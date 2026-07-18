@@ -60,7 +60,7 @@ export const VpdCalculatorPanel: React.FC = () => {
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         aria-label={t('knowledgeView.rechner.vpd.temperature')}
                     />
-                    <span className="text-3xs text-slate-500 text-center">
+                    <span className="text-3xs text-muted text-center">
                         {t('knowledgeView.rechner.vpd.celsius')}
                     </span>
                 </label>
@@ -80,7 +80,7 @@ export const VpdCalculatorPanel: React.FC = () => {
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         aria-label={t('knowledgeView.rechner.vpd.humidity')}
                     />
-                    <span className="text-3xs text-slate-500 text-center">%</span>
+                    <span className="text-3xs text-muted text-center">%</span>
                 </label>
                 <label className="flex flex-col gap-1">
                     <span className="text-xs text-slate-400">
@@ -98,7 +98,7 @@ export const VpdCalculatorPanel: React.FC = () => {
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         aria-label={t('knowledgeView.rechner.vpd.leafOffset')}
                     />
-                    <span className="text-3xs text-slate-500 text-center">
+                    <span className="text-3xs text-muted text-center">
                         {t('knowledgeView.rechner.vpd.celsius')}
                     </span>
                 </label>

@@ -345,7 +345,7 @@ const IssueCard: React.FC<IssueCardProps> = memo(
                     className="w-full flex items-center gap-2 p-3 text-left hover:bg-white/[0.04] transition-colors"
                 >
                     <PhosphorIcons.ChevronDown
-                        className={`h-3.5 w-3.5 text-slate-500 shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+                        className={`h-3.5 w-3.5 text-muted shrink-0 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     />
                     <span className="flex-1 font-medium text-sm text-slate-100 truncate">
                         {issue.title}

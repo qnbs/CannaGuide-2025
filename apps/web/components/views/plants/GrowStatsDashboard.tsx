@@ -65,7 +65,7 @@ const YieldForecastCard: React.FC<YieldForecastCardProps> = ({
                     t('plantsView.growStats.heuristicFallback')
                 )}
             </p>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-muted mt-1">
                 {isLoading
                     ? t('plantsView.growStats.modelTraining')
                     : (prediction?.explanation ?? t('plantsView.growStats.modelIdle'))}

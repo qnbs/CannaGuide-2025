@@ -369,7 +369,7 @@ export const EntourageScore: React.FC<EntourageScoreProps> = memo(({ score, dive
                 {label}
             </span>
             {diversity !== undefined && diversity > 0 && (
-                <span className="text-3xs text-slate-500">H={diversity.toFixed(2)}</span>
+                <span className="text-3xs text-muted">H={diversity.toFixed(2)}</span>
             )}
         </div>
     )
@@ -531,7 +531,7 @@ export const TerpeneDetailList: React.FC<TerpeneDetailListProps> = memo(({ terpe
                                                 ? 'text-emerald-400'
                                                 : ix.strength === 'medium'
                                                   ? 'text-amber-400'
-                                                  : 'text-slate-500',
+                                                  : 'text-muted',
                                         )}
                                     >
                                         {ix.cannabinoid}
@@ -581,7 +581,7 @@ export const GeneticsTree: React.FC<GeneticsTreeProps> = memo(({ genetics, paren
                             {pA}
                         </span>
                     )}
-                    {pA && pB && <span className="text-slate-500 text-xs font-bold">x</span>}
+                    {pA && pB && <span className="text-muted text-xs font-bold">x</span>}
                     {pB && (
                         <span className="text-xs px-2 py-1 rounded bg-orange-500/10 text-orange-300 border border-orange-500/20">
                             {pB}

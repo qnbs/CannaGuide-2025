@@ -203,7 +203,7 @@ const DashboardSummaryComponent: React.FC = () => {
                         <PhosphorIcons.ChartLineUp className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-2xs uppercase tracking-[0.22em] text-slate-500">
+                        <p className="text-2xs uppercase tracking-[0.22em] text-muted">
                             {t('plantsView.gardenVitals.vpdSummary')}
                         </p>
                         <p className="text-lg font-bold font-display text-slate-50">
@@ -348,7 +348,7 @@ const DashboardSummaryComponent: React.FC = () => {
                                 />
                             </>
                         ) : (
-                            <p className="text-xs text-slate-500 text-center">
+                            <p className="text-xs text-muted text-center">
                                 {t('plantsView.summary.advancedControlsHint')}
                             </p>
                         )}

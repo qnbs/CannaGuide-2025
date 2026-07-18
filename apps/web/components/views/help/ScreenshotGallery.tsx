@@ -274,7 +274,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
             </div>
 
             {/* Count */}
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-xs text-muted mb-4">
                 {t('helpView.screenshots.resultCount', {
                     count: filtered.length,
                     total: SCREENSHOTS.length,
@@ -289,7 +289,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
                         <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
                             {t(`helpView.screenshots.categories.${catId}`)}
                         </h4>
-                        <span className="text-xs tabular-nums text-slate-500 bg-slate-800 rounded-full px-2 py-0.5">
+                        <span className="text-xs tabular-nums text-muted bg-slate-800 rounded-full px-2 py-0.5">
                             {items.length}
                         </span>
                         <div className="h-px flex-1 bg-slate-700/60" />
@@ -331,7 +331,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
             ))}
 
             {filtered.length === 0 && (
-                <div className="text-center py-10 text-slate-500 space-y-2">
+                <div className="text-center py-10 text-muted space-y-2">
                     <PhosphorIcons.Camera className="w-10 h-10 mx-auto text-slate-600" />
                     <p>{t('helpView.screenshots.noResults')}</p>
                 </div>

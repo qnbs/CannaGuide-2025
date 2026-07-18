@@ -75,7 +75,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                 {/* Row 1: Search + View toggle */}
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                        <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted" />
                         <input
                             type="text"
                             value={searchTerm}
@@ -88,7 +88,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                         <button
                             type="button"
                             onClick={() => onViewModeChange('list')}
-                            className={`h-9 w-9 flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-primary-500/20 text-primary-300 shadow-[inset_0_0_12px_rgba(var(--color-primary-400),0.15)]' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]'}`}
+                            className={`h-9 w-9 flex items-center justify-center transition-all ${viewMode === 'list' ? 'bg-primary-500/20 text-primary-300 shadow-[inset_0_0_12px_rgba(var(--color-primary-400),0.15)]' : 'text-muted hover:text-slate-300 hover:bg-white/[0.06]'}`}
                             aria-label={t('strainsView.seedVault.listView')}
                         >
                             <PhosphorIcons.ListBullets className="h-4 w-4" />
@@ -96,7 +96,7 @@ export const SeedVaultToolbar: React.FC<SeedVaultToolbarProps> = memo(
                         <button
                             type="button"
                             onClick={() => onViewModeChange('grid')}
-                            className={`h-9 w-9 flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-primary-500/20 text-primary-300 shadow-[inset_0_0_12px_rgba(var(--color-primary-400),0.15)]' : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.06]'}`}
+                            className={`h-9 w-9 flex items-center justify-center transition-all ${viewMode === 'grid' ? 'bg-primary-500/20 text-primary-300 shadow-[inset_0_0_12px_rgba(var(--color-primary-400),0.15)]' : 'text-muted hover:text-slate-300 hover:bg-white/[0.06]'}`}
                             aria-label={t('strainsView.seedVault.gridView')}
                         >
                             <PhosphorIcons.GridFour className="h-4 w-4" />

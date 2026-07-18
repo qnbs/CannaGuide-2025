@@ -108,7 +108,7 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
         mainContent = <SkeletonLoader variant={viewMode} count={10} />
     } else if (hasNoResults) {
         mainContent = (
-            <Card className="text-center py-10 text-slate-500">
+            <Card className="text-center py-10 text-muted">
                 <PhosphorIcons.MagnifyingGlass className="w-14 h-14 mx-auto text-slate-400 mb-3" />
                 <h3 className="font-semibold text-slate-300">
                     {t('strainsView.emptyStates.noResults.title')}

@@ -350,7 +350,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                 </Card>
                             )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-4 text-center">{t('ai.disclaimer')}</p>
+                    <AiDisclaimer />
                 </div>
             </Card>
 

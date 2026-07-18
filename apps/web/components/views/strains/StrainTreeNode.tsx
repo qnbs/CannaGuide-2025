@@ -126,7 +126,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(
                             {!isPlaceholder && (
                                 <button
                                     type="button"
-                                    className="flex-shrink-0 p-0.5 rounded text-slate-500 hover:text-primary-300 hover:bg-slate-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 pointer-events-auto"
+                                    className="flex-shrink-0 p-0.5 rounded text-muted hover:text-primary-300 hover:bg-slate-700/50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 pointer-events-auto"
                                     onClick={handleDetailClick}
                                     aria-label={
                                         t('common.accessibility.openStrainDetails') +

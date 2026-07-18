@@ -125,7 +125,7 @@ export const LexiconSection: React.FC = memo(() => {
                 <h3 className="text-xl font-bold font-display text-primary-400">
                     {t('helpView.lexicon.title')}
                 </h3>
-                <span className="text-xs tabular-nums text-slate-500">
+                <span className="text-xs tabular-nums text-muted">
                     {t('helpView.lexicon.resultCount', {
                         count: filteredLexicon.length,
                         total: augmentedLexicon.length,
@@ -228,7 +228,7 @@ export const LexiconSection: React.FC = memo(() => {
                         ))}
                 </div>
             ) : (
-                <div className="text-center py-10 text-slate-500 space-y-2 md:col-span-2 lg:col-span-3">
+                <div className="text-center py-10 text-muted space-y-2 md:col-span-2 lg:col-span-3">
                     <PhosphorIcons.MagnifyingGlass className="w-10 h-10 mx-auto text-slate-600" />
                     <p>{t('helpView.lexicon.noResults', { term: searchTerm })}</p>
                 </div>

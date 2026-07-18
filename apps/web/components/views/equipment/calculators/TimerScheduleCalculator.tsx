@@ -163,7 +163,7 @@ export const TimerScheduleCalculator: React.FC = memo(() => {
                         </div>
                     )}
 
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         {t('equipmentView.calculators.timerSchedule.dliRangeNote', {
                             min: result.recommendedDliRange.min,
                             max: result.recommendedDliRange.max,

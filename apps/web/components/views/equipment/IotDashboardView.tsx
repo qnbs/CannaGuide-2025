@@ -135,7 +135,7 @@ const GaugeCard: React.FC<GaugeCardProps> = memo(
 
         const valueColor =
             value === null
-                ? 'text-slate-500'
+                ? 'text-muted'
                 : isOptimal
                   ? 'text-emerald-400'
                   : optimalMin !== undefined
@@ -145,7 +145,7 @@ const GaugeCard: React.FC<GaugeCardProps> = memo(
         return (
             <Card className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-wider text-slate-500">{label}</span>
+                    <span className="text-xs uppercase tracking-wider text-muted">{label}</span>
                     {optimalMin !== undefined && optimalMax !== undefined && (
                         <span className="text-3xs text-slate-600">
                             {optimalMin}-{optimalMax} {unit}
@@ -154,7 +154,7 @@ const GaugeCard: React.FC<GaugeCardProps> = memo(
                 </div>
                 <div className={cn('text-2xl font-bold font-display', valueColor)}>
                     {value !== null ? value.toFixed(1) : '--'}
-                    <span className="text-sm text-slate-500 ml-1">{unit}</span>
+                    <span className="text-sm text-muted ml-1">{unit}</span>
                 </div>
                 <Sparkline data={sparkData} color={color} label={`${label} trend`} />
             </Card>
@@ -188,13 +188,13 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-slate-100">
                         {telemetry.messagesReceived}
                     </div>
-                    <div className="text-3xs uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-muted">
                         {t('settingsView.iot.messages', { defaultValue: 'Messages' })}
                     </div>
                 </div>
                 <div>
                     <div className="text-lg font-bold text-emerald-400">{uptimePercent}%</div>
-                    <div className="text-3xs uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-muted">
                         {t('settingsView.iot.validRate', { defaultValue: 'Valid Rate' })}
                     </div>
                 </div>
@@ -202,7 +202,7 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-cyan-400">
                         {telemetry.avgLatencyMs.toFixed(0)}
                     </div>
-                    <div className="text-3xs uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-muted">
                         {t('settingsView.iot.latencyMs', { defaultValue: 'Latency (ms)' })}
                     </div>
                 </div>
@@ -210,7 +210,7 @@ const TelemetryPanel: React.FC<{ telemetry: MqttTelemetryMetrics }> = memo(({ te
                     <div className="text-lg font-bold text-red-400">
                         {telemetry.validationErrors}
                     </div>
-                    <div className="text-3xs uppercase text-slate-500">
+                    <div className="text-3xs uppercase text-muted">
                         {t('settingsView.iot.errors', { defaultValue: 'Errors' })}
                     </div>
                 </div>
@@ -347,7 +347,7 @@ function IotDashboardViewComponent(): React.JSX.Element {
                         defaultValue: 'IoT Sensors Disabled',
                     })}
                 </h2>
-                <p className="text-sm text-slate-500 max-w-md mx-auto">
+                <p className="text-sm text-muted max-w-md mx-auto">
                     {t('settingsView.iot.dashboardEnableHint', {
                         defaultValue:
                             'Enable IoT sensors in Settings to see live data from your ESP32 devices.',
@@ -365,10 +365,10 @@ function IotDashboardViewComponent(): React.JSX.Element {
                     <h2 className="text-xl font-bold text-slate-100">
                         {t('equipmentView.tabs.iotDashboard')}
                     </h2>
-                    <p className="text-xs text-slate-500">{brokerUrl}</p>
+                    <p className="text-xs text-muted">{brokerUrl}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                    <span className="text-xs text-slate-500">Last update: {lastUpdateText}</span>
+                    <span className="text-xs text-muted">Last update: {lastUpdateText}</span>
                     <ConnectionBadge status={connectionState} />
                 </div>
             </div>

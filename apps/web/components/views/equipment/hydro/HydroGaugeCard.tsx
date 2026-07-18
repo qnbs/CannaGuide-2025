@@ -26,7 +26,7 @@ export const HydroGaugeCard: React.FC<HydroGaugeCardProps> = memo(
             ok: 'text-emerald-400',
             low: 'text-amber-400',
             high: 'text-red-400',
-            unknown: 'text-slate-500',
+            unknown: 'text-muted',
         }
 
         return (
@@ -40,7 +40,7 @@ export const HydroGaugeCard: React.FC<HydroGaugeCardProps> = memo(
                 <p className={cn('text-2xl font-bold tabular-nums', textColor[status])}>
                     {value !== undefined ? value.toFixed(decimals) : '--'}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                     {unit} ({min}-{max})
                 </p>
             </div>

@@ -105,7 +105,7 @@ export const PlantTagGenerator: React.FC<PlantTagGeneratorProps> = memo(({ plant
     if (plants.length === 0) {
         return (
             <div className="rounded-xl bg-slate-800/40 p-8 text-center">
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted">
                     {t('plantsView.tags.noPlants', {
                         defaultValue: 'No plants to generate tags for.',
                     })}

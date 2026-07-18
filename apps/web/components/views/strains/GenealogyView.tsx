@@ -596,7 +596,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
 
             {/* ── No strain selected ── */}
             {status !== 'loading' && !selectedStrainId && (
-                <Card key="no-selection" className="text-center py-10 text-slate-500">
+                <Card key="no-selection" className="text-center py-10 text-muted">
                     <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto text-slate-400 mb-4" />
                     <p>{t('strainsView.genealogyView.noStrainSelected')}</p>
                 </Card>

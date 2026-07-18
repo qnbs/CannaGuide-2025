@@ -51,7 +51,7 @@ export const CostCalculator: React.FC = memo(() => {
                  <div className="bg-slate-800/50 p-3 rounded-lg">
                     <p className="text-xs font-semibold text-slate-400 uppercase">{t('equipmentView.calculators.cost.cycle')}</p>
                     <p className="text-xl font-bold text-primary-400">{costs.cycle} {t('common.units.currency_eur')}</p>
-                    <p className="text-xs text-slate-500">{t('equipmentView.calculators.cost.cycleSub')}</p>
+                    <p className="text-xs text-muted">{t('equipmentView.calculators.cost.cycleSub')}</p>
                 </div>
             </div>
         </CalculatorSection>

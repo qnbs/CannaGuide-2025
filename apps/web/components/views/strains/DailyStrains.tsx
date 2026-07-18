@@ -112,7 +112,7 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                 )}
 
                 {strain.genetics && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted">
                         <span className="font-semibold text-slate-400">
                             {t('strainsView.dailyStrains.genetics')}:
                         </span>{' '}
@@ -134,7 +134,7 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                 )}
 
                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
-                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-2 text-xs text-muted">
                         {strain.source === 'ai-lookup' && (
                             <span className="text-primary-400">AI</span>
                         )}
@@ -324,7 +324,7 @@ export const DailyStrains: React.FC = () => {
                             count: feed.stats.categories.length,
                         })}
                     </span>
-                    <span className="text-slate-500">
+                    <span className="text-muted">
                         {t('strainsView.dailyStrains.catalogSize', {
                             count: feed.stats.existingCatalogSize,
                         })}
@@ -345,7 +345,7 @@ export const DailyStrains: React.FC = () => {
             <Card className="p-4">
                 <div className="flex gap-2">
                     <div className="relative flex-1">
-                        <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
                         <input
                             type="text"
                             value={searchQuery}

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { secureRandom } from '@/utils/random'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { scenarioService } from '@/services/scenarioService'
 import { Button } from '@/components/common/Button'
@@ -115,14 +116,12 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({
                                 <PhosphorIcons.GameController className="w-5 h-5 mr-2" />
                                 {t(relevantScenario.titleKey)}
                             </Button>
-                            <p className="text-xs text-slate-500 mt-2">
+                            <p className="text-xs text-muted mt-2">
                                 {t(relevantScenario.descriptionKey)}
                             </p>
                         </div>
                     )}
-                    <p className="text-xs text-slate-500 italic mt-4 text-center">
-                        {t('ai.disclaimer')}
-                    </p>
+                    <AiDisclaimer />
                 </div>
             )}
         </Modal>

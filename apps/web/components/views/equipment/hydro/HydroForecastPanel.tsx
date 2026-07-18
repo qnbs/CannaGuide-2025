@@ -62,13 +62,13 @@ export const HydroForecastPanel: React.FC<HydroForecastPanelProps> = memo(({ rea
             </div>
 
             {forecastLoading && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                     {t('equipmentView.hydroMonitoring.forecast.loading')}
                 </p>
             )}
 
             {!forecastLoading && !forecast && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                     {t('equipmentView.hydroMonitoring.forecast.insufficientReadings')}
                 </p>
             )}
@@ -143,7 +143,7 @@ export const HydroForecastPanel: React.FC<HydroForecastPanelProps> = memo(({ rea
                             {t(`equipmentView.hydroMonitoring.forecast.trends.${forecast.trend}`)}
                         </span>
                         {forecast.confidence > 0 && (
-                            <span className="text-slate-500">
+                            <span className="text-muted">
                                 {t('equipmentView.hydroMonitoring.forecast.confidence')}:{' '}
                                 {Math.round(forecast.confidence * 100)}%
                             </span>

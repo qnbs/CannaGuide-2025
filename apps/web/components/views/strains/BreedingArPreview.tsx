@@ -307,7 +307,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
                             <p className="text-sm leading-6 text-slate-300">
                                 {t('knowledgeView.breeding.webglUnavailableDescription')}
                             </p>
-                            <p className="text-xs leading-5 text-slate-500">
+                            <p className="text-xs leading-5 text-muted">
                                 {t('knowledgeView.breeding.webglUnavailableHint')}
                             </p>
                         </div>

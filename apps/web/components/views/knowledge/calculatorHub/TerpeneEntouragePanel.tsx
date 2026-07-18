@@ -87,14 +87,14 @@ export const TerpeneEntouragePanel: React.FC = () => {
                             className="w-20 rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                             aria-label={t('knowledgeView.rechner.terpeneEntourage.terpenePercent')}
                         />
-                        <span className="text-xs text-slate-500">%</span>
+                        <span className="text-xs text-muted">%</span>
                         {terpenes.length > 1 && (
                             <button
                                 type="button"
                                 onClick={() => {
                                     setTerpenes(terpenes.filter((_, i) => i !== idx))
                                 }}
-                                className="text-slate-500 hover:text-red-400 transition-colors text-lg leading-none"
+                                className="text-muted hover:text-red-400 transition-colors text-lg leading-none"
                                 aria-label={t('knowledgeView.rechner.terpeneEntourage.remove')}
                             >
                                 x
@@ -165,7 +165,7 @@ export const TerpeneEntouragePanel: React.FC = () => {
                         </span>
                         <span className={`text-2xl font-bold font-display ${scoreColor}`}>
                             {result.entourageScore}
-                            <span className="text-xs font-normal text-slate-500">/100</span>
+                            <span className="text-xs font-normal text-muted">/100</span>
                         </span>
                     </div>
                     <div className="flex justify-between text-xs text-slate-300">
@@ -179,7 +179,7 @@ export const TerpeneEntouragePanel: React.FC = () => {
                         </span>
                     </div>
                     {result.synergyPairs.length > 0 && (
-                        <div className="text-3xs text-slate-500 space-y-0.5 border-t border-white/10 pt-2">
+                        <div className="text-3xs text-muted space-y-0.5 border-t border-white/10 pt-2">
                             <p className="text-slate-400 font-semibold text-xs">
                                 {t('knowledgeView.rechner.terpeneEntourage.synergyMatrix')}
                             </p>

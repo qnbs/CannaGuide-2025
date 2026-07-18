@@ -214,7 +214,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
             {activeTab === 'manual' && (
                 <Suspense
                     fallback={
-                        <p className="text-xs text-slate-500 text-center py-4">
+                        <p className="text-xs text-muted text-center py-4">
                             {t('common.loadingGeneric')}
                         </p>
                     }
@@ -435,7 +435,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                             </span>
 
                             {/* Model used chip */}
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-muted">
                                 {t(`diagnosis.modelUsed.${result.modelUsed}`)}
                             </p>
 
@@ -455,7 +455,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                                     {rec.diseaseId.replace(/-/g, ' ')}
                                                 </span>
                                                 {rec.relatedLexiconKeys.length > 0 && (
-                                                    <span className="text-slate-500">
+                                                    <span className="text-muted">
                                                         {' '}
                                                         &mdash; {rec.relatedLexiconKeys.join(', ')}
                                                     </span>
@@ -465,7 +465,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                                     </ul>
                                 </div>
                             ) : (
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-muted">
                                     {t('plantsView.diagnosis.noRecommendations')}
                                 </p>
                             )}

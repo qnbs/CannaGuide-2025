@@ -47,7 +47,7 @@ export const PhQuickGuidePanel: React.FC = () => {
                     </tbody>
                 </table>
             </div>
-            <p className="text-3xs text-slate-500">{t('knowledgeView.rechner.ph.note')}</p>
+            <p className="text-3xs text-muted">{t('knowledgeView.rechner.ph.note')}</p>
         </div>
     )
 }

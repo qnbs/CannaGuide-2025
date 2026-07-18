@@ -57,7 +57,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                             <span className="font-semibold">
                                 {getSafeText(geneticsParentA.name, 'Unknown Strain')}
                             </span>
-                            <span className="text-slate-500">|</span>
+                            <span className="text-muted">|</span>
                             <span className="text-primary-300">
                                 THC {getSafeNumericValue(geneticsParentA.thc, 0).toFixed(1)}%
                             </span>
@@ -79,7 +79,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                             <span className="font-semibold">
                                 {getSafeText(geneticsParentB.name, 'Unknown Strain')}
                             </span>
-                            <span className="text-slate-500">|</span>
+                            <span className="text-muted">|</span>
                             <span className="text-primary-300">
                                 THC {getSafeNumericValue(geneticsParentB.thc, 0).toFixed(1)}%
                             </span>
@@ -141,7 +141,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                 } else if (isPast) {
                                     badgeCls += 'bg-slate-600 text-slate-300'
                                 } else {
-                                    badgeCls += 'bg-slate-800 text-slate-500'
+                                    badgeCls += 'bg-slate-800 text-muted'
                                 }
                                 return (
                                     <React.Fragment key={gen}>
@@ -219,7 +219,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                     key={item.label}
                                     className="bg-slate-800/60 rounded-lg p-2 ring-1 ring-white/10"
                                 >
-                                    <p className="text-3xs text-slate-500 uppercase tracking-wider">
+                                    <p className="text-3xs text-muted uppercase tracking-wider">
                                         {item.label}
                                     </p>
                                     <p

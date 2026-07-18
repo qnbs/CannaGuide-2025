@@ -56,7 +56,7 @@ export const CalculatorHistoryPanel: React.FC<Props> = memo(({ calculatorId, ref
                         e.preventDefault()
                         handleClear()
                     }}
-                    className="text-xs text-slate-500 hover:text-red-400 ml-2"
+                    className="text-xs text-muted hover:text-red-400 ml-2"
                 >
                     {t('equipmentView.calculators.history.clear')}
                 </button>
@@ -66,7 +66,7 @@ export const CalculatorHistoryPanel: React.FC<Props> = memo(({ calculatorId, ref
                 {entries.map((entry) => (
                     <li key={entry.id} className="py-2">
                         <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-muted">
                                 {new Date(entry.timestamp).toLocaleString()}
                             </span>
                             {entry.label !== undefined && entry.label !== '' && (
@@ -75,7 +75,7 @@ export const CalculatorHistoryPanel: React.FC<Props> = memo(({ calculatorId, ref
                         </div>
                         <div className="flex flex-wrap gap-x-3 gap-y-1">
                             {Object.entries(entry.inputs).map(([k, v]) => (
-                                <span key={k} className="text-xs text-slate-500">
+                                <span key={k} className="text-xs text-muted">
                                     {t(`calculators.${k}`, { defaultValue: k })}:{' '}
                                     <span className="text-slate-400">{v}</span>
                                 </span>

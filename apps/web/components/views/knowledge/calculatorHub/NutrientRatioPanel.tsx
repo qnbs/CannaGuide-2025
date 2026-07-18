@@ -79,7 +79,7 @@ export const NutrientRatioPanel: React.FC = () => {
                         className="w-full rounded bg-slate-700 border border-slate-600 text-slate-100 text-center py-1.5 text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none"
                         aria-label={t('knowledgeView.rechner.nutrient.volume')}
                     />
-                    <span className="text-3xs text-slate-500 text-center">
+                    <span className="text-3xs text-muted text-center">
                         {t('knowledgeView.rechner.nutrient.unitLiter')}
                     </span>
                 </label>
@@ -126,7 +126,7 @@ export const NutrientRatioPanel: React.FC = () => {
                 </div>
             </div>
 
-            <p className="text-3xs text-slate-500">
+            <p className="text-3xs text-muted">
                 {t('knowledgeView.rechner.nutrient.disclaimer')}
             </p>
         </div>

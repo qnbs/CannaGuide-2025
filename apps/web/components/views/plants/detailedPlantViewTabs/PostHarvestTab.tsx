@@ -286,7 +286,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                                 {t('plantsView.postHarvest.day')} {harvestData.currentDryDay} /{' '}
                                 {PLANT_STAGE_DETAILS[PlantStage.Drying].duration}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-muted">
                                 {t('plantsView.postHarvest.targetDryingWindow')}
                             </p>
                             <div className="space-y-2">
@@ -325,7 +325,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                                 {t('plantsView.postHarvest.day')} {harvestData.currentCureDay} /{' '}
                                 {PLANT_STAGE_DETAILS[PlantStage.Curing].duration}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-muted">
                                 {t('plantsView.postHarvest.targetCuringWindow')}
                             </p>
                             <BurpCalendar
@@ -433,7 +433,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                             >
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <p className="font-semibold text-slate-100">{entry.notes}</p>
-                                    <span className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                                    <span className="text-xs uppercase tracking-[0.16em] text-muted">
                                         {new Date(entry.createdAt).toLocaleString()}
                                     </span>
                                 </div>

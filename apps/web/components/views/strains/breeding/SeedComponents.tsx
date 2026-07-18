@@ -72,7 +72,7 @@ export const ParentSlot: React.FC<{
                     </Button>
                 </>
             ) : (
-                <div className="text-slate-500">
+                <div className="text-muted">
                     <PhosphorIcons.Drop className="w-12 h-12 mb-2" />
                     <p>{t('knowledgeView.breeding.selectSeed')}</p>
                 </div>

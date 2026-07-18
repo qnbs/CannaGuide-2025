@@ -6,6 +6,7 @@ import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stores/api'
@@ -367,7 +368,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         />
                     )
                 )}
-                <p className="text-xs text-slate-500 italic mt-3">{t('ai.disclaimer')}</p>
+                <AiDisclaimer />
             </div>
         </Card>
     )

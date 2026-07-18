@@ -16,7 +16,7 @@ const MetricCard: React.FC<{ label: string; value: string; hint: string }> = ({
     hint,
 }) => (
     <div className="rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">{label}</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted">{label}</p>
         <p className="mt-2 text-2xl font-bold text-slate-100">{value}</p>
         <p className="mt-2 text-sm text-slate-400">{hint}</p>
     </div>
@@ -315,7 +315,7 @@ export const SimulationDebugTab: React.FC<SimulationDebugTabProps> = memo(({ pla
                         {t('plantsView.simulationDebug.postHarvest')}
                     </h3>
                     <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
-                        <span className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                        <span className="text-xs uppercase tracking-[0.2em] text-muted">
                             {t('plantsView.simulationDebug.postHarvestStage')}
                         </span>
                         <span className="rounded-full bg-slate-700 px-3 py-1 text-sm font-semibold text-slate-100">

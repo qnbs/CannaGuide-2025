@@ -159,7 +159,7 @@ const PresetSetupsViewComponent: React.FC = () => {
             </div>
 
             {/* Count */}
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-xs text-muted text-center">
                 {t('equipmentView.presetSetups.count', { count: filteredPresets.length })}
             </p>
 
@@ -229,7 +229,7 @@ const PresetSetupsViewComponent: React.FC = () => {
             ))}
 
             {/* Info footer */}
-            <Card className="text-center py-6 text-slate-500">
+            <Card className="text-center py-6 text-muted">
                 <PhosphorIcons.Info className="w-8 h-8 mx-auto text-slate-400 mb-2" />
                 <p className="text-xs">{t('equipmentView.presetSetups.footer')}</p>
             </Card>

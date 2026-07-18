@@ -191,7 +191,7 @@ const GrowReminderPanelComponent: React.FC = () => {
                                             <p className="text-xs text-slate-300">
                                                 {t('plantsView.growReminderPanel.batchQrLabel')}
                                             </p>
-                                            <p className="text-2xs text-slate-500 break-all mt-1">
+                                            <p className="text-2xs text-muted break-all mt-1">
                                                 {triggerUrl}
                                             </p>
                                             <div className="mt-3 flex flex-wrap gap-2">

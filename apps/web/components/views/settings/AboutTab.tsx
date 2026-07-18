@@ -213,7 +213,7 @@ const AboutAppContent = memo(() => {
                             {t('settingsView.about.devJourney.phase4Desc')}
                         </ListItem>
                     </ul>
-                    <p className="text-xs text-slate-500 mt-3 italic">
+                    <p className="text-xs text-muted mt-3 italic">
                         {t('settingsView.about.devJourney.secondaryNote')}
                     </p>
                 </InfoSection>

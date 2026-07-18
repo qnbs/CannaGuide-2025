@@ -64,7 +64,7 @@ export const ModelLoadingProgress: React.FC = memo(() => {
             </div>
 
             {/* Percentage + ETA */}
-            <div className="flex justify-between text-xs text-slate-500 tabular-nums">
+            <div className="flex justify-between text-xs text-muted tabular-nums">
                 <span>{pct}%</span>
                 {eta && <span>{t('ai.webLlmLoading.eta', { time: eta })}</span>}
             </div>

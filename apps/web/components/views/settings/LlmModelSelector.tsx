@@ -58,7 +58,7 @@ const ModelCard = memo(function ModelCard({ model, isSelected, onSelect }: Model
                     `settingsView.offlineAi.modelSelector.model_${model.sizeTier.replace('.', '')}_desc`,
                 )}
             </p>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
+            <div className="flex items-center gap-2 text-xs text-muted">
                 <span>
                     {t('settingsView.offlineAi.modelSelector.downloadSize', {
                         size: formatMb(model.sizeBytes),
@@ -108,7 +108,7 @@ const AutoCard = memo(function AutoCard({ isSelected, autoModel, onSelect }: Aut
             <p className="text-xs text-slate-400 mb-1.5">
                 {t('settingsView.offlineAi.modelSelector.autoDesc')}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted">
                 {t('settingsView.offlineAi.modelSelector.currentAuto', { model: autoModel.label })}
             </p>
         </button>
@@ -167,7 +167,7 @@ export const LlmModelSelector = memo(function LlmModelSelector({
                 <h4 className="text-sm font-medium text-slate-200 mb-1">
                     {t('settingsView.offlineAi.modelSelector.title')}
                 </h4>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-muted">
                     {t('settingsView.offlineAi.modelSelector.subtitle')}
                 </p>
             </div>

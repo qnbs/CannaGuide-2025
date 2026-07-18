@@ -360,7 +360,7 @@ const WorkerTelemetryTab: React.FC = () => {
                 </h4>
                 <PoolStatus poolMetrics={poolMetrics} />
                 {poolMetrics && (
-                    <div className="mt-2 text-xs text-slate-500">
+                    <div className="mt-2 text-xs text-muted">
                         {t('workerTelemetry.maxPool', { defaultValue: 'Max pool size' })}:{' '}
                         <span className="text-slate-400 tabular-nums">
                             {poolMetrics.maxPoolSize}
@@ -402,7 +402,7 @@ const WorkerTelemetryTab: React.FC = () => {
                 )}
 
             {/* Last updated timestamp */}
-            <div className="text-xs text-slate-500 text-right">
+            <div className="text-xs text-muted text-right">
                 {t('workerTelemetry.lastUpdated', { defaultValue: 'Last updated' })}:{' '}
                 <span className="tabular-nums">{lastUpdatedStr}</span>
             </div>

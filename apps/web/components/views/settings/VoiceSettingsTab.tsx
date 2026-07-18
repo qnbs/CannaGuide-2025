@@ -33,7 +33,7 @@ const CommandItem: React.FC<{
     <div className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-md">
         <div className="w-5 h-5 text-primary-300 flex-shrink-0">{icon}</div>
         <code className="text-sm text-slate-300 flex-grow">{title}</code>
-        <span className="text-xs text-slate-500 shrink-0">{group}</span>
+        <span className="text-xs text-muted shrink-0">{group}</span>
         <Button size="sm" variant="ghost" onClick={onTry} className="shrink-0 h-6 px-2 text-xs">
             <PhosphorIcons.Play className="w-3 h-3" />
         </Button>
@@ -413,7 +413,7 @@ const VoiceSettingsTab: React.FC = () => {
                                         autoComplete="off"
                                     />
                                 </SettingsRow>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-muted">
                                     {t('settingsView.voice.cloudTts.privacyNote')}
                                 </p>
                             </>
@@ -478,7 +478,7 @@ const VoiceSettingsTab: React.FC = () => {
                                 {analyticsSnapshot && (
                                     <div className="grid grid-cols-2 gap-2 text-xs">
                                         <div className="p-2 bg-slate-900/50 rounded">
-                                            <span className="text-slate-500">
+                                            <span className="text-muted">
                                                 {t('settingsView.voice.advanced.totalCommands')}
                                             </span>
                                             <p className="text-lg font-medium">
@@ -486,7 +486,7 @@ const VoiceSettingsTab: React.FC = () => {
                                             </p>
                                         </div>
                                         <div className="p-2 bg-slate-900/50 rounded">
-                                            <span className="text-slate-500">
+                                            <span className="text-muted">
                                                 {t('settingsView.voice.advanced.successRate')}
                                             </span>
                                             <p className="text-lg font-medium">
@@ -494,7 +494,7 @@ const VoiceSettingsTab: React.FC = () => {
                                             </p>
                                         </div>
                                         <div className="p-2 bg-slate-900/50 rounded">
-                                            <span className="text-slate-500">
+                                            <span className="text-muted">
                                                 {t('settingsView.voice.advanced.avgLatency')}
                                             </span>
                                             <p className="text-lg font-medium">
@@ -502,7 +502,7 @@ const VoiceSettingsTab: React.FC = () => {
                                             </p>
                                         </div>
                                         <div className="p-2 bg-slate-900/50 rounded">
-                                            <span className="text-slate-500">
+                                            <span className="text-muted">
                                                 {t('settingsView.voice.advanced.hotwordCount')}
                                             </span>
                                             <p className="text-lg font-medium">

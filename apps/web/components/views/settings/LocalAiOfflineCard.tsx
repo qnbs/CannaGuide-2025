@@ -194,7 +194,7 @@ export const LocalAiOfflineCard: React.FC = () => {
                                 })}
                             </p>
                         )}
-                        <p className="text-xs text-slate-500 pt-1">
+                        <p className="text-xs text-muted pt-1">
                             {t('settingsView.offlineAi.modelsLoaded', {
                                 loaded: [
                                     status.textModelReady,
@@ -247,7 +247,7 @@ export const LocalAiOfflineCard: React.FC = () => {
                                 <p className="text-sm text-slate-200">
                                     {t('settingsView.offlineAi.forceWasm')}
                                 </p>
-                                <p className="text-xs text-slate-500">
+                                <p className="text-xs text-muted">
                                     {t('settingsView.offlineAi.forceWasmHint')}
                                 </p>
                             </div>

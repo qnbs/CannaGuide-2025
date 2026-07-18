@@ -124,7 +124,7 @@ const OfflineActionQueuePanel: React.FC = () => {
                             >
                                 <span className="text-slate-300 truncate">{label}</span>
                                 {typeof action.queuedAt === 'number' && (
-                                    <span className="text-slate-500 shrink-0">
+                                    <span className="text-muted shrink-0">
                                         {new Date(action.queuedAt).toLocaleString()}
                                     </span>
                                 )}

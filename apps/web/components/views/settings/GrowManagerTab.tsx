@@ -34,7 +34,7 @@ const GrowStatsRow: React.FC<{ growId: string }> = memo(({ growId }) => {
     const summary = useAppSelector(selectGrowSummary(growId))
     const { t } = useTranslation()
     return (
-        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-2xs text-slate-500">
+        <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-2xs text-muted">
             <span>
                 {t('settingsView.grows.statsPlants', { count: summary.plantCount })}
             </span>

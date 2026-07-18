@@ -310,7 +310,7 @@ const DiseaseAtlasViewComponent: React.FC = () => {
                 </div>
             )}
 
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-xs text-muted text-center">
                 {t('knowledgeView.atlas.entryCount', { count: diseaseAtlas.length })}
             </p>
         </div>

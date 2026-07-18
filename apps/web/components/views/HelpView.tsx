@@ -99,7 +99,7 @@ export const HelpView: React.FC = () => {
                 <p className="text-sm text-slate-400 mt-1.5 max-w-lg mx-auto">
                     {currentMeta?.description}
                 </p>
-                <span className="inline-block mt-2 text-xs tabular-nums text-slate-500 bg-slate-800/70 rounded-full px-3 py-1">
+                <span className="inline-block mt-2 text-xs tabular-nums text-muted bg-slate-800/70 rounded-full px-3 py-1">
                     {currentMeta?.countLabel}
                 </span>
             </div>

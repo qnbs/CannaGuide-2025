@@ -140,7 +140,7 @@ const LexikonViewComponent: React.FC = () => {
                                         {definition}
                                     </p>
                                 ) : (
-                                    <p className="text-slate-500 text-xs italic">
+                                    <p className="text-muted text-xs italic">
                                         {t('knowledgeView.lexikon.noDefinition')}
                                     </p>
                                 )}
@@ -150,7 +150,7 @@ const LexikonViewComponent: React.FC = () => {
                 </div>
             )}
 
-            <p className="text-xs text-slate-500 text-center">
+            <p className="text-xs text-muted text-center">
                 {t('knowledgeView.lexikon.totalCount', { count: lexiconData.length })}
             </p>
         </div>

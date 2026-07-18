@@ -260,7 +260,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
                             />
                         ))}
                         {filteredStrains.length === 0 && (
-                            <div className="text-center py-4 text-slate-500 text-sm">
+                            <div className="text-center py-4 text-muted text-sm">
                                 <PhosphorIcons.MagnifyingGlass
                                     className="w-8 h-8 mx-auto text-slate-600 mb-1"
                                     aria-hidden="true"

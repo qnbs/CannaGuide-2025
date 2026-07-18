@@ -8,6 +8,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { scenarioService } from '@/services/scenarioService'
 import { Button } from '@/components/common/Button'
 import { cn } from '@/lib/utils'
+import { METRIC_COLORS } from '@/utils/chartPalette'
 
 // -- Chart Tab Types -------------------------------------------------------
 
@@ -153,7 +154,7 @@ const ComparisonChart: React.FC<{
                                 type="monotone"
                                 dataKey="phA"
                                 name={`pH ${labelA}`}
-                                stroke="#3b82f6"
+                                stroke={METRIC_COLORS.ph}
                                 strokeWidth={2}
                                 dot={false}
                             />
@@ -161,7 +162,7 @@ const ComparisonChart: React.FC<{
                                 type="monotone"
                                 dataKey="phB"
                                 name={`pH ${labelB}`}
-                                stroke="#60a5fa"
+                                stroke={METRIC_COLORS.ph}
                                 strokeWidth={2}
                                 strokeDasharray="5 5"
                                 dot={false}
@@ -170,7 +171,7 @@ const ComparisonChart: React.FC<{
                                 type="monotone"
                                 dataKey="ecA"
                                 name={`EC ${labelA}`}
-                                stroke="#f59e0b"
+                                stroke={METRIC_COLORS.ec}
                                 strokeWidth={2}
                                 dot={false}
                             />
@@ -178,7 +179,7 @@ const ComparisonChart: React.FC<{
                                 type="monotone"
                                 dataKey="ecB"
                                 name={`EC ${labelB}`}
-                                stroke="#fbbf24"
+                                stroke={METRIC_COLORS.ec}
                                 strokeWidth={2}
                                 strokeDasharray="5 5"
                                 dot={false}

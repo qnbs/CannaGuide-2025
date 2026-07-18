@@ -167,7 +167,7 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
                     y={y + 3}
                     textAnchor="end"
                     fontSize="8"
-                    fill={CHART_CHROME.axis}
+                    fill={CHART_CHROME.label}
                 >
                     {v.toFixed(v < 10 ? 2 : 0)}
                 </text>
@@ -181,7 +181,7 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
                     y={height - 4}
                     textAnchor="middle"
                     fontSize="8"
-                    fill={CHART_CHROME.axis}
+                    fill={CHART_CHROME.label}
                 >
                     D{p.day + 1}
                 </text>

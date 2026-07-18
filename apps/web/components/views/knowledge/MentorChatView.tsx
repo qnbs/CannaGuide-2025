@@ -4,6 +4,7 @@ import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { ModelLoadingProgress } from '@/components/common/ModelLoadingProgress'
 import { Textarea } from '@/components/ui/textarea'
@@ -300,7 +301,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                 <ModelLoadingProgress />
                 <div ref={messagesEndRef} />
             </div>
-            <p className="text-xs text-muted italic px-1 pt-2">{t('ai.disclaimer')}</p>
+            <AiDisclaimer />
             <div className="flex-shrink-0 mt-4 pt-4 border-t border-slate-700">
                 <div className="flex items-start gap-2">
                     <Textarea

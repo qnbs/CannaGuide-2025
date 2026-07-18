@@ -17,6 +17,7 @@
  */
 
 import React, { useMemo } from 'react'
+import { CHART_CHROME } from '@/utils/chartPalette'
 
 export interface ChartPoint {
     day: number
@@ -152,7 +153,7 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
                     y1={y}
                     x2={width - PAD_RIGHT}
                     y2={y}
-                    stroke="#334155"
+                    stroke={CHART_CHROME.grid}
                     strokeWidth="0.5"
                     strokeDasharray="3 3"
                 />
@@ -166,7 +167,7 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
                     y={y + 3}
                     textAnchor="end"
                     fontSize="8"
-                    fill="#64748b"
+                    fill={CHART_CHROME.label}
                 >
                     {v.toFixed(v < 10 ? 2 : 0)}
                 </text>
@@ -180,7 +181,7 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
                     y={height - 4}
                     textAnchor="middle"
                     fontSize="8"
-                    fill="#64748b"
+                    fill={CHART_CHROME.label}
                 >
                     D{p.day + 1}
                 </text>

@@ -9,6 +9,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { generatePlantVpdProfile } from '@/stores/slices/simulationSlice'
 import { selectSettings } from '@/stores/selectors'
 import { useTranslation } from 'react-i18next'
+import { VPD_BAND_COLORS } from '@/utils/chartPalette'
 
 interface VPDChartProps {
     plant: Plant
@@ -85,7 +86,7 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
                         <Line
                             type="monotone"
                             dataKey="vpd"
-                            stroke="#22c55e"
+                            stroke={VPD_BAND_COLORS.optimal}
                             strokeWidth={2}
                             dot={false}
                         />

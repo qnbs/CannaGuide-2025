@@ -68,7 +68,7 @@
         "@picovoice/porcupine-web": "^4.0.1",
         "@picovoice/web-voice-processor": "^4.0.10",
         "@tauri-apps/api": "^2.11.1",
-        "@tauri-apps/plugin-dialog": "^2.7.1",
+        "@tauri-apps/plugin-dialog": "^2.7.2",
         "@tauri-apps/plugin-notification": "^2.2.0"
     },
     "devDependencies": {

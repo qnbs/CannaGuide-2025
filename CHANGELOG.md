@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+---
+
+## [1.10.0] - 2026-07-17
+
 ### Added
 
 - **feat(ui):** `text-muted` semantic token — `--color-text-muted` (base, inherited by all 9 themes) + the `text-muted` Tailwind utility. This is the muted-body-text role that `text-slate-500` couldn't fill: `text-slate-500` fails WCAG-AA on cards in 8/9 themes, whereas `text-muted` is AA-verified on every theme's `bg-primary` and `bg-component` (worst 5.56:1, via `check-contrast.mjs`). The ~253 `text-slate-500` body-text call sites migrate onto it per surface during WS-C (WS-A)
@@ -26,6 +30,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **refactor(ui):** Type-scale migration — 153 arbitrary font sizes across 63 components moved onto the new micro-scale utilities (`text-[11px]`/`[0.68rem]`/`[0.7rem]` → `text-2xs`; `text-[10px]`/`[0.65rem]`/`[0.6rem]`/`[0.55rem]`/`[0.5rem]`/`[9px]` → `text-3xs`). Each arbitrary value was mapped to the nearest token tier, so rendered sizes shift by at most a fraction of a pixel; the token system is now the only path to a font size on these surfaces (WS-A3)
+- **refactor(ui):** Chart-color migration onto the palette + domain families — every Recharts surface (strain comparison, VPD zone map, metrics overview, hydro, analytics dashboard, strain-lookup cannabinoid/flavonoid/score charts, environment dashboard) now reads its colors from `chartPalette.ts` instead of inline hex. Fixed-meaning colors keep their meaning as **named domain families** (`--color-cannabinoid-*`, `--color-vpd-zone-*`, `--color-metric-*`, `--color-flavonoid-*`, `--color-chart-status-*`, `--color-vpd-band-*`) rather than being genericised onto the categorical slots, and `chartPalette.test.ts` asserts hex↔token parity so the two representations cannot drift (WS-A2)
+- **refactor(ui):** `text-slate-500` body text migrated to the AA-verified `text-muted` token on the calculator-hub panels and the WS-C1 batch-2 surfaces (WS-C1)
 - **ci(security):** `check-csp-consistency.mjs` now **enforces** `frame-ancestors 'none'` parity across every header-delivery path (`netlify.toml`, `vercel.json`, `public/_headers`) instead of silently tolerating it as a platform extra — a drop or divergence now fails the gate. `frame-ancestors` stays header-only by design (browsers ignore it, and warn, when it is delivered via a `<meta>` CSP), so `index.html`'s meta is intentionally unchanged; the header directive already protects `index.html` in production
 - **ci(review):** `claude-code-review.yml` now runs `/code-review --comment`, so the automatic Claude review posts its findings as inline PR review threads. Previously it ran (sonnet, ~60 turns) but buffered no comments and its report was hidden from the Action log ("full output hidden for security") — the review was invisible and could not be actioned. It now feeds the same per-PR correction loop as CodeRabbit
 - **ci(security):** CodeQL advanced workflow is now the single code-scanning source (GitHub "Default Setup" disabled) — restored `push`/`pull_request`/`schedule` triggers and a language matrix (`javascript-typescript`, `actions`, `python`, `rust`) with `build-mode: none`, matching the languages Default Setup covered so nothing is lost; job name `Analyze (<language>)` preserves the required-check names. `docs/code-scanning-setup.md` updated to reflect advanced-only policy.
@@ -360,7 +367,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **chore:** Deleted dead scripts/fetch-daily-strains.mjs -- SeedFinder
   API removed since mid-2024; client-side Daily Drop is independent
 
-## [1.8.0] - 2025-04-12
+## [1.8.0] - 2026-04-12
 
 ### Added
 
@@ -454,7 +461,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
   -- all 14 CI workflows, custom action, package.json engines, README,
   CONTRIBUTING, SECURITY updated
 
-## [1.7.2] -- 2026-04-11
+## [1.7.2] - 2026-04-11
 
 ### Added
 
@@ -601,7 +608,7 @@ no-store, must-revalidate` (was `public, max-age=0, must-revalidate`)
 - **security(ci):** CSP consistency checker extended to verify
   Referrer-Policy consistency across deployment targets
 
-## [1.7.1] -- 2026-04-11
+## [1.7.1] - 2026-04-11
 
 ### Fixed
 
@@ -927,7 +934,7 @@ Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 
 ---
 
-## [1.6.0] - 2026-04-10
+## [1.6.0] - 2026-04-09
 
 ### Added
 
@@ -1503,7 +1510,7 @@ Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 - **ui:** fix memory leaks, lazy-load heavy deps, optimize SW caching ([08e0f6e](https://github.com/qnbs/CannaGuide-2025/commit/08e0f6e0cbba1bf8e8569058778af168999e1feb))
 - **ui:** lazy-load Recharts/D3 + harden Lighthouse thresholds ([cb4b47d](https://github.com/qnbs/CannaGuide-2025/commit/cb4b47d6e6f7be70362bca9aa867fb73e153c1f1))
 
-## [1.2.0-alpha] — 2026-03-29
+## [1.2.0-alpha] - 2026-03-29
 
 ### Quality & Toolchain Audit (2026-03-29)
 
@@ -1553,7 +1560,7 @@ Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 
 ---
 
-## [1.1.0] — 2026-03-20
+## [1.1.0] - 2026-03-20
 
 ### 🔒 Security Hardening (3-Day Sprint)
 
@@ -1603,7 +1610,7 @@ Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 
 ---
 
-## [1.1.0-initial] — 2026-03-18
+## [1.1.0-initial] - 2026-03-18
 
 ### 🤖 Local AI (Offline-First Inference)
 
@@ -1680,7 +1687,7 @@ Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 
 ---
 
-## [1.0.0] — 2026-07-07
+## [1.0.0] - 2026-07-07
 
 ### 🔒 Security & DSGVO/GDPR
 
@@ -1777,7 +1784,7 @@ Setups + Enhanced PDF Reports + GitHub Build Attestation + a11y Polish.
 
 ---
 
-## [0.1.0] — 2026-03-01
+## [0.1.0] - 2026-03-01
 
 ### Added
 

@@ -36,6 +36,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **ci:** `gate:push` / pre-push include `check:file-budget`
 - **test:** Coverage thresholds raised to match measured values — lines **43%**, functions **41%** (Stufe C)
 
+### Removed
+
+- **ci(review):** Deleted `claude-code-review.yml` and `claude.yml`. The Claude GitHub App has been uninstalled from the repository, so both workflows could only ever fail — every run ended in `403 Forbidden - The Claude GitHub App installation is suspended on GitHub` after three retries, turning `claude-review` into a permanently red check on every PR. The automated review is also the most token-expensive reviewer in the set. PR review is now carried by CodeRabbit, CodeQL, DeepSource, Socket, Snyk, Semgrep, GitGuardian and Copilot, which cover the same ground without an app installation. CI-workflow count 30 -> 28, with the README badges, stat lines and CI/CD table updated to match (`check-doc-metrics.mjs` enforces this) and both rows dropped from `.github/workflows/README.md`. Neither workflow was a required status check -- the `main` ruleset requires only `CI Status` -- so nothing is left waiting on a check that can no longer report
+
 ### Fixed
 
 - **ci(mutation):** Harden the Stryker mutation-testing setup (WS-0). Added `tsconfigFile: tsconfig.json` to `stryker.conf.json` so the `typescript-checker` no longer relies on an implicit cwd-relative default (correct under `exactOptionalPropertyTypes`), and documented that the `mutation-testing.yml` incremental-cache `hashFiles` list must stay in sync with `stryker.conf.json`'s `mutate` targets (a target omitted from that list isn't cache-busted by its later edits, so Stryker reuses a stale incremental result for it). Static analysis confirmed the CI workflow itself is correctly wired (`working-directory: apps/web` + explicit `../../stryker.conf.json`), so this is hardening, not a repair. Thresholds unchanged (`break:50`, advisory, non-`main`-gating).

@@ -40,10 +40,8 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 
 ## AI assistance
 
-| Workflow                                             | Purpose                                                                             |
-| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [`claude.yml`](./claude.yml)                         | On-demand Claude Code agent triggered by `@claude` in issue / PR / review comments. |
-| [`claude-code-review.yml`](./claude-code-review.yml) | Automated Claude review on pull requests (fork-guarded).                            |
+| Workflow | Purpose |
+| -------- | ------- |
 
 ## Testing & experiments
 

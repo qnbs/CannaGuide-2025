@@ -23,6 +23,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **ci:** File-budget gate required in Quality Gates; `docs/DEVOPS-GATES.md` gate inventory updated
 - **ci:** Playwright `install-deps` always runs before browser cache restore (fixes WebKit `libwoff2dec` on cross-browser E2E)
 - **ci:** Auto-prune GitHub deployments after each deploy (keep 3 per env); weekly cleanup workflow
+- **ci(security):** `check-override-floors.mjs` override/dependabot drift gate — the `overrides:` block in `pnpm-workspace.yaml` and the `ignore:` list in `.github/dependabot.yml` are a load-bearing pair (a package is silenced there **because** it is pinned here), and nothing re-validated them. The gate fails when a fully-ignored npm package has no override, or when a major-scoped key (`js-yaml@3`) matches no version resolved in `pnpm-lock.yaml` — an orphaned pin that protects nothing while Dependabot stays muted. Unbounded floors are reported as warnings. Zero-dependency, offline (lockfile + config only), wired into the `Security` CI job
 
 ### Changed
 
@@ -43,6 +44,14 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 - **ci(security):** `snyk.yml` header comment falsely claimed it "uploads Open Source SARIF"; the job has no SARIF-upload step. Corrected to "scan + monitor, no SARIF upload" and made the `docs/code-scanning-setup.md` Snyk row match
 - **docs(security):** Supported versions updated to reflect v1.9.x as current (was stale at 1.8.x)
 - **docs:** README/ROADMAP metric truth-up — TypeScript badge 5.x→6.x, Vite 7→8, coverage badge →43% lines (matches `vite.config.ts` thresholds), CI-workflow count 24/25→27, and a v1.9.0 ROADMAP row (was still labelled "v1.8.2 latest" / v1.9.x "in progress"). Sources verified from `package.json`, `apps/web/package.json`, `apps/web/vite.config.ts`, `.github/workflows/`. Test-count badge deferred to the upcoming doc-metric gate (single-sourced from CI).
+- **ci(security):** The `Security` job no longer hides its own findings. Its four scans ran as bare sequential steps, so the first failure aborted the rest — a red dependency audit skipped **both** the Trojan-Source scan and the Gitleaks secret scan, and `CI Status` reported only "Security checks failed". Each scan is now guarded with `always() && <setup|checkout> succeeded`, so every control reports a result on every run. They still hard-fail the job (no `continue-on-error`); the merge gate is unchanged, just better informed
+- **ci(security):** Production dependencies are no longer held to a **laxer** bar than dev tooling. The `--prod` audit ran at `--audit-level=critical` while the all-deps audit ran at `high`, so a high-severity advisory in the shipped dependency graph passed the gate — the CI log printed `Severity: 1 high` and exited 0. Both audits are now `--audit-level=high`
+- **chore(deps):** Refresh the decayed override floors in `pnpm-workspace.yaml`, clearing all 22 advisories (14 high / 7 moderate / 1 low). **Every floor is now bounded (`>=x.y.z <next-major`)**, because an open-ended floor resolves to the newest major in the registry and that is what actually went wrong here:
+    - **`js-yaml` — the unbounded override did not fail to prevent the advisory, it created it.** `js-yaml@3: '>=3.15.0'` had no upper bound, so pnpm resolved `depcheck`'s `js-yaml@^3` up two majors to **5.2.1** — precisely the range GHSA-pm4m-ph32-ghv5 names (`>=5.0.0 <=5.2.1`) — while `.github/dependabot.yml` stayed muted on `js-yaml` _because_ it was "pinned here". Bounded to `>=3.15.1 <4`, depcheck gets the patched 3.15.1 and the advisory disappears. This tree has no js-yaml 5.x consumer at all
+    - **`fast-uri`** `>=3.1.2` → `>=4.1.2 <5`: the open floor had resolved to 4.1.0, itself named by GHSA-v2hh-gcrm-f6hx
+    - **`ip-address`** `>=10.1.1` → `>=10.3.1 <11`: SSRF / trust-boundary bypass, and the only advisory on an `apps/web` **production** path (`mqtt > socks`)
+    - **`undici`** → `>=7.29.0 <8.0.0`; **`js-yaml@4`** → `>=4.2.0 <5` (cosmiconfig, unaffected)
+    - newly pinned: **`brace-expansion@1/@2/@5`**, **`postcss >=8.5.23 <9`**, **`body-parser@1 >=1.20.6 <2`**, and **`sharp >=0.35.0`** (libvips CVE-2026-33327/33328/35590/35591; reached only via `@xenova/transformers` and `wrangler > miniflare`, never bundled into the browser PWA)
 
 ---
 

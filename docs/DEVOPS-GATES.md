@@ -30,9 +30,31 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                      |
 | E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                      |
 | CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`           |
-| pnpm audit (critical, prod)                       | `security` | `pnpm audit --audit-level=critical --prod`                  |
+| pnpm audit (high, prod)                           | `security` | `pnpm audit --audit-level=high --prod`                      |
+| pnpm audit (high, all deps)                       | `security` | `pnpm audit --audit-level=high`                             |
+| **Override / dependabot-ignore drift**            | `security` | `node scripts/security/check-override-floors.mjs`           |
 | Trojan-source scan                                | `security` | `pnpm run security:trojan-source`                           |
 | Gitleaks                                          | `security` | `pnpm run security:secrets`                                 |
+
+Every step in the `security` job is guarded with `always() && <setup\|checkout> succeeded`.
+They are independent controls, so one failure must not skip the others -- before that guard, a
+red dependency audit silently skipped both the Trojan-Source scan and the Gitleaks secret scan,
+and a green `Security` job was the only evidence they had ever run. The guards do **not** soften
+the gate: there is still no `continue-on-error`, so any failing scan fails the job and with it
+`CI Status`.
+
+Both audits run at `--audit-level=high`. The production audit used to run at `critical`, i.e. a
+_laxer_ bar for shipped code than for dev tooling -- it printed `Severity: 1 high` and exited 0.
+Production must never be held to a lower threshold than the dev graph.
+
+### Override / dependabot-ignore drift
+
+`overrides:` in `pnpm-workspace.yaml` and `ignore:` in `.github/dependabot.yml` are a pair: a
+package is silenced for Dependabot **because** it is pinned by an override. `check-override-floors.mjs`
+fails when that pair rots -- a fully-ignored npm package with no override, or a major-scoped key
+(`js-yaml@3`) matching no version resolved in `pnpm-lock.yaml`. It also warns on unbounded floors
+(`>=x` with no `<y`), which resolve across majors: `fast-uri: '>=3.1.2'` resolved to 4.1.0, the
+version GHSA-v2hh-gcrm-f6hx names. Offline -- lockfile and config only, no registry call.
 
 ### Critical path coverage
 

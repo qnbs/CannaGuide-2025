@@ -12,22 +12,28 @@
  * anything, dependabot stayed muted -- and GHSA-pm4m-ph32-ghv5 (js-yaml 5.x)
  * went unprotected until it broke CI.
  *
- * Two failure modes are checked, both offline (lockfile + config only):
+ * Three failure modes are checked, all offline (lockfile + config only):
  *
  *   [FAIL] a package dependabot is told to ignore has no override at all
  *          -> silenced with nothing standing in for the silenced updates.
  *   [FAIL] an override carries a major selector (`name@N`) that matches no
  *          resolved version in the lockfile
  *          -> orphaned pin; the tree moved to another major, unprotected.
+ *   [FAIL] an override floor with no upper bound (`>=x` without `<y`) that is
+ *          not on the legacy allowlist below. pnpm resolves such a floor to the
+ *          highest version in the registry, which crosses majors --
+ *          `fast-uri: '>=3.1.2'` resolved to 4.1.0, a version that was itself
+ *          vulnerable, and `js-yaml@3: '>=3.15.0'` resolved depcheck's
+ *          `js-yaml@^3` to 5.2.1, *creating* GHSA-pm4m-ph32-ghv5.
  *
- * One advisory signal is reported but does not fail:
- *
- *   [WARN] an override floor with no upper bound (`>=x` without `<y`).
- *          pnpm resolves such a floor to the highest version in the registry,
- *          which crosses majors -- `fast-uri: '>=3.1.2'` resolved to 4.1.0,
- *          a version that was itself vulnerable. Bounding the legacy pins can
- *          downgrade a working resolution, so it is a deliberate follow-up
- *          rather than an immediate hard failure.
+ * The unbounded rule is a RATCHET, not a flag day. Bounding the pre-existing
+ * pins is not mechanical: three of them have already crossed a major
+ * (`uuid` >=11.1.1 -> 14.0.0, `basic-ftp` >=5.3.1 -> 6.0.1,
+ * `linkify-it` >=5.0.1 -> 6.0.0), so each needs its own call on whether to
+ * revert the crossing or bless it -- a judgement that does not belong in an
+ * unrelated PR. They are listed explicitly in LEGACY_UNBOUNDED so they are
+ * visible rather than tolerated, and the list may only shrink: bounding one
+ * without removing it from the list is itself a failure.
  *
  * Run: node scripts/security/check-override-floors.mjs
  */
@@ -38,6 +44,34 @@ import { resolve } from 'node:path'
 const WORKSPACE_PATH = resolve('pnpm-workspace.yaml')
 const LOCKFILE_PATH = resolve('pnpm-lock.yaml')
 const DEPENDABOT_PATH = resolve('.github/dependabot.yml')
+
+/**
+ * Override keys that predate the bounded-floor rule and are still open-ended.
+ * This list may only SHRINK. Do not add to it -- bound the new override instead.
+ *
+ * Retiring an entry means deciding what its unbounded floor already did:
+ *   uuid        '>=11.1.1'  -> resolved 14.0.0  (three majors up, via zustand)
+ *   basic-ftp   '>=5.3.1'   -> resolved 6.0.1   (via get-uri)
+ *   linkify-it  '>=5.0.1'   -> resolved 6.0.0   (via markdown-it)
+ *   @babel/core '>=7.29.6'  -> resolves to NOTHING; neither @babel/core nor
+ *                              @stryker-mutator is in the lockfile, so the
+ *                              "devDep path via Stryker" this pin cites no
+ *                              longer exists and it should simply be dropped.
+ */
+const LEGACY_UNBOUNDED = new Set([
+    '@babel/core',
+    '@babel/plugin-transform-modules-systemjs',
+    'tmp',
+    'lodash',
+    'basic-ftp',
+    'protobufjs',
+    'qs',
+    'uuid',
+    'esbuild',
+    'ws',
+    'linkify-it',
+    'markdown-it',
+])
 
 const read = (path, label) => {
     try {
@@ -242,11 +276,37 @@ for (const { key, name, selector } of overrides) {
     }
 }
 
-// -- Check 3 (advisory): unbounded floors ----------------------------------
-for (const { key, range } of overrides) {
+// -- Check 3: unbounded floors (ratchet) -----------------------------------
+const stillUnbounded = new Set()
+
+for (const { key, name, range } of overrides) {
     if (!/^\s*>=?/.test(range)) continue
     if (range.includes('<')) continue
-    warnings.push(`${key}: '${range}' has no upper bound -- resolves across majors.`)
+
+    stillUnbounded.add(name)
+
+    if (LEGACY_UNBOUNDED.has(name)) {
+        warnings.push(
+            `${key}: '${range}' has no upper bound (known legacy pin, pending retirement).`,
+        )
+    } else {
+        failures.push(
+            `${key}: '${range}' has no upper bound. pnpm resolves an open floor to the newest ` +
+                `major in the registry, which is how fast-uri landed on a vulnerable 4.1.0 and how ` +
+                `js-yaml@3 dragged depcheck onto 5.2.1. Bound it, e.g. '${range} <NEXT_MAJOR'.`,
+        )
+    }
+}
+
+// The allowlist may only shrink -- a bounded entry left on it hides the next drift.
+for (const name of LEGACY_UNBOUNDED) {
+    if (!stillUnbounded.has(name)) {
+        failures.push(
+            `${name}: listed in LEGACY_UNBOUNDED but is no longer an unbounded override. ` +
+                `Remove it from that list in ${'scripts/security/check-override-floors.mjs'} -- ` +
+                `the allowlist may only shrink.`,
+        )
+    }
 }
 
 console.log('')

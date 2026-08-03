@@ -58,12 +58,16 @@ real error, not noise -- don't assume the filter covers it.
 ## Legal hard limits (CanG -- German Cannabis Act, BINDING)
 
 `MAX_GROWS` (`stores/slices/growsSlice.ts`) and `MAX_PLANTS_CANG` (`constants.ts`) are both
-hard-coded to **3** -- the German Cannabis Act (KCanG Section 9 (1) Nr. 1) caps home cultivation
-at 3 living plants, counted globally across all grows, not per grow. **Never raise either value
-and never make it configurable** (setting, env var, feature flag, plugin) -- 3 is a legal cap,
-not a product decision. Archived/finished plants don't count toward it; only active-stage
-plants (Seed through Curing) do. Any new feature (multi-tent, zone planner, automation) must
-still respect the global cap.
+hard-coded to **3**. KCanG **Section 9 (1)** -- the whole rule is in that Absatz, it has no
+`Nr.` subdivisions -- permits adults "an ihrem Wohnsitz oder an ihrem gewoehnlichen Aufenthalt
+der private Eigenanbau von insgesamt nicht mehr als drei Cannabispflanzen gleichzeitig". Two
+consequences for the code: the cap attaches to the **residence**, so it is counted globally
+across all grows rather than per grow; and "gleichzeitig" is why only active-stage plants
+(Seed through Curing) count, while archived/finished ones do not.
+
+**Never raise either value and never make it configurable** (setting, env var, feature flag,
+plugin) -- 3 is a legal cap, not a product decision. Any new feature (multi-tent, zone
+planner, automation) must still respect the global cap.
 
 ## The traps that have actually bitten us
 
@@ -87,16 +91,24 @@ These look like the safe command. They are not. Each one has cost a session.
    Untracked files are not in the diff, so a brand-new doc or component sails past the
    formatter and fails the docs gate in CI. Use `git status --porcelain` when formatting.
 
-4. **An unbounded pnpm override floor silently stops protecting anything.**
+4. **An unbounded pnpm override floor can resolve straight into the vulnerability.**
    `overrides:` lives in `pnpm-workspace.yaml` (pnpm 11 ignores package.json's `"pnpm"`
    field), and `.github/dependabot.yml` _ignores_ those packages **because** they are pinned
-   there -- the two are a pair. Two ways that pair rots, both observed:
-   an open-ended floor (`fast-uri: '>=3.1.2'`) resolves to the newest major, which can itself
-   be vulnerable (it resolved to 4.1.0, the version GHSA-v2hh-gcrm-f6hx names); and a
-   major-scoped key (`js-yaml@3`) stops matching once the tree moves on, leaving the package
-   both unpinned and un-Dependaboted. **Always bound the range** (`>=x.y.z <next-major`), and
-   never add a name to the ignore list without an override.
-   `node scripts/security/check-override-floors.mjs` fails CI on both.
+   there -- the two are a pair. Three ways that pair rots, all observed in this repo:
+   an open floor resolves to the newest major, which can itself be vulnerable
+   (`fast-uri: '>=3.1.2'` resolved to 4.1.0, the version GHSA-v2hh-gcrm-f6hx names); an open
+   floor can drag a consumer _into_ an advisory (`js-yaml@3: '>=3.15.0'` resolved depcheck's
+   `js-yaml@^3` up two majors to 5.2.1, i.e. the pin **created** GHSA-pm4m-ph32-ghv5); and a
+   major-scoped key stops matching once the tree moves on, leaving the package both unpinned
+   and un-Dependaboted. **Always bound the range** (`>=x.y.z <next-major`), and never add a
+   name to the ignore list without an override.
+
+    `node scripts/security/check-override-floors.mjs` (Security job) **fails** on a new
+    unbounded floor, on an orphaned `name@major` selector, and on an ignored package with no
+    override. The 12 pre-existing unbounded pins are an explicit `LEGACY_UNBOUNDED` allowlist
+    inside that script -- a ratchet that **may only shrink**, since three of them have already
+    crossed a major (`uuid >=11.1.1` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
+    and retiring each is a per-package compatibility call.
 
 ## Do not reach for tsgo
 

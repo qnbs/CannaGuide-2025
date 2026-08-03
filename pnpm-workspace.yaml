@@ -111,4 +111,4 @@ overrides:
     # sharp: reached only through @xenova/transformers (optional, Node-only image
     # decode) and wrangler>miniflare. Never bundled into the browser PWA, but the
     # libvips CVEs are real for anyone running those tools locally.
-    sharp: '>=0.35.0'
+    sharp: '>=0.35.0 <1'

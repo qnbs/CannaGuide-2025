@@ -51,10 +51,23 @@ Production must never be held to a lower threshold than the dev graph.
 
 `overrides:` in `pnpm-workspace.yaml` and `ignore:` in `.github/dependabot.yml` are a pair: a
 package is silenced for Dependabot **because** it is pinned by an override. `check-override-floors.mjs`
-fails when that pair rots -- a fully-ignored npm package with no override, or a major-scoped key
-(`js-yaml@3`) matching no version resolved in `pnpm-lock.yaml`. It also warns on unbounded floors
-(`>=x` with no `<y`), which resolve across majors: `fast-uri: '>=3.1.2'` resolved to 4.1.0, the
-version GHSA-v2hh-gcrm-f6hx names. Offline -- lockfile and config only, no registry call.
+fails when that pair rots:
+
+- a fully-ignored npm package with **no override** -- silenced with nothing standing in;
+- a major-scoped key (`js-yaml@3`) matching **no version resolved** in `pnpm-lock.yaml` -- an
+  orphaned pin;
+- a **new** override floor with no upper bound (`>=x` with no `<y`).
+
+An open floor resolves to the newest major in the registry. That is not theoretical here:
+`fast-uri: '>=3.1.2'` resolved to 4.1.0, the version GHSA-v2hh-gcrm-f6hx names, and
+`js-yaml@3: '>=3.15.0'` resolved depcheck's `js-yaml@^3` up two majors to 5.2.1 -- **creating**
+GHSA-pm4m-ph32-ghv5 rather than preventing it.
+
+The unbounded rule is a **ratchet**. The 12 pre-existing unbounded pins are listed in
+`LEGACY_UNBOUNDED` inside the script and warn rather than fail; that list may only shrink, and
+bounding a pin without delisting it fails too. Retiring them is a per-package call, because
+three have already crossed a major (`uuid` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
+and `@babel/core` resolves to nothing at all. Offline -- lockfile and config only, no registry call.
 
 ### Critical path coverage
 

@@ -147,7 +147,7 @@ export const settingsView = {
         forceWasm: 'Forcer le backend WASM',
         autoPreload: 'Telecharger les modeles au demarrage',
         autoPreloadHint:
-            'Telecharge les modeles d\'IA hors ligne en arriere-plan au demarrage. Desactive par defaut : plusieurs centaines de megaoctets depuis le CDN HuggingFace. Ignore automatiquement sur les connexions limitees ou lentes.',
+            'Telecharge les modeles d\'IA hors ligne en arriere-plan au demarrage. Desactive par defaut : plusieurs centaines de megaoctets depuis le CDN HuggingFace. Ignore automatiquement sur les connexions limitees ou lentes, dans les navigateurs qui exposent les informations de connexion.',
         forceWasmHint:
             'Ignorer la detection automatique de WebGPU et toujours utiliser le backend WASM. Utile pour le debogage.',
         enableWebGpu: "Activer l'acceleration WebGPU", // machine-translated, review needed

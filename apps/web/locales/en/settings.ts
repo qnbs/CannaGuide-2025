@@ -140,7 +140,7 @@ export const settingsView = {
         forceWasm: 'Force WASM Backend',
         autoPreload: 'Download models on startup',
         autoPreloadHint:
-            'Fetches the offline AI models in the background when the app starts. Off by default -- this is several hundred megabytes from the HuggingFace CDN. Skipped automatically on metered or slow connections.',
+            'Fetches the offline AI models in the background when the app starts. Off by default -- this is several hundred megabytes from the HuggingFace CDN. Skipped automatically on metered or slow connections, in browsers that report connection information.',
         forceWasmHint:
             'Override WebGPU auto-detection and always use the WASM backend. Useful for debugging.',
         enableWebGpu: 'Enable WebGPU Acceleration',

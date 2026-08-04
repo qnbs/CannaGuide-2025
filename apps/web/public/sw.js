@@ -381,7 +381,7 @@ self.addEventListener('fetch', (event) => {
     // These are immutable — once cached, they never change. This is critical for
     // offline reliability in environments with poor connectivity (grow rooms, basements).
     //
-    // The previous pattern was /\.[a-f0-9]{8,}\.(js|css|woff2?)$/ — a DOT-separated,
+    // The previous pattern was /\.[a-f0-9]{8,}\.(js|css|woff2?)$/ -- a DOT-separated,
     // lowercase-hex hash. Vite emits `[name]-[hash]` with a base64url-ish hash, e.g.
     // `AboutTab-C3WkehI1.js`, so that pattern matched NOTHING this project builds:
     // the branch was dead and every chunk fell through to stale-while-revalidate,

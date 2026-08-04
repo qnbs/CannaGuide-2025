@@ -145,7 +145,7 @@ export const settingsView = {
         forceWasm: 'WASM-backend forceren',
         autoPreload: 'Modellen downloaden bij opstarten',
         autoPreloadHint:
-            'Haalt de offline AI-modellen op de achtergrond op bij het starten. Standaard uit -- dit zijn enkele honderden megabytes van de HuggingFace-CDN. Wordt automatisch overgeslagen op datalimiet- of trage verbindingen.',
+            'Haalt de offline AI-modellen op de achtergrond op bij het starten. Standaard uit -- dit zijn enkele honderden megabytes van de HuggingFace-CDN. Wordt automatisch overgeslagen op datalimiet- of trage verbindingen, in browsers die verbindingsinformatie doorgeven.',
         forceWasmHint:
             'Overschrijf WebGPU-autodetectie en gebruik altijd de WASM-backend. Nuttig voor foutopsporing.',
         enableWebGpu: 'WebGPU-versnelling inschakelen', // machine-translated, review needed

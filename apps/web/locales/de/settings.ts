@@ -145,7 +145,7 @@ export const settingsView = {
         forceWasm: 'WASM-Backend erzwingen',
         autoPreload: 'Modelle beim Start herunterladen',
         autoPreloadHint:
-            'Laedt die Offline-KI-Modelle im Hintergrund beim App-Start. Standardmaessig aus -- es sind mehrere hundert Megabyte vom HuggingFace-CDN. Wird bei getakteten oder langsamen Verbindungen automatisch uebersprungen.',
+            'Laedt die Offline-KI-Modelle im Hintergrund beim App-Start. Standardmaessig aus -- es sind mehrere hundert Megabyte vom HuggingFace-CDN. Wird bei getakteten oder langsamen Verbindungen automatisch uebersprungen, sofern der Browser Verbindungsinformationen bereitstellt.',
         forceWasmHint:
             'WebGPU-Erkennung übersteuern und immer das WASM-Backend verwenden. Nützlich zur Fehlersuche.',
         enableWebGpu: 'WebGPU-Beschleunigung aktivieren',

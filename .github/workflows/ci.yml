@@ -700,7 +700,23 @@ jobs:
                     exit 1
                   fi
 
+                  # Rust is checked BEFORE the docs-only exit, because the two
+                  # detectors are independent: `code` keys off the DOCS_ONLY regex,
+                  # `desktop` off `^apps/desktop/`. A change limited to
+                  # apps/desktop/README.md therefore yields code=false AND
+                  # desktop=true -- the rust job runs, can fail, and an early
+                  # `exit 0` here would wave it through. That is exactly the silent
+                  # bypass this gate exists to prevent.
+                  RUST_FAILED=0
+                  if [[ "${{ needs.changes.outputs.desktop }}" == "true" ]]; then
+                    echo "Rust:     ${{ needs.rust.result }}"
+                    if [[ "${{ needs.rust.result }}" != "success" ]]; then
+                      echo "[FAIL] Rust / Tauri checks failed"; RUST_FAILED=1
+                    fi
+                  fi
+
                   if [[ "${{ needs.changes.outputs.code }}" != "true" ]]; then
+                    if [[ "$RUST_FAILED" -ne 0 ]]; then exit 1; fi
                     echo "[OK] Docs-only change -- no code pipeline to run."
                     exit 0
                   fi
@@ -724,15 +740,10 @@ jobs:
                     echo "[FAIL] Security checks failed"; FAILED=1
                   fi
 
-                  # `rust` is path-gated, so it is legitimately `skipped` on any PR that
-                  # does not touch apps/desktop. Require success only when it actually
-                  # ran -- but never accept `skipped` while desktop files DID change,
-                  # which would be the same silent-bypass shape this gate exists to stop.
-                  if [[ "${{ needs.changes.outputs.desktop }}" == "true" ]]; then
-                    echo "Rust:     ${{ needs.rust.result }}"
-                    if [[ "${{ needs.rust.result }}" != "success" ]]; then
-                      echo "[FAIL] Rust / Tauri checks failed"; FAILED=1
-                    fi
-                  fi
+                  # Folded in from the pre-docs-exit check above. `rust` is
+                  # path-gated, so `skipped` is legitimate when apps/desktop was
+                  # untouched -- but a skip is never accepted while desktop files
+                  # DID change.
+                  if [[ "$RUST_FAILED" -ne 0 ]]; then FAILED=1; fi
                   if [[ "$FAILED" -ne 0 ]]; then exit 1; fi
                   echo "[PASS] CI merge gate passed (build + test + verify + security; E2E advisory)"

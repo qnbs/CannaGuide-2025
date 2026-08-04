@@ -51,6 +51,17 @@ fn get_app_version() -> AppInfo {
 /// Anything unresolvable is simply omitted rather than failing the whole call.
 fn permitted_roots(app: &tauri::AppHandle) -> Vec<PathBuf> {
     let resolver = app.path();
+
+    // The app data dir may not exist yet on a fresh install, or after the user
+    // clears application data. `canonicalize()` fails on a missing path, which
+    // would silently drop the app's OWN directory from the permitted set and
+    // reject every export to it -- the same class of failure as the `.local`
+    // bug, arriving by a different route. Create it first; a creation failure
+    // just means it stays out of the set, which fails closed.
+    if let Ok(dir) = resolver.app_data_dir() {
+        let _ = std::fs::create_dir_all(&dir);
+    }
+
     [
         resolver.app_data_dir(),
         resolver.document_dir(),

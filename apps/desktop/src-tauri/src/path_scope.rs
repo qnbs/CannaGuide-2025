@@ -191,9 +191,13 @@ mod tests {
 
     #[test]
     fn rejects_reading_system_files() {
+        // Like the ssh case above: caught by the root check, not the extension
+        // check, because the roots are matched first. `/etc/shadow` is outside
+        // every permitted root, and that is the stronger of the two rejections --
+        // it holds regardless of what the file is called.
         assert_eq!(
             validate_scoped(Path::new("/etc/shadow"), &roots()),
-            Err(ScopeError::BadExtension)
+            Err(ScopeError::OutsideRoots)
         );
     }
 

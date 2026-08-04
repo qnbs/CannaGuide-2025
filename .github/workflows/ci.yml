@@ -151,6 +151,17 @@ jobs:
             - name: Build
               run: pnpm run build
 
+            # Uncached, so it runs even when turbo replays a cached dist/**. The
+            # artifact uploaded below feeds E2E and (on release paths) the tarball,
+            # so it must identify the commit it was built from rather than whichever
+            # commit first populated the cache.
+            - name: Stamp build metadata
+              env:
+                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+              run: |
+                  node scripts/stamp-build-metadata.mjs
+                  node scripts/stamp-build-metadata.mjs --verify
+
             - name: Bundle budget check
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 

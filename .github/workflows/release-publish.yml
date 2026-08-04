@@ -285,6 +285,21 @@ jobs:
             - name: Build
               run: pnpm run build
 
+            # The tarball below is attested and published, so a cached dist/**
+            # carrying another commit's version.json would be signed off as this
+            # release's content. Stamp with the TAG's commit, then assert before
+            # anything is packaged.
+            - name: Stamp build metadata
+              env:
+                  # steps.commit.outputs.sha, NOT github.sha: the release commit is
+                  # the one the TAG resolves to (`git rev-parse refs/tags/<tag>^{commit}`,
+                  # full 40 chars), which is deliberately not the ref the run started
+                  # on -- that distinction is the whole point of "Resolve release commit".
+                  BUILD_COMMIT: ${{ steps.commit.outputs.sha }}
+              run: |
+                  node scripts/stamp-build-metadata.mjs
+                  node scripts/stamp-build-metadata.mjs --verify
+
             - name: Create release tarball
               id: tarball
               shell: bash

@@ -95,6 +95,16 @@ jobs:
                   echo "::group::vite build (BUILD_BASE_PATH=/)"
                   pnpm run build
                   echo "::endgroup::"
+
+            # Uncached: `pnpm run build` is a turbo task caching dist/**, so on a
+            # cache hit the previous commit's version.json is replayed. Stamp and
+            # assert here so the preview/production upload carries this commit.
+            - name: Stamp build metadata
+              env:
+                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+              run: |
+                  node scripts/stamp-build-metadata.mjs
+                  node scripts/stamp-build-metadata.mjs --verify
                   echo "[OK] Build complete — dist size: $(du -sh apps/web/dist | cut -f1)"
 
             - name: Verify wrangler CLI
@@ -176,6 +186,16 @@ jobs:
                   echo "::group::vite build (preview)"
                   pnpm run build
                   echo "::endgroup::"
+
+            # Uncached: `pnpm run build` is a turbo task caching dist/**, so on a
+            # cache hit the previous commit's version.json is replayed. Stamp and
+            # assert here so the preview/production upload carries this commit.
+            - name: Stamp build metadata
+              env:
+                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+              run: |
+                  node scripts/stamp-build-metadata.mjs
+                  node scripts/stamp-build-metadata.mjs --verify
 
             - name: Resolve Cloudflare preview branch name
               id: cf_preview_branch

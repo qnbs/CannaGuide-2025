@@ -27,9 +27,9 @@
     "scripts": {
         "dev": "turbo run dev",
         "dev:desktop": "pnpm --filter @cannaguide/desktop dev",
-        "build": "turbo run build --filter=!@cannaguide/desktop && node scripts/stamp-build-metadata.mjs",
+        "build": "turbo run build --filter=!@cannaguide/desktop && node scripts/prune-bundled-ort-wasm.mjs && node scripts/stamp-build-metadata.mjs",
         "build:desktop": "pnpm --filter @cannaguide/desktop build",
-        "build:gh": "turbo run build:gh && node scripts/stamp-build-metadata.mjs",
+        "build:gh": "turbo run build:gh && node scripts/prune-bundled-ort-wasm.mjs && node scripts/stamp-build-metadata.mjs",
         "verify": "node ./scripts/scoped-verify.mjs typecheck",
         "verify:typecheck": "node ./scripts/scoped-verify.mjs typecheck",
         "verify:test": "node ./scripts/scoped-verify.mjs test:run",

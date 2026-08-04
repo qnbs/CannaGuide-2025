@@ -63,7 +63,24 @@ async function getJsFiles(dir) {
 // 19.15 MiB, of which 8.57 MiB was lazily-imported AI runtime that the precache
 // pulled in regardless. After excluding those: 243 entries / 10.57 MiB.
 const PRECACHE_BUDGET_MIB = 12
-const PRECACHE_ENTRY_RE = /\{"revision":(?:"[0-9a-f]*"|null),"url":"([^"]+)"\}/g
+
+// Parsed in two stages instead of one rigid pattern, because the shipped sw.js is
+// bundled and minified (VitePWA injectManifest + build.minify 'esbuild').
+//
+// The previous single regex required `{"revision":"<hex>","url":"..."}` verbatim:
+// quoted keys, revision first, lowercase-hex revisions, no extra whitespace. That
+// does hold today -- a real production build on this branch measures 245 entries,
+// so it is not broken -- but every one of those assumptions belongs to the
+// minifier, not to us. Unquoted keys (`{revision:"a",url:"b"}`) or a swapped
+// property order would silently reduce this gate to "0 entries", which fails
+// closed but for the wrong reason and looks like a broken script rather than a
+// toolchain change.
+//
+// Stage 1 finds each object that carries a `revision` key; stage 2 pulls `url`
+// out of it. Both accept quoted or unquoted keys, either order, and any revision
+// value.
+const PRECACHE_OBJECT_RE = /\{[^{}]*?["']?revision["']?\s*:[^{}]*?\}/g
+const PRECACHE_URL_RE = /["']?url["']?\s*:\s*["']([^"']+)["']/
 
 async function checkPrecacheBudget(distDir) {
     const swPath = join(distDir, '..', 'sw.js')
@@ -80,7 +97,9 @@ async function checkPrecacheBudget(distDir) {
         return 1
     }
 
-    const workboxUrls = [...sw.matchAll(PRECACHE_ENTRY_RE)].map((m) => m[1])
+    const workboxUrls = [...sw.matchAll(PRECACHE_OBJECT_RE)]
+        .map((m) => PRECACHE_URL_RE.exec(m[0])?.[1])
+        .filter((url) => typeof url === 'string' && url.length > 0)
     if (workboxUrls.length === 0) {
         console.error('[FAIL] Could not parse the precache manifest from sw.js.')
         console.error('[FAIL] Refusing to pass a budget that measured nothing.')

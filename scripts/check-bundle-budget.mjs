@@ -71,8 +71,13 @@ async function checkPrecacheBudget(distDir) {
     try {
         sw = await readFile(swPath, 'utf8')
     } catch {
-        console.log(`[WARN] No service worker at ${swPath} -- skipping precache budget.`)
-        return 0
+        // Fails closed. A missing service worker used to return 0 here, so a
+        // build that produced no sw.js at all reported "precache within budget"
+        // after measuring nothing -- the exact fail-open this gate exists to
+        // prevent, in the gate itself.
+        console.error(`[FAIL] No service worker at ${swPath}.`)
+        console.error('[FAIL] Cannot measure the precache, so cannot claim it is within budget.')
+        return 1
     }
 
     const urls = [...sw.matchAll(PRECACHE_ENTRY_RE)].map((m) => m[1])
@@ -83,13 +88,26 @@ async function checkPrecacheBudget(distDir) {
     }
 
     let total = 0
+    const unresolved = []
     for (const url of urls) {
         try {
             const buf = await readFile(join(distDir, '..', url.replace(/^\//, '')))
             total += buf.length
         } catch {
-            // Entry not on disk (e.g. a virtual route) -- nothing to weigh.
+            // Also fails closed. Silently skipping an unreadable entry means the
+            // measured total is smaller than what the service worker will
+            // actually download, so a partial measurement could pass a budget the
+            // real install payload exceeds.
+            unresolved.push(url)
         }
+    }
+
+    if (unresolved.length > 0) {
+        console.error(`[FAIL] ${unresolved.length} precache entr(ies) could not be measured:`)
+        for (const url of unresolved.slice(0, 10)) console.error(`       - ${url}`)
+        if (unresolved.length > 10) console.error(`       ... and ${unresolved.length - 10} more`)
+        console.error('[FAIL] A partial measurement cannot establish that the budget is met.')
+        return 1
     }
 
     const mib = total / 1024 / 1024

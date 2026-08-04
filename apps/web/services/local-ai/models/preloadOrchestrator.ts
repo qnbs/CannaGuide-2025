@@ -22,8 +22,36 @@ export type PreloadTier = 'critical' | 'standard' | 'full'
  * so we never opportunistically download large WebLLM weights.
  */
 /** Non-standard NetworkInformation surface, narrowed to what this check reads. */
-interface NavigatorWithConnection {
-    connection?: { effectiveType?: string; saveData?: boolean; type?: string }
+interface ConnectionInfo {
+    effectiveType: string | undefined
+    saveData: boolean | undefined
+    type: string | undefined
+}
+
+/**
+ * Read `navigator.connection` without a type assertion.
+ *
+ * The previous version reached for it with an `as unknown as {...}` cast plus an
+ * `eslint-disable`, which this repository forbids -- a suppression ratchet gates
+ * CI, so silencing the rule is not an option. Reading each field through
+ * `Reflect.get` and validating its runtime type gives the same narrow result
+ * honestly, and satisfies `exactOptionalPropertyTypes` on the way.
+ */
+const readConnection = (): ConnectionInfo | undefined => {
+    if (typeof navigator === 'undefined') return undefined
+
+    const raw: unknown = Reflect.get(navigator, 'connection')
+    if (typeof raw !== 'object' || raw === null) return undefined
+
+    const effectiveType: unknown = Reflect.get(raw, 'effectiveType')
+    const saveData: unknown = Reflect.get(raw, 'saveData')
+    const type: unknown = Reflect.get(raw, 'type')
+
+    return {
+        effectiveType: typeof effectiveType === 'string' ? effectiveType : undefined,
+        saveData: typeof saveData === 'boolean' ? saveData : undefined,
+        type: typeof type === 'string' ? type : undefined,
+    }
 }
 
 /**
@@ -39,10 +67,7 @@ interface NavigatorWithConnection {
  * blocked by it; this guards the automatic path.
  */
 export const isNetworkSuitableForBulkDownload = (): boolean => {
-    if (typeof navigator === 'undefined') return true
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrow non-standard NetworkInformation API
-    const conn = (navigator as unknown as NavigatorWithConnection).connection
+    const conn = readConnection()
 
     // Unknown connection -> allowed. NetworkInformation is Chromium-only, so
     // returning false here would permanently disable the preload on Firefox and

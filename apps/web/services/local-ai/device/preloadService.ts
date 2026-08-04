@@ -3,6 +3,7 @@ import { probeGpuVram, isVramInsufficient } from './healthService'
 import { setVramInsufficientOverride } from '../models/modelLoader'
 import { applyAdaptiveMode, isEcoMode } from './ecoModeService'
 import { isNetworkSuitableForBulkDownload } from '../models/preloadOrchestrator'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { secureRandom } from '@/utils/random'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
@@ -202,6 +203,17 @@ export const localAiPreloadService = {
         }
 
         const startPreload = () => {
+            // Local-Only Mode forbids ALL outbound traffic, and the preload is
+            // the largest outbound transfer in the app. Nothing stopped a user
+            // from enabling Local-Only Mode and startup preloading together, in
+            // which case this happily fetched model weights from the HuggingFace
+            // CDN -- no attacker involved, just two settings that contradicted
+            // each other and only one of them being enforced.
+            if (isLocalOnlyMode()) {
+                console.debug('[LocalAI] Skipping idle preload: Local-Only Mode is active.')
+                return
+            }
+
             // Re-check at EXECUTION time, not just at scheduling time. This runs
             // from requestIdleCallback (up to a 10s timeout) or a 5s fallback, and
             // the user can move onto mobile data or enable Data Saver in between --

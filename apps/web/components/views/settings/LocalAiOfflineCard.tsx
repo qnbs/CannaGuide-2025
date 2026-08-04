@@ -266,6 +266,7 @@ export const LocalAiOfflineCard: React.FC = () => {
                             <Switch
                                 checked={localAiSettings.autoPreloadOnStartup ?? false}
                                 onChange={handleAutoPreloadToggle}
+                                aria-label={t('settingsView.offlineAi.autoPreload')}
                             />
                         </div>
                         <div className="flex items-center justify-between">

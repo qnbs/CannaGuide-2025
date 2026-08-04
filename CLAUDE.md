@@ -176,10 +176,16 @@ Everything that lands in this repo or on GitHub is **English**: commit messages,
 and bodies, review replies, code comments, script output, docs. Conversation with the
 maintainer may be in German; that does not carry over into the repo.
 
-Source files (`.ts .tsx .mjs .js .sh .yml .json` and friends) are also **ASCII-only** -- no
-emoji, no Unicode symbols (arrows, checkmarks, em-dash). `anti-trojan-source` runs in the
-pre-commit `lint-staged` step and rejects non-ASCII bytes in those extensions; use `->`, `--`,
-`[OK]`/`[FAIL]`/`[WARN]` instead. `locales/*` translation files and `*.md` docs are exempt.
+Keep **new** source you write ASCII-only -- no emoji, no Unicode symbols (arrows, checkmarks,
+em-dash); use `->`, `--`, `[OK]`/`[FAIL]`/`[WARN]` instead. This matters most for anything a
+terminal or a CI log renders.
+
+This is a **convention, not a gate** -- do not assume a tool will catch you. `anti-trojan-source`
+runs in the pre-commit `lint-staged` step over `*.{js,jsx,ts,tsx,mjs,cjs}` only, and it detects
+**Trojan Source** attacks (bidirectional-override and other control/confusable characters), not
+non-ASCII in general. Ordinary accented text and dashes pass it: 193 tracked JS/TS files already
+contain non-ASCII bytes. `.yml`/`.json` are not in that glob at all, and `locales/*` plus `*.md`
+are exempt by design.
 
 # Architecture at a glance
 

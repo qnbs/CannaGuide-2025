@@ -55,7 +55,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
     - **`fast-uri`** `>=3.1.2` → `>=4.1.2 <5`: the open floor had resolved to 4.1.0, itself named by GHSA-v2hh-gcrm-f6hx
     - **`ip-address`** `>=10.1.1` → `>=10.3.1 <11`: SSRF / trust-boundary bypass, and the only advisory on an `apps/web` **production** path (`mqtt > socks`)
     - **`undici`** → `>=7.29.0 <8.0.0`; **`js-yaml@4`** → `>=4.2.0 <5` (cosmiconfig, unaffected)
-    - newly pinned: **`brace-expansion@1/@2/@5`**, **`postcss >=8.5.23 <9`**, **`body-parser@1 >=1.20.6 <2`**, and **`sharp >=0.35.0`** (libvips CVE-2026-33327/33328/35590/35591; reached only via `@xenova/transformers` and `wrangler > miniflare`, never bundled into the browser PWA)
+    - newly pinned: **`brace-expansion@1/@2/@5`**, **`postcss >=8.5.23 <9`**, **`body-parser@1 >=1.20.6 <2`**, and **`sharp >=0.35.0 <1`** (libvips CVE-2026-33327/33328/35590/35591; reached only via `@xenova/transformers` and `wrangler > miniflare`, never bundled into the browser PWA)
 
 ---
 

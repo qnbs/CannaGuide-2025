@@ -359,7 +359,7 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | CSP check       | pass                                    |
 | full E2E        | CI only (advisory on `main` aggregator) |
 
-### CI/CD Workflows (30)
+### CI/CD Workflows (28)
 
 | Workflow           | Trigger                       | Purpose                                                                          |
 | ------------------ | ----------------------------- | -------------------------------------------------------------------------------- |

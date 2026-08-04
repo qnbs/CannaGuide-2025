@@ -52,8 +52,18 @@ const LOCKFILE_PATH = resolve('pnpm-lock.yaml')
 const DEPENDABOT_PATH = resolve('.github/dependabot.yml')
 
 /**
- * Override keys that predate the bounded-floor rule and are still open-ended.
- * This list may only SHRINK. Do not add to it -- bound the new override instead.
+ * Override entries that predate the bounded-floor rule and are still open-ended,
+ * as an exact `override key -> exact range` map. This list may only SHRINK. Do
+ * not add to it -- bound the new override instead.
+ *
+ * Keyed by the FULL override key, not by package name, and pinned to the exact
+ * range. Both matter:
+ *   - by name, a brand-new `uuid@14: '>=14.0.0'` would inherit the `uuid`
+ *     exemption and slip past the ratchet entirely (and, with 14.0.0 resolved,
+ *     past the orphaned-selector check too);
+ *   - by key alone, silently weakening an existing floor (`uuid: '>=9.0.0'`)
+ *     would still be waved through as "known legacy".
+ * Changing a legacy pin at all therefore fails until it is bounded and delisted.
  *
  * Retiring an entry means deciding what its unbounded floor already did:
  *   uuid        '>=11.1.1'  -> resolved 14.0.0  (three majors up, via zustand)
@@ -64,19 +74,19 @@ const DEPENDABOT_PATH = resolve('.github/dependabot.yml')
  *                              "devDep path via Stryker" this pin cites no
  *                              longer exists and it should simply be dropped.
  */
-const LEGACY_UNBOUNDED = new Set([
-    '@babel/core',
-    '@babel/plugin-transform-modules-systemjs',
-    'tmp',
-    'lodash',
-    'basic-ftp',
-    'protobufjs',
-    'qs',
-    'uuid',
-    'esbuild',
-    'ws',
-    'linkify-it',
-    'markdown-it',
+const LEGACY_UNBOUNDED = new Map([
+    ['@babel/core', '>=7.29.6'],
+    ['@babel/plugin-transform-modules-systemjs', '>=7.29.4'],
+    ['tmp', '>=0.2.6'],
+    ['lodash', '>=4.18.0'],
+    ['basic-ftp', '>=5.3.1'],
+    ['protobufjs', '>=8.2.0'],
+    ['qs', '>=6.15.2'],
+    ['uuid', '>=11.1.1'],
+    ['esbuild', '>=0.25.0'],
+    ['ws', '>=8.20.1'],
+    ['linkify-it', '>=5.0.1'],
+    ['markdown-it', '>=14.2.0'],
 ])
 
 const read = (path, label) => {
@@ -345,11 +355,17 @@ for (const { key, name, range } of overrides) {
     if (!/^\s*>=?/.test(range)) continue
     if (range.includes('<')) continue
 
-    stillUnbounded.add(name)
+    stillUnbounded.add(key)
 
-    if (LEGACY_UNBOUNDED.has(name)) {
+    if (LEGACY_UNBOUNDED.get(key) === range) {
         warnings.push(
             `${key}: '${range}' has no upper bound (known legacy pin, pending retirement).`,
+        )
+    } else if (LEGACY_UNBOUNDED.has(key)) {
+        failures.push(
+            `${key}: legacy pin changed from '${LEGACY_UNBOUNDED.get(key)}' to '${range}' but is ` +
+                `still unbounded. Touching a legacy floor means retiring it -- bound it and remove ` +
+                `it from LEGACY_UNBOUNDED.`,
         )
     } else {
         failures.push(
@@ -361,10 +377,10 @@ for (const { key, name, range } of overrides) {
 }
 
 // The allowlist may only shrink -- a bounded entry left on it hides the next drift.
-for (const name of LEGACY_UNBOUNDED) {
-    if (!stillUnbounded.has(name)) {
+for (const key of LEGACY_UNBOUNDED.keys()) {
+    if (!stillUnbounded.has(key)) {
         failures.push(
-            `${name}: listed in LEGACY_UNBOUNDED but is no longer an unbounded override. ` +
+            `${key}: listed in LEGACY_UNBOUNDED but is no longer an unbounded override. ` +
                 `Remove it from that list in ${'scripts/security/check-override-floors.mjs'} -- ` +
                 `the allowlist may only shrink.`,
         )

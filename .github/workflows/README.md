@@ -6,14 +6,15 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 
 ## Core CI/CD
 
-| Workflow                                           | Trigger                            | Purpose                                                                              |
-| -------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------ |
-| [`ci.yml`](./ci.yml)                               | `push`/`PR` `main`, dispatch       | Quality + security + E2E; required check **CI Status**.                              |
-| [`deploy.yml`](./deploy.yml)                       | After **successful CI** on `main`  | GitHub Pages (`BUILD_BASE_PATH=/CannaGuide-2025/`); trusts CI on `workflow_run`.     |
-| [`deploy-cloudflare.yml`](./deploy-cloudflare.yml) | CI success on `main`, PR, dispatch | Cloudflare Pages mirror (`BUILD_BASE_PATH=/`); skips without `CLOUDFLARE_*` secrets. |
-| [`desktop-build.yml`](./desktop-build.yml)         | Tag `v*`                           | Tauri desktop matrix (optional signing secrets).                                     |
-| [`release-gate.yml`](./release-gate.yml)           | Tag `v*`                           | Pre-release checks.                                                                  |
-| [`release-publish.yml`](./release-publish.yml)     | Tag `v*`                           | SBOM + GitHub Release.                                                               |
+| Workflow                                           | Trigger                             | Purpose                                                                              |
+| -------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
+| [`ci.yml`](./ci.yml)                               | `push`/`PR` `main`, dispatch        | Quality + security + E2E; required check **CI Status**.                              |
+| [`ci-docs.yml`](./ci-docs.yml)                     | `push`/`PR` on `**/*.md`, `docs/**` | Docs quality gates (advisory).                                                       |
+| [`deploy.yml`](./deploy.yml)                       | After **successful CI** on `main`   | GitHub Pages (`BUILD_BASE_PATH=/CannaGuide-2025/`); trusts CI on `workflow_run`.     |
+| [`deploy-cloudflare.yml`](./deploy-cloudflare.yml) | CI success on `main`, PR, dispatch  | Cloudflare Pages mirror (`BUILD_BASE_PATH=/`); skips without `CLOUDFLARE_*` secrets. |
+| [`desktop-build.yml`](./desktop-build.yml)         | Tag `v*`                            | Tauri desktop matrix (optional signing secrets).                                     |
+| [`release-gate.yml`](./release-gate.yml)           | Tag `v*`                            | Pre-release checks.                                                                  |
+| [`release-publish.yml`](./release-publish.yml)     | Tag `v*`                            | SBOM + GitHub Release.                                                               |
 
 ## Maintenance & automation
 
@@ -25,6 +26,8 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 | [`graphify-update.yml`](./graphify-update.yml)             | Refresh `graphify-out/` on `main` when code/docs change.                                               |
 | [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                                                     |
 | [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                                                                  |
+| [`strains-daily-update.yml`](./strains-daily-update.yml)   | Strain catalog sync (manual; schedule currently commented out).                                        |
+| [`strains-merge.yml`](./strains-merge.yml)                 | Strain catalog merge check on PRs touching `data/strains/**`.                                          |
 
 ## Security & quality
 
@@ -37,11 +40,6 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 | [`quarantine-provenance.yml`](./quarantine-provenance.yml) | Weekly advisory: re-verify `minimumReleaseAgeExclude` packages still ship npm provenance attestations.                   |
 | [`scorecard.yml`](./scorecard.yml)                         | OpenSSF Scorecard.                                                                                                       |
 | [`config-guard.yml`](./config-guard.yml)                   | Devcontainer/VS Code guard on PRs.                                                                                       |
-
-## AI assistance
-
-| Workflow | Purpose |
-| -------- | ------- |
 
 ## Testing & experiments
 

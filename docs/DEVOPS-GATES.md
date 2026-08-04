@@ -36,8 +36,12 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | Trojan-source scan                                | `security` | `pnpm run security:trojan-source`                           |
 | Gitleaks                                          | `security` | `pnpm run security:secrets`                                 |
 
-Every step in the `security` job is guarded with `always() && <setup\|checkout> succeeded`.
-They are independent controls, so one failure must not skip the others -- before that guard, a
+Every **scan** step in the `security` job is guarded with
+`always() && <its prerequisite> succeeded` -- the audits, the drift check and the Trojan-Source
+scan require the setup step, the Gitleaks scan only the checkout (it needs the working tree, not
+`node_modules`). The harden-runner, checkout and setup steps themselves are deliberately
+unguarded: if any of those fails there is nothing to scan.
+The scans are independent controls, so one failure must not skip the others -- before that guard, a
 red dependency audit silently skipped both the Trojan-Source scan and the Gitleaks secret scan,
 and a green `Security` job was the only evidence they had ever run. The guards do **not** soften
 the gate: there is still no `continue-on-error`, so any failing scan fails the job and with it

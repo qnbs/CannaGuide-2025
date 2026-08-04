@@ -40,17 +40,33 @@ interface ConnectionInfo {
 const readConnection = (): ConnectionInfo | undefined => {
     if (typeof navigator === 'undefined') return undefined
 
-    const raw: unknown = Reflect.get(navigator, 'connection')
-    if (typeof raw !== 'object' || raw === null) return undefined
+    // Every read is inside the try, not just the first. These are getters on a
+    // host object, and a getter can throw -- a privacy extension shimming
+    // navigator.connection, or a partially implemented polyfill. An exception
+    // here would propagate out of isNetworkSuitableForBulkDownload() and abort
+    // the caller, which for scheduleIdlePreload means the whole preload dies on
+    // a property read.
+    //
+    // Treating a throw as "unknown connection" lands on the same branch as a
+    // browser that does not implement NetworkInformation at all, which is the
+    // behaviour already documented below: unknown -> allowed, because the
+    // download is consent-gated and this guard exists to avoid bad timing rather
+    // than to substitute for consent.
+    try {
+        const raw: unknown = Reflect.get(navigator, 'connection')
+        if (typeof raw !== 'object' || raw === null) return undefined
 
-    const effectiveType: unknown = Reflect.get(raw, 'effectiveType')
-    const saveData: unknown = Reflect.get(raw, 'saveData')
-    const type: unknown = Reflect.get(raw, 'type')
+        const effectiveType: unknown = Reflect.get(raw, 'effectiveType')
+        const saveData: unknown = Reflect.get(raw, 'saveData')
+        const type: unknown = Reflect.get(raw, 'type')
 
-    return {
-        effectiveType: typeof effectiveType === 'string' ? effectiveType : undefined,
-        saveData: typeof saveData === 'boolean' ? saveData : undefined,
-        type: typeof type === 'string' ? type : undefined,
+        return {
+            effectiveType: typeof effectiveType === 'string' ? effectiveType : undefined,
+            saveData: typeof saveData === 'boolean' ? saveData : undefined,
+            type: typeof type === 'string' ? type : undefined,
+        }
+    } catch {
+        return undefined
     }
 }
 

@@ -350,6 +350,10 @@ jobs:
 
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  # This job runs cargo, which executes third-party build scripts.
+                  # Do not leave a usable git credential in the runner's config.
+                  persist-credentials: false
 
             - name: Install Rust stable
               uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable

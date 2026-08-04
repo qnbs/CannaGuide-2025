@@ -69,7 +69,26 @@ pub fn validate_scoped(candidate: &Path, roots: &[PathBuf]) -> Result<(), ScopeE
         return Err(ScopeError::NotAbsolute);
     }
 
-    for component in candidate.components() {
+    // Match the root FIRST, then inspect only the part below it.
+    //
+    // Order matters here, and getting it wrong is not academic: on Linux the
+    // app data root is `~/.local/share/cannaguide`. Scanning the whole path for
+    // hidden components rejects `.local` and therefore makes the app's own data
+    // directory -- the primary permitted root -- entirely unusable. Only the
+    // segments the caller controls below the root may be constrained.
+    //
+    // `starts_with` compares whole path components, so `/home/u/docs-evil`
+    // does not match the root `/home/u/docs`.
+    let root = roots
+        .iter()
+        .find(|root| candidate.starts_with(root))
+        .ok_or(ScopeError::OutsideRoots)?;
+
+    let relative = candidate
+        .strip_prefix(root)
+        .map_err(|_| ScopeError::OutsideRoots)?;
+
+    for component in relative.components() {
         match component {
             Component::ParentDir => return Err(ScopeError::Traversal),
             Component::Normal(part) => {
@@ -91,13 +110,7 @@ pub fn validate_scoped(candidate: &Path, roots: &[PathBuf]) -> Result<(), ScopeE
         _ => return Err(ScopeError::BadExtension),
     }
 
-    // `starts_with` compares whole path components, so `/home/u/docs-evil`
-    // does not match the root `/home/u/docs`.
-    if roots.iter().any(|root| candidate.starts_with(root)) {
-        Ok(())
-    } else {
-        Err(ScopeError::OutsideRoots)
-    }
+    Ok(())
 }
 
 #[cfg(test)]
@@ -139,11 +152,40 @@ mod tests {
         );
     }
 
+    /// Regression: the app data root itself lives under a hidden directory on
+    /// Linux (`~/.local/share/...`). Scanning the whole path for hidden
+    /// components made the primary permitted root unusable -- every export and
+    /// import under it was rejected. Only segments below the root are checked.
+    #[test]
+    fn accepts_a_file_directly_under_the_hidden_app_data_root() {
+        assert_eq!(
+            validate_scoped(
+                Path::new("/home/u/.local/share/cannaguide/exports/grow.json"),
+                &roots()
+            ),
+            Ok(())
+        );
+    }
+
+    #[test]
+    fn still_rejects_a_hidden_segment_below_the_hidden_app_data_root() {
+        assert_eq!(
+            validate_scoped(
+                Path::new("/home/u/.local/share/cannaguide/.hidden/grow.json"),
+                &roots()
+            ),
+            Err(ScopeError::HiddenComponent)
+        );
+    }
+
     #[test]
     fn rejects_the_ssh_authorized_keys_attack() {
+        // Rejected as outside every permitted root. The hidden-component rule no
+        // longer applies above the root, so this is caught by the root check --
+        // which is the stronger of the two guarantees anyway.
         assert_eq!(
             validate_scoped(Path::new("/home/u/.ssh/authorized_keys"), &roots()),
-            Err(ScopeError::HiddenComponent)
+            Err(ScopeError::OutsideRoots)
         );
     }
 

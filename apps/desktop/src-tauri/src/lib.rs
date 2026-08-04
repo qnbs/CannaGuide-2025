@@ -73,6 +73,17 @@ fn permitted_roots(app: &tauri::AppHandle) -> Vec<PathBuf> {
 fn resolve_candidate(path: &str) -> Result<PathBuf, String> {
     let raw = Path::new(path);
 
+    // Reject `..` LEXICALLY, before canonicalisation. Canonicalising first would
+    // silently resolve `Documents/../Downloads/x.json` into a path that passes
+    // every later check, so the traversal rule could never actually fire. What
+    // the caller asked for, not what it collapses to, is what must be judged.
+    if raw
+        .components()
+        .any(|c| matches!(c, std::path::Component::ParentDir))
+    {
+        return Err("Path must not contain '..' components.".to_string());
+    }
+
     let file_name = raw
         .file_name()
         .ok_or_else(|| "Path has no file name.".to_string())?;

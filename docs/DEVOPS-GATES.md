@@ -8,28 +8,28 @@ Last updated: 2026-07-01
 
 ## Merge gate (required)
 
-GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Security** succeed (see `.github/workflows/ci.yml`).
+GitHub Actions job **`CI Status`** passes only when the `build`, `test`, `verify` and `security` jobs all succeed (plus `rust` when `apps/desktop/**` changed) (see `.github/workflows/ci.yml`).
 
 | Gate                                              | CI step    | Local command                                                                                |
 | ------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
-| Lint (changed)                                    | `quality`  | `pnpm run lint:changed`                                                                      |
-| Lint (strict scopes)                              | `quality`  | `pnpm run lint:scopes`                                                                       |
-| Graphify MCP doctor                               | `quality`  | `pnpm run graphify:mcp:doctor`                                                               |
-| Typecheck                                         | `quality`  | `pnpm run typecheck`                                                                         |
-| Zero `any` in app source                          | `quality`  | inline grep in `ci.yml`                                                                      |
-| Unit tests + global coverage floors               | `quality`  | `pnpm run test:coverage`                                                                     |
-| **Critical path coverage (≥80% lines/functions)** | `quality`  | `pnpm run check:critical-path-coverage`                                                      |
-| **File budget (≤700 LOC on changed files)**       | `quality`  | `pnpm run check:file-budget`                                                                 |
-| Build                                             | `quality`  | `pnpm run build`                                                                             |
-| Bundle budget                                     | `quality`  | `node scripts/check-bundle-budget.mjs apps/web/dist/assets`                                  |
-| Service dependency acyclic                        | `quality`  | `node scripts/generate-service-map.mjs`                                                      |
-| i18n completeness                                 | `quality`  | `pnpm run check:i18n`                                                                        |
-| Strain catalog integrity                          | `quality`  | `pnpm run strains:check-integrity`                                                           |
-| Documentation metrics (badges ↔ source)           | `quality`  | `pnpm run check:doc-metrics`                                                                 |
-| **jsx-a11y warning ratchet (may only drop)**      | `quality`  | `pnpm run check:a11y-ratchet`                                                                |
-| Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                                                       |
-| E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                                                       |
-| CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`                                            |
+| Lint (changed)                                    | `verify`   | `pnpm run lint:changed`                                                                      |
+| Lint (strict scopes)                              | `verify`   | `pnpm run lint:scopes`                                                                       |
+| Graphify MCP doctor                               | `verify`   | `pnpm run graphify:mcp:doctor`                                                               |
+| Typecheck                                         | `verify`   | `pnpm run typecheck`                                                                         |
+| Zero `any` in app source                          | `verify`   | inline grep in `ci.yml`                                                                      |
+| Unit tests + global coverage floors               | `test`     | `pnpm run test:coverage`                                                                     |
+| **Critical path coverage (≥80% lines/functions)** | `test`     | `pnpm run check:critical-path-coverage`                                                      |
+| **File budget (≤700 LOC on changed files)**       | `verify`   | `pnpm run check:file-budget`                                                                 |
+| Build                                             | `build`    | `pnpm run build`                                                                             |
+| Bundle budget                                     | `build`    | `node scripts/check-bundle-budget.mjs apps/web/dist/assets`                                  |
+| Service dependency acyclic                        | `verify`   | `node scripts/generate-service-map.mjs`                                                      |
+| i18n completeness                                 | `verify`   | `pnpm run check:i18n`                                                                        |
+| Strain catalog integrity                          | `verify`   | `pnpm run strains:check-integrity`                                                           |
+| Documentation metrics (badges ↔ source)           | `verify`   | `pnpm run check:doc-metrics`                                                                 |
+| **jsx-a11y warning ratchet (may only drop)**      | `verify`   | `pnpm run check:a11y-ratchet`                                                                |
+| Audit backlog (open HIGH)                         | `verify`   | `node scripts/check-audit-backlog.mjs`                                                       |
+| E2E selector stability                            | `verify`   | `node scripts/check-e2e-selectors.mjs`                                                       |
+| CSP consistency                                   | `verify`   | `node scripts/security/check-csp-consistency.mjs`                                            |
 | **Rust fmt / clippy / tests (Tauri)**             | `rust`     | `cd apps/desktop/src-tauri && cargo clippy --all-targets -- -D warnings && cargo test --lib` |
 | pnpm audit (high, prod)                           | `security` | `pnpm audit --audit-level=high --prod`                                                       |
 | pnpm audit (high, all deps)                       | `security` | `pnpm audit --audit-level=high`                                                              |

@@ -8,7 +8,7 @@ Last updated: 2026-07-01
 
 ## Merge gate (required)
 
-GitHub Actions job **`CI Status`** passes only when the `build`, `test`, `verify` and `security` jobs all succeed (plus `rust` when `apps/desktop/**` changed) (see `.github/workflows/ci.yml`).
+GitHub Actions job **`CI Status`** passes only when the `build`, `test`, `verify`, `security` and `e2e` (Chromium, 2 shards) jobs all succeed (plus `rust` when `apps/desktop/**` changed) (see `.github/workflows/ci.yml`). E2E was advisory until 2026-08-04: it was absent from the gate's `needs:`, so the required check reached SUCCESS while the browser shards were still running -- observed three times on PR #474 alone. `e2e-cross-browser` (Firefox/WebKit) remains advisory.
 
 | Gate                                                | CI step    | Local command                                                                                                                                |
 | --------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |

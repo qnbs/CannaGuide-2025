@@ -91,10 +91,8 @@ pub fn validate_scoped(candidate: &Path, roots: &[PathBuf]) -> Result<(), ScopeE
     for component in relative.components() {
         match component {
             Component::ParentDir => return Err(ScopeError::Traversal),
-            Component::Normal(part) => {
-                if part.to_string_lossy().starts_with('.') {
-                    return Err(ScopeError::HiddenComponent);
-                }
+            Component::Normal(part) if part.to_string_lossy().starts_with('.') => {
+                return Err(ScopeError::HiddenComponent)
             }
             _ => {}
         }

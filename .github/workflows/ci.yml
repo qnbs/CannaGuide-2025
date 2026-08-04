@@ -318,28 +318,56 @@ jobs:
                   egress-policy: audit
 
             - name: Checkout
+              id: checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
 
             - name: Setup Node + install dependencies
+              id: setup
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: Security audit (critical, production)
-              run: pnpm audit --audit-level=critical --prod
+            # Every scan below is guarded with `always() && setup succeeded` so
+            # that ONE failing control no longer hides the rest. These are
+            # independent checks: a red dependency audit used to skip the secret
+            # scan and the Trojan-Source scan entirely, which meant a green
+            # Security job was the only evidence they had ever run. They still
+            # hard-fail the job (no continue-on-error), so the `CI Status` merge
+            # gate is exactly as strict as before -- just better informed.
+
+            # The production graph is held to the SAME bar as everything else.
+            # This step used to be `--audit-level=critical`, i.e. laxer for the
+            # code we actually ship than for dev tooling: it printed
+            # "Severity: 1 high" and exited 0.
+            - name: Security audit (high, production)
+              if: always() && steps.setup.outcome == 'success'
+              run: pnpm audit --audit-level=high --prod
 
             - name: Security audit (high, all deps)
+              if: always() && steps.setup.outcome == 'success'
               run: pnpm audit --audit-level=high
 
+            # Guards the pnpm-overrides / dependabot-ignore pair against the
+            # silent drift that let GHSA-pm4m-ph32-ghv5 through: see the script
+            # header and the comment above `overrides:` in pnpm-workspace.yaml.
+            - name: Override / dependabot-ignore drift check
+              if: always() && steps.setup.outcome == 'success'
+              run: node scripts/security/check-override-floors.mjs
+
             - name: Trojan-source scan
+              if: always() && steps.setup.outcome == 'success'
               run: pnpm run security:trojan-source
 
             # Trivy removed 2026-03-24: supply-chain attack (GHSA-69fq-xp46-6x23).
             # Replaced by Grype in security-full.yml (filesystem).
             # CI filesystem scanning covered by pnpm audit + Snyk + CodeQL.
+            # Guarded on the checkout rather than the install: secret scanning
+            # needs the working tree, not node_modules, so a registry outage
+            # must not silently disable it.
             - name: Gitleaks secret scan
+              if: always() && steps.checkout.outcome == 'success'
               run: |
                   GITLEAKS_VERSION="8.24.3"
                   curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \

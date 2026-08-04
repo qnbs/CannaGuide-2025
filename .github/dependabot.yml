@@ -8,7 +8,11 @@ updates:
       open-pull-requests-limit: 8
       labels:
           - dependencies
-      # Pinned via pnpm.overrides — Dependabot cannot bump these reliably in the monorepo.
+      # Pinned via `overrides:` in pnpm-workspace.yaml (pnpm 11 no longer reads
+      # package.json's "pnpm" field) — Dependabot cannot bump these reliably in
+      # the monorepo. This list and that override block are a PAIR: silencing a
+      # package here without pinning it there leaves it unprotected.
+      # scripts/security/check-override-floors.mjs fails CI if they drift apart.
       ignore:
           - dependency-name: tmp
           - dependency-name: qs

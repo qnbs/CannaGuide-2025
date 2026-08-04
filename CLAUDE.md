@@ -50,7 +50,26 @@ reproducible, and is what made a slow hook look affordable on paper.
 Work each PR on a **named local branch** (`git switch -c ...`), never in a detached HEAD --
 otherwise every switch invalidates the turbo hash and the cache never hits.
 
-## The three traps that have actually bitten us
+`apps/web`'s `typecheck` script (what `pnpm verify` runs per affected workspace) filters
+exactly one known error: TS2719 in `stores/store.ts`, an upstream Redux Toolkit 2.x /
+`exactOptionalPropertyTypes` incompatibility (redux-toolkit#4392). A TS2719 anywhere else is a
+real error, not noise -- don't assume the filter covers it.
+
+## Legal hard limits (CanG -- German Cannabis Act, BINDING)
+
+`MAX_GROWS` (`stores/slices/growsSlice.ts`) and `MAX_PLANTS_CANG` (`constants.ts`) are both
+hard-coded to **3**. KCanG **Section 9 (1)** -- the whole rule is in that Absatz, it has no
+`Nr.` subdivisions -- permits adults "an ihrem Wohnsitz oder an ihrem gewoehnlichen Aufenthalt
+der private Eigenanbau von insgesamt nicht mehr als drei Cannabispflanzen gleichzeitig". Two
+consequences for the code: the cap attaches to the **residence**, so it is counted globally
+across all grows rather than per grow; and "gleichzeitig" is why only active-stage plants
+(Seed through Curing) count, while archived/finished ones do not.
+
+**Never raise either value and never make it configurable** (setting, env var, feature flag,
+plugin) -- 3 is a legal cap, not a product decision. Any new feature (multi-tent, zone
+planner, automation) must still respect the global cap.
+
+## The traps that have actually bitten us
 
 These look like the safe command. They are not. Each one has cost a session.
 
@@ -71,6 +90,25 @@ These look like the safe command. They are not. Each one has cost a session.
 3. **`prettier` over `git diff --name-only` misses new files.**
    Untracked files are not in the diff, so a brand-new doc or component sails past the
    formatter and fails the docs gate in CI. Use `git status --porcelain` when formatting.
+
+4. **An unbounded pnpm override floor can resolve straight into the vulnerability.**
+   `overrides:` lives in `pnpm-workspace.yaml` (pnpm 11 ignores package.json's `"pnpm"`
+   field), and `.github/dependabot.yml` _ignores_ those packages **because** they are pinned
+   there -- the two are a pair. Three ways that pair rots, all observed in this repo:
+   an open floor resolves to the newest major, which can itself be vulnerable
+   (`fast-uri: '>=3.1.2'` resolved to 4.1.0, the version GHSA-v2hh-gcrm-f6hx names); an open
+   floor can drag a consumer _into_ an advisory (`js-yaml@3: '>=3.15.0'` resolved depcheck's
+   `js-yaml@^3` up two majors to 5.2.1, i.e. the pin **created** GHSA-pm4m-ph32-ghv5); and a
+   major-scoped key stops matching once the tree moves on, leaving the package both unpinned
+   and un-Dependaboted. **Always bound the range** (`>=x.y.z <next-major`), and never add a
+   name to the ignore list without an override.
+
+    `node scripts/security/check-override-floors.mjs` (Security job) **fails** on a new
+    unbounded floor, on an orphaned `name@major` selector, and on an ignored package with no
+    override. The 12 pre-existing unbounded pins are an explicit `LEGACY_UNBOUNDED` allowlist
+    inside that script -- a ratchet that **may only shrink**, since three of them have already
+    crossed a major (`uuid >=11.1.1` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
+    and retiring each is a per-package compatibility call.
 
 ## Do not reach for tsgo
 
@@ -137,6 +175,17 @@ pnpm run check:i18n
 Everything that lands in this repo or on GitHub is **English**: commit messages, PR titles
 and bodies, review replies, code comments, script output, docs. Conversation with the
 maintainer may be in German; that does not carry over into the repo.
+
+Keep **new** source you write ASCII-only -- no emoji, no Unicode symbols (arrows, checkmarks,
+em-dash); use `->`, `--`, `[OK]`/`[FAIL]`/`[WARN]` instead. This matters most for anything a
+terminal or a CI log renders.
+
+This is a **convention, not a gate** -- do not assume a tool will catch you. `anti-trojan-source`
+runs in the pre-commit `lint-staged` step over `*.{js,jsx,ts,tsx,mjs,cjs}` only, and it detects
+**Trojan Source** attacks (bidirectional-override and other control/confusable characters), not
+non-ASCII in general. Ordinary accented text and dashes pass it: 193 tracked JS/TS files already
+contain non-ASCII bytes. `.yml`/`.json` are not in that glob at all, and `locales/*` plus `*.md`
+are exempt by design.
 
 # Architecture at a glance
 

@@ -30,9 +30,53 @@ GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Secu
 | Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                      |
 | E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                      |
 | CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`           |
-| pnpm audit (critical, prod)                       | `security` | `pnpm audit --audit-level=critical --prod`                  |
+| pnpm audit (high, prod)                           | `security` | `pnpm audit --audit-level=high --prod`                      |
+| pnpm audit (high, all deps)                       | `security` | `pnpm audit --audit-level=high`                             |
+| **Override / dependabot-ignore drift**            | `security` | `node scripts/security/check-override-floors.mjs`           |
 | Trojan-source scan                                | `security` | `pnpm run security:trojan-source`                           |
 | Gitleaks                                          | `security` | `pnpm run security:secrets`                                 |
+
+Every **scan** step in the `security` job is guarded with
+`always() && <its prerequisite> succeeded` -- the audits, the drift check and the Trojan-Source
+scan require the setup step, the Gitleaks scan only the checkout (it needs the working tree, not
+`node_modules`). The harden-runner, checkout and setup steps themselves are deliberately
+unguarded: if any of those fails there is nothing to scan.
+The scans are independent controls, so one failure must not skip the others -- before that guard, a
+red dependency audit silently skipped both the Trojan-Source scan and the Gitleaks secret scan,
+and a green `Security` job was the only evidence they had ever run. The guards do **not** soften
+the gate: there is still no `continue-on-error`, so any failing scan fails the job and with it
+`CI Status`.
+
+Both audits run at `--audit-level=high`. The production audit used to run at `critical`, i.e. a
+_laxer_ bar for shipped code than for dev tooling -- it printed `Severity: 1 high` and exited 0.
+Production must never be held to a lower threshold than the dev graph.
+
+### Override / dependabot-ignore drift
+
+`overrides:` in `pnpm-workspace.yaml` and `ignore:` in `.github/dependabot.yml` are a pair: a
+package is silenced for Dependabot **because** it is pinned by an override. `check-override-floors.mjs`
+fails when that pair rots:
+
+- the `overrides:` block in `pnpm-workspace.yaml` disagreeing with the copy pnpm mirrors into
+  `pnpm-lock.yaml` -- `pnpm install --frozen-lockfile` refuses to run on any difference
+  (`ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`), so editing an override without regenerating the
+  lockfile turns **every** CI job red in its install step, which looks far worse than the
+  one-line cause;
+- a fully-ignored npm package with **no override** -- silenced with nothing standing in;
+- a major-scoped key (`js-yaml@3`) matching **no version resolved** in `pnpm-lock.yaml` -- an
+  orphaned pin;
+- a **new** override floor with no upper bound (`>=x` with no `<y`).
+
+An open floor resolves to the newest major in the registry. That is not theoretical here:
+`fast-uri: '>=3.1.2'` resolved to 4.1.0, the version GHSA-v2hh-gcrm-f6hx names, and
+`js-yaml@3: '>=3.15.0'` resolved depcheck's `js-yaml@^3` up two majors to 5.2.1 -- **creating**
+GHSA-pm4m-ph32-ghv5 rather than preventing it.
+
+The unbounded rule is a **ratchet**. The 12 pre-existing unbounded pins are listed in
+`LEGACY_UNBOUNDED` inside the script and warn rather than fail; that list may only shrink, and
+bounding a pin without delisting it fails too. Retiring them is a per-package call, because
+three have already crossed a major (`uuid` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
+and `@babel/core` resolves to nothing at all. Offline -- lockfile and config only, no registry call.
 
 ### Critical path coverage
 

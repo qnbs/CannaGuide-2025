@@ -35,23 +35,30 @@ export const ORT_WASM_CDN_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@$
 /**
  * Lazy-load @xenova/transformers (ONNX pipelines via WebGPU/WASM).
  *
- * transformers.js embeds onnxruntime-web and exposes its env as
- * `env.backends.onnx`, so it needs the same CDN wasm path as a direct ORT load.
- * It never set one, which is why the 25.6 MiB wasm stayed reachable and shipped
- * even though the two direct-ORT workers pointed at the CDN.
+ * Deliberately does NOT set `env.backends.onnx.wasm.wasmPaths`, which is the
+ * opposite of what it looks like it should do.
  *
- * Set here rather than in the three call sites (modelLoader, inference.worker,
- * imageGeneration.worker) for the same reason as `loadOnnxRuntime`: a consumer
- * that forgets it silently falls back to a bundled binary.
+ * transformers.js bundles its OWN onnxruntime-web -- 1.14.0, nested in its
+ * node_modules -- while `loadOnnxRuntime` below drives the direct dependency at
+ * 1.27.0. Two different runtimes, and ORT's JS and wasm are not interchangeable
+ * across versions.
+ *
+ * It also already points its copy at a CDN, matched to its own version
+ * (@xenova/transformers/src/env.js):
+ *
+ *     onnx_env.wasm.wasmPaths = RUNNING_LOCALLY
+ *         ? path.join(__dirname, '/dist/')
+ *         : `https://cdn.jsdelivr.net/npm/@xenova/transformers@${VERSION}/dist/`
+ *
+ * So in a browser this path is already served remotely and correctly. Assigning
+ * ORT_WASM_CDN_BASE here would REPLACE that working default with 1.27.0 wasm and
+ * hand it to 1.14.0 JS -- the exact mismatch these constants exist to prevent,
+ * reintroduced in the other direction. An earlier revision of this branch did
+ * precisely that; the phantom-dependency gate is what forced a look at the
+ * lockfile and surfaced the two-versions fact.
  */
-export const loadTransformers = async (): Promise<typeof import('@xenova/transformers')> => {
-    const mod = await import('@xenova/transformers')
-    const onnxWasmEnv = mod.env?.backends?.onnx?.wasm
-    if (onnxWasmEnv) {
-        onnxWasmEnv.wasmPaths = ORT_WASM_CDN_BASE
-    }
-    return mod
-}
+export const loadTransformers = async (): Promise<typeof import('@xenova/transformers')> =>
+    import('@xenova/transformers')
 
 /** Lazy-load @mlc-ai/web-llm (WebGPU LLM inference). */
 export const loadWebLlm = async (): Promise<typeof import('@mlc-ai/web-llm')> =>

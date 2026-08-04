@@ -28,6 +28,10 @@ concurrency:
 env:
     NODE_VERSION: '24'
     PAGES_URL: https://qnbs.github.io/CannaGuide-2025/
+    # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
+    # default branch head at dispatch time, not the commit whose CI succeeded --
+    # so using it would stamp and verify a different commit than the one built.
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
     # -------------------------------------------------------------------------
@@ -51,6 +55,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
                   fetch-depth: 2 # needed for lint:changed (HEAD~1 diff)
 
             - name: Setup Node + install dependencies
@@ -63,7 +68,7 @@ jobs:
               run: |
                   if [ "${{ github.event_name }}" = "workflow_run" ]; then
                     echo "trust_ci=true" >> "$GITHUB_OUTPUT"
-                    echo "::notice::CI already passed on main — skipping duplicate quality gates."
+                    echo "::notice::CI already passed on main -- skipping duplicate quality gates."
                   else
                     echo "trust_ci=false" >> "$GITHUB_OUTPUT"
                   fi
@@ -111,7 +116,7 @@ jobs:
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
-                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ env.DEPLOY_SHA }}
                   restore-keys: |
                       turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
                       turbo-${{ runner.os }}-
@@ -120,11 +125,13 @@ jobs:
             - name: Build for GitHub Pages
               env:
                   BUILD_BASE_PATH: /CannaGuide-2025/
+                  # vite.config.ts writes this into dist/version.json.
+                  GITHUB_SHA: ${{ env.DEPLOY_SHA }}
               run: |
                   echo "::group::vite build (BUILD_BASE_PATH=/CannaGuide-2025/)"
                   pnpm run build:gh
                   echo "::endgroup::"
-                  echo "[OK] Build complete — dist size: $(du -sh apps/web/dist | cut -f1)"
+                  echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
 
             # -- Pages setup + upload --------------------------------------------
             - name: Configure Pages
@@ -171,7 +178,7 @@ jobs:
             - name: Verify deployed version matches this commit
               env:
                   PAGE_URL: ${{ steps.deployment.outputs.page_url }}
-                  EXPECTED_SHA: ${{ github.sha }}
+                  EXPECTED_SHA: ${{ env.DEPLOY_SHA }}
               shell: bash
               run: |
                   URL="${PAGE_URL%/}/version.json"

@@ -27,13 +27,23 @@ const counts = { critical: 0, high: 0, medium: 0, low: 0 }
 
 for (const section of sections) {
     // Extract severity from table row: | Severity | XYZ |
-    const severityMatch = section.match(/\|\s*Severity\s*\|\s*(\w+)\s*\|/i)
+    // Read the WHOLE severity cell, not just a leading `\w+`. `(\w+)\s*\|` fails
+    // to match a qualified value such as `Critical (upstream advisory)`, and a
+    // row that fails to match is skipped entirely -- so the most severe entries
+    // are exactly the ones a strict pattern is most likely to drop.
+    const severityMatch = section.match(/\|\s*Severity\s*\|([^|]+)\|/i)
     // Extract status from table row: | Status | **XYZ** | (strip bold markers)
     const statusMatch = section.match(/\|\s*Status\s*\|\s*\**([^|*]+)\**\s*\|/i)
 
     if (!severityMatch || !statusMatch) continue
 
-    const severity = severityMatch[1].trim().toLowerCase()
+    // Normalise the cell: strip markdown emphasis, then classify on the leading
+    // word so `**Critical** (upstream advisory)` still counts as critical.
+    const severity = severityMatch[1]
+        .replace(/[*`_]/g, '')
+        .trim()
+        .toLowerCase()
+        .split(/[\s(,/-]/)[0]
     const status = statusMatch[1].trim().toLowerCase()
 
     // Only count Open and In Progress items

@@ -10,7 +10,7 @@
  *   Exempt: ai-runtime, strains-data, three, locale-* (lazy-loaded)
  */
 
-import { readdir, readFile } from 'node:fs/promises'
+import { readdir, readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib'
 
@@ -49,29 +49,41 @@ async function getJsFiles(dir) {
 const MAX_ASSET_MIB = 20
 
 async function checkAssetCeiling(distDir) {
-    let entries
-    try {
-        entries = await readdir(distDir)
-    } catch {
-        console.error(`[FAIL] Cannot read ${distDir} to check asset sizes.`)
-        return 1
+    const limitBytes = MAX_ASSET_MIB * 1024 * 1024
+    const oversized = []
+
+    // Recursive, because Vite emits into subdirectories (fonts/, and any
+    // assetFileNames grouping). A flat readdir would silently exempt anything not
+    // sitting directly in assets/ -- the same "measured nothing" failure this
+    // ceiling exists to prevent.
+    const walk = async (dir, prefix = '') => {
+        let entries
+        try {
+            entries = await readdir(dir, { withFileTypes: true })
+        } catch {
+            console.error(`[FAIL] Cannot read ${dir} to check asset sizes.`)
+            return false
+        }
+        for (const entry of entries) {
+            const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+            const full = join(dir, entry.name)
+            if (entry.isDirectory()) {
+                if (!(await walk(full, rel))) return false
+                continue
+            }
+            if (!entry.isFile()) continue
+            // stat(), not readFile(): the whole point is a SIZE, and reading a
+            // 25 MiB binary into memory to measure it is both wasteful and a real
+            // risk on the low-memory machine this repo is developed on.
+            const { size } = await stat(full)
+            if (size > limitBytes) {
+                oversized.push({ name: rel, mib: size / 1024 / 1024 })
+            }
+        }
+        return true
     }
 
-    const oversized = []
-    for (const name of entries) {
-        const full = join(distDir, name)
-        let buf
-        try {
-            buf = await readFile(full)
-        } catch {
-            // Directories and unreadable entries are not assets; skip quietly.
-            continue
-        }
-        const mib = buf.length / 1024 / 1024
-        if (mib > MAX_ASSET_MIB) {
-            oversized.push({ name, mib })
-        }
-    }
+    if (!(await walk(distDir))) return 1
 
     if (oversized.length > 0) {
         console.error(`\n[FAIL] ${oversized.length} asset(s) exceed ${MAX_ASSET_MIB} MiB:`)
@@ -85,7 +97,7 @@ async function checkAssetCeiling(distDir) {
         return 1
     }
 
-    console.log(`[OK] No single asset exceeds ${MAX_ASSET_MIB} MiB.`)
+    console.log(`[OK] No single asset exceeds ${MAX_ASSET_MIB} MiB (recursive).`)
     return 0
 }
 

@@ -21,9 +21,23 @@ declare module '@xenova/transformers' {
      * named exports now, matching apps/web/types/optional-deps.d.ts, so both
      * workspaces describe this optional dependency the same way.
      */
+    // `| undefined` on every optional field: this repo compiles with
+    // exactOptionalPropertyTypes, under which `x?: string` does NOT accept
+    // `undefined` as a value -- only absence. Without it, assigning a
+    // possibly-undefined value to these fields is a type error at the call site.
     export const env: {
-        backends?: { onnx?: { wasm?: { wasmPaths?: string; proxy?: boolean } } }
-        allowLocalModels?: boolean
+        backends?:
+            | {
+                  onnx?:
+                      | {
+                            wasm?:
+                                | { wasmPaths?: string | undefined; proxy?: boolean | undefined }
+                                | undefined
+                        }
+                      | undefined
+              }
+            | undefined
+        allowLocalModels?: boolean | undefined
         [key: string]: unknown
     }
 }

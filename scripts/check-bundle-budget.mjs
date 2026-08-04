@@ -112,9 +112,34 @@ async function checkPrecacheBudget(distDir) {
         return 1
     }
 
-    const workboxUrls = [...sw.matchAll(PRECACHE_OBJECT_RE)]
-        .map((m) => PRECACHE_URL_RE.exec(m[0])?.[1])
-        .filter((url) => typeof url === 'string' && url.length > 0)
+    // Every object that carries a `revision` is a manifest entry, so every one of
+    // them MUST yield a URL. Silently dropping the ones that do not -- which an
+    // innocuous `.filter()` did here -- understates the total while still passing,
+    // because the only failure condition below is "zero entries parsed". That is
+    // the partial-measurement failure this gate exists to prevent, reproduced
+    // inside the gate. Collect the misses and fail on them.
+    const workboxUrls = []
+    const unparsedEntries = []
+    for (const match of sw.matchAll(PRECACHE_OBJECT_RE)) {
+        const url = PRECACHE_URL_RE.exec(match[0])?.[1]
+        if (typeof url === 'string' && url.length > 0) {
+            workboxUrls.push(url)
+        } else {
+            unparsedEntries.push(match[0].slice(0, 120))
+        }
+    }
+
+    if (unparsedEntries.length > 0) {
+        console.error(
+            `[FAIL] ${unparsedEntries.length} precache manifest entr(ies) carry a revision but no parsable URL:`,
+        )
+        for (const entry of unparsedEntries.slice(0, 5)) console.error(`       ${entry}`)
+        console.error(
+            '[FAIL] A partially parsed manifest understates the precache; refusing to pass.',
+        )
+        return 1
+    }
+
     if (workboxUrls.length === 0) {
         console.error('[FAIL] Could not parse the precache manifest from sw.js.')
         console.error('[FAIL] Refusing to pass a budget that measured nothing.')

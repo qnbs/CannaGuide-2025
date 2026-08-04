@@ -40,7 +40,7 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: Audit backlog check (blocks on open HIGH items)
+            - name: Audit backlog check (blocks on open CRITICAL or HIGH items)
               run: node scripts/check-audit-backlog.mjs
               continue-on-error: false
 

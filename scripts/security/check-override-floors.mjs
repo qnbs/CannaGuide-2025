@@ -12,8 +12,14 @@
  * anything, dependabot stayed muted -- and GHSA-pm4m-ph32-ghv5 (js-yaml 5.x)
  * went unprotected until it broke CI.
  *
- * Three failure modes are checked, all offline (lockfile + config only):
+ * Four failure modes are checked, all offline (lockfile + config only):
  *
+ *   [FAIL] the `overrides:` block in pnpm-workspace.yaml disagrees with the one
+ *          mirrored into pnpm-lock.yaml
+ *          -> every `pnpm install --frozen-lockfile` in CI dies with
+ *             ERR_PNPM_LOCKFILE_CONFIG_MISMATCH. Editing an override without
+ *             regenerating the lockfile turns the whole pipeline red in the
+ *             install step, several jobs deep, for a one-line config change.
  *   [FAIL] a package dependabot is told to ignore has no override at all
  *          -> silenced with nothing standing in for the silenced updates.
  *   [FAIL] an override carries a major selector (`name@N`) that matches no
@@ -149,6 +155,34 @@ const parseOverrides = (yaml) => {
  * indent is stable -- and package entries must be distinguished from the
  * more deeply indented dependency lines nested underneath them.
  */
+/**
+ * Read the `overrides:` block that pnpm mirrors into the lockfile. `pnpm install
+ * --frozen-lockfile` compares this against pnpm-workspace.yaml and refuses to
+ * run on any difference, so a drift here is a hard CI outage rather than a
+ * quality nit -- and it surfaces in the install step of every job at once,
+ * which makes it look like something far worse than a stale lockfile.
+ */
+const parseLockfileOverrides = (lockfile) => {
+    const map = new Map()
+    let inBlock = false
+
+    for (const line of lockfile.split('\n')) {
+        if (/^overrides:\s*$/.test(line)) {
+            inBlock = true
+            continue
+        }
+        if (!inBlock) continue
+        if (line.trim() !== '' && !/^\s/.test(line)) break
+        if (line.trim() === '' || line.trim().startsWith('#')) continue
+
+        const match = line.match(/^\s+(\S.*?):\s*(\S.*)$/)
+        if (!match) continue
+        map.set(unquote(match[1]), unquote(match[2]))
+    }
+
+    return map
+}
+
 const RESOLVED_SECTIONS = new Set(['packages', 'snapshots'])
 
 const parseResolved = (lockfile) => {
@@ -246,6 +280,34 @@ if (overrides.length === 0) {
 }
 
 const overriddenNames = new Set(overrides.map((o) => o.name))
+
+// -- Check 0: workspace overrides must match the lockfile's mirrored copy ---
+const lockOverrides = parseLockfileOverrides(read(LOCKFILE_PATH, 'pnpm-lock.yaml'))
+
+for (const { key, range } of overrides) {
+    if (!lockOverrides.has(key)) {
+        failures.push(
+            `${key}: present in pnpm-workspace.yaml but missing from the lockfile's mirrored ` +
+                `overrides. Run \`pnpm install --no-frozen-lockfile\` and commit pnpm-lock.yaml, ` +
+                `or CI dies with ERR_PNPM_LOCKFILE_CONFIG_MISMATCH.`,
+        )
+    } else if (lockOverrides.get(key) !== range) {
+        failures.push(
+            `${key}: workspace says '${range}' but the lockfile mirrors ` +
+                `'${lockOverrides.get(key)}'. Regenerate the lockfile -- ` +
+                `\`--frozen-lockfile\` refuses to install on this mismatch.`,
+        )
+    }
+}
+
+for (const key of lockOverrides.keys()) {
+    if (!overrides.some((o) => o.key === key)) {
+        failures.push(
+            `${key}: mirrored in pnpm-lock.yaml but no longer in pnpm-workspace.yaml. ` +
+                `Regenerate the lockfile so the removal is recorded.`,
+        )
+    }
+}
 
 // -- Check 1: every fully-ignored npm package must still be pinned ----------
 for (const name of ignored) {

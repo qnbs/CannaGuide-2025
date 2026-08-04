@@ -53,6 +53,11 @@ Production must never be held to a lower threshold than the dev graph.
 package is silenced for Dependabot **because** it is pinned by an override. `check-override-floors.mjs`
 fails when that pair rots:
 
+- the `overrides:` block in `pnpm-workspace.yaml` disagreeing with the copy pnpm mirrors into
+  `pnpm-lock.yaml` -- `pnpm install --frozen-lockfile` refuses to run on any difference
+  (`ERR_PNPM_LOCKFILE_CONFIG_MISMATCH`), so editing an override without regenerating the
+  lockfile turns **every** CI job red in its install step, which looks far worse than the
+  one-line cause;
 - a fully-ignored npm package with **no override** -- silenced with nothing standing in;
 - a major-scoped key (`js-yaml@3`) matching **no version resolved** in `pnpm-lock.yaml` -- an
   orphaned pin;

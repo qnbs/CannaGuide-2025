@@ -31,7 +31,7 @@ overrides:
   brace-expansion@5: '>=5.0.9 <6'
   postcss: '>=8.5.23 <9'
   body-parser@1: '>=1.20.6 <2'
-  sharp: '>=0.35.0'
+  sharp: '>=0.35.0 <1'
 
 importers:
 

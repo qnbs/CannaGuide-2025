@@ -1,6 +1,6 @@
 name: CI
 
-# workflow-version: 2026-07-14-parallel (CI Status = build+test+verify+security; E2E advisory)
+# workflow-version: 2026-08-04-e2e-blocking (CI Status = build+test+verify+security+e2e)
 
 on:
     push:
@@ -694,14 +694,21 @@ jobs:
               run: echo "::notice::Advisory job finished — failures here do not block merge."
 
     # ---------------------------------------------------------------------
-    # CI Gate -- build + test + verify + security required; E2E advisory
+    # CI Gate -- build + test + verify + security + Chromium E2E all required
     # ---------------------------------------------------------------------
     ci-status:
         name: "\u2705 CI Status"
         if: always()
         # build + test + verify together are exactly what the old `quality` job
         # covered \u2014 splitting it must not narrow the merge gate.
-        needs: [changes, build, test, verify, security, rust]
+        #
+        # `e2e` is in this list deliberately. It was absent, and the consequence was
+        # not theoretical: this check reached SUCCESS while both Chromium shards
+        # were still `in_progress`, three separate times on PR #474 alone. A PR was
+        # therefore mergeable -- by the repository's own required check -- with the
+        # browser tests unfinished, and a shard failing afterwards changed nothing.
+        # A required gate that concludes before its evidence is in is not a gate.
+        needs: [changes, build, test, verify, security, rust, e2e]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
@@ -736,6 +743,7 @@ jobs:
                   echo "Test:     ${{ needs.test.result }}"
                   echo "Verify:   ${{ needs.verify.result }}"
                   echo "Security: ${{ needs.security.result }}"
+                  echo "E2E:      ${{ needs.e2e.result }}"
                   echo "---"
                   FAILED=0
                   if [[ "${{ needs.build.result }}" != "success" ]]; then
@@ -751,10 +759,20 @@ jobs:
                     echo "[FAIL] Security checks failed"; FAILED=1
                   fi
 
+                  # Chromium E2E is now blocking. `e2e` runs a 2-shard matrix and
+                  # `needs.e2e.result` is the aggregate across both, so one red shard
+                  # fails this. Note the comparison is against "success" and NOT a
+                  # not-equal-to-failure test: `cancelled`, `skipped` and the empty
+                  # result must all fail here. A gate that accepts anything other
+                  # than a green run is how E2E became advisory in the first place.
+                  if [[ "${{ needs.e2e.result }}" != "success" ]]; then
+                    echo "[FAIL] Chromium E2E failed or did not complete"; FAILED=1
+                  fi
+
                   # Folded in from the pre-docs-exit check above. `rust` is
                   # path-gated, so `skipped` is legitimate when apps/desktop was
                   # untouched -- but a skip is never accepted while desktop files
                   # DID change.
                   if [[ "$RUST_FAILED" -ne 0 ]]; then FAILED=1; fi
                   if [[ "$FAILED" -ne 0 ]]; then exit 1; fi
-                  echo "[PASS] CI merge gate passed (build + test + verify + security; E2E advisory)"
+                  echo "[PASS] CI merge gate passed (build + test + verify + security + Chromium E2E)"

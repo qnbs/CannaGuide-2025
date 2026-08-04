@@ -28,6 +28,10 @@ concurrency:
 env:
     NODE_VERSION: '24'
     PAGES_URL: https://qnbs.github.io/CannaGuide-2025/
+    # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
+    # default branch head at dispatch time, not the commit whose CI succeeded --
+    # so using it would stamp and verify a different commit than the one built.
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
 
 jobs:
     # -------------------------------------------------------------------------
@@ -37,6 +41,7 @@ jobs:
         name: Build
         if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         permissions:
             contents: read
             pages: write
@@ -50,6 +55,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
+                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
                   fetch-depth: 2 # needed for lint:changed (HEAD~1 diff)
 
             - name: Setup Node + install dependencies
@@ -62,15 +68,18 @@ jobs:
               run: |
                   if [ "${{ github.event_name }}" = "workflow_run" ]; then
                     echo "trust_ci=true" >> "$GITHUB_OUTPUT"
-                    echo "::notice::CI already passed on main — skipping duplicate quality gates."
+                    echo "::notice::CI already passed on main -- skipping duplicate quality gates."
                   else
                     echo "trust_ci=false" >> "$GITHUB_OUTPUT"
                   fi
 
             # -- Quality gates (manual dispatch only; CI workflow_run is trusted) --
+            # `high`, not `critical`: this mirrors ci.yml's Security job, where the
+            # production audit used to run at a *laxer* threshold than the dev graph
+            # and let a high-severity advisory through the gate.
             - name: Security audit
               if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: pnpm audit --audit-level=critical --prod
+              run: pnpm audit --audit-level=high --prod
 
             - name: Lint changed files
               if: steps.deploy_mode.outputs.trust_ci != 'true'
@@ -107,7 +116,7 @@ jobs:
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
-                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ env.DEPLOY_SHA }}
                   restore-keys: |
                       turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
                       turbo-${{ runner.os }}-
@@ -116,11 +125,13 @@ jobs:
             - name: Build for GitHub Pages
               env:
                   BUILD_BASE_PATH: /CannaGuide-2025/
+                  # vite.config.ts writes this into dist/version.json.
+                  GITHUB_SHA: ${{ env.DEPLOY_SHA }}
               run: |
                   echo "::group::vite build (BUILD_BASE_PATH=/CannaGuide-2025/)"
                   pnpm run build:gh
                   echo "::endgroup::"
-                  echo "[OK] Build complete — dist size: $(du -sh apps/web/dist | cut -f1)"
+                  echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
 
             # -- Pages setup + upload --------------------------------------------
             - name: Configure Pages
@@ -140,6 +151,7 @@ jobs:
         name: Deploy
         needs: build
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         permissions:
             contents: read
             pages: write
@@ -158,6 +170,42 @@ jobs:
             - name: Deployed
               run: echo "[OK] Live at ${{ steps.deployment.outputs.page_url }}"
 
+            # The build stamps dist/version.json with {version, commit, builtAt}
+            # (apps/web/vite.config.ts) precisely so a deployment can be identified
+            # -- but until now no workflow ever read it back, so nothing verified
+            # that the site actually serving traffic is the commit we just built.
+            # Fails closed: a deploy that cannot be identified is not a good deploy.
+            - name: Verify deployed version matches this commit
+              env:
+                  PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+                  EXPECTED_SHA: ${{ env.DEPLOY_SHA }}
+              shell: bash
+              run: |
+                  URL="${PAGE_URL%/}/version.json"
+                  echo "[INFO] Expecting ${EXPECTED_SHA} at ${URL}"
+
+                  # Pages needs a moment to serve the new bundle; the CDN also
+                  # caches, so retry rather than assert on the first response.
+                  for attempt in $(seq 1 20); do
+                    BODY=$(curl -fsSL --max-time 20 "${URL}" 2>/dev/null || echo "")
+                    if [ -n "${BODY}" ]; then
+                      SERVED_SHA=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
+                      SERVED_VERSION=$(printf '%s' "${BODY}" | jq -r '.version // empty')
+                      if [ "${SERVED_SHA}" = "${EXPECTED_SHA}" ]; then
+                        echo "[OK] Serving ${SERVED_VERSION} (${SERVED_SHA})."
+                        exit 0
+                      fi
+                      echo "[INFO] attempt ${attempt}: serving ${SERVED_SHA:-<none>} -- waiting"
+                    else
+                      echo "[INFO] attempt ${attempt}: version.json not reachable yet -- waiting"
+                    fi
+                    sleep 15
+                  done
+
+                  echo "[FAIL] ${URL} never reported commit ${EXPECTED_SHA}."
+                  echo "[FAIL] The deployment cannot be tied to the commit that produced it."
+                  exit 1
+
     # -------------------------------------------------------------------------
     # E2E -- smoke-test the live Pages deployment
     # -------------------------------------------------------------------------
@@ -165,6 +213,7 @@ jobs:
         name: E2E Smoke Tests
         needs: deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         continue-on-error: true
         steps:
             - name: Checkout
@@ -233,6 +282,7 @@ jobs:
         name: Lighthouse
         needs: deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         continue-on-error: true
         steps:
             - name: Checkout
@@ -291,6 +341,7 @@ jobs:
         name: Cleanup old runs and deployments
         needs: deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         if: success()
         continue-on-error: true
         permissions:

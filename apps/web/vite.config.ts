@@ -138,7 +138,11 @@ function devCspPlugin(): PluginOption {
 }
 
 // Emits a build-version marker so the live build is identifiable without devtools:
-// dist/version.json (queried by preview-validation) + a <meta name="app-version">.
+// dist/version.json + a <meta name="app-version">. The `commit` field is read back
+// by deploy.yml's post-deploy check, which asserts the live site is serving the
+// commit that was just built. (It previously said "queried by preview-validation";
+// that workflow is disabled and contains no such query -- for a long time nothing
+// read this file at all.)
 function buildVersionPlugin(): PluginOption {
     const version = process.env.npm_package_version ?? '0.0.0'
     return {

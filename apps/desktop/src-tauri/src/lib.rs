@@ -191,25 +191,72 @@ fn write_atomic_no_follow(target: &Path, data: &str) -> Result<(), String> {
     })
 }
 
-/// Read `source` without ever returning the contents of a symlink target.
+/// Read `source` without returning the contents of a symlink target.
 ///
-/// Same race as the write path, opposite direction: a pre-open check cannot bind
-/// the thing it inspected to the thing that is later read. Opening FIRST and
-/// checking after does bind them. If the path was already a symlink, the check
-/// reports it and the bytes are dropped without being handed back; if it became
-/// one after the open, the handle still refers to the file that passed
-/// validation and refusing is merely conservative. Either way the contents of a
-/// swapped-in target are never returned.
+/// Neither ordering of a pathname check and an open is sufficient on its own,
+/// and the first attempt at this got it wrong in an instructive way. Checking
+/// BEFORE the open is the classic check-then-use race. Checking AFTER the open
+/// is *also* racy, just less obviously so: `File::open` has already followed the
+/// symlink, and an attacker who then REMOVES it leaves `symlink_metadata`
+/// looking at a perfectly ordinary file. The check passes and the already-opened
+/// outside file is returned. (Caught by CodeAnt on #474, after this code claimed
+/// the opposite.)
+///
+/// What closes it is binding the check to the open by file IDENTITY rather than
+/// by pathname. On Unix `dev` + `ino` name a file uniquely, so: stat the path,
+/// open it, then require that the handle actually obtained is that same file. A
+/// traversed symlink cannot satisfy that -- a symlink and its target are
+/// different inodes -- and neither can a file swapped in between the two calls.
+/// When the identities match, the handle *is* the thing that was validated, and
+/// every subsequent read goes through the handle rather than the path again.
+#[cfg(unix)]
 fn read_no_follow(source: &Path) -> Result<String, String> {
     use std::io::Read;
+    use std::os::unix::fs::MetadataExt;
+
+    let before = std::fs::symlink_metadata(source).map_err(|e| e.to_string())?;
+    if before.file_type().is_symlink() {
+        return Err("Refusing to follow a symlink.".to_string());
+    }
 
     let mut file = std::fs::File::open(source).map_err(|e| e.to_string())?;
+    let opened = file.metadata().map_err(|e| e.to_string())?;
+
+    if opened.dev() != before.dev() || opened.ino() != before.ino() {
+        return Err("Refusing to follow a symlink.".to_string());
+    }
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)
+        .map_err(|e| e.to_string())?;
+    Ok(contents)
+}
+
+/// Non-Unix fallback.
+///
+/// Stated plainly rather than papered over: this does **not** close the race.
+/// `std::os::windows::fs::MetadataExt` exposes no stable file-identity accessor
+/// (`volume_serial_number` / `file_index` sit behind the unstable
+/// `windows_by_handle` feature), so there is no std-only equivalent of the
+/// inode comparison above. The pathname check below therefore remains
+/// check-then-use on Windows.
+///
+/// The residual exposure is smaller there -- creating a symlink requires
+/// SeCreateSymbolicLinkPrivilege (administrator, or Developer Mode) -- but it is
+/// not zero, and calling it a defence would repeat exactly the mistake this
+/// function's Unix arm documents. Closing it needs `FILE_FLAG_OPEN_REPARSE_POINT`
+/// through a Win32 binding, which is a dependency decision rather than a
+/// drive-by fix.
+#[cfg(not(unix))]
+fn read_no_follow(source: &Path) -> Result<String, String> {
+    use std::io::Read;
 
     let meta = std::fs::symlink_metadata(source).map_err(|e| e.to_string())?;
     if meta.file_type().is_symlink() {
         return Err("Refusing to follow a symlink.".to_string());
     }
 
+    let mut file = std::fs::File::open(source).map_err(|e| e.to_string())?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .map_err(|e| e.to_string())?;
@@ -522,6 +569,26 @@ mod command_path_tests {
 
         let err = read_no_follow(&link).expect_err("must be rejected");
         assert_eq!(err, "Refusing to follow a symlink.");
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    /// The identity check must reject a *traversed* symlink, not merely any path
+    /// that reaches the same bytes. A hard link shares dev+ino with its target,
+    /// so it has to keep working -- an implementation that compared paths, or
+    /// that rejected on link count, would fail here.
+    #[cfg(unix)]
+    #[test]
+    fn reading_through_a_hard_link_is_allowed_because_the_inode_matches() {
+        let dir = scratch("read-hardlink");
+        let real = dir.join("real.json");
+        std::fs::write(&real, "{\"hard\":true}").expect("seed real file");
+        let link = dir.join("hard.json");
+        std::fs::hard_link(&real, &link).expect("create hard link");
+
+        assert_eq!(
+            read_no_follow(&link).expect("hard link must be readable"),
+            "{\"hard\":true}"
+        );
         let _ = std::fs::remove_dir_all(&dir);
     }
 

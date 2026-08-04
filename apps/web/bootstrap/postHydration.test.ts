@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { runPostHydrationServices } from './postHydration'
 import type { AppStore } from '@/stores/store'
-import settingsReducer from '@/stores/slices/settingsSlice'
+import settingsReducer, { setSetting } from '@/stores/slices/settingsSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
 
 const mockStrainInit = vi.fn().mockResolvedValue(undefined)
@@ -61,7 +61,8 @@ vi.mock('@/services/nativeBridgeService', () => ({
 
 vi.mock('@/services/local-ai', () => ({
     localAiPreloadService: { scheduleIdlePreload: () => mockScheduleIdlePreload() },
-    startBackgroundPrecomputation: (...args: unknown[]) => mockStartBackgroundPrecomputation(...args),
+    startBackgroundPrecomputation: (...args: unknown[]) =>
+        mockStartBackgroundPrecomputation(...args),
 }))
 
 vi.mock('@/services/platformService', () => ({
@@ -119,9 +120,25 @@ describe('runPostHydrationServices', () => {
         expect(mockSetAiMode).toHaveBeenCalled()
         expect(mockMqttInit).toHaveBeenCalledWith(store)
         expect(mockProactiveInit).toHaveBeenCalledWith(store)
-        expect(mockScheduleIdlePreload).toHaveBeenCalled()
+        // The offline-model preload is opt-in (localAi.autoPreloadOnStartup,
+        // default false), so boot must NOT start a multi-hundred-megabyte
+        // download. See the dedicated cases below for both directions.
+        expect(mockScheduleIdlePreload).not.toHaveBeenCalled()
         expect(mockStartBackgroundPrecomputation).toHaveBeenCalled()
         expect(mockSetAppReady).toHaveBeenCalledWith(true)
         expect(document.body.getAttribute('data-app-ready')).toBe('true')
+    })
+
+    it('does not preload offline models when the opt-in is off (default)', async () => {
+        const store = createTestStore()
+        await runPostHydrationServices(store)
+        expect(mockScheduleIdlePreload).not.toHaveBeenCalled()
+    })
+
+    it('preloads offline models once the user opts in', async () => {
+        const store = createTestStore()
+        store.dispatch(setSetting({ path: 'localAi.autoPreloadOnStartup', value: true }))
+        await runPostHydrationServices(store)
+        expect(mockScheduleIdlePreload).toHaveBeenCalled()
     })
 })

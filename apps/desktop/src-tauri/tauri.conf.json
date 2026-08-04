@@ -1,5 +1,5 @@
 {
-    "$schema": "https://raw.githubusercontent.com/nicehash/tauri/main/packages/tauri-cli/schema.json",
+    "$schema": "https://schema.tauri.app/config/2",
     "productName": "CannaGuide 2025",
     "version": "0.1.0",
     "identifier": "com.cannaguide.desktop",
@@ -11,18 +11,6 @@
     },
     "app": {
         "withGlobalTauri": false,
-        "capabilities": [
-            "core",
-            "desktop",
-            "fs",
-            "dialog",
-            "notification",
-            "tray",
-            "shortcut",
-            "updater",
-            "window-state",
-            "store"
-        ],
         "windows": [
             {
                 "title": "CannaGuide 2025",
@@ -39,7 +27,19 @@
         ],
         "security": {
             "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https: asset: https://asset.localhost; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs.hf.co https://huggingfaceusercontent.com https://cdn.jsdelivr.net https://api.elevenlabs.io ipc: https://ipc.localhost; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'",
-            "dangerousDisableAssetCspModification": false
+            "dangerousDisableAssetCspModification": false,
+            "capabilities": [
+                "core",
+                "desktop",
+                "fs",
+                "dialog",
+                "notification",
+                "tray",
+                "shortcut",
+                "updater",
+                "window-state",
+                "store"
+            ]
         },
         "trayIcon": {
             "iconPath": "icons/icon.png",

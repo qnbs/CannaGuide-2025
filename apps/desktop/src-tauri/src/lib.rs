@@ -44,16 +44,6 @@ fn get_app_version() -> AppInfo {
 }
 
 #[tauri::command]
-fn export_data(path: String, data: String) -> Result<(), String> {
-    std::fs::write(&path, &data).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn import_data(path: String) -> Result<String, String> {
-    std::fs::read_to_string(&path).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
 fn get_native_capabilities(app_handle: tauri::AppHandle) -> NativeCapabilities {
     let log_dir = app_handle
         .path()
@@ -77,11 +67,10 @@ fn get_native_capabilities(app_handle: tauri::AppHandle) -> NativeCapabilities {
 
 #[tauri::command]
 fn open_log_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
-    let dir = app_handle
-        .path()
-        .app_log_dir()
-        .map_err(|e| e.to_string())?;
-    let dir_str = dir.to_str().ok_or_else(|| "log_dir not utf-8".to_string())?;
+    let dir = app_handle.path().app_log_dir().map_err(|e| e.to_string())?;
+    let dir_str = dir
+        .to_str()
+        .ok_or_else(|| "log_dir not utf-8".to_string())?;
     Ok(dir_str.to_string())
 }
 
@@ -114,7 +103,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
-        .plugin(tauri_plugin_global_shortcut::init())
+        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_process::init())
@@ -122,12 +111,9 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // -- Tray icon with context menu --------------------------------
-            let show_item = MenuItemBuilder::with_id("show", "Show Window")
-                .build(app)?;
-            let hide_item = MenuItemBuilder::with_id("hide", "Hide Window")
-                .build(app)?;
-            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
-                .build(app)?;
+            let show_item = MenuItemBuilder::with_id("show", "Show Window").build(app)?;
+            let hide_item = MenuItemBuilder::with_id("hide", "Hide Window").build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
 
             let tray_menu = MenuBuilder::new(app)
                 .item(&show_item)
@@ -179,8 +165,6 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             get_app_version,
-            export_data,
-            import_data,
             get_native_capabilities,
             open_log_dir,
             clear_native_cache,

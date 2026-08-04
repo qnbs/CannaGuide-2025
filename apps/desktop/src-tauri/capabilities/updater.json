@@ -3,6 +3,6 @@
     "identifier": "updater",
     "description": "Auto-update capabilities for in-app updates from GitHub Releases",
     "windows": ["main"],
-    "platforms": ["linux", "macos", "windows"],
+    "platforms": ["linux", "macOS", "windows"],
     "permissions": ["updater:default", "updater:allow-check", "updater:allow-download-and-install"]
 }

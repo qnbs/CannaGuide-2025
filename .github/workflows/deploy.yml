@@ -37,6 +37,7 @@ jobs:
         name: Build
         if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         permissions:
             contents: read
             pages: write
@@ -68,9 +69,12 @@ jobs:
                   fi
 
             # -- Quality gates (manual dispatch only; CI workflow_run is trusted) --
+            # `high`, not `critical`: this mirrors ci.yml's Security job, where the
+            # production audit used to run at a *laxer* threshold than the dev graph
+            # and let a high-severity advisory through the gate.
             - name: Security audit
               if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: pnpm audit --audit-level=critical --prod
+              run: pnpm audit --audit-level=high --prod
 
             - name: Lint changed files
               if: steps.deploy_mode.outputs.trust_ci != 'true'
@@ -140,6 +144,7 @@ jobs:
         name: Deploy
         needs: build
         runs-on: ubuntu-latest
+        timeout-minutes: 15
         permissions:
             contents: read
             pages: write
@@ -158,6 +163,42 @@ jobs:
             - name: Deployed
               run: echo "[OK] Live at ${{ steps.deployment.outputs.page_url }}"
 
+            # The build stamps dist/version.json with {version, commit, builtAt}
+            # (apps/web/vite.config.ts) precisely so a deployment can be identified
+            # -- but until now no workflow ever read it back, so nothing verified
+            # that the site actually serving traffic is the commit we just built.
+            # Fails closed: a deploy that cannot be identified is not a good deploy.
+            - name: Verify deployed version matches this commit
+              env:
+                  PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+                  EXPECTED_SHA: ${{ github.sha }}
+              shell: bash
+              run: |
+                  URL="${PAGE_URL%/}/version.json"
+                  echo "[INFO] Expecting ${EXPECTED_SHA} at ${URL}"
+
+                  # Pages needs a moment to serve the new bundle; the CDN also
+                  # caches, so retry rather than assert on the first response.
+                  for attempt in $(seq 1 20); do
+                    BODY=$(curl -fsSL --max-time 20 "${URL}" 2>/dev/null || echo "")
+                    if [ -n "${BODY}" ]; then
+                      SERVED_SHA=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
+                      SERVED_VERSION=$(printf '%s' "${BODY}" | jq -r '.version // empty')
+                      if [ "${SERVED_SHA}" = "${EXPECTED_SHA}" ]; then
+                        echo "[OK] Serving ${SERVED_VERSION} (${SERVED_SHA})."
+                        exit 0
+                      fi
+                      echo "[INFO] attempt ${attempt}: serving ${SERVED_SHA:-<none>} -- waiting"
+                    else
+                      echo "[INFO] attempt ${attempt}: version.json not reachable yet -- waiting"
+                    fi
+                    sleep 15
+                  done
+
+                  echo "[FAIL] ${URL} never reported commit ${EXPECTED_SHA}."
+                  echo "[FAIL] The deployment cannot be tied to the commit that produced it."
+                  exit 1
+
     # -------------------------------------------------------------------------
     # E2E -- smoke-test the live Pages deployment
     # -------------------------------------------------------------------------
@@ -165,6 +206,7 @@ jobs:
         name: E2E Smoke Tests
         needs: deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         continue-on-error: true
         steps:
             - name: Checkout
@@ -233,6 +275,7 @@ jobs:
         name: Lighthouse
         needs: deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 30
         continue-on-error: true
         steps:
             - name: Checkout
@@ -291,6 +334,7 @@ jobs:
         name: Cleanup old runs and deployments
         needs: deploy
         runs-on: ubuntu-latest
+        timeout-minutes: 10
         if: success()
         continue-on-error: true
         permissions:

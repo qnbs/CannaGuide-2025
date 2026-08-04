@@ -58,13 +58,17 @@ jobs:
                   token: ${{ secrets.RELEASE_PAT || github.token }}
 
             # ── CI Status Guard ──────────────────────────────────────
-            # Release Publish runs in parallel with Release Gate.
-            # No cross-workflow dependency is possible in GitHub Actions.
-            # This guard queries the Checks API to verify the CI status
-            # job passed on the tagged commit before proceeding.
-            # Skipped for workflow_dispatch (maintainer is in control).
+            # Release Publish runs in parallel with Release Gate; GitHub Actions
+            # has no cross-workflow `needs:`. This guard queries the Checks API
+            # for the merge gate on the commit being released, and the step after
+            # it waits for Release Gate itself.
+            #
+            # It now runs for workflow_dispatch too. `github.ref_name` resolves
+            # to the tag on a tag push and to the dispatching branch otherwise,
+            # so both cases check the commit that is actually about to ship.
+            # "The maintainer is in control" was not a safeguard -- a manual
+            # dispatch was precisely the path with no verification at all.
             - name: Verify CI passed on tagged commit
-              if: github.event_name == 'push'
               env:
                   GH_TOKEN: ${{ github.token }}
                   REPO: ${{ github.repository }}
@@ -78,9 +82,14 @@ jobs:
                     --jq '[.check_runs[] | select(.name | contains("CI Status"))] | .[0].conclusion // empty')
 
                   if [ -z "${CONCLUSION}" ]; then
-                    echo "[WARN] No CI Status check found for ${COMMIT_SHA}."
-                    echo "[WARN] This can happen for docs-only commits (paths-ignore)."
-                    echo "[WARN] Proceeding with caution."
+                    echo "[FAIL] No CI Status check found for ${COMMIT_SHA}."
+                    echo "[FAIL] A release must be traceable to a commit that passed the merge gate."
+                    echo "[FAIL] This previously warned and continued, which -- combined with the"
+                    echo "[FAIL] docs-only short-circuit in ci.yml -- let a commit that never ran"
+                    echo "[FAIL] security checks be published."
+                    echo ""
+                    echo "[FIX] Push a commit that runs CI, or re-run CI on ${COMMIT_SHA}."
+                    exit 1
                   elif [ "${CONCLUSION}" != "success" ]; then
                     echo "[FAIL] CI Status check is '${CONCLUSION}' -- not success."
                     echo "[FAIL] Aborting release. Push tag only after CI is green."
@@ -88,6 +97,53 @@ jobs:
                   else
                     echo "[OK] CI Status check passed (${CONCLUSION})."
                   fi
+
+            # ── Release Gate coupling ────────────────────────────────
+            # release-gate.yml and this workflow fire on the SAME `push: tags:
+            # ['v*']` event and run concurrently, so a tag whose Release Gate
+            # FAILED still produced a published GitHub Release with an SBOM and a
+            # provenance attestation. Actions offers no cross-workflow `needs:`,
+            # so wait for it explicitly and fail closed on anything but success.
+            - name: Wait for Release Gate on the same commit
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  REPO: ${{ github.repository }}
+                  REF: ${{ github.ref_name }}
+              shell: bash
+              run: |
+                  COMMIT_SHA=$(git rev-list -n 1 "${REF}")
+                  DEADLINE=$(( SECONDS + 45 * 60 ))
+
+                  echo "[INFO] Waiting for Release Gate on ${COMMIT_SHA}"
+
+                  while :; do
+                    RUN=$(gh api \
+                      "repos/${REPO}/actions/workflows/release-gate.yml/runs?head_sha=${COMMIT_SHA}&per_page=1" \
+                      --jq '.workflow_runs[0] | "\(.status)|\(.conclusion // "")"' 2>/dev/null || echo "")
+
+                    STATUS="${RUN%%|*}"
+                    CONCLUSION="${RUN#*|}"
+
+                    if [ "${STATUS}" = "completed" ]; then
+                      if [ "${CONCLUSION}" = "success" ]; then
+                        echo "[OK] Release Gate succeeded for ${COMMIT_SHA}."
+                        exit 0
+                      fi
+                      echo "[FAIL] Release Gate concluded '${CONCLUSION}' for ${COMMIT_SHA}."
+                      echo "[FAIL] Refusing to publish a release the gate rejected."
+                      exit 1
+                    fi
+
+                    if [ "${SECONDS}" -ge "${DEADLINE}" ]; then
+                      echo "[FAIL] Timed out waiting for Release Gate on ${COMMIT_SHA}."
+                      echo "[FAIL] Failing closed: an unverified tag must not publish."
+                      echo "[FIX] Check whether release-gate.yml ran for this tag at all."
+                      exit 1
+                    fi
+
+                    echo "[INFO] Release Gate status='${STATUS:-not started}' -- waiting 30s"
+                    sleep 30
+                  done
 
             - name: Resolve tag name
               id: tag
@@ -107,6 +163,42 @@ jobs:
                   TAG="${TAG#refs/tags/}"
                   echo "name=${TAG}" >> "$GITHUB_OUTPUT"
                   echo "[INFO] Resolved tag: ${TAG}"
+
+            # ── Tag <-> version assertion ────────────────────────────
+            # Nothing previously tied the tag to the tree it labels. Pushing
+            # v9.9.9 on a 1.10.0 checkout produced a release named
+            # "CannaGuide v9.9.9" containing a 1.10.0 build -- with an SBOM and
+            # a provenance attestation vouching for it. Runs BEFORE "Ensure tag
+            # exists", so a wrong workflow_dispatch tag is never created.
+            - name: Verify tag matches package.json version
+              env:
+                  TAG: ${{ steps.tag.outputs.name }}
+              shell: bash
+              run: |
+                  if [[ ! "${TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+                    echo "[FAIL] Tag '${TAG}' is not a v-prefixed semver tag (expected e.g. v1.10.0)."
+                    exit 1
+                  fi
+
+                  TAG_VERSION="${TAG#v}"
+                  PKG_VERSION=$(jq -r '.version' package.json)
+                  WEB_VERSION=$(jq -r '.version' apps/web/package.json)
+
+                  echo "tag=${TAG_VERSION} root=${PKG_VERSION} web=${WEB_VERSION}"
+
+                  if [[ "${TAG_VERSION}" != "${PKG_VERSION}" ]]; then
+                    echo "[FAIL] Tag ${TAG} does not match package.json version ${PKG_VERSION}."
+                    echo "[FAIL] Refusing to publish a release whose name contradicts its contents."
+                    exit 1
+                  fi
+
+                  # apps/web is what actually ships and what stamps dist/version.json.
+                  if [[ "${WEB_VERSION}" != "${PKG_VERSION}" ]]; then
+                    echo "[FAIL] apps/web/package.json (${WEB_VERSION}) disagrees with the root (${PKG_VERSION})."
+                    exit 1
+                  fi
+
+                  echo "[OK] Tag, root package.json and apps/web/package.json all agree on ${PKG_VERSION}."
 
             # ── Ensure Tag Exists ────────────────────────────────────
             # For workflow_dispatch the tag may not exist yet.

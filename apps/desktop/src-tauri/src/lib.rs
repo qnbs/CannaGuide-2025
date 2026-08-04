@@ -1,4 +1,7 @@
+mod path_scope;
+
 use serde::Serialize;
+use std::path::{Path, PathBuf};
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
@@ -43,14 +46,73 @@ fn get_app_version() -> AppInfo {
     }
 }
 
-#[tauri::command]
-fn export_data(path: String, data: String) -> Result<(), String> {
-    std::fs::write(&path, &data).map_err(|e| e.to_string())
+/// Directories these commands may touch: the app's own data dir, plus the
+/// user's Documents and Downloads (where a save dialog realistically lands).
+/// Anything unresolvable is simply omitted rather than failing the whole call.
+fn permitted_roots(app: &tauri::AppHandle) -> Vec<PathBuf> {
+    let resolver = app.path();
+    [
+        resolver.app_data_dir(),
+        resolver.document_dir(),
+        resolver.download_dir(),
+    ]
+    .into_iter()
+    .filter_map(|dir| dir.ok())
+    .filter_map(|dir| dir.canonicalize().ok())
+    .collect()
+}
+
+/// Resolve `path` to a candidate that can be scope-checked without being fooled
+/// by symlinks.
+///
+/// The parent is canonicalised (it must already exist, which is true for both a
+/// save dialog and an open dialog), so a symlinked *directory* cannot smuggle
+/// the write outside the permitted roots. If the target itself already exists
+/// as a symlink it is refused outright rather than followed -- `fs::write`
+/// would otherwise write through it.
+fn resolve_candidate(path: &str) -> Result<PathBuf, String> {
+    let raw = Path::new(path);
+
+    let file_name = raw
+        .file_name()
+        .ok_or_else(|| "Path has no file name.".to_string())?;
+    let parent = raw
+        .parent()
+        .ok_or_else(|| "Path has no parent directory.".to_string())?;
+
+    let parent = parent
+        .canonicalize()
+        .map_err(|_| "Directory does not exist.".to_string())?;
+
+    let candidate = parent.join(file_name);
+
+    if let Ok(meta) = std::fs::symlink_metadata(&candidate) {
+        if meta.file_type().is_symlink() {
+            return Err("Refusing to follow a symlink.".to_string());
+        }
+    }
+
+    Ok(candidate)
+}
+
+/// Check `path` against the permitted roots and return the resolved path.
+fn scoped_path(app: &tauri::AppHandle, path: &str) -> Result<PathBuf, String> {
+    let candidate = resolve_candidate(path)?;
+    path_scope::validate_scoped(&candidate, &permitted_roots(app))
+        .map_err(|e| e.message().to_string())?;
+    Ok(candidate)
 }
 
 #[tauri::command]
-fn import_data(path: String) -> Result<String, String> {
-    std::fs::read_to_string(&path).map_err(|e| e.to_string())
+fn export_data(app: tauri::AppHandle, path: String, data: String) -> Result<(), String> {
+    let target = scoped_path(&app, &path)?;
+    std::fs::write(&target, &data).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn import_data(app: tauri::AppHandle, path: String) -> Result<String, String> {
+    let source = scoped_path(&app, &path)?;
+    std::fs::read_to_string(&source).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -77,11 +139,10 @@ fn get_native_capabilities(app_handle: tauri::AppHandle) -> NativeCapabilities {
 
 #[tauri::command]
 fn open_log_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
-    let dir = app_handle
-        .path()
-        .app_log_dir()
-        .map_err(|e| e.to_string())?;
-    let dir_str = dir.to_str().ok_or_else(|| "log_dir not utf-8".to_string())?;
+    let dir = app_handle.path().app_log_dir().map_err(|e| e.to_string())?;
+    let dir_str = dir
+        .to_str()
+        .ok_or_else(|| "log_dir not utf-8".to_string())?;
     Ok(dir_str.to_string())
 }
 
@@ -122,12 +183,9 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             // -- Tray icon with context menu --------------------------------
-            let show_item = MenuItemBuilder::with_id("show", "Show Window")
-                .build(app)?;
-            let hide_item = MenuItemBuilder::with_id("hide", "Hide Window")
-                .build(app)?;
-            let quit_item = MenuItemBuilder::with_id("quit", "Quit")
-                .build(app)?;
+            let show_item = MenuItemBuilder::with_id("show", "Show Window").build(app)?;
+            let hide_item = MenuItemBuilder::with_id("hide", "Hide Window").build(app)?;
+            let quit_item = MenuItemBuilder::with_id("quit", "Quit").build(app)?;
 
             let tray_menu = MenuBuilder::new(app)
                 .item(&show_item)

@@ -10,31 +10,32 @@ Last updated: 2026-07-01
 
 GitHub Actions job **`CI Status`** passes only when **Quality Gates** and **Security** succeed (see `.github/workflows/ci.yml`).
 
-| Gate                                              | CI step    | Local command                                               |
-| ------------------------------------------------- | ---------- | ----------------------------------------------------------- |
-| Lint (changed)                                    | `quality`  | `pnpm run lint:changed`                                     |
-| Lint (strict scopes)                              | `quality`  | `pnpm run lint:scopes`                                      |
-| Graphify MCP doctor                               | `quality`  | `pnpm run graphify:mcp:doctor`                              |
-| Typecheck                                         | `quality`  | `pnpm run typecheck`                                        |
-| Zero `any` in app source                          | `quality`  | inline grep in `ci.yml`                                     |
-| Unit tests + global coverage floors               | `quality`  | `pnpm run test:coverage`                                    |
-| **Critical path coverage (≥80% lines/functions)** | `quality`  | `pnpm run check:critical-path-coverage`                     |
-| **File budget (≤700 LOC on changed files)**       | `quality`  | `pnpm run check:file-budget`                                |
-| Build                                             | `quality`  | `pnpm run build`                                            |
-| Bundle budget                                     | `quality`  | `node scripts/check-bundle-budget.mjs apps/web/dist/assets` |
-| Service dependency acyclic                        | `quality`  | `node scripts/generate-service-map.mjs`                     |
-| i18n completeness                                 | `quality`  | `pnpm run check:i18n`                                       |
-| Strain catalog integrity                          | `quality`  | `pnpm run strains:check-integrity`                          |
-| Documentation metrics (badges ↔ source)           | `quality`  | `pnpm run check:doc-metrics`                                |
-| **jsx-a11y warning ratchet (may only drop)**      | `quality`  | `pnpm run check:a11y-ratchet`                               |
-| Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                      |
-| E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                      |
-| CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`           |
-| pnpm audit (high, prod)                           | `security` | `pnpm audit --audit-level=high --prod`                      |
-| pnpm audit (high, all deps)                       | `security` | `pnpm audit --audit-level=high`                             |
-| **Override / dependabot-ignore drift**            | `security` | `node scripts/security/check-override-floors.mjs`           |
-| Trojan-source scan                                | `security` | `pnpm run security:trojan-source`                           |
-| Gitleaks                                          | `security` | `pnpm run security:secrets`                                 |
+| Gate                                              | CI step    | Local command                                                                                |
+| ------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------- |
+| Lint (changed)                                    | `quality`  | `pnpm run lint:changed`                                                                      |
+| Lint (strict scopes)                              | `quality`  | `pnpm run lint:scopes`                                                                       |
+| Graphify MCP doctor                               | `quality`  | `pnpm run graphify:mcp:doctor`                                                               |
+| Typecheck                                         | `quality`  | `pnpm run typecheck`                                                                         |
+| Zero `any` in app source                          | `quality`  | inline grep in `ci.yml`                                                                      |
+| Unit tests + global coverage floors               | `quality`  | `pnpm run test:coverage`                                                                     |
+| **Critical path coverage (≥80% lines/functions)** | `quality`  | `pnpm run check:critical-path-coverage`                                                      |
+| **File budget (≤700 LOC on changed files)**       | `quality`  | `pnpm run check:file-budget`                                                                 |
+| Build                                             | `quality`  | `pnpm run build`                                                                             |
+| Bundle budget                                     | `quality`  | `node scripts/check-bundle-budget.mjs apps/web/dist/assets`                                  |
+| Service dependency acyclic                        | `quality`  | `node scripts/generate-service-map.mjs`                                                      |
+| i18n completeness                                 | `quality`  | `pnpm run check:i18n`                                                                        |
+| Strain catalog integrity                          | `quality`  | `pnpm run strains:check-integrity`                                                           |
+| Documentation metrics (badges ↔ source)           | `quality`  | `pnpm run check:doc-metrics`                                                                 |
+| **jsx-a11y warning ratchet (may only drop)**      | `quality`  | `pnpm run check:a11y-ratchet`                                                                |
+| Audit backlog (open HIGH)                         | `quality`  | `node scripts/check-audit-backlog.mjs`                                                       |
+| E2E selector stability                            | `quality`  | `node scripts/check-e2e-selectors.mjs`                                                       |
+| CSP consistency                                   | `quality`  | `node scripts/security/check-csp-consistency.mjs`                                            |
+| **Rust fmt / clippy / tests (Tauri)**             | `rust`     | `cd apps/desktop/src-tauri && cargo clippy --all-targets -- -D warnings && cargo test --lib` |
+| pnpm audit (high, prod)                           | `security` | `pnpm audit --audit-level=high --prod`                                                       |
+| pnpm audit (high, all deps)                       | `security` | `pnpm audit --audit-level=high`                                                              |
+| **Override / dependabot-ignore drift**            | `security` | `node scripts/security/check-override-floors.mjs`                                            |
+| Trojan-source scan                                | `security` | `pnpm run security:trojan-source`                                                            |
+| Gitleaks                                          | `security` | `pnpm run security:secrets`                                                                  |
 
 Every **scan** step in the `security` job is guarded with
 `always() && <its prerequisite> succeeded` -- the audits, the drift check and the Trojan-Source
@@ -50,6 +51,19 @@ the gate: there is still no `continue-on-error`, so any failing scan fails the j
 Both audits run at `--audit-level=high`. The production audit used to run at `critical`, i.e. a
 _laxer_ bar for shipped code than for dev tooling -- it printed `Severity: 1 high` and exited 0.
 Production must never be held to a lower threshold than the dev graph.
+
+### Rust (Tauri)
+
+Path-gated on `apps/desktop/**`. It is required by `CI Status` **only when it actually ran** --
+a PR that does not touch the desktop legitimately skips it, and the gate must not read that
+skip as a failure. It must equally not accept a skip while desktop files _did_ change, so the
+condition keys off `needs.changes.outputs.desktop`, not off the job result alone.
+
+It exists because Rust was otherwise compiled only by `desktop-build.yml`, which fires on `v*`
+tags -- a broken Rust change was first discovered while cutting a release. The job stops at
+`cargo check`-level work (fmt, clippy, `--lib` tests); the full platform bundle stays in
+`desktop-build.yml`. Note the desktop app cannot be built on the maintainer's low-end machine
+(`libwebkit2gtk-4.1-dev` is absent), so this job is the only pre-merge verification Rust gets.
 
 ### Override / dependabot-ignore drift
 

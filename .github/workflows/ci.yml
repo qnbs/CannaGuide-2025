@@ -45,6 +45,7 @@ jobs:
         runs-on: ubuntu-latest
         outputs:
             code: ${{ steps.detect.outputs.code }}
+            desktop: ${{ steps.detect.outputs.desktop }}
         steps:
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -60,6 +61,7 @@ jobs:
                   if [ -z "$BASE_SHA" ]; then
                     echo "Not a pull request -- treating as a code change."
                     echo "code=true" >> "$GITHUB_OUTPUT"
+                    echo "desktop=true" >> "$GITHUB_OUTPUT"
                     exit 0
                   fi
 
@@ -95,6 +97,27 @@ jobs:
                   else
                     echo "code=false" >> "$GITHUB_OUTPUT"
                     echo "Docs-only change -- the code pipeline has nothing to verify."
+                  fi
+
+                  # Rust is otherwise compiled only by desktop-build.yml, which fires on
+                  # `v*` tags -- i.e. a broken Rust change is first discovered while
+                  # cutting a release. Gate a cargo check on the Tauri paths so it is
+                  # caught on the PR instead. Same grep discipline as above: a failed
+                  # detector must not silently resolve to "no desktop changes".
+                  set +e
+                  DESKTOP=$(printf '%s\n' "$CHANGED" | grep -E '^apps/desktop/')
+                  DESKTOP_STATUS=$?
+                  set -e
+                  if [ "$DESKTOP_STATUS" -gt 1 ]; then
+                    echo "[FAIL] Desktop-path detection failed (grep exit $DESKTOP_STATUS)."
+                    exit 1
+                  fi
+                  if [ -n "$DESKTOP" ]; then
+                    echo "desktop=true" >> "$GITHUB_OUTPUT"
+                    echo "Desktop/Tauri paths changed -- running the Rust check:"
+                    printf '  %s\n' "$DESKTOP"
+                  else
+                    echo "desktop=false" >> "$GITHUB_OUTPUT"
                   fi
 
     build:
@@ -301,6 +324,75 @@ jobs:
 
             - name: CSP consistency check
               run: node scripts/security/check-csp-consistency.mjs
+
+    # ---------------------------------------------------------------------
+    # Rust / Tauri -- only when apps/desktop changed.
+    #
+    # Without this, Rust is compiled exclusively by desktop-build.yml on `v*`
+    # tags, so a type error or a broken command signature surfaces during a
+    # release rather than on the PR that introduced it. `cargo check` + clippy
+    # is enough to catch that; the full bundle stays in desktop-build.yml.
+    # ---------------------------------------------------------------------
+    rust:
+        name: Rust (Tauri)
+        needs: changes
+        if: needs.changes.outputs.desktop == 'true'
+        runs-on: ubuntu-22.04
+        timeout-minutes: 30
+        env:
+            CARGO_INCREMENTAL: 0
+            RUST_BACKTRACE: short
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Install Rust stable
+              uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+              with:
+                  toolchain: stable
+                  components: clippy, rustfmt
+
+            - name: Rust cache
+              uses: swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
+              with:
+                  workspaces: apps/desktop/src-tauri
+
+            # Same list desktop-build.yml installs; Tauri will not configure without them.
+            - name: Install Linux system deps
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y \
+                    libwebkit2gtk-4.1-dev \
+                    libappindicator3-dev \
+                    librsvg2-dev \
+                    patchelf \
+                    libgtk-3-dev \
+                    libsoup-3.0-dev \
+                    libjavascriptcoregtk-4.1-dev
+
+            # tauri.conf.json points frontendDist at `../web/dist` (i.e. apps/web/dist).
+            # tauri-build wants that directory to exist; it does not need real assets for
+            # a type check, and `beforeBuildCommand` only runs for `tauri build`. The
+            # real bundle is still produced by desktop-build.yml.
+            - name: Stub frontend dist
+              run: mkdir -p apps/web/dist && touch apps/web/dist/index.html
+
+            - name: Formatting
+              working-directory: apps/desktop/src-tauri
+              run: cargo fmt --all -- --check
+
+            - name: Clippy
+              working-directory: apps/desktop/src-tauri
+              run: cargo clippy --all-targets -- -D warnings
+
+            - name: Unit tests
+              working-directory: apps/desktop/src-tauri
+              run: cargo test --lib
 
     # ---------------------------------------------------------------------
     # Security -- hard-fail, no continue-on-error
@@ -565,7 +657,7 @@ jobs:
         if: always()
         # build + test + verify together are exactly what the old `quality` job
         # covered \u2014 splitting it must not narrow the merge gate.
-        needs: [changes, build, test, verify, security]
+        needs: [changes, build, test, verify, security, rust]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
@@ -597,6 +689,17 @@ jobs:
                   fi
                   if [[ "${{ needs.security.result }}" != "success" ]]; then
                     echo "[FAIL] Security checks failed"; FAILED=1
+                  fi
+
+                  # `rust` is path-gated, so it is legitimately `skipped` on any PR that
+                  # does not touch apps/desktop. Require success only when it actually
+                  # ran -- but never accept `skipped` while desktop files DID change,
+                  # which would be the same silent-bypass shape this gate exists to stop.
+                  if [[ "${{ needs.changes.outputs.desktop }}" == "true" ]]; then
+                    echo "Rust:     ${{ needs.rust.result }}"
+                    if [[ "${{ needs.rust.result }}" != "success" ]]; then
+                      echo "[FAIL] Rust / Tauri checks failed"; FAILED=1
+                    fi
                   fi
                   if [[ "$FAILED" -ne 0 ]]; then exit 1; fi
                   echo "[PASS] CI merge gate passed (build + test + verify + security; E2E advisory)"

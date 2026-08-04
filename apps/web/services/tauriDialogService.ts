@@ -10,6 +10,16 @@ import { platform } from '@/services/platformService'
 export interface TauriSaveResult {
     /** Absolute path chosen by the user, or null if canceled */
     path: string | null
+    /**
+     * Why the operation failed, when it failed for a reason other than the user
+     * cancelling. `path` is null in both cases, so without this a rejected path
+     * is indistinguishable from a cancel and the save fails silently.
+     *
+     * The Rust side scopes `export_data`/`import_data` to the app data dir plus
+     * Documents/Downloads and to `.json`/`.cannaguide`, so a location outside
+     * that lands here rather than being written.
+     */
+    error?: string
 }
 
 export interface TauriOpenResult {
@@ -17,6 +27,8 @@ export interface TauriOpenResult {
     path: string | null
     /** File contents as UTF-8 string */
     content: string | null
+    /** See {@link TauriSaveResult.error}. */
+    error?: string
 }
 
 /**
@@ -46,9 +58,10 @@ export async function saveFileDialog(
 
         await invoke('export_data', { path: filePath, data })
         return { path: filePath }
-    } catch {
-        console.debug('[TauriDialog] Save dialog failed')
-        return { path: null }
+    } catch (err) {
+        const error = err instanceof Error ? err.message : String(err)
+        console.debug('[TauriDialog] Save dialog failed:', error)
+        return { path: null, error }
     }
 }
 
@@ -57,9 +70,7 @@ export async function saveFileDialog(
  * Returns the path and contents or null if the user cancels.
  * On web/PWA this is a no-op returning null.
  */
-export async function openFileDialog(
-    defaultPath?: string | undefined,
-): Promise<TauriOpenResult> {
+export async function openFileDialog(defaultPath?: string | undefined): Promise<TauriOpenResult> {
     if (!platform.isTauri) return { path: null, content: null }
 
     try {
@@ -79,8 +90,9 @@ export async function openFileDialog(
 
         const content = await invoke<string>('import_data', { path: filePath })
         return { path: filePath, content }
-    } catch {
-        console.debug('[TauriDialog] Open dialog failed')
-        return { path: null, content: null }
+    } catch (err) {
+        const error = err instanceof Error ? err.message : String(err)
+        console.debug('[TauriDialog] Open dialog failed:', error)
+        return { path: null, content: null, error }
     }
 }

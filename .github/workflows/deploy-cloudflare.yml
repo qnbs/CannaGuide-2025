@@ -35,6 +35,13 @@ env:
     NODE_VERSION: '24'
     CF_PROJECT_NAME: cannaguide-2025
     CF_PAGES_URL: https://cannaguide-2025.pages.dev
+    # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
+    # default branch head at dispatch time, NOT the commit whose CI succeeded --
+    # so if main advances between CI finishing and this workflow starting, using
+    # it would build, deploy and then STAMP an untested commit as verified.
+    # deploy.yml already derives it this way; this workflow did not, which mattered
+    # more once artifact identity started being asserted here.
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }}
 
 jobs:
     gate:
@@ -85,6 +92,10 @@ jobs:
 
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  # Without this the job builds whatever main points at now, which
+                  # is not necessarily the commit whose CI passed.
+                  ref: ${{ env.DEPLOY_SHA }}
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -113,7 +124,7 @@ jobs:
             # assert here so the preview/production upload carries this commit.
             - name: Stamp build metadata
               env:
-                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
               run: |
                   node scripts/stamp-build-metadata.mjs
                   node scripts/stamp-build-metadata.mjs --verify
@@ -209,32 +220,48 @@ jobs:
                   fi
 
             # Completes the artifact-identity chain for this deploy path. The build
-            # already stamps dist/version.json with BUILD_COMMIT and asserts it
-            # before upload (#486); this confirms the commit that is actually being
-            # SERVED, which is the only claim a live check can make.
+            # stamps dist/version.json with DEPLOY_SHA and asserts it before upload
+            # (#486); this confirms the commit actually being SERVED.
             #
-            # Advisory on purpose, unlike the pre-deploy assert. Cloudflare's edge
-            # can serve a stale cached copy for a short window after a deploy, so a
-            # hard failure here would produce flakes that say nothing about the
-            # artifact. The pre-deploy assertion is the one that fails closed; this
-            # is corroboration.
+            # The first version of this step could not fail: it carried
+            # `continue-on-error: true` AND only warned on a mismatch, so it was
+            # green whether the served commit matched or not. That is the exact
+            # defect this PR exists to remove -- a check reporting success while
+            # establishing nothing -- reintroduced by me one step below where I had
+            # just deleted it. Caught in review by CodeAnt.
+            #
+            # Edge-cache lag was the real concern behind that, and retrying is the
+            # correct answer to it, not ignoring the result. Same shape as
+            # deploy.yml's Pages check: poll until the edge catches up, then fail if
+            # it never does.
             - name: Verify served version marker
-              continue-on-error: true
               env:
-                  EXPECTED_SHA: ${{ github.sha }}
+                  EXPECTED_SHA: ${{ env.DEPLOY_SHA }}
               run: |
                   CF_URL="${{ steps.deploy.outputs.deployment-url || env.CF_PAGES_URL }}"
-                  BODY=$(curl -fsSL --max-time 20 "${CF_URL%/}/version.json" 2>/dev/null || echo "")
-                  if [ -z "${BODY}" ]; then
-                    echo "::warning::No version.json served at ${CF_URL} -- cannot confirm identity."
-                    exit 0
-                  fi
-                  SERVED=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
-                  if [ "${SERVED}" = "${EXPECTED_SHA}" ]; then
-                    echo "[OK] Serving ${SERVED}."
-                  else
-                    echo "::warning::Served commit ${SERVED} != expected ${EXPECTED_SHA} (edge cache lag?)."
-                  fi
+                  URL="${CF_URL%/}/version.json"
+                  echo "[INFO] Expecting ${EXPECTED_SHA} at ${URL}"
+
+                  for attempt in $(seq 1 15); do
+                    BODY=$(curl -fsSL --max-time 20 "${URL}" 2>/dev/null || echo "")
+                    if [ -n "${BODY}" ]; then
+                      SERVED=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
+                      if [ "${SERVED}" = "${EXPECTED_SHA}" ]; then
+                        echo "[OK] Serving ${SERVED} (attempt ${attempt})."
+                        exit 0
+                      fi
+                      echo "  attempt ${attempt}: serving ${SERVED:-<none>}, waiting for ${EXPECTED_SHA}"
+                    else
+                      echo "  attempt ${attempt}: no version.json yet"
+                    fi
+                    sleep 10
+                  done
+
+                  echo "::error::Cloudflare is not serving ${EXPECTED_SHA} after 15 attempts."
+                  echo "        Last served: ${SERVED:-<none>}"
+                  echo "        Either the deploy did not take effect, or it published a"
+                  echo "        different commit than the one this run built."
+                  exit 1
 
     preview:
         name: PR Preview Deploy
@@ -279,7 +306,7 @@ jobs:
             # assert here so the preview/production upload carries this commit.
             - name: Stamp build metadata
               env:
-                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
               run: |
                   node scripts/stamp-build-metadata.mjs
                   node scripts/stamp-build-metadata.mjs --verify

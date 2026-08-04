@@ -1,21 +1,38 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
-    "buildCommand": "BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web",
+    "buildCommand": "BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web && node scripts/stamp-build-metadata.mjs && node scripts/stamp-build-metadata.mjs --verify",
     "outputDirectory": "apps/web/dist",
     "installCommand": "corepack enable && pnpm install --frozen-lockfile",
-    "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
     "headers": [
         {
             "source": "/(.*)",
             "headers": [
-                { "key": "X-Frame-Options", "value": "DENY" },
-                { "key": "X-Content-Type-Options", "value": "nosniff" },
-                { "key": "Referrer-Policy", "value": "same-origin" },
+                {
+                    "key": "X-Frame-Options",
+                    "value": "DENY"
+                },
+                {
+                    "key": "X-Content-Type-Options",
+                    "value": "nosniff"
+                },
+                {
+                    "key": "Referrer-Policy",
+                    "value": "same-origin"
+                },
                 {
                     "key": "Permissions-Policy",
                     "value": "accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()"
                 },
-                { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+                {
+                    "key": "Cross-Origin-Opener-Policy",
+                    "value": "same-origin"
+                },
                 {
                     "key": "Cross-Origin-Embedder-Policy",
                     "value": "credentialless"
@@ -24,7 +41,10 @@
                     "key": "Strict-Transport-Security",
                     "value": "max-age=31536000; includeSubDomains"
                 },
-                { "key": "X-DNS-Prefetch-Control", "value": "on" },
+                {
+                    "key": "X-DNS-Prefetch-Control",
+                    "value": "on"
+                },
                 {
                     "key": "Content-Security-Policy",
                     "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://cdn-lfs.hf.co https://huggingfaceusercontent.com https://cdn.jsdelivr.net https://api.elevenlabs.io; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
@@ -33,19 +53,39 @@
         },
         {
             "source": "/assets/(.*)",
-            "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
         },
         {
             "source": "/index.html",
-            "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate"
+                }
+            ]
         },
         {
             "source": "/sw.js",
-            "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "no-cache, no-store, must-revalidate"
+                }
+            ]
         },
         {
             "source": "/manifest.json",
-            "headers": [{ "key": "Cache-Control", "value": "public, max-age=3600" }]
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600"
+                }
+            ]
         }
     ]
 }

@@ -7,6 +7,7 @@
             "outputs": ["dist/**"],
             "env": ["BUILD_BASE_PATH", "VITE_*"],
             "inputs": [
+                "package.json",
                 "src/**",
                 "components/**",
                 "stores/**",
@@ -45,6 +46,7 @@
             "outputs": ["dist/**"],
             "env": ["BUILD_BASE_PATH", "VITE_*"],
             "inputs": [
+                "package.json",
                 "src/**",
                 "components/**",
                 "stores/**",

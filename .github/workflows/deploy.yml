@@ -125,13 +125,31 @@ jobs:
             - name: Build for GitHub Pages
               env:
                   BUILD_BASE_PATH: /CannaGuide-2025/
-                  # vite.config.ts writes this into dist/version.json.
-                  GITHUB_SHA: ${{ env.DEPLOY_SHA }}
               run: |
                   echo "::group::vite build (BUILD_BASE_PATH=/CannaGuide-2025/)"
                   pnpm run build:gh
                   echo "::endgroup::"
                   echo "[OK] Build complete -- dist size: $(du -sh apps/web/dist | cut -f1)"
+
+            # Stamped AFTER the build, on purpose. `build:gh` is a turbo task whose
+            # cached output is dist/**, so anything written during it is replayed
+            # verbatim on a cache hit -- including the previous commit's
+            # version.json. Passing GITHUB_SHA into the build did not help: it was
+            # never in the task's `env` list, so it changed neither the hash nor a
+            # replayed artifact. This step is not cached, so it always runs.
+            - name: Stamp build metadata
+              env:
+                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
+              run: node scripts/stamp-build-metadata.mjs
+
+            # Assert BEFORE upload, not only after the deploy. The post-deploy
+            # check further down is still worth having, but by the time it runs the
+            # artifact is already serving traffic -- a red workflow does not roll
+            # Pages back. Catching a mismatched artifact here means it never ships.
+            - name: Verify artifact identity before upload
+              env:
+                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
+              run: node scripts/stamp-build-metadata.mjs --verify
 
             # -- Pages setup + upload --------------------------------------------
             - name: Configure Pages

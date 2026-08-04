@@ -6,8 +6,6 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
-import { writeFileSync } from 'node:fs'
-import { execSync } from 'node:child_process'
 import type { PluginOption } from 'vite'
 
 const __webRoot = path.dirname(fileURLToPath(import.meta.url))
@@ -137,12 +135,21 @@ function devCspPlugin(): PluginOption {
     }
 }
 
-// Emits a build-version marker so the live build is identifiable without devtools:
-// dist/version.json + a <meta name="app-version">. The `commit` field is read back
-// by deploy.yml's post-deploy check, which asserts the live site is serving the
-// commit that was just built. (It previously said "queried by preview-validation";
-// that workflow is disabled and contains no such query -- for a long time nothing
-// read this file at all.)
+// Injects <meta name="app-version"> so the shipped shell carries the package
+// version. Only the version -- deliberately NOT the commit or the build time.
+//
+// `dist/version.json` used to be written here too, and that was a correctness
+// bug rather than a stylistic one. This plugin runs inside the turbo `build`
+// task, whose cached output is `dist/**`, so on a cache HIT the plugin never
+// executes and the previous commit's version.json is replayed verbatim into the
+// artifact. Observed live: a Vercel preview built for 95848cf served
+// {"commit":"3501ef2"}. Neither GITHUB_SHA nor VERCEL_GIT_COMMIT_SHA was in the
+// task's `env` list, so a differing commit did not even change the hash.
+//
+// Per-build identity is now stamped by scripts/stamp-build-metadata.mjs in an
+// uncached task that runs after the build. The version stays here because it is
+// a genuine input: package.json is in the task inputs, so a version bump busts
+// the cache and re-runs this.
 function buildVersionPlugin(): PluginOption {
     const version = process.env.npm_package_version ?? '0.0.0'
     return {
@@ -152,22 +159,6 @@ function buildVersionPlugin(): PluginOption {
             return html.replace(
                 '</head>',
                 `    <meta name="app-version" content="${version}" />\n    </head>`,
-            )
-        },
-        writeBundle(options) {
-            // commit resolved at build time only (no git call on every config load / test run)
-            let commit = process.env.GITHUB_SHA ?? ''
-            if (!commit) {
-                try {
-                    commit = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
-                } catch {
-                    commit = 'unknown'
-                }
-            }
-            const outDir = options.dir ?? 'dist'
-            writeFileSync(
-                path.join(outDir, 'version.json'),
-                JSON.stringify({ version, commit, builtAt: new Date().toISOString() }, null, 2),
             )
         },
     }

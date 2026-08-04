@@ -314,7 +314,7 @@ jobs:
             - name: Strain catalog integrity
               run: pnpm run strains:check-integrity
 
-            - name: Audit backlog check (blocks on open HIGH items)
+            - name: Audit backlog check (blocks on open CRITICAL or HIGH items)
               run: node scripts/check-audit-backlog.mjs
               continue-on-error: false
 

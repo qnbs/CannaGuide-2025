@@ -27,7 +27,7 @@ GitHub Actions job **`CI Status`** passes only when the `build`, `test`, `verify
 | Strain catalog integrity                          | `verify`   | `pnpm run strains:check-integrity`                                                                                                           |
 | Documentation metrics (badges ↔ source)           | `verify`   | `pnpm run check:doc-metrics`                                                                                                                 |
 | **jsx-a11y warning ratchet (may only drop)**      | `verify`   | `pnpm run check:a11y-ratchet`                                                                                                                |
-| Audit backlog (open HIGH)                         | `verify`   | `node scripts/check-audit-backlog.mjs`                                                                                                       |
+| Audit backlog (open CRITICAL/HIGH)                | `verify`   | `node scripts/check-audit-backlog.mjs`                                                                                                       |
 | E2E selector stability                            | `verify`   | `node scripts/check-e2e-selectors.mjs`                                                                                                       |
 | CSP consistency                                   | `verify`   | `node scripts/security/check-csp-consistency.mjs`                                                                                            |
 | **Rust fmt / clippy / tests (Tauri)**             | `rust`     | `cd apps/desktop/src-tauri && cargo fmt --all -- --check && cargo clippy --locked --all-targets -- -D warnings && cargo test --locked --lib` |

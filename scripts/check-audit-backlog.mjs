@@ -3,8 +3,14 @@
  * check-audit-backlog.mjs
  *
  * Parses docs/AUDIT_BACKLOG.md and counts open items by severity.
- * Exits with code 1 if any HIGH-severity items are still Open or In Progress.
- * Used in CI to block releases with unresolved high-priority audit findings.
+ * Exits with code 1 if any CRITICAL- or HIGH-severity items are still Open or
+ * In Progress. Used in CI to block releases with unresolved audit findings.
+ *
+ * `critical` used to be bucketed into `counts.low` and only `high` gated, so an
+ * open CRITICAL item passed -- the one severity such a gate most obviously
+ * exists to stop. Callers and docs must state both severities, or a
+ * critical-only failure looks like unexpected gate behaviour and the wrong
+ * check gets troubleshot.
  */
 
 import { readFileSync } from 'node:fs'

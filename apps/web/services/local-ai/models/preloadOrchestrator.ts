@@ -23,12 +23,13 @@ export type PreloadTier = 'critical' | 'standard' | 'full'
  */
 /** Non-standard NetworkInformation surface, narrowed to what this check reads. */
 interface NavigatorWithConnection {
-    connection?: { effectiveType?: string; saveData?: boolean }
+    connection?: { effectiveType?: string; saveData?: boolean; type?: string }
 }
 
 /**
  * True when the connection is suitable for pulling hundreds of megabytes of
- * model weights: not `slow-2g`/`2g`/`3g`, and Data Saver not requested.
+ * model weights: Data Saver not requested, not a cellular link, and not
+ * `slow-2g`/`2g`/`3g`. An unknown connection counts as suitable -- see below.
  *
  * Exported because this check used to be reachable **only** through the `full`
  * tier, a branch the automatic startup preload never took -- so the default
@@ -42,10 +43,25 @@ export const isNetworkSuitableForBulkDownload = (): boolean => {
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrow non-standard NetworkInformation API
     const conn = (navigator as unknown as NavigatorWithConnection).connection
+
+    // Unknown connection -> allowed. NetworkInformation is Chromium-only, so
+    // returning false here would permanently disable the preload on Firefox and
+    // Safari -- for users who explicitly opted in. Since the download is now
+    // consented (localAi.autoPreloadOnStartup, default off), this guard's job is
+    // to avoid *bad timing*, not to substitute for consent. Silently doing
+    // nothing on half the browsers would be the worse failure.
     if (!conn) return true
 
+    if (conn.saveData === true) return false
+
+    // `type: 'cellular'` is the direct mobile-data signal. effectiveType alone is
+    // not enough: a 4g cellular link reports '4g' and would otherwise be treated
+    // exactly like home broadband, which is the case this guard most needs to
+    // catch.
+    if (conn.type === 'cellular') return false
+
     const slowTypes = new Set(['slow-2g', '2g', '3g'])
-    return !slowTypes.has(conn.effectiveType ?? '') && conn.saveData !== true
+    return !slowTypes.has(conn.effectiveType ?? '')
 }
 
 const isFullTierAppropriate = async (): Promise<boolean> => {

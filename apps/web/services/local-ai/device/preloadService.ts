@@ -202,6 +202,15 @@ export const localAiPreloadService = {
         }
 
         const startPreload = () => {
+            // Re-check at EXECUTION time, not just at scheduling time. This runs
+            // from requestIdleCallback (up to a 10s timeout) or a 5s fallback, and
+            // the user can move onto mobile data or enable Data Saver in between --
+            // precisely the window in which starting a multi-hundred-megabyte
+            // download is worst.
+            if (!isNetworkSuitableForBulkDownload()) {
+                console.debug('[LocalAI] Aborting idle preload: connection became metered or slow.')
+                return
+            }
             this.preloadOfflineModels(onProgress).catch((err) => {
                 console.debug('[LocalAI] Idle preload failed:', err)
             })

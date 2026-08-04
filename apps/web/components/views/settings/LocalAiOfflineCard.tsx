@@ -106,6 +106,18 @@ export const LocalAiOfflineCard: React.FC = () => {
         }
     }
 
+    // The startup preload is opt-in (localAi.autoPreloadOnStartup, default false).
+    // Without this control the setting would be unreachable and the opt-in would
+    // amount to "off, permanently".
+    const handleAutoPreloadToggle = () => {
+        dispatch(
+            setSetting({
+                path: 'localAi.autoPreloadOnStartup',
+                value: !(localAiSettings.autoPreloadOnStartup ?? false),
+            }),
+        )
+    }
+
     const handleForceWasmToggle = () => {
         const next = !localAiSettings.forceWasm
         setForceWasm(next)
@@ -242,6 +254,20 @@ export const LocalAiOfflineCard: React.FC = () => {
                     )}
                     <div className="space-y-3 border-t border-slate-700/60 pt-3">
                         <BatteryEcoStatusBadge />
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-slate-200">
+                                    {t('settingsView.offlineAi.autoPreload')}
+                                </p>
+                                <p className="text-xs text-muted">
+                                    {t('settingsView.offlineAi.autoPreloadHint')}
+                                </p>
+                            </div>
+                            <Switch
+                                checked={localAiSettings.autoPreloadOnStartup ?? false}
+                                onChange={handleAutoPreloadToggle}
+                            />
+                        </div>
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm text-slate-200">

@@ -139,6 +139,30 @@ jobs:
                     echo "::warning::Could not create Pages project (exit ${CODE}). Deploy will retry; create manually in the Cloudflare dashboard if this persists."
                   fi
                   set -e
+            # Cloudflare Pages rejects any single file over 25 MiB, and does so
+            # only after uploading the rest -- so the failure arrives late and names
+            # the file in wrangler output nobody reads when the job is advisory.
+            # Check first and say exactly what is wrong.
+            #
+            # This is not hypothetical: assets/ort-wasm-simd-threaded.jsep-*.wasm is
+            # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
+            # because the job carried continue-on-error, which this PR removes.
+            - name: Check Cloudflare Pages file-size limit
+              run: |
+                  LIMIT=$((25 * 1024 * 1024))
+                  OVERSIZE=$(find apps/web/dist -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
+                  if [ -n "${OVERSIZE}" ]; then
+                    echo "::error::Cloudflare Pages rejects files larger than 25 MiB."
+                    printf '%s\n' "${OVERSIZE}" | while IFS=$'\t' read -r bytes path; do
+                      printf '       %6.1f MiB  %s\n' "$(echo "scale=2; ${bytes}/1048576" | bc)" "${path}"
+                    done
+                    echo ""
+                    echo "       GitHub Pages and Vercel have no such limit, so this affects the"
+                    echo "       Cloudflare mirror only. Options: keep the asset off this host,"
+                    echo "       serve it from a CDN, or retire the mirror."
+                    exit 1
+                  fi
+                  echo "[OK] No file exceeds the 25 MiB Cloudflare Pages limit."
 
             # Uses the workspace's own lockfile-pinned wrangler instead of
             # cloudflare/wrangler-action. The action was pinned to wranglerVersion
@@ -294,6 +318,30 @@ jobs:
                     echo "::warning::Could not ensure Pages project (exit ${CODE})"
                   fi
                   set -e
+            # Cloudflare Pages rejects any single file over 25 MiB, and does so
+            # only after uploading the rest -- so the failure arrives late and names
+            # the file in wrangler output nobody reads when the job is advisory.
+            # Check first and say exactly what is wrong.
+            #
+            # This is not hypothetical: assets/ort-wasm-simd-threaded.jsep-*.wasm is
+            # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
+            # because the job carried continue-on-error, which this PR removes.
+            - name: Check Cloudflare Pages file-size limit
+              run: |
+                  LIMIT=$((25 * 1024 * 1024))
+                  OVERSIZE=$(find apps/web/dist -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
+                  if [ -n "${OVERSIZE}" ]; then
+                    echo "::error::Cloudflare Pages rejects files larger than 25 MiB."
+                    printf '%s\n' "${OVERSIZE}" | while IFS=$'\t' read -r bytes path; do
+                      printf '       %6.1f MiB  %s\n' "$(echo "scale=2; ${bytes}/1048576" | bc)" "${path}"
+                    done
+                    echo ""
+                    echo "       GitHub Pages and Vercel have no such limit, so this affects the"
+                    echo "       Cloudflare mirror only. Options: keep the asset off this host,"
+                    echo "       serve it from a CDN, or retire the mirror."
+                    exit 1
+                  fi
+                  echo "[OK] No file exceeds the 25 MiB Cloudflare Pages limit."
 
             # Same change as the production job: lockfile-pinned wrangler via
             # `pnpm exec`, no forced version, no swallowed failure.

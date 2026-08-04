@@ -2,6 +2,7 @@ import type { LocalAiPreloadReport } from '../core/localAI'
 import { probeGpuVram, isVramInsufficient } from './healthService'
 import { setVramInsufficientOverride } from '../models/modelLoader'
 import { applyAdaptiveMode, isEcoMode } from './ecoModeService'
+import { isNetworkSuitableForBulkDownload } from '../models/preloadOrchestrator'
 import { secureRandom } from '@/utils/random'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
@@ -61,9 +62,7 @@ const writeStatus = (status: LocalAiPreloadStatus): LocalAiPreloadStatus => {
     // windows, so we need a CustomEvent for in-tab observers such as
     // `usePwaInstall`'s deferred Service-Worker activation).
     if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-            new CustomEvent('cg.localai.preloadStatusChange', { detail: status }),
-        )
+        window.dispatchEvent(new CustomEvent('cg.localai.preloadStatusChange', { detail: status }))
     }
     return status
 }
@@ -191,6 +190,16 @@ export const localAiPreloadService = {
     scheduleIdlePreload(onProgress?: (loaded: number, total: number, label: string) => void): void {
         const current = readStatus()
         if (current.state === 'ready' || current.state === 'preloading') return
+
+        // The metered/Data-Saver guard used to sit behind the `full` tier only --
+        // a branch this automatic path never reaches -- so the default `standard`
+        // tier pulled nine ONNX models over whatever connection happened to be
+        // active. An explicit "Preload" from Settings is still honoured; this only
+        // constrains the unattended one.
+        if (!isNetworkSuitableForBulkDownload()) {
+            console.debug('[LocalAI] Skipping idle preload: metered or slow connection.')
+            return
+        }
 
         const startPreload = () => {
             this.preloadOfflineModels(onProgress).catch((err) => {

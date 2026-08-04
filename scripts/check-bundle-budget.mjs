@@ -7,7 +7,14 @@
  * Budget rules:
  *   Gzip:   Main < 300 KB | Vendor < 500 KB
  *   Brotli: Main < 280 KB | Vendor < 450 KB
- *   Exempt: ai-runtime, strains-data, three, locale-* (lazy-loaded)
+ *   Lazy chunks: explicit per-chunk ceilings (see LAZY_BUDGETS_GZIP_KB)
+ *
+ * Why per-chunk ceilings instead of an exempt list: `ai-runtime` was exempt *by
+ * name*, and grew to 6.74 MB raw / 2.29 MB gzip -- roughly 2.4x its size at the
+ * previous audit -- while this gate printed [PASS] the whole time. A budget the
+ * largest artifact is excused from is not a budget. Lazy chunks legitimately do
+ * not belong under the vendor limit, so they get their own numbers rather than
+ * a pass.
  */
 
 import { readdir, readFile } from 'node:fs/promises'
@@ -22,8 +29,23 @@ const VENDOR_BUDGET_GZIP_KB = 500
 const MAIN_BUDGET_BROTLI_KB = 280
 const VENDOR_BUDGET_BROTLI_KB = 450
 
-// Chunks exempt from budget enforcement (lazy-loaded, not in critical path)
-const EXEMPT_CHUNKS = ['ai-runtime', 'strains-data', 'three', 'locale-']
+// Lazy-loaded chunks are not in the critical path, so the vendor limit does not
+// apply -- but they are still bounded. Numbers are set just above the measured
+// size at the time of writing, so growth has to be deliberate rather than silent.
+// Raising one is a decision that shows up in review; it is not a config detail.
+const LAZY_BUDGETS_GZIP_KB = {
+    'ai-runtime': 2400, // measured 2293 KB gz -- WebLLM + tvmjs
+    transformers: 240, // measured 216 KB gz
+    'ort.bundle.min': 160,
+    three: 160,
+    'strains-data': 220,
+    'locale-': 220,
+}
+
+function lazyBudgetFor(filename) {
+    const hit = Object.keys(LAZY_BUDGETS_GZIP_KB).find((chunk) => filename.includes(chunk))
+    return hit ? { chunk: hit, limit: LAZY_BUDGETS_GZIP_KB[hit] } : null
+}
 
 async function getJsFiles(dir) {
     try {
@@ -34,8 +56,61 @@ async function getJsFiles(dir) {
     }
 }
 
-function isExempt(filename) {
-    return EXEMPT_CHUNKS.some((chunk) => filename.includes(chunk))
+// Total bytes the service worker downloads at install, for every visitor, before
+// any interaction. Nothing measured this before: the only precache constraint was
+// workbox's per-file `maximumFileSizeToCacheInBytes`, an inclusion filter rather
+// than a gate, with its size warning explicitly silenced. Measured 247 entries /
+// 19.15 MiB, of which 8.57 MiB was lazily-imported AI runtime that the precache
+// pulled in regardless. After excluding those: 243 entries / 10.57 MiB.
+const PRECACHE_BUDGET_MIB = 12
+const PRECACHE_ENTRY_RE = /\{"revision":(?:"[0-9a-f]*"|null),"url":"([^"]+)"\}/g
+
+async function checkPrecacheBudget(distDir) {
+    const swPath = join(distDir, '..', 'sw.js')
+    let sw
+    try {
+        sw = await readFile(swPath, 'utf8')
+    } catch {
+        console.log(`[WARN] No service worker at ${swPath} -- skipping precache budget.`)
+        return 0
+    }
+
+    const urls = [...sw.matchAll(PRECACHE_ENTRY_RE)].map((m) => m[1])
+    if (urls.length === 0) {
+        console.error('[FAIL] Could not parse the precache manifest from sw.js.')
+        console.error('[FAIL] Refusing to pass a budget that measured nothing.')
+        return 1
+    }
+
+    let total = 0
+    for (const url of urls) {
+        try {
+            const buf = await readFile(join(distDir, '..', url.replace(/^\//, '')))
+            total += buf.length
+        } catch {
+            // Entry not on disk (e.g. a virtual route) -- nothing to weigh.
+        }
+    }
+
+    const mib = total / 1024 / 1024
+    console.log(
+        `\nPrecache: ${urls.length} entries, ${mib.toFixed(2)} MiB (budget ${PRECACHE_BUDGET_MIB} MiB)`,
+    )
+
+    if (mib > PRECACHE_BUDGET_MIB) {
+        console.error(
+            `[FAIL] Precache is ${mib.toFixed(2)} MiB, over the ${PRECACHE_BUDGET_MIB} MiB budget.`,
+        )
+        console.error('[FAIL] Every visitor downloads this at service-worker install.')
+        console.error(
+            '[FIX] Add the offending chunk to injectManifest.globIgnores in vite.config.ts',
+        )
+        console.error('      and let public/sw.js cache it on demand instead.')
+        return 1
+    }
+
+    console.log('[OK] Precache within budget.')
+    return 0
 }
 
 function isMainChunk(filename) {
@@ -67,13 +142,24 @@ async function main() {
         const rawKB = (raw.length / 1024).toFixed(1)
         const gzipKB = (gzipped.length / 1024).toFixed(1)
         const brotliKB = (brotli.length / 1024).toFixed(1)
-        const exempt = isExempt(file)
+        const lazy = lazyBudgetFor(file)
         const isMain = isMainChunk(file)
 
-        const gzipBudgetKB = isMain ? MAIN_BUDGET_GZIP_KB : VENDOR_BUDGET_GZIP_KB
-        const brotliBudgetKB = isMain ? MAIN_BUDGET_BROTLI_KB : VENDOR_BUDGET_BROTLI_KB
-        const overGzip = !exempt && gzipped.length > gzipBudgetKB * 1024
-        const overBrotli = !exempt && brotli.length > brotliBudgetKB * 1024
+        // Lazy chunks are bounded by their own gzip ceiling; brotli is not
+        // separately budgeted for them, since gzip is the figure that moves.
+        const gzipBudgetKB = lazy
+            ? lazy.limit
+            : isMain
+              ? MAIN_BUDGET_GZIP_KB
+              : VENDOR_BUDGET_GZIP_KB
+        const brotliBudgetKB = lazy
+            ? null
+            : isMain
+              ? MAIN_BUDGET_BROTLI_KB
+              : VENDOR_BUDGET_BROTLI_KB
+
+        const overGzip = gzipped.length > gzipBudgetKB * 1024
+        const overBrotli = brotliBudgetKB !== null && brotli.length > brotliBudgetKB * 1024
         const overBudget = overGzip || overBrotli
 
         results.push({
@@ -81,8 +167,8 @@ async function main() {
             rawKB,
             gzipKB,
             brotliKB,
-            gzipBudgetKB: exempt ? 'exempt' : gzipBudgetKB,
-            brotliBudgetKB: exempt ? 'exempt' : brotliBudgetKB,
+            gzipBudgetKB,
+            brotliBudgetKB: brotliBudgetKB ?? 'lazy',
             overBudget,
             overGzip,
             overBrotli,
@@ -121,8 +207,12 @@ async function main() {
 
     console.log('')
 
+    // Runs regardless of per-chunk results: a per-file pass says nothing about
+    // what the service worker actually makes every visitor download.
+    failures += await checkPrecacheBudget(DIST_DIR)
+
     if (failures > 0) {
-        console.error(`[FAIL] ${failures} chunk(s) exceed budget.`)
+        console.error(`\n[FAIL] ${failures} budget violation(s).`)
         console.error('')
         console.error('  Suggestions:')
         console.error('    1. Run: pnpm --filter @cannaguide/web build:analyze')
@@ -132,7 +222,7 @@ async function main() {
         process.exit(1)
     }
 
-    console.log('[PASS] All chunks within budget (gzip + brotli).')
+    console.log('\n[PASS] All chunks and the precache are within budget.')
 }
 
 main().catch((err) => {

@@ -178,6 +178,8 @@ export const defaultSettings: AppSettings = {
         quantizationLevel: 'auto',
         ecoMode: false,
         ecoModeForced: false,
+        // Opt-in: see the doc comment on AppSettings.localAi.autoPreloadOnStartup.
+        autoPreloadOnStartup: false,
     },
 
     data: {

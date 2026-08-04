@@ -21,23 +21,38 @@ export type PreloadTier = 'critical' | 'standard' | 'full'
  * Falls back to `false` whenever the relevant browser APIs are unavailable
  * so we never opportunistically download large WebLLM weights.
  */
+/** Non-standard NetworkInformation surface, narrowed to what this check reads. */
+interface NavigatorWithConnection {
+    connection?: { effectiveType?: string; saveData?: boolean }
+}
+
+/**
+ * True when the connection is suitable for pulling hundreds of megabytes of
+ * model weights: not `slow-2g`/`2g`/`3g`, and Data Saver not requested.
+ *
+ * Exported because this check used to be reachable **only** through the `full`
+ * tier, a branch the automatic startup preload never took -- so the default
+ * `standard` tier (nine ONNX models) downloaded happily over a metered
+ * connection with `saveData` set. `scheduleIdlePreload` now consults it directly.
+ * A user who explicitly presses "Preload" in Settings is deliberately not
+ * blocked by it; this guards the automatic path.
+ */
+export const isNetworkSuitableForBulkDownload = (): boolean => {
+    if (typeof navigator === 'undefined') return true
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrow non-standard NetworkInformation API
+    const conn = (navigator as unknown as NavigatorWithConnection).connection
+    if (!conn) return true
+
+    const slowTypes = new Set(['slow-2g', '2g', '3g'])
+    return !slowTypes.has(conn.effectiveType ?? '') && conn.saveData !== true
+}
+
 const isFullTierAppropriate = async (): Promise<boolean> => {
     const battery = await getBatteryManager()
     const batteryOk = !battery || battery.charging || battery.level >= 0.8
 
-    const conn =
-        typeof navigator !== 'undefined'
-            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrow non-standard NetworkInformation API
-              (navigator as unknown as {
-                  connection?: { effectiveType?: string; saveData?: boolean }
-              }).connection
-            : undefined
-    const slowTypes = new Set(['slow-2g', '2g', '3g'])
-    const networkOk =
-        !conn ||
-        (!slowTypes.has(conn.effectiveType ?? '') && conn.saveData !== true)
-
-    return batteryOk && networkOk
+    return batteryOk && isNetworkSuitableForBulkDownload()
 }
 
 export interface LocalAiPreloadReport {

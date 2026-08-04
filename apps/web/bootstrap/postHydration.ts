@@ -70,7 +70,13 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
     proactiveCoachService.init(hydratedStore)
     void requestNotificationPermission()
 
-    localAiPreloadService.scheduleIdlePreload()
+    // Opt-in only. This used to run unconditionally on every boot and fetch the
+    // `standard` tier -- nine ONNX models, hundreds of MB from the HuggingFace
+    // CDN -- with no setting, no consent and no metered-network check. Users who
+    // want offline AI enable it in Settings, or preload once from the Local AI card.
+    if ((hydratedStore.getState() as RootState).settings.settings.localAi?.autoPreloadOnStartup) {
+        localAiPreloadService.scheduleIdlePreload()
+    }
 
     const plantEntities = (hydratedStore.getState() as RootState).simulation.plants.entities
     const allPlants = Object.values(plantEntities).filter((p): p is Plant => p !== undefined)
@@ -106,8 +112,7 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
         }
     }
 
-    const { registerOfflineActionReplayListener } = await import(
-        '@/services/offlineActionReplayService'
-    )
+    const { registerOfflineActionReplayListener } =
+        await import('@/services/offlineActionReplayService')
     registerOfflineActionReplayListener(hydratedStore)
 }

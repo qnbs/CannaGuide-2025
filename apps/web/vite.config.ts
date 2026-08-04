@@ -225,6 +225,28 @@ export default defineConfig({
             showMaximumFileSizeToCacheInBytesWarning: false,
             injectManifest: {
                 globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
+                // The local-AI runtimes are lazily `import()`ed from
+                // packages/ai-core/src/ml.ts and are only reachable if the user
+                // actually turns local AI on. Precaching defeated that entirely:
+                // the service worker downloaded them at install for every visitor,
+                // on every device, whether or not an AI feature was ever opened.
+                //
+                // Measured before this change: 247 entries / 19.15 MiB, of which
+                // ai-runtime (WebLLM + tvmjs) alone was 6.74 MB, transformers.js
+                // 1.01 MB and ort.bundle.min 480 KB. `three` is in the same
+                // position -- a lazily loaded visualiser, not app shell.
+                //
+                // They are still served offline: public/sw.js already caches ML
+                // assets on demand via handleMlModelRequest (cannaguide-ml-models
+                // cache, LRU-capped). This moves them from "downloaded up front"
+                // to "cached once actually used".
+                globIgnores: [
+                    '**/ai-runtime-*.js',
+                    '**/transformers-*.js',
+                    '**/ort.bundle.min-*.js',
+                    '**/ort-wasm*',
+                    '**/three-*.js',
+                ],
                 maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
             },
             devOptions: { enabled: false },

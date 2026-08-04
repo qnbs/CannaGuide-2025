@@ -313,8 +313,6 @@ self.onmessage = async (e: MessageEvent<WorkerRequest>) => {
         }
         try {
             const ort = await loadOnnxRuntime()
-            // Point WASM runtime to jsDelivr CDN -- avoids bundling ~5 MB WASM
-            ort.env.wasm.wasmPaths = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.0/dist/'
             session = await ort.InferenceSession.create(p.modelBuffer, {
                 executionProviders: ['webgpu', 'wasm'],
             })

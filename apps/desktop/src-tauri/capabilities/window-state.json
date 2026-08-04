@@ -3,7 +3,7 @@
     "identifier": "window-state",
     "description": "Window state persistence (size, position, maximized state)",
     "windows": ["main"],
-    "platforms": ["linux", "macos", "windows"],
+    "platforms": ["linux", "macOS", "windows"],
     "permissions": [
         "window-state:default",
         "window-state:allow-restore-state",

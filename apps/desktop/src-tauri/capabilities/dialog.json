@@ -3,7 +3,7 @@
     "identifier": "dialog",
     "description": "Native file dialog capabilities for import/export operations",
     "windows": ["main"],
-    "platforms": ["linux", "macos", "windows"],
+    "platforms": ["linux", "macOS", "windows"],
     "permissions": [
         "dialog:default",
         "dialog:allow-open",

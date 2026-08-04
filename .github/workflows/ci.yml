@@ -386,17 +386,46 @@ jobs:
             - name: Stub frontend dist
               run: mkdir -p apps/web/dist && touch apps/web/dist/index.html
 
+            # These three are independent signals, so one failure must not hide
+            # the others -- the same mistake the `security` job used to make, and
+            # this job reproduced it on its very first run: clippy failed, the
+            # unit tests never ran, and the diagnosis was half a picture.
+            # `continue-on-error` on the steps + an aggregating gate keeps every
+            # result visible without paying for three separate Rust build jobs.
+            #
+            # `--locked` everywhere: the whole point of committing Cargo.lock is
+            # that CI must fail on drift rather than quietly resolve around it.
             - name: Formatting
+              id: fmt
+              continue-on-error: true
               working-directory: apps/desktop/src-tauri
               run: cargo fmt --all -- --check
 
             - name: Clippy
+              id: clippy
+              continue-on-error: true
               working-directory: apps/desktop/src-tauri
-              run: cargo clippy --all-targets -- -D warnings
+              run: cargo clippy --locked --all-targets -- -D warnings
 
             - name: Unit tests
+              id: tests
+              continue-on-error: true
               working-directory: apps/desktop/src-tauri
-              run: cargo test --lib
+              run: cargo test --locked --lib
+
+            - name: Aggregate Rust results
+              if: always()
+              run: |
+                  echo "fmt:    ${{ steps.fmt.outcome }}"
+                  echo "clippy: ${{ steps.clippy.outcome }}"
+                  echo "tests:  ${{ steps.tests.outcome }}"
+                  echo "---"
+                  FAILED=0
+                  [[ "${{ steps.fmt.outcome }}"    == "success" ]] || { echo "[FAIL] cargo fmt";    FAILED=1; }
+                  [[ "${{ steps.clippy.outcome }}" == "success" ]] || { echo "[FAIL] cargo clippy"; FAILED=1; }
+                  [[ "${{ steps.tests.outcome }}"  == "success" ]] || { echo "[FAIL] cargo test";   FAILED=1; }
+                  if [[ "$FAILED" -ne 0 ]]; then exit 1; fi
+                  echo "[PASS] Rust fmt, clippy and unit tests all green."
 
     # ---------------------------------------------------------------------
     # Security -- hard-fail, no continue-on-error

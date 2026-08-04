@@ -3,7 +3,7 @@
     "identifier": "fs",
     "description": "File system capabilities with scoped access for CannaGuide data",
     "windows": ["main"],
-    "platforms": ["linux", "macos", "windows"],
+    "platforms": ["linux", "macOS", "windows"],
     "permissions": [
         "fs:default",
         {

@@ -46,6 +46,10 @@ export type {
 } from '../telemetry/telemetryService'
 
 // -- Preload -------------------------------------------------------------
-export { localAiPreloadService, ensurePersistentStorage } from '../device/preloadService'
+export {
+    localAiPreloadService,
+    ensurePersistentStorage,
+    LocalOnlyModeError,
+} from '../device/preloadService'
 
 export type { LocalAiPreloadState, LocalAiPreloadStatus } from '../device/preloadService'

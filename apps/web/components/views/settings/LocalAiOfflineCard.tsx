@@ -8,7 +8,7 @@ import { Switch } from '@/components/common/Switch'
 import { FormSection } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/common/Card'
-import { localAiPreloadService } from '@/services/local-ai'
+import { localAiPreloadService, LocalOnlyModeError } from '@/services/local-ai'
 import { detectOnnxBackend, setForceWasm, getGpuTier } from '@/services/local-ai'
 import { LlmModelSelector } from './LlmModelSelector'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
@@ -47,6 +47,7 @@ export const LocalAiOfflineCard: React.FC = () => {
         label: string
     } | null>(null)
     const [preloadDurationMs, setPreloadDurationMs] = useState<number | null>(null)
+    const [preloadError, setPreloadError] = useState<string | null>(null)
     const [healthStatus, setHealthStatus] = useState<string | null>(null)
     const [deviceClass, setDeviceClass] = useState<string | null>(null)
     const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
@@ -93,6 +94,7 @@ export const LocalAiOfflineCard: React.FC = () => {
     const handlePreload = async () => {
         setIsBusy(true)
         setProgress(null)
+        setPreloadError(null)
         const startTime = performance.now()
         try {
             const nextStatus = await localAiPreloadService.preloadOfflineModels(
@@ -100,6 +102,18 @@ export const LocalAiOfflineCard: React.FC = () => {
             )
             setPreloadDurationMs(performance.now() - startTime)
             setStatus(nextStatus)
+        } catch (error) {
+            // Previously try/finally with no catch, so anything thrown here became
+            // an unhandled rejection and the user saw the button simply stop
+            // spinning. Local-Only refusal is reported distinctly from a download
+            // failure: the first is the app honouring a setting, the second is
+            // something going wrong, and telling a user their network broke when
+            // their own privacy setting worked would be actively misleading.
+            setPreloadError(
+                error instanceof LocalOnlyModeError
+                    ? t('settingsView.offlineAi.preloadBlockedLocalOnly')
+                    : t('settingsView.offlineAi.preloadFailed'),
+            )
         } finally {
             setIsBusy(false)
             setProgress(null)
@@ -159,6 +173,11 @@ export const LocalAiOfflineCard: React.FC = () => {
                     </p>
                     <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3 text-sm text-slate-300 space-y-1">
                         <p>{statusLabel}</p>
+                        {preloadError && (
+                            <p role="alert" className="text-danger">
+                                {preloadError}
+                            </p>
+                        )}
                         {healthStatus && (
                             <p>
                                 {t('settingsView.offlineAi.healthStatus', { value: healthStatus })}

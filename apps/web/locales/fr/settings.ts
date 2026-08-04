@@ -146,6 +146,10 @@ export const settingsView = {
             "Mettez l'application en ligne pour prechauffer le cache de modeles avant de compter sur l'IA hors ligne.",
         forceWasm: 'Forcer le backend WASM',
         autoPreload: 'Telecharger les modeles au demarrage',
+        preloadBlockedLocalOnly:
+            'Le mode local uniquement est actif, les telechargements de modeles sont donc bloques. Desactivez-le dans Confidentialite pour telecharger.',
+        preloadFailed:
+            "Le telechargement du modele ne s'est pas termine. Verifiez la connexion et reessayez.",
         autoPreloadHint:
             'Telecharge les modeles d\'IA hors ligne en arriere-plan au demarrage. Desactive par defaut : plusieurs centaines de megaoctets depuis le CDN HuggingFace. Ignore automatiquement sur les connexions limitees ou lentes, dans les navigateurs qui exposent les informations de connexion.',
         forceWasmHint:

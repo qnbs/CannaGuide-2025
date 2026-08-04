@@ -139,6 +139,9 @@ export const settingsView = {
         offlineHint: 'Bring the app online to warm the model cache before relying on offline AI.',
         forceWasm: 'Force WASM Backend',
         autoPreload: 'Download models on startup',
+        preloadBlockedLocalOnly:
+            'Local-Only Mode is on, so model downloads are blocked. Turn it off in Privacy settings to download.',
+        preloadFailed: 'The model download did not complete. Check your connection and try again.',
         autoPreloadHint:
             'Fetches the offline AI models in the background when the app starts. Off by default -- this is several hundred megabytes from the HuggingFace CDN. Skipped automatically on metered or slow connections, in browsers that report connection information.',
         forceWasmHint:

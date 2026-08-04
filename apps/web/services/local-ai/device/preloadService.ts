@@ -174,6 +174,21 @@ const buildFinalPreloadStatus = (
 }
 
 /**
+ * Thrown when a model download is requested while Local-Only Mode is active.
+ *
+ * A named class rather than a bare Error so the UI can distinguish "you turned
+ * outbound traffic off" from a genuine download failure -- the two need different
+ * messages, and conflating them would tell a user their network is broken when in
+ * fact their own setting is working correctly.
+ */
+export class LocalOnlyModeError extends Error {
+    constructor() {
+        super('Local-Only Mode is active: model downloads are blocked.')
+        this.name = 'LocalOnlyModeError'
+    }
+}
+
+/**
  * Is the startup-preload opt-in still on, right now?
  *
  * Read through `uiStateBridge` rather than importing the store: this module is a
@@ -278,6 +293,23 @@ export const localAiPreloadService = {
     async preloadOfflineModels(
         onProgress?: (loaded: number, total: number, label: string) => void,
     ): Promise<LocalAiPreloadStatus> {
+        // Local-Only Mode is absolute: no outbound traffic, whoever asked.
+        //
+        // The guard used to sit only in `scheduleIdlePreload`, which covers the
+        // automatic path. This is the *shared* entry point -- pressing "Preload"
+        // in Settings reaches it directly -- so a user with Local-Only enabled
+        // could still trigger several hundred megabytes from the HuggingFace CDN
+        // by clicking a button. User intent to download does not override a
+        // global "make no network connections" policy; if anything it is the case
+        // where the promise most needs to hold, because the user believes it is.
+        //
+        // Throws rather than returning a status: a silent no-op would leave the UI
+        // showing "preloading" and then "idle" with no explanation, which is its
+        // own small dishonesty. The caller surfaces this as an error message.
+        if (isLocalOnlyMode()) {
+            throw new LocalOnlyModeError()
+        }
+
         const startedAt = Date.now()
 
         // Run adaptive mode detection, VRAM probe, and persistent storage in parallel

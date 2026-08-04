@@ -34,6 +34,61 @@ async function getJsFiles(dir) {
     }
 }
 
+// Ceiling for ANY single emitted asset, whatever its extension.
+//
+// The per-chunk budgets above only ever looked at `.js`, so `.wasm`, `.css`,
+// fonts and images were unbudgeted -- and that is not a theoretical gap. ONNX
+// Runtime's `ort-wasm-simd-threaded.jsep.wasm` shipped at 25.6 MiB and no gate
+// looked at it, because it is not a JS chunk. It took Cloudflare Pages rejecting
+// the file at deploy time to surface it, which is the worst possible detector:
+// late, host-specific, and previously swallowed by continue-on-error.
+//
+// 20 MiB deliberately sits BELOW Cloudflare's hard 25 MiB per-file limit, so an
+// oversized asset fails here -- in the build, naming the file -- rather than at a
+// deploy that only one of three hosts performs.
+const MAX_ASSET_MIB = 20
+
+async function checkAssetCeiling(distDir) {
+    let entries
+    try {
+        entries = await readdir(distDir)
+    } catch {
+        console.error(`[FAIL] Cannot read ${distDir} to check asset sizes.`)
+        return 1
+    }
+
+    const oversized = []
+    for (const name of entries) {
+        const full = join(distDir, name)
+        let buf
+        try {
+            buf = await readFile(full)
+        } catch {
+            // Directories and unreadable entries are not assets; skip quietly.
+            continue
+        }
+        const mib = buf.length / 1024 / 1024
+        if (mib > MAX_ASSET_MIB) {
+            oversized.push({ name, mib })
+        }
+    }
+
+    if (oversized.length > 0) {
+        console.error(`\n[FAIL] ${oversized.length} asset(s) exceed ${MAX_ASSET_MIB} MiB:`)
+        for (const { name, mib } of oversized.sort((a, b) => b.mib - a.mib)) {
+            console.error(`       ${mib.toFixed(1)} MiB  ${name}`)
+        }
+        console.error('')
+        console.error('  A single file this large is a problem before it is a budget question:')
+        console.error('  Cloudflare Pages rejects anything over 25 MiB outright.')
+        console.error('  Prefer serving it from a CDN over shipping it in the bundle.')
+        return 1
+    }
+
+    console.log(`[OK] No single asset exceeds ${MAX_ASSET_MIB} MiB.`)
+    return 0
+}
+
 function isExempt(filename) {
     return EXEMPT_CHUNKS.some((chunk) => filename.includes(chunk))
 }
@@ -132,7 +187,12 @@ async function main() {
         process.exit(1)
     }
 
-    console.log('[PASS] All chunks within budget (gzip + brotli).')
+    const ceilingFailed = await checkAssetCeiling(DIST_DIR)
+    if (ceilingFailed) {
+        process.exit(1)
+    }
+
+    console.log('[PASS] All chunks within budget (gzip + brotli), no oversized assets.')
 }
 
 main().catch((err) => {

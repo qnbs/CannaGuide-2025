@@ -351,7 +351,7 @@ for (const { key, name, selector } of overrides) {
 // -- Check 3: unbounded floors (ratchet) -----------------------------------
 const stillUnbounded = new Set()
 
-for (const { key, name, range } of overrides) {
+for (const { key, range } of overrides) {
     if (!/^\s*>=?/.test(range)) continue
     if (range.includes('<')) continue
 

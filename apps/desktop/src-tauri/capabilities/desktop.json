@@ -4,11 +4,5 @@
     "description": "Desktop-specific capabilities: tray, shell, process management",
     "windows": ["main"],
     "platforms": ["linux", "macOS", "windows"],
-    "permissions": [
-        "shell:default",
-        "shell:allow-open",
-        "process:default",
-        "process:allow-exit",
-        "process:allow-relaunch"
-    ]
+    "permissions": ["shell:default", "shell:allow-open"]
 }

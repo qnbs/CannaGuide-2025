@@ -56,12 +56,27 @@ async function getJsFiles(dir) {
     }
 }
 
-// Total bytes the service worker downloads at install, for every visitor, before
-// any interaction. Nothing measured this before: the only precache constraint was
+// Size of everything the service worker installs, for every visitor, before any
+// interaction. Nothing measured this before: the only precache constraint was
 // workbox's per-file `maximumFileSizeToCacheInBytes`, an inclusion filter rather
 // than a gate, with its size warning explicitly silenced. Measured 247 entries /
 // 19.15 MiB, of which 8.57 MiB was lazily-imported AI runtime that the precache
 // pulled in regardless. After excluding those: 243 entries / 10.57 MiB.
+//
+// What this number IS, precisely: the sum of raw, uncompressed bytes on disk. It
+// is NOT the over-the-wire transfer size -- responses are normally served with
+// gzip or brotli, so the download is smaller. Two reasons to budget the raw
+// figure anyway, rather than "fixing" it to measure compressed bytes:
+//
+//   - It is what Cache Storage actually consumes on the device, which is the
+//     resource the browser evicts against. That is the constraint that bites an
+//     offline-first PWA, not the download.
+//   - It is a conservative upper bound on the transfer, so the gate cannot pass a
+//     payload that would have failed a transfer-size budget.
+//
+// Naming it here because the earlier wording ("bytes the service worker
+// downloads") implied a transfer measurement and invited a false comparison
+// against the 12 MiB threshold.
 const PRECACHE_BUDGET_MIB = 12
 
 // Parsed in two stages instead of one rigid pattern, because the shipped sw.js is
@@ -146,12 +161,22 @@ async function checkPrecacheBudget(distDir) {
     const normalise = (u) => u.replace(/^\.?\//, '') || 'index.html'
     const urls = [...new Set([...shellUrls, ...workboxUrls].map(normalise))]
 
-    // THIRD_PARTY_URLS are remote and cannot be measured from dist/. They are
-    // named here so the omission is a stated limitation rather than a silent one.
+    // THIRD_PARTY_URLS are installed alongside the shell and the workbox manifest,
+    // but they are remote and cannot be measured from dist/. An [INFO] line was not
+    // enough: a non-empty list means this gate reports a total smaller than the
+    // payload it claims to bound, so it could pass a precache that exceeds the
+    // budget. Fail closed instead, like every other unknown in this function.
+    //
+    // The list is `[]` today and documented as deliberately empty (the app is
+    // Vite-bundled and self-hosts its dependencies), so this costs nothing now and
+    // forces a conscious decision the moment someone adds an entry: measure it with
+    // a known build-time size, or raise the budget knowingly.
     if (/const THIRD_PARTY_URLS\s*=\s*\[\s*[^\]\s]/.test(swSource)) {
-        console.log(
-            '[INFO] THIRD_PARTY_URLS are installed but not measured (remote, not in dist/).',
-        )
+        console.error('[FAIL] THIRD_PARTY_URLS is non-empty and cannot be measured from dist/.')
+        console.error('[FAIL] The service worker installs those URLs, so the measured total would')
+        console.error('       understate the real precache payload. Refusing to pass a budget that')
+        console.error('       does not cover everything the install downloads.')
+        return 1
     }
 
     let total = 0

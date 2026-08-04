@@ -57,8 +57,20 @@ jobs:
     deploy:
         name: Build & Deploy (Production)
         needs: gate
-        # Advisory mirror — GitHub Pages + Vercel are primary; do not block main on CF API quirks.
-        continue-on-error: true
+        # Advisory mirror -- GitHub Pages + Vercel are primary. "Advisory" is
+        # enforced by NOT listing this workflow among the ruleset's required
+        # checks, which is the honest mechanism: a red run cannot block a merge.
+        #
+        # It is deliberately NOT enforced with `continue-on-error: true` any more.
+        # That reported success for a deploy that never happened -- observed on
+        # PR #474, where the run was green while wrangler had aborted with
+        # ERR_PNPM_ADDING_TO_ROOT and no preview URL was ever posted. A check that
+        # is green when the deploy failed is worse than no check: it is a claim
+        # nobody can act on. Optional must mean "does not block", never "cannot
+        # go red".
+        #
+        # The job only runs when the secrets gate passed, so a run that starts is
+        # a run that is expected to succeed.
         if: >-
             needs.gate.outputs.configured == 'true' &&
             (github.event_name == 'workflow_dispatch' ||
@@ -128,19 +140,39 @@ jobs:
                   fi
                   set -e
 
+            # Uses the workspace's own lockfile-pinned wrangler instead of
+            # cloudflare/wrangler-action. The action was pinned to wranglerVersion
+            # '4.105.0' while package.json carries ^4.110.0, so it tried to install
+            # a DIFFERENT version at the repo root and died with:
+            #
+            #     ERR_PNPM_ADDING_TO_ROOT
+            #
+            # `pnpm exec` runs the version the lockfile already resolved, so there
+            # is nothing to install, no version to drift, and no second source of
+            # truth for which wrangler this repo uses.
             - name: Deploy to Cloudflare Pages
               id: deploy
-              continue-on-error: true
-              uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
-              with:
-                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: pnpm
-                  wranglerVersion: '4.105.0'
-                  command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=main
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: |
+                  set -o pipefail
+                  OUT=$(pnpm exec wrangler pages deploy apps/web/dist \
+                          --project-name="${CF_PROJECT_NAME}" \
+                          --branch=main 2>&1 | tee /dev/stderr)
+
+                  # wrangler exits 0 on success, so pipefail above is what makes a
+                  # failed deploy fail this step. The URL check below additionally
+                  # catches a "successful" run that deployed nothing.
+                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1)
+                  if [ -z "$URL" ]; then
+                    echo "::error::wrangler reported success but printed no deployment URL."
+                    exit 1
+                  fi
+                  echo "deployment-url=${URL}" >> "$GITHUB_OUTPUT"
+                  echo "[OK] Deployed to ${URL}"
 
             - name: Post-deploy health check
-              if: steps.deploy.outcome == 'success'
               run: |
                   CF_URL="${{ steps.deploy.outputs.deployment-url || env.CF_PAGES_URL }}"
                   echo "Health-checking ${CF_URL} ..."
@@ -152,11 +184,42 @@ jobs:
                     exit 1
                   fi
 
+            # Completes the artifact-identity chain for this deploy path. The build
+            # already stamps dist/version.json with BUILD_COMMIT and asserts it
+            # before upload (#486); this confirms the commit that is actually being
+            # SERVED, which is the only claim a live check can make.
+            #
+            # Advisory on purpose, unlike the pre-deploy assert. Cloudflare's edge
+            # can serve a stale cached copy for a short window after a deploy, so a
+            # hard failure here would produce flakes that say nothing about the
+            # artifact. The pre-deploy assertion is the one that fails closed; this
+            # is corroboration.
+            - name: Verify served version marker
+              continue-on-error: true
+              env:
+                  EXPECTED_SHA: ${{ github.sha }}
+              run: |
+                  CF_URL="${{ steps.deploy.outputs.deployment-url || env.CF_PAGES_URL }}"
+                  BODY=$(curl -fsSL --max-time 20 "${CF_URL%/}/version.json" 2>/dev/null || echo "")
+                  if [ -z "${BODY}" ]; then
+                    echo "::warning::No version.json served at ${CF_URL} -- cannot confirm identity."
+                    exit 0
+                  fi
+                  SERVED=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
+                  if [ "${SERVED}" = "${EXPECTED_SHA}" ]; then
+                    echo "[OK] Serving ${SERVED}."
+                  else
+                    echo "::warning::Served commit ${SERVED} != expected ${EXPECTED_SHA} (edge cache lag?)."
+                  fi
+
     preview:
         name: PR Preview Deploy
         needs: gate
-        # Advisory — Vercel is the primary PR preview; CF project may be absent in account.
-        continue-on-error: true
+        # Advisory -- Vercel is the primary PR preview. Same reasoning as the
+        # production job above: advisory is expressed by not being a required
+        # check, not by swallowing failures. This job posts the preview URL to the
+        # PR, so a swallowed failure showed green AND silently posted nothing,
+        # which is precisely the state that hid the wrangler breakage.
         if: >-
             needs.gate.outputs.configured == 'true' &&
             github.event_name == 'pull_request'
@@ -232,16 +295,27 @@ jobs:
                   fi
                   set -e
 
+            # Same change as the production job: lockfile-pinned wrangler via
+            # `pnpm exec`, no forced version, no swallowed failure.
             - name: Deploy preview to Cloudflare Pages
               id: preview-deploy
-              continue-on-error: true
-              uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
-              with:
-                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: pnpm
-                  wranglerVersion: '4.105.0'
-                  command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=${{ steps.cf_preview_branch.outputs.name }}
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  PREVIEW_BRANCH: ${{ steps.cf_preview_branch.outputs.name }}
+              run: |
+                  set -o pipefail
+                  OUT=$(pnpm exec wrangler pages deploy apps/web/dist \
+                          --project-name="${CF_PROJECT_NAME}" \
+                          --branch="${PREVIEW_BRANCH}" 2>&1 | tee /dev/stderr)
+
+                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1)
+                  if [ -z "$URL" ]; then
+                    echo "::error::wrangler reported success but printed no deployment URL."
+                    exit 1
+                  fi
+                  echo "deployment-url=${URL}" >> "$GITHUB_OUTPUT"
+                  echo "[OK] Preview deployed to ${URL}"
 
             - name: Comment preview URL on PR
               if: steps.preview-deploy.outcome == 'success'

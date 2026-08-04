@@ -4,6 +4,7 @@ import { setVramInsufficientOverride } from '../models/modelLoader'
 import { applyAdaptiveMode, isEcoMode } from './ecoModeService'
 import { isNetworkSuitableForBulkDownload } from '../models/preloadOrchestrator'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { secureRandom } from '@/utils/random'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
@@ -172,6 +173,25 @@ const buildFinalPreloadStatus = (
     }
 }
 
+/**
+ * Is the startup-preload opt-in still on, right now?
+ *
+ * Read through `uiStateBridge` rather than importing the store: this module is a
+ * service, and the bridge is the sanctioned seam between Redux and services.
+ *
+ * Fails CLOSED. `getReduxSnapshot` throws when the bridge is not initialised, and
+ * `localAi.autoPreloadOnStartup` defaults to false -- so "cannot determine" must
+ * resolve to "do not download". Treating unknown as enabled would reintroduce the
+ * unattended multi-hundred-megabyte fetch this whole path exists to prevent.
+ */
+const isStartupPreloadStillEnabled = (): boolean => {
+    try {
+        return getReduxSnapshot((s) => s.settings.settings.localAi?.autoPreloadOnStartup) === true
+    } catch {
+        return false
+    }
+}
+
 export const localAiPreloadService = {
     getStatus(): LocalAiPreloadStatus {
         return readStatus()
@@ -211,6 +231,21 @@ export const localAiPreloadService = {
             // each other and only one of them being enforced.
             if (isLocalOnlyMode()) {
                 console.debug('[LocalAI] Skipping idle preload: Local-Only Mode is active.')
+                return
+            }
+
+            // The opt-in itself is re-read here too, and for the same reason as the
+            // network check below: this callback was QUEUED under conditions that
+            // may no longer hold. postHydration reads
+            // localAi.autoPreloadOnStartup once and schedules; the user can open
+            // Settings and switch it off inside the idle window, and without this
+            // the already-queued task would download anyway -- the opt-out ignored
+            // until the next boot, which is exactly when a user would conclude the
+            // toggle does nothing.
+            if (!isStartupPreloadStillEnabled()) {
+                console.debug(
+                    '[LocalAI] Aborting idle preload: startup preload was switched off while queued.',
+                )
                 return
             }
 

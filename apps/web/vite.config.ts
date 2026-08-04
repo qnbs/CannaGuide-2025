@@ -236,10 +236,22 @@ export default defineConfig({
                 // 1.01 MB and ort.bundle.min 480 KB. `three` is in the same
                 // position -- a lazily loaded visualiser, not app shell.
                 //
-                // They are still served offline: public/sw.js already caches ML
-                // assets on demand via handleMlModelRequest (cannaguide-ml-models
-                // cache, LRU-capped). This moves them from "downloaded up front"
-                // to "cached once actually used".
+                // They are still cached once used, but NOT by handleMlModelRequest --
+                // an earlier version of this comment said so and was wrong. That
+                // route is gated on ML_MODEL_HOSTS, i.e. remote CDN hostnames; these
+                // are same-origin Vite chunks and never reach it. They are handled
+                // by the same-origin cache-first rule for hashed assets in
+                // public/sw.js, whose pattern had to be fixed alongside this change
+                // (it required a dot-separated hex hash and so matched none of
+                // Vite's `[name]-[hash]` output).
+                //
+                // Residual limitation, stated rather than glossed: a chunk that has
+                // never been fetched cannot be served offline. Turning local AI on
+                // for the first time needs the network anyway -- the model weights
+                // are a far larger download than the runtime -- so the exposed case
+                // is narrow: an update lands, the user goes offline before opening
+                // local AI once, and the previously cached weights are then unusable
+                // because the new runtime chunk was never fetched.
                 globIgnores: [
                     '**/ai-runtime-*.js',
                     '**/transformers-*.js',

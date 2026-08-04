@@ -80,11 +80,59 @@ async function checkPrecacheBudget(distDir) {
         return 1
     }
 
-    const urls = [...sw.matchAll(PRECACHE_ENTRY_RE)].map((m) => m[1])
-    if (urls.length === 0) {
+    const workboxUrls = [...sw.matchAll(PRECACHE_ENTRY_RE)].map((m) => m[1])
+    if (workboxUrls.length === 0) {
         console.error('[FAIL] Could not parse the precache manifest from sw.js.')
         console.error('[FAIL] Refusing to pass a budget that measured nothing.')
         return 1
+    }
+
+    // The service worker installs `[...APP_SHELL_URLS, ...THIRD_PARTY_URLS,
+    // ...workboxUrls]`, but only the workbox manifest was measured here. The app
+    // shell was therefore downloaded on install and counted as zero, so the gate
+    // could report the precache within 12 MiB while the real install payload was
+    // larger -- under-measuring in the one direction a budget must never be wrong.
+    //
+    // Read from the SOURCE service worker, not the built one. VitePWA runs in
+    // `injectManifest` mode with build.minify = 'esbuild', so the shipped sw.js is
+    // bundled and its top-level identifiers are mangled -- `APP_SHELL_URLS` does
+    // not survive as a name. The injected manifest does survive (it is data, not an
+    // identifier), which is why the regex above can read the built file.
+    //
+    // Parsing the source keeps a single source of truth: a URL added to
+    // APP_SHELL_URLS is measured without touching this script.
+    const swSourcePath = join(distDir, '..', '..', 'public', 'sw.js')
+    let swSource
+    try {
+        swSource = await readFile(swSourcePath, 'utf8')
+    } catch {
+        console.error(`[FAIL] No service worker source at ${swSourcePath}.`)
+        console.error('[FAIL] The app shell is part of the install payload and must be measured.')
+        return 1
+    }
+    const shellMatch = swSource.match(/const APP_SHELL_URLS\s*=\s*\[([^\]]*)\]/)
+    if (!shellMatch) {
+        // Fails closed, like every other unknown in this function. If the shell
+        // list cannot be found, the measurement is incomplete by an unknown amount.
+        console.error('[FAIL] Could not locate APP_SHELL_URLS in the service worker source.')
+        console.error('[FAIL] The install payload includes it, so it must be measured.')
+        return 1
+    }
+    const shellUrls = [...shellMatch[1].matchAll(/'([^']+)'|"([^"]+)"/g)].map((m) => m[1] ?? m[2])
+
+    // Dedupe the way the service worker does (`new Set()` over the concatenation),
+    // after normalising './x' and '/x' to 'x' so the same file is not counted twice
+    // when it appears in both lists under different spellings. './' is the
+    // navigation entry, served by index.html.
+    const normalise = (u) => u.replace(/^\.?\//, '') || 'index.html'
+    const urls = [...new Set([...shellUrls, ...workboxUrls].map(normalise))]
+
+    // THIRD_PARTY_URLS are remote and cannot be measured from dist/. They are
+    // named here so the omission is a stated limitation rather than a silent one.
+    if (/const THIRD_PARTY_URLS\s*=\s*\[\s*[^\]\s]/.test(swSource)) {
+        console.log(
+            '[INFO] THIRD_PARTY_URLS are installed but not measured (remote, not in dist/).',
+        )
     }
 
     let total = 0

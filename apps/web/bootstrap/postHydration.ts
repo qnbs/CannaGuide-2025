@@ -11,6 +11,29 @@ import { REDUX_STATE_KEY } from '@/constants'
 import { Sentry } from '@/services/sentryService'
 
 export const runPostHydrationServices = async (hydratedStore: AppStore): Promise<void> => {
+    // FIRST, before any service that can reach the network.
+    //
+    // localOnlyModeService keeps its state in a module variable initialised to
+    // false, and its only writer is the `setSetting` listener in
+    // listenerMiddleware. Hydration replays persisted state into the store but
+    // dispatches no `privacy.localOnlyMode` action, so nothing ever told the
+    // service. After every reload the flag read false while the user's setting
+    // said true -- and isLocalOnlyMode() is exactly what cansativaService,
+    // communityShareService, dailyStrainsService and the Sentry enable/disable
+    // branch consult before going out. A privacy setting the user had switched on
+    // was therefore inert for the whole session, until they happened to toggle it
+    // again. No attacker required; the setting simply was not restored.
+    const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
+    const localOnly =
+        (hydratedStore.getState() as RootState).settings.settings.privacy?.localOnlyMode === true
+    setLocalOnlyMode(localOnly)
+    if (localOnly) {
+        // Mirrors syncLocalOnlyMode() in listenerMiddleware: the flag alone does
+        // not stop Sentry, which is initialised before hydration runs.
+        const { disableSentry } = await import('@/services/sentryService')
+        disableSentry()
+    }
+
     await strainService.init()
     hydratedStore.dispatch(initializeSimulation())
     ttsService.init()

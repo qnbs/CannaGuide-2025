@@ -35,6 +35,13 @@ env:
     NODE_VERSION: '24'
     CF_PROJECT_NAME: cannaguide-2025
     CF_PAGES_URL: https://cannaguide-2025.pages.dev
+    # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
+    # default branch head at dispatch time, NOT the commit whose CI succeeded --
+    # so if main advances between CI finishing and this workflow starting, using
+    # it would build, deploy and then STAMP an untested commit as verified.
+    # deploy.yml already derives it this way; this workflow did not, which mattered
+    # more once artifact identity started being asserted here.
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }}
 
 jobs:
     gate:
@@ -57,8 +64,20 @@ jobs:
     deploy:
         name: Build & Deploy (Production)
         needs: gate
-        # Advisory mirror — GitHub Pages + Vercel are primary; do not block main on CF API quirks.
-        continue-on-error: true
+        # Advisory mirror -- GitHub Pages + Vercel are primary. "Advisory" is
+        # enforced by NOT listing this workflow among the ruleset's required
+        # checks, which is the honest mechanism: a red run cannot block a merge.
+        #
+        # It is deliberately NOT enforced with `continue-on-error: true` any more.
+        # That reported success for a deploy that never happened -- observed on
+        # PR #474, where the run was green while wrangler had aborted with
+        # ERR_PNPM_ADDING_TO_ROOT and no preview URL was ever posted. A check that
+        # is green when the deploy failed is worse than no check: it is a claim
+        # nobody can act on. Optional must mean "does not block", never "cannot
+        # go red".
+        #
+        # The job only runs when the secrets gate passed, so a run that starts is
+        # a run that is expected to succeed.
         if: >-
             needs.gate.outputs.configured == 'true' &&
             (github.event_name == 'workflow_dispatch' ||
@@ -73,6 +92,14 @@ jobs:
 
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  # Without this the job builds whatever main points at now, which
+                  # is not necessarily the commit whose CI passed.
+                  ref: ${{ env.DEPLOY_SHA }}
+                  # No git write operations happen after checkout, so the
+                  # GITHUB_TOKEN doesn't need to be readable from .git/config by
+                  # build/deploy tooling.
+                  persist-credentials: false
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -101,7 +128,7 @@ jobs:
             # assert here so the preview/production upload carries this commit.
             - name: Stamp build metadata
               env:
-                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
               run: |
                   node scripts/stamp-build-metadata.mjs
                   node scripts/stamp-build-metadata.mjs --verify
@@ -127,20 +154,55 @@ jobs:
                     echo "::warning::Could not create Pages project (exit ${CODE}). Deploy will retry; create manually in the Cloudflare dashboard if this persists."
                   fi
                   set -e
+            # Cloudflare Pages rejects any single file over 25 MiB, and does so
+            # only after uploading the rest -- so the failure arrives late and names
+            # the file in wrangler output nobody reads when the job is advisory.
+            # Check first and say exactly what is wrong.
+            #
+            # This is not hypothetical: assets/ort-wasm-simd-threaded.jsep-*.wasm is
+            # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
+            # because the job carried continue-on-error, which this PR removes.
+            - name: Check Cloudflare Pages file-size limit
+              uses: ./.github/actions/check-pages-file-size
+              with:
+                  path: apps/web/dist
 
+            # Uses the workspace's own lockfile-pinned wrangler instead of
+            # cloudflare/wrangler-action. The action was pinned to wranglerVersion
+            # '4.105.0' while package.json carries ^4.110.0, so it tried to install
+            # a DIFFERENT version at the repo root and died with:
+            #
+            #     ERR_PNPM_ADDING_TO_ROOT
+            #
+            # `pnpm exec` runs the version the lockfile already resolved, so there
+            # is nothing to install, no version to drift, and no second source of
+            # truth for which wrangler this repo uses.
             - name: Deploy to Cloudflare Pages
               id: deploy
-              continue-on-error: true
-              uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
-              with:
-                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: pnpm
-                  wranglerVersion: '4.105.0'
-                  command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=main
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: |
+                  set -o pipefail
+                  OUT=$(pnpm exec wrangler pages deploy apps/web/dist \
+                          --project-name="${CF_PROJECT_NAME}" \
+                          --branch=main 2>&1 | tee /dev/stderr)
+
+                  # wrangler exits 0 on success, so pipefail above is what makes a
+                  # failed deploy fail this step. The URL check below additionally
+                  # catches a "successful" run that deployed nothing -- `|| true` on
+                  # the grep is required for that check to ever run: under `bash -e`
+                  # + `pipefail`, a no-match grep (exit 1) would abort the
+                  # `URL=$(...)` assignment itself and skip the guard entirely.
+                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1 || true)
+                  if [ -z "$URL" ]; then
+                    echo "::error::wrangler reported success but printed no deployment URL."
+                    exit 1
+                  fi
+                  echo "deployment-url=${URL}" >> "$GITHUB_OUTPUT"
+                  echo "[OK] Deployed to ${URL}"
 
             - name: Post-deploy health check
-              if: steps.deploy.outcome == 'success'
               run: |
                   CF_URL="${{ steps.deploy.outputs.deployment-url || env.CF_PAGES_URL }}"
                   echo "Health-checking ${CF_URL} ..."
@@ -152,11 +214,58 @@ jobs:
                     exit 1
                   fi
 
+            # Completes the artifact-identity chain for this deploy path. The build
+            # stamps dist/version.json with DEPLOY_SHA and asserts it before upload
+            # (#486); this confirms the commit actually being SERVED.
+            #
+            # The first version of this step could not fail: it carried
+            # `continue-on-error: true` AND only warned on a mismatch, so it was
+            # green whether the served commit matched or not. That is the exact
+            # defect this PR exists to remove -- a check reporting success while
+            # establishing nothing -- reintroduced by me one step below where I had
+            # just deleted it. Caught in review by CodeAnt.
+            #
+            # Edge-cache lag was the real concern behind that, and retrying is the
+            # correct answer to it, not ignoring the result. Same shape as
+            # deploy.yml's Pages check: poll until the edge catches up, then fail if
+            # it never does.
+            - name: Verify served version marker
+              env:
+                  EXPECTED_SHA: ${{ env.DEPLOY_SHA }}
+              run: |
+                  CF_URL="${{ steps.deploy.outputs.deployment-url || env.CF_PAGES_URL }}"
+                  URL="${CF_URL%/}/version.json"
+                  echo "[INFO] Expecting ${EXPECTED_SHA} at ${URL}"
+
+                  for attempt in $(seq 1 15); do
+                    BODY=$(curl -fsSL --max-time 20 "${URL}" 2>/dev/null || echo "")
+                    if [ -n "${BODY}" ]; then
+                      SERVED=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
+                      if [ "${SERVED}" = "${EXPECTED_SHA}" ]; then
+                        echo "[OK] Serving ${SERVED} (attempt ${attempt})."
+                        exit 0
+                      fi
+                      echo "  attempt ${attempt}: serving ${SERVED:-<none>}, waiting for ${EXPECTED_SHA}"
+                    else
+                      echo "  attempt ${attempt}: no version.json yet"
+                    fi
+                    sleep 10
+                  done
+
+                  echo "::error::Cloudflare is not serving ${EXPECTED_SHA} after 15 attempts."
+                  echo "        Last served: ${SERVED:-<none>}"
+                  echo "        Either the deploy did not take effect, or it published a"
+                  echo "        different commit than the one this run built."
+                  exit 1
+
     preview:
         name: PR Preview Deploy
         needs: gate
-        # Advisory — Vercel is the primary PR preview; CF project may be absent in account.
-        continue-on-error: true
+        # Advisory -- Vercel is the primary PR preview. Same reasoning as the
+        # production job above: advisory is expressed by not being a required
+        # check, not by swallowing failures. This job posts the preview URL to the
+        # PR, so a swallowed failure showed green AND silently posted nothing,
+        # which is precisely the state that hid the wrangler breakage.
         if: >-
             needs.gate.outputs.configured == 'true' &&
             github.event_name == 'pull_request'
@@ -173,6 +282,16 @@ jobs:
 
             - name: Checkout PR
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  # Without this, checkout resolves refs/pull/<n>/merge (the merge
+                  # commit) rather than the PR head -- so the preview would build a
+                  # tree that doesn't match the commit dist/version.json gets
+                  # stamped with two steps below, and the PR comment further down
+                  # would report a third, different SHA (context.sha). Pinning here
+                  # is what makes build tree, stamped version, and posted commit
+                  # agree, matching the production job's DEPLOY_SHA checkout above.
+                  ref: ${{ env.DEPLOY_SHA }}
+                  persist-credentials: false
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -192,7 +311,7 @@ jobs:
             # assert here so the preview/production upload carries this commit.
             - name: Stamp build metadata
               env:
-                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
               run: |
                   node scripts/stamp-build-metadata.mjs
                   node scripts/stamp-build-metadata.mjs --verify
@@ -231,25 +350,66 @@ jobs:
                     echo "::warning::Could not ensure Pages project (exit ${CODE})"
                   fi
                   set -e
+            # Cloudflare Pages rejects any single file over 25 MiB, and does so
+            # only after uploading the rest -- so the failure arrives late and names
+            # the file in wrangler output nobody reads when the job is advisory.
+            # Check first and say exactly what is wrong.
+            #
+            # This is not hypothetical: assets/ort-wasm-simd-threaded.jsep-*.wasm is
+            # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
+            # because the job carried continue-on-error, which this PR removes.
+            - name: Check Cloudflare Pages file-size limit
+              uses: ./.github/actions/check-pages-file-size
+              with:
+                  path: apps/web/dist
 
+            # Same change as the production job: lockfile-pinned wrangler via
+            # `pnpm exec`, no forced version, no swallowed failure.
             - name: Deploy preview to Cloudflare Pages
               id: preview-deploy
-              continue-on-error: true
-              uses: cloudflare/wrangler-action@9acf94ace14e7dc412b076f2c5c20b8ce93c79cd # v3.15.0
-              with:
-                  apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                  accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  packageManager: pnpm
-                  wranglerVersion: '4.105.0'
-                  command: pages deploy apps/web/dist --project-name=${{ env.CF_PROJECT_NAME }} --branch=${{ steps.cf_preview_branch.outputs.name }}
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+                  PREVIEW_BRANCH: ${{ steps.cf_preview_branch.outputs.name }}
+              run: |
+                  set -o pipefail
+                  OUT=$(pnpm exec wrangler pages deploy apps/web/dist \
+                          --project-name="${CF_PROJECT_NAME}" \
+                          --branch="${PREVIEW_BRANCH}" 2>&1 | tee /dev/stderr)
+
+                  # See the production job's identical guard for why `|| true` is
+                  # required here under `bash -e` + `pipefail`.
+                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1 || true)
+                  if [ -z "$URL" ]; then
+                    echo "::error::wrangler reported success but printed no deployment URL."
+                    exit 1
+                  fi
+                  echo "deployment-url=${URL}" >> "$GITHUB_OUTPUT"
+                  echo "[OK] Preview deployed to ${URL}"
 
             - name: Comment preview URL on PR
               if: steps.preview-deploy.outcome == 'success'
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+              env:
+                  # Passed via env, not interpolated straight into the script below:
+                  # a `${{ }}` expression inside a github-script `script:` is spliced
+                  # into the JS source as text BEFORE it runs, so untrusted context
+                  # data (PR_HEAD_REF is attacker-controlled on a fork PR) could break
+                  # out of the string literal and execute arbitrary code with this
+                  # step's GITHUB_TOKEN. `process.env.X` never gets that treatment --
+                  # it is always a plain string value (opengrep: github-script-injection).
+                  DEPLOY_URL: ${{ steps.preview-deploy.outputs.deployment-url }}
+                  DEPLOY_SHA_FULL: ${{ env.DEPLOY_SHA }}
+                  PR_HEAD_REF: ${{ github.head_ref }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
                   script: |
-                      const deployUrl = '${{ steps.preview-deploy.outputs.deployment-url }}';
-                      const sha = context.sha.substring(0, 7);
+                      const deployUrl = process.env.DEPLOY_URL;
+                      // context.sha is the merge commit under pull_request, not what
+                      // was actually checked out/built/stamped above -- DEPLOY_SHA is.
+                      const sha = process.env.DEPLOY_SHA_FULL.substring(0, 7);
+                      const headRef = process.env.PR_HEAD_REF;
+                      const runUrl = process.env.RUN_URL;
                       const marker = '<!-- cf-preview-comment -->';
                       const body = [
                         marker,
@@ -259,9 +419,9 @@ jobs:
                         '|---|---|',
                         `| **Preview URL** | ${deployUrl} |`,
                         `| **Commit** | \`${sha}\` |`,
-                        `| **Branch** | \`${{ github.head_ref }}\` |`,
+                        `| **Branch** | \`${headRef}\` |`,
                         '',
-                        `_Deployed by [deploy-cloudflare.yml](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})_`,
+                        `_Deployed by [deploy-cloudflare.yml](${runUrl})_`,
                       ].join('\n');
 
                       const { data: comments } = await github.rest.issues.listComments({

@@ -133,8 +133,10 @@ describe('CloudSyncPanel', () => {
         // Push/Pull only render inside the isSyncEnabled block.
         expect(screen.queryByTestId('cloud-sync-push')).not.toBeInTheDocument()
         expect(screen.queryByTestId('cloud-sync-pull')).not.toBeInTheDocument()
-        // "All your data lives on this device" is true here -- sync is off.
-        expect(screen.getByText('settingsView.data.localOnlyBadge')).toBeVisible()
+        // Sync being off is not the same as Local-Only Mode being on -- other
+        // outbound features (cloud AI, TTS) could still be active here, so
+        // the "all data stays on this device" badge must NOT show by default.
+        expect(screen.queryByText('settingsView.data.localOnlyBadge')).not.toBeInTheDocument()
     })
 
     it('clicking the disabled-state toggle does not dispatch (newly enabling is blocked)', () => {
@@ -152,7 +154,8 @@ describe('CloudSyncPanel', () => {
         const toggle = screen.getByTestId('cloud-sync-toggle')
         expect(toggle).not.toBeDisabled()
         expect(toggle).toHaveTextContent('settingsView.data.sync.disableSync')
-        // Would misrepresent this user's data as device-only if shown here.
+        // Local-Only Mode is off (default) and sync is genuinely active here,
+        // so the "all data stays on this device" badge must not show.
         expect(screen.queryByText('settingsView.data.localOnlyBadge')).not.toBeInTheDocument()
 
         expect(screen.getByTestId('cloud-sync-push')).toBeDisabled()
@@ -174,6 +177,24 @@ describe('CloudSyncPanel', () => {
 
         expect(screen.getByTestId('cloud-sync-unavailable-banner')).toBeVisible()
         expect(screen.getByText('settingsView.data.sync.blockedByLocalOnly')).toBeVisible()
+    })
+
+    it('shows the Local-Only badge when Local-Only Mode is actually on', () => {
+        setState({ localOnlyMode: true })
+        render(<CloudSyncPanel />)
+
+        expect(screen.getByText('settingsView.data.localOnlyBadge')).toBeVisible()
+    })
+
+    it('does not show the Local-Only badge with Local-Only Mode off, even with sync disabled', () => {
+        // Regression test: !isSyncEnabled alone is true here too (sync was
+        // never on), but Local-Only Mode being off means other outbound
+        // features (cloud AI, TTS) could still be active -- the badge would
+        // misrepresent that as "all data stays on this device."
+        setState({ localOnlyMode: false, cloudSync: { provider: 'none' } })
+        render(<CloudSyncPanel />)
+
+        expect(screen.queryByText('settingsView.data.localOnlyBadge')).not.toBeInTheDocument()
     })
 
     it('shows the E2EE generate-key prompt when no key is set', () => {

@@ -106,8 +106,11 @@ A real fix needs, at minimum:
   whether rotation is supported or the user must re-paste a new PAT. The `Authorization` header
   itself must be scoped narrowly: attached only to the intended `api.github.com` request, never
   forwarded across a redirect or to a different origin, and that constraint applies to both the CRDT
-  and the legacy LWW push/pull paths in `syncService.ts`. No token in logs/telemetry/URLs, and a
-  documented revocation path (pointing users at GitHub's own token-management UI).
+  and the legacy LWW push/pull paths in `syncService.ts`. Concretely: every sync `fetch` call must
+  set `redirect: 'error'`, not the default `'follow'` -- a 307/308 response would otherwise carry
+  both the `Authorization` header and the request body (the sync payload) to whatever origin it
+  names, and the browser does this silently. No token in logs/telemetry/URLs, and a documented
+  revocation path (pointing users at GitHub's own token-management UI).
 - Adding exactly `https://api.github.com` to `connect-src` in all five places listed above (never a
   broader GitHub-origin wildcard).
 - Making E2EE mandatory for this path rather than opt-in, given the payload is a full app-state

@@ -213,10 +213,13 @@ const CloudSyncPanel: React.FC = () => {
                 onConfirm={handlePullConfirm}
             />
 
-            {/* Local-Only Badge -- only true while sync isn't actually active. Was
-                rendered unconditionally, which would misrepresent a user's data as
-                device-only the moment they had cloud sync genuinely turned on. */}
-            {!isSyncEnabled && (
+            {/* Local-Only Badge -- gated on isLocalOnly (the actual "no outbound
+                traffic at all" invariant), not !isSyncEnabled. A user can have
+                Gist sync off while Local-Only Mode is ALSO off (BYOK cloud AI,
+                cloud TTS etc. still allowed) -- !isSyncEnabled is true in that
+                state too, so it would have shown "all your data stays on this
+                device" while other outbound features remained active. */}
+            {isLocalOnly && (
                 <Card className="border border-green-500/30 bg-green-900/10">
                     <div className="flex items-start gap-3">
                         <div className="mt-0.5 rounded-full bg-green-500/20 p-2">

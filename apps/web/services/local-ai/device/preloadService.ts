@@ -2,6 +2,9 @@ import type { LocalAiPreloadReport } from '../core/localAI'
 import { probeGpuVram, isVramInsufficient } from './healthService'
 import { setVramInsufficientOverride } from '../models/modelLoader'
 import { applyAdaptiveMode, isEcoMode } from './ecoModeService'
+import { isNetworkSuitableForBulkDownload } from '../models/preloadOrchestrator'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { secureRandom } from '@/utils/random'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
@@ -61,9 +64,7 @@ const writeStatus = (status: LocalAiPreloadStatus): LocalAiPreloadStatus => {
     // windows, so we need a CustomEvent for in-tab observers such as
     // `usePwaInstall`'s deferred Service-Worker activation).
     if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-            new CustomEvent('cg.localai.preloadStatusChange', { detail: status }),
-        )
+        window.dispatchEvent(new CustomEvent('cg.localai.preloadStatusChange', { detail: status }))
     }
     return status
 }
@@ -172,6 +173,40 @@ const buildFinalPreloadStatus = (
     }
 }
 
+/**
+ * Thrown when a model download is requested while Local-Only Mode is active.
+ *
+ * A named class rather than a bare Error so the UI can distinguish "you turned
+ * outbound traffic off" from a genuine download failure -- the two need different
+ * messages, and conflating them would tell a user their network is broken when in
+ * fact their own setting is working correctly.
+ */
+export class LocalOnlyModeError extends Error {
+    constructor() {
+        super('Local-Only Mode is active: model downloads are blocked.')
+        this.name = 'LocalOnlyModeError'
+    }
+}
+
+/**
+ * Is the startup-preload opt-in still on, right now?
+ *
+ * Read through `uiStateBridge` rather than importing the store: this module is a
+ * service, and the bridge is the sanctioned seam between Redux and services.
+ *
+ * Fails CLOSED. `getReduxSnapshot` throws when the bridge is not initialised, and
+ * `localAi.autoPreloadOnStartup` defaults to false -- so "cannot determine" must
+ * resolve to "do not download". Treating unknown as enabled would reintroduce the
+ * unattended multi-hundred-megabyte fetch this whole path exists to prevent.
+ */
+const isStartupPreloadStillEnabled = (): boolean => {
+    try {
+        return getReduxSnapshot((s) => s.settings.settings.localAi?.autoPreloadOnStartup) === true
+    } catch {
+        return false
+    }
+}
+
 export const localAiPreloadService = {
     getStatus(): LocalAiPreloadStatus {
         return readStatus()
@@ -192,7 +227,52 @@ export const localAiPreloadService = {
         const current = readStatus()
         if (current.state === 'ready' || current.state === 'preloading') return
 
+        // The metered/Data-Saver guard used to sit behind the `full` tier only --
+        // a branch this automatic path never reaches -- so the default `standard`
+        // tier pulled nine ONNX models over whatever connection happened to be
+        // active. An explicit "Preload" from Settings is still honoured; this only
+        // constrains the unattended one.
+        if (!isNetworkSuitableForBulkDownload()) {
+            console.debug('[LocalAI] Skipping idle preload: metered or slow connection.')
+            return
+        }
+
         const startPreload = () => {
+            // Local-Only Mode forbids ALL outbound traffic, and the preload is
+            // the largest outbound transfer in the app. Nothing stopped a user
+            // from enabling Local-Only Mode and startup preloading together, in
+            // which case this happily fetched model weights from the HuggingFace
+            // CDN -- no attacker involved, just two settings that contradicted
+            // each other and only one of them being enforced.
+            if (isLocalOnlyMode()) {
+                console.debug('[LocalAI] Skipping idle preload: Local-Only Mode is active.')
+                return
+            }
+
+            // The opt-in itself is re-read here too, and for the same reason as the
+            // network check below: this callback was QUEUED under conditions that
+            // may no longer hold. postHydration reads
+            // localAi.autoPreloadOnStartup once and schedules; the user can open
+            // Settings and switch it off inside the idle window, and without this
+            // the already-queued task would download anyway -- the opt-out ignored
+            // until the next boot, which is exactly when a user would conclude the
+            // toggle does nothing.
+            if (!isStartupPreloadStillEnabled()) {
+                console.debug(
+                    '[LocalAI] Aborting idle preload: startup preload was switched off while queued.',
+                )
+                return
+            }
+
+            // Re-check at EXECUTION time, not just at scheduling time. This runs
+            // from requestIdleCallback (up to a 10s timeout) or a 5s fallback, and
+            // the user can move onto mobile data or enable Data Saver in between --
+            // precisely the window in which starting a multi-hundred-megabyte
+            // download is worst.
+            if (!isNetworkSuitableForBulkDownload()) {
+                console.debug('[LocalAI] Aborting idle preload: connection became metered or slow.')
+                return
+            }
             this.preloadOfflineModels(onProgress).catch((err) => {
                 console.debug('[LocalAI] Idle preload failed:', err)
             })
@@ -213,6 +293,23 @@ export const localAiPreloadService = {
     async preloadOfflineModels(
         onProgress?: (loaded: number, total: number, label: string) => void,
     ): Promise<LocalAiPreloadStatus> {
+        // Local-Only Mode is absolute: no outbound traffic, whoever asked.
+        //
+        // The guard used to sit only in `scheduleIdlePreload`, which covers the
+        // automatic path. This is the *shared* entry point -- pressing "Preload"
+        // in Settings reaches it directly -- so a user with Local-Only enabled
+        // could still trigger several hundred megabytes from the HuggingFace CDN
+        // by clicking a button. User intent to download does not override a
+        // global "make no network connections" policy; if anything it is the case
+        // where the promise most needs to hold, because the user believes it is.
+        //
+        // Throws rather than returning a status: a silent no-op would leave the UI
+        // showing "preloading" and then "idle" with no explanation, which is its
+        // own small dishonesty. The caller surfaces this as an error message.
+        if (isLocalOnlyMode()) {
+            throw new LocalOnlyModeError()
+        }
+
         const startedAt = Date.now()
 
         // Run adaptive mode detection, VRAM probe, and persistent storage in parallel

@@ -93,6 +93,30 @@ bounding a pin without delisting it fails too. Retiring them is a per-package ca
 three have already crossed a major (`uuid` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
 and `@babel/core` resolves to nothing at all. Offline -- lockfile and config only, no registry call.
 
+### Bundle and precache budget
+
+`scripts/check-bundle-budget.mjs` enforces three things:
+
+- **entry chunk** `index-*.js`: 300 KB gzip / 280 KB brotli;
+- **vendor chunks**: 500 KB gzip / 450 KB brotli;
+- **lazy chunks**: explicit per-chunk gzip ceilings in `LAZY_BUDGETS_GZIP_KB`.
+
+The lazy ceilings replaced a blanket exempt list. `ai-runtime` was exempt **by name**
+and grew to 2.29 MB gzip -- roughly 2.4x its size at the previous audit -- while the gate
+printed `[PASS]` the whole time. A budget that excuses the largest artifact is not a budget.
+Raising a ceiling is a visible decision in review, not a config detail.
+
+**Precache budget: 12 MiB.** This sums raw, uncompressed on-disk bytes of everything the
+service worker precaches at install -- not a network-transfer-size budget, since gzip/Brotli
+still shrink what actually crosses the wire -- but every visitor still fetches all of it at
+install, and nothing measured it before this gate: the only constraint was workbox's per-file
+`maximumFileSizeToCacheInBytes`, an inclusion filter rather than a gate, with its size warning
+explicitly silenced (`showMaximumFileSizeToCacheInBytesWarning: false`).
+It had reached **247 entries / 19.15 MiB**, including 8.57 MiB of local-AI runtime that is
+lazily imported and only used if the user enables local AI. Excluding those via
+`injectManifest.globIgnores` brings it to **243 entries / 10.57 MiB**; the gate parses the
+generated manifest out of `dist/sw.js` and fails closed if it cannot parse one at all.
+
 ### Critical path coverage
 
 Enforced files (see `scripts/check-critical-path-coverage.mjs`):

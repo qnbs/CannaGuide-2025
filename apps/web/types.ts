@@ -268,25 +268,12 @@ export enum StrainViewTab {
 
 /** Strain browser sort keys. */
 export type SortKey =
-    | 'name'
-    | 'type'
-    | 'thc'
-    | 'cbd'
-    | 'floweringTime'
-    | 'difficulty'
-    | 'yield'
-    | 'height'
+    'name' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'yield' | 'height'
 export type SortDirection = 'asc' | 'desc'
 
 /** Plant journal modal type. */
 export type ModalType =
-    | 'watering'
-    | 'feeding'
-    | 'training'
-    | 'observation'
-    | 'photo'
-    | 'pestControl'
-    | 'amendment'
+    'watering' | 'feeding' | 'training' | 'observation' | 'photo' | 'pestControl' | 'amendment'
 
 // ---------------------------------------------------------------------------
 // Redux state container types (depend on EntityState from RTK)
@@ -422,6 +409,18 @@ export interface AppSettings {
         ecoMode: boolean
         /** Force eco mode regardless of battery/memory state. */
         ecoModeForced: boolean
+        /**
+         * Download the offline ONNX models automatically on app start.
+         *
+         * Defaults to **false**. The idle preload fetches the `standard` tier --
+         * nine models, hundreds of megabytes from the HuggingFace CDN -- and it
+         * used to run unconditionally on every boot, with no setting, no consent
+         * and no metered-network check. That is a large, silent transfer on a
+         * user's connection and a visible outbound request to a third party, so
+         * it is opt-in. Users who want offline AI enable it here, or trigger a
+         * one-off preload from the Local AI settings card.
+         */
+        autoPreloadOnStartup: boolean
     }
     data: {
         autoBackup: 'off' | 'daily' | 'weekly'
@@ -468,11 +467,7 @@ export interface TTSSettings {
 
 /** Event types tracked by voice telemetry (opt-in, anonymous, no PII). */
 export type VoiceAnalyticsEventType =
-    | 'commandMatched'
-    | 'commandFailed'
-    | 'ttsPlayed'
-    | 'hotwordDetected'
-    | 'errorOccurred'
+    'commandMatched' | 'commandFailed' | 'ttsPlayed' | 'hotwordDetected' | 'errorOccurred'
 
 /** Single anonymous voice analytics event. */
 export interface VoiceAnalyticsEvent {

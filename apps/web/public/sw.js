@@ -380,10 +380,22 @@ self.addEventListener('fetch', (event) => {
     // Cache-First for hashed Vite assets (JS/CSS chunks with content hashes).
     // These are immutable — once cached, they never change. This is critical for
     // offline reliability in environments with poor connectivity (grow rooms, basements).
+    //
+    // The previous pattern was /\.[a-f0-9]{8,}\.(js|css|woff2?)$/ -- a DOT-separated,
+    // lowercase-hex hash. Vite emits `[name]-[hash]` with a base64url-ish hash, e.g.
+    // `AboutTab-C3WkehI1.js`, so that pattern matched NOTHING this project builds:
+    // the branch was dead and every chunk fell through to stale-while-revalidate,
+    // which re-requests immutable files on every load. That also made the precache
+    // exclusion of `ai-runtime-*` / `transformers-*` weaker than intended, since
+    // those chunks are same-origin and never reach handleMlModelRequest (that route
+    // is gated on ML_MODEL_HOSTS, i.e. remote CDNs only).
+    //
+    // Scoped to /assets/, where Vite puts only hashed output, so the looser charset
+    // cannot promote an unhashed file by accident.
     const isHashedAsset =
         url.origin === self.location.origin &&
         url.pathname.includes('/assets/') &&
-        /\.[a-f0-9]{8,}\.(js|css|woff2?)$/i.test(url.pathname)
+        /[-.][A-Za-z0-9_-]{8,}\.(js|css|woff2?)$/.test(url.pathname)
 
     if (isHashedAsset) {
         event.respondWith(

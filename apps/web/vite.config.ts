@@ -225,6 +225,40 @@ export default defineConfig({
             showMaximumFileSizeToCacheInBytesWarning: false,
             injectManifest: {
                 globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
+                // The local-AI runtimes are lazily `import()`ed from
+                // packages/ai-core/src/ml.ts and are only reachable if the user
+                // actually turns local AI on. Precaching defeated that entirely:
+                // the service worker downloaded them at install for every visitor,
+                // on every device, whether or not an AI feature was ever opened.
+                //
+                // Measured before this change: 247 entries / 19.15 MiB, of which
+                // ai-runtime (WebLLM + tvmjs) alone was 6.74 MB, transformers.js
+                // 1.01 MB and ort.bundle.min 480 KB. `three` is in the same
+                // position -- a lazily loaded visualiser, not app shell.
+                //
+                // They are still cached once used, but NOT by handleMlModelRequest --
+                // an earlier version of this comment said so and was wrong. That
+                // route is gated on ML_MODEL_HOSTS, i.e. remote CDN hostnames; these
+                // are same-origin Vite chunks and never reach it. They are handled
+                // by the same-origin cache-first rule for hashed assets in
+                // public/sw.js, whose pattern had to be fixed alongside this change
+                // (it required a dot-separated hex hash and so matched none of
+                // Vite's `[name]-[hash]` output).
+                //
+                // Residual limitation, stated rather than glossed: a chunk that has
+                // never been fetched cannot be served offline. Turning local AI on
+                // for the first time needs the network anyway -- the model weights
+                // are a far larger download than the runtime -- so the exposed case
+                // is narrow: an update lands, the user goes offline before opening
+                // local AI once, and the previously cached weights are then unusable
+                // because the new runtime chunk was never fetched.
+                globIgnores: [
+                    '**/ai-runtime-*.js',
+                    '**/transformers-*.js',
+                    '**/ort.bundle.min-*.js',
+                    '**/ort-wasm*',
+                    '**/three-*.js',
+                ],
                 maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
             },
             devOptions: { enabled: false },

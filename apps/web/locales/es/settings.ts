@@ -145,6 +145,13 @@ export const settingsView = {
         offlineHint:
             'Conecta la aplicacion a internet para calentar la cache del modelo antes de depender del AI sin conexion.',
         forceWasm: 'Forzar Backend WASM',
+        autoPreload: 'Descargar modelos al iniciar',
+        preloadBlockedLocalOnly:
+            'El modo solo local esta activo, por lo que las descargas de modelos estan bloqueadas. Desactivalo en Privacidad para descargar.',
+        preloadFailed:
+            'La descarga del modelo no se completo. Comprueba la conexion e intentalo de nuevo.',
+        autoPreloadHint:
+            'Descarga los modelos de IA sin conexion en segundo plano al iniciar la aplicacion. Desactivado por defecto: son varios cientos de megabytes desde el CDN de HuggingFace. Se omite automaticamente en conexiones limitadas o lentas, en navegadores que informan de la conexion.',
         forceWasmHint:
             'Anula la deteccion automatica de WebGPU y siempre usa el backend WASM. Util para depuracion.',
         enableWebGpu: 'Habilitar Aceleracion WebGPU', // machine-translated, review needed

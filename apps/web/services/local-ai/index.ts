@@ -42,6 +42,7 @@ export {
     applyCacheSettings,
     localAiPreloadService,
     ensurePersistentStorage,
+    LocalOnlyModeError,
 } from './core/infrastructureService'
 
 // ---------------------------------------------------------------------------

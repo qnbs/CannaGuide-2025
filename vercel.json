@@ -1,6 +1,6 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
-    "buildCommand": "BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web && node scripts/stamp-build-metadata.mjs && node scripts/stamp-build-metadata.mjs --verify",
+    "buildCommand": "BUILD_BASE_PATH=/ turbo run build --filter=@cannaguide/web && node scripts/prune-bundled-ort-wasm.mjs && node scripts/stamp-build-metadata.mjs && node scripts/stamp-build-metadata.mjs --verify",
     "outputDirectory": "apps/web/dist",
     "installCommand": "corepack enable && pnpm install --frozen-lockfile",
     "rewrites": [

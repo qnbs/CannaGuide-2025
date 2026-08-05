@@ -21,23 +21,95 @@ export type PreloadTier = 'critical' | 'standard' | 'full'
  * Falls back to `false` whenever the relevant browser APIs are unavailable
  * so we never opportunistically download large WebLLM weights.
  */
+/** Non-standard NetworkInformation surface, narrowed to what this check reads. */
+interface ConnectionInfo {
+    effectiveType: string | undefined
+    saveData: boolean | undefined
+    type: string | undefined
+}
+
+/**
+ * Read `navigator.connection` without a type assertion.
+ *
+ * The previous version reached for it with an `as unknown as {...}` cast plus an
+ * `eslint-disable`, which this repository forbids -- a suppression ratchet gates
+ * CI, so silencing the rule is not an option. Reading each field through
+ * `Reflect.get` and validating its runtime type gives the same narrow result
+ * honestly, and satisfies `exactOptionalPropertyTypes` on the way.
+ */
+const readConnection = (): ConnectionInfo | undefined => {
+    if (typeof navigator === 'undefined') return undefined
+
+    // Every read is inside the try, not just the first. These are getters on a
+    // host object, and a getter can throw -- a privacy extension shimming
+    // navigator.connection, or a partially implemented polyfill. An exception
+    // here would propagate out of isNetworkSuitableForBulkDownload() and abort
+    // the caller, which for scheduleIdlePreload means the whole preload dies on
+    // a property read.
+    //
+    // Treating a throw as "unknown connection" lands on the same branch as a
+    // browser that does not implement NetworkInformation at all, which is the
+    // behaviour already documented below: unknown -> allowed, because the
+    // download is consent-gated and this guard exists to avoid bad timing rather
+    // than to substitute for consent.
+    try {
+        const raw: unknown = Reflect.get(navigator, 'connection')
+        if (typeof raw !== 'object' || raw === null) return undefined
+
+        const effectiveType: unknown = Reflect.get(raw, 'effectiveType')
+        const saveData: unknown = Reflect.get(raw, 'saveData')
+        const type: unknown = Reflect.get(raw, 'type')
+
+        return {
+            effectiveType: typeof effectiveType === 'string' ? effectiveType : undefined,
+            saveData: typeof saveData === 'boolean' ? saveData : undefined,
+            type: typeof type === 'string' ? type : undefined,
+        }
+    } catch {
+        return undefined
+    }
+}
+
+/**
+ * True when the connection is suitable for pulling hundreds of megabytes of
+ * model weights: Data Saver not requested, not a cellular link, and not
+ * `slow-2g`/`2g`/`3g`. An unknown connection counts as suitable -- see below.
+ *
+ * Exported because this check used to be reachable **only** through the `full`
+ * tier, a branch the automatic startup preload never took -- so the default
+ * `standard` tier (nine ONNX models) downloaded happily over a metered
+ * connection with `saveData` set. `scheduleIdlePreload` now consults it directly.
+ * A user who explicitly presses "Preload" in Settings is deliberately not
+ * blocked by it; this guards the automatic path.
+ */
+export const isNetworkSuitableForBulkDownload = (): boolean => {
+    const conn = readConnection()
+
+    // Unknown connection -> allowed. NetworkInformation is Chromium-only, so
+    // returning false here would permanently disable the preload on Firefox and
+    // Safari -- for users who explicitly opted in. Since the download is now
+    // consented (localAi.autoPreloadOnStartup, default off), this guard's job is
+    // to avoid *bad timing*, not to substitute for consent. Silently doing
+    // nothing on half the browsers would be the worse failure.
+    if (!conn) return true
+
+    if (conn.saveData === true) return false
+
+    // `type: 'cellular'` is the direct mobile-data signal. effectiveType alone is
+    // not enough: a 4g cellular link reports '4g' and would otherwise be treated
+    // exactly like home broadband, which is the case this guard most needs to
+    // catch.
+    if (conn.type === 'cellular') return false
+
+    const slowTypes = new Set(['slow-2g', '2g', '3g'])
+    return !slowTypes.has(conn.effectiveType ?? '')
+}
+
 const isFullTierAppropriate = async (): Promise<boolean> => {
     const battery = await getBatteryManager()
     const batteryOk = !battery || battery.charging || battery.level >= 0.8
 
-    const conn =
-        typeof navigator !== 'undefined'
-            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- narrow non-standard NetworkInformation API
-              (navigator as unknown as {
-                  connection?: { effectiveType?: string; saveData?: boolean }
-              }).connection
-            : undefined
-    const slowTypes = new Set(['slow-2g', '2g', '3g'])
-    const networkOk =
-        !conn ||
-        (!slowTypes.has(conn.effectiveType ?? '') && conn.saveData !== true)
-
-    return batteryOk && networkOk
+    return batteryOk && isNetworkSuitableForBulkDownload()
 }
 
 export interface LocalAiPreloadReport {

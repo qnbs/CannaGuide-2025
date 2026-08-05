@@ -96,6 +96,10 @@ jobs:
                   # Without this the job builds whatever main points at now, which
                   # is not necessarily the commit whose CI passed.
                   ref: ${{ env.DEPLOY_SHA }}
+                  # No git write operations happen after checkout, so the
+                  # GITHUB_TOKEN doesn't need to be readable from .git/config by
+                  # build/deploy tooling.
+                  persist-credentials: false
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -159,21 +163,9 @@ jobs:
             # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
             # because the job carried continue-on-error, which this PR removes.
             - name: Check Cloudflare Pages file-size limit
-              run: |
-                  LIMIT=$((25 * 1024 * 1024))
-                  OVERSIZE=$(find apps/web/dist -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
-                  if [ -n "${OVERSIZE}" ]; then
-                    echo "::error::Cloudflare Pages rejects files larger than 25 MiB."
-                    printf '%s\n' "${OVERSIZE}" | while IFS=$'\t' read -r bytes path; do
-                      printf '       %6.1f MiB  %s\n' "$(echo "scale=2; ${bytes}/1048576" | bc)" "${path}"
-                    done
-                    echo ""
-                    echo "       GitHub Pages and Vercel have no such limit, so this affects the"
-                    echo "       Cloudflare mirror only. Options: keep the asset off this host,"
-                    echo "       serve it from a CDN, or retire the mirror."
-                    exit 1
-                  fi
-                  echo "[OK] No file exceeds the 25 MiB Cloudflare Pages limit."
+              uses: ./.github/actions/check-pages-file-size
+              with:
+                  path: apps/web/dist
 
             # Uses the workspace's own lockfile-pinned wrangler instead of
             # cloudflare/wrangler-action. The action was pinned to wranglerVersion
@@ -198,8 +190,11 @@ jobs:
 
                   # wrangler exits 0 on success, so pipefail above is what makes a
                   # failed deploy fail this step. The URL check below additionally
-                  # catches a "successful" run that deployed nothing.
-                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1)
+                  # catches a "successful" run that deployed nothing -- `|| true` on
+                  # the grep is required for that check to ever run: under `bash -e`
+                  # + `pipefail`, a no-match grep (exit 1) would abort the
+                  # `URL=$(...)` assignment itself and skip the guard entirely.
+                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1 || true)
                   if [ -z "$URL" ]; then
                     echo "::error::wrangler reported success but printed no deployment URL."
                     exit 1
@@ -287,6 +282,16 @@ jobs:
 
             - name: Checkout PR
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  # Without this, checkout resolves refs/pull/<n>/merge (the merge
+                  # commit) rather than the PR head -- so the preview would build a
+                  # tree that doesn't match the commit dist/version.json gets
+                  # stamped with two steps below, and the PR comment further down
+                  # would report a third, different SHA (context.sha). Pinning here
+                  # is what makes build tree, stamped version, and posted commit
+                  # agree, matching the production job's DEPLOY_SHA checkout above.
+                  ref: ${{ env.DEPLOY_SHA }}
+                  persist-credentials: false
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -354,21 +359,9 @@ jobs:
             # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
             # because the job carried continue-on-error, which this PR removes.
             - name: Check Cloudflare Pages file-size limit
-              run: |
-                  LIMIT=$((25 * 1024 * 1024))
-                  OVERSIZE=$(find apps/web/dist -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
-                  if [ -n "${OVERSIZE}" ]; then
-                    echo "::error::Cloudflare Pages rejects files larger than 25 MiB."
-                    printf '%s\n' "${OVERSIZE}" | while IFS=$'\t' read -r bytes path; do
-                      printf '       %6.1f MiB  %s\n' "$(echo "scale=2; ${bytes}/1048576" | bc)" "${path}"
-                    done
-                    echo ""
-                    echo "       GitHub Pages and Vercel have no such limit, so this affects the"
-                    echo "       Cloudflare mirror only. Options: keep the asset off this host,"
-                    echo "       serve it from a CDN, or retire the mirror."
-                    exit 1
-                  fi
-                  echo "[OK] No file exceeds the 25 MiB Cloudflare Pages limit."
+              uses: ./.github/actions/check-pages-file-size
+              with:
+                  path: apps/web/dist
 
             # Same change as the production job: lockfile-pinned wrangler via
             # `pnpm exec`, no forced version, no swallowed failure.
@@ -384,7 +377,9 @@ jobs:
                           --project-name="${CF_PROJECT_NAME}" \
                           --branch="${PREVIEW_BRANCH}" 2>&1 | tee /dev/stderr)
 
-                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1)
+                  # See the production job's identical guard for why `|| true` is
+                  # required here under `bash -e` + `pipefail`.
+                  URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1 || true)
                   if [ -z "$URL" ]; then
                     echo "::error::wrangler reported success but printed no deployment URL."
                     exit 1
@@ -398,7 +393,9 @@ jobs:
               with:
                   script: |
                       const deployUrl = '${{ steps.preview-deploy.outputs.deployment-url }}';
-                      const sha = context.sha.substring(0, 7);
+                      // context.sha is the merge commit under pull_request, not what
+                      // was actually checked out/built/stamped above -- DEPLOY_SHA is.
+                      const sha = '${{ env.DEPLOY_SHA }}'.substring(0, 7);
                       const marker = '<!-- cf-preview-comment -->';
                       const body = [
                         marker,

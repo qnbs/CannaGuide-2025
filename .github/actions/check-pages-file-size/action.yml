@@ -1,0 +1,31 @@
+name: Check Cloudflare Pages file-size limit
+description: >-
+    Fail early and legibly if any file under the given path exceeds Cloudflare
+    Pages' 25 MiB per-file limit. Cloudflare rejects an oversized file only
+    after uploading everything else, so checking first and naming the
+    offender here is what makes the failure actionable instead of a bare
+    wrangler exit code.
+
+inputs:
+    path:
+        description: Directory to scan for oversized files (e.g. apps/web/dist)
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Check Cloudflare Pages file-size limit
+          shell: bash
+          run: |
+              LIMIT=$((25 * 1024 * 1024))
+              OVERSIZE=$(find "${{ inputs.path }}" -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
+              if [ -n "${OVERSIZE}" ]; then
+                echo "::error::Cloudflare Pages rejects files larger than 25 MiB."
+                printf '%s\n' "${OVERSIZE}" | awk -F '\t' '{ printf "       %6.1f MiB  %s\n", $1 / 1048576, $2 }'
+                echo ""
+                echo "       GitHub Pages and Vercel have no such limit, so this affects the"
+                echo "       Cloudflare mirror only. Options: keep the asset off this host,"
+                echo "       serve it from a CDN, or retire the mirror."
+                exit 1
+              fi
+              echo "[OK] No file exceeds the 25 MiB Cloudflare Pages limit."

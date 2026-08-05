@@ -57,7 +57,7 @@
 
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
-[![WCAG 2.1 AA](https://img.shields.io/badge/a11y-WCAG%202.1%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
+[![WCAG 2.1 AA (partial)](<https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20(partial)-yellow>)](docs/AUDIT_REMEDIATION_PLAN.md)
 
 <!-- Distribution -->
 
@@ -512,7 +512,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
-[![WCAG 2.1 AA](https://img.shields.io/badge/a11y-WCAG%202.1%20AA-green)](https://qnbs.github.io/CannaGuide-2025/)
+[![WCAG 2.1 AA (partial)](<https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20(partial)-yellow>)](docs/AUDIT_REMEDIATION_PLAN.md)
 
 <!-- Distribution -->
 

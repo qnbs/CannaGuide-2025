@@ -30,15 +30,16 @@ describe('ORT wasm CDN pin', () => {
 
         // Importer block for packages/ai-core, up to the next importer.
         const importer = /\n {2}packages\/ai-core:\n([\s\S]*?)(?=\n {2}\S|\n[^\s])/.exec(lock)
-        if (!importer) return null
+        const importerBlock = importer?.[1]
+        if (!importerBlock) return null
 
         // `onnxruntime-web:` then its `version:` line. Deliberately scoped to the
         // importer block: transformers.js pulls in a SECOND onnxruntime-web
         // (1.14.0, nested), and matching that one would assert the wrong thing.
         const entry = /\n\s+onnxruntime-web:\n\s+specifier:[^\n]*\n\s+version:\s*([0-9][^\s(]*)/.exec(
-            importer[1],
+            importerBlock,
         )
-        return entry ? entry[1] : null
+        return entry?.[1] ?? null
     }
 
     it('matches the version resolved for ai-core in pnpm-lock.yaml', () => {

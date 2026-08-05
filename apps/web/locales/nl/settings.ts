@@ -734,7 +734,7 @@ export const settingsView = {
             blockedByLocalOnly:
                 'Cloud Sync is uitgeschakeld zolang de Alleen-lokaal-modus actief is. Schakel de Alleen-lokaal-modus uit in Privacy & Beveiliging om Cloud Sync te gebruiken.',
             temporarilyUnavailable:
-                'We hebben een fout gevonden waardoor elke synchronisatie meteen zou mislukken, dus deze functie is uitgeschakeld totdat dit is opgelost. Ondertussen verlaten geen gegevens je apparaat.',
+                'We hebben een fout gevonden waardoor elke synchronisatie meteen zou mislukken, dus deze functie is uitgeschakeld totdat dit is opgelost. Ondertussen worden er geen synchronisatiegegevens naar GitHub verzonden.',
             gistSecurityWarning:
                 'Uw gegevens worden opgeslagen in een niet-vindbare GitHub Gist. Hoewel versleuteld, is de Gist-URL publiek toegankelijk als deze bekend is. Schakel E2EE in voor bescherming.', // machine-translated, review needed
             encryptionKeyRequired:

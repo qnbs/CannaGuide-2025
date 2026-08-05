@@ -714,7 +714,7 @@ export const settingsView = {
             blockedByLocalOnly:
                 'Cloud sync is disabled while Local-Only Mode is active. Disable Local-Only Mode in Privacy & Security to use cloud sync.',
             temporarilyUnavailable:
-                "We found a bug that would make every sync fail immediately, so this feature is switched off until it's fixed. No data leaves your device in the meantime.",
+                "We found a bug that would make every sync fail immediately, so this feature is switched off until it's fixed. No sync data reaches GitHub in the meantime.",
             gistSecurityWarning:
                 'Your data is stored in an unlisted GitHub Gist. While encrypted, the Gist URL is publicly accessible if known. Enable E2EE below for protection.',
             encryptionKeyRequired:

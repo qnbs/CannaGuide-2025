@@ -752,7 +752,7 @@ export const settingsView = {
             blockedByLocalOnly:
                 'La synchronisation cloud est desactivee tant que le mode Local uniquement est actif. Desactivez le mode Local uniquement dans Confidentialite & Securite pour utiliser la synchronisation cloud.',
             temporarilyUnavailable:
-                'Nous avons trouve un bug qui ferait echouer chaque synchronisation immediatement, cette fonctionnalite est donc desactivee en attendant sa correction. Aucune donnee ne quitte votre appareil entre-temps.',
+                "Nous avons trouve un bug qui ferait echouer chaque synchronisation immediatement, cette fonctionnalite est donc desactivee en attendant sa correction. Aucune donnee de synchronisation n'est envoyee a GitHub entre-temps.",
             gistSecurityWarning:
                 "Vos donnees sont dans un Gist GitHub non liste. Bien que chiffrees, l'URL du Gist est accessible publiquement si elle est connue. Activez E2EE ci-dessous pour la protection.", // machine-translated, review needed
             encryptionKeyRequired:

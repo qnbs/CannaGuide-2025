@@ -749,7 +749,7 @@ export const settingsView = {
             blockedByLocalOnly:
                 'La sincronizacion en la nube esta deshabilitada mientras el Modo Solo Local esta activo. Deshabilita el Modo Solo Local en Privacidad y Seguridad para usar la sincronizacion en la nube.',
             temporarilyUnavailable:
-                'Encontramos un error que haria fallar cada sincronizacion de inmediato, asi que esta funcion esta desactivada hasta que se solucione. Mientras tanto, ningun dato sale de tu dispositivo.',
+                'Encontramos un error que haria fallar cada sincronizacion de inmediato, asi que esta funcion esta desactivada hasta que se solucione. Mientras tanto, no se envian datos de sincronizacion a GitHub.',
             gistSecurityWarning:
                 'Tus datos se almacenan en un GitHub Gist no listado. Aunque cifrado, la URL del Gist es publicamente accesible si se conoce. Habilita E2EE para proteccion.', // machine-translated, review needed
             encryptionKeyRequired:

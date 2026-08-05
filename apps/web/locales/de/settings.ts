@@ -735,7 +735,7 @@ export const settingsView = {
             blockedByLocalOnly:
                 'Cloud-Sync ist deaktiviert, solange der Nur-Lokal-Modus aktiv ist. Deaktiviere den Nur-Lokal-Modus unter Privatsphäre & Sicherheit, um Cloud-Sync zu nutzen.',
             temporarilyUnavailable:
-                'Wir haben einen Fehler gefunden, durch den jede Synchronisierung sofort fehlschlagen würde. Deshalb ist diese Funktion abgeschaltet, bis er behoben ist. In der Zwischenzeit verlassen keine Daten dein Gerät.',
+                'Wir haben einen Fehler gefunden, durch den jede Synchronisierung sofort fehlschlagen würde. Deshalb ist diese Funktion abgeschaltet, bis er behoben ist. In der Zwischenzeit werden keine Sync-Daten an GitHub gesendet.',
             gistSecurityWarning:
                 'Deine Daten werden in einem nicht gelisteten GitHub Gist gespeichert. Auch wenn verschlüsselt, ist die Gist-URL öffentlich zugänglich, wenn sie bekannt ist. Aktiviere E2EE unten für Schutz.',
             encryptionKeyRequired:

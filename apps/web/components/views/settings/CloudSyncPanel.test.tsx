@@ -134,6 +134,8 @@ describe('CloudSyncPanel', () => {
         // Push/Pull only render inside the isSyncEnabled block.
         expect(screen.queryByTestId('cloud-sync-push')).not.toBeInTheDocument()
         expect(screen.queryByTestId('cloud-sync-pull')).not.toBeInTheDocument()
+        // "All your data lives on this device" is true here -- sync is off.
+        expect(screen.getByText('settingsView.data.localOnlyBadge')).toBeVisible()
     })
 
     it('clicking the disabled-state toggle does not dispatch (newly enabling is blocked)', () => {
@@ -151,6 +153,8 @@ describe('CloudSyncPanel', () => {
         const toggle = screen.getByTestId('cloud-sync-toggle')
         expect(toggle).not.toBeDisabled()
         expect(toggle).toHaveTextContent('settingsView.data.sync.disableSync')
+        // Would misrepresent this user's data as device-only if shown here.
+        expect(screen.queryByText('settingsView.data.localOnlyBadge')).not.toBeInTheDocument()
 
         expect(screen.getByTestId('cloud-sync-push')).toBeDisabled()
         expect(screen.getByTestId('cloud-sync-pull')).toBeDisabled()

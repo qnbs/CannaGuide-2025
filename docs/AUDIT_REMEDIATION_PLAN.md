@@ -26,11 +26,9 @@ Measured state as of this pass:
   under the 4.5:1 threshold (`purpleHaze` `neutral-500` on `bg-component`: 2.21:1; `runtzRainbow`:
   2.56:1; `lemonSkunk` primary-button label: 2.93:1). The check runs in CI (`verify` job) but in
   advisory mode -- `--strict` is not passed, so these findings do not fail the gate.
-- README.md displays an unqualified `WCAG 2.1 AA` badge (both EN and DE, two occurrences) despite
-  the above. This pass adds a footnote linking here rather than removing the badge outright, since
-  the underlying work is scoped and partially done (see below) -- but the badge should not be
-  treated as a compliance claim until the contrast failures are at zero and the ratchet baseline
-  reflects real fixes, not just a raised ceiling.
+- README.md now qualifies both EN and DE badges as `WCAG 2.1 AA (partial)` and links here. The
+  badge should not be treated as a full compliance claim until the contrast failures are at zero
+  and the ratchet baseline reflects real fixes, not just a raised ceiling.
 
 **This is not new, unscoped work.** A prior session (paused 2026-07-18, "weekly limit ~97%") did
 the classification and produced a full execution plan with three of six sub-phases merged:

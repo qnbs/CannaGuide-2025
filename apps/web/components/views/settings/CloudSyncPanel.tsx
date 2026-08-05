@@ -213,22 +213,26 @@ const CloudSyncPanel: React.FC = () => {
                 onConfirm={handlePullConfirm}
             />
 
-            {/* Local-Only Badge */}
-            <Card className="border border-green-500/30 bg-green-900/10">
-                <div className="flex items-start gap-3">
-                    <div className="mt-0.5 rounded-full bg-green-500/20 p-2">
-                        <PhosphorIcons.ShieldCheck className="h-5 w-5 text-green-400" />
+            {/* Local-Only Badge -- only true while sync isn't actually active. Was
+                rendered unconditionally, which would misrepresent a user's data as
+                device-only the moment they had cloud sync genuinely turned on. */}
+            {!isSyncEnabled && (
+                <Card className="border border-green-500/30 bg-green-900/10">
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5 rounded-full bg-green-500/20 p-2">
+                            <PhosphorIcons.ShieldCheck className="h-5 w-5 text-green-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-green-400 flex items-center gap-2">
+                                {t('settingsView.data.localOnlyBadge')}
+                            </h3>
+                            <p className="text-sm text-slate-300 mt-1">
+                                {t('settingsView.data.localOnlyDesc')}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-lg font-bold text-green-400 flex items-center gap-2">
-                            {t('settingsView.data.localOnlyBadge')}
-                        </h3>
-                        <p className="text-sm text-slate-300 mt-1">
-                            {t('settingsView.data.localOnlyDesc')}
-                        </p>
-                    </div>
-                </div>
-            </Card>
+                </Card>
+            )}
 
             {/* Cloud Sync Card — data-testid for E2E (Settings → Data → Cloud sync) */}
             <Card data-testid="cloud-sync-panel">

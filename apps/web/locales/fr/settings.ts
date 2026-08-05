@@ -720,8 +720,7 @@ export const settingsView = {
             batterySaver: 'Economie de batterie (5s)',
         },
         localOnlyBadge: 'Local uniquement',
-        localOnlyDesc:
-            'Toutes vos donnees restent sur cet appareil. Aucun compte necessaire -- jamais. Activez eventuellement la synchronisation cloud en un clic ci-dessous pour sauvegarder via un Gist GitHub anonyme.',
+        localOnlyDesc: 'Toutes vos donnees restent sur cet appareil. Aucun compte necessaire -- jamais.',
         sync: {
             title: 'Synchronisation cloud en un clic',
             description:

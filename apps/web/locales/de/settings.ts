@@ -705,8 +705,7 @@ export const settingsView = {
             batterySaver: 'Akkuschonend (5s)',
         },
         localOnlyBadge: 'Nur lokal',
-        localOnlyDesc:
-            'Alle deine Daten bleiben auf diesem Gerät. Kein Konto nötig — niemals. Optional kannst du unten die Ein-Tipp-Cloud-Synchronisierung aktivieren, um über anonyme GitHub Gists zu sichern.',
+        localOnlyDesc: 'Alle deine Daten bleiben auf diesem Gerät. Kein Konto nötig — niemals.',
         sync: {
             title: 'Ein-Tipp Cloud-Sync',
             description:

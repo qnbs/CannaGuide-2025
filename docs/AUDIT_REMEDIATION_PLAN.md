@@ -6,10 +6,11 @@ tracked only in an uncommitted, machine-local Claude Code plan file.
 
 Severity follows this repo's usual meaning: **P1** blocks a confident "release ready" claim but
 does not block ongoing development; **P2** is engineering hardening; **P3** is backlog polish.
-Nothing in this document is release-blocking on its own -- the items that _were_ release-blocking
-(local-AI consent gating, service-worker precache budget, ONNX Runtime version/delivery, Cloudflare
-deploy honesty, the stale v1.10.0 release branch) were resolved in the same pass that produced this
-file; see `CHANGELOG.md` under `[Unreleased]` for the specifics and PR references.
+No item in this document blocks ongoing development. Unresolved P1 items still prevent a confident
+"release ready" claim. The items that _were_ release-blocking (local-AI consent gating,
+service-worker precache budget, ONNX Runtime version/delivery, Cloudflare deploy honesty, the stale
+v1.10.0 release branch) were resolved in the same pass that produced this file; see `CHANGELOG.md`
+under `[Unreleased]` for the specifics and PR references.
 
 ## P1 -- Accessibility
 
@@ -96,17 +97,25 @@ Settings panel on it, rather than attempting the real fix inline with unrelated 
 
 A real fix needs, at minimum:
 
-- An authentication model: either a user-supplied fine-grained GitHub PAT (minimal Gist scope,
-  encrypted at rest, no token in logs/telemetry/URLs, documented revocation path) or an OAuth
-  device flow through a backend this project does not currently have. The backend option is a
-  bigger commitment (hosting, secret management, an actual server) that this offline-first,
-  no-backend app has deliberately avoided everywhere else -- that tension is itself a decision for
-  the maintainer, not an engineering default.
+- An authentication model: either a user-supplied fine-grained GitHub PAT or an OAuth device flow
+  through a backend this project does not currently have. The backend option is a bigger commitment
+  (hosting, secret management, an actual server) that this offline-first, no-backend app has
+  deliberately avoided everywhere else -- that tension is itself a decision for the maintainer, not
+  an engineering default. If the PAT route is chosen, it needs testable requirements before it
+  ships, not just "encrypted": AES-256-GCM at rest (reusing `syncEncryptionService.ts`'s existing
+  primitive rather than a second implementation), a defined key-storage location, a documented
+  deletion path (what happens to the stored token when the user disables sync or clears data), and
+  whether rotation is supported or the user must re-paste a new PAT. The `Authorization` header
+  itself must be scoped narrowly: attached only to the intended `api.github.com` request, never
+  forwarded across a redirect or to a different origin, and that constraint applies to both the CRDT
+  and the legacy LWW push/pull paths in `syncService.ts`. No token in logs/telemetry/URLs, and a
+  documented revocation path (pointing users at GitHub's own token-management UI).
 - Adding exactly `https://api.github.com` to `connect-src` in all five places listed above (never a
   broader GitHub-origin wildcard).
-- Deciding whether E2EE becomes mandatory for this path rather than opt-in, given the payload is a
-  full app-state backup (grow logs, notes, potentially health/diagnosis history) sitting in a Gist
-  that is unlisted but not access-controlled.
+- Making E2EE mandatory for this path rather than opt-in, given the payload is a full app-state
+  backup (grow logs, notes, potentially health/diagnosis history) sitting in a Gist that is unlisted
+  but not access-controlled. The current optional-E2EE design (`SECURITY.md`) predates this
+  redesign and should be treated as the pre-remediation baseline, not the target.
 - Re-verifying the existing conflict-resolution flow (`SyncConflictModal`, `forceLocalToGist`,
   `forceRemoteToLocal`) once auth actually works end to end -- it was never exercised against a real
   authenticated backend.
@@ -140,8 +149,7 @@ One line each; none of these were investigated in depth this pass.
 This document consolidates findings from three sources: live re-verification against the current
 repository and GitHub state (2026-08-05, superseding an earlier 2026-08-04 audit snapshot that had
 already drifted in places -- e.g. it referenced PR mergeability states and CI semantics that had
-since changed); a paused prior session's WS-C execution plan (2026-07-18, tracked at
-`~/.claude/plans/master-prompt-zazzy-leaf.md`, which is machine-local and not otherwise visible to
-other contributors -- hence folding its live status in here); and an untracked scratch resume note
-(`WS-C-RESUME-TODO.md`, repo root, self-labeled "not for commit, delete when done") whose content is
-now fully represented above and has been deleted.
+since changed); a paused prior session's WS-C execution plan from 2026-07-18, whose source was
+machine-local and never committed to the repository, with its live status folded in here instead;
+and an untracked scratch resume note (`WS-C-RESUME-TODO.md`, repo root, self-labeled "not for
+commit, delete when done") whose content is now fully represented above and has been deleted.

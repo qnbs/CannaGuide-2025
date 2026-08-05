@@ -684,8 +684,7 @@ export const settingsView = {
             batterySaver: 'Battery Saver (5s)',
         },
         localOnlyBadge: 'Local Only',
-        localOnlyDesc:
-            'All your data lives on this device. No account needed — ever. Optionally enable One-Tap Cloud Sync below to back up via anonymous GitHub Gist.',
+        localOnlyDesc: 'All your data lives on this device. No account needed — ever.',
         sync: {
             title: 'One-Tap Cloud Sync',
             description:

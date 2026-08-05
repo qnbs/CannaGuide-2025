@@ -49,6 +49,7 @@ test.describe('Cloud sync panel', () => {
         await expect(page.getByTestId('cloud-sync-panel')).toBeVisible({ timeout: 25_000 })
 
         await expect(page.getByTestId('cloud-sync-toggle')).toBeDisabled()
+        await expect(page.getByTestId('cloud-sync-unavailable-description')).toBeVisible()
         await expect(page.getByTestId('cloud-sync-unavailable-banner')).toBeVisible()
     })
 })

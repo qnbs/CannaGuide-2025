@@ -717,8 +717,7 @@ export const settingsView = {
             batterySaver: 'Ahorro de Bateria (5s)',
         },
         localOnlyBadge: 'Solo Local',
-        localOnlyDesc:
-            'Todos tus datos viven en este dispositivo. No se necesita cuenta -- nunca. Opcionalmente habilita la Sincronizacion en la Nube con Un Toque a continuacion para respaldar via GitHub Gist anonimo.',
+        localOnlyDesc: 'Todos tus datos viven en este dispositivo. No se necesita cuenta -- nunca.',
         sync: {
             title: 'Sincronizacion en la Nube con Un Toque',
             description:

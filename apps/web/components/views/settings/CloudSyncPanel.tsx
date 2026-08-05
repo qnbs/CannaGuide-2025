@@ -250,7 +250,10 @@ const CloudSyncPanel: React.FC = () => {
                             : t('settingsView.data.sync.enableSync')}
                     </Button>
                 </div>
-                <p className="text-sm text-slate-400 mb-4">
+                <p
+                    data-testid={CLOUD_SYNC_DISABLED ? 'cloud-sync-unavailable-description' : undefined}
+                    className="text-sm text-slate-400 mb-4"
+                >
                     {CLOUD_SYNC_DISABLED
                         ? t('settingsView.data.sync.unavailableDescription')
                         : t('settingsView.data.sync.description')}

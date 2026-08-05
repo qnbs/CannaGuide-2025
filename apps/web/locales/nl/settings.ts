@@ -704,8 +704,7 @@ export const settingsView = {
             batterySaver: 'Batterijbesparing (5s)',
         },
         localOnlyBadge: 'Alleen lokaal',
-        localOnlyDesc:
-            'Al je gegevens staan op dit apparaat. Geen account nodig -- nooit. Schakel optioneel One-Tap Cloud Sync hieronder in om een back-up te maken via anonieme GitHub Gist.',
+        localOnlyDesc: 'Al je gegevens staan op dit apparaat. Geen account nodig -- nooit.',
         sync: {
             title: 'One-Tap Cloud Sync',
             description:

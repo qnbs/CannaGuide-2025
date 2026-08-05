@@ -76,7 +76,7 @@
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
-**Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025) · **Cloud sync:** optional AES-256-GCM when an encryption key is set — see [SECURITY.md](SECURITY.md#cloud-sync-encryption-github-gist).
+**Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025) · **Cloud sync:** temporarily disabled (broken auth + CSP gap — see [docs/AUDIT_REMEDIATION_PLAN.md](docs/AUDIT_REMEDIATION_PLAN.md)); encryption design documented in [SECURITY.md](SECURITY.md#cloud-sync-encryption-github-gist).
 
 AI-powered, offline-first Progressive Web App for cannabis cultivation management. Simulates the full lifecycle from seed selection through harvest using VPD-based environmental modeling, 776-strain library with genealogy tracking, multi-provider AI diagnostics, and comprehensive equipment planning -- all running 100% client-side with no backend.
 

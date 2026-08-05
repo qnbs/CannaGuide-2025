@@ -10,6 +10,11 @@
 
 ## Cloud sync encryption (GitHub Gist)
 
+> **Currently disabled in the UI** (`CLOUD_SYNC_DISABLED` in `apps/web/constants.ts`): push/pull
+> never sent an `Authorization` header, and the production CSP does not allow `api.github.com`, so
+> every sync attempt would fail immediately. The encryption design below remains accurate for when
+> this is re-enabled -- see `docs/AUDIT_REMEDIATION_PLAN.md` for the tracked fix.
+
 Optional **end-to-end encryption** for the CRDT sync blob stored in a private/unlisted GitHub Gist:
 
 - **With encryption key set** (Settings → Data → Cloud sync → E2EE): the gist file content is encrypted with **AES-256-GCM** via [`apps/web/services/syncEncryptionService.ts`](apps/web/services/syncEncryptionService.ts) before upload; pulls decrypt using the same user-managed key.

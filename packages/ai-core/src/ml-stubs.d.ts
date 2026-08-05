@@ -22,8 +22,18 @@ declare module '@xenova/transformers' {
      * workspaces describe this optional dependency the same way.
      */
     export const env: {
-        backends?: { onnx?: { wasm?: { wasmPaths?: string; proxy?: boolean } } }
-        allowLocalModels?: boolean
+        backends?:
+            | {
+                  onnx?:
+                      | {
+                            wasm?:
+                                | { wasmPaths?: string | undefined; proxy?: boolean | undefined }
+                                | undefined
+                        }
+                      | undefined
+              }
+            | undefined
+        allowLocalModels?: boolean | undefined
         [key: string]: unknown
     }
 }

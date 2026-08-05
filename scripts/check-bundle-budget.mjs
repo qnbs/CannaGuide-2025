@@ -236,7 +236,13 @@ async function checkPrecacheBudget(distDir) {
         console.error(
             `[FAIL] Precache is ${mib.toFixed(2)} MiB, over the ${PRECACHE_BUDGET_MIB} MiB budget.`,
         )
-        console.error('[FAIL] Every visitor downloads this at service-worker install.')
+        console.error(
+            '[FAIL] The install-time precache exceeds the raw-byte budget (uncompressed on-disk',
+        )
+        console.error(
+            '       size, not network-transfer size -- every visitor still fetches all of it',
+        )
+        console.error('       at service-worker install, gzip/Brotli notwithstanding).')
         console.error(
             '[FIX] Add the offending chunk to injectManifest.globIgnores in vite.config.ts',
         )

@@ -390,12 +390,26 @@ jobs:
             - name: Comment preview URL on PR
               if: steps.preview-deploy.outcome == 'success'
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+              env:
+                  # Passed via env, not interpolated straight into the script below:
+                  # a `${{ }}` expression inside a github-script `script:` is spliced
+                  # into the JS source as text BEFORE it runs, so untrusted context
+                  # data (PR_HEAD_REF is attacker-controlled on a fork PR) could break
+                  # out of the string literal and execute arbitrary code with this
+                  # step's GITHUB_TOKEN. `process.env.X` never gets that treatment --
+                  # it is always a plain string value (opengrep: github-script-injection).
+                  DEPLOY_URL: ${{ steps.preview-deploy.outputs.deployment-url }}
+                  DEPLOY_SHA_FULL: ${{ env.DEPLOY_SHA }}
+                  PR_HEAD_REF: ${{ github.head_ref }}
+                  RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
                   script: |
-                      const deployUrl = '${{ steps.preview-deploy.outputs.deployment-url }}';
+                      const deployUrl = process.env.DEPLOY_URL;
                       // context.sha is the merge commit under pull_request, not what
                       // was actually checked out/built/stamped above -- DEPLOY_SHA is.
-                      const sha = '${{ env.DEPLOY_SHA }}'.substring(0, 7);
+                      const sha = process.env.DEPLOY_SHA_FULL.substring(0, 7);
+                      const headRef = process.env.PR_HEAD_REF;
+                      const runUrl = process.env.RUN_URL;
                       const marker = '<!-- cf-preview-comment -->';
                       const body = [
                         marker,
@@ -405,9 +419,9 @@ jobs:
                         '|---|---|',
                         `| **Preview URL** | ${deployUrl} |`,
                         `| **Commit** | \`${sha}\` |`,
-                        `| **Branch** | \`${{ github.head_ref }}\` |`,
+                        `| **Branch** | \`${headRef}\` |`,
                         '',
-                        `_Deployed by [deploy-cloudflare.yml](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})_`,
+                        `_Deployed by [deploy-cloudflare.yml](${runUrl})_`,
                       ].join('\n');
 
                       const { data: comments } = await github.rest.issues.listComments({

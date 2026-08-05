@@ -21,6 +21,22 @@ vi.mock('@/stores/useUIStore', () => ({
     },
 }))
 
+// This suite tests the queue's own retry/backoff mechanics, independent of
+// the UI-level CLOUD_SYNC_DISABLED kill-switch (real value: true). Default to
+// false so queueSyncWhenOnline reaches its real logic; the disabled no-op
+// itself is covered by a dedicated test below. A getter, not a plain
+// property -- see syncService.test.ts's identical mock for why.
+const cloudSyncDisabledMock = vi.fn<() => boolean>(() => false)
+vi.mock('@/constants', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/constants')>()
+    return {
+        ...actual,
+        get CLOUD_SYNC_DISABLED() {
+            return cloudSyncDisabledMock()
+        },
+    }
+})
+
 const loadService = async () => (await import('./offlineSyncQueueService')).offlineSyncQueueService
 
 describe('offlineSyncQueueService', () => {
@@ -28,6 +44,7 @@ describe('offlineSyncQueueService', () => {
         vi.resetModules()
         vi.clearAllMocks()
         vi.useFakeTimers()
+        cloudSyncDisabledMock.mockReturnValue(false)
         pushToGistMock.mockResolvedValue({ gistId: 'g1', url: 'u', syncedAt: 1000 })
         Object.defineProperty(globalThis, 'navigator', {
             value: { onLine: true },
@@ -109,6 +126,30 @@ describe('offlineSyncQueueService', () => {
 
         expect(pushToGistMock).toHaveBeenCalledTimes(3)
         expect(setSyncStatusMock).toHaveBeenCalledWith('error', 'Sync failed after retries')
+    })
+
+    it('does not arm a listener or attempt a push while cloud sync is disabled', async () => {
+        cloudSyncDisabledMock.mockReturnValueOnce(true)
+        Object.defineProperty(globalThis.navigator, 'onLine', {
+            value: false,
+            configurable: true,
+        })
+
+        const svc = await loadService()
+        svc.queueSyncWhenOnline('gist-6', null)
+
+        expect(svc.hasPendingSync()).toBe(false)
+        expect(setSyncPendingRetriesMock).not.toHaveBeenCalled()
+
+        // Even if 'online' fires, nothing was armed to react to it.
+        Object.defineProperty(globalThis.navigator, 'onLine', {
+            value: true,
+            configurable: true,
+        })
+        globalThis.dispatchEvent(new Event('online'))
+        await vi.runAllTimersAsync()
+
+        expect(pushToGistMock).not.toHaveBeenCalled()
     })
 
     it('cancelPending clears the queue', async () => {

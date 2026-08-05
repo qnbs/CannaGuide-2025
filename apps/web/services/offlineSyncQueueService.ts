@@ -1,5 +1,6 @@
 import { syncService } from '@/services/syncService'
 import { useUIStore } from '@/stores/useUIStore'
+import { CLOUD_SYNC_DISABLED } from '@/constants'
 
 const MAX_RETRIES = 3
 const BASE_DELAY_MS = 2000
@@ -17,6 +18,12 @@ class OfflineSyncQueueService {
      * Max 3 retries with exponential backoff (2s, 4s, 8s).
      */
     queueSyncWhenOnline(gistId: string | null, encryptionKeyBase64: string | null): void {
+        // syncService.pushToGist would reject anyway, but that still means
+        // arming an 'online' listener (or an immediate call) for a sync that
+        // can never succeed. Don't create work -- and a stray listener --
+        // for something guaranteed to fail.
+        if (CLOUD_SYNC_DISABLED) return
+
         this.gistId = gistId
         this.encryptionKey = encryptionKeyBase64
         this.retryCount = 0

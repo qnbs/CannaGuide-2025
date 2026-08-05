@@ -10,7 +10,15 @@
 
 ## Cloud sync encryption (GitHub Gist)
 
-Optional **end-to-end encryption** for the CRDT sync blob stored in a private/unlisted GitHub Gist:
+> **Currently disabled in the UI** (`CLOUD_SYNC_DISABLED` in `apps/web/constants.ts`): push/pull
+> never sent an `Authorization` header, and the production CSP does not allow `api.github.com`, so
+> every sync attempt would fail immediately. The optional-E2EE design documented below is the
+> **pre-remediation baseline**, not the target: `docs/AUDIT_REMEDIATION_PLAN.md` requires E2EE to
+> become mandatory, not opt-in, as a condition of re-enabling this feature -- the payload is a full
+> app-state backup sitting in a Gist that is unlisted but not access-controlled.
+
+Optional **end-to-end encryption** for the CRDT sync blob stored in a private/unlisted GitHub Gist
+(pre-remediation design, see the note above):
 
 - **With encryption key set** (Settings → Data → Cloud sync → E2EE): the gist file content is encrypted with **AES-256-GCM** via [`apps/web/services/syncEncryptionService.ts`](apps/web/services/syncEncryptionService.ts) before upload; pulls decrypt using the same user-managed key.
 - **Without a key:** the sync payload is still wrapped as structured CRDT JSON (`crdt-v1`), but the gist file is **not** E2EE — rely on GitHub account security and gist secrecy (unlisted + URL obscurity). Users handling sensitive grow data should generate or supply a key.

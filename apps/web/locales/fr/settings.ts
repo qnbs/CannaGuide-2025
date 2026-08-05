@@ -720,12 +720,12 @@ export const settingsView = {
             batterySaver: 'Economie de batterie (5s)',
         },
         localOnlyBadge: 'Local uniquement',
-        localOnlyDesc:
-            'Toutes vos donnees restent sur cet appareil. Aucun compte necessaire -- jamais. Activez eventuellement la synchronisation cloud en un clic ci-dessous pour sauvegarder via un Gist GitHub anonyme.',
+        localOnlyDesc: 'Toutes vos donnees restent sur cet appareil. Aucun compte necessaire -- jamais.',
         sync: {
             title: 'Synchronisation cloud en un clic',
             description:
                 "Sauvegardez et restaurez l'integralite de l'etat de votre application via un Gist GitHub anonyme. Aucun compte ni inscription requis.",
+            unavailableDescription: 'La synchronisation cloud est temporairement indisponible.',
             pushButton: 'Envoyer vers le cloud',
             pullButton: 'Recuperer depuis le cloud',
             pushSuccess: 'Toutes les donnees synchronisees vers le Gist avec succes.',
@@ -751,6 +751,8 @@ export const settingsView = {
             connected: 'Connecte au Gist',
             blockedByLocalOnly:
                 'La synchronisation cloud est desactivee tant que le mode Local uniquement est actif. Desactivez le mode Local uniquement dans Confidentialite & Securite pour utiliser la synchronisation cloud.',
+            temporarilyUnavailable:
+                "Nous avons trouve un bug qui ferait echouer chaque synchronisation immediatement, cette fonctionnalite est donc desactivee en attendant sa correction. Aucune donnee de synchronisation n'est envoyee a GitHub entre-temps.",
             gistSecurityWarning:
                 "Vos donnees sont dans un Gist GitHub non liste. Bien que chiffrees, l'URL du Gist est accessible publiquement si elle est connue. Activez E2EE ci-dessous pour la protection.", // machine-translated, review needed
             encryptionKeyRequired:

@@ -14,7 +14,7 @@ import { generateSyncEncryptionKey } from '@/services/syncEncryptionService'
 import { offlineSyncQueueService } from '@/services/offlineSyncQueueService'
 import { SyncConflictModal } from '@/components/common/SyncConflictModal'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY } from '@/constants'
+import { REDUX_STATE_KEY, CLOUD_SYNC_DISABLED } from '@/constants'
 
 const formatSyncDate = (ts: number | null, t: (key: string) => string): string => {
     if (!ts) return t('settingsView.data.sync.never')
@@ -63,6 +63,11 @@ const CloudSyncPanel: React.FC = () => {
     }
 
     const handleToggleSync = (): void => {
+        // Turning an already-enabled sync off stays available even while the
+        // feature is disabled -- that direction is always safe. Only newly
+        // enabling it is blocked, so a user can't opt into a control that would
+        // fail the instant they pressed Push or Pull.
+        if (CLOUD_SYNC_DISABLED && !isSyncEnabled) return
         if (isSyncEnabled) {
             dispatch(setSetting({ path: 'data.cloudSync.provider', value: 'none' }))
             dispatch(setSetting({ path: 'data.cloudSync.enabled', value: false }))
@@ -208,22 +213,29 @@ const CloudSyncPanel: React.FC = () => {
                 onConfirm={handlePullConfirm}
             />
 
-            {/* Local-Only Badge */}
-            <Card className="border border-green-500/30 bg-green-900/10">
-                <div className="flex items-start gap-3">
-                    <div className="mt-0.5 rounded-full bg-green-500/20 p-2">
-                        <PhosphorIcons.ShieldCheck className="h-5 w-5 text-green-400" />
+            {/* Local-Only Badge -- gated on isLocalOnly (the actual "no outbound
+                traffic at all" invariant), not !isSyncEnabled. A user can have
+                Gist sync off while Local-Only Mode is ALSO off (BYOK cloud AI,
+                cloud TTS etc. still allowed) -- !isSyncEnabled is true in that
+                state too, so it would have shown "all your data stays on this
+                device" while other outbound features remained active. */}
+            {isLocalOnly && (
+                <Card className="border border-green-500/30 bg-green-900/10">
+                    <div className="flex items-start gap-3">
+                        <div className="mt-0.5 rounded-full bg-green-500/20 p-2">
+                            <PhosphorIcons.ShieldCheck className="h-5 w-5 text-green-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-green-400 flex items-center gap-2">
+                                {t('settingsView.data.localOnlyBadge')}
+                            </h3>
+                            <p className="text-sm text-slate-300 mt-1">
+                                {t('settingsView.data.localOnlyDesc')}
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-lg font-bold text-green-400 flex items-center gap-2">
-                            {t('settingsView.data.localOnlyBadge')}
-                        </h3>
-                        <p className="text-sm text-slate-300 mt-1">
-                            {t('settingsView.data.localOnlyDesc')}
-                        </p>
-                    </div>
-                </div>
-            </Card>
+                </Card>
+            )}
 
             {/* Cloud Sync Card — data-testid for E2E (Settings → Data → Cloud sync) */}
             <Card data-testid="cloud-sync-panel">
@@ -233,19 +245,36 @@ const CloudSyncPanel: React.FC = () => {
                         {t('settingsView.data.sync.title')}
                     </h3>
                     <Button
+                        data-testid="cloud-sync-toggle"
                         variant={isSyncEnabled ? 'default' : 'secondary'}
                         size="sm"
                         className="shrink-0"
                         onClick={handleToggleSync}
+                        disabled={CLOUD_SYNC_DISABLED && !isSyncEnabled}
                     >
                         {isSyncEnabled
                             ? t('settingsView.data.sync.disableSync')
                             : t('settingsView.data.sync.enableSync')}
                     </Button>
                 </div>
-                <p className="text-sm text-slate-400 mb-4">
-                    {t('settingsView.data.sync.description')}
+                <p
+                    data-testid={CLOUD_SYNC_DISABLED ? 'cloud-sync-unavailable-description' : undefined}
+                    className="text-sm text-slate-400 mb-4"
+                >
+                    {CLOUD_SYNC_DISABLED
+                        ? t('settingsView.data.sync.unavailableDescription')
+                        : t('settingsView.data.sync.description')}
                 </p>
+
+                {CLOUD_SYNC_DISABLED && (
+                    <div
+                        data-testid="cloud-sync-unavailable-banner"
+                        className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300"
+                    >
+                        <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
+                        {t('settingsView.data.sync.temporarilyUnavailable')}
+                    </div>
+                )}
 
                 {isLocalOnly && (
                     <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
@@ -337,8 +366,9 @@ const CloudSyncPanel: React.FC = () => {
                         {/* Push / Pull */}
                         <div className="flex flex-col sm:flex-row gap-2">
                             <Button
+                                data-testid="cloud-sync-push"
                                 onClick={handlePush}
-                                disabled={isPushing || isPulling || isLocalOnly}
+                                disabled={isPushing || isPulling || isLocalOnly || CLOUD_SYNC_DISABLED}
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.CloudArrowUp className="mr-2" />
@@ -347,12 +377,14 @@ const CloudSyncPanel: React.FC = () => {
                                     : t('settingsView.data.sync.pushButton')}
                             </Button>
                             <Button
+                                data-testid="cloud-sync-pull"
                                 variant="secondary"
                                 onClick={handlePullClick}
                                 disabled={
                                     isPushing ||
                                     isPulling ||
                                     isLocalOnly ||
+                                    CLOUD_SYNC_DISABLED ||
                                     (!pullGistInput.trim() && !cloudSync.gistId)
                                 }
                                 className="flex-1 justify-center"

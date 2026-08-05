@@ -705,12 +705,12 @@ export const settingsView = {
             batterySaver: 'Akkuschonend (5s)',
         },
         localOnlyBadge: 'Nur lokal',
-        localOnlyDesc:
-            'Alle deine Daten bleiben auf diesem Gerät. Kein Konto nötig — niemals. Optional kannst du unten die Ein-Tipp-Cloud-Synchronisierung aktivieren, um über anonyme GitHub Gists zu sichern.',
+        localOnlyDesc: 'Alle deine Daten bleiben auf diesem Gerät. Kein Konto nötig — niemals.',
         sync: {
             title: 'Ein-Tipp Cloud-Sync',
             description:
                 'Sichere & stelle deinen gesamten App-Zustand über anonyme GitHub Gists wieder her. Kein Konto oder Anmeldung erforderlich.',
+            unavailableDescription: 'Cloud-Sync ist vorübergehend nicht verfügbar.',
             pushButton: 'In die Cloud sichern',
             pullButton: 'Aus der Cloud wiederherstellen',
             pushSuccess: 'Alle Daten erfolgreich zum Gist synchronisiert.',
@@ -734,6 +734,8 @@ export const settingsView = {
             connected: 'Mit Gist verbunden',
             blockedByLocalOnly:
                 'Cloud-Sync ist deaktiviert, solange der Nur-Lokal-Modus aktiv ist. Deaktiviere den Nur-Lokal-Modus unter Privatsphäre & Sicherheit, um Cloud-Sync zu nutzen.',
+            temporarilyUnavailable:
+                'Wir haben einen Fehler gefunden, durch den jede Synchronisierung sofort fehlschlagen würde. Deshalb ist diese Funktion abgeschaltet, bis er behoben ist. In der Zwischenzeit werden keine Sync-Daten an GitHub gesendet.',
             gistSecurityWarning:
                 'Deine Daten werden in einem nicht gelisteten GitHub Gist gespeichert. Auch wenn verschlüsselt, ist die Gist-URL öffentlich zugänglich, wenn sie bekannt ist. Aktiviere E2EE unten für Schutz.',
             encryptionKeyRequired:

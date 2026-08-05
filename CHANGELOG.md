@@ -77,6 +77,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
     - **`ip-address`** `>=10.1.1` → `>=10.3.1 <11`: SSRF / trust-boundary bypass, and the only advisory on an `apps/web` **production** path (`mqtt > socks`)
     - **`undici`** → `>=7.29.0 <8.0.0`; **`js-yaml@4`** → `>=4.2.0 <5` (cosmiconfig, unaffected)
     - newly pinned: **`brace-expansion@1/@2/@5`**, **`postcss >=8.5.23 <9`**, **`body-parser@1 >=1.20.6 <2`**, and **`sharp >=0.35.0 <1`** (libvips CVE-2026-33327/33328/35590/35591; reached only via `@xenova/transformers` and `wrangler > miniflare`, never bundled into the browser PWA)
+- **fix(sync):** GitHub Gist cloud sync disabled (`CLOUD_SYNC_DISABLED` in `apps/web/constants.ts`). `syncService`'s push/pull never sent an `Authorization` header, and the production CSP does not allow `api.github.com` -- so the "One-Tap Cloud Sync" Push/Pull buttons in Settings failed immediately on every attempt, in every environment, despite copy implying a working, no-signup feature. The buttons are now disabled with an honest "temporarily unavailable" message (all 5 locales); turning an already-enabled sync off stays available, only newly enabling it is blocked. Full redesign (PAT/OAuth auth, the missing CSP entry, mandatory E2EE) tracked in `docs/AUDIT_REMEDIATION_PLAN.md`
 
 ---
 

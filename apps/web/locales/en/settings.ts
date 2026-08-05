@@ -684,12 +684,12 @@ export const settingsView = {
             batterySaver: 'Battery Saver (5s)',
         },
         localOnlyBadge: 'Local Only',
-        localOnlyDesc:
-            'All your data lives on this device. No account needed — ever. Optionally enable One-Tap Cloud Sync below to back up via anonymous GitHub Gist.',
+        localOnlyDesc: 'All your data lives on this device. No account needed — ever.',
         sync: {
             title: 'One-Tap Cloud Sync',
             description:
                 'Back up & restore your entire app state via anonymous GitHub Gist. No account or sign-up required.',
+            unavailableDescription: 'Cloud sync is temporarily unavailable.',
             pushButton: 'Push to Cloud',
             pullButton: 'Pull from Cloud',
             pushSuccess: 'All data synced to Gist successfully.',
@@ -713,6 +713,8 @@ export const settingsView = {
             connected: 'Connected to Gist',
             blockedByLocalOnly:
                 'Cloud sync is disabled while Local-Only Mode is active. Disable Local-Only Mode in Privacy & Security to use cloud sync.',
+            temporarilyUnavailable:
+                "We found a bug that would make every sync fail immediately, so this feature is switched off until it's fixed. No sync data reaches GitHub in the meantime.",
             gistSecurityWarning:
                 'Your data is stored in an unlisted GitHub Gist. While encrypted, the Gist URL is publicly accessible if known. Enable E2EE below for protection.',
             encryptionKeyRequired:

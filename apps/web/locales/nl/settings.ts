@@ -704,12 +704,12 @@ export const settingsView = {
             batterySaver: 'Batterijbesparing (5s)',
         },
         localOnlyBadge: 'Alleen lokaal',
-        localOnlyDesc:
-            'Al je gegevens staan op dit apparaat. Geen account nodig -- nooit. Schakel optioneel One-Tap Cloud Sync hieronder in om een back-up te maken via anonieme GitHub Gist.',
+        localOnlyDesc: 'Al je gegevens staan op dit apparaat. Geen account nodig -- nooit.',
         sync: {
             title: 'One-Tap Cloud Sync',
             description:
                 'Maak een back-up en herstel je volledige app-status via anonieme GitHub Gist. Geen account of registratie vereist.',
+            unavailableDescription: 'Cloud Sync is tijdelijk niet beschikbaar.',
             pushButton: 'Naar cloud pushen',
             pullButton: 'Van cloud ophalen',
             pushSuccess: 'Alle gegevens succesvol gesynchroniseerd naar Gist.',
@@ -733,6 +733,8 @@ export const settingsView = {
             connected: 'Verbonden met Gist',
             blockedByLocalOnly:
                 'Cloud Sync is uitgeschakeld zolang de Alleen-lokaal-modus actief is. Schakel de Alleen-lokaal-modus uit in Privacy & Beveiliging om Cloud Sync te gebruiken.',
+            temporarilyUnavailable:
+                'We hebben een fout gevonden waardoor elke synchronisatie meteen zou mislukken, dus deze functie is uitgeschakeld totdat dit is opgelost. Ondertussen worden er geen synchronisatiegegevens naar GitHub verzonden.',
             gistSecurityWarning:
                 'Uw gegevens worden opgeslagen in een niet-vindbare GitHub Gist. Hoewel versleuteld, is de Gist-URL publiek toegankelijk als deze bekend is. Schakel E2EE in voor bescherming.', // machine-translated, review needed
             encryptionKeyRequired:

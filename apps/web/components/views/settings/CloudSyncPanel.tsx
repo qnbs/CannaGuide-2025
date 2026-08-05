@@ -238,6 +238,7 @@ const CloudSyncPanel: React.FC = () => {
                         {t('settingsView.data.sync.title')}
                     </h3>
                     <Button
+                        data-testid="cloud-sync-toggle"
                         variant={isSyncEnabled ? 'default' : 'secondary'}
                         size="sm"
                         className="shrink-0"
@@ -256,7 +257,10 @@ const CloudSyncPanel: React.FC = () => {
                 </p>
 
                 {CLOUD_SYNC_DISABLED && (
-                    <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
+                    <div
+                        data-testid="cloud-sync-unavailable-banner"
+                        className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300"
+                    >
                         <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
                         {t('settingsView.data.sync.temporarilyUnavailable')}
                     </div>

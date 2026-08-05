@@ -4,6 +4,16 @@ import { PlantStage, AdvancedFilterState } from '@/types'
 export const APP_VERSION = 6
 export const CURRENT_STRAIN_DATA_VERSION = 7
 
+// --- FEATURE AVAILABILITY ---
+/**
+ * GitHub Gist cloud sync is disabled: `syncService`'s push/pull never send an
+ * Authorization header (unauthenticated create/update calls fail), and the
+ * production CSP does not allow `api.github.com`, so every push/pull fails
+ * immediately in every environment. Flip back to `false` only once both are
+ * fixed -- see docs/AUDIT_REMEDIATION_PLAN.md for the tracked redesign.
+ */
+export const CLOUD_SYNC_DISABLED = true
+
 /**
  * Per-slice schema versions. Bump a slice version whenever its persisted shape
  * changes so the migration system can detect stale data and auto-reset that

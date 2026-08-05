@@ -28,4 +28,17 @@ test.describe('Cloud sync panel', () => {
 
         await expect(page.getByTestId('sync-conflict-modal')).toHaveCount(0)
     })
+
+    // Gist sync is disabled (CLOUD_SYNC_DISABLED in constants.ts): syncService
+    // never sends an Authorization header and the production CSP does not allow
+    // api.github.com, so every push/pull would fail immediately. This asserts
+    // the honest-unavailable state rather than a working feature.
+    test('push and pull are disabled while cloud sync is unavailable', async ({ page }) => {
+        await page.locator('[data-view-id="settings"]').first().click()
+        await page.locator('[data-tab-id="data"]').click({ timeout: 15_000 })
+        await expect(page.getByTestId('cloud-sync-panel')).toBeVisible({ timeout: 25_000 })
+
+        await expect(page.getByTestId('cloud-sync-push')).toBeDisabled()
+        await expect(page.getByTestId('cloud-sync-pull')).toBeDisabled()
+    })
 })

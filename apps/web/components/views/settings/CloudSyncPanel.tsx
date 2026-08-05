@@ -14,7 +14,7 @@ import { generateSyncEncryptionKey } from '@/services/syncEncryptionService'
 import { offlineSyncQueueService } from '@/services/offlineSyncQueueService'
 import { SyncConflictModal } from '@/components/common/SyncConflictModal'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY } from '@/constants'
+import { REDUX_STATE_KEY, CLOUD_SYNC_DISABLED } from '@/constants'
 
 const formatSyncDate = (ts: number | null, t: (key: string) => string): string => {
     if (!ts) return t('settingsView.data.sync.never')
@@ -63,6 +63,11 @@ const CloudSyncPanel: React.FC = () => {
     }
 
     const handleToggleSync = (): void => {
+        // Turning an already-enabled sync off stays available even while the
+        // feature is disabled -- that direction is always safe. Only newly
+        // enabling it is blocked, so a user can't opt into a control that would
+        // fail the instant they pressed Push or Pull.
+        if (CLOUD_SYNC_DISABLED && !isSyncEnabled) return
         if (isSyncEnabled) {
             dispatch(setSetting({ path: 'data.cloudSync.provider', value: 'none' }))
             dispatch(setSetting({ path: 'data.cloudSync.enabled', value: false }))
@@ -237,6 +242,7 @@ const CloudSyncPanel: React.FC = () => {
                         size="sm"
                         className="shrink-0"
                         onClick={handleToggleSync}
+                        disabled={CLOUD_SYNC_DISABLED && !isSyncEnabled}
                     >
                         {isSyncEnabled
                             ? t('settingsView.data.sync.disableSync')
@@ -244,8 +250,17 @@ const CloudSyncPanel: React.FC = () => {
                     </Button>
                 </div>
                 <p className="text-sm text-slate-400 mb-4">
-                    {t('settingsView.data.sync.description')}
+                    {CLOUD_SYNC_DISABLED
+                        ? t('settingsView.data.sync.unavailableDescription')
+                        : t('settingsView.data.sync.description')}
                 </p>
+
+                {CLOUD_SYNC_DISABLED && (
+                    <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
+                        <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
+                        {t('settingsView.data.sync.temporarilyUnavailable')}
+                    </div>
+                )}
 
                 {isLocalOnly && (
                     <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
@@ -337,8 +352,9 @@ const CloudSyncPanel: React.FC = () => {
                         {/* Push / Pull */}
                         <div className="flex flex-col sm:flex-row gap-2">
                             <Button
+                                data-testid="cloud-sync-push"
                                 onClick={handlePush}
-                                disabled={isPushing || isPulling || isLocalOnly}
+                                disabled={isPushing || isPulling || isLocalOnly || CLOUD_SYNC_DISABLED}
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.CloudArrowUp className="mr-2" />
@@ -347,12 +363,14 @@ const CloudSyncPanel: React.FC = () => {
                                     : t('settingsView.data.sync.pushButton')}
                             </Button>
                             <Button
+                                data-testid="cloud-sync-pull"
                                 variant="secondary"
                                 onClick={handlePullClick}
                                 disabled={
                                     isPushing ||
                                     isPulling ||
                                     isLocalOnly ||
+                                    CLOUD_SYNC_DISABLED ||
                                     (!pullGistInput.trim() && !cloudSync.gistId)
                                 }
                                 className="flex-1 justify-center"

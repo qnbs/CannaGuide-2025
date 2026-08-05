@@ -723,6 +723,7 @@ export const settingsView = {
             title: 'Sincronizacion en la Nube con Un Toque',
             description:
                 'Respalda y restaura todo el estado de tu aplicacion via GitHub Gist anonimo. No se requiere cuenta ni registro.',
+            unavailableDescription: 'La sincronizacion en la nube no esta disponible temporalmente.',
             pushButton: 'Enviar a la Nube',
             pullButton: 'Obtener de la Nube',
             pushSuccess: 'Todos los datos sincronizados al Gist exitosamente.',
@@ -748,6 +749,8 @@ export const settingsView = {
             connected: 'Conectado al Gist',
             blockedByLocalOnly:
                 'La sincronizacion en la nube esta deshabilitada mientras el Modo Solo Local esta activo. Deshabilita el Modo Solo Local en Privacidad y Seguridad para usar la sincronizacion en la nube.',
+            temporarilyUnavailable:
+                'Encontramos un error que haria fallar cada sincronizacion de inmediato, asi que esta funcion esta desactivada hasta que se solucione. Mientras tanto, ningun dato sale de tu dispositivo.',
             gistSecurityWarning:
                 'Tus datos se almacenan en un GitHub Gist no listado. Aunque cifrado, la URL del Gist es publicamente accesible si se conoce. Habilita E2EE para proteccion.', // machine-translated, review needed
             encryptionKeyRequired:

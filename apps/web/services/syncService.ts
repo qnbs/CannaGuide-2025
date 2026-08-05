@@ -8,6 +8,7 @@ import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { crdtService, base64ToUint8Array } from '@/services/crdtService'
 import type { CrdtSyncResult, DivergenceInfo } from '@/services/crdtService'
 import { reportCrdtTelemetry } from '@/services/crdtSyncBridge'
+import { CLOUD_SYNC_DISABLED } from '@/constants'
 import * as Y from 'yjs'
 import * as Sentry from '@sentry/react'
 
@@ -81,6 +82,13 @@ class SyncService {
         encryptionKeyBase64: string | null = null,
         reduxStateJson?: string | undefined,
     ): Promise<{ gistId: string; url: string; syncedAt: number }> {
+        // Guarded here, not just at the UI's disabled buttons, so no caller --
+        // a queued offline retry, the SyncConflictModal's "Keep Local"
+        // resolution (which routes through forceLocalToGist -> pushToGist), or
+        // future code -- can complete a network call while sync is disabled.
+        if (CLOUD_SYNC_DISABLED) {
+            throw new Error(getT()('settingsView.data.sync.temporarilyUnavailable'))
+        }
         if (isLocalOnlyMode()) {
             throw new Error(getT()('settingsView.data.sync.blockedByLocalOnly'))
         }
@@ -172,6 +180,10 @@ class SyncService {
         divergenceInfo?: DivergenceInfo | undefined
         legacyState?: string | undefined
     }> {
+        // See pushToGist for why this is guarded here rather than only in the UI.
+        if (CLOUD_SYNC_DISABLED) {
+            throw new Error(getT()('settingsView.data.sync.temporarilyUnavailable'))
+        }
         if (isLocalOnlyMode()) {
             throw new Error(getT()('settingsView.data.sync.blockedByLocalOnly'))
         }

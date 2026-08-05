@@ -67,6 +67,26 @@ vi.mock('yjs', () => ({
     encodeStateVector: vi.fn(() => new Uint8Array([0])),
 }))
 
+// This suite tests syncService's own CRDT/encryption/fetch logic, independent
+// of the UI-level CLOUD_SYNC_DISABLED kill-switch (real value: true). Default
+// to false here so push/pull reach their real logic. A getter, not a plain
+// property: the mock factory runs once (vi.resetModules() does not force it
+// to re-run per dynamic import), so a static value would freeze whatever
+// cloudSyncDisabledMock returned the first time. The getter re-evaluates on
+// every read, matching how syncService.ts actually consumes it
+// (`if (CLOUD_SYNC_DISABLED)`), so a test can flip the mock's return value
+// before calling loadService() to exercise the guard (see below).
+const cloudSyncDisabledMock = vi.fn<() => boolean>(() => false)
+vi.mock('@/constants', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/constants')>()
+    return {
+        ...actual,
+        get CLOUD_SYNC_DISABLED() {
+            return cloudSyncDisabledMock()
+        },
+    }
+})
+
 const loadService = async () => (await import('./syncService')).syncService
 
 type FetchOptions = {
@@ -104,6 +124,7 @@ describe('syncService', () => {
         vi.clearAllMocks()
         getTMock.mockReturnValue((key: string) => key)
         isLocalOnlyModeMock.mockReturnValue(false)
+        cloudSyncDisabledMock.mockReturnValue(false)
         isInitializedMock.mockReturnValue(true)
         encryptSyncPayloadMock.mockImplementation(async (payload: string) => payload)
         decryptSyncPayloadMock.mockImplementation(async (payload: string) => payload)
@@ -185,6 +206,16 @@ describe('syncService', () => {
         await expect(svc.pushToGist(null)).rejects.toThrow(
             'settingsView.data.sync.blockedByLocalOnly',
         )
+    })
+
+    it('blocks push while cloud sync is disabled', async () => {
+        cloudSyncDisabledMock.mockReturnValueOnce(true)
+        const svc = await loadService()
+
+        await expect(svc.pushToGist(null)).rejects.toThrow(
+            'settingsView.data.sync.temporarilyUnavailable',
+        )
+        expect(global.fetch).not.toHaveBeenCalled()
     })
 
     it('throws when CRDT is not initialized on push', async () => {
@@ -301,6 +332,16 @@ describe('syncService', () => {
         await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
             'settingsView.data.sync.blockedByLocalOnly',
         )
+    })
+
+    it('blocks pull while cloud sync is disabled', async () => {
+        cloudSyncDisabledMock.mockReturnValueOnce(true)
+        const svc = await loadService()
+
+        await expect(svc.pullFromGist('abcdef01234567890123')).rejects.toThrow(
+            'settingsView.data.sync.temporarilyUnavailable',
+        )
+        expect(global.fetch).not.toHaveBeenCalled()
     })
 
     // -- forceLocalToGist / forceRemoteToLocal --

@@ -257,7 +257,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 7. **Formatting covers new files:** `npx prettier --check $(git status --porcelain | awk '{print $2}')` -- **not** `git diff --name-only`, which omits untracked files and lets a brand-new file fail the docs gate in CI
 8. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL); `pnpm run check:i18n`
 9. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
-10. **Hooks run:** `.husky/pre-commit` = serialized identity + `lint-staged --concurrent 1`; `.husky/pre-push` = a single-hook lock, dependency/resource-pressure preflight, **scoped** typecheck, changed-scope lint, file budget and doc metrics. Hook tools execute directly from `node_modules/.bin`, so pnpm cannot install implicitly. Neither calls a bare `turbo run`.
+10. **Hooks run:** `.husky/pre-commit` = serialized identity + `lint-staged --concurrent 1`; `.husky/pre-push` = a single-hook lock, dependency/resource-pressure preflight, **scoped** typecheck, changed-scope lint, file budget and doc metrics. Hook tools execute installed package-declared entrypoints through Node, so pnpm cannot install implicitly. Neither calls a bare `turbo run`.
 11. **Typecheck after test file changes:** When creating or modifying `*.test.ts(x)` files, **always run typecheck immediately** (`pnpm --filter @cannaguide/web typecheck`) before running the tests. Test files are TypeScript and can introduce type errors.
 
 ### Low-end hardware: the commands that look safe but are not

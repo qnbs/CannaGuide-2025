@@ -17,7 +17,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
-import { resolveLocalBinary } from './git-hooks/hook-runtime.mjs'
+import { resolveLocalTool } from './git-hooks/hook-runtime.mjs'
 
 const CONFIG_PATH = new URL('./lint-burndown.config.json', import.meta.url)
 const TAG = '[lint:scopes]'
@@ -104,9 +104,10 @@ function main() {
 
     const args = ['--report-unused-disable-directives', '--max-warnings', '0', ...targets]
 
-    const result = spawnSync(resolveLocalBinary('eslint'), args, {
+    const eslint = resolveLocalTool('eslint')
+    const result = spawnSync(eslint.command, [...eslint.argsPrefix, ...args], {
         stdio: 'inherit',
-        shell: process.platform === 'win32',
+        shell: false,
     })
 
     process.exit(result.status ?? 1)

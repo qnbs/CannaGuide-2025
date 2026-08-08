@@ -167,7 +167,7 @@ every PR.
 
 | Hook                           | Command                                                                                            |
 | ------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `pre-commit`                   | serialized `lint-staged --concurrent 1` (security + eslint + prettier on staged files)             |
+| `pre-commit`                   | commit identity + serialized `lint-staged --concurrent 1` (security + eslint + prettier)           |
 | `commit-msg`                   | commitlint conventional commits                                                                    |
 | `pre-push`                     | single-hook lock + memory/dependency preflight + scoped typecheck + changed lint + local gates     |
 | **`gate:push`** (manual, full) | `pnpm run gate:push` — identity, lint, mdc, graphify, typecheck, tests, scopes, file-budget, build |
@@ -180,7 +180,11 @@ Skip hooks (emergency only): `git push --no-verify`
 
 ```bash
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
-CANNAGUIDE_NODE_BIN="$(dirname "$(nvm which 24)")"
+if ! CANNAGUIDE_NODE="$(nvm which 24)" || [ ! -x "$CANNAGUIDE_NODE" ]; then
+  echo "Node.js 24 is unavailable; PATH was not modified." >&2
+  return 1 2>/dev/null || exit 1
+fi
+CANNAGUIDE_NODE_BIN="$(dirname "$CANNAGUIDE_NODE")"
 export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
 corepack enable pnpm
 pnpm --version # must match package.json packageManager

@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import {
     accessSync,
-    constants,
     existsSync,
     mkdirSync,
     readFileSync,
@@ -20,9 +19,17 @@ import { spawn, spawnSync } from 'node:child_process'
 
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
-const LOCK_DIRECTORY_NAME = 'cannaguide-hook.lock'
+const LOCK_DIRECTORY_PREFIX = 'cannaguide-hook'
 const LOCK_METADATA_NAME = 'owner.json'
-const REQUIRED_HOOK_TOOLS = ['lint-staged', 'commitlint', 'turbo', 'tsc', 'eslint']
+const LOCAL_TOOL_PACKAGES = {
+    'anti-trojan-source': ['anti-trojan-source', 'anti-trojan-source'],
+    commitlint: ['@commitlint/cli', 'commitlint'],
+    eslint: ['eslint', 'eslint'],
+    'lint-staged': ['lint-staged', 'lint-staged'],
+    prettier: ['prettier', 'prettier'],
+    tsc: ['typescript', 'tsc'],
+    turbo: ['turbo', 'turbo'],
+}
 const RESOURCE_PRESSURE_MB = {
     criticalAvailable: 256,
     lowAvailable: 512,
@@ -158,27 +165,10 @@ function removeKnownLockDirectory(lockDirectory) {
     rmdirSync(lockDirectory)
 }
 
-function recoverProvenStaleLock(lockDirectory, existing, currentBootIdentity) {
-    if (
-        !existing.bootIdentity ||
-        !currentBootIdentity ||
-        existing.bootIdentity === currentBootIdentity
-    ) {
-        return false
-    }
-
-    const quarantine = `${lockDirectory}.stale-${process.pid}-${Date.now()}`
-    try {
-        renameSync(lockDirectory, quarantine)
-    } catch (error) {
-        if (error && typeof error === 'object' && error.code === 'ENOENT') return true
-        throw error
-    }
-    removeKnownLockDirectory(quarantine)
-    console.warn(
-        `[hook] recovered a lock from an earlier boot (${existing.bootIdentity} -> ${currentBootIdentity})`,
-    )
-    return true
+function lockDirectoryName(bootIdentity) {
+    if (!bootIdentity) return `${LOCK_DIRECTORY_PREFIX}.lock`
+    const bootKey = createHash('sha256').update(bootIdentity).digest('hex').slice(0, 16)
+    return `${LOCK_DIRECTORY_PREFIX}-${bootKey}.lock`
 }
 
 export function acquireHookLock({
@@ -191,7 +181,11 @@ export function acquireHookLock({
 } = {}) {
     if (!hookName) throw new HookRuntimeError('A hook name is required to acquire the hook lock.')
 
-    const lockDirectory = join(gitCommonDir, LOCK_DIRECTORY_NAME)
+    // Linux boot identity is part of the lock name. A hard power-off can leave
+    // the previous directory intact, but a later boot uses a different name and
+    // never has to delete an observed lock. Platforms without a trustworthy boot
+    // identity conservatively reuse one fixed name and require manual recovery.
+    const lockDirectory = join(gitCommonDir, lockDirectoryName(bootIdentity))
     const owner = {
         token: randomUUID(),
         hookName,
@@ -201,45 +195,32 @@ export function acquireHookLock({
         startedAt: now().toISOString(),
     }
 
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-        const candidateDirectory = `${lockDirectory}.candidate-${pid}-${owner.token}`
-        try {
-            mkdirSync(candidateDirectory, { mode: 0o700 })
-            writeFileSync(
-                lockMetadataPath(candidateDirectory),
-                `${JSON.stringify(owner, null, 2)}\n`,
-                { mode: 0o600 },
-            )
-            renameSync(candidateDirectory, lockDirectory)
-            break
-        } catch (error) {
-            if (existsSync(candidateDirectory)) {
-                try {
-                    removeKnownLockDirectory(candidateDirectory)
-                } catch {
-                    // Preserve anything we cannot identify and remove exactly.
-                }
+    const candidateDirectory = `${lockDirectory}.candidate-${pid}-${owner.token}`
+    try {
+        mkdirSync(candidateDirectory, { mode: 0o700 })
+        writeFileSync(lockMetadataPath(candidateDirectory), `${JSON.stringify(owner, null, 2)}\n`, {
+            mode: 0o600,
+        })
+        renameSync(candidateDirectory, lockDirectory)
+    } catch (error) {
+        if (existsSync(candidateDirectory)) {
+            try {
+                removeKnownLockDirectory(candidateDirectory)
+            } catch {
+                // Preserve anything we cannot identify and remove exactly.
             }
-            if (
-                !error ||
-                typeof error !== 'object' ||
-                !['EEXIST', 'ENOTEMPTY'].includes(error.code)
-            ) {
-                throw error
-            }
-
-            const existing = readLockMetadata(lockDirectory)
-            if (attempt === 0 && recoverProvenStaleLock(lockDirectory, existing, bootIdentity)) {
-                continue
-            }
-
-            throw new HookRuntimeError(
-                `Another repository hook is already active: ${existing.hookName ?? 'unknown'} ` +
-                    `(pid ${existing.pid ?? 'unknown'}, started ${existing.startedAt ?? 'unknown'}, ` +
-                    `elapsed ${formatDuration(Date.now() - Date.parse(existing.startedAt))}). ` +
-                    `Wait for it to finish. Same-boot locks are never deleted automatically; if the owner was killed, inspect ${lockMetadataPath(lockDirectory)} and prove no hook is active before removing the lock.`,
-            )
         }
+        if (!error || typeof error !== 'object' || !['EEXIST', 'ENOTEMPTY'].includes(error.code)) {
+            throw error
+        }
+
+        const existing = readLockMetadata(lockDirectory)
+        throw new HookRuntimeError(
+            `Another repository hook is already active: ${existing.hookName ?? 'unknown'} ` +
+                `(pid ${existing.pid ?? 'unknown'}, started ${existing.startedAt ?? 'unknown'}, ` +
+                `elapsed ${formatDuration(Date.now() - Date.parse(existing.startedAt))}). ` +
+                `Wait for it to finish. Current-boot locks are never deleted automatically; if the owner was killed, inspect ${lockMetadataPath(lockDirectory)} and prove no hook is active before removing the lock.`,
+        )
     }
 
     let released = false
@@ -260,10 +241,7 @@ export function acquireHookLock({
     }
 }
 
-export function assertDependenciesSynchronized({
-    repoRoot = REPO_ROOT,
-    requiredTools = REQUIRED_HOOK_TOOLS,
-} = {}) {
+export function assertDependenciesSynchronized({ repoRoot = REPO_ROOT, requiredTools = [] } = {}) {
     const rootLock = join(repoRoot, 'pnpm-lock.yaml')
     const installedLock = join(repoRoot, 'node_modules', '.pnpm', 'lock.yaml')
     const modulesMetadata = join(repoRoot, 'node_modules', '.modules.yaml')
@@ -278,9 +256,24 @@ export function assertDependenciesSynchronized({
         }
     }
 
-    if (!readFileSync(rootLock).equals(readFileSync(installedLock))) {
+    const importerSection = (path) => {
+        const lines = readFileSync(path, 'utf8').replaceAll('\r\n', '\n').split('\n')
+        const start = lines.findIndex((line) => line === 'importers:')
+        if (start === -1) return null
+        const end = lines.findIndex(
+            (line, index) => index > start && (/^[^\s#].*:$/.test(line) || line === '---'),
+        )
+        return lines
+            .slice(start, end === -1 ? undefined : end)
+            .join('\n')
+            .trimEnd()
+    }
+    const wantedImporters = importerSection(rootLock)
+    const installedImporters = importerSection(installedLock)
+    if (!wantedImporters || wantedImporters !== installedImporters) {
         throw new HookRuntimeError(
-            'Installed dependencies do not match pnpm-lock.yaml. Hooks never install implicitly. ' +
+            'Installed dependency resolutions do not match pnpm-lock.yaml importers. ' +
+                'Hooks never install implicitly. ' +
                 'Run `corepack pnpm install --frozen-lockfile` deliberately, then retry.',
         )
     }
@@ -298,10 +291,10 @@ export function assertDependenciesSynchronized({
         )
     }
 
-    for (const tool of requiredTools) resolveLocalBinary(tool, { repoRoot })
+    for (const tool of requiredTools) resolveLocalTool(tool, { repoRoot })
 
     console.log(
-        `[hook] dependency preflight: lockfile, ${expectedManager} metadata and ` +
+        `[hook] dependency preflight: lockfile importers, ${expectedManager} metadata and ` +
             `${requiredTools.length} local tools match`,
     )
 }
@@ -315,22 +308,30 @@ export function assertNodeVersion({ minimumMajor = 24 } = {}) {
     }
 }
 
-export function resolveLocalBinary(
-    name,
-    { repoRoot = REPO_ROOT, platform = process.platform } = {},
-) {
-    const suffix = platform === 'win32' ? '.cmd' : ''
-    const candidate = join(repoRoot, 'node_modules', '.bin', `${name}${suffix}`)
+export function resolveLocalTool(name, { repoRoot = REPO_ROOT } = {}) {
+    const specification = LOCAL_TOOL_PACKAGES[name]
+    if (!specification) throw new HookRuntimeError(`Unknown local hook tool '${name}'.`)
+    const [packageName, binName] = specification
+    const manifestPath = join(repoRoot, 'node_modules', packageName, 'package.json')
     try {
-        accessSync(candidate, platform === 'win32' ? constants.F_OK : constants.X_OK)
+        const manifest = readJson(manifestPath)
+        const declaredBin =
+            typeof manifest.bin === 'string' ? manifest.bin : manifest.bin?.[binName]
+        if (!declaredBin) throw new Error(`package does not declare bin '${binName}'`)
+        const entrypoint = resolve(dirname(manifestPath), declaredBin)
+        accessSync(entrypoint)
+        return {
+            command: process.execPath,
+            argsPrefix: [entrypoint],
+            displayPath: entrypoint,
+        }
     } catch (error) {
         throw new HookRuntimeError(
-            `Required local tool '${name}' is unavailable at ${candidate}. ` +
+            `Required installed local tool '${name}' is unavailable through ${manifestPath}. ` +
                 'Run `corepack pnpm install --frozen-lockfile` deliberately, then retry.',
             { cause: error },
         )
     }
-    return candidate
 }
 
 function terminateProcessTree(child, signal = 'SIGTERM') {
@@ -371,7 +372,7 @@ export async function runStep(
         cwd,
         env,
         stdio: 'inherit',
-        shell: process.platform === 'win32',
+        shell: false,
         detached: process.platform !== 'win32',
     })
 
@@ -454,7 +455,13 @@ export async function runStep(
 }
 
 export function runLocalTool(name, args, options = {}) {
-    return runStep(options.label ?? name, resolveLocalBinary(name, options), args, options)
+    const localTool = resolveLocalTool(name, options)
+    return runStep(
+        options.label ?? name,
+        localTool.command,
+        [...localTool.argsPrefix, ...args],
+        options,
+    )
 }
 
 export function runNodeScript(script, args = [], options = {}) {

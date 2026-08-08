@@ -16,10 +16,9 @@
  * Nothing here shells out to an unfiltered `turbo run`.
  */
 import { spawnSync } from 'node:child_process'
-import { resolveLocalBinary } from './git-hooks/hook-runtime.mjs'
+import { resolveLocalTool } from './git-hooks/hook-runtime.mjs'
 
 const TAG = '[verify]'
-const isWindows = process.platform === 'win32'
 
 /** Path prefix -> workspace package name. */
 const WORKSPACE_BY_PREFIX = [
@@ -107,11 +106,14 @@ const filters = [...affected]
 console.log(`${TAG} affected workspaces: ${[...affected].sort().join(', ')}`)
 
 const args = ['run', task, '--concurrency=1', ...filters.map((f) => `--filter=${f}`)]
-const turbo = resolveLocalBinary('turbo')
-console.log(`${TAG} -> ${turbo} ${args.join(' ')}`)
+const turbo = resolveLocalTool('turbo')
+console.log(`${TAG} -> ${turbo.displayPath} ${args.join(' ')}`)
 
 // Direct local execution is intentional. pnpm 11 defaults verify-deps-before-run
 // to "install", which can turn a hook into an implicit workspace install after a
 // lockfile merge. The hook runner verifies dependency synchronization first.
-const run = spawnSync(turbo, args, { stdio: 'inherit', shell: isWindows })
+const run = spawnSync(turbo.command, [...turbo.argsPrefix, ...args], {
+    stdio: 'inherit',
+    shell: false,
+})
 process.exit(run.status ?? 1)

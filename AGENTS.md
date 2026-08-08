@@ -15,7 +15,11 @@ In every shell session, before `pnpm` commands:
 ```bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-CANNAGUIDE_NODE_BIN="$(dirname "$(nvm which 24)")"
+if ! CANNAGUIDE_NODE="$(nvm which 24)" || [ ! -x "$CANNAGUIDE_NODE" ]; then
+  echo "Node.js 24 is unavailable; PATH was not modified." >&2
+  return 1 2>/dev/null || exit 1
+fi
+CANNAGUIDE_NODE_BIN="$(dirname "$CANNAGUIDE_NODE")"
 export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
 corepack enable pnpm
 node -v   # must show v24.x
@@ -132,9 +136,10 @@ reach CI unnoticed.
 - `pre-push`: serialized, resource-pressure-guarded **scoped** typecheck +
   `lint-scopes --changed` + file budget + doc metrics.
 
-Hooks execute checked-in `node_modules/.bin` tools directly. They never invoke `pnpm exec` or
-install dependencies implicitly. If `node_modules/.pnpm/lock.yaml` does not match the repository
-lockfile, the hook fails fast and asks for one deliberate `corepack pnpm install --frozen-lockfile`.
+Hooks execute installed repository-local tools directly. They never invoke `pnpm exec` or
+install dependencies implicitly. If installed importer resolutions, exact pnpm metadata, or the
+required local entrypoints do not match the repository, the hook fails fast and asks for one
+deliberate `corepack pnpm install --frozen-lockfile`.
 Only one hook may run at a time; a second commit/push fails immediately instead of competing for RAM.
 
 Both slow steps used to ignore the diff. `pre-push` deliberately does **not** call

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import test from 'node:test'
 
@@ -9,16 +10,41 @@ import {
     assertDependenciesSynchronized,
     assertSafeResourcePressure,
     parseMemoryStatus,
-    resolveLocalBinary,
+    resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
 
 const REQUIRED_PACKAGE_MANAGER = JSON.parse(
     readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'),
 ).packageManager
+const BASE_LOCKFILE = `lockfileVersion: '9.0'
+
+importers:
+  .:
+    devDependencies:
+      eslint:
+        specifier: ^9.0.0
+        version: 9.39.4
+
+packages:
+  eslint@9.39.4: {}
+`
 
 function fixture() {
-    const root = mkdtempSync(join(REPO_ROOT, '.hook-test-'))
+    let root
+    try {
+        root = mkdtempSync(join(tmpdir(), 'cannaguide-hook-test-'))
+    } catch (error) {
+        if (
+            !error ||
+            typeof error !== 'object' ||
+            !['EACCES', 'ENOENT', 'EROFS'].includes(error.code)
+        ) {
+            throw error
+        }
+        // Some agent sandboxes mount the system temp directory read-only.
+        root = mkdtempSync(join(REPO_ROOT, '.hook-test-'))
+    }
     const gitCommonDir = join(root, '.git')
     mkdirSync(gitCommonDir)
     return {
@@ -30,11 +56,15 @@ function fixture() {
 
 function writeDependencyMetadata(
     root,
-    { lock = 'lock\n', manager = REQUIRED_PACKAGE_MANAGER } = {},
+    {
+        wantedLock = BASE_LOCKFILE,
+        installedLock = wantedLock,
+        manager = REQUIRED_PACKAGE_MANAGER,
+    } = {},
 ) {
     mkdirSync(join(root, 'node_modules', '.pnpm'), { recursive: true })
-    writeFileSync(join(root, 'pnpm-lock.yaml'), lock)
-    writeFileSync(join(root, 'node_modules', '.pnpm', 'lock.yaml'), lock)
+    writeFileSync(join(root, 'pnpm-lock.yaml'), wantedLock)
+    writeFileSync(join(root, 'node_modules', '.pnpm', 'lock.yaml'), installedLock)
     writeFileSync(join(root, 'node_modules', '.modules.yaml'), `packageManager: ${manager}\n`)
     writeFileSync(join(root, 'package.json'), `${JSON.stringify({ packageManager: manager })}\n`)
 }
@@ -90,23 +120,28 @@ test('same-boot hook contention fails fast and preserves the active lock', () =>
     }
 })
 
-test('a changed boot identity proves and recovers a stale lock', () => {
+test('a changed boot identity uses a new lock without deleting crash evidence', () => {
     const { gitCommonDir, cleanup } = fixture()
     try {
-        acquireHookLock({
+        const previousBoot = acquireHookLock({
             hookName: 'pre-push',
             gitCommonDir,
             bootIdentity: 'boot-before-crash',
             pid: 101,
         })
-        const recovered = acquireHookLock({
+        const currentBoot = acquireHookLock({
             hookName: 'pre-commit',
             gitCommonDir,
             bootIdentity: 'boot-after-crash',
             pid: 202,
         })
-        assert.equal(recovered.owner.hookName, 'pre-commit')
-        recovered.release()
+        assert.notEqual(previousBoot.lockDirectory, currentBoot.lockDirectory)
+        assert.equal(currentBoot.owner.hookName, 'pre-commit')
+        currentBoot.release()
+        assert.equal(
+            JSON.parse(readFileSync(join(previousBoot.lockDirectory, 'owner.json'))).pid,
+            101,
+        )
     } finally {
         cleanup()
     }
@@ -123,7 +158,7 @@ test('an unreadable lock is never deleted speculatively', () => {
                 acquireHookLock({
                     hookName: 'pre-commit',
                     gitCommonDir,
-                    bootIdentity: 'boot-a',
+                    bootIdentity: null,
                 }),
             /metadata is unreadable/,
         )
@@ -133,10 +168,27 @@ test('an unreadable lock is never deleted speculatively', () => {
     }
 })
 
-test('dependency preflight accepts a byte-identical pinned install', () => {
+test('dependency preflight accepts matching importer resolutions', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
+        assert.doesNotThrow(() =>
+            assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight accepts valid non-identical current lock metadata', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root, {
+            installedLock: BASE_LOCKFILE.replace(
+                'packages:\n',
+                'packages:\n  platform-specific-metadata@1.0.0: {}\n',
+            ),
+        })
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
         )
@@ -162,7 +214,10 @@ test('dependency preflight rejects lockfile drift without installing', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
-        writeFileSync(join(root, 'node_modules', '.pnpm', 'lock.yaml'), 'different\n')
+        writeFileSync(
+            join(root, 'node_modules', '.pnpm', 'lock.yaml'),
+            BASE_LOCKFILE.replace('version: 9.39.4', 'version: 9.0.0'),
+        )
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
             /Hooks never install implicitly/,
@@ -194,22 +249,29 @@ test('dependency preflight rejects a missing required local tool', () => {
         writeDependencyMetadata(root)
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: ['eslint'] }),
-            /Required local tool 'eslint' is unavailable/,
+            /Required installed local tool 'eslint' is unavailable/,
         )
     } finally {
         cleanup()
     }
 })
 
-test('local binary resolution never consults pnpm', () => {
+test('local tool resolution uses its installed declared entrypoint and never pnpm', () => {
     const { root, cleanup } = fixture()
     try {
-        const binDirectory = join(root, 'node_modules', '.bin')
-        mkdirSync(binDirectory, { recursive: true })
-        const binary = join(binDirectory, 'eslint')
-        writeFileSync(binary, '#!/bin/sh\nexit 0\n')
-        chmodSync(binary, 0o755)
-        assert.equal(resolveLocalBinary('eslint', { repoRoot: root, platform: 'linux' }), binary)
+        const packageDirectory = join(root, 'node_modules', 'eslint')
+        const entrypoint = join(packageDirectory, 'bin', 'eslint.js')
+        mkdirSync(join(packageDirectory, 'bin'), { recursive: true })
+        writeFileSync(
+            join(packageDirectory, 'package.json'),
+            JSON.stringify({ bin: { eslint: './bin/eslint.js' } }),
+        )
+        writeFileSync(entrypoint, 'process.exit(0)\n')
+        assert.deepEqual(resolveLocalTool('eslint', { repoRoot: root }), {
+            command: process.execPath,
+            argsPrefix: [entrypoint],
+            displayPath: entrypoint,
+        })
     } finally {
         cleanup()
     }

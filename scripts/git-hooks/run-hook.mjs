@@ -13,6 +13,11 @@ import {
 const hookName = process.argv[2]
 const hookArguments = process.argv.slice(3)
 const supportedHooks = new Set(['pre-commit', 'commit-msg', 'pre-push'])
+const requiredToolsByHook = {
+    'pre-commit': ['lint-staged', 'anti-trojan-source', 'eslint', 'prettier'],
+    'commit-msg': ['commitlint'],
+    'pre-push': ['turbo', 'tsc', 'eslint'],
+}
 
 if (!supportedHooks.has(hookName)) {
     console.error(
@@ -41,7 +46,7 @@ try {
     assertNodeVersion()
     lock = acquireHookLock({ hookName })
     console.log(`[hook] acquired repository lock for ${hookName}`)
-    assertDependenciesSynchronized()
+    assertDependenciesSynchronized({ requiredTools: requiredToolsByHook[hookName] })
     assertNotInterrupted()
 
     if (hookName === 'pre-commit') {

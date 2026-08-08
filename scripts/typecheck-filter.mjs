@@ -2,12 +2,13 @@
 // Runs tsc --noEmit and filters known upstream errors (RTK TS2719).
 // Exits 0 if no unknown errors remain, 1 otherwise.
 import { spawnSync } from 'node:child_process'
-import { resolveLocalBinary } from './git-hooks/hook-runtime.mjs'
+import { resolveLocalTool } from './git-hooks/hook-runtime.mjs'
 
-const result = spawnSync(resolveLocalBinary('tsc'), ['--noEmit'], {
+const tsc = resolveLocalTool('tsc')
+const result = spawnSync(tsc.command, [...tsc.argsPrefix, '--noEmit'], {
     encoding: 'utf-8',
     stdio: ['inherit', 'pipe', 'pipe'],
-    shell: process.platform === 'win32',
+    shell: false,
 })
 
 const output = (result.stdout || '') + (result.stderr || '')

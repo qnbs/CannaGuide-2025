@@ -561,7 +561,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ```bash
 corepack enable pnpm
-pnpm --version             # muss package.json packageManager entsprechen
+pnpm --version             # must match package.json packageManager
 corepack pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build

@@ -33,8 +33,10 @@ const rememberInterrupt = (signal) => {
 }
 const onInterrupt = () => rememberInterrupt('SIGINT')
 const onTerminate = () => rememberInterrupt('SIGTERM')
+const onHangup = () => rememberInterrupt('SIGHUP')
 process.on('SIGINT', onInterrupt)
 process.on('SIGTERM', onTerminate)
+process.on('SIGHUP', onHangup)
 
 function assertNotInterrupted() {
     if (interruptedSignal) {
@@ -104,6 +106,7 @@ try {
 } finally {
     process.removeListener('SIGINT', onInterrupt)
     process.removeListener('SIGTERM', onTerminate)
+    process.removeListener('SIGHUP', onHangup)
     if (lock) {
         try {
             lock.release()

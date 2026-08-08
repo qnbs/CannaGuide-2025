@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { EventEmitter } from 'node:events'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -10,6 +11,8 @@ import {
     assertDependenciesSynchronized,
     assertSafeResourcePressure,
     parseMemoryStatus,
+    parseLockfileImporterSpecifiers,
+    parseTopLevelScalarMap,
     resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
@@ -18,6 +21,9 @@ const REQUIRED_PACKAGE_MANAGER = JSON.parse(
     readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'),
 ).packageManager
 const BASE_LOCKFILE = `lockfileVersion: '9.0'
+
+overrides:
+  postcss: '>=8.5.23 <9'
 
 importers:
   .:
@@ -28,6 +34,11 @@ importers:
 
 packages:
   eslint@9.39.4: {}
+`
+const BASE_WORKSPACE = `packages: []
+
+overrides:
+    postcss: '>=8.5.23 <9'
 `
 
 function fixture() {
@@ -64,9 +75,16 @@ function writeDependencyMetadata(
 ) {
     mkdirSync(join(root, 'node_modules', '.pnpm'), { recursive: true })
     writeFileSync(join(root, 'pnpm-lock.yaml'), wantedLock)
+    writeFileSync(join(root, 'pnpm-workspace.yaml'), BASE_WORKSPACE)
     writeFileSync(join(root, 'node_modules', '.pnpm', 'lock.yaml'), installedLock)
     writeFileSync(join(root, 'node_modules', '.modules.yaml'), `packageManager: ${manager}\n`)
-    writeFileSync(join(root, 'package.json'), `${JSON.stringify({ packageManager: manager })}\n`)
+    writeFileSync(
+        join(root, 'package.json'),
+        `${JSON.stringify({
+            packageManager: manager,
+            devDependencies: { eslint: '^9.0.0' },
+        })}\n`,
+    )
 }
 
 function writeJsonStyleDependencyMetadata(root, manager) {
@@ -180,6 +198,21 @@ test('dependency preflight accepts matching importer resolutions', () => {
     }
 })
 
+test('lockfile importer parsing preserves exact manifest specifiers', () => {
+    assert.deepEqual(Object.fromEntries(parseLockfileImporterSpecifiers(BASE_LOCKFILE)), {
+        '.': { devDependencies: { eslint: '^9.0.0' } },
+    })
+})
+
+test('workspace and lockfile override parsing preserve exact values', () => {
+    assert.deepEqual(parseTopLevelScalarMap(BASE_LOCKFILE, 'overrides', 2), {
+        postcss: '>=8.5.23 <9',
+    })
+    assert.deepEqual(parseTopLevelScalarMap(BASE_WORKSPACE, 'overrides', 4), {
+        postcss: '>=8.5.23 <9',
+    })
+})
+
 test('dependency preflight accepts valid non-identical current lock metadata', () => {
     const { root, cleanup } = fixture()
     try {
@@ -221,6 +254,40 @@ test('dependency preflight rejects lockfile drift without installing', () => {
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
             /Hooks never install implicitly/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight rejects manifest specifier drift without installing', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        writeFileSync(
+            join(root, 'package.json'),
+            `${JSON.stringify({
+                packageManager: REQUIRED_PACKAGE_MANAGER,
+                devDependencies: { eslint: '^10.0.0' },
+            })}\n`,
+        )
+        assert.throws(
+            () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+            /package.json devDependencies do not match pnpm-lock.yaml/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight rejects workspace override drift without installing', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        writeFileSync(join(root, 'pnpm-workspace.yaml'), BASE_WORKSPACE.replace('8.5.23', '8.5.24'))
+        assert.throws(
+            () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+            /pnpm-workspace.yaml overrides do not match pnpm-lock.yaml/,
         )
     } finally {
         cleanup()
@@ -333,6 +400,53 @@ test('a timed-out step terminates its entire process group', async () => {
         cleanup()
     }
 })
+
+test(
+    'SIGHUP terminates the active process group',
+    { skip: process.platform === 'win32' },
+    async () => {
+        const { root, cleanup } = fixture()
+        const pidFile = join(root, 'hangup-child.pid')
+        let childPid
+        try {
+            const signalEmitter = new EventEmitter()
+            const childProgram = [
+                "const { writeFileSync } = require('node:fs')",
+                `writeFileSync(${JSON.stringify(pidFile)}, String(process.pid))`,
+                "process.on('SIGHUP', () => {})",
+                "process.on('SIGTERM', () => {})",
+                'setInterval(() => {}, 1000)',
+            ].join(';')
+            const step = runStep('hangup regression', process.execPath, ['-e', childProgram], {
+                heartbeatMs: 60_000,
+                terminationGraceMs: 100,
+                signalEmitter,
+            })
+
+            const deadline = Date.now() + 2_000
+            while (!childPid && Date.now() < deadline) {
+                try {
+                    childPid = Number(readFileSync(pidFile, 'utf8'))
+                } catch {
+                    await new Promise((resolvePromise) => setTimeout(resolvePromise, 25))
+                }
+            }
+            assert.ok(childPid, 'child process did not start')
+            signalEmitter.emit('SIGHUP')
+            await assert.rejects(step, /hangup regression interrupted by SIGHUP/)
+            await waitForProcessTermination(childPid)
+        } finally {
+            if (childPid) {
+                try {
+                    process.kill(childPid, 'SIGKILL')
+                } catch {
+                    // Expected when SIGHUP process-group termination worked.
+                }
+            }
+            cleanup()
+        }
+    },
+)
 
 test('active hook path contains no pnpm process launch', () => {
     const files = [

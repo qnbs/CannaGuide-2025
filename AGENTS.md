@@ -85,8 +85,9 @@ wall time, is what kept crashing sessions. `apps/web` now sets `incremental`. An
   (`scripts/scoped-verify.mjs`), which derive the affected workspaces from the git diff and
   run with `--concurrency=1`.
 - **Do not run E2E, Playwright, Stryker or Lighthouse locally.** That is CI's job.
-- **One heavy task at a time.** Check `free -m` first; below ~500 MB available, stop rather
-  than run into the OOM.
+- **One heavy task at a time.** Check `free -m` first. The hook stops under clearly dangerous
+  pressure (less than 256 MB available, or less than 512 MB with exhausted swap) and warns
+  below 900 MB; if warned, close memory-heavy applications before starting additional work.
 
 #### Three traps that look like the safe command
 

@@ -36,6 +36,7 @@ const RESOURCE_PRESSURE_MB = {
     minimumSwapFree: 256,
     warningAvailable: 900,
 }
+const LOCKFILE_DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies']
 
 export class HookRuntimeError extends Error {
     constructor(message, options = {}) {
@@ -46,6 +47,138 @@ export class HookRuntimeError extends Error {
 
 function readJson(path) {
     return JSON.parse(readFileSync(path, 'utf8'))
+}
+
+function parseYamlScalar(value) {
+    const trimmed = value.trim()
+    if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
+        return trimmed.slice(1, -1).replaceAll("''", "'")
+    }
+    if (trimmed.startsWith('"') && trimmed.endsWith('"')) return JSON.parse(trimmed)
+    return trimmed
+}
+
+export function parseLockfileImporterSpecifiers(contents) {
+    const importers = new Map()
+    let importer = null
+    let dependencyField = null
+    let dependencyName = null
+    let insideImporters = false
+
+    for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
+        if (line === 'importers:') {
+            insideImporters = true
+            continue
+        }
+        if (!insideImporters) continue
+        if (/^[^\s#].*:$/.test(line)) break
+
+        const importerMatch = line.match(/^  (\S.*?):(?: \{\})?$/)
+        if (importerMatch) {
+            importer = parseYamlScalar(importerMatch[1])
+            importers.set(importer, {})
+            dependencyField = null
+            dependencyName = null
+            continue
+        }
+
+        const fieldMatch = line.match(/^    (dependencies|devDependencies|optionalDependencies):$/)
+        if (fieldMatch && importer !== null) {
+            dependencyField = fieldMatch[1]
+            importers.get(importer)[dependencyField] = {}
+            dependencyName = null
+            continue
+        }
+
+        const dependencyMatch = line.match(/^      (\S.*):$/)
+        if (dependencyMatch && dependencyField !== null) {
+            dependencyName = parseYamlScalar(dependencyMatch[1])
+            continue
+        }
+
+        const specifierMatch = line.match(/^        specifier: (.+)$/)
+        if (specifierMatch && dependencyName !== null) {
+            importers.get(importer)[dependencyField][dependencyName] = parseYamlScalar(
+                specifierMatch[1],
+            )
+        }
+    }
+
+    if (importers.size === 0) {
+        throw new HookRuntimeError('pnpm-lock.yaml has no readable importer metadata.')
+    }
+    return importers
+}
+
+export function parseTopLevelScalarMap(contents, sectionName, indentation) {
+    const values = {}
+    let insideSection = false
+    const entryPattern = new RegExp(`^ {${indentation}}(\\S.*?):\\s+(.+)$`)
+
+    for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
+        if (line === `${sectionName}:`) {
+            insideSection = true
+            continue
+        }
+        if (!insideSection || /^\s*#/.test(line) || line.trim() === '') continue
+        if (/^\S/.test(line)) break
+        const match = line.match(entryPattern)
+        if (match) values[parseYamlScalar(match[1])] = parseYamlScalar(match[2])
+    }
+    return values
+}
+
+function sortedDependencyMap(dependencies = {}) {
+    return Object.fromEntries(
+        Object.entries(dependencies).sort(([left], [right]) => left.localeCompare(right)),
+    )
+}
+
+function assertManifestSpecifiersMatchLockfile(lockContents, workspaceContents, repoRoot) {
+    const importers = parseLockfileImporterSpecifiers(lockContents)
+    const lockedOverrides = sortedDependencyMap(
+        parseTopLevelScalarMap(lockContents, 'overrides', 2),
+    )
+    const configuredOverrides = sortedDependencyMap(
+        parseTopLevelScalarMap(workspaceContents, 'overrides', 4),
+    )
+    if (JSON.stringify(lockedOverrides) !== JSON.stringify(configuredOverrides)) {
+        throw new HookRuntimeError(
+            'pnpm-workspace.yaml overrides do not match pnpm-lock.yaml. Hooks never install implicitly. ' +
+                'Update the lockfile deliberately, then run `corepack pnpm install --frozen-lockfile` and retry.',
+        )
+    }
+    for (const [importer, lockedFields] of importers) {
+        const manifestPath =
+            importer === '.'
+                ? join(repoRoot, 'package.json')
+                : join(repoRoot, importer, 'package.json')
+        if (!existsSync(manifestPath)) {
+            throw new HookRuntimeError(
+                `Lockfile importer '${importer}' has no manifest at ${manifestPath}.`,
+            )
+        }
+        const manifest = readJson(manifestPath)
+        for (const field of LOCKFILE_DEPENDENCY_FIELDS) {
+            const locked = sortedDependencyMap(lockedFields[field])
+            const declared = sortedDependencyMap(manifest[field])
+            const lockedNames = Object.keys(locked)
+            const declaredNames = Object.keys(declared)
+            const incompatible =
+                JSON.stringify(lockedNames) !== JSON.stringify(declaredNames) ||
+                declaredNames.some(
+                    (name) =>
+                        locked[name] !== declared[name] &&
+                        locked[name] !== configuredOverrides[name],
+                )
+            if (incompatible) {
+                throw new HookRuntimeError(
+                    `${manifestPath} ${field} do not match pnpm-lock.yaml. Hooks never install implicitly. ` +
+                        'Run `corepack pnpm install --frozen-lockfile` deliberately after correcting the lockfile, then retry.',
+                )
+            }
+        }
+    }
 }
 
 function formatDuration(milliseconds) {
@@ -246,8 +379,15 @@ export function assertDependenciesSynchronized({ repoRoot = REPO_ROOT, requiredT
     const installedLock = join(repoRoot, 'node_modules', '.pnpm', 'lock.yaml')
     const modulesMetadata = join(repoRoot, 'node_modules', '.modules.yaml')
     const packageJson = join(repoRoot, 'package.json')
+    const workspaceConfig = join(repoRoot, 'pnpm-workspace.yaml')
 
-    for (const required of [rootLock, installedLock, modulesMetadata, packageJson]) {
+    for (const required of [
+        rootLock,
+        installedLock,
+        modulesMetadata,
+        packageJson,
+        workspaceConfig,
+    ]) {
         if (!existsSync(required)) {
             throw new HookRuntimeError(
                 `Dependency metadata is missing: ${required}. ` +
@@ -268,6 +408,8 @@ export function assertDependenciesSynchronized({ repoRoot = REPO_ROOT, requiredT
             .join('\n')
             .trimEnd()
     }
+    const wantedLockContents = readFileSync(rootLock, 'utf8')
+    const workspaceContents = readFileSync(workspaceConfig, 'utf8')
     const wantedImporters = importerSection(rootLock)
     const installedImporters = importerSection(installedLock)
     if (!wantedImporters || wantedImporters !== installedImporters) {
@@ -277,6 +419,8 @@ export function assertDependenciesSynchronized({ repoRoot = REPO_ROOT, requiredT
                 'Run `corepack pnpm install --frozen-lockfile` deliberately, then retry.',
         )
     }
+
+    assertManifestSpecifiersMatchLockfile(wantedLockContents, workspaceContents, repoRoot)
 
     const expectedManager = readJson(packageJson).packageManager
     const metadata = readFileSync(modulesMetadata, 'utf8')
@@ -294,7 +438,7 @@ export function assertDependenciesSynchronized({ repoRoot = REPO_ROOT, requiredT
     for (const tool of requiredTools) resolveLocalTool(tool, { repoRoot })
 
     console.log(
-        `[hook] dependency preflight: lockfile importers, ${expectedManager} metadata and ` +
+        `[hook] dependency preflight: package manifests, lockfile importers, ${expectedManager} metadata and ` +
             `${requiredTools.length} local tools match`,
     )
 }
@@ -363,6 +507,7 @@ export async function runStep(
         timeoutMs = 10 * 60 * 1000,
         heartbeatMs = 30 * 1000,
         terminationGraceMs = 5 * 1000,
+        signalEmitter = process,
     } = {},
 ) {
     const started = Date.now()
@@ -407,15 +552,18 @@ export async function runStep(
 
         const onInterrupt = () => terminate(`${label} interrupted by SIGINT`)
         const onTerminate = () => terminate(`${label} interrupted by SIGTERM`)
-        process.once('SIGINT', onInterrupt)
-        process.once('SIGTERM', onTerminate)
+        const onHangup = () => terminate(`${label} interrupted by SIGHUP`)
+        signalEmitter.once('SIGINT', onInterrupt)
+        signalEmitter.once('SIGTERM', onTerminate)
+        signalEmitter.once('SIGHUP', onHangup)
 
         const cleanup = () => {
             clearInterval(heartbeat)
             clearTimeout(timeout)
             if (forceKillTimer) clearTimeout(forceKillTimer)
-            process.removeListener('SIGINT', onInterrupt)
-            process.removeListener('SIGTERM', onTerminate)
+            signalEmitter.removeListener('SIGINT', onInterrupt)
+            signalEmitter.removeListener('SIGTERM', onTerminate)
+            signalEmitter.removeListener('SIGHUP', onHangup)
         }
 
         child.once('error', (error) => {

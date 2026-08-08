@@ -17,6 +17,8 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawn, spawnSync } from 'node:child_process'
 
+import { assertDependencyMetadataSynchronized } from './dependency-state.mjs'
+
 export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 const LOCK_DIRECTORY_PREFIX = 'cannaguide-hook'
@@ -36,7 +38,6 @@ const RESOURCE_PRESSURE_MB = {
     minimumSwapFree: 256,
     warningAvailable: 900,
 }
-const LOCKFILE_DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies']
 
 export class HookRuntimeError extends Error {
     constructor(message, options = {}) {
@@ -47,138 +48,6 @@ export class HookRuntimeError extends Error {
 
 function readJson(path) {
     return JSON.parse(readFileSync(path, 'utf8'))
-}
-
-function parseYamlScalar(value) {
-    const trimmed = value.trim()
-    if (trimmed.startsWith("'") && trimmed.endsWith("'")) {
-        return trimmed.slice(1, -1).replaceAll("''", "'")
-    }
-    if (trimmed.startsWith('"') && trimmed.endsWith('"')) return JSON.parse(trimmed)
-    return trimmed
-}
-
-export function parseLockfileImporterSpecifiers(contents) {
-    const importers = new Map()
-    let importer = null
-    let dependencyField = null
-    let dependencyName = null
-    let insideImporters = false
-
-    for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
-        if (line === 'importers:') {
-            insideImporters = true
-            continue
-        }
-        if (!insideImporters) continue
-        if (/^[^\s#].*:$/.test(line)) break
-
-        const importerMatch = line.match(/^  (\S.*?):(?: \{\})?$/)
-        if (importerMatch) {
-            importer = parseYamlScalar(importerMatch[1])
-            importers.set(importer, {})
-            dependencyField = null
-            dependencyName = null
-            continue
-        }
-
-        const fieldMatch = line.match(/^    (dependencies|devDependencies|optionalDependencies):$/)
-        if (fieldMatch && importer !== null) {
-            dependencyField = fieldMatch[1]
-            importers.get(importer)[dependencyField] = {}
-            dependencyName = null
-            continue
-        }
-
-        const dependencyMatch = line.match(/^      (\S.*):$/)
-        if (dependencyMatch && dependencyField !== null) {
-            dependencyName = parseYamlScalar(dependencyMatch[1])
-            continue
-        }
-
-        const specifierMatch = line.match(/^        specifier: (.+)$/)
-        if (specifierMatch && dependencyName !== null) {
-            importers.get(importer)[dependencyField][dependencyName] = parseYamlScalar(
-                specifierMatch[1],
-            )
-        }
-    }
-
-    if (importers.size === 0) {
-        throw new HookRuntimeError('pnpm-lock.yaml has no readable importer metadata.')
-    }
-    return importers
-}
-
-export function parseTopLevelScalarMap(contents, sectionName, indentation) {
-    const values = {}
-    let insideSection = false
-    const entryPattern = new RegExp(`^ {${indentation}}(\\S.*?):\\s+(.+)$`)
-
-    for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
-        if (line === `${sectionName}:`) {
-            insideSection = true
-            continue
-        }
-        if (!insideSection || /^\s*#/.test(line) || line.trim() === '') continue
-        if (/^\S/.test(line)) break
-        const match = line.match(entryPattern)
-        if (match) values[parseYamlScalar(match[1])] = parseYamlScalar(match[2])
-    }
-    return values
-}
-
-function sortedDependencyMap(dependencies = {}) {
-    return Object.fromEntries(
-        Object.entries(dependencies).sort(([left], [right]) => left.localeCompare(right)),
-    )
-}
-
-function assertManifestSpecifiersMatchLockfile(lockContents, workspaceContents, repoRoot) {
-    const importers = parseLockfileImporterSpecifiers(lockContents)
-    const lockedOverrides = sortedDependencyMap(
-        parseTopLevelScalarMap(lockContents, 'overrides', 2),
-    )
-    const configuredOverrides = sortedDependencyMap(
-        parseTopLevelScalarMap(workspaceContents, 'overrides', 4),
-    )
-    if (JSON.stringify(lockedOverrides) !== JSON.stringify(configuredOverrides)) {
-        throw new HookRuntimeError(
-            'pnpm-workspace.yaml overrides do not match pnpm-lock.yaml. Hooks never install implicitly. ' +
-                'Update the lockfile deliberately, then run `corepack pnpm install --frozen-lockfile` and retry.',
-        )
-    }
-    for (const [importer, lockedFields] of importers) {
-        const manifestPath =
-            importer === '.'
-                ? join(repoRoot, 'package.json')
-                : join(repoRoot, importer, 'package.json')
-        if (!existsSync(manifestPath)) {
-            throw new HookRuntimeError(
-                `Lockfile importer '${importer}' has no manifest at ${manifestPath}.`,
-            )
-        }
-        const manifest = readJson(manifestPath)
-        for (const field of LOCKFILE_DEPENDENCY_FIELDS) {
-            const locked = sortedDependencyMap(lockedFields[field])
-            const declared = sortedDependencyMap(manifest[field])
-            const lockedNames = Object.keys(locked)
-            const declaredNames = Object.keys(declared)
-            const incompatible =
-                JSON.stringify(lockedNames) !== JSON.stringify(declaredNames) ||
-                declaredNames.some(
-                    (name) =>
-                        locked[name] !== declared[name] &&
-                        locked[name] !== configuredOverrides[name],
-                )
-            if (incompatible) {
-                throw new HookRuntimeError(
-                    `${manifestPath} ${field} do not match pnpm-lock.yaml. Hooks never install implicitly. ` +
-                        'Run `corepack pnpm install --frozen-lockfile` deliberately after correcting the lockfile, then retry.',
-                )
-            }
-        }
-    }
 }
 
 function formatDuration(milliseconds) {
@@ -245,9 +114,14 @@ export function readCgroupStatus(readText = (path) => readFileSync(path, 'utf8')
         if (!mount) return null
         const fields = mount.split(' - ')[0].split(' ')
         const [mountRoot, mountPoint] = [fields[3], fields[4]]
-        const relative = cgroupPath.startsWith(mountRoot)
-            ? cgroupPath.slice(mountRoot === '/' ? 0 : mountRoot.length)
-            : ''
+        const relative =
+            mountRoot === '/'
+                ? cgroupPath
+                : cgroupPath === mountRoot
+                  ? '/'
+                  : cgroupPath.startsWith(`${mountRoot}/`)
+                    ? cgroupPath.slice(mountRoot.length)
+                    : ''
         if (!relative.startsWith('/')) return null
         const directory = join(mountPoint, relative.slice(1))
         const [memoryNames, totalNames] =
@@ -456,72 +330,19 @@ export function acquireHookLock({
     }
 }
 
-export function assertDependenciesSynchronized({ repoRoot = REPO_ROOT, requiredTools = [] } = {}) {
-    const rootLock = join(repoRoot, 'pnpm-lock.yaml')
-    const installedLock = join(repoRoot, 'node_modules', '.pnpm', 'lock.yaml')
-    const modulesMetadata = join(repoRoot, 'node_modules', '.modules.yaml')
-    const packageJson = join(repoRoot, 'package.json')
-    const workspaceConfig = join(repoRoot, 'pnpm-workspace.yaml')
-
-    for (const required of [
-        rootLock,
-        installedLock,
-        modulesMetadata,
-        packageJson,
-        workspaceConfig,
-    ]) {
-        if (!existsSync(required)) {
-            throw new HookRuntimeError(
-                `Dependency metadata is missing: ${required}. ` +
-                    'Run `corepack pnpm install --frozen-lockfile` deliberately, then retry.',
-            )
-        }
-    }
-
-    const importerSection = (path) => {
-        const lines = readFileSync(path, 'utf8').replaceAll('\r\n', '\n').split('\n')
-        const start = lines.findIndex((line) => line === 'importers:')
-        if (start === -1) return null
-        const end = lines.findIndex(
-            (line, index) => index > start && (/^[^\s#].*:$/.test(line) || line === '---'),
-        )
-        return lines
-            .slice(start, end === -1 ? undefined : end)
-            .join('\n')
-            .trimEnd()
-    }
-    const wantedLockContents = readFileSync(rootLock, 'utf8')
-    const workspaceContents = readFileSync(workspaceConfig, 'utf8')
-    const wantedImporters = importerSection(rootLock)
-    const installedImporters = importerSection(installedLock)
-    if (!wantedImporters || wantedImporters !== installedImporters) {
-        throw new HookRuntimeError(
-            'Installed dependency resolutions do not match pnpm-lock.yaml importers. ' +
-                'Hooks never install implicitly. ' +
-                'Run `corepack pnpm install --frozen-lockfile` deliberately, then retry.',
-        )
-    }
-
-    assertManifestSpecifiersMatchLockfile(wantedLockContents, workspaceContents, repoRoot)
-
-    const expectedManager = readJson(packageJson).packageManager
-    const metadata = readFileSync(modulesMetadata, 'utf8')
-    const installedManager = metadata.match(
-        /^\s*["']?packageManager["']?\s*:\s*["']?([^"',\s]+)["']?,?\s*$/m,
-    )?.[1]
-    if (!expectedManager || installedManager !== expectedManager) {
-        throw new HookRuntimeError(
-            `Dependencies were installed with ${installedManager ?? 'an unknown pnpm version'}; ` +
-                `the repository requires ${expectedManager ?? 'a pinned package manager'}. ` +
-                'Run `corepack pnpm install --frozen-lockfile` deliberately, then retry.',
-        )
-    }
-
+export function assertDependenciesSynchronized({
+    repoRoot = REPO_ROOT,
+    requiredTools = [],
+    source = 'worktree',
+} = {}) {
+    const { expectedManager, sourceLabel } = assertDependencyMetadataSynchronized({
+        repoRoot,
+        source,
+    })
     for (const tool of requiredTools) resolveLocalTool(tool, { repoRoot })
-
     console.log(
-        `[hook] dependency preflight: package manifests, lockfile importers, ${expectedManager} metadata and ` +
-            `${requiredTools.length} local tools match`,
+        `[hook] dependency preflight (${sourceLabel}): manifests, full resolutions, ` +
+            `${expectedManager} metadata and ${requiredTools.length} local tools match`,
     )
 }
 

@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { accessSync, constants, readFileSync } from 'node:fs'
+import { spawnSync } from 'node:child_process'
+
 import {
     HookRuntimeError,
     acquireHookLock,
@@ -44,11 +47,38 @@ function assertNotInterrupted() {
     }
 }
 
+function dependencySources() {
+    if (hookName !== 'pre-push') return ['index']
+    let updates = ''
+    if (!process.stdin.isTTY) {
+        try {
+            updates = readFileSync(0, 'utf8')
+        } catch {}
+    }
+    const sources = updates
+        .trim()
+        .split('\n')
+        .map((line) => line.trim().split(/\s+/)[1])
+        .filter((sha) => /^[0-9a-f]{40}$/i.test(sha) && !/^0+$/.test(sha))
+    if (sources.length > 0) return [...new Set(sources)]
+    const head = spawnSync('git', ['rev-parse', 'HEAD'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    if (head.status !== 0) throw new HookRuntimeError('pre-push cannot resolve the current HEAD.')
+    return [head.stdout.trim()]
+}
+
 try {
     assertNodeVersion()
     lock = acquireHookLock({ hookName })
     console.log(`[hook] acquired repository lock for ${hookName}`)
-    assertDependenciesSynchronized({ requiredTools: requiredToolsByHook[hookName] })
+    dependencySources().forEach((source, index) =>
+        assertDependenciesSynchronized({
+            source,
+            requiredTools: index === 0 ? requiredToolsByHook[hookName] : [],
+        }),
+    )
     assertNotInterrupted()
 
     if (hookName === 'pre-commit') {
@@ -66,6 +96,13 @@ try {
     if (hookName === 'commit-msg') {
         if (hookArguments.length !== 1) {
             throw new HookRuntimeError('commit-msg requires exactly one message-file argument.')
+        }
+        try {
+            accessSync(hookArguments[0], constants.R_OK)
+        } catch {
+            throw new HookRuntimeError(
+                `commit-msg message file is missing or unreadable: ${hookArguments[0]}`,
+            )
         }
         await runLocalTool('commitlint', ['--edit', hookArguments[0]], {
             label: 'commit message',

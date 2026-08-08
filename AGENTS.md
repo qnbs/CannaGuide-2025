@@ -139,7 +139,7 @@ reach CI unnoticed.
   `lint-scopes --changed` + file budget + doc metrics.
 
 Hooks execute installed repository-local tools directly. They never invoke `pnpm exec` or
-install dependencies implicitly. If installed importer resolutions, exact pnpm metadata, or the
+install dependencies implicitly. If the installed importer resolutions, exact pnpm metadata, or the
 required local entrypoints do not match the repository, the hook fails fast and asks for one
 deliberate `corepack pnpm install --frozen-lockfile`.
 Only one hook may run at a time; a second commit/push fails immediately instead of competing for RAM.

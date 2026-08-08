@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -12,12 +13,11 @@ import {
     assertSafeResourcePressure,
     parseCgroupHeadroomMb,
     parseMemoryStatus,
-    parseLockfileImporterSpecifiers,
-    parseTopLevelScalarMap,
     readCgroupStatus,
     resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
+import { parseLockfileImporterSpecifiers, parseTopLevelScalarMap } from './dependency-state.mjs'
 
 const REQUIRED_PACKAGE_MANAGER = JSON.parse(
     readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'),
@@ -37,7 +37,8 @@ importers:
 packages:
   eslint@9.39.4: {}
 `
-const BASE_WORKSPACE = `packages: []
+const BASE_WORKSPACE = `packages:
+    - 'apps/*'
 
 overrides:
     postcss: '>=8.5.23 <9'
@@ -94,6 +95,12 @@ function writeJsonStyleDependencyMetadata(root, manager) {
         join(root, 'node_modules', '.modules.yaml'),
         `  "packageManager": "${manager}",\n`,
     )
+}
+
+function git(root, args) {
+    const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' })
+    assert.equal(result.status, 0, result.stderr)
+    return result.stdout.trim()
 }
 
 async function waitForProcessTermination(pid, timeoutMs = 2_000) {
@@ -215,13 +222,13 @@ test('workspace and lockfile override parsing preserve exact values', () => {
     })
 })
 
-test('dependency preflight accepts valid non-identical current lock metadata', () => {
+test('dependency preflight accepts valid non-resolution current lock metadata', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root, {
             installedLock: BASE_LOCKFILE.replace(
-                'packages:\n',
-                'packages:\n  platform-specific-metadata@1.0.0: {}\n',
+                'overrides:\n',
+                'currentInstallMetadata: true\n\noverrides:\n',
             ),
         })
         assert.doesNotThrow(() =>
@@ -262,6 +269,36 @@ test('dependency preflight rejects lockfile drift without installing', () => {
     }
 })
 
+test('dependency preflight rejects transitive package drift without installing', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root, {
+            installedLock: BASE_LOCKFILE.replace('eslint@9.39.4: {}', 'eslint@9.39.5: {}'),
+        })
+        assert.throws(
+            () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+            /packages resolutions do not match installed dependencies/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight rejects workspace manifests absent from the lockfile', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        mkdirSync(join(root, 'apps', 'new'), { recursive: true })
+        writeFileSync(join(root, 'apps', 'new', 'package.json'), '{}\n')
+        assert.throws(
+            () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+            /workspace manifests do not match pnpm-lock.yaml importers/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
 test('dependency preflight rejects manifest specifier drift without installing', () => {
     const { root, cleanup } = fixture()
     try {
@@ -296,6 +333,91 @@ test('dependency preflight rejects workspace override drift without installing',
     }
 })
 
+test('dependency preflight reads the Git index instead of a masking working tree', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        git(root, ['init', '--quiet'])
+        git(root, ['add', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'])
+        writeFileSync(
+            join(root, 'package.json'),
+            JSON.stringify({
+                packageManager: REQUIRED_PACKAGE_MANAGER,
+                devDependencies: { eslint: '^10.0.0' },
+            }),
+        )
+        git(root, ['add', 'package.json'])
+        writeDependencyMetadata(root)
+        assert.doesNotThrow(() =>
+            assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+        )
+        assert.throws(
+            () =>
+                assertDependenciesSynchronized({
+                    repoRoot: root,
+                    requiredTools: [],
+                    source: 'index',
+                }),
+            /Git index package.json devDependencies do not match pnpm-lock.yaml/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight reads the pushed commit instead of a masking working tree', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        git(root, ['init', '--quiet'])
+        git(root, ['add', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'])
+        git(root, [
+            '-c',
+            'user.name=Hook Test',
+            '-c',
+            'user.email=hook@example.invalid',
+            '-c',
+            'commit.gpgsign=false',
+            'commit',
+            '--quiet',
+            '-m',
+            'test: baseline',
+        ])
+        writeFileSync(
+            join(root, 'package.json'),
+            JSON.stringify({
+                packageManager: REQUIRED_PACKAGE_MANAGER,
+                devDependencies: { eslint: '^10.0.0' },
+            }),
+        )
+        git(root, ['add', 'package.json'])
+        git(root, [
+            '-c',
+            'user.name=Hook Test',
+            '-c',
+            'user.email=hook@example.invalid',
+            '-c',
+            'commit.gpgsign=false',
+            'commit',
+            '--quiet',
+            '-m',
+            'test: stale lock',
+        ])
+        writeDependencyMetadata(root)
+        assert.throws(
+            () =>
+                assertDependenciesSynchronized({
+                    repoRoot: root,
+                    requiredTools: [],
+                    source: 'HEAD',
+                }),
+            /Git tree HEAD package.json devDependencies do not match pnpm-lock.yaml/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
 test('dependency preflight rejects a package-manager mismatch', () => {
     const { root, cleanup } = fixture()
     try {
@@ -305,7 +427,7 @@ test('dependency preflight rejects a package-manager mismatch', () => {
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
             (error) =>
                 error instanceof Error &&
-                error.message.includes(`repository requires ${REQUIRED_PACKAGE_MANAGER}`),
+                error.message.includes(`requires ${REQUIRED_PACKAGE_MANAGER}`),
         )
     } finally {
         cleanup()
@@ -397,6 +519,25 @@ test('cgroup v2 headroom resolves through the current process path', () => {
         {
             memoryAvailableMb: 768,
             totalAvailableMb: 1024,
+            version: 2,
+        },
+    )
+})
+
+test('cgroup membership equal to the mount root maps directly to the mount point', () => {
+    const files = new Map([
+        ['/proc/self/cgroup', '0::/slice/app\n'],
+        ['/proc/self/mountinfo', '1 0 0:1 /slice/app /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
+        ['/sys/fs/cgroup/memory.max', '1073741824\n'],
+        ['/sys/fs/cgroup/memory.current', '268435456\n'],
+        ['/sys/fs/cgroup/memory.swap.max', '0\n'],
+        ['/sys/fs/cgroup/memory.swap.current', '0\n'],
+    ])
+    assert.deepEqual(
+        readCgroupStatus((path) => files.get(path)),
+        {
+            memoryAvailableMb: 768,
+            totalAvailableMb: 768,
             version: 2,
         },
     )
@@ -511,6 +652,7 @@ test('active hook path contains no pnpm process launch', () => {
         '.husky/commit-msg',
         '.husky/pre-push',
         'scripts/git-hooks/run-hook.mjs',
+        'scripts/git-hooks/dependency-state.mjs',
         'scripts/scoped-verify.mjs',
         'scripts/typecheck-filter.mjs',
         'scripts/lint-scopes.mjs',

@@ -8,18 +8,22 @@
  * syncService.test.ts; this file is about the render-time branches.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import CloudSyncPanel from './CloudSyncPanel'
+
+const mocks = vi.hoisted(() => ({
+    dispatch: vi.fn(),
+    addNotification: vi.fn(),
+    pullFromGist: vi.fn(),
+    replacePrimaryPersistedSnapshot: vi.fn(),
+}))
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }))
 
-const mockDispatch = vi.fn()
-const mockAddNotification = vi.fn()
-
 vi.mock('@/stores/store', () => ({
-    useAppDispatch: () => mockDispatch,
+    useAppDispatch: () => mocks.dispatch,
     useAppSelector: (selector: (s: unknown) => unknown) => selector(mockReduxState),
 }))
 
@@ -29,13 +33,13 @@ vi.mock('@/stores/selectors', () => ({
 
 vi.mock('@/stores/useUIStore', () => ({
     useUIStore: (selector: (s: Record<string, unknown>) => unknown) => selector(mockUIState),
-    getUISnapshot: () => ({ addNotification: mockAddNotification }),
+    getUISnapshot: () => ({ addNotification: mocks.addNotification }),
 }))
 
 vi.mock('@/services/syncService', () => ({
     syncService: {
         pushToGist: vi.fn(),
-        pullFromGist: vi.fn(),
+        pullFromGist: mocks.pullFromGist,
         forceLocalToGist: vi.fn(),
         forceRemoteToLocal: vi.fn(),
     },
@@ -54,11 +58,15 @@ vi.mock('@/stores/indexedDBStorage', () => ({
 }))
 
 vi.mock('@/services/persistedStateService', () => ({
-    replacePrimaryPersistedSnapshot: vi.fn().mockResolvedValue(true),
+    replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
 }))
 
 vi.mock('@/components/common/ConfirmDialog', () => ({
-    ConfirmDialog: () => null,
+    ConfirmDialog: ({ onConfirm }: { onConfirm: () => void }) => (
+        <button type="button" data-testid="confirm-sync-pull" onClick={onConfirm}>
+            confirm
+        </button>
+    ),
 }))
 
 vi.mock('@/components/common/SyncConflictModal', () => ({
@@ -125,6 +133,7 @@ function setState(overrides: {
 describe('CloudSyncPanel', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
         setState({})
     })
 
@@ -148,7 +157,7 @@ describe('CloudSyncPanel', () => {
 
         fireEvent.click(screen.getByTestId('cloud-sync-toggle'))
 
-        expect(mockDispatch).not.toHaveBeenCalled()
+        expect(mocks.dispatch).not.toHaveBeenCalled()
     })
 
     it('leaves the toggle enabled and shows push/pull (disabled) for a user who already had sync on', () => {
@@ -172,7 +181,7 @@ describe('CloudSyncPanel', () => {
 
         fireEvent.click(screen.getByTestId('cloud-sync-toggle'))
 
-        expect(mockDispatch).toHaveBeenCalledTimes(2)
+        expect(mocks.dispatch).toHaveBeenCalledTimes(2)
     })
 
     it('shows the Local-Only-blocked banner in addition to the unavailable banner', () => {
@@ -231,5 +240,25 @@ describe('CloudSyncPanel', () => {
         render(<CloudSyncPanel />)
 
         expect(screen.getByText(/settingsView.data.sync.synced/)).toBeVisible()
+    })
+
+    it('reports a legacy restore blocked by safe recovery', async () => {
+        setState({ cloudSync: { provider: 'gist', enabled: true, gistId: 'abc123def456' } })
+        mocks.pullFromGist.mockResolvedValueOnce({
+            result: { status: 'migrated' },
+            syncedAt: 123,
+            legacyState: '{"version":6}',
+        })
+        mocks.replacePrimaryPersistedSnapshot.mockResolvedValueOnce(false)
+        render(<CloudSyncPanel />)
+
+        fireEvent.click(screen.getByTestId('confirm-sync-pull'))
+
+        await waitFor(() =>
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.data.restoreBlocked',
+            }),
+        )
     })
 })

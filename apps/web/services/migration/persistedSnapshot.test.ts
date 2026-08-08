@@ -20,7 +20,28 @@ describe('persistedSnapshot', () => {
             parseAndMigratePersistedSnapshot(
                 JSON.stringify({ version: APP_VERSION, simulation: { plants: [] } }),
             ),
-        ).toThrow('Persisted simulation plants must be an entity collection.')
+        ).toThrow('Persisted simulation.plants must be an entity collection.')
+    })
+
+    it('repairs malformed collection fields in current-version persisted slices', () => {
+        const migrated = parseAndMigratePersistedSnapshot(
+            JSON.stringify({
+                version: APP_VERSION,
+                nutrientPlanner: { schedule: {}, readings: {}, alerts: null },
+                hydro: { readings: {}, alerts: {}, thresholds: null },
+                metrics: { readings: {} },
+                growPlanner: { tasks: {} },
+            }),
+        )
+
+        expect(migrated.nutrientPlanner).toEqual(
+            expect.objectContaining({ schedule: [], readings: [], alerts: [] }),
+        )
+        expect(migrated.hydro).toEqual(
+            expect.objectContaining({ readings: [], alerts: [], thresholds: expect.any(Object) }),
+        )
+        expect(migrated.metrics?.readings).toEqual([])
+        expect(migrated.growPlanner?.tasks).toEqual([])
     })
 
     it('runs the canonical migration and shape-repair pipeline', () => {

@@ -26,6 +26,114 @@ const OBJECT_SLICE_KEYS = [
     'ui',
 ] as const
 
+const requireArrayField = (
+    sliceName: string,
+    slice: Record<string, unknown>,
+    field: string,
+): void => {
+    if (!Array.isArray(slice[field])) {
+        throw new TypeError(`Persisted ${sliceName}.${field} must be an array.`)
+    }
+}
+
+const requireRecordField = (
+    sliceName: string,
+    slice: Record<string, unknown>,
+    field: string,
+): Record<string, unknown> => {
+    const value = slice[field]
+    if (!isRecord(value)) {
+        throw new TypeError(`Persisted ${sliceName}.${field} must be an object.`)
+    }
+    return value
+}
+
+const requireEntityCollection = (
+    sliceName: string,
+    slice: Record<string, unknown>,
+    field?: string,
+): void => {
+    const collectionValue = field ? slice[field] : slice
+    const path = field ? `${sliceName}.${field}` : sliceName
+    if (!isRecord(collectionValue)) {
+        throw new TypeError(`Persisted ${path} must be an entity collection.`)
+    }
+    const collection = collectionValue
+    if (!Array.isArray(collection.ids) || !isRecord(collection.entities)) {
+        throw new TypeError(`Persisted ${path} must be an entity collection.`)
+    }
+}
+
+const validateNestedSliceShapes = (state: PersistedState): void => {
+    const getSlice = (name: (typeof OBJECT_SLICE_KEYS)[number]): Record<string, unknown> | null => {
+        const value: unknown = state[name]
+        if (value === undefined) return null
+        if (!isRecord(value)) {
+            throw new TypeError(`Persisted state slice "${name}" must be an object.`)
+        }
+        return value
+    }
+
+    const simulation = getSlice('simulation')
+    if (simulation) {
+        requireEntityCollection('simulation', simulation, 'plants')
+        requireArrayField('simulation', simulation, 'plantSlots')
+        requireRecordField('simulation', simulation, 'vpdProfiles')
+    }
+    const userStrains = getSlice('userStrains')
+    if (userStrains) requireEntityCollection('userStrains', userStrains)
+
+    const favorites = getSlice('favorites')
+    if (favorites) requireArrayField('favorites', favorites, 'favoriteIds')
+    const notes = getSlice('notes')
+    if (notes) requireRecordField('notes', notes, 'strainNotes')
+    const archives = getSlice('archives')
+    if (archives) {
+        requireArrayField('archives', archives, 'archivedMentorResponses')
+        requireRecordField('archives', archives, 'archivedAdvisorResponses')
+    }
+    const savedItems = getSlice('savedItems')
+    if (savedItems) {
+        for (const field of ['savedSetups', 'savedStrainTips', 'savedExports']) {
+            requireEntityCollection('savedItems', savedItems, field)
+        }
+    }
+    const knowledge = getSlice('knowledge')
+    if (knowledge) {
+        requireRecordField('knowledge', knowledge, 'knowledgeProgress')
+        requireRecordField('knowledge', knowledge, 'learningPathProgress')
+    }
+    const breeding = getSlice('breeding')
+    if (breeding) {
+        for (const field of ['collectedSeeds', 'seedInventory', 'pollenRecords']) {
+            requireArrayField('breeding', breeding, field)
+        }
+        requireRecordField('breeding', breeding, 'breedingSlots')
+    }
+    const sandbox = getSlice('sandbox')
+    if (sandbox) requireArrayField('sandbox', sandbox, 'savedExperiments')
+    const genealogy = getSlice('genealogy')
+    if (genealogy) requireRecordField('genealogy', genealogy, 'computedTrees')
+
+    for (const [sliceName, fields] of [
+        ['nutrientPlanner', ['schedule', 'readings', 'alerts']],
+        ['hydro', ['readings', 'alerts']],
+        ['metrics', ['readings']],
+        ['growPlanner', ['tasks']],
+    ] as const) {
+        const slice = getSlice(sliceName)
+        if (slice) for (const field of fields) requireArrayField(sliceName, slice, field)
+    }
+    const hydro = getSlice('hydro')
+    if (hydro) requireRecordField('hydro', hydro, 'thresholds')
+    const grows = getSlice('grows')
+    if (grows) requireEntityCollection('grows', grows, 'grows')
+    const diagnosisHistory = getSlice('diagnosisHistory')
+    if (diagnosisHistory) requireEntityCollection('diagnosisHistory', diagnosisHistory, 'records')
+    const problemTracker = getSlice('problemTracker')
+    if (problemTracker) requireEntityCollection('problemTracker', problemTracker, 'issues')
+}
+
 const validateMigratedShape = (state: PersistedState): void => {
     for (const sliceName of OBJECT_SLICE_KEYS) {
         const slice = state[sliceName]
@@ -38,12 +146,7 @@ const validateMigratedShape = (state: PersistedState): void => {
         throw new TypeError('Persisted settings payload must be an object.')
     }
 
-    if (state.simulation) {
-        const plants = state.simulation.plants as unknown
-        if (!isRecord(plants) || !Array.isArray(plants.ids) || !isRecord(plants.entities)) {
-            throw new TypeError('Persisted simulation plants must be an entity collection.')
-        }
-    }
+    validateNestedSliceShapes(state)
 }
 
 /** Parse a persisted snapshot and run the canonical migration/shape-repair pipeline. */

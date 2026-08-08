@@ -1,8 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+const mocks = vi.hoisted(() => ({
+    loadZip: vi.fn(),
+    replacePrimaryPersistedSnapshot: vi.fn(),
+}))
+
 vi.mock('jszip', () => {
     class MockJSZip {
         files: Record<string, unknown> = {}
+        static loadAsync(file: Blob): Promise<unknown> {
+            return mocks.loadZip(file)
+        }
         file(name: string, _data?: string): MockJSZip {
             this.files[name] = { name }
             return this
@@ -28,7 +36,11 @@ vi.mock('@/constants', () => ({
 }))
 
 vi.mock('@/services/persistedStateService', () => ({
-    replacePrimaryPersistedSnapshot: vi.fn().mockResolvedValue(true),
+    replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
+}))
+
+vi.mock('@/i18n', () => ({
+    getT: () => (key: string) => key,
 }))
 
 import { backupService } from '@/services/backupService'
@@ -37,6 +49,7 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 describe('backupService', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
     })
 
     describe('exportBackup', () => {
@@ -65,6 +78,28 @@ describe('backupService', () => {
             const result = await backupService.importBackup(bigFile)
             expect(result.success).toBe(false)
             expect(result.error).toContain('too large')
+        })
+
+        it('reports a state restore blocked by safe recovery', async () => {
+            const state = '{"version":6}'
+            mocks.loadZip.mockResolvedValueOnce({
+                files: { 'cannaguide-state.json': { name: 'cannaguide-state.json' } },
+                file: (name: string) =>
+                    name === 'cannaguide-state.json'
+                        ? { async: vi.fn().mockResolvedValue(state) }
+                        : null,
+            })
+            mocks.replacePrimaryPersistedSnapshot.mockResolvedValueOnce(false)
+
+            const result = await backupService.importBackup(
+                new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+            )
+
+            expect(result).toEqual({
+                success: false,
+                metadata: null,
+                error: 'settingsView.data.restoreBlocked',
+            })
         })
     })
 

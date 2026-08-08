@@ -42,10 +42,13 @@ export const updatePrimaryPersistedSnapshot = async (
         const snapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (!snapshot) return
 
-        const state: unknown = JSON.parse(migratePersistedSnapshot(snapshot))
+        const state: unknown = JSON.parse(snapshot)
         if (!isRecord(state)) {
-            throw new TypeError('Migrated persisted state must be an object.')
+            throw new TypeError('Persisted state must be an object.')
         }
+        // Apply the narrow repair to the raw top-level snapshot first. This lets
+        // a caller remove the corrupt slice that would otherwise make canonical
+        // migration fail before the repair callback could run.
         update(state)
         await indexedDBStorage.setItem(
             REDUX_STATE_KEY,

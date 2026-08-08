@@ -165,7 +165,7 @@ const CloudSyncPanel: React.FC = () => {
                     if (legacyState) {
                         const stateRestored = await replacePrimaryPersistedSnapshot(legacyState)
                         if (!stateRestored) {
-                            throw new Error('State restore was blocked by safe recovery.')
+                            throw new Error(String(t('settingsView.data.restoreBlocked')))
                         }
                         getUISnapshot().addNotification({
                             type: 'success',

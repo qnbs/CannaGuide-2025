@@ -7,6 +7,10 @@ import {
     ensureProblemTrackerShape,
     ensureSavedItemsShape,
     ensureUserStrainsShape,
+    ensureNutrientPlannerShape,
+    ensureHydroShape,
+    ensureMetricsShape,
+    ensureGrowPlannerShape,
     normalizeSavedStrainTipImages,
 } from '@/services/migration/sliceShapeGuards'
 import type { PersistedState } from '@/services/migration/migrationTypes'
@@ -43,9 +47,8 @@ describe('sliceShapeGuards', () => {
             },
         } as unknown as PersistedState
         normalizeSavedStrainTipImages(state)
-        const tip = (
-            (state as Record<string, unknown>).savedItems as Record<string, unknown>
-        ).savedStrainTips as { entities: Record<string, Record<string, unknown>> }
+        const tip = ((state as Record<string, unknown>).savedItems as Record<string, unknown>)
+            .savedStrainTips as { entities: Record<string, Record<string, unknown>> }
         expect(tip.entities['tip-1']?.imageUrl).toBeUndefined()
     })
 
@@ -66,7 +69,9 @@ describe('sliceShapeGuards', () => {
     it('ensureNotesShape creates strainNotes map when missing', () => {
         const state = {} as PersistedState
         ensureNotesShape(state)
-        const notes = (state as Record<string, unknown>).notes as { strainNotes: Record<string, unknown> }
+        const notes = (state as Record<string, unknown>).notes as {
+            strainNotes: Record<string, unknown>
+        }
         expect(notes.strainNotes).toEqual({})
     })
 
@@ -90,5 +95,27 @@ describe('sliceShapeGuards', () => {
         }
         expect(tracker.issues.ids).toEqual([])
         expect(tracker.issues.entities).toEqual({})
+    })
+
+    it('repairs collection fields that selectors consume as arrays', () => {
+        const state = {
+            nutrientPlanner: { schedule: {}, readings: {}, alerts: {} },
+            hydro: { readings: {}, alerts: {}, thresholds: null },
+            metrics: { readings: {} },
+            growPlanner: { tasks: {} },
+        } as unknown as PersistedState
+
+        ensureNutrientPlannerShape(state)
+        ensureHydroShape(state)
+        ensureMetricsShape(state)
+        ensureGrowPlannerShape(state)
+
+        const repaired = state as Record<string, Record<string, unknown>>
+        expect(repaired.nutrientPlanner?.schedule).toEqual([])
+        expect(repaired.nutrientPlanner?.readings).toEqual([])
+        expect(repaired.hydro?.readings).toEqual([])
+        expect(repaired.hydro?.thresholds).toEqual(expect.any(Object))
+        expect(repaired.metrics?.readings).toEqual([])
+        expect(repaired.growPlanner?.tasks).toEqual([])
     })
 })

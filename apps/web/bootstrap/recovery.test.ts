@@ -254,11 +254,13 @@ describe('triggerSafeRecovery', () => {
         )
         await Promise.resolve()
         expect(mocks.getItem).not.toHaveBeenCalled()
+        expect(vi.mocked(navigator.locks.request)).toHaveBeenCalledOnce()
 
         finishWrite?.()
         await expect(activeWrite).resolves.toBe(true)
         await expect(recoveryAttempt).resolves.toBe(false)
         expect(mocks.getItem).toHaveBeenCalledWith(BACKUP_KEY)
+        expect(vi.mocked(navigator.locks.request)).toHaveBeenCalledTimes(2)
     })
 
     it('does not repeat recovery during the same page session', async () => {
@@ -270,5 +272,28 @@ describe('triggerSafeRecovery', () => {
 
         expect(mocks.getItem).not.toHaveBeenCalled()
         expect(mocks.setItem).not.toHaveBeenCalled()
+    })
+
+    it('fails closed without rejecting when session storage is unavailable', async () => {
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new DOMException('denied', 'SecurityError')
+        })
+
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, vi.fn()),
+        ).resolves.toBe(false)
+
+        expect(mocks.getItem).not.toHaveBeenCalled()
+    })
+
+    it('does not reject when clearing a failed recovery marker is denied', async () => {
+        vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+            throw new DOMException('denied', 'SecurityError')
+        })
+        mocks.getItem.mockResolvedValueOnce(null)
+
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, vi.fn()),
+        ).resolves.toBe(false)
     })
 })

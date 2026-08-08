@@ -151,7 +151,7 @@ export const settingsView = {
         preloadFailed:
             "Le telechargement du modele ne s'est pas termine. Verifiez la connexion et reessayez.",
         autoPreloadHint:
-            'Telecharge les modeles d\'IA hors ligne en arriere-plan au demarrage. Desactive par defaut : plusieurs centaines de megaoctets depuis le CDN HuggingFace. Ignore automatiquement sur les connexions limitees ou lentes, dans les navigateurs qui exposent les informations de connexion.',
+            "Telecharge les modeles d'IA hors ligne en arriere-plan au demarrage. Desactive par defaut : plusieurs centaines de megaoctets depuis le CDN HuggingFace. Ignore automatiquement sur les connexions limitees ou lentes, dans les navigateurs qui exposent les informations de connexion.",
         forceWasmHint:
             'Ignorer la detection automatique de WebGPU et toujours utiliser le backend WASM. Utile pour le debogage.',
         enableWebGpu: "Activer l'acceleration WebGPU", // machine-translated, review needed
@@ -695,6 +695,12 @@ export const settingsView = {
         importSuccess: "Donnees importees avec succes. L'application va maintenant se recharger.",
         importError:
             "L'importation a echoue. Veuillez vous assurer qu'il s'agit d'un fichier de sauvegarde valide.",
+        restoreBlocked:
+            'La restauration des donnees est temporairement bloquee par une operation de recuperation securisee.',
+        resetError:
+            "La reinitialisation n'a pas pu aboutir. Vos donnees enregistrees n'ont pas ete modifiees.",
+        sliceResetError:
+            "Cette section n'a pas pu etre reinitialisee. Vos donnees enregistrees n'ont pas ete modifiees.",
         growExportTitle: 'Sauvegarde par Culture',
         growExportDesc: 'Exporter "{{name}}" avec {{count}} plantes en fichier JSON portable.',
         exportGrow: 'Exporter cette Culture',
@@ -720,7 +726,8 @@ export const settingsView = {
             batterySaver: 'Economie de batterie (5s)',
         },
         localOnlyBadge: 'Local uniquement',
-        localOnlyDesc: 'Toutes vos donnees restent sur cet appareil. Aucun compte necessaire -- jamais.',
+        localOnlyDesc:
+            'Toutes vos donnees restent sur cet appareil. Aucun compte necessaire -- jamais.',
         sync: {
             title: 'Synchronisation cloud en un clic',
             description:

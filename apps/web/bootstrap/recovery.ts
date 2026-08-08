@@ -12,31 +12,48 @@ export const SAFE_RECOVERY_ATTEMPT_KEY = 'cannaguide.safeRecoveryAttempted'
 export const SAFE_RECOVERY_ROLLBACK_KEY = `${REDUX_STATE_KEY}-recovery-rollback`
 const SAFE_RECOVERY_BACKUP_KEY = `${REDUX_STATE_KEY}-backup`
 
+const claimRecoveryAttempt = (): boolean => {
+    try {
+        if (sessionStorage.getItem(SAFE_RECOVERY_ATTEMPT_KEY) === '1') return false
+        sessionStorage.setItem(SAFE_RECOVERY_ATTEMPT_KEY, '1')
+        return true
+    } catch {
+        return false
+    }
+}
+
+const clearRecoveryAttempt = (): void => {
+    try {
+        sessionStorage.removeItem(SAFE_RECOVERY_ATTEMPT_KEY)
+    } catch {
+        // Recovery is already failing closed; denied session storage must not
+        // turn the event listener's boolean result into an unhandled rejection.
+    }
+}
+
 export const triggerSafeRecovery = async (
     reason: string,
     error?: unknown,
     reload: () => void = () => window.location.reload(),
 ): Promise<boolean> => {
+    if (!claimRecoveryAttempt()) return false
+
+    let resumePersistence: (() => void) | null = null
+    let resumeOnFailure = true
     try {
-        const alreadyAttempted = sessionStorage.getItem(SAFE_RECOVERY_ATTEMPT_KEY) === '1'
-        if (alreadyAttempted) {
-            return false
+        // Drain and suspend this tab before requesting the cross-tab exclusive
+        // lock. Otherwise a local shared-lock waiter can queue behind recovery
+        // while recovery waits for that same local write, causing a deadlock.
+        resumePersistence = await suspendPersistenceForRecovery()
+        if (!resumePersistence) {
+            throw new Error('Persisted-state recovery is already in progress.')
         }
-        // This synchronous marker closes the gap in which two recovery calls could
-        // both pass the guard before the first IndexedDB read completes.
-        sessionStorage.setItem(SAFE_RECOVERY_ATTEMPT_KEY, '1')
 
         const recoveryResult = await runWithExclusiveRecoveryLock(async () => {
             let originalSnapshot: string | null = null
             let primarySnapshotChanged = false
-            let resumePersistence: (() => void) | null = null
 
             try {
-                resumePersistence = await suspendPersistenceForRecovery()
-                if (!resumePersistence) {
-                    throw new Error('Persisted-state recovery is already in progress.')
-                }
-
                 const backupSnapshot = await indexedDBStorage.getItem(SAFE_RECOVERY_BACKUP_KEY)
                 if (!backupSnapshot) {
                     throw new Error('No backup snapshot is available.')
@@ -93,7 +110,7 @@ export const triggerSafeRecovery = async (
                         )
                     }
                 }
-                if (rollbackSucceeded) resumePersistence?.()
+                resumeOnFailure = rollbackSucceeded
                 throw recoveryError
             }
         })
@@ -103,7 +120,8 @@ export const triggerSafeRecovery = async (
         }
         return recoveryResult
     } catch (recoveryError) {
-        sessionStorage.removeItem(SAFE_RECOVERY_ATTEMPT_KEY)
+        if (resumeOnFailure) resumePersistence?.()
+        clearRecoveryAttempt()
         console.error('[SafeRecovery] Failed to restore the backup snapshot.', recoveryError)
         return false
     }

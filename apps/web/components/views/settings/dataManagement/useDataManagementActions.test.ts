@@ -1,15 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
-import { useDataManagementActions } from './useDataManagementActions'
 
-const mockDispatch = vi.fn()
 const mocks = vi.hoisted(() => ({
+    dispatch: vi.fn(),
     addNotification: vi.fn(),
     replacePrimaryPersistedSnapshot: vi.fn(),
 }))
 
 vi.mock('@/stores/store', () => ({
-    useAppDispatch: () => mockDispatch,
+    useAppDispatch: () => mocks.dispatch,
     useAppSelector: (selector: (state: unknown) => unknown) =>
         selector({
             simulation: {
@@ -27,6 +26,11 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key,
     }),
+}))
+
+vi.mock('@/i18n', () => ({
+    getT: () => (key: string) => key,
+    i18nInstance: {},
 }))
 
 vi.mock('@/stores/useUIStore', () => ({
@@ -60,10 +64,15 @@ vi.mock('@sentry/react', () => ({
     captureMessage: vi.fn(),
 }))
 
+let useDataManagementActions: typeof import('./useDataManagementActions').useDataManagementActions
+
 describe('useDataManagementActions', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks()
+        vi.resetModules()
+        mocks.dispatch.mockReturnValue({ unwrap: vi.fn().mockResolvedValue(undefined) })
         mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
+        ;({ useDataManagementActions } = await import('./useDataManagementActions'))
     })
 
     it('exposes known databases and erase phrase constants', () => {
@@ -73,12 +82,12 @@ describe('useDataManagementActions', () => {
         expect(result.current.isEraseDisabled).toBe(true)
     })
 
-    it('dispatches resetAllData on handleResetAll', () => {
+    it('dispatches resetAllData on handleResetAll', async () => {
         const { result } = renderHook(() => useDataManagementActions())
-        act(() => {
-            result.current.handleResetAll()
+        await act(async () => {
+            await result.current.handleResetAll()
         })
-        expect(mockDispatch).toHaveBeenCalled()
+        expect(mocks.dispatch).toHaveBeenCalled()
     })
 
     it('opens export confirm via setIsExportConfirmOpen', () => {
@@ -94,7 +103,7 @@ describe('useDataManagementActions', () => {
         act(() => {
             result.current.handleConfirmExportAll()
         })
-        expect(mockDispatch).toHaveBeenCalled()
+        expect(mocks.dispatch).toHaveBeenCalled()
     })
 
     it('reports a validation failure from confirmed state import', async () => {
@@ -122,5 +131,39 @@ describe('useDataManagementActions', () => {
             message: 'settingsView.data.importError',
         })
         expect(result.current.isImportConfirmOpen).toBe(true)
+    })
+
+    it('keeps the reset dialog open when persisted-state removal is blocked', async () => {
+        const unwrap = vi.fn().mockRejectedValue(new Error('blocked'))
+        mocks.dispatch.mockReturnValueOnce({ unwrap })
+        const { result } = renderHook(() => useDataManagementActions())
+        act(() => result.current.setIsResetConfirmOpen(true))
+
+        await act(async () => {
+            await result.current.handleResetAll()
+        })
+
+        expect(result.current.isResetConfirmOpen).toBe(true)
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.resetError',
+        })
+    })
+
+    it('keeps the slice dialog open when a slice reset is blocked', async () => {
+        const unwrap = vi.fn().mockRejectedValue(new Error('blocked'))
+        mocks.dispatch.mockReturnValueOnce({ unwrap })
+        const { result } = renderHook(() => useDataManagementActions())
+        act(() => result.current.setSliceToReset('simulation'))
+
+        await act(async () => {
+            await result.current.handleConfirmSliceReset()
+        })
+
+        expect(result.current.sliceToReset).toBe('simulation')
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.sliceResetError',
+        })
     })
 })

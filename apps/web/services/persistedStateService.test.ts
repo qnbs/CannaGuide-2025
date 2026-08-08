@@ -64,9 +64,7 @@ describe('persistedStateService', () => {
     it('holds one coordinator operation across read-modify-write', async () => {
         const { updatePrimaryPersistedSnapshot } = await import('./persistedStateService')
         mocks.getItem.mockResolvedValueOnce('{"settings":{}}')
-        mocks.migrate
-            .mockReturnValueOnce('{"settings":{}}')
-            .mockReturnValueOnce('{"settings":{"changed":true}}')
+        mocks.migrate.mockReturnValueOnce('{"settings":{"changed":true}}')
 
         await expect(
             updatePrimaryPersistedSnapshot((state) => {
@@ -75,6 +73,41 @@ describe('persistedStateService', () => {
         ).resolves.toBe(true)
 
         expect(mocks.schedule).toHaveBeenCalledOnce()
+        expect(mocks.migrate).toHaveBeenCalledWith('{"settings":{"changed":true}}')
         expect(mocks.setItem).toHaveBeenCalledWith('primary', '{"settings":{"changed":true}}')
+    })
+
+    it('removes a corrupt target slice before canonical migration', async () => {
+        const { updatePrimaryPersistedSnapshot } = await import('./persistedStateService')
+        mocks.getItem.mockResolvedValueOnce(
+            '{"version":6,"simulation":{"plants":[]},"notes":{"strainNotes":{}}}',
+        )
+        mocks.migrate.mockReturnValueOnce('migrated-without-simulation')
+
+        await expect(
+            updatePrimaryPersistedSnapshot((state) => {
+                delete state.simulation
+            }),
+        ).resolves.toBe(true)
+
+        expect(mocks.migrate).toHaveBeenCalledWith('{"version":6,"notes":{"strainNotes":{}}}')
+        expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated-without-simulation')
+    })
+
+    it('does not access IndexedDB when coordinated primary mutations are blocked', async () => {
+        const {
+            removePrimaryPersistedSnapshot,
+            replacePrimaryPersistedSnapshot,
+            updatePrimaryPersistedSnapshot,
+        } = await import('./persistedStateService')
+        mocks.schedule.mockResolvedValue(false)
+
+        await expect(replacePrimaryPersistedSnapshot('{"version":1}')).resolves.toBe(false)
+        await expect(removePrimaryPersistedSnapshot()).resolves.toBe(false)
+        await expect(updatePrimaryPersistedSnapshot(() => {})).resolves.toBe(false)
+
+        expect(mocks.getItem).not.toHaveBeenCalled()
+        expect(mocks.setItem).not.toHaveBeenCalled()
+        expect(mocks.removeItem).not.toHaveBeenCalled()
     })
 })

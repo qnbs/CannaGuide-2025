@@ -12,6 +12,7 @@ import JSZip from 'jszip'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { getT } from '@/i18n'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -256,7 +257,7 @@ export const backupService = {
                 return {
                     success: false,
                     metadata,
-                    error: 'State restore was blocked by an active recovery operation',
+                    error: String(getT()('settingsView.data.restoreBlocked')),
                 }
             }
 

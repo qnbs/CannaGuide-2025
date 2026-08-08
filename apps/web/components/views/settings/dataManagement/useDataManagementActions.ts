@@ -173,9 +173,16 @@ export function useDataManagementActions() {
         [dispatch, t],
     )
 
-    const handleResetAll = () => {
-        dispatch(resetAllData())
-        setIsResetConfirmOpen(false)
+    const handleResetAll = async (): Promise<void> => {
+        try {
+            await dispatch(resetAllData()).unwrap()
+            setIsResetConfirmOpen(false)
+        } catch {
+            getUISnapshot().addNotification({
+                type: 'error',
+                message: String(t('settingsView.data.resetError')),
+            })
+        }
     }
 
     const handleEraseAll = useCallback(async () => {
@@ -278,8 +285,17 @@ export function useDataManagementActions() {
         setIsClearArchivesConfirmOpen(false)
     }
 
-    const handleConfirmSliceReset = () => {
-        if (sliceToReset) dispatch(resetSliceData(sliceToReset))
+    const handleConfirmSliceReset = async (): Promise<void> => {
+        if (!sliceToReset) return
+        try {
+            await dispatch(resetSliceData(sliceToReset)).unwrap()
+            setSliceToReset(null)
+        } catch {
+            getUISnapshot().addNotification({
+                type: 'error',
+                message: String(t('settingsView.data.sliceResetError')),
+            })
+        }
     }
 
     return {

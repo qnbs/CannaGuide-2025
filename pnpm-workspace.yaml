@@ -102,7 +102,10 @@ overrides:
     # was "pinned here". Bounded, depcheck gets the patched 3.15.1 and the advisory
     # disappears. There is no js-yaml 5.x consumer in this tree at all.
     js-yaml@3: '>=3.15.1 <4'
-    js-yaml@4: '>=4.2.0 <5'
+    js-yaml@4: '>=4.3.1 <5'
+    # postcss@8 currently accepts nanoid@3, including the advisory range. Remove
+    # this override once every resolved postcss consumer requires >=3.3.17 itself.
+    nanoid@3: '>=3.3.17 <4'
     brace-expansion@1: '>=1.1.18 <2'
     brace-expansion@2: '>=2.1.4 <3'
     brace-expansion@5: '>=5.0.9 <6'

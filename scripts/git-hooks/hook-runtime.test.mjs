@@ -13,6 +13,10 @@ import {
     runStep,
 } from './hook-runtime.mjs'
 
+const REQUIRED_PACKAGE_MANAGER = JSON.parse(
+    readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'),
+).packageManager
+
 function fixture() {
     const root = mkdtempSync(join(REPO_ROOT, '.hook-test-'))
     const gitCommonDir = join(root, '.git')
@@ -24,7 +28,10 @@ function fixture() {
     }
 }
 
-function writeDependencyMetadata(root, { lock = 'lock\n', manager = 'pnpm@11.19.0' } = {}) {
+function writeDependencyMetadata(
+    root,
+    { lock = 'lock\n', manager = REQUIRED_PACKAGE_MANAGER } = {},
+) {
     mkdirSync(join(root, 'node_modules', '.pnpm'), { recursive: true })
     writeFileSync(join(root, 'pnpm-lock.yaml'), lock)
     writeFileSync(join(root, 'node_modules', '.pnpm', 'lock.yaml'), lock)
@@ -58,7 +65,7 @@ async function waitForProcessTermination(pid, timeoutMs = 2_000) {
 }
 
 test('same-boot hook contention fails fast and preserves the active lock', () => {
-    const { root, gitCommonDir, cleanup } = fixture()
+    const { gitCommonDir, cleanup } = fixture()
     try {
         const first = acquireHookLock({
             hookName: 'pre-push',
@@ -142,7 +149,7 @@ test('dependency preflight accepts pnpm 11 quoted install metadata', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
-        writeJsonStyleDependencyMetadata(root, 'pnpm@11.19.0')
+        writeJsonStyleDependencyMetadata(root, REQUIRED_PACKAGE_MANAGER)
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
         )
@@ -169,10 +176,12 @@ test('dependency preflight rejects a package-manager mismatch', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
-        writeFileSync(join(root, 'node_modules', '.modules.yaml'), 'packageManager: pnpm@11.11.0\n')
+        writeFileSync(join(root, 'node_modules', '.modules.yaml'), 'packageManager: pnpm@0.0.0\n')
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
-            /repository requires pnpm@11\.19\.0/,
+            (error) =>
+                error instanceof Error &&
+                error.message.includes(`repository requires ${REQUIRED_PACKAGE_MANAGER}`),
         )
     } finally {
         cleanup()

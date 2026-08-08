@@ -23,6 +23,12 @@ export const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 
 const LOCK_DIRECTORY_NAME = 'cannaguide-hook.lock'
 const LOCK_METADATA_NAME = 'owner.json'
 const REQUIRED_HOOK_TOOLS = ['lint-staged', 'commitlint', 'turbo', 'tsc', 'eslint']
+const RESOURCE_PRESSURE_MB = {
+    criticalAvailable: 256,
+    lowAvailable: 512,
+    minimumSwapFree: 256,
+    warningAvailable: 900,
+}
 
 export class HookRuntimeError extends Error {
     constructor(message, options = {}) {
@@ -88,8 +94,11 @@ export function assertSafeResourcePressure({ readStatus = resourceStatus } = {})
     // legitimate low-memory machine merely for being below that measurement:
     // fail only when immediate headroom is tiny, or both RAM and swap are under
     // severe pressure. Healthy-but-slow work is protected by heartbeats.
-    const swapExhausted = swapKnown && (swapTotalMb === 0 || swapFreeMb < 256)
-    const clearlyUnsafe = availableMb < 256 || (availableMb < 512 && swapExhausted)
+    const swapExhausted =
+        swapKnown && (swapTotalMb === 0 || swapFreeMb < RESOURCE_PRESSURE_MB.minimumSwapFree)
+    const clearlyUnsafe =
+        availableMb < RESOURCE_PRESSURE_MB.criticalAvailable ||
+        (availableMb < RESOURCE_PRESSURE_MB.lowAvailable && swapExhausted)
 
     if (clearlyUnsafe) {
         throw new HookRuntimeError(
@@ -99,7 +108,7 @@ export function assertSafeResourcePressure({ readStatus = resourceStatus } = {})
         )
     }
 
-    const severity = availableMb < 900 ? 'warning' : 'healthy'
+    const severity = availableMb < RESOURCE_PRESSURE_MB.warningAvailable ? 'warning' : 'healthy'
     console.log(
         `[hook] resource preflight (${severity}): ${availableMb} MB memory available` +
             (swapKnown ? `, ${swapFreeMb}/${swapTotalMb} MB swap free` : ''),
@@ -193,26 +202,31 @@ export function acquireHookLock({
     }
 
     for (let attempt = 0; attempt < 2; attempt += 1) {
-        let created = false
+        const candidateDirectory = `${lockDirectory}.candidate-${pid}-${owner.token}`
         try {
-            mkdirSync(lockDirectory, { mode: 0o700 })
-            created = true
-            writeFileSync(lockMetadataPath(lockDirectory), `${JSON.stringify(owner, null, 2)}\n`, {
-                mode: 0o600,
-            })
+            mkdirSync(candidateDirectory, { mode: 0o700 })
+            writeFileSync(
+                lockMetadataPath(candidateDirectory),
+                `${JSON.stringify(owner, null, 2)}\n`,
+                { mode: 0o600 },
+            )
+            renameSync(candidateDirectory, lockDirectory)
             break
         } catch (error) {
-            if (created) {
+            if (existsSync(candidateDirectory)) {
                 try {
-                    if (existsSync(lockMetadataPath(lockDirectory))) {
-                        unlinkSync(lockMetadataPath(lockDirectory))
-                    }
-                    rmdirSync(lockDirectory)
+                    removeKnownLockDirectory(candidateDirectory)
                 } catch {
                     // Preserve anything we cannot identify and remove exactly.
                 }
             }
-            if (!error || typeof error !== 'object' || error.code !== 'EEXIST') throw error
+            if (
+                !error ||
+                typeof error !== 'object' ||
+                !['EEXIST', 'ENOTEMPTY'].includes(error.code)
+            ) {
+                throw error
+            }
 
             const existing = readLockMetadata(lockDirectory)
             if (attempt === 0 && recoverProvenStaleLock(lockDirectory, existing, bootIdentity)) {

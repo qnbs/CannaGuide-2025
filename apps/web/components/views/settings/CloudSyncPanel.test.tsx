@@ -53,6 +53,10 @@ vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { setItem: vi.fn(), getItem: vi.fn() },
 }))
 
+vi.mock('@/services/persistedStateService', () => ({
+    replacePrimaryPersistedSnapshot: vi.fn().mockResolvedValue(true),
+}))
+
 vi.mock('@/components/common/ConfirmDialog', () => ({
     ConfirmDialog: () => null,
 }))

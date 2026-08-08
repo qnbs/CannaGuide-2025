@@ -34,6 +34,10 @@ import { REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
+import {
+    removePrimaryPersistedSnapshot,
+    replacePrimaryPersistedSnapshot,
+} from '@/services/persistedStateService'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -117,7 +121,7 @@ export const createAppStore = async (): Promise<AppStore> => {
         const recoveredState = hydratePersistedState(backupString)
 
         try {
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, backupString)
+            await replacePrimaryPersistedSnapshot(backupString)
         } catch (repairErr) {
             console.debug('[Store] Could not repair primary snapshot from backup:', repairErr)
         }
@@ -146,7 +150,7 @@ export const createAppStore = async (): Promise<AppStore> => {
         )
         preloadedState = await tryLoadBackupState()
         if (!preloadedState) {
-            await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+            await removePrimaryPersistedSnapshot()
         }
     }
 

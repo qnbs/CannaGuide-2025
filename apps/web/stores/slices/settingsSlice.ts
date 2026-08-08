@@ -2,8 +2,12 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { AppSettings, View } from '@/types'
 import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
-import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY, VersionedSliceName } from '@/constants'
+import { GEMINI_API_KEY_STORAGE_KEY, VersionedSliceName } from '@/constants'
 import { aiProviderService } from '@/services/aiProviderService'
+import {
+    removePrimaryPersistedSnapshot,
+    updatePrimaryPersistedSnapshot,
+} from '@/services/persistedStateService'
 
 export const simulationProfilePresets: Record<
     AppSettings['simulation']['simulationProfile'],
@@ -235,7 +239,8 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
 )
 
 export const resetAllData = createAsyncThunk<void>('settings/resetAllData', async () => {
-    await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+    const stateRemoved = await removePrimaryPersistedSnapshot()
+    if (!stateRemoved) throw new Error('State reset was blocked by safe recovery.')
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
     // The page reload will effectively reset the store to its initial state
@@ -250,12 +255,10 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
 export const resetSliceData = createAsyncThunk<void, VersionedSliceName>(
     'settings/resetSliceData',
     async (sliceName) => {
-        const raw = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-        if (raw) {
-            const state = JSON.parse(raw)
+        const stateUpdated = await updatePrimaryPersistedSnapshot((state) => {
             delete state[sliceName]
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, JSON.stringify(state))
-        }
+        })
+        if (!stateUpdated) throw new Error('Slice reset was blocked by safe recovery.')
         window.location.reload()
     },
 )

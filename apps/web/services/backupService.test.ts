@@ -27,6 +27,10 @@ vi.mock('@/constants', () => ({
     REDUX_STATE_KEY: 'test-state-key',
 }))
 
+vi.mock('@/services/persistedStateService', () => ({
+    replacePrimaryPersistedSnapshot: vi.fn().mockResolvedValue(true),
+}))
+
 import { backupService } from '@/services/backupService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 

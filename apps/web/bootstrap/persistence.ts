@@ -6,10 +6,12 @@ import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
-export const setupPersistedStateSync = (hydratedStore: AppStore): void => {
+export type FlushPersistedState = () => Promise<boolean>
+
+export const setupPersistedStateSync = (hydratedStore: AppStore): FlushPersistedState => {
     const saveState = async () => {
         try {
-            await schedulePersistenceWrite(async () => {
+            return await schedulePersistenceWrite(async () => {
                 const state = hydratedStore.getState() as RootState
                 const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                     state.simulation,
@@ -62,6 +64,7 @@ export const setupPersistedStateSync = (hydratedStore: AppStore): void => {
             })
         } catch (e) {
             console.error('[Persistence] Failed to save state:', e)
+            return false
         }
     }
 
@@ -87,4 +90,6 @@ export const setupPersistedStateSync = (hydratedStore: AppStore): void => {
         void saveState()
         workerBus.dispose()
     })
+
+    return saveState
 }

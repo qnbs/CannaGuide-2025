@@ -11,6 +11,7 @@
 import JSZip from 'jszip'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
+import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -250,7 +251,14 @@ export const backupService = {
             }
 
             // 4. Restore state to IndexedDB
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, stateString)
+            const stateRestored = await replacePrimaryPersistedSnapshot(stateString)
+            if (!stateRestored) {
+                return {
+                    success: false,
+                    metadata,
+                    error: 'State restore was blocked by an active recovery operation',
+                }
+            }
 
             // 5. Restore images
             const imageFiles = Object.keys(zip.files).filter(

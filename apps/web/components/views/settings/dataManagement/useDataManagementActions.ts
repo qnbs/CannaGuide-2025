@@ -5,8 +5,6 @@ import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/set
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { setSimulationState } from '@/stores/slices/simulationSlice'
 import { addGrow } from '@/stores/slices/growsSlice'
-import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY } from '@/constants'
 import type { VersionedSliceName } from '@/constants'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { dbService } from '@/services/dbService'
@@ -21,6 +19,7 @@ import {
 } from '@/services/privacyService'
 import * as Sentry from '@sentry/react'
 import { pruneOnQuotaThreshold } from '@/services/indexedDbPruneService'
+import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 
 export function useDataManagementActions() {
     const { t } = useTranslation()
@@ -87,7 +86,14 @@ export function useDataManagementActions() {
 
     const confirmImport = async () => {
         if (fileToImport) {
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, fileToImport)
+            const stateRestored = await replacePrimaryPersistedSnapshot(fileToImport)
+            if (!stateRestored) {
+                getUISnapshot().addNotification({
+                    type: 'error',
+                    message: String(t('settingsView.data.importError')),
+                })
+                return
+            }
             setIsImportConfirmOpen(false)
             setFileToImport(null)
             getUISnapshot().addNotification({

@@ -16,6 +16,10 @@ const mockRequestNotification = vi.fn()
 const mockScheduleIdlePreload = vi.fn()
 const mockStartBackgroundPrecomputation = vi.fn()
 const mockSetAppReady = vi.fn()
+const platformMocks = vi.hoisted(() => ({
+    isTauri: false,
+    listen: vi.fn(),
+}))
 
 vi.mock('@/services/strainService', () => ({
     strainService: { init: () => mockStrainInit() },
@@ -66,7 +70,15 @@ vi.mock('@/services/local-ai', () => ({
 }))
 
 vi.mock('@/services/platformService', () => ({
-    platform: { isTauri: false },
+    platform: {
+        get isTauri() {
+            return platformMocks.isTauri
+        },
+    },
+}))
+
+vi.mock('@tauri-apps/api/event', () => ({
+    listen: platformMocks.listen,
 }))
 
 vi.mock('@/services/offlineActionReplayService', () => ({
@@ -94,6 +106,8 @@ describe('runPostHydrationServices', () => {
         vi.clearAllMocks()
         mockLoadPersistedPassword.mockReset()
         mockLoadPersistedPassword.mockResolvedValue(undefined)
+        platformMocks.isTauri = false
+        platformMocks.listen.mockReset()
         document.body.removeAttribute('data-app-ready')
     })
 
@@ -140,5 +154,27 @@ describe('runPostHydrationServices', () => {
         store.dispatch(setSetting({ path: 'localAi.autoPreloadOnStartup', value: true }))
         await runPostHydrationServices(store)
         expect(mockScheduleIdlePreload).toHaveBeenCalled()
+    })
+
+    it('routes the Tauri before-quit flush through the coordinated persistence path', async () => {
+        const store = createTestStore()
+        const flushPersistedState = vi.fn().mockResolvedValue(true)
+        let beforeQuit: (() => Promise<void>) | undefined
+        platformMocks.isTauri = true
+        platformMocks.listen.mockImplementation(
+            async (_event: string, callback: () => Promise<void>) => {
+                beforeQuit = callback
+                return () => {}
+            },
+        )
+
+        await runPostHydrationServices(store, flushPersistedState)
+        await beforeQuit?.()
+
+        expect(platformMocks.listen).toHaveBeenCalledWith(
+            'tauri://before-quit',
+            expect.any(Function),
+        )
+        expect(flushPersistedState).toHaveBeenCalledOnce()
     })
 })

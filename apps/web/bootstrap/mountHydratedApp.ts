@@ -20,8 +20,8 @@ export const mountHydratedApp = async (): Promise<void> => {
             console.error('[CRDT] Initialization failed, continuing without sync:', crdtError)
         }
 
-        setupPersistedStateSync(hydratedStore)
-        await runPostHydrationServices(hydratedStore)
+        const flushPersistedState = setupPersistedStateSync(hydratedStore)
+        await runPostHydrationServices(hydratedStore, flushPersistedState)
     } catch (error) {
         console.error('Failed to initialize the application:', error)
         if (error instanceof Error) {

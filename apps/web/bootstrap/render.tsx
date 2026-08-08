@@ -21,6 +21,10 @@ export const getAppRoot = (): ReactDOM.Root => {
 }
 
 export const renderError = (error: Error): void => {
+    const requestSafeRecovery = () => {
+        globalThis.dispatchEvent(new Event('cannaguide-safe-recovery-request'))
+    }
+
     getAppRoot().render(
         <div style={{ padding: '2rem', color: '#f87171', textAlign: 'center' }}>
             <h1>Application Error</h1>
@@ -36,6 +40,23 @@ export const renderError = (error: Error): void => {
             >
                 {error.message}
             </pre>
+            <p style={{ color: '#cbd5e1' }}>
+                If startup keeps failing, you can explicitly restore the last validated backup.
+            </p>
+            <button
+                type="button"
+                onClick={requestSafeRecovery}
+                style={{
+                    marginTop: '0.75rem',
+                    borderRadius: '6px',
+                    padding: '0.6rem 1rem',
+                    background: '#f59e0b',
+                    color: '#111827',
+                    fontWeight: 700,
+                }}
+            >
+                Try Safe Recovery
+            </button>
         </div>,
     )
 }

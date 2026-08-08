@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
     setItem: vi.fn(),
     removeItem: vi.fn(),
     captureException: vi.fn(),
+    migrateSnapshot: vi.fn(),
 }))
 
 vi.mock('@/stores/indexedDBStorage', () => ({
@@ -25,6 +26,10 @@ vi.mock('@/services/sentryService', () => ({
     },
 }))
 
+vi.mock('@/services/migration/persistedSnapshot', () => ({
+    migratePersistedSnapshot: mocks.migrateSnapshot,
+}))
+
 const BACKUP_KEY = 'test-state-key-backup'
 const PRIMARY_KEY = 'test-state-key'
 
@@ -36,6 +41,14 @@ describe('triggerSafeRecovery', () => {
         vi.clearAllMocks()
         vi.resetModules()
         sessionStorage.clear()
+        localStorage.clear()
+        mocks.migrateSnapshot.mockImplementation((snapshot: string) => {
+            const parsed: unknown = JSON.parse(snapshot)
+            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                throw new TypeError('Invalid persisted snapshot')
+            }
+            return snapshot
+        })
         vi.spyOn(console, 'debug').mockImplementation(() => {})
         vi.spyOn(console, 'error').mockImplementation(() => {})
         recovery = await import('./recovery')
@@ -48,6 +61,7 @@ describe('triggerSafeRecovery', () => {
         mocks.getItem
             .mockResolvedValueOnce(backup)
             .mockResolvedValueOnce(primary)
+            .mockResolvedValueOnce(null)
             .mockResolvedValueOnce(backup)
 
         await expect(
@@ -63,7 +77,13 @@ describe('triggerSafeRecovery', () => {
         expect(mocks.setItem).toHaveBeenNthCalledWith(2, PRIMARY_KEY, backup)
         expect(mocks.removeItem).not.toHaveBeenCalled()
         expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBe('1')
+        expect(localStorage.getItem('cannaguide.recoveryEpoch')).toBe('1')
         expect(reload).toHaveBeenCalledOnce()
+
+        const coordinator = await import('./persistenceCoordinator')
+        const staleFlush = vi.fn(async () => {})
+        await expect(coordinator.schedulePersistenceWrite(staleFlush)).resolves.toBe(false)
+        expect(staleFlush).not.toHaveBeenCalled()
     })
 
     it.each([null, 'not-json', '[]', 'null'])(
@@ -87,6 +107,7 @@ describe('triggerSafeRecovery', () => {
         mocks.getItem
             .mockResolvedValueOnce(backup)
             .mockResolvedValueOnce(primary)
+            .mockResolvedValueOnce(null)
             .mockResolvedValueOnce('unexpected-state')
 
         await expect(
@@ -103,6 +124,7 @@ describe('triggerSafeRecovery', () => {
         mocks.getItem
             .mockResolvedValueOnce(backup)
             .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce(null)
             .mockResolvedValueOnce('unexpected-state')
 
         await expect(
@@ -110,6 +132,41 @@ describe('triggerSafeRecovery', () => {
         ).resolves.toBe(false)
 
         expect(mocks.removeItem).toHaveBeenCalledWith(PRIMARY_KEY)
+        expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBeNull()
+    })
+
+    it('preserves an existing durable rollback across recovery sessions', async () => {
+        const backup = JSON.stringify({ version: 1, notes: { notes: [] } })
+        const primary = JSON.stringify({ version: 1, notes: { notes: [{ id: 'current' }] } })
+        const firstRollback = JSON.stringify({ version: 1, notes: { notes: [{ id: 'first' }] } })
+        mocks.getItem
+            .mockResolvedValueOnce(backup)
+            .mockResolvedValueOnce(primary)
+            .mockResolvedValueOnce(firstRollback)
+            .mockResolvedValueOnce(backup)
+
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, vi.fn()),
+        ).resolves.toBe(true)
+
+        expect(mocks.setItem).toHaveBeenCalledOnce()
+        expect(mocks.setItem).toHaveBeenCalledWith(PRIMARY_KEY, backup)
+        expect(mocks.setItem).not.toHaveBeenCalledWith(recovery.SAFE_RECOVERY_ROLLBACK_KEY, primary)
+    })
+
+    it('rejects a backup that the canonical migration pipeline cannot validate', async () => {
+        const malformedBackup = JSON.stringify({ version: 6, settings: 'invalid' })
+        mocks.getItem.mockResolvedValueOnce(malformedBackup)
+        mocks.migrateSnapshot.mockImplementationOnce(() => {
+            throw new TypeError('Invalid settings slice')
+        })
+
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, vi.fn()),
+        ).resolves.toBe(false)
+
+        expect(mocks.setItem).not.toHaveBeenCalled()
+        expect(mocks.removeItem).not.toHaveBeenCalled()
         expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBeNull()
     })
 

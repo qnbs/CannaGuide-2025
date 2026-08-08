@@ -29,7 +29,7 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
-import { migrateState } from '../services/migrationLogic'
+import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
@@ -94,8 +94,7 @@ export const createAppStore = async (): Promise<AppStore> => {
     let persistedUiState: Partial<UIState> | undefined
 
     const hydratePersistedState = (persistedString: string): Partial<RootState> => {
-        const persistedState = JSON.parse(persistedString)
-        const migrated = migrateState(persistedState) as Partial<RootState> & {
+        const migrated = parseAndMigratePersistedSnapshot(persistedString) as Partial<RootState> & {
             ui?: Partial<UIState>
         }
 

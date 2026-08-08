@@ -5,6 +5,7 @@ let coordinator: typeof import('./persistenceCoordinator')
 describe('persistenceCoordinator', () => {
     beforeEach(async () => {
         vi.resetModules()
+        localStorage.clear()
         coordinator = await import('./persistenceCoordinator')
     })
 
@@ -57,5 +58,57 @@ describe('persistenceCoordinator', () => {
         const resumedWrite = vi.fn(async () => {})
         await expect(coordinator.schedulePersistenceWrite(resumedWrite)).resolves.toBe(true)
         expect(resumedWrite).toHaveBeenCalledOnce()
+    })
+
+    it('fences writes from tabs that booted before a recovery commit', async () => {
+        coordinator.commitRecoveryEpoch()
+        const staleWrite = vi.fn(async () => {})
+
+        await expect(coordinator.schedulePersistenceWrite(staleWrite)).resolves.toBe(false)
+        expect(staleWrite).not.toHaveBeenCalled()
+    })
+
+    it('uses a shared Web Lock for writes and an exclusive lock for recovery', async () => {
+        const originalLocks = Object.getOwnPropertyDescriptor(navigator, 'locks')
+        const request = vi.fn(
+            async (
+                _name: string,
+                _options: LockOptions,
+                callback: (lock: Lock | null) => Promise<unknown>,
+            ) => callback({ name: 'cannaguide.persisted-state', mode: 'exclusive' } as Lock),
+        )
+        Object.defineProperty(navigator, 'locks', {
+            configurable: true,
+            value: { request } as unknown as LockManager,
+        })
+
+        try {
+            vi.resetModules()
+            coordinator = await import('./persistenceCoordinator')
+
+            await expect(coordinator.schedulePersistenceWrite(async () => {})).resolves.toBe(true)
+            await expect(
+                coordinator.runWithExclusiveRecoveryLock(async () => 'recovered'),
+            ).resolves.toBe('recovered')
+
+            expect(request).toHaveBeenNthCalledWith(
+                1,
+                'cannaguide.persisted-state',
+                { mode: 'shared' },
+                expect.any(Function),
+            )
+            expect(request).toHaveBeenNthCalledWith(
+                2,
+                'cannaguide.persisted-state',
+                { mode: 'exclusive', ifAvailable: true },
+                expect.any(Function),
+            )
+        } finally {
+            if (originalLocks) {
+                Object.defineProperty(navigator, 'locks', originalLocks)
+            } else {
+                Reflect.deleteProperty(navigator, 'locks')
+            }
+        }
     })
 })

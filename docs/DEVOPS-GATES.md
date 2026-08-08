@@ -167,9 +167,9 @@ every PR.
 
 | Hook                           | Command                                                                                            |
 | ------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `pre-commit`                   | `lint-staged` (eslint + prettier on staged files)                                                  |
+| `pre-commit`                   | serialized `lint-staged --concurrent 1` (security + eslint + prettier on staged files)             |
 | `commit-msg`                   | commitlint conventional commits                                                                    |
-| `pre-push`                     | typecheck + lint:scopes + file-budget + doc-metrics                                                |
+| `pre-push`                     | single-hook lock + memory/dependency preflight + scoped typecheck + changed lint + local gates     |
 | **`gate:push`** (manual, full) | `pnpm run gate:push` — identity, lint, mdc, graphify, typecheck, tests, scopes, file-budget, build |
 
 Skip hooks (emergency only): `git push --no-verify`
@@ -180,7 +180,10 @@ Skip hooks (emergency only): `git push --no-verify`
 
 ```bash
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
-export PATH="$NVM_DIR/versions/node/v24.16.0/bin:$PATH"
+CANNAGUIDE_NODE_BIN="$(dirname "$(nvm which 24)")"
+export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
+corepack enable pnpm
+pnpm --version # must match package.json packageManager
 
 pnpm run ci:audit          # lightweight subset
 pnpm run gate:push         # full pre-push gate

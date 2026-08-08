@@ -16,6 +16,7 @@
  * Nothing here shells out to an unfiltered `turbo run`.
  */
 import { spawnSync } from 'node:child_process'
+import { resolveLocalBinary } from './git-hooks/hook-runtime.mjs'
 
 const TAG = '[verify]'
 const isWindows = process.platform === 'win32'
@@ -105,19 +106,12 @@ const filters = [...affected]
 
 console.log(`${TAG} affected workspaces: ${[...affected].sort().join(', ')}`)
 
-const args = [
-    'exec',
-    'turbo',
-    'run',
-    task,
-    '--concurrency=1',
-    ...filters.map((f) => `--filter=${f}`),
-]
-console.log(`${TAG} -> pnpm ${args.join(' ')}`)
+const args = ['run', task, '--concurrency=1', ...filters.map((f) => `--filter=${f}`)]
+const turbo = resolveLocalBinary('turbo')
+console.log(`${TAG} -> ${turbo} ${args.join(' ')}`)
 
-// `pnpm` is a .cmd shim on Windows, which spawnSync cannot execute without a
-// shell (EINVAL since Node's CVE-2024-27980 fix). Same treatment as the other
-// launcher scripts in this directory. Every argument here is built from the
-// literals above, never from the diff, so the shell has nothing to inject into.
-const run = spawnSync('pnpm', args, { stdio: 'inherit', shell: isWindows })
+// Direct local execution is intentional. pnpm 11 defaults verify-deps-before-run
+// to "install", which can turn a hook into an implicit workspace install after a
+// lockfile merge. The hook runner verifies dependency synchronization first.
+const run = spawnSync(turbo, args, { stdio: 'inherit', shell: isWindows })
 process.exit(run.status ?? 1)

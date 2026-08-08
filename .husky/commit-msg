@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
 
-pnpm exec commitlint --edit "$1"
+exec node ./scripts/git-hooks/run-hook.mjs commit-msg "$1"

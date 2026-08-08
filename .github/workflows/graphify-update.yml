@@ -64,9 +64,8 @@ jobs:
             - name: Update graph
               run: uv run --no-project --with graphifyy==0.9.36 python -m graphify update .
 
-            # The artifact lands on main with [skip ci], so nothing downstream would
-            # catch a bad graph — but ci.yml's quality job runs this same doctor on
-            # every PR. Validate here, or a broken refresh turns every PR red.
+            # The workflow never writes to main. Validate the generated graph before
+            # publishing it for human review so a broken artifact cannot be promoted.
             - name: Validate refreshed graph
               run: pnpm run graphify:mcp:doctor
 
@@ -75,4 +74,5 @@ jobs:
               with:
                   name: graphify-refresh-${{ github.run_id }}
                   path: graphify-out/
+                  include-hidden-files: true
                   retention-days: 7

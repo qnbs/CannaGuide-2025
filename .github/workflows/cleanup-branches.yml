@@ -1,4 +1,4 @@
-name: Cleanup Stale Branches
+name: Cleanup Merged Branches
 
 on:
     schedule:
@@ -11,8 +11,8 @@ on:
                 required: false
                 type: boolean
                 default: false
-            include_closed_pr_branches:
-                description: 'Also delete cursor/* and dependabot/* with closed/merged PRs'
+            include_merged_pr_branches:
+                description: 'Also delete squash/rebase-merged PR branches'
                 required: false
                 type: boolean
                 default: true
@@ -21,7 +21,7 @@ permissions: {}
 
 jobs:
     cleanup:
-        name: Prune merged and closed PR branches
+        name: Prune merged PR branches
         runs-on: ubuntu-latest
         timeout-minutes: 15
         permissions:
@@ -39,4 +39,4 @@ jobs:
               uses: ./.github/actions/cleanup-branches
               with:
                   dry_run: ${{ inputs.dry_run || 'false' }}
-                  include_closed_pr_branches: ${{ inputs.include_closed_pr_branches || 'true' }}
+                  include_merged_pr_branches: ${{ github.event_name != 'workflow_dispatch' || inputs.include_merged_pr_branches }}

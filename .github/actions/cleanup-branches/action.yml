@@ -1,7 +1,7 @@
-name: Cleanup merged and closed PR branches
+name: Cleanup merged PR branches
 description: >-
     Delete remote branches that are fully merged into the default branch, plus
-    stale branches whose pull requests are closed or merged (cursor/*, dependabot/*).
+    pull-request branches merged through squash or rebase strategies.
 
 inputs:
     base_branch:
@@ -12,8 +12,8 @@ inputs:
         description: List delete candidates only (no deletes)
         required: false
         default: 'false'
-    include_closed_pr_branches:
-        description: Also delete branches with closed/merged PRs (not only git-merged)
+    include_merged_pr_branches:
+        description: Also delete merged PR branches that are not git ancestors of main
         required: false
         default: 'true'
 
@@ -26,7 +26,7 @@ runs:
               script: |
                   const baseBranch = '${{ inputs.base_branch }}' || 'main';
                   const dryRun = String('${{ inputs.dry_run }}').toLowerCase() === 'true';
-                  const includeClosed = String('${{ inputs.include_closed_pr_branches }}').toLowerCase() !== 'false';
+                  const includeMerged = String('${{ inputs.include_merged_pr_branches }}').toLowerCase() !== 'false';
                   const owner = context.repo.owner;
                   const repo = context.repo.repo;
 
@@ -47,6 +47,9 @@ runs:
                     github.rest.repos.listBranches,
                     { owner, repo, per_page: 100 }
                   );
+                  for (const branch of branches) {
+                    if (branch.protected) PROTECTED.add(branch.name);
+                  }
 
                   const candidates = new Set();
 
@@ -69,19 +72,16 @@ runs:
                     }
                   }
 
-                  if (includeClosed) {
+                  if (includeMerged) {
                     const prs = await github.paginate(
                       github.rest.pulls.list,
                       { owner, repo, state: 'closed', per_page: 100 }
                     );
                     for (const pr of prs) {
                       const head = pr.head?.ref;
-                      if (!head || PROTECTED.has(head)) continue;
-                      if (
-                        pr.merged_at ||
-                        head.startsWith('cursor/') ||
-                        head.startsWith('dependabot/')
-                      ) {
+                      const sourceRepository = pr.head?.repo?.full_name;
+                      if (!head || sourceRepository !== `${owner}/${repo}` || PROTECTED.has(head)) continue;
+                      if (pr.merged_at) {
                         candidates.add(head);
                       }
                     }

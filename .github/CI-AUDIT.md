@@ -19,12 +19,12 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 | E2E              | **Advisory** — failure emits `::warning::`, does not block merge                        |
 | E2E retries      | `--retries=2` on Chromium shard                                                         |
 | Advisory job     | Separate `advisory` job: critical-path, file-budget, localStorage (`continue-on-error`) |
-| `cursor/**` push | Full CI runs on agent branches without opening a PR                                     |
+| Feature branches | Full CI requires a pull request; direct push CI runs only on `main`                     |
 | AI safety        | `services/ai/safetyPipeline.ts` extracted from `geminiService`                          |
 | Docs CI          | `ci-docs.yml` for markdown-only changes                                                 |
 | V-06             | Deferred to **v2.0** in `AUDIT_BACKLOG.md`                                              |
 
-**Branch:** use only `cursor/master-audit-phase-0-671a` (not `cursor/master-audit-plan-*` plan-only runs).
+**Branch:** use an editor-neutral `<area>/<description>` name and open a pull request for CI evidence.
 
 **Non-blocking PR checks (expected red/warn):** Cloudflare Pages preview (project name mismatch / optional), Workers Builds dashboard hook, `ci-docs` only when `*.md` paths change.
 
@@ -61,7 +61,7 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 | Issue                                    | Root cause                                                                | Fix                                                                                                                     |
 | ---------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Cloudflare PR preview deploy fails       | `wrangler` not in monorepo; `pnpm add wrangler` blocked at workspace root | Added `wrangler` devDependency; `wranglerVersion` + `pnpm exec wrangler --version` in workflow (currently wrangler 4.x) |
-| Preview branch names with `/`            | `cursor/foo` passed raw to `--branch`                                     | Sanitize to DNS-safe slug (max 63 chars)                                                                                |
+| Preview branch names with `/`            | `feature/foo` passed raw to `--branch`                                    | Sanitize to DNS-safe slug (max 63 chars)                                                                                |
 | Dependabot noise on tmp/qs/uuid          | Packages pinned in `pnpm.overrides`                                       | `dependabot.yml` ignore list                                                                                            |
 | `workflows/README.md` stale              | Still said Cloudflare paused / cleanup read-only                          | Rewritten to match PR #250 state                                                                                        |
 | Snyk weekly workflow red without token   | Single job required `SNYK_TOKEN`                                          | Split `snyk-skipped` job (notice) vs `snyk` scan job                                                                    |
@@ -90,15 +90,15 @@ Full Vitest (2812 tests) and E2E remain in GitHub Actions `ci.yml`.
 
 ## 2026-05-30 — Audit consolidation (PR #250)
 
-| Area             | Change                                                          |
-| ---------------- | --------------------------------------------------------------- |
-| Typecheck        | `actionCreator` matchers in Redux listeners                     |
-| Vercel build     | Tauri stubs when optional packages missing                      |
-| react-dom        | `^19.2.7` — 2812 Vitest tests
-| GitHub Pages     | Trust CI on `workflow_run`; `BUILD_BASE_PATH=/CannaGuide-2025/` |
-| Cloudflare Pages | `deploy-cloudflare.yml` with secrets gate + PR preview          |
+| Area             | Change                                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------------------- |
+| Typecheck        | `actionCreator` matchers in Redux listeners                                                                 |
+| Vercel build     | Tauri stubs when optional packages missing                                                                  |
+| react-dom        | `^19.2.7` — 2812 Vitest tests                                                                               |
+| GitHub Pages     | Trust CI on `workflow_run`; `BUILD_BASE_PATH=/CannaGuide-2025/`                                             |
+| Cloudflare Pages | `deploy-cloudflare.yml` with secrets gate + PR preview                                                      |
 | Deploy cleanup   | Post-deploy prune in `deploy.yml` + `deploy-cloudflare.yml`; nightly `cleanup-deployments.yml` (keep 3/env) |
-| harden-runner    | v2.19.4 repo-wide                                               |
+| harden-runner    | v2.19.4 repo-wide                                                                                           |
 
 **CI note:** `ci.yml` ignores `**/*.md` and `docs/**` — doc-only commits do not run CI.
 

@@ -17,7 +17,7 @@ This project is web-first with multiple web distribution targets; **automated** 
 
 Production builds are deployed automatically via `.github/workflows/deploy.yml` when CI passes on `main`.
 
-**Housekeeping:** On `workflow_run` (post-CI), the deploy workflow trusts CI and only runs `build:gh` + Pages upload — it does not re-run lint, typecheck, or unit tests. Use `workflow_dispatch` for a full pre-deploy gate locally in Actions.
+**Housekeeping:** On `workflow_run` (post-CI), the deploy workflow trusts the successful CI run for the exact `main` SHA and only runs `build:gh` + Pages upload. To request a full manual validation, dispatch the **CI** workflow on `main`; the deploy workflow itself has no manual production bypass.
 
 Stale GitHub **deployment** records are pruned automatically:
 
@@ -25,7 +25,7 @@ Stale GitHub **deployment** records are pruned automatically:
 - **Nightly safety net:** [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (45 min timeout; re-run `workflow_dispatch` if backlog is large).
 - **Local / maintainer:** `node scripts/github/prune-deployments.mjs --keep=3` (requires `gh auth` with `repo` scope).
 
-**Branches:** Merged and closed-PR `cursor/*` / `dependabot/*` branches are pruned post-deploy and weekly via [`.github/workflows/cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml).
+**Branches:** Fully merged and squash/rebase-merged PR branches are pruned post-deploy and weekly via [`.github/workflows/cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml). Closed but unmerged branches are preserved.
 
 **Build:** `BUILD_BASE_PATH=/CannaGuide-2025/` (subpath hosting).
 
@@ -71,7 +71,7 @@ Automated wrangler deploys run from `.github/workflows/deploy-cloudflare.yml` wh
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 
-**Triggers:** successful CI on `main` (production), pull requests to `main` (preview + PR comment), and `workflow_dispatch`.
+**Triggers:** successful CI on `main` (production) and pull requests to `main` (preview + PR comment). The deployment workflow has no direct production dispatch.
 
 **Build:** `BUILD_BASE_PATH=/` (root-hosted SPA at `https://cannaguide-2025.pages.dev`).
 
@@ -183,7 +183,7 @@ Use this checklist when bringing **Netlify** automation back.
 
 1. Create API token with **Cloudflare Pages — Edit** (and account read) scope.
 2. Add repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
-3. Run **Deploy to Cloudflare Pages** via `workflow_dispatch` once; production deploys follow successful CI on `main`.
+3. Dispatch the **CI** workflow on `main` (or merge a validated PR); the successful exact-SHA CI run triggers the first production deploy and creates the Pages project when necessary.
 4. Keep `_headers` / `_redirects` under `apps/web/public/` aligned with [apps/web/securityHeaders.ts](../apps/web/securityHeaders.ts).
 
 ---

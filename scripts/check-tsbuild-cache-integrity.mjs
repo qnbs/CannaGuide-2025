@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'node:fs'
 import { posix } from 'node:path'
+import ts from 'typescript'
 
 const PROJECTS = ['packages/ai-core/tsconfig.json', 'packages/ui/tsconfig.json']
 const failures = []
 
 for (const project of PROJECTS) {
-    const config = JSON.parse(readFileSync(project, 'utf8'))
+    const { config, error } = ts.readConfigFile(project, ts.sys.readFile)
+    if (error) {
+        failures.push(`${project}: ${ts.flattenDiagnosticMessageText(error.messageText, '\n')}`)
+        continue
+    }
     const options = config.compilerOptions ?? {}
     const outDir = posix.normalize(options.outDir ?? '')
     const buildInfo = posix.normalize(options.tsBuildInfoFile ?? '')

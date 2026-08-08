@@ -335,13 +335,13 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 }
 ```
 
-### 12.5 CI-Automatisierung (dieses Repo)
+### 12.5 CI automation (this repository)
 
-| Komponente                              | Zweck                                                                                                                                                                                                                     |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/ci.yml`              | Installs `uv` (for the doctor), then runs `pnpm run graphify:mcp:doctor` before typecheck/tests.                                                                                                                          |
-| `.github/workflows/graphify-update.yml` | Woechentlich/manuell: fuehrt die exakt gepinnte Graphify-Version ohne Repository-Schreibrecht aus, validiert `graphify-out/` und laedt ein Review-Artefakt hoch. Ein Mensch uebernimmt gepruefte Aenderungen in einen PR. |
-| `scripts/graphify-mcp-doctor.mjs`       | Prueft u. a. JSON-Schema-Aehnlichkeit (`nodes` + `links`/`edges`), Inferred-Confidence-Schwelle, Graph-Freshness vs. letzter Git-Commit.                                                                                  |
+| Component                               | Purpose                                                                                                                                                                                                         |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`              | Installs `uv` for the doctor, then runs `pnpm run graphify:mcp:doctor` before typecheck and tests.                                                                                                              |
+| `.github/workflows/graphify-update.yml` | Weekly/manual: runs the exactly pinned Graphify version without repository write access, validates the complete `graphify-out/`, and uploads a review artifact. A maintainer promotes approved changes in a PR. |
+| `scripts/graphify-mcp-doctor.mjs`       | Checks JSON schema shape (`nodes` plus `links`/`edges`), the inferred-confidence threshold, and graph freshness relative to the latest Git commit.                                                              |
 
 **Note:** Heavy E2E and Playwright runs are intentionally **CI-first**; locally `pnpm run graphify:mcp:doctor` and targeted tests suffice.
 

@@ -158,10 +158,10 @@ git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
 ### Git workflow (Cloud Agent)
 
 - **Merge target:** `main` directly is fine when local gates pass (`lint:changed`, `lint:scopes`, `typecheck`, relevant `vitest`).
-- **Branches:** `cursor/<descriptive-name>-671a` off `main`; push triggers CI on `cursor/**` (see `.github/workflows/ci.yml`).
+- **Branches:** use an editor-neutral `<area>/<descriptive-name>` branch off `main` (for example `security/workflow-gate-hardening`). CI runs for every pull request target; direct push CI is reserved for `main` to avoid duplicate push/PR runs.
 - **Pull requests:** `gh pr create` / ManagePullRequest may fail with `Resource not accessible by integration` — no blocker; merge locally and `git push origin main` after Quality + Security are green.
 - **Merge gate (CI):** **Quality + Security** required; E2E and deploy workflows are advisory unless explicitly requested.
-- **Housekeeping:** After merge to `main`, watch [Actions](https://github.com/qnbs/CannaGuide-2025/actions) on `main` until **CI Status** passes; fix regressions on `main` or a follow-up `cursor/*` branch.
+- **Housekeeping:** After merge to `main`, watch [Actions](https://github.com/qnbs/CannaGuide-2025/actions) on `main` until **CI Status** passes; fix regressions on `main` or a follow-up editor-neutral branch.
 
 ### Releases & Git tags (Cloud Agent)
 

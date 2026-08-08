@@ -18,6 +18,9 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 
 ## Maintenance & automation
 
+CI runs on direct pushes to `main` and on every pull request target. Branch names are editor-neutral,
+and stacked pull requests receive the same CI graph as pull requests targeting `main`.
+
 | Workflow                                                   | Purpose                                                                                                |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).                                         |

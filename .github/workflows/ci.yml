@@ -4,7 +4,7 @@ name: CI
 
 on:
     push:
-        branches: [main, 'cursor/**']
+        branches: [main]
         paths-ignore:
             - '**/*.md'
             - 'docs/**'
@@ -16,8 +16,9 @@ on:
     # a large pull request could hide a code change beyond that window, skip this
     # workflow entirely, and still satisfy the required check. The `changes` job
     # below makes that decision from the complete diff instead.
+    # Run for every PR target so stacked PRs and editor-neutral branch names
+    # receive the same required evidence as PRs opened directly against main.
     pull_request:
-        branches: [main]
     workflow_dispatch:
 
 concurrency:

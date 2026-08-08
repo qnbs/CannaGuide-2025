@@ -53,15 +53,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error:', error, errorInfo)
         Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } })
-        try {
-            globalThis.dispatchEvent(
-                new CustomEvent('cannaguide-runtime-error', {
-                    detail: { message: error.message },
-                }),
-            )
-        } catch {
-            // no-op in non-browser contexts
-        }
     }
 
     private readonly requestSafeRecovery = () => {

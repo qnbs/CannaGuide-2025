@@ -12,8 +12,10 @@ first for structure, drop to the micro for the exact modules, then open the spec
 | **Macro** — god nodes, communities, cross-module structure                       | Graphify                            | `graphify-out/GRAPH_REPORT.md`, `graph.json`, `manifest.json`                                                      | **Yes** (team policy — shared via git)     | `graphify update .` (AST-only, no API cost) |
 | **Micro** — repo-wide import graph, module index, redux-slice map for `apps/web` | Codegraph (`scripts/codegraph.mjs`) | `.ai-context/codegraph/` (`import-graph.json`, `module-index.md`, `redux-slice-map.md`, `stats.json`, `README.md`) | **No** (git-ignored — regenerated locally) | `node ./scripts/codegraph.mjs`              |
 
-Why the split: the macro view changes rarely and is worth sharing, so it is committed (matching
-the Graphify team policy in the home `CLAUDE.md`). The micro view changes on every edit, so
+Why the split: the macro view changes rarely and is worth sharing, so reviewed refreshes are
+committed (matching the Graphify team policy in the home `CLAUDE.md`). The scheduled workflow
+uploads a validated review artifact and never pushes generated code directly to `main`. The
+micro view changes on every edit, so
 committing it would churn diffs and invite a needless drift gate — it stays local and is cheap
 to regenerate.
 

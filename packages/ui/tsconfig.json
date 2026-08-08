@@ -14,6 +14,7 @@
         "declarationMap": true,
         "emitDeclarationOnly": true,
         "outDir": "dist",
+        "tsBuildInfoFile": "./dist/.tsbuildinfo",
         "rootDir": "src",
         "composite": true
     },

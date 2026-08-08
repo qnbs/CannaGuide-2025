@@ -287,6 +287,9 @@ jobs:
             - name: Doc-metric truth check
               run: node scripts/check-doc-metrics.mjs
 
+            - name: TypeScript build-cache integrity
+              run: node scripts/check-tsbuild-cache-integrity.mjs
+
             - name: jsx-a11y warning ratchet
               run: pnpm run check:a11y-ratchet
 

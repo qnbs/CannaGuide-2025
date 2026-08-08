@@ -11,7 +11,7 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 | [`ci.yml`](./ci.yml)                               | `push`/`PR` `main`, dispatch        | Quality + security + E2E; required check **CI Status**.                              |
 | [`ci-docs.yml`](./ci-docs.yml)                     | `push`/`PR` on `**/*.md`, `docs/**` | Docs quality gates (advisory).                                                       |
 | [`deploy.yml`](./deploy.yml)                       | After **successful CI** on `main`   | GitHub Pages (`BUILD_BASE_PATH=/CannaGuide-2025/`); trusts CI on `workflow_run`.     |
-| [`deploy-cloudflare.yml`](./deploy-cloudflare.yml) | CI success on `main`, PR, dispatch  | Cloudflare Pages mirror (`BUILD_BASE_PATH=/`); skips without `CLOUDFLARE_*` secrets. |
+| [`deploy-cloudflare.yml`](./deploy-cloudflare.yml) | CI success on `main`, PR previews   | Cloudflare Pages mirror (`BUILD_BASE_PATH=/`); skips without `CLOUDFLARE_*` secrets. |
 | [`desktop-build.yml`](./desktop-build.yml)         | Tag `v*`                            | Tauri desktop matrix (optional signing secrets).                                     |
 | [`release-gate.yml`](./release-gate.yml)           | Tag `v*`                            | Pre-release checks.                                                                  |
 | [`release-publish.yml`](./release-publish.yml)     | Tag `v*`                            | SBOM + GitHub Release.                                                               |
@@ -23,7 +23,7 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 | [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).                                         |
 | [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Nightly + manual prune of GitHub Deployments (keep 3/env); also runs post-deploy via composite action. |
 | [`cleanup-branches.yml`](./cleanup-branches.yml)           | Weekly + manual prune of merged / closed-PR branches (`cursor/*`, `dependabot/*`).                     |
-| [`graphify-update.yml`](./graphify-update.yml)             | Refresh `graphify-out/` on `main` when code/docs change.                                               |
+| [`graphify-update.yml`](./graphify-update.yml)             | Generate a pinned, validated `graphify-out/` review artifact; never pushes to `main`.                  |
 | [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                                                     |
 | [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                                                                  |
 | [`strains-daily-update.yml`](./strains-daily-update.yml)   | Strain catalog sync (manual; schedule currently commented out).                                        |

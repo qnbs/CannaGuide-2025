@@ -337,11 +337,11 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 
 ### 12.5 CI-Automatisierung (dieses Repo)
 
-| Komponente                              | Zweck                                                                                                                                                      |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/ci.yml`              | Installs `uv` (for the doctor), then runs `pnpm run graphify:mcp:doctor` before typecheck/tests.                                                           |
-| `.github/workflows/graphify-update.yml` | Auf `main` (Push, woechentlich, manuell): `uv run --with graphifyy python -m graphify update .`, committet Aenderungen unter `graphify-out/` (ohne Cache). |
-| `scripts/graphify-mcp-doctor.mjs`       | Prueft u. a. JSON-Schema-Aehnlichkeit (`nodes` + `links`/`edges`), Inferred-Confidence-Schwelle, Graph-Freshness vs. letzter Git-Commit.                   |
+| Komponente                              | Zweck                                                                                                                                                                                                                     |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github/workflows/ci.yml`              | Installs `uv` (for the doctor), then runs `pnpm run graphify:mcp:doctor` before typecheck/tests.                                                                                                                          |
+| `.github/workflows/graphify-update.yml` | Woechentlich/manuell: fuehrt die exakt gepinnte Graphify-Version ohne Repository-Schreibrecht aus, validiert `graphify-out/` und laedt ein Review-Artefakt hoch. Ein Mensch uebernimmt gepruefte Aenderungen in einen PR. |
+| `scripts/graphify-mcp-doctor.mjs`       | Prueft u. a. JSON-Schema-Aehnlichkeit (`nodes` + `links`/`edges`), Inferred-Confidence-Schwelle, Graph-Freshness vs. letzter Git-Commit.                                                                                  |
 
 **Note:** Heavy E2E and Playwright runs are intentionally **CI-first**; locally `pnpm run graphify:mcp:doctor` and targeted tests suffice.
 

@@ -113,7 +113,9 @@ async function waitForProcessTermination(pid, timeoutMs = 2_000) {
                 if (state === 'Z') return
             }
         } catch (error) {
-            if (error && typeof error === 'object' && error.code === 'ESRCH') return
+            if (error && typeof error === 'object' && ['ESRCH', 'ENOENT'].includes(error.code)) {
+                return
+            }
             throw error
         }
         await new Promise((resolvePromise) => setTimeout(resolvePromise, 25))
@@ -659,7 +661,13 @@ test('active hook path contains no pnpm process launch', () => {
     ]
     for (const file of files) {
         const source = readFileSync(resolve(REPO_ROOT, file), 'utf8')
-        assert.doesNotMatch(source, /(?:spawnSync|spawn|execFileSync)\s*\(\s*['"]pnpm['"]/, file)
-        if (file.startsWith('.husky/')) assert.doesNotMatch(source, /^\s*pnpm\s/m, file)
+        assert.doesNotMatch(
+            source,
+            /(?:spawnSync|spawn|execFileSync|execFile|execSync|exec)\s*\(\s*['"`](?:corepack |npx )?pnpm\b/,
+            file,
+        )
+        if (file.startsWith('.husky/')) {
+            assert.doesNotMatch(source, /(?:^|[;&|]\s*)(?:corepack |npx )?pnpm\s/m, file)
+        }
     }
 })

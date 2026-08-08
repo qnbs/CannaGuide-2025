@@ -87,7 +87,8 @@ wall time, is what kept crashing sessions. `apps/web` now sets `incremental`. An
 - **Do not run E2E, Playwright, Stryker or Lighthouse locally.** That is CI's job.
 - **One heavy task at a time.** Check `free -m` first. The hook stops under clearly dangerous
   pressure (less than 256 MB available, or less than 512 MB with exhausted swap) and warns
-  below 900 MB; if warned, close memory-heavy applications before starting additional work.
+  below 900 MB. A finite cgroup limit is also enforced against the measured 900 MB task
+  headroom. If warned, close memory-heavy applications before starting additional work.
 
 #### Three traps that look like the safe command
 

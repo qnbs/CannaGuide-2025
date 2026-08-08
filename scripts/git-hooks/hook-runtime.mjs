@@ -194,9 +194,7 @@ export function readBootIdentity({ platform = process.platform } = {}) {
         try {
             const id = readFileSync('/proc/sys/kernel/random/boot_id', 'utf8').trim()
             if (id) return `linux:${id}`
-        } catch {
-            // A missing procfs is not proof of a reboot. Keep recovery conservative.
-        }
+        } catch {}
     }
     return null
 }
@@ -214,36 +212,119 @@ export function parseMemoryStatus(meminfo) {
     return { availableMb, swapFreeMb, swapTotalMb }
 }
 
+export function parseCgroupHeadroomMb(limit, usage) {
+    if (!limit || limit.trim() === 'max') return null
+    try {
+        const limitBytes = BigInt(limit.trim())
+        const usageBytes = BigInt(usage.trim())
+        if (limitBytes >= 1n << 60n) return null
+        return Number((limitBytes > usageBytes ? limitBytes - usageBytes : 0n) / 1_048_576n)
+    } catch {
+        return null
+    }
+}
+
+export function readCgroupStatus(readText = (path) => readFileSync(path, 'utf8')) {
+    try {
+        const memberships = readText('/proc/self/cgroup').trim().split('\n')
+        const mounts = readText('/proc/self/mountinfo').trim().split('\n')
+        const unified = memberships.find((line) => line.startsWith('0::'))
+        const memoryV1 = memberships.find((line) =>
+            line.split(':')[1]?.split(',').includes('memory'),
+        )
+        const version = unified ? 2 : memoryV1 ? 1 : null
+        if (!version) return null
+        const cgroupPath = (unified ?? memoryV1).split(':')[2]
+        const mount = mounts.find((line) => {
+            const [, typeAndOptions = ''] = line.split(' - ')
+            return version === 2
+                ? typeAndOptions.startsWith('cgroup2 ')
+                : typeAndOptions.startsWith('cgroup ') &&
+                      typeAndOptions.split(' ')[2]?.split(',').includes('memory')
+        })
+        if (!mount) return null
+        const fields = mount.split(' - ')[0].split(' ')
+        const [mountRoot, mountPoint] = [fields[3], fields[4]]
+        const relative = cgroupPath.startsWith(mountRoot)
+            ? cgroupPath.slice(mountRoot === '/' ? 0 : mountRoot.length)
+            : ''
+        if (!relative.startsWith('/')) return null
+        const directory = join(mountPoint, relative.slice(1))
+        const [memoryNames, totalNames] =
+            version === 2
+                ? [
+                      ['max', 'current'],
+                      ['swap.max', 'swap.current'],
+                  ]
+                : [
+                      ['limit_in_bytes', 'usage_in_bytes'],
+                      ['memsw.limit_in_bytes', 'memsw.usage_in_bytes'],
+                  ]
+        const readHeadroom = ([limit, usage]) =>
+            parseCgroupHeadroomMb(
+                readText(join(directory, `memory.${limit}`)),
+                readText(join(directory, `memory.${usage}`)),
+            )
+        const memoryAvailableMb = readHeadroom(memoryNames)
+        let auxiliaryHeadroomMb = null
+        try {
+            auxiliaryHeadroomMb = readHeadroom(totalNames)
+        } catch {}
+        const totalAvailableMb =
+            version === 1
+                ? (auxiliaryHeadroomMb ?? memoryAvailableMb)
+                : memoryAvailableMb !== null && auxiliaryHeadroomMb !== null
+                  ? memoryAvailableMb + auxiliaryHeadroomMb
+                  : null
+        return { memoryAvailableMb, totalAvailableMb, version }
+    } catch {
+        return null
+    }
+}
+
 export function resourceStatus({ platform = process.platform } = {}) {
     if (platform === 'linux') {
         try {
             const parsed = parseMemoryStatus(readFileSync('/proc/meminfo', 'utf8'))
-            if (parsed !== null) return parsed
-        } catch {
-            // Fall back to Node's cross-platform free-memory reading.
-        }
+            if (parsed !== null) {
+                const cgroup = readCgroupStatus()
+                if (cgroup?.memoryAvailableMb != null) {
+                    return {
+                        ...parsed,
+                        availableMb: Math.min(parsed.availableMb, cgroup.memoryAvailableMb),
+                        cgroupAvailableMb: cgroup.memoryAvailableMb,
+                        cgroupTotalAvailableMb: cgroup.totalAvailableMb,
+                        cgroupVersion: cgroup.version,
+                    }
+                }
+                return parsed
+            }
+        } catch {}
     }
     return { availableMb: Math.floor(freemem() / 1024 / 1024), swapFreeMb: null, swapTotalMb: null }
 }
 
 export function assertSafeResourcePressure({ readStatus = resourceStatus } = {}) {
     const status = readStatus()
-    const { availableMb, swapFreeMb, swapTotalMb } = status
+    const { availableMb, swapFreeMb, swapTotalMb, cgroupAvailableMb, cgroupTotalAvailableMb } =
+        status
     const swapKnown = swapFreeMb !== null && swapTotalMb !== null
-    // The measured warm web typecheck peaks around 850 MB. Do not reject a
-    // legitimate low-memory machine merely for being below that measurement:
-    // fail only when immediate headroom is tiny, or both RAM and swap are under
-    // severe pressure. Healthy-but-slow work is protected by heartbeats.
     const swapExhausted =
         swapKnown && (swapTotalMb === 0 || swapFreeMb < RESOURCE_PRESSURE_MB.minimumSwapFree)
     const clearlyUnsafe =
         availableMb < RESOURCE_PRESSURE_MB.criticalAvailable ||
-        (availableMb < RESOURCE_PRESSURE_MB.lowAvailable && swapExhausted)
+        (availableMb < RESOURCE_PRESSURE_MB.lowAvailable && swapExhausted) ||
+        (cgroupTotalAvailableMb !== undefined &&
+            cgroupTotalAvailableMb !== null &&
+            cgroupTotalAvailableMb < RESOURCE_PRESSURE_MB.warningAvailable)
 
     if (clearlyUnsafe) {
         throw new HookRuntimeError(
             `Dangerous resource pressure: ${availableMb} MB memory available` +
                 (swapKnown ? `, ${swapFreeMb}/${swapTotalMb} MB swap free` : '') +
+                (cgroupAvailableMb !== undefined
+                    ? `, cgroup ${cgroupAvailableMb} MB memory / ${cgroupTotalAvailableMb ?? 'unbounded'} MB total headroom`
+                    : '') +
                 '. Close memory-heavy applications and retry. The push is aborted; no gate is bypassed.',
         )
     }
@@ -251,7 +332,10 @@ export function assertSafeResourcePressure({ readStatus = resourceStatus } = {})
     const severity = availableMb < RESOURCE_PRESSURE_MB.warningAvailable ? 'warning' : 'healthy'
     console.log(
         `[hook] resource preflight (${severity}): ${availableMb} MB memory available` +
-            (swapKnown ? `, ${swapFreeMb}/${swapTotalMb} MB swap free` : ''),
+            (swapKnown ? `, ${swapFreeMb}/${swapTotalMb} MB swap free` : '') +
+            (cgroupAvailableMb !== undefined
+                ? `, cgroup v${status.cgroupVersion} ${cgroupAvailableMb} MB memory / ${cgroupTotalAvailableMb ?? 'unbounded'} MB total headroom`
+                : ''),
     )
     return status
 }
@@ -339,9 +423,7 @@ export function acquireHookLock({
         if (existsSync(candidateDirectory)) {
             try {
                 removeKnownLockDirectory(candidateDirectory)
-            } catch {
-                // Preserve anything we cannot identify and remove exactly.
-            }
+            } catch {}
         }
         if (!error || typeof error !== 'object' || !['EEXIST', 'ENOTEMPTY'].includes(error.code)) {
             throw error
@@ -491,9 +573,7 @@ function terminateProcessTree(child, signal = 'SIGTERM') {
     } catch {
         try {
             child.kill(signal)
-        } catch {
-            // The child may already have exited between checks.
-        }
+        } catch {}
     }
 }
 
@@ -576,9 +656,6 @@ export async function runStep(
         })
 
         child.once('exit', (code, signal) => {
-            // A parent can exit on SIGTERM while one of its descendants ignores
-            // the signal. Kill the still-addressable process group before
-            // clearing the grace timer so a timeout cannot orphan local tools.
             if (reason) terminateProcessTree(child, 'SIGKILL')
             cleanup()
             const elapsed = formatDuration(Date.now() - started)

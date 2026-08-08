@@ -10,9 +10,11 @@ import {
     acquireHookLock,
     assertDependenciesSynchronized,
     assertSafeResourcePressure,
+    parseCgroupHeadroomMb,
     parseMemoryStatus,
     parseLockfileImporterSpecifiers,
     parseTopLevelScalarMap,
+    readCgroupStatus,
     resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
@@ -362,6 +364,61 @@ test('resource guard warns on low memory but fails only under dangerous pressure
                 readStatus: () => ({ availableMb: 300, swapFreeMb: 100, swapTotalMb: 2048 }),
             }),
         /Dangerous resource pressure/,
+    )
+    assert.equal(parseCgroupHeadroomMb('1073741824', '268435456'), 768)
+    assert.equal(parseCgroupHeadroomMb('max', '268435456'), null)
+    assert.equal(parseCgroupHeadroomMb('9223372036854771712', '0'), null)
+    assert.throws(
+        () =>
+            assertSafeResourcePressure({
+                readStatus: () => ({
+                    availableMb: 700,
+                    swapFreeMb: 2048,
+                    swapTotalMb: 4096,
+                    cgroupAvailableMb: 700,
+                    cgroupTotalAvailableMb: 700,
+                }),
+            }),
+        /cgroup 700 MB memory \/ 700 MB total headroom/,
+    )
+})
+
+test('cgroup v2 headroom resolves through the current process path', () => {
+    const files = new Map([
+        ['/proc/self/cgroup', '0::/slice/app\n'],
+        ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
+        ['/sys/fs/cgroup/slice/app/memory.max', '1073741824\n'],
+        ['/sys/fs/cgroup/slice/app/memory.current', '268435456\n'],
+        ['/sys/fs/cgroup/slice/app/memory.swap.max', '268435456\n'],
+        ['/sys/fs/cgroup/slice/app/memory.swap.current', '0\n'],
+    ])
+    assert.deepEqual(
+        readCgroupStatus((path) => files.get(path)),
+        {
+            memoryAvailableMb: 768,
+            totalAvailableMb: 1024,
+            version: 2,
+        },
+    )
+})
+
+test('cgroup v1 memsw is treated as combined headroom', () => {
+    const directory = '/sys/fs/cgroup/memory/docker/app'
+    const files = new Map([
+        ['/proc/self/cgroup', '5:memory:/docker/app\n'],
+        ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup/memory rw - cgroup cgroup rw,memory\n'],
+        [`${directory}/memory.limit_in_bytes`, '1073741824\n'],
+        [`${directory}/memory.usage_in_bytes`, '268435456\n'],
+        [`${directory}/memory.memsw.limit_in_bytes`, '1610612736\n'],
+        [`${directory}/memory.memsw.usage_in_bytes`, '536870912\n'],
+    ])
+    assert.deepEqual(
+        readCgroupStatus((path) => files.get(path)),
+        {
+            memoryAvailableMb: 768,
+            totalAvailableMb: 1024,
+            version: 1,
+        },
     )
 })
 

@@ -4,59 +4,62 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
+import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export const setupPersistedStateSync = (hydratedStore: AppStore): void => {
     const saveState = async () => {
         try {
-            const state = hydratedStore.getState() as RootState
-            const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
-                state.simulation,
-            )
-            const stateToSave = {
-                version: state.settings.version,
-                _sliceVersions: SLICE_SCHEMA_VERSIONS,
-                settings: state.settings,
-                simulation: optimizedSimulation,
-                userStrains: state.userStrains,
-                favorites: state.favorites,
-                notes: state.notes,
-                archives: state.archives,
-                savedItems: state.savedItems,
-                knowledge: state.knowledge,
-                breeding: state.breeding,
-                genealogy: state.genealogy,
-                nutrientPlanner: {
-                    schedule: state.nutrientPlanner.schedule,
-                    readings: state.nutrientPlanner.readings,
-                    alerts: state.nutrientPlanner.alerts,
-                    autoAdjustEnabled: state.nutrientPlanner.autoAdjustEnabled,
-                    medium: state.nutrientPlanner.medium,
-                    activePluginId: state.nutrientPlanner.activePluginId,
-                    activeBrandId: state.nutrientPlanner.activeBrandId,
-                    isAiLoading: false,
-                    lastAiRecommendation: state.nutrientPlanner.lastAiRecommendation,
-                    autoAdjustRecommendation: state.nutrientPlanner.autoAdjustRecommendation,
-                },
-                sandbox: {
-                    savedExperiments: state.sandbox.savedExperiments,
-                    currentExperiment: null,
-                    status: 'idle' as const,
-                },
-                hydro: state.hydro,
-                grows: state.grows,
-                metrics: state.metrics,
-                growPlanner: state.growPlanner,
-                diagnosisHistory: state.diagnosisHistory,
-                problemTracker: state.problemTracker,
-                ui: {
-                    lastActiveView: getUISnapshot().lastActiveView,
-                    onboardingStep: getUISnapshot().onboardingStep,
-                    equipmentViewTab: getUISnapshot().equipmentViewTab,
-                    knowledgeViewTab: getUISnapshot().knowledgeViewTab,
-                },
-            }
-            const serializedState = JSON.stringify(stateToSave)
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState)
+            await schedulePersistenceWrite(async () => {
+                const state = hydratedStore.getState() as RootState
+                const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
+                    state.simulation,
+                )
+                const stateToSave = {
+                    version: state.settings.version,
+                    _sliceVersions: SLICE_SCHEMA_VERSIONS,
+                    settings: state.settings,
+                    simulation: optimizedSimulation,
+                    userStrains: state.userStrains,
+                    favorites: state.favorites,
+                    notes: state.notes,
+                    archives: state.archives,
+                    savedItems: state.savedItems,
+                    knowledge: state.knowledge,
+                    breeding: state.breeding,
+                    genealogy: state.genealogy,
+                    nutrientPlanner: {
+                        schedule: state.nutrientPlanner.schedule,
+                        readings: state.nutrientPlanner.readings,
+                        alerts: state.nutrientPlanner.alerts,
+                        autoAdjustEnabled: state.nutrientPlanner.autoAdjustEnabled,
+                        medium: state.nutrientPlanner.medium,
+                        activePluginId: state.nutrientPlanner.activePluginId,
+                        activeBrandId: state.nutrientPlanner.activeBrandId,
+                        isAiLoading: false,
+                        lastAiRecommendation: state.nutrientPlanner.lastAiRecommendation,
+                        autoAdjustRecommendation: state.nutrientPlanner.autoAdjustRecommendation,
+                    },
+                    sandbox: {
+                        savedExperiments: state.sandbox.savedExperiments,
+                        currentExperiment: null,
+                        status: 'idle' as const,
+                    },
+                    hydro: state.hydro,
+                    grows: state.grows,
+                    metrics: state.metrics,
+                    growPlanner: state.growPlanner,
+                    diagnosisHistory: state.diagnosisHistory,
+                    problemTracker: state.problemTracker,
+                    ui: {
+                        lastActiveView: getUISnapshot().lastActiveView,
+                        onboardingStep: getUISnapshot().onboardingStep,
+                        equipmentViewTab: getUISnapshot().equipmentViewTab,
+                        knowledgeViewTab: getUISnapshot().knowledgeViewTab,
+                    },
+                }
+                const serializedState = JSON.stringify(stateToSave)
+                await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState)
+            })
         } catch (e) {
             console.error('[Persistence] Failed to save state:', e)
         }

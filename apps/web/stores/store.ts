@@ -36,7 +36,7 @@ import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
 import {
     removePrimaryPersistedSnapshot,
-    replacePrimaryPersistedSnapshot,
+    tryRepairPrimaryPersistedSnapshot,
 } from '@/services/persistedStateService'
 
 const rootReducer = combineReducers({
@@ -118,15 +118,12 @@ export const createAppStore = async (): Promise<AppStore> => {
         }
 
         console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
-        const recoveredState = hydratePersistedState(backupString)
-
-        try {
-            await replacePrimaryPersistedSnapshot(backupString)
-        } catch (repairErr) {
-            console.debug('[Store] Could not repair primary snapshot from backup:', repairErr)
+        const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
+        if (!repaired) {
+            return undefined
         }
 
-        return recoveredState
+        return hydratePersistedState(backupString)
     }
 
     try {

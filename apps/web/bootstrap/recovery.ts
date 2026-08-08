@@ -49,6 +49,12 @@ export const triggerSafeRecovery = async (
                     // Preserve the first pre-recovery primary until the user explicitly
                     // accepts or rolls back recovery; never replace it on later attempts.
                     await indexedDBStorage.setItem(SAFE_RECOVERY_ROLLBACK_KEY, originalSnapshot)
+                    const preservedRollback = await indexedDBStorage.getItem(
+                        SAFE_RECOVERY_ROLLBACK_KEY,
+                    )
+                    if (preservedRollback !== originalSnapshot) {
+                        throw new Error('Rollback snapshot verification failed.')
+                    }
                 }
 
                 console.debug(`[SafeRecovery] Triggered by: ${reason}`, error)

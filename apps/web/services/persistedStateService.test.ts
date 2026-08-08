@@ -39,6 +39,21 @@ describe('persistedStateService', () => {
         expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated:{"version":1}')
     })
 
+    it.each([
+        ['fenced', false],
+        ['failed', new Error('storage unavailable')],
+    ])('does not report a %s backup repair as successful', async (_case, outcome) => {
+        const { tryRepairPrimaryPersistedSnapshot } = await import('./persistedStateService')
+        vi.spyOn(console, 'debug').mockImplementation(() => {})
+        if (outcome instanceof Error) {
+            mocks.schedule.mockRejectedValueOnce(outcome)
+        } else {
+            mocks.schedule.mockResolvedValueOnce(outcome)
+        }
+
+        await expect(tryRepairPrimaryPersistedSnapshot('{"version":1}')).resolves.toBe(false)
+    })
+
     it('coordinates primary removal', async () => {
         const { removePrimaryPersistedSnapshot } = await import('./persistedStateService')
 

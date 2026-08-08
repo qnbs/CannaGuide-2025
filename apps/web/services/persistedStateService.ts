@@ -14,6 +14,20 @@ export const replacePrimaryPersistedSnapshot = async (snapshot: string): Promise
     })
 }
 
+/** Repair a corrupt primary from backup without treating a fenced/failed write as success. */
+export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promise<boolean> => {
+    try {
+        const repaired = await replacePrimaryPersistedSnapshot(snapshot)
+        if (!repaired) {
+            console.debug('[Store] Primary snapshot repair was fenced by recovery.')
+        }
+        return repaired
+    } catch (repairError) {
+        console.debug('[Store] Could not repair primary snapshot from backup:', repairError)
+        return false
+    }
+}
+
 /** Remove the primary snapshot without racing recovery or another writer. */
 export const removePrimaryPersistedSnapshot = async (): Promise<boolean> =>
     schedulePersistenceWrite(async () => {

@@ -87,6 +87,7 @@ describe('triggerSafeRecovery', () => {
             .mockResolvedValueOnce(backup)
             .mockResolvedValueOnce(primary)
             .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce(primary)
             .mockResolvedValueOnce(backup)
 
         await expect(
@@ -133,6 +134,7 @@ describe('triggerSafeRecovery', () => {
             .mockResolvedValueOnce(backup)
             .mockResolvedValueOnce(primary)
             .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce(primary)
             .mockResolvedValueOnce('unexpected-state')
 
         await expect(
@@ -141,6 +143,25 @@ describe('triggerSafeRecovery', () => {
 
         expect(mocks.setItem).toHaveBeenNthCalledWith(2, PRIMARY_KEY, backup)
         expect(mocks.setItem).toHaveBeenNthCalledWith(3, PRIMARY_KEY, primary)
+        expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBeNull()
+    })
+
+    it('does not replace the primary when rollback preservation cannot be verified', async () => {
+        const backup = JSON.stringify({ version: 1, notes: { notes: [] } })
+        const primary = JSON.stringify({ version: 1, notes: { notes: [{ id: 'n1' }] } })
+        mocks.getItem
+            .mockResolvedValueOnce(backup)
+            .mockResolvedValueOnce(primary)
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce('unexpected-rollback')
+
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, vi.fn()),
+        ).resolves.toBe(false)
+
+        expect(mocks.setItem).toHaveBeenCalledOnce()
+        expect(mocks.setItem).toHaveBeenCalledWith(recovery.SAFE_RECOVERY_ROLLBACK_KEY, primary)
+        expect(mocks.setItem).not.toHaveBeenCalledWith(PRIMARY_KEY, backup)
         expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBeNull()
     })
 

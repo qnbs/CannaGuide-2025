@@ -61,11 +61,43 @@ describe('persistenceCoordinator', () => {
     })
 
     it('fences writes from tabs that booted before a recovery commit', async () => {
-        coordinator.commitRecoveryEpoch()
+        expect(coordinator.commitRecoveryEpoch()).toBe(true)
         const staleWrite = vi.fn(async () => {})
+        const reload = vi.fn()
 
         await expect(coordinator.schedulePersistenceWrite(staleWrite)).resolves.toBe(false)
         expect(staleWrite).not.toHaveBeenCalled()
+        expect(
+            coordinator.handleRecoveryEpochStorageEvent(
+                { key: 'cannaguide.recoveryEpoch', newValue: '1' },
+                reload,
+            ),
+        ).toBe(true)
+        expect(reload).toHaveBeenCalledOnce()
+    })
+
+    it('fails recovery closed when Web Locks are unavailable', async () => {
+        const operation = vi.fn(async () => 'recovered')
+
+        await expect(coordinator.runWithExclusiveRecoveryLock(operation)).resolves.toBeNull()
+        expect(operation).not.toHaveBeenCalled()
+    })
+
+    it('survives denied localStorage access and disables recovery', async () => {
+        const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+            throw new DOMException('Denied', 'SecurityError')
+        })
+
+        try {
+            vi.resetModules()
+            await expect(import('./persistenceCoordinator')).resolves.toBeDefined()
+            coordinator = await import('./persistenceCoordinator')
+            await expect(
+                coordinator.runWithExclusiveRecoveryLock(async () => 'recovered'),
+            ).resolves.toBeNull()
+        } finally {
+            getItem.mockRestore()
+        }
     })
 
     it('uses a shared Web Lock for writes and an exclusive lock for recovery', async () => {
@@ -100,7 +132,7 @@ describe('persistenceCoordinator', () => {
             expect(request).toHaveBeenNthCalledWith(
                 2,
                 'cannaguide.persisted-state',
-                { mode: 'exclusive', ifAvailable: true },
+                { mode: 'exclusive' },
                 expect.any(Function),
             )
         } finally {

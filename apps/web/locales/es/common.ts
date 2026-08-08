@@ -74,6 +74,8 @@ export const common = {
         retry: 'Intentar de nuevo',
         reload: 'Recargar aplicacion',
         safeRecovery: 'Intentar recuperacion segura',
+        safeRecoveryDescription:
+            'Si el inicio sigue fallando, puedes restaurar expresamente la ultima copia de seguridad validada.',
     },
     imageResizeFailed: 'Fallo al redimensionar imagen, usando original.',
     offlineQueued: 'Sin conexion. Accion en cola para sincronizar.',

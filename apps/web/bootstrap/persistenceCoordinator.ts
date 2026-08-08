@@ -5,12 +5,28 @@ const RECOVERY_EPOCH_KEY = 'cannaguide.recoveryEpoch'
 
 let persistenceSuspended = false
 let activeWrite: Promise<void> = Promise.resolve()
-const bootRecoveryEpoch =
-    typeof localStorage === 'undefined' ? null : localStorage.getItem(RECOVERY_EPOCH_KEY)
 
-const recoveryEpochChanged = (): boolean =>
-    typeof localStorage !== 'undefined' &&
-    localStorage.getItem(RECOVERY_EPOCH_KEY) !== bootRecoveryEpoch
+type RecoveryEpoch = { available: true; value: string | null } | { available: false }
+
+const readRecoveryEpoch = (): RecoveryEpoch => {
+    try {
+        if (typeof localStorage === 'undefined') return { available: false }
+        return { available: true, value: localStorage.getItem(RECOVERY_EPOCH_KEY) }
+    } catch {
+        return { available: false }
+    }
+}
+
+const bootRecoveryEpoch = readRecoveryEpoch()
+
+const recoveryEpochChanged = (): boolean => {
+    const currentEpoch = readRecoveryEpoch()
+    return (
+        bootRecoveryEpoch.available &&
+        currentEpoch.available &&
+        currentEpoch.value !== bootRecoveryEpoch.value
+    )
+}
 
 const runWithSharedPersistenceLock = async (write: () => Promise<void>): Promise<void> => {
     if (typeof navigator === 'undefined' || !navigator.locks) {
@@ -22,32 +38,60 @@ const runWithSharedPersistenceLock = async (write: () => Promise<void>): Promise
 }
 
 /**
- * Serialize recovery against writes in every tab. `ifAvailable` prevents a
- * second recovery operation from waiting and later replaying stale intent.
+ * Serialize recovery against writes in every tab. Recovery is unavailable
+ * when Web Locks or the epoch fence are unavailable; silently falling back
+ * would permit an in-flight write from another tab to overwrite the restore.
  */
 export const runWithExclusiveRecoveryLock = async <T>(
     operation: () => Promise<T>,
 ): Promise<T | null> => {
-    if (typeof navigator === 'undefined' || !navigator.locks) {
-        return operation()
-    }
+    if (typeof navigator === 'undefined' || !navigator.locks || !bootRecoveryEpoch.available)
+        return null
 
-    return navigator.locks.request(
-        PERSISTENCE_LOCK_NAME,
-        { mode: 'exclusive', ifAvailable: true },
-        async (lock) => (lock ? operation() : null),
+    return navigator.locks.request(PERSISTENCE_LOCK_NAME, { mode: 'exclusive' }, async (lock) =>
+        lock && !recoveryEpochChanged() ? operation() : null,
     )
 }
 
 /** Fence every already-open tab from persisting stale state after recovery. */
-export const commitRecoveryEpoch = (): void => {
-    if (typeof localStorage === 'undefined') return
+export const commitRecoveryEpoch = (): boolean => {
+    const current = readRecoveryEpoch()
+    if (!current.available) return false
 
-    const currentEpoch = Number.parseInt(localStorage.getItem(RECOVERY_EPOCH_KEY) ?? '0', 10)
-    localStorage.setItem(
-        RECOVERY_EPOCH_KEY,
-        Number.isSafeInteger(currentEpoch) ? String(currentEpoch + 1) : '1',
-    )
+    try {
+        const numericEpoch = Number.parseInt(current.value ?? '0', 10)
+        localStorage.setItem(
+            RECOVERY_EPOCH_KEY,
+            Number.isSafeInteger(numericEpoch) ? String(numericEpoch + 1) : '1',
+        )
+        return true
+    } catch {
+        return false
+    }
+}
+
+/** Reload an old tab as soon as another tab commits a recovered snapshot. */
+export const handleRecoveryEpochStorageEvent = (
+    event: Pick<StorageEvent, 'key' | 'newValue'>,
+    reload: () => void = () => globalThis.location.reload(),
+): boolean => {
+    if (
+        event.key !== RECOVERY_EPOCH_KEY ||
+        !bootRecoveryEpoch.available ||
+        event.newValue === bootRecoveryEpoch.value
+    ) {
+        return false
+    }
+
+    persistenceSuspended = true
+    reload()
+    return true
+}
+
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+        void handleRecoveryEpochStorageEvent(event)
+    })
 }
 
 /** Serialize writes and skip any write that has not started when recovery begins. */

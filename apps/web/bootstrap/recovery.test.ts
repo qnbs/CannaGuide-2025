@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
     getItem: vi.fn(),
@@ -34,6 +34,7 @@ const BACKUP_KEY = 'test-state-key-backup'
 const PRIMARY_KEY = 'test-state-key'
 
 let recovery: typeof import('./recovery')
+const originalLocks = Object.getOwnPropertyDescriptor(navigator, 'locks')
 
 describe('triggerSafeRecovery', () => {
     beforeEach(async () => {
@@ -42,6 +43,22 @@ describe('triggerSafeRecovery', () => {
         vi.resetModules()
         sessionStorage.clear()
         localStorage.clear()
+        Object.defineProperty(navigator, 'locks', {
+            configurable: true,
+            value: {
+                request: vi.fn(
+                    async (
+                        _name: string,
+                        options: LockOptions,
+                        callback: (lock: Lock | null) => Promise<unknown>,
+                    ) =>
+                        callback({
+                            name: 'cannaguide.persisted-state',
+                            mode: options.mode ?? 'exclusive',
+                        } as Lock),
+                ),
+            } as unknown as LockManager,
+        })
         mocks.migrateSnapshot.mockImplementation((snapshot: string) => {
             const parsed: unknown = JSON.parse(snapshot)
             if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
@@ -52,6 +69,14 @@ describe('triggerSafeRecovery', () => {
         vi.spyOn(console, 'debug').mockImplementation(() => {})
         vi.spyOn(console, 'error').mockImplementation(() => {})
         recovery = await import('./recovery')
+    })
+
+    afterEach(() => {
+        if (originalLocks) {
+            Object.defineProperty(navigator, 'locks', originalLocks)
+        } else {
+            Reflect.deleteProperty(navigator, 'locks')
+        }
     })
 
     it('restores a validated backup, preserves the primary, and reloads', async () => {

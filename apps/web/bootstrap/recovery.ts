@@ -65,7 +65,9 @@ export const triggerSafeRecovery = async (
 
                 // Existing tabs retain the prior epoch and can no longer persist stale
                 // in-memory state after the exclusive cross-tab lock is released.
-                commitRecoveryEpoch()
+                if (!commitRecoveryEpoch()) {
+                    throw new Error('Could not commit the cross-tab recovery fence.')
+                }
                 reload()
                 return true
             } catch (recoveryError) {

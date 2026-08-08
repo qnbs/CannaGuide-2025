@@ -74,6 +74,8 @@ export const common = {
         retry: 'Reessayer',
         reload: "Recharger l'application",
         safeRecovery: 'Essayer la recuperation securisee',
+        safeRecoveryDescription:
+            'Si le demarrage echoue toujours, vous pouvez restaurer explicitement la derniere sauvegarde validee.',
     },
     imageResizeFailed: "Echec du redimensionnement de l'image, utilisation de l'original.",
     offlineQueued: "Hors ligne. Action mise en file d'attente pour synchronisation.",

@@ -86,21 +86,24 @@ export function useDataManagementActions() {
 
     const confirmImport = async () => {
         if (fileToImport) {
-            const stateRestored = await replacePrimaryPersistedSnapshot(fileToImport)
-            if (!stateRestored) {
+            try {
+                const stateRestored = await replacePrimaryPersistedSnapshot(fileToImport)
+                if (!stateRestored) {
+                    throw new Error('State import was blocked by safe recovery.')
+                }
+                setIsImportConfirmOpen(false)
+                setFileToImport(null)
+                getUISnapshot().addNotification({
+                    type: 'success',
+                    message: String(t('settingsView.data.importSuccess')),
+                })
+                setTimeout(() => globalThis.location.reload(), 1000)
+            } catch {
                 getUISnapshot().addNotification({
                     type: 'error',
                     message: String(t('settingsView.data.importError')),
                 })
-                return
             }
-            setIsImportConfirmOpen(false)
-            setFileToImport(null)
-            getUISnapshot().addNotification({
-                type: 'success',
-                message: String(t('settingsView.data.importSuccess')),
-            })
-            setTimeout(() => globalThis.location.reload(), 1000)
         }
     }
 

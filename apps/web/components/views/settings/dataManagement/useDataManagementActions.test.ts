@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { useDataManagementActions } from './useDataManagementActions'
 
 const mockDispatch = vi.fn()
+const mocks = vi.hoisted(() => ({
+    addNotification: vi.fn(),
+    replacePrimaryPersistedSnapshot: vi.fn(),
+}))
 
 vi.mock('@/stores/store', () => ({
     useAppDispatch: () => mockDispatch,
@@ -26,7 +30,7 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('@/stores/useUIStore', () => ({
-    getUISnapshot: () => ({ addNotification: vi.fn() }),
+    getUISnapshot: () => ({ addNotification: mocks.addNotification }),
 }))
 
 vi.mock('@/services/privacyService', () => ({
@@ -48,7 +52,7 @@ vi.mock('@/services/indexedDbPruneService', () => ({
 }))
 
 vi.mock('@/services/persistedStateService', () => ({
-    replacePrimaryPersistedSnapshot: vi.fn().mockResolvedValue(true),
+    replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
 }))
 
 vi.mock('@sentry/react', () => ({
@@ -59,6 +63,7 @@ vi.mock('@sentry/react', () => ({
 describe('useDataManagementActions', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
     })
 
     it('exposes known databases and erase phrase constants', () => {
@@ -90,5 +95,32 @@ describe('useDataManagementActions', () => {
             result.current.handleConfirmExportAll()
         })
         expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('reports a validation failure from confirmed state import', async () => {
+        const { result } = renderHook(() => useDataManagementActions())
+        const file = new File(['{"version":6,"settings":"invalid"}'], 'invalid.json', {
+            type: 'application/json',
+        })
+
+        act(() => {
+            result.current.handleFileChange({
+                target: { files: [file], value: '' },
+            } as unknown as Parameters<typeof result.current.handleFileChange>[0])
+        })
+        await waitFor(() => expect(result.current.isImportConfirmOpen).toBe(true))
+        mocks.replacePrimaryPersistedSnapshot.mockRejectedValueOnce(
+            new TypeError('Invalid persisted state'),
+        )
+
+        await act(async () => {
+            await result.current.confirmImport()
+        })
+
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.importError',
+        })
+        expect(result.current.isImportConfirmOpen).toBe(true)
     })
 })

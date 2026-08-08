@@ -236,6 +236,8 @@ export const common = {
         retry: 'Erneut versuchen',
         reload: 'App neu laden',
         safeRecovery: 'Sichere Wiederherstellung versuchen',
+        safeRecoveryDescription:
+            'Wenn der Start weiterhin fehlschlägt, kannst du die letzte geprüfte Sicherung ausdrücklich wiederherstellen.',
     },
     appShortDescription:
         'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',

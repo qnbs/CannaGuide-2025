@@ -4,7 +4,7 @@ import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { App } from '@/components/views/plants/App'
 import type { AppStore } from '@/stores/store'
-import { i18nInstance } from '@/i18n'
+import { getT, i18nInstance } from '@/i18n'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 
 let root: ReactDOM.Root | null = null
@@ -21,6 +21,7 @@ export const getAppRoot = (): ReactDOM.Root => {
 }
 
 export const renderError = (error: Error): void => {
+    const t = getT()
     const requestSafeRecovery = () => {
         globalThis.dispatchEvent(new Event('cannaguide-safe-recovery-request'))
     }
@@ -40,22 +41,15 @@ export const renderError = (error: Error): void => {
             >
                 {error.message}
             </pre>
-            <p style={{ color: '#cbd5e1' }}>
-                If startup keeps failing, you can explicitly restore the last validated backup.
+            <p className="text-slate-300">
+                {String(t('common.errorBoundary.safeRecoveryDescription'))}
             </p>
             <button
                 type="button"
                 onClick={requestSafeRecovery}
-                style={{
-                    marginTop: '0.75rem',
-                    borderRadius: '6px',
-                    padding: '0.6rem 1rem',
-                    background: '#f59e0b',
-                    color: '#111827',
-                    fontWeight: 700,
-                }}
+                className="mt-3 rounded-md bg-amber-500 px-4 py-2.5 font-bold text-slate-900"
             >
-                Try Safe Recovery
+                {String(t('common.errorBoundary.safeRecovery'))}
             </button>
         </div>,
     )

@@ -263,6 +263,7 @@ test('workspace parsing accepts a commented packages key and fails closed withou
         installedManagerFor(`${REQUIRED_PACKAGE_MANAGER}+sha512.deadbeef`),
         REQUIRED_PACKAGE_MANAGER,
     )
+    assert.equal(installedManagerFor({ packageManager: REQUIRED_PACKAGE_MANAGER }), null)
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)

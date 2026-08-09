@@ -95,17 +95,16 @@ function assertCleanOutgoingTree() {
         stdio: ['ignore', 'pipe', 'pipe'],
     })
     if (status.status !== 0) {
-        throw new HookRuntimeError(
-            `pre-push cannot inspect the checkout: ${(status.stderr || '').trim()}`,
-        )
+        const detail = (status.stderr || '').trim() || status.error?.message || 'unknown error'
+        throw new HookRuntimeError(`pre-push cannot inspect the checkout: ${detail}`)
     }
     const changes = status.stdout.trim().split('\n').filter(Boolean)
     if (changes.length > 0) {
         const summary = changes.slice(0, 8).join(', ')
         const remainder = changes.length > 8 ? ` (+${changes.length - 8} more)` : ''
         throw new HookRuntimeError(
-            `pre-push gates must inspect the exact outgoing HEAD; commit or stash checkout ` +
-                `changes first: ${summary}${remainder}`,
+            `pre-push gates must inspect the exact outgoing HEAD; commit changes, or run ` +
+                `"git stash push --include-untracked", first: ${summary}${remainder}`,
         )
     }
 }

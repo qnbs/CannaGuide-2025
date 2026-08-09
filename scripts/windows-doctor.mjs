@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { installedManagerFor } from './git-hooks/dependency-state.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const isWindows = process.platform === 'win32'
@@ -17,14 +18,14 @@ if (!isWindows) {
 }
 
 const packageManager = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).packageManager
-const packageManagerMatch = packageManager?.match(/^pnpm@([^+\s]+)(?:\+.+)?$/)
-if (!packageManagerMatch) {
+const normalizedPackageManager = installedManagerFor(packageManager)
+if (!normalizedPackageManager) {
     console.error(
         `package.json must declare packageManager as pnpm@<version>; found '${packageManager ?? 'missing'}'.`,
     )
     process.exit(1)
 }
-const requiredPnpm = packageManagerMatch[1]
+const requiredPnpm = normalizedPackageManager.slice('pnpm@'.length)
 
 let failed = false
 let warned = false

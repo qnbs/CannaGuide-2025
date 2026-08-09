@@ -150,9 +150,12 @@ function cgroupHierarchyStatus({ version, membership, mounts, readText, hostSwap
                   ['memsw.limit_in_bytes', 'memsw.usage_in_bytes'],
               ]
     const directories = []
-    for (let current = directory; ; current = dirname(current)) {
+    for (let current = directory; ;) {
         directories.push(current)
         if (current === mount.mountPoint) break
+        const parent = dirname(current)
+        if (parent === current) return null
+        current = parent
     }
     const tightestHeadroom = ([limit, usage]) => {
         const values = directories

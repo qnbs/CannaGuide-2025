@@ -52,7 +52,10 @@ export function parseWorkspacePatterns(contents) {
 }
 
 export function installedManagerFor(packageManager) {
-    const match = packageManager?.match(/^pnpm@([^+\s]+)(?:\+.+)?$/)
+    const match =
+        typeof packageManager === 'string'
+            ? packageManager.match(/^pnpm@([^+\s]+)(?:\+.+)?$/)
+            : null
     return match ? `pnpm@${match[1]}` : null
 }
 

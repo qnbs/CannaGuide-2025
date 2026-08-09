@@ -111,6 +111,17 @@ test('cgroup membership parsing preserves colons in the cgroup path', () => {
     )
 })
 
+test('cgroup ancestor traversal fails closed when a synthetic path escapes its mount', () => {
+    const files = new Map([
+        ['/proc/self/cgroup', '0::/../../outside\n'],
+        ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
+    ])
+    assert.equal(
+        readCgroupStatus((path) => files.get(path)),
+        null,
+    )
+})
+
 test('hybrid cgroups fall back to a readable v1 memory controller', () => {
     const directory = '/sys/fs/cgroup/memory/legacy/app'
     const files = new Map([

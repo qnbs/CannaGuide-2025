@@ -27,7 +27,6 @@ if (-not (Test-Command 'corepack')) {
     Write-Host 'Corepack not bundled with this Node; installing from npm...'
     npm install -g corepack@latest
 }
-corepack enable
 $activePnpm = (corepack pnpm --version 2>$null)
 if ($activePnpm -ne $requiredPnpm) {
     throw "Corepack must resolve $packageManager, but returned '$activePnpm'."

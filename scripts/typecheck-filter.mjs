@@ -18,6 +18,14 @@ if (result.status === 0) {
     process.exit(0)
 }
 
+if (result.error || typeof result.status !== 'number') {
+    console.error(
+        result.error?.message ||
+            `TypeScript compiler terminated without an exit code${result.signal ? ` (${result.signal})` : ''}.`,
+    )
+    process.exit(1)
+}
+
 const lines = output.split('\n')
 // Only filter TS2719 in store.ts (known RTK upstream bug: redux-toolkit#4392).
 // Any TS2719 in other files is treated as a real error.
@@ -31,4 +39,8 @@ if (unknownErrors.length > 0) {
 }
 
 const filtered = lines.filter((l) => isKnownRtkError(l)).length
+if (filtered === 0) {
+    console.error(output || `TypeScript compiler exited with status ${result.status}.`)
+    process.exit(1)
+}
 console.log(`[OK] Typecheck passed (${filtered} known RTK TS2719 in store.ts filtered)`)

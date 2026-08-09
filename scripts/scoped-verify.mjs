@@ -54,11 +54,11 @@ const LIBRARY_WORKSPACES = new Set(['@cannaguide/ai-core', '@cannaguide/ui'])
 
 const KNOWN_TASKS = new Set(['typecheck', 'test:run', 'lint', 'build'])
 
-function git(args) {
+function tryGit(args) {
     const result = spawnSync('git', args, { encoding: 'utf8' })
     if (result.status !== 0) {
-        console.error(`${TAG} git ${args.join(' ')} failed: ${(result.stderr || '').trim()}`)
-        process.exit(1)
+        console.warn(`${TAG} git ${args.join(' ')} unavailable: ${(result.stderr || '').trim()}`)
+        return null
     }
     return result.stdout.trim()
 }
@@ -66,8 +66,10 @@ function git(args) {
 function changedFiles() {
     // Diff against the merge-base, not against origin/main's tip: otherwise every
     // commit that lands on main while a branch is open widens this branch's scope.
-    const base = git(['merge-base', 'origin/main', 'HEAD'])
-    const out = git(['diff', '--name-only', `${base}...HEAD`])
+    const base = tryGit(['merge-base', 'origin/main', 'HEAD'])
+    if (!base) return null
+    const out = tryGit(['diff', '--name-only', `${base}...HEAD`])
+    if (out === null) return null
     return out ? out.split('\n').filter(Boolean) : []
 }
 
@@ -92,7 +94,11 @@ if (!KNOWN_TASKS.has(task)) {
     process.exit(1)
 }
 
-const affected = affectedWorkspaces(changedFiles())
+const files = changedFiles()
+if (files === null) {
+    console.warn(`${TAG} change scope is unavailable -- verifying every workspace serially`)
+}
+const affected = files === null ? new Set(ALL_WORKSPACES) : affectedWorkspaces(files)
 
 if (affected.size === 0) {
     console.log(`${TAG} no workspace touched -- skip verify`)

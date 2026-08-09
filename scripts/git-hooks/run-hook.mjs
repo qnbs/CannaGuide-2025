@@ -60,13 +60,33 @@ function dependencySources() {
         .split('\n')
         .map((line) => line.trim().split(/\s+/)[1])
         .filter((sha) => /^[0-9a-f]{40}$/i.test(sha) && !/^0+$/.test(sha))
-    if (sources.length > 0) return [...new Set(sources)]
     const head = spawnSync('git', ['rev-parse', 'HEAD'], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
     })
     if (head.status !== 0) throw new HookRuntimeError('pre-push cannot resolve the current HEAD.')
-    return [head.stdout.trim()]
+    const headSha = head.stdout.trim()
+    if (sources.length === 0) return [headSha]
+    const commits = [...new Set(sources)].map((source) => {
+        const commit = spawnSync('git', ['rev-parse', `${source}^{commit}`], {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'pipe'],
+        })
+        if (commit.status !== 0) {
+            throw new HookRuntimeError(
+                `pre-push cannot resolve local object ${source} as a commit.`,
+            )
+        }
+        return commit.stdout.trim()
+    })
+    const unsupported = [...new Set(commits)].filter((source) => source !== headSha)
+    if (unsupported.length > 0) {
+        throw new HookRuntimeError(
+            `pre-push only verifies the checked-out HEAD (${headSha}); refusing to push ` +
+                `different local commit(s): ${unsupported.join(', ')}. Check out each ref and push it separately.`,
+        )
+    }
+    return [headSha]
 }
 
 try {

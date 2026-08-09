@@ -259,7 +259,10 @@ test('workspace parsing accepts a commented packages key and fails closed withou
     assert.deepEqual(parseWorkspacePatterns("packages: # workspace roots\n    - 'apps/*'\n"), [
         'apps/*',
     ])
-    assert.equal(installedManagerFor('pnpm@11.19.0+sha512.deadbeef'), 'pnpm@11.19.0')
+    assert.equal(
+        installedManagerFor(`${REQUIRED_PACKAGE_MANAGER}+sha512.deadbeef`),
+        REQUIRED_PACKAGE_MANAGER,
+    )
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
@@ -581,6 +584,19 @@ test('resource guard warns on low memory but fails only under dangerous pressure
                 }),
             }),
         /cgroup 700 MB memory \/ 700 MB total headroom/,
+    )
+    assert.throws(
+        () =>
+            assertSafeResourcePressure({
+                readStatus: () => ({
+                    availableMb: 4096,
+                    swapFreeMb: null,
+                    swapTotalMb: null,
+                    cgroupAvailableMb: 300,
+                    cgroupTotalAvailableMb: null,
+                }),
+            }),
+        /cgroup 300 MB memory \/ unbounded MB total headroom/,
     )
 })
 

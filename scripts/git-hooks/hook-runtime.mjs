@@ -262,7 +262,11 @@ export function assertSafeResourcePressure({ readStatus = resourceStatus } = {})
         (availableMb < RESOURCE_PRESSURE_MB.lowAvailable && swapExhausted) ||
         (cgroupTotalAvailableMb !== undefined &&
             cgroupTotalAvailableMb !== null &&
-            cgroupTotalAvailableMb < RESOURCE_PRESSURE_MB.warningAvailable)
+            cgroupTotalAvailableMb < RESOURCE_PRESSURE_MB.warningAvailable) ||
+        (cgroupAvailableMb !== undefined &&
+            cgroupAvailableMb !== null &&
+            (cgroupTotalAvailableMb === undefined || cgroupTotalAvailableMb === null) &&
+            cgroupAvailableMb < RESOURCE_PRESSURE_MB.lowAvailable)
 
     if (clearlyUnsafe) {
         throw new HookRuntimeError(

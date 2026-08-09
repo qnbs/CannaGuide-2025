@@ -16,6 +16,8 @@
  * Nothing here shells out to an unfiltered `turbo run`.
  */
 import { spawnSync } from 'node:child_process'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { resolveLocalTool } from './git-hooks/hook-runtime.mjs'
 
 const TAG = '[verify]'
@@ -43,6 +45,16 @@ const SHARED_ROOT_INPUTS = new Set([
     'tsconfig.base.json',
     'turbo.json',
     '.npmrc',
+    'eslint.config.js',
+])
+
+const WORKSPACE_NEUTRAL_PREFIXES = ['.github/', '.husky/', 'docs/', 'scripts/']
+const WORKSPACE_NEUTRAL_ROOT_FILES = new Set([
+    'AGENTS.md',
+    'CHANGELOG.md',
+    'CONTRIBUTING.md',
+    'LICENSE',
+    'README.md',
 ])
 
 /**
@@ -63,17 +75,22 @@ function tryGit(args) {
     return result.stdout.trim()
 }
 
-function changedFiles() {
+export function changedFiles({ git = tryGit } = {}) {
     // Diff against the merge-base, not against origin/main's tip: otherwise every
     // commit that lands on main while a branch is open widens this branch's scope.
-    const base = tryGit(['merge-base', 'origin/main', 'HEAD'])
+    const base = git(['merge-base', 'origin/main', 'HEAD'])
     if (!base) return null
-    const out = tryGit(['diff', '--name-only', `${base}...HEAD`])
-    if (out === null) return null
-    return out ? out.split('\n').filter(Boolean) : []
+    const outputs = [
+        git(['diff', '--name-only', `${base}...HEAD`, '--']),
+        git(['diff', '--name-only', '--cached', '--']),
+        git(['diff', '--name-only', '--']),
+        git(['ls-files', '--others', '--exclude-standard', '--']),
+    ]
+    if (outputs.some((output) => output === null)) return null
+    return [...new Set(outputs.flatMap((output) => output.split('\n').filter(Boolean)))]
 }
 
-function affectedWorkspaces(files) {
+export function affectedWorkspaces(files) {
     if (files.some((file) => SHARED_ROOT_INPUTS.has(file))) {
         console.log(`${TAG} shared root input changed -- verifying every workspace`)
         return new Set(ALL_WORKSPACES)
@@ -81,45 +98,62 @@ function affectedWorkspaces(files) {
 
     const affected = new Set()
     for (const file of files) {
+        let matched = false
         for (const [prefix, workspace] of WORKSPACE_BY_PREFIX) {
-            if (file.startsWith(prefix)) affected.add(workspace)
+            if (file.startsWith(prefix)) {
+                affected.add(workspace)
+                matched = true
+            }
+        }
+        if (
+            !matched &&
+            !WORKSPACE_NEUTRAL_ROOT_FILES.has(file) &&
+            !WORKSPACE_NEUTRAL_PREFIXES.some((prefix) => file.startsWith(prefix))
+        ) {
+            console.log(`${TAG} unrecognized shared input '${file}' -- verifying every workspace`)
+            return new Set(ALL_WORKSPACES)
         }
     }
     return affected
 }
 
-const task = process.argv[2] || 'typecheck'
-if (!KNOWN_TASKS.has(task)) {
-    console.error(`${TAG} unknown task '${task}'. Known: ${[...KNOWN_TASKS].join(', ')}`)
-    process.exit(1)
+export function main(task = process.argv[2] || 'typecheck') {
+    if (!KNOWN_TASKS.has(task)) {
+        console.error(`${TAG} unknown task '${task}'. Known: ${[...KNOWN_TASKS].join(', ')}`)
+        return 1
+    }
+
+    const files = changedFiles()
+    if (files === null) {
+        console.warn(`${TAG} change scope is unavailable -- verifying every workspace serially`)
+    }
+    const affected = files === null ? new Set(ALL_WORKSPACES) : affectedWorkspaces(files)
+
+    if (affected.size === 0) {
+        console.log(`${TAG} no workspace touched -- skip verify`)
+        return 0
+    }
+
+    const filters = [...affected]
+        .sort()
+        .map((workspace) => (LIBRARY_WORKSPACES.has(workspace) ? `${workspace}...` : workspace))
+
+    console.log(`${TAG} affected workspaces: ${[...affected].sort().join(', ')}`)
+
+    const args = ['run', task, '--concurrency=1', ...filters.map((f) => `--filter=${f}`)]
+    const turbo = resolveLocalTool('turbo')
+    console.log(`${TAG} -> ${turbo.displayPath} ${args.join(' ')}`)
+
+    // Direct local execution is intentional. pnpm 11 defaults verify-deps-before-run
+    // to "install", which can turn a hook into an implicit workspace install after a
+    // lockfile merge. The hook runner verifies dependency synchronization first.
+    const run = spawnSync(turbo.command, [...turbo.argsPrefix, ...args], {
+        stdio: 'inherit',
+        shell: false,
+    })
+    return run.status ?? 1
 }
 
-const files = changedFiles()
-if (files === null) {
-    console.warn(`${TAG} change scope is unavailable -- verifying every workspace serially`)
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+    process.exitCode = main()
 }
-const affected = files === null ? new Set(ALL_WORKSPACES) : affectedWorkspaces(files)
-
-if (affected.size === 0) {
-    console.log(`${TAG} no workspace touched -- skip verify`)
-    process.exit(0)
-}
-
-const filters = [...affected]
-    .sort()
-    .map((workspace) => (LIBRARY_WORKSPACES.has(workspace) ? `${workspace}...` : workspace))
-
-console.log(`${TAG} affected workspaces: ${[...affected].sort().join(', ')}`)
-
-const args = ['run', task, '--concurrency=1', ...filters.map((f) => `--filter=${f}`)]
-const turbo = resolveLocalTool('turbo')
-console.log(`${TAG} -> ${turbo.displayPath} ${args.join(' ')}`)
-
-// Direct local execution is intentional. pnpm 11 defaults verify-deps-before-run
-// to "install", which can turn a hook into an implicit workspace install after a
-// lockfile merge. The hook runner verifies dependency synchronization first.
-const run = spawnSync(turbo.command, [...turbo.argsPrefix, ...args], {
-    stdio: 'inherit',
-    shell: false,
-})
-process.exit(run.status ?? 1)

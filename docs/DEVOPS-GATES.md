@@ -203,8 +203,9 @@ pnpm run gate:push         # full pre-push gate
 
 Transitive vulnerabilities remediated via root `pnpm.overrides` are documented in [`SECURITY.md`](../SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
 
-After adding overrides: deliberately run `corepack pnpm install`, then `corepack pnpm audit`,
-and confirm GitHub **Security → Dependabot** alerts are resolved.
+After adding overrides: deliberately regenerate with `corepack pnpm install --lockfile-only`, reject
+unrelated changes in `pnpm-lock.yaml`, then run `corepack pnpm install --frozen-lockfile` and
+`corepack pnpm audit`. Confirm GitHub **Security → Dependabot** alerts are resolved.
 
 ---
 

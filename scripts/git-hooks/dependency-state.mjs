@@ -5,8 +5,9 @@ import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
 const RECOVERY_COMMAND = '`corepack pnpm install --frozen-lockfile`'
-const MARKER_VERSION = 1
+const MARKER_VERSION = 2
 const MARKER_NAME = '.cannaguide-dependency-state.json'
+const INSTALL_LIFECYCLE_SCRIPTS = ['preinstall', 'install', 'postinstall', 'prepare']
 const MANIFEST_FIELDS = [
     'name',
     'version',
@@ -175,12 +176,19 @@ function stableValue(value) {
 
 function dependencyManifest(contents) {
     const manifest = JSON.parse(contents)
-    return Object.fromEntries(
+    const dependencyInputs = Object.fromEntries(
         MANIFEST_FIELDS.filter((field) => manifest[field] !== undefined).map((field) => [
             field,
             stableValue(manifest[field]),
         ]),
     )
+    const installScripts = Object.fromEntries(
+        INSTALL_LIFECYCLE_SCRIPTS.filter((name) => manifest.scripts?.[name] !== undefined).map(
+            (name) => [name, manifest.scripts[name]],
+        ),
+    )
+    if (Object.keys(installScripts).length > 0) dependencyInputs.scripts = installScripts
+    return dependencyInputs
 }
 
 function hashRecords(records) {

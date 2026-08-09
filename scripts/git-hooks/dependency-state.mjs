@@ -1,9 +1,30 @@
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
-import { dirname, join, relative, sep } from 'node:path'
+import { createHash } from 'node:crypto'
+import { existsSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, resolve, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
-const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'optionalDependencies']
 const RECOVERY_COMMAND = '`corepack pnpm install --frozen-lockfile`'
+const MARKER_VERSION = 1
+const MARKER_NAME = '.cannaguide-dependency-state.json'
+const MANIFEST_FIELDS = [
+    'name',
+    'version',
+    'packageManager',
+    'engines',
+    'os',
+    'cpu',
+    'libc',
+    'dependencies',
+    'devDependencies',
+    'optionalDependencies',
+    'peerDependencies',
+    'peerDependenciesMeta',
+    'dependenciesMeta',
+    'bundledDependencies',
+    'bundleDependencies',
+    'pnpm',
+]
 
 function parseYamlScalar(value) {
     const trimmed = value.trim()
@@ -12,68 +33,6 @@ function parseYamlScalar(value) {
     }
     if (trimmed.startsWith('"') && trimmed.endsWith('"')) return JSON.parse(trimmed)
     return trimmed
-}
-
-export function parseLockfileImporterSpecifiers(contents) {
-    const importers = new Map()
-    let importer = null
-    let dependencyField = null
-    let dependencyName = null
-    let insideImporters = false
-
-    for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
-        if (line === 'importers:') {
-            insideImporters = true
-            continue
-        }
-        if (!insideImporters) continue
-        if (/^[^\s#].*:$/.test(line)) break
-        const importerMatch = line.match(/^  (\S.*?):(?: \{\})?$/)
-        if (importerMatch) {
-            importer = parseYamlScalar(importerMatch[1])
-            importers.set(importer, {})
-            dependencyField = null
-            dependencyName = null
-            continue
-        }
-        const fieldMatch = line.match(/^    (dependencies|devDependencies|optionalDependencies):$/)
-        if (fieldMatch && importer !== null) {
-            dependencyField = fieldMatch[1]
-            importers.get(importer)[dependencyField] = {}
-            dependencyName = null
-            continue
-        }
-        const dependencyMatch = line.match(/^      (\S.*):$/)
-        if (dependencyMatch && dependencyField !== null) {
-            dependencyName = parseYamlScalar(dependencyMatch[1])
-            continue
-        }
-        const specifierMatch = line.match(/^        specifier: (.+)$/)
-        if (specifierMatch && dependencyName !== null) {
-            importers.get(importer)[dependencyField][dependencyName] = parseYamlScalar(
-                specifierMatch[1],
-            )
-        }
-    }
-    if (importers.size === 0) throw new Error('pnpm-lock.yaml has no readable importer metadata.')
-    return importers
-}
-
-export function parseTopLevelScalarMap(contents, sectionName, indentation) {
-    const values = {}
-    let insideSection = false
-    const entryPattern = new RegExp(`^ {${indentation}}(\\S.*?):\\s+(.+)$`)
-    for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
-        if (line === `${sectionName}:`) {
-            insideSection = true
-            continue
-        }
-        if (!insideSection || /^\s*#/.test(line) || line.trim() === '') continue
-        if (/^\S/.test(line)) break
-        const match = line.match(entryPattern)
-        if (match) values[parseYamlScalar(match[1])] = parseYamlScalar(match[2])
-    }
-    return values
 }
 
 export function parseWorkspacePatterns(contents) {
@@ -90,18 +49,6 @@ export function parseWorkspacePatterns(contents) {
         if (match) patterns.push(parseYamlScalar(match[1]))
     }
     return patterns
-}
-
-function normalizeSection(contents, sectionName) {
-    const lines = contents.replaceAll('\r\n', '\n').split('\n')
-    const start = lines.findIndex((line) => line === `${sectionName}:`)
-    if (start === -1) return ''
-    const end = lines.findIndex((line, index) => index > start && /^[^\s#].*:$/.test(line))
-    return lines
-        .slice(start, end === -1 ? undefined : end)
-        .map((line) => line.trimEnd())
-        .join('\n')
-        .trimEnd()
 }
 
 function listWorktreeFiles(root) {
@@ -158,119 +105,194 @@ function globPattern(pattern) {
     return new RegExp(`^${escaped.replaceAll('*', '[^/]*').replaceAll('\0', '.*')}$`)
 }
 
-function workspaceImporterPaths(reader, workspaceContents) {
+function workspaceManifestPaths(reader, workspaceContents) {
     const patterns = parseWorkspacePatterns(workspaceContents)
     const positive = patterns.filter((pattern) => !pattern.startsWith('!')).map(globPattern)
     const negative = patterns
         .filter((pattern) => pattern.startsWith('!'))
         .map((pattern) => globPattern(pattern.slice(1)))
-    const paths = reader
-        .listFiles()
-        .filter((path) => path.endsWith('/package.json'))
-        .map((path) => dirname(path).split(sep).join('/'))
-        .filter(
-            (path) =>
-                positive.some((pattern) => pattern.test(path)) &&
-                !negative.some((pattern) => pattern.test(path)),
-        )
-    return ['.', ...paths].sort()
+    return [
+        'package.json',
+        ...reader
+            .listFiles()
+            .filter((path) => path.endsWith('/package.json'))
+            .filter((path) => {
+                const directory = dirname(path).split(sep).join('/')
+                return (
+                    positive.some((pattern) => pattern.test(directory)) &&
+                    !negative.some((pattern) => pattern.test(directory))
+                )
+            }),
+    ].sort()
 }
 
-function sortedMap(values = {}) {
+function stableValue(value) {
+    if (Array.isArray(value)) return value.map(stableValue)
+    if (!value || typeof value !== 'object') return value
     return Object.fromEntries(
-        Object.entries(values).sort(([left], [right]) => left.localeCompare(right)),
+        Object.entries(value)
+            .sort(([left], [right]) => left.localeCompare(right))
+            .map(([key, nested]) => [key, stableValue(nested)]),
     )
 }
 
-function assertManifests(reader, lockContents, workspaceContents) {
-    const importers = parseLockfileImporterSpecifiers(lockContents)
-    const configuredPaths = workspaceImporterPaths(reader, workspaceContents)
-    const lockedPaths = [...importers.keys()].sort()
-    if (JSON.stringify(configuredPaths) !== JSON.stringify(lockedPaths)) {
-        throw new Error(
-            `${reader.label} workspace manifests do not match pnpm-lock.yaml importers. ` +
-                `Configured: ${configuredPaths.join(', ')}; locked: ${lockedPaths.join(', ')}.`,
-        )
+function dependencyManifest(contents) {
+    const manifest = JSON.parse(contents)
+    return Object.fromEntries(
+        MANIFEST_FIELDS.filter((field) => manifest[field] !== undefined).map((field) => [
+            field,
+            stableValue(manifest[field]),
+        ]),
+    )
+}
+
+function hashRecords(records) {
+    const hash = createHash('sha256')
+    for (const [path, contents] of records.sort(([left], [right]) => left.localeCompare(right))) {
+        hash.update(`${path}\0${Buffer.byteLength(contents)}\0${contents}\0`)
     }
-    const lockedOverrides = sortedMap(parseTopLevelScalarMap(lockContents, 'overrides', 2))
-    const configuredOverrides = sortedMap(parseTopLevelScalarMap(workspaceContents, 'overrides', 4))
-    if (JSON.stringify(lockedOverrides) !== JSON.stringify(configuredOverrides)) {
-        throw new Error('pnpm-workspace.yaml overrides do not match pnpm-lock.yaml.')
+    return hash.digest('hex')
+}
+
+function sourceState(reader) {
+    const workspaceContents = reader.read('pnpm-workspace.yaml')
+    const files = new Set(reader.listFiles())
+    const records = [
+        ['pnpm-lock.yaml', reader.read('pnpm-lock.yaml')],
+        ['pnpm-workspace.yaml', workspaceContents],
+    ]
+    for (const path of workspaceManifestPaths(reader, workspaceContents)) {
+        records.push([path, JSON.stringify(dependencyManifest(reader.read(path)))])
     }
-    for (const [importer, lockedFields] of importers) {
-        const manifestPath = importer === '.' ? 'package.json' : `${importer}/package.json`
-        const manifest = JSON.parse(reader.read(manifestPath))
-        for (const field of DEPENDENCY_FIELDS) {
-            const locked = sortedMap(lockedFields[field])
-            const declared = sortedMap(manifest[field])
-            const names = Object.keys(declared)
-            const incompatible =
-                JSON.stringify(Object.keys(locked)) !== JSON.stringify(names) ||
-                names.some(
-                    (name) =>
-                        locked[name] !== declared[name] &&
-                        locked[name] !== configuredOverrides[name],
-                )
-            if (incompatible) {
-                throw new Error(
-                    `${reader.label} ${manifestPath} ${field} do not match pnpm-lock.yaml.`,
-                )
-            }
-        }
+    for (const path of ['.npmrc', '.pnpmfile.cjs', '.pnpmfile.mjs']) {
+        if (files.has(path)) records.push([path, reader.read(path)])
+    }
+    for (const path of [...files].filter((name) => /^(?:patches|\.pnpm-patches)\//.test(name))) {
+        records.push([path, reader.read(path)])
+    }
+    const rootManifest = JSON.parse(reader.read('package.json'))
+    return {
+        expectedManager: rootManifest.packageManager,
+        fingerprint: hashRecords(records),
     }
 }
 
-export function assertDependencyMetadataSynchronized({ repoRoot, source = 'worktree' } = {}) {
-    const installedLockPath = join(repoRoot, 'node_modules', '.pnpm', 'lock.yaml')
-    const modulesPath = join(repoRoot, 'node_modules', '.modules.yaml')
-    for (const path of [installedLockPath, modulesPath]) {
+function installedManager(modulesPath) {
+    return readFileSync(modulesPath, 'utf8').match(
+        /^\s*["']?packageManager["']?\s*:\s*["']?([^"',\s]+)["']?,?\s*$/m,
+    )?.[1]
+}
+
+function installedPaths(repoRoot) {
+    return {
+        installedLockPath: join(repoRoot, 'node_modules', '.pnpm', 'lock.yaml'),
+        markerPath: join(repoRoot, 'node_modules', MARKER_NAME),
+        modulesPath: join(repoRoot, 'node_modules', '.modules.yaml'),
+    }
+}
+
+function requireInstalledFiles(paths) {
+    for (const path of Object.values(paths)) {
         if (!existsSync(path)) {
             throw new Error(
                 `Dependency metadata is missing: ${path}. Run ${RECOVERY_COMMAND} deliberately.`,
             )
         }
     }
-    const reader = repositoryReader(repoRoot, source)
-    let lockContents
-    let workspaceContents
-    let rootManifest
+}
+
+export function writeDependencyStateMarker({ repoRoot } = {}) {
+    const paths = installedPaths(repoRoot)
+    requireInstalledFiles({
+        installedLockPath: paths.installedLockPath,
+        modulesPath: paths.modulesPath,
+    })
+    const state = sourceState(repositoryReader(repoRoot, 'worktree'))
+    const manager = installedManager(paths.modulesPath)
+    if (!state.expectedManager || manager !== state.expectedManager) {
+        throw new Error(
+            `Dependencies were installed with ${manager ?? 'an unknown pnpm version'}; ` +
+                `the repository requires ${state.expectedManager ?? 'a pinned package manager'}. ` +
+                `Run ${RECOVERY_COMMAND} deliberately.`,
+        )
+    }
+    const marker = {
+        version: MARKER_VERSION,
+        packageManager: manager,
+        sourceFingerprint: state.fingerprint,
+        installedLockFingerprint: hashRecords([
+            ['installed-lock.yaml', readFileSync(paths.installedLockPath, 'utf8')],
+        ]),
+    }
+    const candidate = `${paths.markerPath}.candidate-${process.pid}`
     try {
-        lockContents = reader.read('pnpm-lock.yaml')
-        workspaceContents = reader.read('pnpm-workspace.yaml')
-        rootManifest = JSON.parse(reader.read('package.json'))
+        writeFileSync(candidate, `${JSON.stringify(marker, null, 2)}\n`, { mode: 0o600 })
+        renameSync(candidate, paths.markerPath)
+    } finally {
+        rmSync(candidate, { force: true })
+    }
+    return marker
+}
+
+export function assertDependencyMetadataSynchronized({ repoRoot, source = 'worktree' } = {}) {
+    const paths = installedPaths(repoRoot)
+    requireInstalledFiles(paths)
+    const reader = repositoryReader(repoRoot, source)
+    let state
+    let marker
+    try {
+        state = sourceState(reader)
+        marker = JSON.parse(readFileSync(paths.markerPath, 'utf8'))
     } catch (error) {
         throw new Error(`${reader.label} dependency metadata is missing or unreadable.`, {
             cause: error,
         })
     }
-    const installedLock = readFileSync(installedLockPath, 'utf8')
-    for (const section of ['importers', 'packages', 'snapshots']) {
-        if (normalizeSection(lockContents, section) !== normalizeSection(installedLock, section)) {
-            throw new Error(
-                `${reader.label} ${section} resolutions do not match installed dependencies. ` +
-                    `Hooks never install implicitly. Run ${RECOVERY_COMMAND} deliberately, then retry.`,
+    const manager = installedManager(paths.modulesPath)
+    if (
+        marker.version !== MARKER_VERSION ||
+        !state.expectedManager ||
+        marker.packageManager !== state.expectedManager ||
+        manager !== state.expectedManager
+    ) {
+        throw new Error(
+            `Dependencies were installed with ${manager ?? 'an unknown pnpm version'}; ` +
+                `${reader.label} requires ${state.expectedManager ?? 'a pinned package manager'}. ` +
+                `Run ${RECOVERY_COMMAND} deliberately.`,
+        )
+    }
+    const currentInstalledLock = hashRecords([
+        ['installed-lock.yaml', readFileSync(paths.installedLockPath, 'utf8')],
+    ])
+    if (
+        marker.sourceFingerprint !== state.fingerprint ||
+        marker.installedLockFingerprint !== currentInstalledLock
+    ) {
+        throw new Error(
+            `${reader.label} dependency inputs or the installed lock snapshot changed since the ` +
+                `last successful install. Hooks never install implicitly. Run ${RECOVERY_COMMAND} ` +
+                `deliberately, then retry.`,
+        )
+    }
+    return { expectedManager: state.expectedManager, sourceLabel: reader.label }
+}
+
+const invokedPath = process.argv[1] ? resolve(process.argv[1]) : null
+if (invokedPath === fileURLToPath(import.meta.url)) {
+    const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
+    if (process.argv[2] !== '--write') {
+        console.error('Usage: node scripts/git-hooks/dependency-state.mjs --write')
+        process.exitCode = 2
+    } else {
+        try {
+            const marker = writeDependencyStateMarker({ repoRoot })
+            console.log(
+                `[dependency-state] recorded ${marker.packageManager} install metadata ` +
+                    `(${marker.sourceFingerprint.slice(0, 12)})`,
             )
+        } catch (error) {
+            console.error(`[dependency-state] ${error instanceof Error ? error.message : error}`)
+            process.exitCode = 1
         }
     }
-    try {
-        assertManifests(reader, lockContents, workspaceContents)
-    } catch (error) {
-        throw new Error(
-            `${error instanceof Error ? error.message : String(error)} ` +
-                `Hooks never install implicitly. Correct the repository metadata, run ${RECOVERY_COMMAND} deliberately, then retry.`,
-            { cause: error },
-        )
-    }
-    const expectedManager = rootManifest.packageManager
-    const installedManager = readFileSync(modulesPath, 'utf8').match(
-        /^\s*["']?packageManager["']?\s*:\s*["']?([^"',\s]+)["']?,?\s*$/m,
-    )?.[1]
-    if (!expectedManager || installedManager !== expectedManager) {
-        throw new Error(
-            `Dependencies were installed with ${installedManager ?? 'an unknown pnpm version'}; ` +
-                `${reader.label} requires ${expectedManager ?? 'a pinned package manager'}. ` +
-                `Run ${RECOVERY_COMMAND} deliberately, then retry.`,
-        )
-    }
-    return { expectedManager, sourceLabel: reader.label }
 }

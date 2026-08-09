@@ -4,6 +4,14 @@ $ErrorActionPreference = 'Stop'
 
 Write-Host '=== CannaGuide Windows Setup ===' -ForegroundColor Cyan
 
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+Set-Location $repoRoot
+$packageManager = (Get-Content (Join-Path $repoRoot 'package.json') -Raw | ConvertFrom-Json).packageManager
+if ($packageManager -notmatch '^pnpm@(.+)$') {
+    throw "package.json must declare packageManager as pnpm@<version>; found '$packageManager'."
+}
+$requiredPnpm = $Matches[1]
+
 function Test-Command($name) {
     return [bool](Get-Command $name -ErrorAction SilentlyContinue)
 }
@@ -12,28 +20,16 @@ if (-not (Test-Command 'node')) {
     Write-Warning 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows.'
 }
 
-# Presence alone is not enough: an older globally installed pnpm would satisfy
-# Test-Command, skip corepack, and then run the install with the wrong version.
-$requiredPnpm = '11.13.0'
-$currentPnpm = if (Test-Command 'pnpm') { (pnpm --version 2>$null) } else { $null }
-if ($currentPnpm -ne $requiredPnpm) {
-    if ($currentPnpm) {
-        Write-Host "pnpm $currentPnpm found, but $requiredPnpm is required. Activating via Corepack..."
-    } else {
-        Write-Host 'Enabling Corepack for pnpm...'
-    }
-    # Node 25 dropped the bundled Corepack, so it has to come from npm there.
-    if (-not (Test-Command 'corepack')) {
-        Write-Host 'Corepack not bundled with this Node; installing from npm...'
-        npm install -g corepack@latest
-    }
-    corepack enable
-    corepack prepare "pnpm@$requiredPnpm" --activate
-
-    $activePnpm = (pnpm --version 2>$null)
-    if ($activePnpm -ne $requiredPnpm) {
-        throw "pnpm $requiredPnpm required, but '$activePnpm' is active after Corepack activation."
-    }
+# Do not trust a global pnpm on PATH. Corepack resolves the repository's exact
+# packageManager declaration from package.json.
+if (-not (Test-Command 'corepack')) {
+    Write-Host 'Corepack not bundled with this Node; installing from npm...'
+    npm install -g corepack@latest
+}
+corepack enable
+$activePnpm = (corepack pnpm --version 2>$null)
+if ($activePnpm -ne $requiredPnpm) {
+    throw "Corepack must resolve $packageManager, but returned '$activePnpm'."
 }
 
 if (-not (Test-Command 'uv')) {
@@ -58,13 +54,12 @@ if (-not (Test-Command 'gk')) {
 }
 
 Write-Host ''
-Write-Host 'Installing npm dependencies...'
-Set-Location $PSScriptRoot\..
-pnpm install
+Write-Host 'Installing dependencies with the repository-pinned pnpm...'
+corepack pnpm install --frozen-lockfile
 
 Write-Host ''
 Write-Host 'Running Windows doctor...'
-pnpm run windows:doctor
+corepack pnpm run windows:doctor
 
 Write-Host ''
 Write-Host 'Done. Reload Cursor MCP: Settings -> Tools & MCP -> Reload' -ForegroundColor Green

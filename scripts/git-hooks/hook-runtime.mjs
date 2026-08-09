@@ -104,26 +104,31 @@ export function readCgroupStatus(readText = (path) => readFileSync(path, 'utf8')
         const version = unified ? 2 : memoryV1 ? 1 : null
         if (!version) return null
         const cgroupPath = (unified ?? memoryV1).split(':')[2]
-        const mount = mounts.find((line) => {
+        const candidates = mounts.filter((line) => {
             const [, typeAndOptions = ''] = line.split(' - ')
             return version === 2
                 ? typeAndOptions.startsWith('cgroup2 ')
                 : typeAndOptions.startsWith('cgroup ') &&
                       typeAndOptions.split(' ')[2]?.split(',').includes('memory')
         })
+        const mount = candidates
+            .map((line) => line.split(' - ')[0].split(' '))
+            .map((fields) => ({ mountRoot: fields[3], mountPoint: fields[4] }))
+            .filter(
+                ({ mountRoot }) =>
+                    mountRoot === '/' ||
+                    cgroupPath === mountRoot ||
+                    cgroupPath.startsWith(`${mountRoot}/`),
+            )
+            .sort((left, right) => right.mountRoot.length - left.mountRoot.length)[0]
         if (!mount) return null
-        const fields = mount.split(' - ')[0].split(' ')
-        const [mountRoot, mountPoint] = [fields[3], fields[4]]
         const relative =
-            mountRoot === '/'
+            mount.mountRoot === '/'
                 ? cgroupPath
-                : cgroupPath === mountRoot
+                : cgroupPath === mount.mountRoot
                   ? '/'
-                  : cgroupPath.startsWith(`${mountRoot}/`)
-                    ? cgroupPath.slice(mountRoot.length)
-                    : ''
-        if (!relative.startsWith('/')) return null
-        const directory = join(mountPoint, relative.slice(1))
+                  : cgroupPath.slice(mount.mountRoot.length)
+        const directory = join(mount.mountPoint, relative.slice(1))
         const [memoryNames, totalNames] =
             version === 2
                 ? [
@@ -341,7 +346,7 @@ export function assertDependenciesSynchronized({
     })
     for (const tool of requiredTools) resolveLocalTool(tool, { repoRoot })
     console.log(
-        `[hook] dependency preflight (${sourceLabel}): manifests, full resolutions, ` +
+        `[hook] dependency preflight (${sourceLabel}): successful-install stamp, ` +
             `${expectedManager} metadata and ${requiredTools.length} local tools match`,
     )
 }

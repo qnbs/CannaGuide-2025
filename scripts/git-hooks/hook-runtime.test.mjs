@@ -17,7 +17,7 @@ import {
     resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
-import { parseLockfileImporterSpecifiers, parseTopLevelScalarMap } from './dependency-state.mjs'
+import { writeDependencyStateMarker } from './dependency-state.mjs'
 
 const REQUIRED_PACKAGE_MANAGER = JSON.parse(
     readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'),
@@ -39,6 +39,8 @@ packages:
 `
 const BASE_WORKSPACE = `packages:
     - 'apps/*'
+
+autoInstallPeers: true
 
 overrides:
     postcss: '>=8.5.23 <9'
@@ -74,6 +76,10 @@ function writeDependencyMetadata(
         wantedLock = BASE_LOCKFILE,
         installedLock = wantedLock,
         manager = REQUIRED_PACKAGE_MANAGER,
+        manifest = {
+            packageManager: manager,
+            devDependencies: { eslint: '^9.0.0' },
+        },
     } = {},
 ) {
     mkdirSync(join(root, 'node_modules', '.pnpm'), { recursive: true })
@@ -81,13 +87,8 @@ function writeDependencyMetadata(
     writeFileSync(join(root, 'pnpm-workspace.yaml'), BASE_WORKSPACE)
     writeFileSync(join(root, 'node_modules', '.pnpm', 'lock.yaml'), installedLock)
     writeFileSync(join(root, 'node_modules', '.modules.yaml'), `packageManager: ${manager}\n`)
-    writeFileSync(
-        join(root, 'package.json'),
-        `${JSON.stringify({
-            packageManager: manager,
-            devDependencies: { eslint: '^9.0.0' },
-        })}\n`,
-    )
+    writeFileSync(join(root, 'package.json'), `${JSON.stringify(manifest)}\n`)
+    writeDependencyStateMarker({ repoRoot: root })
 }
 
 function writeJsonStyleDependencyMetadata(root, manager) {
@@ -197,10 +198,16 @@ test('an unreadable lock is never deleted speculatively', () => {
     }
 })
 
-test('dependency preflight accepts matching importer resolutions', () => {
+test('dependency preflight accepts a platform-filtered installed lock snapshot', () => {
     const { root, cleanup } = fixture()
     try {
-        writeDependencyMetadata(root)
+        writeDependencyMetadata(root, {
+            wantedLock: BASE_LOCKFILE.replace(
+                'packages:\n',
+                'packages:\n  optional-darwin@1.0.0: {}\n',
+            ),
+            installedLock: BASE_LOCKFILE,
+        })
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
         )
@@ -209,32 +216,36 @@ test('dependency preflight accepts matching importer resolutions', () => {
     }
 })
 
-test('lockfile importer parsing preserves exact manifest specifiers', () => {
-    assert.deepEqual(Object.fromEntries(parseLockfileImporterSpecifiers(BASE_LOCKFILE)), {
-        '.': { devDependencies: { eslint: '^9.0.0' } },
-    })
-})
-
-test('workspace and lockfile override parsing preserve exact values', () => {
-    assert.deepEqual(parseTopLevelScalarMap(BASE_LOCKFILE, 'overrides', 2), {
-        postcss: '>=8.5.23 <9',
-    })
-    assert.deepEqual(parseTopLevelScalarMap(BASE_WORKSPACE, 'overrides', 4), {
-        postcss: '>=8.5.23 <9',
-    })
-})
-
-test('dependency preflight accepts valid non-resolution current lock metadata', () => {
+test('dependency preflight accepts auto-installed peer metadata after a successful install', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root, {
-            installedLock: BASE_LOCKFILE.replace(
-                'overrides:\n',
-                'currentInstallMetadata: true\n\noverrides:\n',
+            manifest: {
+                packageManager: REQUIRED_PACKAGE_MANAGER,
+                devDependencies: { eslint: '^9.0.0' },
+                peerDependencies: { react: '^19.0.0' },
+            },
+            wantedLock: BASE_LOCKFILE.replace(
+                '      eslint:\n',
+                '      react:\n        specifier: ^19.0.0\n        version: 19.2.4\n      eslint:\n',
             ),
         })
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight rejects a missing successful-install stamp', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        rmSync(join(root, 'node_modules', '.cannaguide-dependency-state.json'))
+        assert.throws(
+            () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+            /Dependency metadata is missing/,
         )
     } finally {
         cleanup()
@@ -254,39 +265,24 @@ test('dependency preflight accepts pnpm 11 quoted install metadata', () => {
     }
 })
 
-test('dependency preflight rejects lockfile drift without installing', () => {
+test('dependency preflight rejects transitive installed-lock drift without installing', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
         writeFileSync(
             join(root, 'node_modules', '.pnpm', 'lock.yaml'),
-            BASE_LOCKFILE.replace('version: 9.39.4', 'version: 9.0.0'),
+            BASE_LOCKFILE.replace('eslint@9.39.4: {}', 'eslint@9.39.5: {}'),
         )
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
-            /Hooks never install implicitly/,
+            /installed lock snapshot changed/,
         )
     } finally {
         cleanup()
     }
 })
 
-test('dependency preflight rejects transitive package drift without installing', () => {
-    const { root, cleanup } = fixture()
-    try {
-        writeDependencyMetadata(root, {
-            installedLock: BASE_LOCKFILE.replace('eslint@9.39.4: {}', 'eslint@9.39.5: {}'),
-        })
-        assert.throws(
-            () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
-            /packages resolutions do not match installed dependencies/,
-        )
-    } finally {
-        cleanup()
-    }
-})
-
-test('dependency preflight rejects workspace manifests absent from the lockfile', () => {
+test('dependency preflight rejects a workspace manifest added after install', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
@@ -294,7 +290,7 @@ test('dependency preflight rejects workspace manifests absent from the lockfile'
         writeFileSync(join(root, 'apps', 'new', 'package.json'), '{}\n')
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
-            /workspace manifests do not match pnpm-lock.yaml importers/,
+            /dependency inputs.*changed since the last successful install/,
         )
     } finally {
         cleanup()
@@ -314,21 +310,24 @@ test('dependency preflight rejects manifest specifier drift without installing',
         )
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
-            /package.json devDependencies do not match pnpm-lock.yaml/,
+            /dependency inputs.*changed since the last successful install/,
         )
     } finally {
         cleanup()
     }
 })
 
-test('dependency preflight rejects workspace override drift without installing', () => {
+test('dependency preflight rejects any workspace configuration drift without installing', () => {
     const { root, cleanup } = fixture()
     try {
         writeDependencyMetadata(root)
-        writeFileSync(join(root, 'pnpm-workspace.yaml'), BASE_WORKSPACE.replace('8.5.23', '8.5.24'))
+        writeFileSync(
+            join(root, 'pnpm-workspace.yaml'),
+            BASE_WORKSPACE.replace('autoInstallPeers: true', 'autoInstallPeers: false'),
+        )
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
-            /pnpm-workspace.yaml overrides do not match pnpm-lock.yaml/,
+            /dependency inputs.*changed since the last successful install/,
         )
     } finally {
         cleanup()
@@ -360,7 +359,7 @@ test('dependency preflight reads the Git index instead of a masking working tree
                     requiredTools: [],
                     source: 'index',
                 }),
-            /Git index package.json devDependencies do not match pnpm-lock.yaml/,
+            /Git index dependency inputs.*changed since the last successful install/,
         )
     } finally {
         cleanup()
@@ -413,7 +412,7 @@ test('dependency preflight reads the pushed commit instead of a masking working 
                     requiredTools: [],
                     source: 'HEAD',
                 }),
-            /Git tree HEAD package.json devDependencies do not match pnpm-lock.yaml/,
+            /Git tree HEAD dependency inputs.*changed since the last successful install/,
         )
     } finally {
         cleanup()
@@ -534,6 +533,29 @@ test('cgroup membership equal to the mount root maps directly to the mount point
         ['/sys/fs/cgroup/memory.current', '268435456\n'],
         ['/sys/fs/cgroup/memory.swap.max', '0\n'],
         ['/sys/fs/cgroup/memory.swap.current', '0\n'],
+    ])
+    assert.deepEqual(
+        readCgroupStatus((path) => files.get(path)),
+        {
+            memoryAvailableMb: 768,
+            totalAvailableMb: 768,
+            version: 2,
+        },
+    )
+})
+
+test('cgroup status selects the mount whose root contains the process membership', () => {
+    const files = new Map([
+        ['/proc/self/cgroup', '0::/slice/app\n'],
+        [
+            '/proc/self/mountinfo',
+            '1 0 0:1 /other /sys/fs/cgroup/other rw - cgroup2 cgroup rw\n' +
+                '2 0 0:2 /slice /sys/fs/cgroup/slice rw - cgroup2 cgroup rw\n',
+        ],
+        ['/sys/fs/cgroup/slice/app/memory.max', '1073741824\n'],
+        ['/sys/fs/cgroup/slice/app/memory.current', '268435456\n'],
+        ['/sys/fs/cgroup/slice/app/memory.swap.max', '0\n'],
+        ['/sys/fs/cgroup/slice/app/memory.swap.current', '0\n'],
     ])
     assert.deepEqual(
         readCgroupStatus((path) => files.get(path)),

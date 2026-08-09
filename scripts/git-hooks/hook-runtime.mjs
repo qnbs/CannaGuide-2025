@@ -537,7 +537,6 @@ export async function runStep(
                 forceKillTimer = null
                 if (pendingExit) finish(...pendingExit)
             }, terminationGraceMs)
-            forceKillTimer.unref()
         }
 
         const timeout = setTimeout(

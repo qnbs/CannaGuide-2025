@@ -116,7 +116,8 @@ function repositoryReader(repoRoot, source) {
                 ])
                     .trim()
                     .split('\n')
-                    .filter(Boolean),
+                    .filter(Boolean)
+                    .filter((path) => existsSync(join(repoRoot, path))),
             read: (path) => readFileSync(join(repoRoot, path), 'utf8'),
         }
     }

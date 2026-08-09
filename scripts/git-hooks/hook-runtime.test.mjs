@@ -378,6 +378,22 @@ test('dependency preflight rejects a workspace manifest added after install', ()
     }
 })
 
+test('dependency stamp excludes a tracked workspace manifest deleted from the worktree', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        const manifestPath = join(root, 'apps', 'deleted', 'package.json')
+        mkdirSync(join(root, 'apps', 'deleted'), { recursive: true })
+        writeFileSync(manifestPath, '{"name":"deleted"}\n')
+        git(root, ['add', 'apps/deleted/package.json'])
+        rmSync(manifestPath)
+
+        assert.doesNotThrow(() => writeDependencyStateMarker({ repoRoot: root }))
+    } finally {
+        cleanup()
+    }
+})
+
 test('dependency preflight rejects manifest specifier drift without installing', () => {
     const { root, cleanup } = fixture()
     try {
@@ -635,6 +651,31 @@ test('a timed-out step terminates its entire process group', async () => {
         cleanup()
     }
 })
+
+test(
+    'standalone runner remains alive for forced descendant cleanup',
+    { skip: process.platform === 'win32' },
+    () => {
+        const runtimeUrl = new URL('./hook-runtime.mjs', import.meta.url).href
+        const grandchild = "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000)"
+        const supervisor = [
+            "const { spawn } = require('node:child_process')",
+            `spawn(process.execPath, ['-e', ${JSON.stringify(grandchild)}], { stdio: 'ignore' })`,
+            'setInterval(() => {}, 1000)',
+        ].join(';')
+        const program = [
+            `import { runStep } from ${JSON.stringify(runtimeUrl)}`,
+            `try { await runStep('standalone timeout', process.execPath, ['-e', ${JSON.stringify(supervisor)}], { timeoutMs: 200, terminationGraceMs: 100, heartbeatMs: 60_000 }) } catch (error) { if (/timed out/.test(error.message)) process.exit(0); console.error(error); process.exit(2) }`,
+            'process.exit(3)',
+        ].join(';')
+
+        const result = spawnSync(process.execPath, ['--input-type=module', '-e', program], {
+            encoding: 'utf8',
+            timeout: 5_000,
+        })
+        assert.equal(result.status, 0, result.stderr || result.stdout)
+    },
+)
 
 test(
     'SIGHUP terminates the active process group',

@@ -18,7 +18,8 @@ function Test-Command($name) {
 }
 
 if (-not (Test-Command 'node')) {
-    Write-Warning 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows.'
+    Write-Error 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows, then rerun setup.'
+    exit 1
 }
 
 # Do not trust a global pnpm on PATH. Corepack resolves the repository's exact

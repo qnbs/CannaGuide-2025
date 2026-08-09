@@ -10,13 +10,21 @@ import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const isWindows = process.platform === 'win32'
-const packageManager = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).packageManager
-const requiredPnpm = packageManager?.match(/^pnpm@(.+)$/)?.[1]
 
 if (!isWindows) {
     console.log('windows:doctor — skipped (not win32); use devcontainer:doctor on Linux/macOS')
     process.exit(0)
 }
+
+const packageManager = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).packageManager
+const packageManagerMatch = packageManager?.match(/^pnpm@(.+)$/)
+if (!packageManagerMatch) {
+    console.error(
+        `package.json must declare packageManager as pnpm@<version>; found '${packageManager ?? 'missing'}'.`,
+    )
+    process.exit(1)
+}
+const requiredPnpm = packageManagerMatch[1]
 
 let failed = false
 let warned = false

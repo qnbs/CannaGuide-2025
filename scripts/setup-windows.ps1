@@ -7,10 +7,11 @@ Write-Host '=== CannaGuide Windows Setup ===' -ForegroundColor Cyan
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
 $packageManager = (Get-Content (Join-Path $repoRoot 'package.json') -Raw | ConvertFrom-Json).packageManager
-if ($packageManager -notmatch '^pnpm@(.+)$') {
+if ($packageManager -match '^pnpm@(.+)$') {
+    $requiredPnpm = $Matches[1]
+} else {
     throw "package.json must declare packageManager as pnpm@<version>; found '$packageManager'."
 }
-$requiredPnpm = $Matches[1]
 
 function Test-Command($name) {
     return [bool](Get-Command $name -ErrorAction SilentlyContinue)

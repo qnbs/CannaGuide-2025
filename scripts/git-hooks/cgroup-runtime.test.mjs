@@ -91,6 +91,26 @@ test('cgroup mountinfo paths are decoded before membership matching and reads', 
     )
 })
 
+test('cgroup membership parsing preserves colons in the cgroup path', () => {
+    const directory = '/sys/fs/cgroup/workers:batch'
+    const files = new Map([
+        ['/proc/self/cgroup', '0::/workers:batch\n'],
+        ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
+        [`${directory}/memory.max`, '1073741824\n'],
+        [`${directory}/memory.current`, '268435456\n'],
+        [`${directory}/memory.swap.max`, '0\n'],
+        [`${directory}/memory.swap.current`, '0\n'],
+    ])
+    assert.deepEqual(
+        readCgroupStatus((path) => files.get(path)),
+        {
+            memoryAvailableMb: 768,
+            totalAvailableMb: 768,
+            version: 2,
+        },
+    )
+})
+
 test('hybrid cgroups fall back to a readable v1 memory controller', () => {
     const directory = '/sys/fs/cgroup/memory/legacy/app'
     const files = new Map([

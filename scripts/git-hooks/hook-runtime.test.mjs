@@ -17,6 +17,7 @@ import {
     runStep,
 } from './hook-runtime.mjs'
 import {
+    assertInstallLifecycle,
     installedManagerFor,
     parseWorkspacePatterns,
     writeDependencyStateMarker,
@@ -287,6 +288,20 @@ test('dependency preflight accepts an integrity-pinned Corepack locator', () => 
     } finally {
         cleanup()
     }
+})
+
+test('dependency stamp authorization accepts installs and rejects manual prepare runs', () => {
+    assert.doesNotThrow(() =>
+        assertInstallLifecycle({ npm_command: 'install', npm_lifecycle_event: 'prepare' }),
+    )
+    assert.throws(
+        () =>
+            assertInstallLifecycle({
+                npm_command: 'run-script',
+                npm_lifecycle_event: 'prepare',
+            }),
+        /written only by the prepare phase.*install/,
+    )
 })
 
 test('dependency fingerprints normalize CRLF worktree text to Git-normalized LF', () => {

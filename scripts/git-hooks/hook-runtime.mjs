@@ -98,8 +98,19 @@ function decodeMountInfoPath(path) {
     return path.replace(/\\(011|012|040|134)/g, (_match, code) => escapes[code])
 }
 
+function parseCgroupMembership(line) {
+    const first = line.indexOf(':')
+    const second = line.indexOf(':', first + 1)
+    if (first < 0 || second < 0) return null
+    return {
+        hierarchy: line.slice(0, first),
+        controllers: line.slice(first + 1, second).split(','),
+        path: line.slice(second + 1),
+    }
+}
+
 function cgroupHierarchyStatus({ version, membership, mounts, readText, hostSwapFreeMb }) {
-    const cgroupPath = membership.split(':')[2]
+    const cgroupPath = membership.path
     const candidates = mounts.filter((line) => {
         const [, typeAndOptions = ''] = line.split(' - ')
         return version === 2
@@ -183,11 +194,20 @@ export function readCgroupStatus(
     { hostSwapFreeMb = null } = {},
 ) {
     try {
-        const memberships = readText('/proc/self/cgroup').trim().split('\n')
+        const memberships = readText('/proc/self/cgroup')
+            .trim()
+            .split('\n')
+            .map(parseCgroupMembership)
+            .filter(Boolean)
         const mounts = readText('/proc/self/mountinfo').trim().split('\n')
         const hierarchies = [
-            [2, memberships.find((line) => line.startsWith('0::'))],
-            [1, memberships.find((line) => line.split(':')[1]?.split(',').includes('memory'))],
+            [
+                2,
+                memberships.find(
+                    ({ hierarchy, controllers }) => hierarchy === '0' && controllers[0] === '',
+                ),
+            ],
+            [1, memberships.find(({ controllers }) => controllers.includes('memory'))],
         ]
         for (const [version, membership] of hierarchies) {
             if (!membership) continue

@@ -56,6 +56,16 @@ export function installedManagerFor(packageManager) {
     return match ? `pnpm@${match[1]}` : null
 }
 
+export function assertInstallLifecycle(environment = process.env) {
+    const installCommand = ['install', 'ci'].includes(environment.npm_command)
+    if (environment.npm_lifecycle_event !== 'prepare' || !installCommand) {
+        throw new Error(
+            `The dependency stamp is written only by the prepare phase of a package-manager ` +
+                `install. Run ${RECOVERY_COMMAND} deliberately.`,
+        )
+    }
+}
+
 function runGit(repoRoot, args) {
     const result = spawnSync('git', args, {
         cwd: repoRoot,
@@ -343,11 +353,14 @@ export function assertDependencyMetadataSynchronized({ repoRoot, source = 'workt
 const invokedPath = process.argv[1] ? resolve(process.argv[1]) : null
 if (invokedPath === fileURLToPath(import.meta.url)) {
     const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
-    if (process.argv[2] !== '--write') {
-        console.error('Usage: node scripts/git-hooks/dependency-state.mjs --write')
+    if (process.argv[2] !== '--write-after-install') {
+        console.error(
+            'This command is install-managed. Run `corepack pnpm install --frozen-lockfile`.',
+        )
         process.exitCode = 2
     } else {
         try {
+            assertInstallLifecycle()
             const marker = writeDependencyStateMarker({ repoRoot })
             console.log(
                 `[dependency-state] recorded ${marker.packageManager} install metadata ` +

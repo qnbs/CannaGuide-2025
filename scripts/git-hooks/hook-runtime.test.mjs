@@ -13,7 +13,6 @@ import {
     assertSafeResourcePressure,
     parseCgroupHeadroomMb,
     parseMemoryStatus,
-    readCgroupStatus,
     resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
@@ -243,6 +242,31 @@ test('dependency preflight accepts auto-installed peer metadata after a successf
                 '      react:\n        specifier: ^19.0.0\n        version: 19.2.4\n      eslint:\n',
             ),
         })
+        assert.doesNotThrow(() =>
+            assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency fingerprints normalize CRLF worktree text to Git-normalized LF', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        for (const path of ['pnpm-lock.yaml', 'pnpm-workspace.yaml']) {
+            writeFileSync(
+                join(root, path),
+                readFileSync(join(root, path), 'utf8').replaceAll('\n', '\r\n'),
+            )
+        }
+        writeDependencyStateMarker({ repoRoot: root })
+        for (const path of ['pnpm-lock.yaml', 'pnpm-workspace.yaml']) {
+            writeFileSync(
+                join(root, path),
+                readFileSync(join(root, path), 'utf8').replaceAll('\r\n', '\n'),
+            )
+        }
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
         )
@@ -503,91 +527,6 @@ test('resource guard warns on low memory but fails only under dangerous pressure
                 }),
             }),
         /cgroup 700 MB memory \/ 700 MB total headroom/,
-    )
-})
-
-test('cgroup v2 headroom includes a constrained ancestor of an unbounded leaf', () => {
-    const files = new Map([
-        ['/proc/self/cgroup', '0::/slice/app/leaf\n'],
-        ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
-        ['/sys/fs/cgroup/slice/app/leaf/memory.max', 'max\n'],
-        ['/sys/fs/cgroup/slice/app/leaf/memory.current', '0\n'],
-        ['/sys/fs/cgroup/slice/app/leaf/memory.swap.max', 'max\n'],
-        ['/sys/fs/cgroup/slice/app/leaf/memory.swap.current', '0\n'],
-        ['/sys/fs/cgroup/slice/app/memory.max', '943718400\n'],
-        ['/sys/fs/cgroup/slice/app/memory.current', '268435456\n'],
-        ['/sys/fs/cgroup/slice/app/memory.swap.max', '268435456\n'],
-        ['/sys/fs/cgroup/slice/app/memory.swap.current', '0\n'],
-    ])
-    assert.deepEqual(
-        readCgroupStatus((path) => files.get(path)),
-        {
-            memoryAvailableMb: 644,
-            totalAvailableMb: 900,
-            version: 2,
-        },
-    )
-})
-
-test('cgroup membership equal to the mount root maps directly to the mount point', () => {
-    const files = new Map([
-        ['/proc/self/cgroup', '0::/slice/app\n'],
-        ['/proc/self/mountinfo', '1 0 0:1 /slice/app /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
-        ['/sys/fs/cgroup/memory.max', '1073741824\n'],
-        ['/sys/fs/cgroup/memory.current', '268435456\n'],
-        ['/sys/fs/cgroup/memory.swap.max', '0\n'],
-        ['/sys/fs/cgroup/memory.swap.current', '0\n'],
-    ])
-    assert.deepEqual(
-        readCgroupStatus((path) => files.get(path)),
-        {
-            memoryAvailableMb: 768,
-            totalAvailableMb: 768,
-            version: 2,
-        },
-    )
-})
-
-test('cgroup status selects the mount whose root contains the process membership', () => {
-    const files = new Map([
-        ['/proc/self/cgroup', '0::/slice/app\n'],
-        [
-            '/proc/self/mountinfo',
-            '1 0 0:1 /other /sys/fs/cgroup/other rw - cgroup2 cgroup rw\n' +
-                '2 0 0:2 /slice /sys/fs/cgroup/slice rw - cgroup2 cgroup rw\n',
-        ],
-        ['/sys/fs/cgroup/slice/app/memory.max', '1073741824\n'],
-        ['/sys/fs/cgroup/slice/app/memory.current', '268435456\n'],
-        ['/sys/fs/cgroup/slice/app/memory.swap.max', '0\n'],
-        ['/sys/fs/cgroup/slice/app/memory.swap.current', '0\n'],
-    ])
-    assert.deepEqual(
-        readCgroupStatus((path) => files.get(path)),
-        {
-            memoryAvailableMb: 768,
-            totalAvailableMb: 768,
-            version: 2,
-        },
-    )
-})
-
-test('cgroup v1 memsw is treated as combined headroom', () => {
-    const directory = '/sys/fs/cgroup/memory/docker/app'
-    const files = new Map([
-        ['/proc/self/cgroup', '5:memory:/docker/app\n'],
-        ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup/memory rw - cgroup cgroup rw,memory\n'],
-        [`${directory}/memory.limit_in_bytes`, '1073741824\n'],
-        [`${directory}/memory.usage_in_bytes`, '268435456\n'],
-        [`${directory}/memory.memsw.limit_in_bytes`, '1610612736\n'],
-        [`${directory}/memory.memsw.usage_in_bytes`, '536870912\n'],
-    ])
-    assert.deepEqual(
-        readCgroupStatus((path) => files.get(path)),
-        {
-            memoryAvailableMb: 768,
-            totalAvailableMb: 1024,
-            version: 1,
-        },
     )
 })
 

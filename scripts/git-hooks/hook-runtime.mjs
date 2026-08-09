@@ -93,81 +93,114 @@ export function parseCgroupHeadroomMb(limit, usage) {
     }
 }
 
-export function readCgroupStatus(readText = (path) => readFileSync(path, 'utf8')) {
+function decodeMountInfoPath(path) {
+    const escapes = { '011': '\t', '012': '\n', '040': ' ', 134: '\\' }
+    return path.replace(/\\(011|012|040|134)/g, (_match, code) => escapes[code])
+}
+
+function cgroupHierarchyStatus({ version, membership, mounts, readText, hostSwapFreeMb }) {
+    const cgroupPath = membership.split(':')[2]
+    const candidates = mounts.filter((line) => {
+        const [, typeAndOptions = ''] = line.split(' - ')
+        return version === 2
+            ? typeAndOptions.startsWith('cgroup2 ')
+            : typeAndOptions.startsWith('cgroup ') &&
+                  typeAndOptions.split(' ')[2]?.split(',').includes('memory')
+    })
+    const mount = candidates
+        .map((line) => line.split(' - ')[0].split(' '))
+        .map((fields) => ({
+            mountRoot: decodeMountInfoPath(fields[3]),
+            mountPoint: decodeMountInfoPath(fields[4]),
+        }))
+        .filter(
+            ({ mountRoot }) =>
+                mountRoot === '/' ||
+                cgroupPath === mountRoot ||
+                cgroupPath.startsWith(`${mountRoot}/`),
+        )
+        .sort((left, right) => right.mountRoot.length - left.mountRoot.length)[0]
+    if (!mount) return null
+    const relative =
+        mount.mountRoot === '/'
+            ? cgroupPath
+            : cgroupPath === mount.mountRoot
+              ? '/'
+              : cgroupPath.slice(mount.mountRoot.length)
+    const directory = join(mount.mountPoint, relative.slice(1))
+    const [memoryNames, totalNames] =
+        version === 2
+            ? [
+                  ['max', 'current'],
+                  ['swap.max', 'swap.current'],
+              ]
+            : [
+                  ['limit_in_bytes', 'usage_in_bytes'],
+                  ['memsw.limit_in_bytes', 'memsw.usage_in_bytes'],
+              ]
+    const directories = []
+    for (let current = directory; ; current = dirname(current)) {
+        directories.push(current)
+        if (current === mount.mountPoint) break
+    }
+    const tightestHeadroom = ([limit, usage]) => {
+        const values = directories
+            .map((current) => {
+                try {
+                    return parseCgroupHeadroomMb(
+                        readText(join(current, `memory.${limit}`)),
+                        readText(join(current, `memory.${usage}`)),
+                    )
+                } catch {
+                    return null
+                }
+            })
+            .filter((value) => value !== null)
+        return values.length === 0 ? null : Math.min(...values)
+    }
+    const memoryAvailableMb = tightestHeadroom(memoryNames)
+    if (memoryAvailableMb === null) return null
+    const auxiliaryHeadroomMb = tightestHeadroom(totalNames)
+    const swapAvailableMb =
+        version !== 2
+            ? null
+            : auxiliaryHeadroomMb === null
+              ? hostSwapFreeMb
+              : hostSwapFreeMb === null
+                ? auxiliaryHeadroomMb
+                : Math.min(auxiliaryHeadroomMb, hostSwapFreeMb)
+    const totalAvailableMb =
+        version === 1
+            ? (auxiliaryHeadroomMb ?? memoryAvailableMb)
+            : swapAvailableMb === null
+              ? null
+              : memoryAvailableMb + swapAvailableMb
+    return { memoryAvailableMb, totalAvailableMb, version }
+}
+
+export function readCgroupStatus(
+    readText = (path) => readFileSync(path, 'utf8'),
+    { hostSwapFreeMb = null } = {},
+) {
     try {
         const memberships = readText('/proc/self/cgroup').trim().split('\n')
         const mounts = readText('/proc/self/mountinfo').trim().split('\n')
-        const unified = memberships.find((line) => line.startsWith('0::'))
-        const memoryV1 = memberships.find((line) =>
-            line.split(':')[1]?.split(',').includes('memory'),
-        )
-        const version = unified ? 2 : memoryV1 ? 1 : null
-        if (!version) return null
-        const cgroupPath = (unified ?? memoryV1).split(':')[2]
-        const candidates = mounts.filter((line) => {
-            const [, typeAndOptions = ''] = line.split(' - ')
-            return version === 2
-                ? typeAndOptions.startsWith('cgroup2 ')
-                : typeAndOptions.startsWith('cgroup ') &&
-                      typeAndOptions.split(' ')[2]?.split(',').includes('memory')
-        })
-        const mount = candidates
-            .map((line) => line.split(' - ')[0].split(' '))
-            .map((fields) => ({ mountRoot: fields[3], mountPoint: fields[4] }))
-            .filter(
-                ({ mountRoot }) =>
-                    mountRoot === '/' ||
-                    cgroupPath === mountRoot ||
-                    cgroupPath.startsWith(`${mountRoot}/`),
-            )
-            .sort((left, right) => right.mountRoot.length - left.mountRoot.length)[0]
-        if (!mount) return null
-        const relative =
-            mount.mountRoot === '/'
-                ? cgroupPath
-                : cgroupPath === mount.mountRoot
-                  ? '/'
-                  : cgroupPath.slice(mount.mountRoot.length)
-        const directory = join(mount.mountPoint, relative.slice(1))
-        const [memoryNames, totalNames] =
-            version === 2
-                ? [
-                      ['max', 'current'],
-                      ['swap.max', 'swap.current'],
-                  ]
-                : [
-                      ['limit_in_bytes', 'usage_in_bytes'],
-                      ['memsw.limit_in_bytes', 'memsw.usage_in_bytes'],
-                  ]
-        const directories = []
-        for (let current = directory; ; current = dirname(current)) {
-            directories.push(current)
-            if (current === mount.mountPoint) break
+        const hierarchies = [
+            [2, memberships.find((line) => line.startsWith('0::'))],
+            [1, memberships.find((line) => line.split(':')[1]?.split(',').includes('memory'))],
+        ]
+        for (const [version, membership] of hierarchies) {
+            if (!membership) continue
+            const status = cgroupHierarchyStatus({
+                version,
+                membership,
+                mounts,
+                readText,
+                hostSwapFreeMb,
+            })
+            if (status) return status
         }
-        const tightestHeadroom = ([limit, usage]) => {
-            const values = directories
-                .map((current) => {
-                    try {
-                        return parseCgroupHeadroomMb(
-                            readText(join(current, `memory.${limit}`)),
-                            readText(join(current, `memory.${usage}`)),
-                        )
-                    } catch {
-                        return null
-                    }
-                })
-                .filter((value) => value !== null)
-            return values.length === 0 ? null : Math.min(...values)
-        }
-        const memoryAvailableMb = tightestHeadroom(memoryNames)
-        const auxiliaryHeadroomMb = tightestHeadroom(totalNames)
-        const totalAvailableMb =
-            version === 1
-                ? (auxiliaryHeadroomMb ?? memoryAvailableMb)
-                : memoryAvailableMb !== null && auxiliaryHeadroomMb !== null
-                  ? memoryAvailableMb + auxiliaryHeadroomMb
-                  : null
-        return { memoryAvailableMb, totalAvailableMb, version }
+        return null
     } catch {
         return null
     }
@@ -178,7 +211,9 @@ export function resourceStatus({ platform = process.platform } = {}) {
         try {
             const parsed = parseMemoryStatus(readFileSync('/proc/meminfo', 'utf8'))
             if (parsed !== null) {
-                const cgroup = readCgroupStatus()
+                const cgroup = readCgroupStatus(undefined, {
+                    hostSwapFreeMb: parsed.swapFreeMb,
+                })
                 if (cgroup?.memoryAvailableMb != null) {
                     return {
                         ...parsed,

@@ -167,7 +167,8 @@ function dependencyManifest(contents) {
 function hashRecords(records) {
     const hash = createHash('sha256')
     for (const [path, contents] of records.sort(([left], [right]) => left.localeCompare(right))) {
-        hash.update(`${path}\0${Buffer.byteLength(contents)}\0${contents}\0`)
+        const normalized = contents.replaceAll('\r\n', '\n')
+        hash.update(`${path}\0${Buffer.byteLength(normalized)}\0${normalized}\0`)
     }
     return hash.digest('hex')
 }
@@ -270,7 +271,6 @@ export function writeDependencyStateMarker({ repoRoot } = {}) {
             if (previousMoved && !existsSync(paths.markerPath)) {
                 try {
                     renameSync(previous, paths.markerPath)
-                    previousMoved = false
                 } catch (restoreError) {
                     throw new Error(
                         `Could not replace the dependency marker; its previous value remains at ${previous}.`,
@@ -282,7 +282,6 @@ export function writeDependencyStateMarker({ repoRoot } = {}) {
         }
         if (previousMoved) {
             rmSync(previous, { force: true })
-            previousMoved = false
         }
     } finally {
         rmSync(candidate, { force: true })

@@ -16,7 +16,11 @@ import {
     resolveLocalTool,
     runStep,
 } from './hook-runtime.mjs'
-import { writeDependencyStateMarker } from './dependency-state.mjs'
+import {
+    installedManagerFor,
+    parseWorkspacePatterns,
+    writeDependencyStateMarker,
+} from './dependency-state.mjs'
 
 const REQUIRED_PACKAGE_MANAGER = JSON.parse(
     readFileSync(join(REPO_ROOT, 'package.json'), 'utf8'),
@@ -241,6 +245,41 @@ test('dependency preflight accepts auto-installed peer metadata after a successf
                 '      eslint:\n',
                 '      react:\n        specifier: ^19.0.0\n        version: 19.2.4\n      eslint:\n',
             ),
+        })
+        assert.doesNotThrow(() =>
+            assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('workspace parsing accepts a commented packages key and fails closed without patterns', () => {
+    assert.deepEqual(parseWorkspacePatterns("packages: # workspace roots\n    - 'apps/*'\n"), [
+        'apps/*',
+    ])
+    assert.equal(installedManagerFor('pnpm@11.19.0+sha512.deadbeef'), 'pnpm@11.19.0')
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root)
+        writeFileSync(join(root, 'pnpm-workspace.yaml'), "packages: ['apps/*']\n")
+        assert.throws(
+            () => writeDependencyStateMarker({ repoRoot: root }),
+            /supported package pattern/,
+        )
+    } finally {
+        cleanup()
+    }
+})
+
+test('dependency preflight accepts an integrity-pinned Corepack locator', () => {
+    const { root, cleanup } = fixture()
+    try {
+        writeDependencyMetadata(root, {
+            manifest: {
+                packageManager: `${REQUIRED_PACKAGE_MANAGER}+sha512.deadbeef`,
+                devDependencies: { eslint: '^9.0.0' },
+            },
         })
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
@@ -550,7 +589,7 @@ test('a timed-out step terminates its entire process group', async () => {
                 terminationGraceMs: 100,
                 heartbeatMs: 60_000,
             }),
-            /timed out after .*; child exited via/,
+            /timed out after .*; child (?:terminated by|exited with code)/,
         )
         grandchildPid = Number(readFileSync(pidFile, 'utf8'))
         await waitForProcessTermination(grandchildPid)

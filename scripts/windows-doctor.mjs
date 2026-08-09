@@ -17,7 +17,7 @@ if (!isWindows) {
 }
 
 const packageManager = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).packageManager
-const packageManagerMatch = packageManager?.match(/^pnpm@(.+)$/)
+const packageManagerMatch = packageManager?.match(/^pnpm@([^+\s]+)(?:\+.+)?$/)
 if (!packageManagerMatch) {
     console.error(
         `package.json must declare packageManager as pnpm@<version>; found '${packageManager ?? 'missing'}'.`,

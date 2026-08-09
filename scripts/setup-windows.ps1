@@ -7,7 +7,7 @@ Write-Host '=== CannaGuide Windows Setup ===' -ForegroundColor Cyan
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
 $packageManager = (Get-Content (Join-Path $repoRoot 'package.json') -Raw | ConvertFrom-Json).packageManager
-if ($packageManager -match '^pnpm@(.+)$') {
+if ($packageManager -match '^pnpm@([^+\s]+)(?:\+.+)?$') {
     $requiredPnpm = $Matches[1]
 } else {
     throw "package.json must declare packageManager as pnpm@<version>; found '$packageManager'."
@@ -27,6 +27,7 @@ if (-not (Test-Command 'corepack')) {
     Write-Host 'Corepack not bundled with this Node; installing from npm...'
     npm install -g corepack@latest
 }
+corepack enable pnpm
 $activePnpm = (corepack pnpm --version 2>$null)
 if ($activePnpm -ne $requiredPnpm) {
     throw "Corepack must resolve $packageManager, but returned '$activePnpm'."

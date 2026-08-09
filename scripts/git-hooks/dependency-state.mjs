@@ -39,7 +39,7 @@ export function parseWorkspacePatterns(contents) {
     const patterns = []
     let insidePackages = false
     for (const line of contents.replaceAll('\r\n', '\n').split('\n')) {
-        if (line === 'packages:') {
+        if (/^packages\s*:\s*(?:#.*)?$/.test(line)) {
             insidePackages = true
             continue
         }
@@ -49,6 +49,11 @@ export function parseWorkspacePatterns(contents) {
         if (match) patterns.push(parseYamlScalar(match[1]))
     }
     return patterns
+}
+
+export function installedManagerFor(packageManager) {
+    const match = packageManager?.match(/^pnpm@([^+\s]+)(?:\+.+)?$/)
+    return match ? `pnpm@${match[1]}` : null
 }
 
 function runGit(repoRoot, args) {
@@ -176,6 +181,9 @@ function hashRecords(records) {
 function sourceState(reader) {
     const workspaceContents = reader.read('pnpm-workspace.yaml')
     const workspacePatterns = parseWorkspacePatterns(workspaceContents)
+    if (!workspacePatterns.some((pattern) => !pattern.startsWith('!'))) {
+        throw new Error('pnpm-workspace.yaml must declare at least one supported package pattern.')
+    }
     const pathspecs = [
         'package.json',
         '.npmrc',
@@ -203,7 +211,7 @@ function sourceState(reader) {
     }
     const rootManifest = JSON.parse(reader.read('package.json'))
     return {
-        expectedManager: rootManifest.packageManager,
+        expectedManager: installedManagerFor(rootManifest.packageManager),
         fingerprint: hashRecords(records),
     }
 }

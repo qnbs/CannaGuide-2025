@@ -452,6 +452,19 @@ function terminateProcessTree(child, signal = 'SIGTERM') {
     }
 }
 
+function processTreeStillRunning(child) {
+    if (!child.pid) return false
+    if (process.platform === 'win32') {
+        return child.exitCode === null && child.signalCode === null
+    }
+    try {
+        process.kill(-child.pid, 0)
+        return true
+    } catch {
+        return false
+    }
+}
+
 export async function runStep(
     label,
     command,
@@ -479,6 +492,7 @@ export async function runStep(
     return await new Promise((resolvePromise, rejectPromise) => {
         let reason = null
         let forceKillTimer = null
+        let pendingExit = null
 
         const heartbeat = setInterval(() => {
             console.log(
@@ -492,10 +506,13 @@ export async function runStep(
             if (reason) return
             reason = nextReason
             terminateProcessTree(child, 'SIGTERM')
-            forceKillTimer = setTimeout(
-                () => terminateProcessTree(child, 'SIGKILL'),
-                terminationGraceMs,
-            )
+            forceKillTimer = setTimeout(() => {
+                if (processTreeStillRunning(child)) {
+                    terminateProcessTree(child, 'SIGKILL')
+                }
+                forceKillTimer = null
+                if (pendingExit) finish(...pendingExit)
+            }, terminationGraceMs)
             forceKillTimer.unref()
         }
 
@@ -530,14 +547,14 @@ export async function runStep(
             )
         })
 
-        child.once('exit', (code, signal) => {
-            if (reason) terminateProcessTree(child, 'SIGKILL')
+        const finish = (code, signal) => {
             cleanup()
             const elapsed = formatDuration(Date.now() - started)
             if (reason) {
-                rejectPromise(
-                    new HookRuntimeError(`${reason}; child exited via ${signal ?? code}.`),
-                )
+                const outcome = signal
+                    ? `child terminated by ${signal}`
+                    : `child exited with code ${code}`
+                rejectPromise(new HookRuntimeError(`${reason}; ${outcome}.`))
                 return
             }
             if (code !== 0) {
@@ -550,6 +567,14 @@ export async function runStep(
             }
             console.log(`[hook] PASS ${label} (${elapsed})`)
             resolvePromise()
+        }
+
+        child.once('exit', (code, signal) => {
+            if (reason && processTreeStillRunning(child)) {
+                pendingExit = [code, signal]
+                return
+            }
+            finish(code, signal)
         })
     })
 }

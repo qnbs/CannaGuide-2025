@@ -55,11 +55,17 @@ function dependencySources() {
             updates = readFileSync(0, 'utf8')
         } catch {}
     }
-    const sources = updates
+    const sourceTokens = updates
         .trim()
         .split('\n')
         .map((line) => line.trim().split(/\s+/)[1])
-        .filter((sha) => /^[0-9a-f]{40}$/i.test(sha) && !/^0+$/.test(sha))
+        .filter((sha) => /^[0-9a-f]{40}$/i.test(sha))
+    if (sourceTokens.some((sha) => /^0+$/.test(sha))) {
+        throw new HookRuntimeError(
+            'pre-push only verifies the checked-out HEAD; refusing an unvalidated remote-ref deletion.',
+        )
+    }
+    const sources = sourceTokens.filter((sha) => !/^0+$/.test(sha))
     const head = spawnSync('git', ['rev-parse', 'HEAD'], {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],

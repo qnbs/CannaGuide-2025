@@ -748,3 +748,19 @@ test('active hook path contains no pnpm process launch', () => {
         }
     }
 })
+
+test('actual pre-push rejects ref deletions and releases its repository lock', () => {
+    const deletionUpdate = `(delete) ${'0'.repeat(40)} refs/heads/obsolete ${'1'.repeat(40)}\n`
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+        const result = spawnSync(resolve(REPO_ROOT, '.husky/pre-push'), [], {
+            cwd: REPO_ROOT,
+            encoding: 'utf8',
+            input: deletionUpdate,
+        })
+        assert.notEqual(result.status, 0)
+        assert.match(
+            `${result.stdout || ''}${result.stderr || ''}`,
+            /refusing an unvalidated remote-ref deletion/,
+        )
+    }
+})

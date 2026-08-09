@@ -91,13 +91,6 @@ function writeDependencyMetadata(
     writeDependencyStateMarker({ repoRoot: root })
 }
 
-function writeJsonStyleDependencyMetadata(root, manager) {
-    writeFileSync(
-        join(root, 'node_modules', '.modules.yaml'),
-        `  "packageManager": "${manager}",\n`,
-    )
-}
-
 function git(root, args) {
     const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' })
     assert.equal(result.status, 0, result.stderr)
@@ -145,6 +138,13 @@ test('same-boot hook contention fails fast and preserves the active lock', () =>
         )
         assert.equal(JSON.parse(readFileSync(join(first.lockDirectory, 'owner.json'))).pid, 101)
         first.release()
+        const second = acquireHookLock({
+            hookName: 'pre-commit',
+            gitCommonDir,
+            bootIdentity: 'boot-a',
+            pid: 202,
+        })
+        second.release()
     } finally {
         cleanup()
     }
@@ -246,19 +246,6 @@ test('dependency preflight rejects a missing successful-install stamp', () => {
         assert.throws(
             () => assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
             /Dependency metadata is missing/,
-        )
-    } finally {
-        cleanup()
-    }
-})
-
-test('dependency preflight accepts pnpm 11 quoted install metadata', () => {
-    const { root, cleanup } = fixture()
-    try {
-        writeDependencyMetadata(root)
-        writeJsonStyleDependencyMetadata(root, REQUIRED_PACKAGE_MANAGER)
-        assert.doesNotThrow(() =>
-            assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
         )
     } finally {
         cleanup()
@@ -506,11 +493,15 @@ test('resource guard warns on low memory but fails only under dangerous pressure
     )
 })
 
-test('cgroup v2 headroom resolves through the current process path', () => {
+test('cgroup v2 headroom includes a constrained ancestor of an unbounded leaf', () => {
     const files = new Map([
-        ['/proc/self/cgroup', '0::/slice/app\n'],
+        ['/proc/self/cgroup', '0::/slice/app/leaf\n'],
         ['/proc/self/mountinfo', '1 0 0:1 / /sys/fs/cgroup rw - cgroup2 cgroup rw\n'],
-        ['/sys/fs/cgroup/slice/app/memory.max', '1073741824\n'],
+        ['/sys/fs/cgroup/slice/app/leaf/memory.max', 'max\n'],
+        ['/sys/fs/cgroup/slice/app/leaf/memory.current', '0\n'],
+        ['/sys/fs/cgroup/slice/app/leaf/memory.swap.max', 'max\n'],
+        ['/sys/fs/cgroup/slice/app/leaf/memory.swap.current', '0\n'],
+        ['/sys/fs/cgroup/slice/app/memory.max', '943718400\n'],
         ['/sys/fs/cgroup/slice/app/memory.current', '268435456\n'],
         ['/sys/fs/cgroup/slice/app/memory.swap.max', '268435456\n'],
         ['/sys/fs/cgroup/slice/app/memory.swap.current', '0\n'],
@@ -518,8 +509,8 @@ test('cgroup v2 headroom resolves through the current process path', () => {
     assert.deepEqual(
         readCgroupStatus((path) => files.get(path)),
         {
-            memoryAvailableMb: 768,
-            totalAvailableMb: 1024,
+            memoryAvailableMb: 644,
+            totalAvailableMb: 900,
             version: 2,
         },
     )

@@ -139,16 +139,28 @@ export function readCgroupStatus(readText = (path) => readFileSync(path, 'utf8')
                       ['limit_in_bytes', 'usage_in_bytes'],
                       ['memsw.limit_in_bytes', 'memsw.usage_in_bytes'],
                   ]
-        const readHeadroom = ([limit, usage]) =>
-            parseCgroupHeadroomMb(
-                readText(join(directory, `memory.${limit}`)),
-                readText(join(directory, `memory.${usage}`)),
-            )
-        const memoryAvailableMb = readHeadroom(memoryNames)
-        let auxiliaryHeadroomMb = null
-        try {
-            auxiliaryHeadroomMb = readHeadroom(totalNames)
-        } catch {}
+        const directories = []
+        for (let current = directory; ; current = dirname(current)) {
+            directories.push(current)
+            if (current === mount.mountPoint) break
+        }
+        const tightestHeadroom = ([limit, usage]) => {
+            const values = directories
+                .map((current) => {
+                    try {
+                        return parseCgroupHeadroomMb(
+                            readText(join(current, `memory.${limit}`)),
+                            readText(join(current, `memory.${usage}`)),
+                        )
+                    } catch {
+                        return null
+                    }
+                })
+                .filter((value) => value !== null)
+            return values.length === 0 ? null : Math.min(...values)
+        }
+        const memoryAvailableMb = tightestHeadroom(memoryNames)
+        const auxiliaryHeadroomMb = tightestHeadroom(totalNames)
         const totalAvailableMb =
             version === 1
                 ? (auxiliaryHeadroomMb ?? memoryAvailableMb)
@@ -329,8 +341,10 @@ export function acquireHookLock({
                     `Refusing to release a hook lock now owned by another process: ${lockDirectory}`,
                 )
             }
-            removeKnownLockDirectory(lockDirectory)
+            const cleanupDirectory = `${lockDirectory}.cleanup-${owner.pid}-${owner.token}`
+            renameSync(lockDirectory, cleanupDirectory)
             released = true
+            removeKnownLockDirectory(cleanupDirectory)
         },
     }
 }

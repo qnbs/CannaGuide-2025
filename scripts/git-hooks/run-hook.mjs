@@ -89,6 +89,27 @@ function dependencySources() {
     return [headSha]
 }
 
+function assertCleanOutgoingTree() {
+    const status = spawnSync('git', ['status', '--porcelain=v1', '--untracked-files=normal'], {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    if (status.status !== 0) {
+        throw new HookRuntimeError(
+            `pre-push cannot inspect the checkout: ${(status.stderr || '').trim()}`,
+        )
+    }
+    const changes = status.stdout.trim().split('\n').filter(Boolean)
+    if (changes.length > 0) {
+        const summary = changes.slice(0, 8).join(', ')
+        const remainder = changes.length > 8 ? ` (+${changes.length - 8} more)` : ''
+        throw new HookRuntimeError(
+            `pre-push gates must inspect the exact outgoing HEAD; commit or stash checkout ` +
+                `changes first: ${summary}${remainder}`,
+        )
+    }
+}
+
 try {
     assertNodeVersion()
     lock = acquireHookLock({ hookName })
@@ -131,6 +152,7 @@ try {
     }
 
     if (hookName === 'pre-push') {
+        assertCleanOutgoingTree()
         assertSafeResourcePressure()
         assertNotInterrupted()
         await runNodeScript('scripts/scoped-verify.mjs', ['typecheck'], {

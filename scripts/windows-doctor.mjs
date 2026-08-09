@@ -80,7 +80,7 @@ const uv = run('uv', ['--version'])
 if (uv.status === 0) ok(uv.stdout.trim())
 else
     warn(
-        'uv missing (Graphify MCP) — pnpm run setup:windows or: irm https://astral.sh/uv/install.ps1 | iex',
+        'uv missing (Graphify MCP) — corepack pnpm run setup:windows or: irm https://astral.sh/uv/install.ps1 | iex',
     )
 
 const gk = run('where', ['gk'])

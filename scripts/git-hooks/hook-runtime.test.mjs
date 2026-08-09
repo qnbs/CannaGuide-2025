@@ -82,6 +82,7 @@ function writeDependencyMetadata(
         },
     } = {},
 ) {
+    git(root, ['init', '--quiet'])
     mkdirSync(join(root, 'node_modules', '.pnpm'), { recursive: true })
     writeFileSync(join(root, 'pnpm-lock.yaml'), wantedLock)
     writeFileSync(join(root, 'pnpm-workspace.yaml'), BASE_WORKSPACE)
@@ -92,7 +93,18 @@ function writeDependencyMetadata(
 }
 
 function git(root, args) {
-    const result = spawnSync('git', args, { cwd: root, encoding: 'utf8' })
+    const env = Object.fromEntries(
+        Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_')),
+    )
+    Object.assign(env, {
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_CONFIG_GLOBAL: join(root, 'isolated-global.gitconfig'),
+        GIT_AUTHOR_NAME: 'Hook Test',
+        GIT_AUTHOR_EMAIL: 'hook@example.invalid',
+        GIT_COMMITTER_NAME: 'Hook Test',
+        GIT_COMMITTER_EMAIL: 'hook@example.invalid',
+    })
+    const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', env })
     assert.equal(result.status, 0, result.stderr)
     return result.stdout.trim()
 }
@@ -208,6 +220,7 @@ test('dependency preflight accepts a platform-filtered installed lock snapshot',
             ),
             installedLock: BASE_LOCKFILE,
         })
+        writeDependencyStateMarker({ repoRoot: root })
         assert.doesNotThrow(() =>
             assertDependenciesSynchronized({ repoRoot: root, requiredTools: [] }),
         )

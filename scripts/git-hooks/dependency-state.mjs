@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative, resolve, sep } from 'node:path'
+import { createHash, randomUUID } from 'node:crypto'
+import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 
@@ -51,20 +51,6 @@ export function parseWorkspacePatterns(contents) {
     return patterns
 }
 
-function listWorktreeFiles(root) {
-    const files = []
-    const visit = (directory) => {
-        for (const entry of readdirSync(directory, { withFileTypes: true })) {
-            if (entry.isDirectory() && ['.git', 'node_modules'].includes(entry.name)) continue
-            const path = join(directory, entry.name)
-            if (entry.isDirectory()) visit(path)
-            else files.push(relative(root, path).split(sep).join('/'))
-        }
-    }
-    visit(root)
-    return files
-}
-
 function runGit(repoRoot, args) {
     const result = spawnSync('git', args, {
         cwd: repoRoot,
@@ -77,25 +63,58 @@ function runGit(repoRoot, args) {
     return result.stdout
 }
 
+function treeCandidateFiles(repoRoot, source, pathspecs) {
+    const queryPaths = [
+        ...new Set(
+            pathspecs.map((pathspec) => {
+                const wildcard = pathspec.search(/[?*[]/)
+                return wildcard < 0
+                    ? pathspec
+                    : pathspec.slice(0, wildcard).replace(/\/$/, '') || '.'
+            }),
+        ),
+    ]
+    return runGit(repoRoot, ['ls-tree', '-r', '--name-only', source, '--', ...queryPaths])
+        .trim()
+        .split('\n')
+        .filter(Boolean)
+        .filter((path) =>
+            pathspecs.some((pathspec) => {
+                if (/[?*[]/.test(pathspec)) return globPattern(pathspec).test(path)
+                return path === pathspec || path.startsWith(`${pathspec}/`)
+            }),
+        )
+}
+
 function repositoryReader(repoRoot, source) {
     if (source === 'worktree') {
         return {
             label: 'working tree',
-            listFiles: () => listWorktreeFiles(repoRoot),
+            listFiles: (pathspecs) =>
+                runGit(repoRoot, [
+                    'ls-files',
+                    '--cached',
+                    '--others',
+                    '--exclude-standard',
+                    '--',
+                    ...pathspecs,
+                ])
+                    .trim()
+                    .split('\n')
+                    .filter(Boolean),
             read: (path) => readFileSync(join(repoRoot, path), 'utf8'),
         }
     }
     const index = source === 'index'
     return {
         label: index ? 'Git index' : `Git tree ${source}`,
-        listFiles: () =>
-            runGit(
-                repoRoot,
-                index ? ['ls-files', '--cached'] : ['ls-tree', '-r', '--name-only', source],
-            )
-                .trim()
-                .split('\n')
-                .filter(Boolean),
+        listFiles: (pathspecs) =>
+            index
+                ? runGit(repoRoot, ['ls-files', '--cached', '--', ...pathspecs])
+                      .trim()
+                      .split('\n')
+                      .filter(Boolean)
+                : treeCandidateFiles(repoRoot, source, pathspecs),
         read: (path) => runGit(repoRoot, ['show', index ? `:${path}` : `${source}:${path}`]),
     }
 }
@@ -105,7 +124,7 @@ function globPattern(pattern) {
     return new RegExp(`^${escaped.replaceAll('*', '[^/]*').replaceAll('\0', '.*')}$`)
 }
 
-function workspaceManifestPaths(reader, workspaceContents) {
+function workspaceManifestPaths(files, workspaceContents) {
     const patterns = parseWorkspacePatterns(workspaceContents)
     const positive = patterns.filter((pattern) => !pattern.startsWith('!')).map(globPattern)
     const negative = patterns
@@ -113,8 +132,7 @@ function workspaceManifestPaths(reader, workspaceContents) {
         .map((pattern) => globPattern(pattern.slice(1)))
     return [
         'package.json',
-        ...reader
-            .listFiles()
+        ...[...files]
             .filter((path) => path.endsWith('/package.json'))
             .filter((path) => {
                 const directory = dirname(path).split(sep).join('/')
@@ -156,12 +174,24 @@ function hashRecords(records) {
 
 function sourceState(reader) {
     const workspaceContents = reader.read('pnpm-workspace.yaml')
-    const files = new Set(reader.listFiles())
+    const workspacePatterns = parseWorkspacePatterns(workspaceContents)
+    const pathspecs = [
+        'package.json',
+        '.npmrc',
+        '.pnpmfile.cjs',
+        '.pnpmfile.mjs',
+        'patches',
+        '.pnpm-patches',
+        ...workspacePatterns
+            .filter((pattern) => !pattern.startsWith('!'))
+            .map((pattern) => `${pattern}/package.json`),
+    ]
+    const files = new Set(reader.listFiles(pathspecs))
     const records = [
         ['pnpm-lock.yaml', reader.read('pnpm-lock.yaml')],
         ['pnpm-workspace.yaml', workspaceContents],
     ]
-    for (const path of workspaceManifestPaths(reader, workspaceContents)) {
+    for (const path of workspaceManifestPaths(files, workspaceContents)) {
         records.push([path, JSON.stringify(dependencyManifest(reader.read(path)))])
     }
     for (const path of ['.npmrc', '.pnpmfile.cjs', '.pnpmfile.mjs']) {
@@ -224,10 +254,36 @@ export function writeDependencyStateMarker({ repoRoot } = {}) {
             ['installed-lock.yaml', readFileSync(paths.installedLockPath, 'utf8')],
         ]),
     }
-    const candidate = `${paths.markerPath}.candidate-${process.pid}`
+    const token = `${process.pid}-${randomUUID()}`
+    const candidate = `${paths.markerPath}.candidate-${token}`
+    const previous = `${paths.markerPath}.previous-${token}`
+    let previousMoved = false
     try {
         writeFileSync(candidate, `${JSON.stringify(marker, null, 2)}\n`, { mode: 0o600 })
-        renameSync(candidate, paths.markerPath)
+        if (existsSync(paths.markerPath)) {
+            renameSync(paths.markerPath, previous)
+            previousMoved = true
+        }
+        try {
+            renameSync(candidate, paths.markerPath)
+        } catch (error) {
+            if (previousMoved && !existsSync(paths.markerPath)) {
+                try {
+                    renameSync(previous, paths.markerPath)
+                    previousMoved = false
+                } catch (restoreError) {
+                    throw new Error(
+                        `Could not replace the dependency marker; its previous value remains at ${previous}.`,
+                        { cause: restoreError },
+                    )
+                }
+            }
+            throw error
+        }
+        if (previousMoved) {
+            rmSync(previous, { force: true })
+            previousMoved = false
+        }
     } finally {
         rmSync(candidate, { force: true })
     }

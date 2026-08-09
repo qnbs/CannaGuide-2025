@@ -42,6 +42,9 @@ if (-not $shimEnabled) {
     Write-Warning 'Could not install the optional pnpm shim; continuing with corepack pnpm.'
 }
 $activePnpm = (corepack pnpm --version 2>$null)
+if ($LASTEXITCODE -ne 0) {
+    throw 'Corepack failed to resolve the repository-pinned pnpm version.'
+}
 if ($activePnpm -ne $requiredPnpm) {
     throw "Corepack must resolve $packageManager, but returned '$activePnpm'."
 }
@@ -70,10 +73,12 @@ if (-not (Test-Command 'gk')) {
 Write-Host ''
 Write-Host 'Installing dependencies with the repository-pinned pnpm...'
 corepack pnpm install --frozen-lockfile
+if ($LASTEXITCODE -ne 0) { throw 'The frozen pnpm install failed.' }
 
 Write-Host ''
 Write-Host 'Running Windows doctor...'
 corepack pnpm run windows:doctor
+if ($LASTEXITCODE -ne 0) { throw 'The Windows doctor reported a failure.' }
 
 Write-Host ''
 Write-Host 'Done. Reload Cursor MCP: Settings -> Tools & MCP -> Reload' -ForegroundColor Green

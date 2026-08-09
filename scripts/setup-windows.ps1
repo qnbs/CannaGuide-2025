@@ -27,7 +27,19 @@ if (-not (Test-Command 'corepack')) {
     Write-Host 'Corepack not bundled with this Node; installing from npm...'
     npm install -g corepack@latest
 }
-corepack enable pnpm
+# The shim is convenient but optional: machine-wide Node installations commonly
+# make their bin directory read-only to non-administrators. Repository commands
+# below use Corepack directly and therefore do not depend on this shim.
+$shimEnabled = $true
+try {
+    corepack enable pnpm 2>$null
+    if ($LASTEXITCODE -ne 0) { $shimEnabled = $false }
+} catch {
+    $shimEnabled = $false
+}
+if (-not $shimEnabled) {
+    Write-Warning 'Could not install the optional pnpm shim; continuing with corepack pnpm.'
+}
 $activePnpm = (corepack pnpm --version 2>$null)
 if ($activePnpm -ne $requiredPnpm) {
     throw "Corepack must resolve $packageManager, but returned '$activePnpm'."

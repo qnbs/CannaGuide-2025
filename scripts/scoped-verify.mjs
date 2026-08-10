@@ -59,8 +59,9 @@ const WORKSPACE_NEUTRAL_ROOT_FILES = new Set([
 
 /**
  * Changing a library means its consumers have to be re-checked against it, so
- * these are filtered with turbo's trailing `...` (the package *and everything
- * that depends on it*). Leaf apps are filtered on their own.
+ * these are filtered with turbo's leading `...` (the package *and everything
+ * that depends on it*) -- not the trailing form, which walks the package's own
+ * dependencies instead. Leaf apps are filtered on their own.
  */
 const LIBRARY_WORKSPACES = new Set(['@cannaguide/ai-core', '@cannaguide/ui'])
 
@@ -117,6 +118,18 @@ export function affectedWorkspaces(files) {
     return affected
 }
 
+/**
+ * Turbo package microsyntax: a *leading* `...pkg` selects the package and
+ * everything that depends on it (its consumers); a *trailing* `pkg...` selects
+ * the package and everything it depends on. Library workspaces need the
+ * former so a change to the library re-verifies the apps that consume it.
+ */
+export function buildFilters(affected) {
+    return [...affected]
+        .sort()
+        .map((workspace) => (LIBRARY_WORKSPACES.has(workspace) ? `...${workspace}` : workspace))
+}
+
 export function main(task = process.argv[2] || 'typecheck') {
     if (!KNOWN_TASKS.has(task)) {
         console.error(`${TAG} unknown task '${task}'. Known: ${[...KNOWN_TASKS].join(', ')}`)
@@ -134,9 +147,7 @@ export function main(task = process.argv[2] || 'typecheck') {
         return 0
     }
 
-    const filters = [...affected]
-        .sort()
-        .map((workspace) => (LIBRARY_WORKSPACES.has(workspace) ? `${workspace}...` : workspace))
+    const filters = buildFilters(affected)
 
     console.log(`${TAG} affected workspaces: ${[...affected].sort().join(', ')}`)
 

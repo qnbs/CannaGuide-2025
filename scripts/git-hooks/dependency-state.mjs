@@ -7,7 +7,14 @@ import { spawnSync } from 'node:child_process'
 const RECOVERY_COMMAND = '`corepack pnpm install --frozen-lockfile`'
 const MARKER_VERSION = 2
 const MARKER_NAME = '.cannaguide-dependency-state.json'
-const INSTALL_LIFECYCLE_SCRIPTS = ['preinstall', 'install', 'postinstall', 'prepare']
+const INSTALL_LIFECYCLE_SCRIPTS = [
+    'preinstall',
+    'install',
+    'postinstall',
+    'preprepare',
+    'prepare',
+    'postprepare',
+]
 const MANIFEST_FIELDS = [
     'name',
     'version',
@@ -62,10 +69,11 @@ export function installedManagerFor(packageManager) {
 
 export function assertInstallLifecycle(environment = process.env) {
     const installCommand = ['install', 'ci'].includes(environment.npm_command)
-    if (environment.npm_lifecycle_event !== 'prepare' || !installCommand) {
+    if (environment.npm_lifecycle_event !== 'postprepare' || !installCommand) {
         throw new Error(
-            `The dependency stamp is written only by the prepare phase of a package-manager ` +
-                `install. Run ${RECOVERY_COMMAND} deliberately.`,
+            `The dependency stamp is written only by the postprepare phase of a package-manager ` +
+                `install -- after preinstall, install, postinstall, and prepare have all already ` +
+                `succeeded. Run ${RECOVERY_COMMAND} deliberately.`,
         )
     }
 }

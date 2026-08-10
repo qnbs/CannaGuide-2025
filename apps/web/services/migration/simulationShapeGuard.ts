@@ -17,10 +17,14 @@ export const ensureSimulationShape = (state: PersistedState): void => {
     const entities = (sim.plants as Record<string, unknown>)?.entities
     if (entities && typeof entities === 'object') {
         for (const id in entities as Record<string, unknown>) {
-            const plant = (entities as Record<string, LegacyPlant | undefined>)[id]
-            if (!plant) continue
+            const plant = (entities as Record<string, unknown>)[id]
+            // Only a genuine object can be patched in place -- assigning a
+            // property onto a primitive (a corrupt entity persisted as a
+            // string/number/etc.) throws in strict mode. Leave it as-is and
+            // let the post-migration validator reject it with a clear error.
+            if (!plant || typeof plant !== 'object' || Array.isArray(plant)) continue
 
-            patchLegacyPlantShape(plant)
+            patchLegacyPlantShape(plant as LegacyPlant)
         }
     }
 }

@@ -64,6 +64,29 @@ const requireEntityCollection = (
     }
 }
 
+// selectOpenTasksSummary/selectActiveProblemsSummary (stores/selectors.ts) call
+// .filter() directly on every active plant's `tasks`/`problems` with no
+// optional-chaining fallback. requireEntityCollection only validates the
+// plants collection's own `ids`/`entities` container shape, not each plant
+// entity's fields, so a backup that passes that check can still crash every
+// active-plant selector on the very next render after being restored.
+const requirePlantEntityFields = (plants: Record<string, unknown>): void => {
+    const entities = plants.entities
+    if (!isRecord(entities)) return // requireEntityCollection already rejected this shape
+    for (const [plantId, entity] of Object.entries(entities)) {
+        if (!isRecord(entity)) {
+            throw new TypeError(`Persisted simulation.plants.entities.${plantId} must be an object.`)
+        }
+        for (const field of ['tasks', 'problems'] as const) {
+            if (!Array.isArray(entity[field])) {
+                throw new TypeError(
+                    `Persisted simulation.plants.entities.${plantId}.${field} must be an array.`,
+                )
+            }
+        }
+    }
+}
+
 const validateNestedSliceShapes = (state: PersistedState): void => {
     const getSlice = (name: (typeof OBJECT_SLICE_KEYS)[number]): Record<string, unknown> | null => {
         const value: unknown = state[name]
@@ -77,6 +100,7 @@ const validateNestedSliceShapes = (state: PersistedState): void => {
     const simulation = getSlice('simulation')
     if (simulation) {
         requireEntityCollection('simulation', simulation, 'plants')
+        if (isRecord(simulation.plants)) requirePlantEntityFields(simulation.plants)
         requireArrayField('simulation', simulation, 'plantSlots')
         requireRecordField('simulation', simulation, 'vpdProfiles')
     }

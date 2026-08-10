@@ -25,4 +25,22 @@ describe('ensureSimulationShape', () => {
         expect(typeof plant.createdAt).toBe('number')
         expect(plant.terpeneProfile).toEqual({})
     })
+
+    it('leaves a non-object entity untouched instead of throwing', () => {
+        // Assigning a property onto a primitive throws in strict mode --
+        // patching must skip these, not crash, and leave the entity for the
+        // post-migration validator to reject with a clear error.
+        const state = {
+            simulation: {
+                plants: {
+                    entities: { p1: 'not-an-object', p2: 42, p3: ['a'] },
+                },
+            },
+        } as unknown as PersistedState
+        expect(() => ensureSimulationShape(state)).not.toThrow()
+        const entities = state.simulation?.plants?.entities as Record<string, unknown>
+        expect(entities.p1).toBe('not-an-object')
+        expect(entities.p2).toBe(42)
+        expect(entities.p3).toEqual(['a'])
+    })
 })

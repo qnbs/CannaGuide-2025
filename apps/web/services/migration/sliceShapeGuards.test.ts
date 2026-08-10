@@ -118,4 +118,45 @@ describe('sliceShapeGuards', () => {
         expect(repaired.metrics?.readings).toEqual([])
         expect(repaired.growPlanner?.tasks).toEqual([])
     })
+
+    it('rejects array-valued record slices instead of treating them as objects', () => {
+        // typeof [] === 'object', so a naive `typeof x !== 'object'` guard lets an
+        // array-valued field slip through as "valid" and get partially patched
+        // into a hybrid array-with-extra-properties instead of being reset.
+        const state = {
+            nutrientPlanner: [],
+            hydro: [],
+            metrics: [],
+            growPlanner: [],
+        } as unknown as PersistedState
+
+        ensureNutrientPlannerShape(state)
+        ensureHydroShape(state)
+        ensureMetricsShape(state)
+        ensureGrowPlannerShape(state)
+
+        const repaired = state as Record<string, unknown>
+        expect(Array.isArray(repaired.nutrientPlanner)).toBe(false)
+        expect(repaired.nutrientPlanner).toBeUndefined()
+        expect(Array.isArray(repaired.hydro)).toBe(false)
+        expect(repaired.hydro).toBeUndefined()
+        expect(Array.isArray(repaired.metrics)).toBe(false)
+        expect(repaired.metrics).toEqual({ readings: [] })
+        expect(Array.isArray(repaired.growPlanner)).toBe(false)
+        expect(repaired.growPlanner).toEqual({ tasks: [] })
+    })
+
+    it('rejects an array-valued hydro.thresholds instead of treating it as an object', () => {
+        const state = {
+            hydro: { readings: [], alerts: [], thresholds: [] },
+        } as unknown as PersistedState
+
+        ensureHydroShape(state)
+
+        const hydro = (state as Record<string, unknown>).hydro as Record<string, unknown>
+        expect(Array.isArray(hydro.thresholds)).toBe(false)
+        expect(hydro.thresholds).toEqual(
+            expect.objectContaining({ phMin: expect.any(Number) }),
+        )
+    })
 })

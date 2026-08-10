@@ -302,7 +302,11 @@ export const ensureDiagnosisHistoryShape = (state: PersistedState): void => {
 export const ensureNutrientPlannerShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (s.nutrientPlanner === undefined) return
-    if (!s.nutrientPlanner || typeof s.nutrientPlanner !== 'object') {
+    if (
+        !s.nutrientPlanner ||
+        typeof s.nutrientPlanner !== 'object' ||
+        Array.isArray(s.nutrientPlanner)
+    ) {
         delete s.nutrientPlanner
         return
     }
@@ -326,7 +330,7 @@ export const ensureNutrientPlannerShape = (state: PersistedState): void => {
 export const ensureHydroShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (s.hydro === undefined) return
-    if (!s.hydro || typeof s.hydro !== 'object') {
+    if (!s.hydro || typeof s.hydro !== 'object' || Array.isArray(s.hydro)) {
         delete s.hydro
         return
     }
@@ -334,7 +338,11 @@ export const ensureHydroShape = (state: PersistedState): void => {
     if (!Array.isArray(hydro.readings)) hydro.readings = []
     if (!Array.isArray(hydro.alerts)) hydro.alerts = []
     if (typeof hydro.systemType !== 'string') hydro.systemType = 'DWC'
-    if (!hydro.thresholds || typeof hydro.thresholds !== 'object') {
+    if (
+        !hydro.thresholds ||
+        typeof hydro.thresholds !== 'object' ||
+        Array.isArray(hydro.thresholds)
+    ) {
         hydro.thresholds = {
             phMin: 5.5,
             phMax: 6.5,
@@ -349,7 +357,7 @@ export const ensureHydroShape = (state: PersistedState): void => {
 export const ensureMetricsShape = (state: PersistedState): void => {
     const metrics = (state as Record<string, unknown>).metrics
     if (metrics === undefined) return
-    if (!metrics || typeof metrics !== 'object') {
+    if (!metrics || typeof metrics !== 'object' || Array.isArray(metrics)) {
         ;(state as Record<string, unknown>).metrics = { readings: [] }
         return
     }
@@ -361,7 +369,7 @@ export const ensureMetricsShape = (state: PersistedState): void => {
 export const ensureGrowPlannerShape = (state: PersistedState): void => {
     const planner = (state as Record<string, unknown>).growPlanner
     if (planner === undefined) return
-    if (!planner || typeof planner !== 'object') {
+    if (!planner || typeof planner !== 'object' || Array.isArray(planner)) {
         ;(state as Record<string, unknown>).growPlanner = { tasks: [] }
         return
     }

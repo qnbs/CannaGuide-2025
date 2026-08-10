@@ -66,7 +66,12 @@ jobs:
 
             # The workflow never writes to main. Validate the generated graph before
             # publishing it for human review so a broken artifact cannot be promoted.
+            # Pinned to the exact versions the "Update graph" step above already
+            # used, so this step cannot silently install a newer graphifyy/mcp.
             - name: Validate refreshed graph
+              env:
+                  GRAPHIFYY_VERSION: '0.9.36'
+                  MCP_VERSION: '2.0.0'
               run: pnpm run graphify:mcp:doctor
 
             - name: Upload graph for review

@@ -680,6 +680,12 @@ export const settingsView = {
         importSuccess: 'Daten erfolgreich importiert. Die App wird neu geladen.',
         importError:
             'Import fehlgeschlagen. Bitte stellen Sie sicher, dass es sich um eine gueltige Backup-Datei handelt.',
+        restoreBlocked:
+            'Die Datenwiederherstellung ist voruebergehend durch eine sichere Wiederherstellung blockiert.',
+        resetError:
+            'Das Zuruecksetzen konnte nicht abgeschlossen werden. Ihre gespeicherten Daten wurden nicht geaendert.',
+        sliceResetError:
+            'Dieser Datenbereich konnte nicht zurueckgesetzt werden. Ihre gespeicherten Daten wurden nicht geaendert.',
         growExportTitle: 'Grow-Backup',
         growExportDesc: '"{{name}}" mit {{count}} Pflanzen als portable JSON-Datei exportieren.',
         exportGrow: 'Diesen Grow exportieren',

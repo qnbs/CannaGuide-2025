@@ -233,6 +233,8 @@ export const common = {
         retry: 'Try Again',
         reload: 'Reload Application',
         safeRecovery: 'Try Safe Recovery',
+        safeRecoveryDescription:
+            'If startup keeps failing, you can explicitly restore the last validated backup.',
     },
     appShortDescription:
         'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 800+ strains, get AI equipment advice, and master your grow with an interactive guide.',

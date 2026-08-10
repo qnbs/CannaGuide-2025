@@ -11,6 +11,8 @@
 import JSZip from 'jszip'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
+import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { getT } from '@/i18n'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -250,7 +252,14 @@ export const backupService = {
             }
 
             // 4. Restore state to IndexedDB
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, stateString)
+            const stateRestored = await replacePrimaryPersistedSnapshot(stateString)
+            if (!stateRestored) {
+                return {
+                    success: false,
+                    metadata,
+                    error: String(getT()('settingsView.data.restoreBlocked')),
+                }
+            }
 
             // 5. Restore images
             const imageFiles = Object.keys(zip.files).filter(

@@ -1,5 +1,5 @@
 import { i18nPromise } from '@/i18n'
-import { registerRecoveryListeners, triggerSafeRecovery } from './recovery'
+import { registerRecoveryListeners } from './recovery'
 import { renderError } from './render'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
@@ -20,14 +20,10 @@ export const mountHydratedApp = async (): Promise<void> => {
             console.error('[CRDT] Initialization failed, continuing without sync:', crdtError)
         }
 
-        setupPersistedStateSync(hydratedStore)
-        await runPostHydrationServices(hydratedStore)
+        const flushPersistedState = setupPersistedStateSync(hydratedStore)
+        await runPostHydrationServices(hydratedStore, flushPersistedState)
     } catch (error) {
         console.error('Failed to initialize the application:', error)
-        const recovered = await triggerSafeRecovery('boot-initialization-failure', error)
-        if (recovered) {
-            return
-        }
         if (error instanceof Error) {
             renderError(error)
         } else {

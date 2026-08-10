@@ -103,6 +103,11 @@ export const ensureArchivesShape = (state: PersistedState): void => {
         typeof archives.archivedAdvisorResponses !== 'object'
     ) {
         archives.archivedAdvisorResponses = {}
+    } else {
+        const advisorResponses = archives.archivedAdvisorResponses as Record<string, unknown>
+        for (const plantId of Object.keys(advisorResponses)) {
+            if (!Array.isArray(advisorResponses[plantId])) advisorResponses[plantId] = []
+        }
     }
 }
 
@@ -115,25 +120,52 @@ export const ensureNotesShape = (state: PersistedState): void => {
     const notes = s.notes as Record<string, unknown>
     if (!notes.strainNotes || typeof notes.strainNotes !== 'object') {
         notes.strainNotes = {}
+        return
+    }
+    const histories = notes.strainNotes as Record<string, unknown>
+    for (const strainId of Object.keys(histories)) {
+        const history = histories[strainId]
+        if (!history || typeof history !== 'object') {
+            histories[strainId] = { past: [], present: '', future: [] }
+            continue
+        }
+        const note = history as Record<string, unknown>
+        if (!Array.isArray(note.past)) note.past = []
+        if (typeof note.present !== 'string') note.present = ''
+        if (!Array.isArray(note.future)) note.future = []
     }
 }
 
 export const ensureKnowledgeShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (!s.knowledge || typeof s.knowledge !== 'object') {
-        s.knowledge = { knowledgeProgress: {} }
+        s.knowledge = { knowledgeProgress: {}, learningPathProgress: {} }
         return
     }
     const knowledge = s.knowledge as Record<string, unknown>
     if (!knowledge.knowledgeProgress || typeof knowledge.knowledgeProgress !== 'object') {
         knowledge.knowledgeProgress = {}
     }
+    if (!knowledge.learningPathProgress || typeof knowledge.learningPathProgress !== 'object') {
+        knowledge.learningPathProgress = {}
+    }
+    for (const progressKey of ['knowledgeProgress', 'learningPathProgress'] as const) {
+        const progress = knowledge[progressKey] as Record<string, unknown>
+        for (const itemId of Object.keys(progress)) {
+            if (!Array.isArray(progress[itemId])) progress[itemId] = []
+        }
+    }
 }
 
 export const ensureBreedingShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (!s.breeding || typeof s.breeding !== 'object') {
-        s.breeding = { collectedSeeds: [], breedingSlots: { parentA: null, parentB: null } }
+        s.breeding = {
+            collectedSeeds: [],
+            breedingSlots: { parentA: null, parentB: null },
+            seedInventory: [],
+            pollenRecords: [],
+        }
         return
     }
     const breeding = s.breeding as Record<string, unknown>
@@ -143,6 +175,8 @@ export const ensureBreedingShape = (state: PersistedState): void => {
     if (!breeding.breedingSlots || typeof breeding.breedingSlots !== 'object') {
         breeding.breedingSlots = { parentA: null, parentB: null }
     }
+    if (!Array.isArray(breeding.seedInventory)) breeding.seedInventory = []
+    if (!Array.isArray(breeding.pollenRecords)) breeding.pollenRecords = []
 }
 
 export const ensureSandboxShape = (state: PersistedState): void => {
@@ -263,6 +297,85 @@ export const ensureDiagnosisHistoryShape = (state: PersistedState): void => {
     }
     const dh = s.diagnosisHistory as Record<string, unknown>
     dh.records = migrateArrayToEntityCollection(dh.records)
+}
+
+export const ensureNutrientPlannerShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (s.nutrientPlanner === undefined) return
+    if (
+        !s.nutrientPlanner ||
+        typeof s.nutrientPlanner !== 'object' ||
+        Array.isArray(s.nutrientPlanner)
+    ) {
+        delete s.nutrientPlanner
+        return
+    }
+    const planner = s.nutrientPlanner as Record<string, unknown>
+    if (!Array.isArray(planner.schedule)) planner.schedule = []
+    if (!Array.isArray(planner.readings)) planner.readings = []
+    if (!Array.isArray(planner.alerts)) planner.alerts = []
+    if (typeof planner.autoAdjustEnabled !== 'boolean') planner.autoAdjustEnabled = false
+    if (!['Soil', 'Coco', 'Hydro'].includes(String(planner.medium))) planner.medium = 'Soil'
+    planner.isAiLoading = false
+    for (const key of [
+        'lastAiRecommendation',
+        'activePluginId',
+        'activeBrandId',
+        'autoAdjustRecommendation',
+    ] as const) {
+        if (typeof planner[key] !== 'string') planner[key] = null
+    }
+}
+
+export const ensureHydroShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (s.hydro === undefined) return
+    if (!s.hydro || typeof s.hydro !== 'object' || Array.isArray(s.hydro)) {
+        delete s.hydro
+        return
+    }
+    const hydro = s.hydro as Record<string, unknown>
+    if (!Array.isArray(hydro.readings)) hydro.readings = []
+    if (!Array.isArray(hydro.alerts)) hydro.alerts = []
+    if (typeof hydro.systemType !== 'string') hydro.systemType = 'DWC'
+    if (
+        !hydro.thresholds ||
+        typeof hydro.thresholds !== 'object' ||
+        Array.isArray(hydro.thresholds)
+    ) {
+        hydro.thresholds = {
+            phMin: 5.5,
+            phMax: 6.5,
+            ecMin: 0.8,
+            ecMax: 2.4,
+            waterTempMin: 18,
+            waterTempMax: 24,
+        }
+    }
+}
+
+export const ensureMetricsShape = (state: PersistedState): void => {
+    const metrics = (state as Record<string, unknown>).metrics
+    if (metrics === undefined) return
+    if (!metrics || typeof metrics !== 'object' || Array.isArray(metrics)) {
+        ;(state as Record<string, unknown>).metrics = { readings: [] }
+        return
+    }
+    if (!Array.isArray((metrics as Record<string, unknown>).readings)) {
+        ;(metrics as Record<string, unknown>).readings = []
+    }
+}
+
+export const ensureGrowPlannerShape = (state: PersistedState): void => {
+    const planner = (state as Record<string, unknown>).growPlanner
+    if (planner === undefined) return
+    if (!planner || typeof planner !== 'object' || Array.isArray(planner)) {
+        ;(state as Record<string, unknown>).growPlanner = { tasks: [] }
+        return
+    }
+    if (!Array.isArray((planner as Record<string, unknown>).tasks)) {
+        ;(planner as Record<string, unknown>).tasks = []
+    }
 }
 
 export const ensureStrainsViewShape = (state: PersistedState): void => {

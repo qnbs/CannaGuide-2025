@@ -23,4 +23,19 @@ describe('legacyPlantPatches', () => {
         expect(plant.terpeneProfile).toEqual({})
         expect(plant.mediumType).toBe('Soil')
     })
+
+    it('patchLegacyPlantShape backfills tasks/problems arrays', () => {
+        // selectOpenTasksSummary/selectActiveProblemsSummary call .filter()
+        // directly on these with no fallback -- a plant missing either
+        // crashes every active-plant selector on the next render.
+        const plant = { stage: PlantStage.Vegetative } as LegacyPlant
+        patchLegacyPlantShape(plant)
+        expect(plant.tasks).toEqual([])
+        expect(plant.problems).toEqual([])
+
+        const plantWithGarbage = { tasks: 'not-an-array', problems: null } as unknown as LegacyPlant
+        patchLegacyPlantShape(plantWithGarbage)
+        expect(plantWithGarbage.tasks).toEqual([])
+        expect(plantWithGarbage.problems).toEqual([])
+    })
 })

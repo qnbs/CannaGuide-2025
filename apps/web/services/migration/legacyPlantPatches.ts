@@ -221,6 +221,19 @@ const ensureLegacyHistory = (plant: LegacyPlant): void => {
     }
 }
 
+// selectOpenTasksSummary/selectActiveProblemsSummary (stores/selectors.ts) call
+// .filter() directly on every active plant's tasks/problems with no fallback,
+// so a legacy or malformed entity missing either crashes the app on the next
+// render after being restored.
+const ensureLegacyTasksAndProblems = (plant: LegacyPlant): void => {
+    if (!Array.isArray(plant.tasks)) {
+        plant.tasks = []
+    }
+    if (!Array.isArray(plant.problems)) {
+        plant.problems = []
+    }
+}
+
 const ensureLegacyPhenotypeModifiers = (plant: LegacyPlant): void => {
     const legacyStrain = plant.strain as Record<string, unknown> | undefined
     if (!plant.phenotypeModifiers && legacyStrain?.geneticModifiers) {
@@ -243,5 +256,6 @@ export const patchLegacyPlantShape = (plant: LegacyPlant): void => {
     ensureLegacyNutrientPool(plant)
     ensureLegacySimulationClock(plant)
     ensureLegacyHistory(plant)
+    ensureLegacyTasksAndProblems(plant)
     ensureLegacyPhenotypeModifiers(plant)
 }

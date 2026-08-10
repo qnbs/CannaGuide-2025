@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
-import { useDataManagementActions } from './useDataManagementActions'
+import { renderHook, act, waitFor } from '@testing-library/react'
 
-const mockDispatch = vi.fn()
+const mocks = vi.hoisted(() => ({
+    dispatch: vi.fn(),
+    addNotification: vi.fn(),
+    replacePrimaryPersistedSnapshot: vi.fn(),
+}))
 
 vi.mock('@/stores/store', () => ({
-    useAppDispatch: () => mockDispatch,
+    useAppDispatch: () => mocks.dispatch,
     useAppSelector: (selector: (state: unknown) => unknown) =>
         selector({
             simulation: {
@@ -25,8 +28,13 @@ vi.mock('react-i18next', () => ({
     }),
 }))
 
+vi.mock('@/i18n', () => ({
+    getT: () => (key: string) => key,
+    i18nInstance: {},
+}))
+
 vi.mock('@/stores/useUIStore', () => ({
-    getUISnapshot: () => ({ addNotification: vi.fn() }),
+    getUISnapshot: () => ({ addNotification: mocks.addNotification }),
 }))
 
 vi.mock('@/services/privacyService', () => ({
@@ -47,15 +55,24 @@ vi.mock('@/services/indexedDbPruneService', () => ({
     pruneOnQuotaThreshold: vi.fn().mockResolvedValue({ prunedEntries: 0 }),
 }))
 
+vi.mock('@/services/persistedStateService', () => ({
+    replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
+}))
+
 vi.mock('@sentry/react', () => ({
-    withScope: (fn: (scope: { setTag: () => void }) => void) =>
-        fn({ setTag: vi.fn() }),
+    withScope: (fn: (scope: { setTag: () => void }) => void) => fn({ setTag: vi.fn() }),
     captureMessage: vi.fn(),
 }))
 
+let useDataManagementActions: typeof import('./useDataManagementActions').useDataManagementActions
+
 describe('useDataManagementActions', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         vi.clearAllMocks()
+        vi.resetModules()
+        mocks.dispatch.mockReturnValue({ unwrap: vi.fn().mockResolvedValue(undefined) })
+        mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
+        ;({ useDataManagementActions } = await import('./useDataManagementActions'))
     })
 
     it('exposes known databases and erase phrase constants', () => {
@@ -65,12 +82,12 @@ describe('useDataManagementActions', () => {
         expect(result.current.isEraseDisabled).toBe(true)
     })
 
-    it('dispatches resetAllData on handleResetAll', () => {
+    it('dispatches resetAllData on handleResetAll', async () => {
         const { result } = renderHook(() => useDataManagementActions())
-        act(() => {
-            result.current.handleResetAll()
+        await act(async () => {
+            await result.current.handleResetAll()
         })
-        expect(mockDispatch).toHaveBeenCalled()
+        expect(mocks.dispatch).toHaveBeenCalled()
     })
 
     it('opens export confirm via setIsExportConfirmOpen', () => {
@@ -86,6 +103,67 @@ describe('useDataManagementActions', () => {
         act(() => {
             result.current.handleConfirmExportAll()
         })
-        expect(mockDispatch).toHaveBeenCalled()
+        expect(mocks.dispatch).toHaveBeenCalled()
+    })
+
+    it('reports a validation failure from confirmed state import', async () => {
+        const { result } = renderHook(() => useDataManagementActions())
+        const file = new File(['{"version":6,"settings":"invalid"}'], 'invalid.json', {
+            type: 'application/json',
+        })
+
+        act(() => {
+            result.current.handleFileChange({
+                target: { files: [file], value: '' },
+            } as unknown as Parameters<typeof result.current.handleFileChange>[0])
+        })
+        await waitFor(() => expect(result.current.isImportConfirmOpen).toBe(true))
+        mocks.replacePrimaryPersistedSnapshot.mockRejectedValueOnce(
+            new TypeError('Invalid persisted state'),
+        )
+
+        await act(async () => {
+            await result.current.confirmImport()
+        })
+
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.importError',
+        })
+        expect(result.current.isImportConfirmOpen).toBe(true)
+    })
+
+    it('keeps the reset dialog open when persisted-state removal is blocked', async () => {
+        const unwrap = vi.fn().mockRejectedValue(new Error('blocked'))
+        mocks.dispatch.mockReturnValueOnce({ unwrap })
+        const { result } = renderHook(() => useDataManagementActions())
+        act(() => result.current.setIsResetConfirmOpen(true))
+
+        await act(async () => {
+            await result.current.handleResetAll()
+        })
+
+        expect(result.current.isResetConfirmOpen).toBe(true)
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.resetError',
+        })
+    })
+
+    it('keeps the slice dialog open when a slice reset is blocked', async () => {
+        const unwrap = vi.fn().mockRejectedValue(new Error('blocked'))
+        mocks.dispatch.mockReturnValueOnce({ unwrap })
+        const { result } = renderHook(() => useDataManagementActions())
+        act(() => result.current.setSliceToReset('simulation'))
+
+        await act(async () => {
+            await result.current.handleConfirmSliceReset()
+        })
+
+        expect(result.current.sliceToReset).toBe('simulation')
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.sliceResetError',
+        })
     })
 })

@@ -17,6 +17,10 @@ import {
     ensureProblemTrackerShape,
     ensureDiagnosisHistoryShape,
     ensureStrainsViewShape,
+    ensureNutrientPlannerShape,
+    ensureHydroShape,
+    ensureMetricsShape,
+    ensureGrowPlannerShape,
 } from '@/services/migration/sliceShapeGuards'
 import { applyVersionMigrations } from '@/services/migration/versionMigrations'
 
@@ -119,6 +123,10 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         ensureGrowsShape,
         ensureProblemTrackerShape,
         ensureDiagnosisHistoryShape,
+        ensureNutrientPlannerShape,
+        ensureHydroShape,
+        ensureMetricsShape,
+        ensureGrowPlannerShape,
         ensureStrainsViewShape,
     ] as const
     for (const validate of shapeValidators) {

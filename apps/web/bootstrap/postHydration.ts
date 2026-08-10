@@ -6,11 +6,13 @@ import { getUISnapshot } from '@/stores/useUIStore'
 import { strainService } from '@/services/strainService'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
 import { ttsService } from '@/services/ttsService'
-import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY } from '@/constants'
 import { Sentry } from '@/services/sentryService'
+import type { FlushPersistedState } from './persistence'
 
-export const runPostHydrationServices = async (hydratedStore: AppStore): Promise<void> => {
+export const runPostHydrationServices = async (
+    hydratedStore: AppStore,
+    flushPersistedState?: FlushPersistedState,
+): Promise<void> => {
     // FIRST, before any service that can reach the network.
     //
     // localOnlyModeService keeps its state in a module variable initialised to
@@ -122,10 +124,7 @@ export const runPostHydrationServices = async (hydratedStore: AppStore): Promise
             const { listen } = await import('@tauri-apps/api/event')
             await listen('tauri://before-quit', async () => {
                 try {
-                    await indexedDBStorage.setItem(
-                        REDUX_STATE_KEY,
-                        JSON.stringify(hydratedStore.getState()),
-                    )
+                    await flushPersistedState?.()
                 } catch (err) {
                     console.debug('[Tauri] before-quit flush failed:', err)
                 }

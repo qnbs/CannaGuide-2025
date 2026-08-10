@@ -29,11 +29,15 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
-import { migrateState } from '../services/migrationLogic'
+import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
+import {
+    removePrimaryPersistedSnapshot,
+    tryRepairPrimaryPersistedSnapshot,
+} from '@/services/persistedStateService'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -94,8 +98,7 @@ export const createAppStore = async (): Promise<AppStore> => {
     let persistedUiState: Partial<UIState> | undefined
 
     const hydratePersistedState = (persistedString: string): Partial<RootState> => {
-        const persistedState = JSON.parse(persistedString)
-        const migrated = migrateState(persistedState) as Partial<RootState> & {
+        const migrated = parseAndMigratePersistedSnapshot(persistedString) as Partial<RootState> & {
             ui?: Partial<UIState>
         }
 
@@ -115,15 +118,12 @@ export const createAppStore = async (): Promise<AppStore> => {
         }
 
         console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
-        const recoveredState = hydratePersistedState(backupString)
-
-        try {
-            await indexedDBStorage.setItem(REDUX_STATE_KEY, backupString)
-        } catch (repairErr) {
-            console.debug('[Store] Could not repair primary snapshot from backup:', repairErr)
+        const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
+        if (!repaired) {
+            return undefined
         }
 
-        return recoveredState
+        return hydratePersistedState(backupString)
     }
 
     try {
@@ -147,7 +147,7 @@ export const createAppStore = async (): Promise<AppStore> => {
         )
         preloadedState = await tryLoadBackupState()
         if (!preloadedState) {
-            await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+            await removePrimaryPersistedSnapshot()
         }
     }
 

@@ -679,6 +679,12 @@ export const settingsView = {
         importConfirmButton: 'Importeren & Overschrijven',
         importSuccess: 'Gegevens succesvol geimporteerd. De app wordt nu herladen.',
         importError: 'Import mislukt. Controleer of het een geldig back-upbestand is.',
+        restoreBlocked:
+            'Gegevensherstel is tijdelijk geblokkeerd door een veilige herstelbewerking.',
+        resetError:
+            'De gegevens konden niet worden gereset. Je opgeslagen gegevens zijn niet gewijzigd.',
+        sliceResetError:
+            'Dit gegevensonderdeel kon niet worden gereset. Je opgeslagen gegevens zijn niet gewijzigd.',
         growExportTitle: 'Back-up per Kweek',
         growExportDesc: '"{{name}}" exporteren met {{count}} planten als draagbaar JSON-bestand.',
         exportGrow: 'Deze Kweek exporteren',

@@ -73,6 +73,8 @@ export const common = {
         retry: 'Opnieuw proberen',
         reload: 'Applicatie herladen',
         safeRecovery: 'Veilig herstel proberen',
+        safeRecoveryDescription:
+            'Als het opstarten blijft mislukken, kun je de laatst gevalideerde back-up expliciet herstellen.',
     },
     imageResizeFailed: 'Afbeelding verkleinen mislukt, origineel wordt gebruikt.',
     offlineQueued: 'Offline. Actie in wachtrij voor synchronisatie.',

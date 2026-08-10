@@ -7,6 +7,10 @@ import {
     ensureProblemTrackerShape,
     ensureSavedItemsShape,
     ensureUserStrainsShape,
+    ensureNutrientPlannerShape,
+    ensureHydroShape,
+    ensureMetricsShape,
+    ensureGrowPlannerShape,
     normalizeSavedStrainTipImages,
 } from '@/services/migration/sliceShapeGuards'
 import type { PersistedState } from '@/services/migration/migrationTypes'
@@ -43,9 +47,8 @@ describe('sliceShapeGuards', () => {
             },
         } as unknown as PersistedState
         normalizeSavedStrainTipImages(state)
-        const tip = (
-            (state as Record<string, unknown>).savedItems as Record<string, unknown>
-        ).savedStrainTips as { entities: Record<string, Record<string, unknown>> }
+        const tip = ((state as Record<string, unknown>).savedItems as Record<string, unknown>)
+            .savedStrainTips as { entities: Record<string, Record<string, unknown>> }
         expect(tip.entities['tip-1']?.imageUrl).toBeUndefined()
     })
 
@@ -66,7 +69,9 @@ describe('sliceShapeGuards', () => {
     it('ensureNotesShape creates strainNotes map when missing', () => {
         const state = {} as PersistedState
         ensureNotesShape(state)
-        const notes = (state as Record<string, unknown>).notes as { strainNotes: Record<string, unknown> }
+        const notes = (state as Record<string, unknown>).notes as {
+            strainNotes: Record<string, unknown>
+        }
         expect(notes.strainNotes).toEqual({})
     })
 
@@ -90,5 +95,68 @@ describe('sliceShapeGuards', () => {
         }
         expect(tracker.issues.ids).toEqual([])
         expect(tracker.issues.entities).toEqual({})
+    })
+
+    it('repairs collection fields that selectors consume as arrays', () => {
+        const state = {
+            nutrientPlanner: { schedule: {}, readings: {}, alerts: {} },
+            hydro: { readings: {}, alerts: {}, thresholds: null },
+            metrics: { readings: {} },
+            growPlanner: { tasks: {} },
+        } as unknown as PersistedState
+
+        ensureNutrientPlannerShape(state)
+        ensureHydroShape(state)
+        ensureMetricsShape(state)
+        ensureGrowPlannerShape(state)
+
+        const repaired = state as Record<string, Record<string, unknown>>
+        expect(repaired.nutrientPlanner?.schedule).toEqual([])
+        expect(repaired.nutrientPlanner?.readings).toEqual([])
+        expect(repaired.hydro?.readings).toEqual([])
+        expect(repaired.hydro?.thresholds).toEqual(expect.any(Object))
+        expect(repaired.metrics?.readings).toEqual([])
+        expect(repaired.growPlanner?.tasks).toEqual([])
+    })
+
+    it('rejects array-valued record slices instead of treating them as objects', () => {
+        // typeof [] === 'object', so a naive `typeof x !== 'object'` guard lets an
+        // array-valued field slip through as "valid" and get partially patched
+        // into a hybrid array-with-extra-properties instead of being reset.
+        const state = {
+            nutrientPlanner: [],
+            hydro: [],
+            metrics: [],
+            growPlanner: [],
+        } as unknown as PersistedState
+
+        ensureNutrientPlannerShape(state)
+        ensureHydroShape(state)
+        ensureMetricsShape(state)
+        ensureGrowPlannerShape(state)
+
+        const repaired = state as Record<string, unknown>
+        expect(Array.isArray(repaired.nutrientPlanner)).toBe(false)
+        expect(repaired.nutrientPlanner).toBeUndefined()
+        expect(Array.isArray(repaired.hydro)).toBe(false)
+        expect(repaired.hydro).toBeUndefined()
+        expect(Array.isArray(repaired.metrics)).toBe(false)
+        expect(repaired.metrics).toEqual({ readings: [] })
+        expect(Array.isArray(repaired.growPlanner)).toBe(false)
+        expect(repaired.growPlanner).toEqual({ tasks: [] })
+    })
+
+    it('rejects an array-valued hydro.thresholds instead of treating it as an object', () => {
+        const state = {
+            hydro: { readings: [], alerts: [], thresholds: [] },
+        } as unknown as PersistedState
+
+        ensureHydroShape(state)
+
+        const hydro = (state as Record<string, unknown>).hydro as Record<string, unknown>
+        expect(Array.isArray(hydro.thresholds)).toBe(false)
+        expect(hydro.thresholds).toEqual(
+            expect.objectContaining({ phMin: expect.any(Number) }),
+        )
     })
 })

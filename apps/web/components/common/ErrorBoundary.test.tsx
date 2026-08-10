@@ -35,9 +35,9 @@ describe('ErrorBoundary', () => {
         expect(buttons.length).toBeGreaterThanOrEqual(1)
     })
 
-    it('dispatches custom event on error', () => {
-        const handler = vi.fn()
-        window.addEventListener('cannaguide-runtime-error', handler)
+    it('does not request destructive recovery when a child throws', () => {
+        const recoveryHandler = vi.fn()
+        window.addEventListener('cannaguide-safe-recovery-request', recoveryHandler)
 
         render(
             <ErrorBoundary>
@@ -45,8 +45,8 @@ describe('ErrorBoundary', () => {
             </ErrorBoundary>,
         )
 
-        expect(handler).toHaveBeenCalledTimes(1)
-        window.removeEventListener('cannaguide-runtime-error', handler)
+        expect(recoveryHandler).not.toHaveBeenCalled()
+        window.removeEventListener('cannaguide-safe-recovery-request', recoveryHandler)
     })
 
     it('dispatches safe recovery event when recovery button clicked', () => {

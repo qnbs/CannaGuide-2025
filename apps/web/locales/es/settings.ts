@@ -692,6 +692,12 @@ export const settingsView = {
         importSuccess: 'Datos importados exitosamente. La aplicacion se recargara ahora.',
         importError:
             'La importacion fallo. Por favor asegurate de que sea un archivo de copia de seguridad valido.',
+        restoreBlocked:
+            'La restauracion de datos esta bloqueada temporalmente por una operacion de recuperacion segura.',
+        resetError:
+            'No se pudo completar el restablecimiento. Tus datos guardados no se modificaron.',
+        sliceResetError:
+            'No se pudo restablecer esta seccion de datos. Tus datos guardados no se modificaron.',
         growExportTitle: 'Copia de Seguridad por Cultivo',
         growExportDesc: 'Exportar "{{name}}" con {{count}} plantas como archivo JSON portable.',
         exportGrow: 'Exportar este Cultivo',
@@ -722,7 +728,8 @@ export const settingsView = {
             title: 'Sincronizacion en la Nube con Un Toque',
             description:
                 'Respalda y restaura todo el estado de tu aplicacion via GitHub Gist anonimo. No se requiere cuenta ni registro.',
-            unavailableDescription: 'La sincronizacion en la nube no esta disponible temporalmente.',
+            unavailableDescription:
+                'La sincronizacion en la nube no esta disponible temporalmente.',
             pushButton: 'Enviar a la Nube',
             pullButton: 'Obtener de la Nube',
             pushSuccess: 'Todos los datos sincronizados al Gist exitosamente.',

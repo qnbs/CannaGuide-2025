@@ -13,8 +13,8 @@ import { syncService } from '@/services/syncService'
 import { generateSyncEncryptionKey } from '@/services/syncEncryptionService'
 import { offlineSyncQueueService } from '@/services/offlineSyncQueueService'
 import { SyncConflictModal } from '@/components/common/SyncConflictModal'
-import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY, CLOUD_SYNC_DISABLED } from '@/constants'
+import { CLOUD_SYNC_DISABLED } from '@/constants'
+import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 
 const formatSyncDate = (ts: number | null, t: (key: string) => string): string => {
     if (!ts) return t('settingsView.data.sync.never')
@@ -163,7 +163,10 @@ const CloudSyncPanel: React.FC = () => {
                 case 'migrated':
                     // Legacy JSON format: import via indexedDBStorage + reload (one-time)
                     if (legacyState) {
-                        await indexedDBStorage.setItem(REDUX_STATE_KEY, legacyState)
+                        const stateRestored = await replacePrimaryPersistedSnapshot(legacyState)
+                        if (!stateRestored) {
+                            throw new Error(String(t('settingsView.data.restoreBlocked')))
+                        }
                         getUISnapshot().addNotification({
                             type: 'success',
                             message: String(t('settingsView.data.sync.migrating')),
@@ -258,7 +261,9 @@ const CloudSyncPanel: React.FC = () => {
                     </Button>
                 </div>
                 <p
-                    data-testid={CLOUD_SYNC_DISABLED ? 'cloud-sync-unavailable-description' : undefined}
+                    data-testid={
+                        CLOUD_SYNC_DISABLED ? 'cloud-sync-unavailable-description' : undefined
+                    }
                     className="text-sm text-slate-400 mb-4"
                 >
                     {CLOUD_SYNC_DISABLED
@@ -368,7 +373,9 @@ const CloudSyncPanel: React.FC = () => {
                             <Button
                                 data-testid="cloud-sync-push"
                                 onClick={handlePush}
-                                disabled={isPushing || isPulling || isLocalOnly || CLOUD_SYNC_DISABLED}
+                                disabled={
+                                    isPushing || isPulling || isLocalOnly || CLOUD_SYNC_DISABLED
+                                }
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.CloudArrowUp className="mr-2" />

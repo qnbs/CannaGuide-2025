@@ -256,6 +256,8 @@ jobs:
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
+            - name: Hook runtime regression tests
+              run: node --test --test-concurrency=1 ./scripts/git-hooks/*.test.mjs
             - name: Install pinned uv
               env:
                   UV_VERSION: '0.8.10'

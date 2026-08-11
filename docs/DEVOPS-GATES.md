@@ -167,12 +167,16 @@ every PR.
 
 | Hook                           | Command                                                                                            |
 | ------------------------------ | -------------------------------------------------------------------------------------------------- |
-| `pre-commit`                   | `lint-staged` (eslint + prettier on staged files)                                                  |
+| `pre-commit`                   | commit identity + serialized `lint-staged --concurrent 1` (security + eslint + prettier)           |
 | `commit-msg`                   | commitlint conventional commits                                                                    |
-| `pre-push`                     | typecheck + lint:scopes + file-budget + doc-metrics                                                |
+| `pre-push`                     | single-hook lock + memory/dependency preflight + scoped typecheck + changed lint + local gates     |
 | **`gate:push`** (manual, full) | `pnpm run gate:push` — identity, lint, mdc, graphify, typecheck, tests, scopes, file-budget, build |
 
 Skip hooks (emergency only): `git push --no-verify`
+
+The dependency preflight never launches pnpm. The explicit frozen install records a local stamp
+covering repository dependency inputs, the platform-specific installed lock snapshot, and the
+repository-pinned pnpm version; hooks compare that stamp before resolving installed tools directly.
 
 ---
 
@@ -180,7 +184,14 @@ Skip hooks (emergency only): `git push --no-verify`
 
 ```bash
 export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
-export PATH="$NVM_DIR/versions/node/v24.16.0/bin:$PATH"
+if ! CANNAGUIDE_NODE="$(nvm which 24)" || [ ! -x "$CANNAGUIDE_NODE" ]; then
+  echo "Node.js 24 is unavailable; PATH was not modified." >&2
+  return 1 2>/dev/null || exit 1
+fi
+CANNAGUIDE_NODE_BIN="$(dirname "$CANNAGUIDE_NODE")"
+export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
+corepack enable pnpm
+pnpm --version # must match package.json packageManager
 
 pnpm run ci:audit          # lightweight subset
 pnpm run gate:push         # full pre-push gate
@@ -192,7 +203,9 @@ pnpm run gate:push         # full pre-push gate
 
 Transitive vulnerabilities remediated via root `pnpm.overrides` are documented in [`SECURITY.md`](../SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
 
-After adding overrides: `pnpm install`, `pnpm audit`, confirm GitHub **Security → Dependabot** alerts resolve.
+After adding overrides: deliberately regenerate with `corepack pnpm install --lockfile-only`, reject
+unrelated changes in `pnpm-lock.yaml`, then run `corepack pnpm install --frozen-lockfile` and
+`corepack pnpm audit`. Confirm GitHub **Security → Dependabot** alerts are resolved.
 
 ---
 

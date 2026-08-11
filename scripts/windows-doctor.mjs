@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { installedManagerFor } from './git-hooks/dependency-state.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const isWindows = process.platform === 'win32'
@@ -15,6 +16,16 @@ if (!isWindows) {
     console.log('windows:doctor — skipped (not win32); use devcontainer:doctor on Linux/macOS')
     process.exit(0)
 }
+
+const packageManager = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).packageManager
+const normalizedPackageManager = installedManagerFor(packageManager)
+if (!normalizedPackageManager) {
+    console.error(
+        `package.json must declare packageManager as pnpm@<version>; found '${packageManager ?? 'missing'}'.`,
+    )
+    process.exit(1)
+}
+const requiredPnpm = normalizedPackageManager.slice('pnpm@'.length)
 
 let failed = false
 let warned = false
@@ -41,9 +52,15 @@ if (major >= 24) {
     warn(`Node ${nodeVer} — CI uses Node 24; install nvm-windows or fnm and switch to 24.x`)
 }
 
-const pnpm = run('pnpm', ['--version'])
-if (pnpm.status === 0) ok(`pnpm ${pnpm.stdout.trim()}`)
-else bad('pnpm not found -- corepack enable && corepack prepare pnpm@11.13.0 --activate')
+const pnpm = run('corepack', ['pnpm', '--version'], { cwd: root })
+if (pnpm.status === 0 && pnpm.stdout.trim() === requiredPnpm) {
+    ok(`pnpm ${pnpm.stdout.trim()} via Corepack (${packageManager})`)
+} else {
+    bad(
+        `Corepack did not resolve ${packageManager}; run: corepack enable && ` +
+            'corepack pnpm install --frozen-lockfile',
+    )
+}
 
 const git = run('git', ['--version'])
 if (git.status === 0) ok(git.stdout.trim())
@@ -61,7 +78,10 @@ if (gh.status === 0) {
 
 const uv = run('uv', ['--version'])
 if (uv.status === 0) ok(uv.stdout.trim())
-else warn('uv missing (Graphify MCP) — pnpm run setup:windows or: irm https://astral.sh/uv/install.ps1 | iex')
+else
+    warn(
+        'uv missing (Graphify MCP) — corepack pnpm run setup:windows or: irm https://astral.sh/uv/install.ps1 | iex',
+    )
 
 const gk = run('where', ['gk'])
 if (gk.status === 0) {
@@ -69,11 +89,13 @@ if (gk.status === 0) {
     const gkVer = run('gk', ['--version'])
     if (gkVer.status === 0) ok(gkVer.stdout.trim())
 } else {
-    warn('GitKraken CLI (gk) missing — winget install GitKraken.cli OR GitLens: Install GitKraken MCP Server')
+    warn(
+        'GitKraken CLI (gk) missing — winget install GitKraken.cli OR GitLens: Install GitKraken MCP Server',
+    )
 }
 
 if (existsSync(join(root, 'node_modules'))) ok('node_modules present')
-else warn('node_modules missing — run: pnpm install')
+else warn('node_modules missing — run: corepack pnpm install --frozen-lockfile')
 
 const mcpJson = join(root, '.mcp.json')
 if (existsSync(mcpJson)) {
@@ -99,9 +121,9 @@ const mcp = run('node', ['./scripts/mcp-doctor.mjs'], { cwd: root, stdio: 'inher
 if (mcp.status !== 0) failed = true
 
 console.log('\n=== Quick fixes ===')
-console.log('  pnpm run setup:windows     # uv + PATH hints')
-console.log('  pnpm install               # deps')
-console.log('  pnpm run mcp:doctor        # Graphify + GitKraken MCP')
+console.log('  corepack pnpm run setup:windows              # uv + PATH hints')
+console.log('  corepack pnpm install --frozen-lockfile      # deps')
+console.log('  corepack pnpm run mcp:doctor                 # Graphify + GitKraken MCP')
 console.log('  gh auth login              # GitHub CLI')
 console.log('  gk auth login              # GitKraken MCP (after gk install)')
 

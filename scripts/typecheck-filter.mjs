@@ -2,10 +2,13 @@
 // Runs tsc --noEmit and filters known upstream errors (RTK TS2719).
 // Exits 0 if no unknown errors remain, 1 otherwise.
 import { spawnSync } from 'node:child_process'
+import { resolveLocalTool } from './git-hooks/hook-runtime.mjs'
 
-const result = spawnSync('pnpm', ['exec', 'tsc', '--noEmit'], {
+const tsc = resolveLocalTool('tsc')
+const result = spawnSync(tsc.command, [...tsc.argsPrefix, '--noEmit'], {
     encoding: 'utf-8',
     stdio: ['inherit', 'pipe', 'pipe'],
+    shell: false,
 })
 
 const output = (result.stdout || '') + (result.stderr || '')
@@ -13,6 +16,14 @@ const output = (result.stdout || '') + (result.stderr || '')
 if (result.status === 0) {
     console.log('[OK] Typecheck passed')
     process.exit(0)
+}
+
+if (result.error || typeof result.status !== 'number') {
+    console.error(
+        result.error?.message ||
+            `TypeScript compiler terminated without an exit code${result.signal ? ` (${result.signal})` : ''}.`,
+    )
+    process.exit(1)
 }
 
 const lines = output.split('\n')
@@ -28,4 +39,8 @@ if (unknownErrors.length > 0) {
 }
 
 const filtered = lines.filter((l) => isKnownRtkError(l)).length
+if (filtered === 0) {
+    console.error(output || `TypeScript compiler exited with status ${result.status}.`)
+    process.exit(1)
+}
 console.log(`[OK] Typecheck passed (${filtered} known RTK TS2719 in store.ts filtered)`)

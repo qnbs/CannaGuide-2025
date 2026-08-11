@@ -17,6 +17,7 @@
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { spawnSync } from 'node:child_process'
+import { resolveLocalTool } from './git-hooks/hook-runtime.mjs'
 
 const CONFIG_PATH = new URL('./lint-burndown.config.json', import.meta.url)
 const TAG = '[lint:scopes]'
@@ -101,14 +102,13 @@ function main() {
         console.log(`${TAG} Running strict lint for ${strictScopes.length} scope(s).`)
     }
 
-    const result = spawnSync(
-        'pnpm',
-        ['exec', 'eslint', '--report-unused-disable-directives', '--max-warnings', '0', ...targets],
-        {
-            stdio: 'inherit',
-            shell: process.platform === 'win32',
-        },
-    )
+    const args = ['--report-unused-disable-directives', '--max-warnings', '0', ...targets]
+
+    const eslint = resolveLocalTool('eslint')
+    const result = spawnSync(eslint.command, [...eslint.argsPrefix, ...args], {
+        stdio: 'inherit',
+        shell: false,
+    })
 
     process.exit(result.status ?? 1)
 }

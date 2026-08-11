@@ -257,7 +257,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 7. **Formatting covers new files:** `npx prettier --check $(git status --porcelain | awk '{print $2}')` -- **not** `git diff --name-only`, which omits untracked files and lets a brand-new file fail the docs gate in CI
 8. **i18n complete:** new user-facing strings present in all 5 languages (EN/DE/ES/FR/NL); `pnpm run check:i18n`
 9. **E2E selectors stable:** use `data-testid`, `data-view-id`, or `data-tab-id` -- avoid hardcoded text selectors
-10. **Hooks run:** `.husky/pre-commit` = commit identity + lint-staged (seconds); `.husky/pre-push` = **scoped** typecheck (`scripts/scoped-verify.mjs`) + lint-scopes + file budget (under a minute). Neither calls a bare `turbo run`.
+10. **Hooks run:** `.husky/pre-commit` = serialized identity + `lint-staged --concurrent 1`; `.husky/pre-push` = a single-hook lock, dependency/resource-pressure preflight, **scoped** typecheck, changed-scope lint, file budget and doc metrics. Hook tools execute installed package-declared entrypoints through Node, so pnpm cannot install implicitly. Neither calls a bare `turbo run`.
 11. **Typecheck after test file changes:** When creating or modifying `*.test.ts(x)` files, **always run typecheck immediately** (`pnpm --filter @cannaguide/web typecheck`) before running the tests. Test files are TypeScript and can introduce type errors.
 
 ### Low-end hardware: the commands that look safe but are not
@@ -329,7 +329,7 @@ happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = *
 - **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `pnpm run pr:push` (branch -> PR -> auto-merge).
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
-- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. The hooks are staged so each step is affordable -- `pre-commit` is commit identity + lint-staged (seconds), `pre-push` is a **scoped** typecheck + lint-scopes + file budget (under a minute) -- so there is no longer a "the hook takes too long" excuse. There used to be, and the bypass it invited is what let a formatting failure and a file-budget failure reach CI. If an emergency truly forces `--no-verify`, run the equivalent checks by hand **before** pushing and document the reason in the commit body:
+- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. Hooks are serialized, never install implicitly, and report heartbeats for slow checks. Pre-commit runs staged checks with concurrency 1; pre-push runs bounded affected checks while CI remains exhaustive. If an emergency truly forces `--no-verify`, run the equivalent checks by hand **before** pushing and document the reason in the commit body:
 
     Run **exactly what the hook runs** -- the scoped commands, not the expensive ones this repo exists to avoid:
 

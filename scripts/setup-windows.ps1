@@ -4,36 +4,49 @@ $ErrorActionPreference = 'Stop'
 
 Write-Host '=== CannaGuide Windows Setup ===' -ForegroundColor Cyan
 
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+Set-Location $repoRoot
+$packageManager = (Get-Content (Join-Path $repoRoot 'package.json') -Raw | ConvertFrom-Json).packageManager
+if ($packageManager -match '^pnpm@([^+\s]+)(?:\+.+)?$') {
+    $requiredPnpm = $Matches[1]
+} else {
+    throw "package.json must declare packageManager as pnpm@<version>; found '$packageManager'."
+}
+
 function Test-Command($name) {
     return [bool](Get-Command $name -ErrorAction SilentlyContinue)
 }
 
 if (-not (Test-Command 'node')) {
-    Write-Warning 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows.'
+    Write-Error 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows, then rerun setup.'
+    exit 1
 }
 
-# Presence alone is not enough: an older globally installed pnpm would satisfy
-# Test-Command, skip corepack, and then run the install with the wrong version.
-$requiredPnpm = '11.13.0'
-$currentPnpm = if (Test-Command 'pnpm') { (pnpm --version 2>$null) } else { $null }
-if ($currentPnpm -ne $requiredPnpm) {
-    if ($currentPnpm) {
-        Write-Host "pnpm $currentPnpm found, but $requiredPnpm is required. Activating via Corepack..."
-    } else {
-        Write-Host 'Enabling Corepack for pnpm...'
-    }
-    # Node 25 dropped the bundled Corepack, so it has to come from npm there.
-    if (-not (Test-Command 'corepack')) {
-        Write-Host 'Corepack not bundled with this Node; installing from npm...'
-        npm install -g corepack@latest
-    }
-    corepack enable
-    corepack prepare "pnpm@$requiredPnpm" --activate
-
-    $activePnpm = (pnpm --version 2>$null)
-    if ($activePnpm -ne $requiredPnpm) {
-        throw "pnpm $requiredPnpm required, but '$activePnpm' is active after Corepack activation."
-    }
+# Do not trust a global pnpm on PATH. Corepack resolves the repository's exact
+# packageManager declaration from package.json.
+if (-not (Test-Command 'corepack')) {
+    Write-Host 'Corepack not bundled with this Node; installing from npm...'
+    npm install -g corepack@latest
+}
+# The shim is convenient but optional: machine-wide Node installations commonly
+# make their bin directory read-only to non-administrators. Repository commands
+# below use Corepack directly and therefore do not depend on this shim.
+$shimEnabled = $true
+try {
+    corepack enable pnpm 2>$null
+    if ($LASTEXITCODE -ne 0) { $shimEnabled = $false }
+} catch {
+    $shimEnabled = $false
+}
+if (-not $shimEnabled) {
+    Write-Warning 'Could not install the optional pnpm shim; continuing with corepack pnpm.'
+}
+$activePnpm = (corepack pnpm --version 2>$null)
+if ($LASTEXITCODE -ne 0) {
+    throw 'Corepack failed to resolve the repository-pinned pnpm version.'
+}
+if ($activePnpm -ne $requiredPnpm) {
+    throw "Corepack must resolve $packageManager, but returned '$activePnpm'."
 }
 
 if (-not (Test-Command 'uv')) {
@@ -58,13 +71,14 @@ if (-not (Test-Command 'gk')) {
 }
 
 Write-Host ''
-Write-Host 'Installing npm dependencies...'
-Set-Location $PSScriptRoot\..
-pnpm install
+Write-Host 'Installing dependencies with the repository-pinned pnpm...'
+corepack pnpm install --frozen-lockfile
+if ($LASTEXITCODE -ne 0) { throw 'The frozen pnpm install failed.' }
 
 Write-Host ''
 Write-Host 'Running Windows doctor...'
-pnpm run windows:doctor
+corepack pnpm run windows:doctor
+if ($LASTEXITCODE -ne 0) { throw 'The Windows doctor reported a failure.' }
 
 Write-Host ''
 Write-Host 'Done. Reload Cursor MCP: Settings -> Tools & MCP -> Reload' -ForegroundColor Green

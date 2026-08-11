@@ -128,11 +128,12 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Getting Started
 
-**Prerequisites:** Node.js 24+, pnpm 10+ (via Corepack)
+**Prerequisites:** Node.js 24+, the `package.json`-pinned pnpm version via Corepack
 
 ```bash
-corepack enable
-pnpm install --frozen-lockfile
+corepack enable pnpm
+pnpm --version             # must match package.json packageManager
+corepack pnpm install --frozen-lockfile
 pnpm run dev                # Vite dev server on localhost:5173
 pnpm run build              # Production build (all workspaces)
 pnpm run test:run           # 2812 tests (267 files), single run
@@ -559,8 +560,9 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 ### Schnellstart
 
 ```bash
-corepack enable
-pnpm install --frozen-lockfile
+corepack enable pnpm
+pnpm --version             # must match package.json packageManager
+corepack pnpm install --frozen-lockfile
 pnpm run dev                # Vite Dev-Server auf localhost:5173
 pnpm run build              # Produktions-Build
 pnpm run test:run           # 2812 Tests (267 Dateien), Einzellauf

@@ -15,8 +15,15 @@ In every shell session, before `pnpm` commands:
 ```bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-export PATH="$NVM_DIR/versions/node/v24.16.0/bin:$PATH"   # or: nvm use 24 && export PATH="$(dirname "$(which node)"):$PATH"
+if ! CANNAGUIDE_NODE="$(nvm which 24)" || [ ! -x "$CANNAGUIDE_NODE" ]; then
+  echo "Node.js 24 is unavailable; PATH was not modified." >&2
+  return 1 2>/dev/null || exit 1
+fi
+CANNAGUIDE_NODE_BIN="$(dirname "$CANNAGUIDE_NODE")"
+export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
+corepack enable pnpm
 node -v   # must show v24.x
+pnpm --version   # must match package.json packageManager (currently 11.19.0)
 ```
 
 `~/.bashrc` in this environment is preconfigured with the above.
@@ -26,8 +33,8 @@ node -v   # must show v24.x
 Ensure Node 24 is on `PATH` (see above), then install with the frozen lockfile:
 
 ```bash
-corepack enable
-pnpm install --frozen-lockfile
+corepack enable pnpm
+corepack pnpm install --frozen-lockfile
 ```
 
 Reinstall only when `pnpm-lock.yaml` actually changed, and always with `--frozen-lockfile` — a bare `pnpm install` re-resolves carets and can trip the `minimumReleaseAge` quarantine in CI. See [README.md](README.md) for the canonical command list.
@@ -52,7 +59,8 @@ cd apps/web && pnpm run dev -- --host 0.0.0.0
 | Typecheck            | `pnpm run typecheck`         | Turbo; web uses `scripts/typecheck-filter.mjs`           |
 | Unit tests           | `pnpm run test:run`          | Full suite is large (~3+ min); see React note below      |
 | Coverage + gates     | `pnpm run test:coverage`     | Then `check:critical-path-coverage`, `check:file-budget` |
-| Pre-push gate        | `pnpm run gate:push`         | Full local gate before push                              |
+| Pre-push hook        | `.husky/pre-push`            | Serialized affected checks; no implicit install          |
+| Full local gate      | `pnpm run gate:push`         | Optional CI-grade suite; intentionally heavy             |
 | Build                | `pnpm run build`             | Excludes desktop by default                              |
 | Doc metrics          | `pnpm run docs:sync-metrics` | Sync Vitest counts in README / ARCHITECTURE              |
 | Gate inventory       | `docs/DEVOPS-GATES.md`       | CI merge gate vs advisory jobs                           |
@@ -77,8 +85,10 @@ wall time, is what kept crashing sessions. `apps/web` now sets `incremental`. An
   (`scripts/scoped-verify.mjs`), which derive the affected workspaces from the git diff and
   run with `--concurrency=1`.
 - **Do not run E2E, Playwright, Stryker or Lighthouse locally.** That is CI's job.
-- **One heavy task at a time.** Check `free -m` first; below ~500 MB available, stop rather
-  than run into the OOM.
+- **One heavy task at a time.** Check `free -m` first. The hook stops under clearly dangerous
+  pressure (less than 256 MB available, or less than 512 MB with exhausted swap) and warns
+  below 900 MB. A finite cgroup limit is also enforced against the measured 900 MB task
+  headroom. If warned, close memory-heavy applications before starting additional work.
 
 #### Three traps that look like the safe command
 
@@ -124,8 +134,16 @@ The hooks are staged so each step is affordable, and `--no-verify` is therefore 
 both commit and push. Bypassing is what let a formatting failure and a file-budget failure
 reach CI unnoticed.
 
-- `pre-commit`: commit-identity check + `lint-staged` (seconds).
-- `pre-push`: **scoped** typecheck + `lint-scopes --changed` + file budget.
+- `pre-commit`: serialized commit-identity check + `lint-staged --concurrent 1`.
+- `pre-push`: serialized, resource-pressure-guarded **scoped** typecheck +
+  `lint-scopes --changed` + file budget + doc metrics.
+
+Hooks execute installed repository-local tools directly. They never invoke `pnpm exec` or
+install dependencies implicitly. A successful explicit install records a repository-owned stamp
+of the exact dependency inputs, platform-specific installed lock snapshot, and pnpm version. If
+that stamp or a required local entrypoint no longer matches, the hook fails fast and asks for one
+deliberate `corepack pnpm install --frozen-lockfile`.
+Only one hook may run at a time; a second commit/push fails immediately instead of competing for RAM.
 
 Both slow steps used to ignore the diff. `pre-push` deliberately does **not** call
 `turbo run typecheck` (6-9 min unfiltered) — it goes through `scripts/scoped-verify.mjs`.

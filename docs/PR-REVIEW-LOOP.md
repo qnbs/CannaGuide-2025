@@ -112,7 +112,7 @@ gh run view --job <JOB_ID> --log-failed | tail -40
 
 Two traps this repo has already hit:
 
-- **A red `main` can hide.** `graphify-update.yml` pushes to `main` with `[skip ci]`, and `ci.yml` has `paths-ignore: graphify-out/**` — so a broken artifact reached `main` and failed **every** PR's `quality` job while `main` itself showed no failing run for twelve days. **If a failure is unrelated to your diff, check `main` before assuming it is yours:** `gh run list --workflow=ci.yml --branch=main --limit 5`.
+- **A red `main` can hide.** A historical Graphify updater pushed with `[skip ci]`, allowing a broken artifact to reach `main` and fail every PR while `main` showed no failing run. The updater now publishes a validated, complete review artifact and never writes to the repository; a human promotes it through a PR. **If a failure is unrelated to your diff, still check `main` before assuming it is yours:** `gh run list --workflow=ci.yml --branch=main --limit 5`.
 - **`✅ CI Status` only requires `quality` + `security`.** E2E, cross-browser, and the advisory job do **not** block. A green check mark does not mean the E2E suite passed.
 
 Every "green" claim in a PR description cites a **CI run URL + artifact**, never a local run.

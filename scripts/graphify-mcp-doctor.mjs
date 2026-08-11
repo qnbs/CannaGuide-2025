@@ -191,18 +191,19 @@ if (uvVer.status !== 0) {
 }
 
 if (uvVer.status === 0) {
+    // Unattended contexts (CI) must not resolve "whatever is newest on PyPI
+    // right now" -- that reopens the exact non-reproducible, unpinned-package
+    // execution the graphify-update workflow was hardened to remove. The
+    // workflow sets these explicitly to match its own pinned "Update graph"
+    // step; interactive local runs fall back to unpinned for convenience,
+    // since a developer machine isn't the credentialed/unattended boundary.
+    const graphifyySpec = process.env.GRAPHIFYY_VERSION
+        ? `graphifyy==${process.env.GRAPHIFYY_VERSION}`
+        : "graphifyy";
+    const mcpSpec = process.env.MCP_VERSION ? `mcp==${process.env.MCP_VERSION}` : "mcp";
     const imports = spawnSync(
         "uv",
-        [
-            "run",
-            "--with",
-            "graphifyy",
-            "--with",
-            "mcp",
-            "python",
-            "-c",
-            "import mcp, graphify",
-        ],
+        ["run", "--with", graphifyySpec, "--with", mcpSpec, "python", "-c", "import mcp, graphify"],
         {
             encoding: "utf8",
             cwd: root,
@@ -211,10 +212,10 @@ if (uvVer.status === 0) {
     );
     if (imports.status !== 0) {
         bad(
-            `uv run (graphifyy + mcp) import failed: ${(imports.stderr || imports.stdout || "").trim() || `exit ${imports.status}`}`,
+            `uv run (${graphifyySpec} + ${mcpSpec}) import failed: ${(imports.stderr || imports.stdout || "").trim() || `exit ${imports.status}`}`,
         );
     } else {
-        ok("uv can import graphify + PyPI package mcp");
+        ok(`uv can import graphify + PyPI package mcp (${graphifyySpec}, ${mcpSpec})`);
     }
 } else {
     console.error("skip uv import check because uv is unavailable");

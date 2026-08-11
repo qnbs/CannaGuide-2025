@@ -12,17 +12,6 @@ on:
     pull_request:
         branches: [main]
         types: [opened, synchronize, reopened]
-    workflow_dispatch:
-        inputs:
-            deploy_target:
-                description: 'production (main) or preview (PR branch)'
-                required: false
-                default: 'auto'
-                type: choice
-                options:
-                    - auto
-                    - production
-                    - preview
 
 permissions:
     contents: read
@@ -41,7 +30,7 @@ env:
     # it would build, deploy and then STAMP an untested commit as verified.
     # deploy.yml already derives it this way; this workflow did not, which mattered
     # more once artifact identity started being asserted here.
-    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha || github.sha }}
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
 
 jobs:
     gate:
@@ -80,8 +69,8 @@ jobs:
         # a run that is expected to succeed.
         if: >-
             needs.gate.outputs.configured == 'true' &&
-            (github.event_name == 'workflow_dispatch' ||
-            (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
+            github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success'
         runs-on: ubuntu-latest
         timeout-minutes: 25
         steps:

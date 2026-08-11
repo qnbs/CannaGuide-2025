@@ -5,7 +5,6 @@ on:
         workflows: [CI]
         types: [completed]
         branches: [main]
-    workflow_dispatch:
 
 # ---------------------------------------------------------------------------
 # Permissions -- minimal surface, exactly what each job needs
@@ -19,7 +18,7 @@ permissions:
 # (deploy job has its own group without cancel-in-progress so Pages stays stable).
 # ---------------------------------------------------------------------------
 concurrency:
-    group: pages-${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
+    group: pages-${{ github.event.workflow_run.head_branch }}
     cancel-in-progress: true
 
 # ---------------------------------------------------------------------------
@@ -31,7 +30,7 @@ env:
     # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
     # default branch head at dispatch time, not the commit whose CI succeeded --
     # so using it would stamp and verify a different commit than the one built.
-    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
 
 jobs:
     # -------------------------------------------------------------------------
@@ -39,7 +38,7 @@ jobs:
     # -------------------------------------------------------------------------
     build:
         name: Build
-        if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
         timeout-minutes: 30
         permissions:
@@ -55,62 +54,14 @@ jobs:
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
-                  ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+                  ref: ${{ env.DEPLOY_SHA }}
                   fetch-depth: 2 # needed for lint:changed (HEAD~1 diff)
+                  persist-credentials: false
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
               with:
                   node-version: ${{ env.NODE_VERSION }}
-
-            - name: Resolve deploy mode
-              id: deploy_mode
-              run: |
-                  if [ "${{ github.event_name }}" = "workflow_run" ]; then
-                    echo "trust_ci=true" >> "$GITHUB_OUTPUT"
-                    echo "::notice::CI already passed on main -- skipping duplicate quality gates."
-                  else
-                    echo "trust_ci=false" >> "$GITHUB_OUTPUT"
-                  fi
-
-            # -- Quality gates (manual dispatch only; CI workflow_run is trusted) --
-            # `high`, not `critical`: this mirrors ci.yml's Security job, where the
-            # production audit used to run at a *laxer* threshold than the dev graph
-            # and let a high-severity advisory through the gate.
-            - name: Security audit
-              if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: pnpm audit --audit-level=high --prod
-
-            - name: Lint changed files
-              if: steps.deploy_mode.outputs.trust_ci != 'true'
-              env:
-                  LINT_BASE_REF: ${{ github.event_name == 'workflow_dispatch' && format('origin/{0}~1', github.ref_name) || '' }}
-              run: |
-                  echo "::group::lint:changed"
-                  pnpm run lint:changed
-                  echo "::endgroup::"
-
-            - name: Lint strict scopes
-              if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: |
-                  echo "::group::lint:scopes"
-                  pnpm run lint:scopes
-                  echo "::endgroup::"
-
-            - name: Type check
-              if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: pnpm exec turbo run typecheck
-
-            - name: Check i18n completeness
-              if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: pnpm run check:i18n
-
-            - name: Unit tests
-              if: steps.deploy_mode.outputs.trust_ci != 'true'
-              run: |
-                  echo "::group::vitest"
-                  pnpm --filter @cannaguide/web run test:run --reporter=verbose
-                  echo "::endgroup::"
 
             - name: Restore Turbo cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

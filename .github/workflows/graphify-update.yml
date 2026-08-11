@@ -1,6 +1,7 @@
 name: Graphify Update
 
-# Weekly/manual graph refresh only — no push-to-main PR spam (see docs/distribution.md).
+# Weekly/manual graph refresh. Generated output is an artifact for human review;
+# this workflow never writes directly to the repository.
 on:
     schedule:
         - cron: '30 3 * * 1'
@@ -17,23 +18,43 @@ jobs:
     refresh-graph:
         runs-on: ubuntu-latest
         timeout-minutes: 20
-        permissions:
-            contents: write
         steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: block
+                  allowed-endpoints: >
+                      api.github.com:443
+                      codeload.github.com:443
+                      files.pythonhosted.org:443
+                      github.com:443
+                      nodejs.org:443
+                      objects.githubusercontent.com:443
+                      pypi.org:443
+                      raw.githubusercontent.com:443
+                      registry.npmjs.org:443
+                      release-assets.githubusercontent.com:443
+                      results-receiver.actions.githubusercontent.com:443
+                      *.actions.githubusercontent.com:443
+                      *.blob.core.windows.net:443
+
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
                   ref: main
+                  persist-credentials: false
 
-            - name: Install pinned uv
+            - name: Install checksum-verified uv
               env:
                   UV_VERSION: '0.8.10'
+                  UV_SHA256: '2c4392591fe9469d006452ef22f32712f35087d87fb1764ec03e23544eb8770d'
               run: |
                   curl -LsSf "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz" \
                     -o /tmp/uv.tar.gz
+                  echo "${UV_SHA256}  /tmp/uv.tar.gz" | sha256sum --check --strict
                   tar -xzf /tmp/uv.tar.gz -C /tmp
-                  sudo install /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv
+                  echo "/tmp/uv-x86_64-unknown-linux-gnu" >> "$GITHUB_PATH"
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -41,22 +62,22 @@ jobs:
                   node-version: '24'
 
             - name: Update graph
-              run: uv run --with graphifyy python -m graphify update .
+              run: uv run --no-project --with graphifyy==0.9.36 python -m graphify update .
 
-            # The artifact lands on main with [skip ci], so nothing downstream would
-            # catch a bad graph — but ci.yml's quality job runs this same doctor on
-            # every PR. Validate here, or a broken refresh turns every PR red.
+            # The workflow never writes to main. Validate the generated graph before
+            # publishing it for human review so a broken artifact cannot be promoted.
+            # Pinned to the exact versions the "Update graph" step above already
+            # used, so this step cannot silently install a newer graphifyy/mcp.
             - name: Validate refreshed graph
+              env:
+                  GRAPHIFYY_VERSION: '0.9.36'
+                  MCP_VERSION: '2.0.0'
               run: pnpm run graphify:mcp:doctor
 
-            - name: Commit graph artifacts to main
-              run: |
-                  if git diff --quiet -- graphify-out; then
-                    echo "[SKIP] No graphify changes"
-                    exit 0
-                  fi
-                  git config user.name "github-actions[bot]"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git add graphify-out
-                  git commit -m "chore(graphify): refresh graph artifacts [skip ci]"
-                  git push origin HEAD:main
+            - name: Upload graph for review
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: graphify-refresh-${{ github.run_id }}
+                  path: graphify-out/
+                  include-hidden-files: true
+                  retention-days: 7

@@ -31,8 +31,8 @@ Wenn `RELEASE_PAT` als Repository-Secret gesetzt ist (siehe [Abschnitt 3](#3-rel
 1. **CI auf `main` grün** — [Actions](https://github.com/qnbs/CannaGuide-2025/actions) → letzter `main`-Run → **CI Status** = success
 2. GitHub → **Actions** → **Release Publish** → **Run workflow**
 3. Eingaben:
-   - **tag:** `v1.9.0`
-   - **dry-run:** `false`
+    - **tag:** `v1.9.0`
+    - **dry-run:** `false`
 4. Workflow erstellt den Tag, baut Tarball + SBOM, veröffentlicht GitHub Release
 
 ### Option B — Tag manuell als Repo-Owner pushen
@@ -74,15 +74,15 @@ Assets (Tarball, SBOM) dann manuell hochladen oder `release-publish.yml` mit `dr
 
 ### Was blockiert wird
 
-| Eigenschaft | Wert |
-| ----------- | ---- |
-| **Name** | Tag Protection |
-| **ID** | `14231365` |
-| **URL** | https://github.com/qnbs/CannaGuide-2025/rules/14231365 |
-| **Target** | `tag` |
-| **Pattern** | `refs/tags/v*` (alle Version-Tags `v1.x.x`, `v2.0.0`, …) |
-| **Regeln** | `creation`, `update`, `deletion` — alle aktiv |
-| **Bypass (aktuell)** | `current_user_can_bypass: never` für Cloud-Agent-Token |
+| Eigenschaft          | Wert                                                     |
+| -------------------- | -------------------------------------------------------- |
+| **Name**             | Tag Protection                                           |
+| **ID**               | `14231365`                                               |
+| **URL**              | https://github.com/qnbs/CannaGuide-2025/rules/14231365   |
+| **Target**           | `tag`                                                    |
+| **Pattern**          | `refs/tags/v*` (alle Version-Tags `v1.x.x`, `v2.0.0`, …) |
+| **Regeln**           | `creation`, `update`, `deletion` — alle aktiv            |
+| **Bypass (aktuell)** | `current_user_can_bypass: never` für Cloud-Agent-Token   |
 
 **Fehlermeldung beim Push:**
 
@@ -103,11 +103,11 @@ Schutz vor versehentlichen oder unautorisierten Release-Tags. Sinnvoll für Supp
 
 Unter **Bypass list** hinzufügen:
 
-| Actor | Zweck |
-| ----- | ----- |
-| `github-actions[bot]` | `release-publish.yml` kann Tags per `RELEASE_PAT` oder Bot-Bypass pushen |
-| Dein persönlicher Account (`qnbs`) | Manuelle Tag-Pushes als Maintainer |
-| Optional: GitHub App des Cursor Cloud Agents | Falls als dedizierter Actor sichtbar |
+| Actor                                        | Zweck                                                                    |
+| -------------------------------------------- | ------------------------------------------------------------------------ |
+| `github-actions[bot]`                        | `release-publish.yml` kann Tags per `RELEASE_PAT` oder Bot-Bypass pushen |
+| Dein persönlicher Account (`qnbs`)           | Manuelle Tag-Pushes als Maintainer                                       |
+| Optional: GitHub App des Cursor Cloud Agents | Falls als dedizierter Actor sichtbar                                     |
 
 **Nicht** die Regeln komplett deaktivieren — nur gezielt bypassen.
 
@@ -167,10 +167,10 @@ Dann **Release Publish** → `workflow_dispatch` mit `tag: v1.9.0`.
 
 ### Trigger
 
-| Event | Verhalten |
-| ----- | --------- |
-| `push: tags: ['v*']` | Parallel zu `release-gate.yml`; CI-Status-Guard prüft Checks |
-| `workflow_dispatch` | Manuell; erstellt Tag wenn nicht vorhanden (**braucht `RELEASE_PAT`**) |
+| Event                | Verhalten                                                              |
+| -------------------- | ---------------------------------------------------------------------- |
+| `push: tags: ['v*']` | Parallel zu `release-gate.yml`; CI-Status-Guard prüft Checks           |
+| `workflow_dispatch`  | Manuell; erstellt Tag wenn nicht vorhanden (**braucht `RELEASE_PAT`**) |
 
 ### Ablauf
 
@@ -185,9 +185,9 @@ flowchart LR
 
 ### Wichtige Inputs bei manuellem Start
 
-| Input | Wert für v1.9.0 |
-| ----- | --------------- |
-| `tag` | `v1.9.0` |
+| Input     | Wert für v1.9.0                                               |
+| --------- | ------------------------------------------------------------- |
+| `tag`     | `v1.9.0`                                                      |
 | `dry-run` | `true` zum Testen (kein Release), `false` zum Veröffentlichen |
 
 ### CI-Status-Guard
@@ -200,25 +200,25 @@ Bei Tag-**Push** (nicht `workflow_dispatch`): Workflow prüft, ob **CI Status** 
 
 Dokumentierter Zielzustand (Solo-Dev, CI-gated):
 
-| Setting | Wert | UI-Pfad |
-| ------- | ---- | ------- |
-| `enforce_admins` | ✅ | Settings → Branches → `main` → Include administrators |
-| PR required | ✅, 0 Approvals | Require pull request → 0 approving reviews |
-| Required checks | `quality`, `ci-status` (strict) | Require status checks |
-| Signed commits | ✅ | Require signed commits |
-| Linear history | ✅ | Require linear history |
-| Force push | ❌ | Block force pushes |
-| Branch deletion | ❌ | Block deletions |
+| Setting          | Wert                            | UI-Pfad                                               |
+| ---------------- | ------------------------------- | ----------------------------------------------------- |
+| `enforce_admins` | ✅                              | Settings → Branches → `main` → Include administrators |
+| PR required      | ✅, 0 Approvals                 | Require pull request → 0 approving reviews            |
+| Required checks  | `quality`, `ci-status` (strict) | Require status checks                                 |
+| Signed commits   | ✅                              | Require signed commits                                |
+| Linear history   | ✅                              | Require linear history                                |
+| Force push       | ❌                              | Block force pushes                                    |
+| Branch deletion  | ❌                              | Block deletions                                       |
 
 **Merge-Strategien** (Settings → General → Pull Requests):
 
-| Setting | Wert |
-| ------- | ---- |
-| Squash merge | ✅ (einzige erlaubte) |
-| Merge commit | ❌ |
-| Rebase merge | ❌ |
-| Auto-merge | ✅ |
-| Delete branch on merge | ✅ |
+| Setting                | Wert                  |
+| ---------------------- | --------------------- |
+| Squash merge           | ✅ (einzige erlaubte) |
+| Merge commit           | ❌                    |
+| Rebase merge           | ❌                    |
+| Auto-merge             | ✅                    |
+| Delete branch on merge | ✅                    |
 
 ### Direkt-Push auf `main`
 
@@ -232,21 +232,21 @@ Cloud Agents und Maintainer mit Admin-Bypass können `git push origin main` nutz
 
 **Pfad:** Settings → Actions → General → **Workflow permissions**
 
-| Setting | Empfohlen |
-| ------- | --------- |
-| Default permissions | **Read repository contents** (least privilege) |
-| Allow GitHub Actions to create PRs | Optional |
+| Setting                            | Empfohlen                                      |
+| ---------------------------------- | ---------------------------------------------- |
+| Default permissions                | **Read repository contents** (least privilege) |
+| Allow GitHub Actions to create PRs | Optional                                       |
 
 Einzelne Workflows setzen bei Bedarf `permissions: contents: write` (z. B. `release-publish.yml` im `release`-Job).
 
 ### Wichtige Repository-Secrets
 
-| Secret | Zweck | Pflicht? |
-| ------ | ----- | -------- |
-| `RELEASE_PAT` | Tag-Push + Release bei Ruleset-Blockade | Für automatisierte Releases **ja** |
-| `SNYK_TOKEN` | Wöchentlicher Snyk-Scan | Optional |
-| `CLOUDFLARE_*` | Cloudflare Pages Deploy | Optional |
-| Codespace/Signing-Keys | SSH-Commit-Signing | Optional |
+| Secret                 | Zweck                                   | Pflicht?                           |
+| ---------------------- | --------------------------------------- | ---------------------------------- |
+| `RELEASE_PAT`          | Tag-Push + Release bei Ruleset-Blockade | Für automatisierte Releases **ja** |
+| `SNYK_TOKEN`           | Wöchentlicher Snyk-Scan                 | Optional                           |
+| `CLOUDFLARE_*`         | Cloudflare Pages Deploy                 | Optional                           |
+| Codespace/Signing-Keys | SSH-Commit-Signing                      | Optional                           |
 
 ### Actions-Allowlist
 
@@ -258,21 +258,21 @@ Curated allowlist aktiv (nur vertrauenswürdige Actions). Neue `uses:`-Referenze
 
 ## 7. Cursor Cloud Agent — Grenzen & Workarounds
 
-| Aktion | Cloud Agent | Workaround |
-| ------ | ----------- | ---------- |
-| `git push origin main` | ✅ (wenn Token Bypass hat) | Gates lokal, dann push |
-| `git push origin v1.9.0` | ❌ Ruleset `never` bypass | `RELEASE_PAT` + `workflow_dispatch` oder manuell als Owner |
-| `gh pr create` / ManagePullRequest | ❌ `Resource not accessible by integration` | Lokal mergen + `git push origin main` |
-| `gh pr close` / Kommentare | ❌ gleicher Fehler | PRs manuell in GitHub UI schließen |
-| Branch Protection lesen | ❌ 403 für Integration | Diese Anleitung + `gh api rulesets` |
+| Aktion                             | Cloud Agent                                 | Workaround                                                 |
+| ---------------------------------- | ------------------------------------------- | ---------------------------------------------------------- |
+| `git push origin main`             | ✅ (wenn Token Bypass hat)                  | Gates lokal, dann push                                     |
+| `git push origin v1.9.0`           | ❌ Ruleset `never` bypass                   | `RELEASE_PAT` + `workflow_dispatch` oder manuell als Owner |
+| `gh pr create` / ManagePullRequest | ❌ `Resource not accessible by integration` | Lokal mergen + `git push origin main`                      |
+| `gh pr close` / Kommentare         | ❌ gleicher Fehler                          | PRs manuell in GitHub UI schließen                         |
+| Branch Protection lesen            | ❌ 403 für Integration                      | Diese Anleitung + `gh api rulesets`                        |
 
 ### Offene PRs (manuell schließen)
 
-| PR | Aktion |
-| -- | ------ |
+| PR   | Aktion                                             |
+| ---- | -------------------------------------------------- |
 | #361 | Schließen — Fix in #360 (`cursor-cloud-update.sh`) |
-| #363 | Schließen — Vitest-Fix auf `main` |
-| #364 | Schließen — bereits in `main` gemergt |
+| #363 | Schließen — Vitest-Fix auf `main`                  |
+| #364 | Schließen — bereits in `main` gemergt              |
 
 Details: [`docs/audits/SUPERSEDED-PRS-2026-07-01.md`](./audits/SUPERSEDED-PRS-2026-07-01.md)
 
@@ -286,32 +286,32 @@ Details: [`docs/audits/SUPERSEDED-PRS-2026-07-01.md`](./audits/SUPERSEDED-PRS-20
 - **Signed commits** — SSH- oder GPG-Signing erforderlich
 - **Squash-only** — lineare History
 
-### Cloud-Agent-Branches
+### Feature branches
 
-- Pattern: `cursor/<beschreibung>-4ff3` (oder `-671a` laut `AGENTS.md`)
-- Push auf `cursor/**` triggert CI (siehe `.github/workflows/ci.yml`)
+- Use editor-neutral `<area>/<description>` names.
+- Direct feature-branch pushes do not run the required CI graph; open a pull request (including a stacked PR) for validation.
 
 ### Merge Gate (CI)
 
-| Check | Required? |
-| ----- | --------- |
-| Quality Gates | ✅ |
-| Security | ✅ |
-| CI Status (Aggregator) | ✅ |
-| E2E | Advisory |
-| Deploy | Advisory (nach CI success) |
+| Check                  | Required?                  |
+| ---------------------- | -------------------------- |
+| Quality Gates          | ✅                         |
+| Security               | ✅                         |
+| CI Status (Aggregator) | ✅                         |
+| E2E                    | Advisory                   |
+| Deploy                 | Advisory (nach CI success) |
 
 ---
 
 ## 9. Security-Settings (Secret Scanning, Dependabot)
 
-| Setting | Pfad | Status |
-| ------- | ---- | ------ |
-| Secret scanning | Settings → Code security | ✅ aktiv |
-| Push protection | Secret scanning → Push protection | ✅ aktiv |
-| Dependabot alerts | Settings → Code security → Dependabot | ✅ |
-| Dependabot security updates | Automatische Fix-PRs | ✅ |
-| CodeQL | `.github/workflows/codeql.yml` | Dispatch + Default |
+| Setting                     | Pfad                                  | Status             |
+| --------------------------- | ------------------------------------- | ------------------ |
+| Secret scanning             | Settings → Code security              | ✅ aktiv           |
+| Push protection             | Secret scanning → Push protection     | ✅ aktiv           |
+| Dependabot alerts           | Settings → Code security → Dependabot | ✅                 |
+| Dependabot security updates | Automatische Fix-PRs                  | ✅                 |
+| CodeQL                      | `.github/workflows/codeql.yml`        | Dispatch + Default |
 
 ---
 
@@ -339,14 +339,14 @@ Siehe [`docs/release-process.md`](./release-process.md) Pre-Release Checklist.
 
 ## 11. Fehlerdiagnose
 
-| Symptom | Ursache | Fix |
-| ------- | ------- | --- |
-| `GH013` Tag push rejected | Tag Protection Ruleset | Abschnitt 2 oder 3 |
-| `RELEASE_PAT is required` im Workflow | Kein Secret bei `workflow_dispatch` | Secret anlegen (Abschnitt 3) |
-| `Resource not accessible by integration` | Cloud-Agent Token-Scope | Manuell in UI oder Owner-Account |
-| CI Status check failed bei Release | Tests/Lint rot auf Commit | Gates lokal fixen, neu taggen |
-| `unknown_key` / unsigned commits | SSH-Key nicht registriert | GitHub → Settings → SSH keys |
-| Docs-only: kein CI Status | `paths-ignore` in `ci.yml` | Code-Änderung oder `workflow_dispatch` |
+| Symptom                                  | Ursache                             | Fix                                    |
+| ---------------------------------------- | ----------------------------------- | -------------------------------------- |
+| `GH013` Tag push rejected                | Tag Protection Ruleset              | Abschnitt 2 oder 3                     |
+| `RELEASE_PAT is required` im Workflow    | Kein Secret bei `workflow_dispatch` | Secret anlegen (Abschnitt 3)           |
+| `Resource not accessible by integration` | Cloud-Agent Token-Scope             | Manuell in UI oder Owner-Account       |
+| CI Status check failed bei Release       | Tests/Lint rot auf Commit           | Gates lokal fixen, neu taggen          |
+| `unknown_key` / unsigned commits         | SSH-Key nicht registriert           | GitHub → Settings → SSH keys           |
+| Docs-only: kein CI Status                | `paths-ignore` in `ci.yml`          | Code-Änderung oder `workflow_dispatch` |
 
 ### Nützliche Befehle
 

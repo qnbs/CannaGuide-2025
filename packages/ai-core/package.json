@@ -26,12 +26,12 @@
         "clean": "rm -rf dist tsconfig.tsbuildinfo"
     },
     "dependencies": {
-        "@google/genai": "^2.16.0",
+        "@google/genai": "^2.19.0",
         "zod": "^4.4.2"
     },
     "optionalDependencies": {
         "@mlc-ai/web-llm": "*",
         "@xenova/transformers": "*",
-        "onnxruntime-web": "^1.27.0"
+        "onnxruntime-web": "^1.29.0"
     }
 }

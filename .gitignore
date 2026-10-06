@@ -34,6 +34,9 @@ benchmark-metrics.json
 test-results/
 .turbo/
 
+# Cargo build output (Tauri). Never part of the source tree.
+apps/desktop/src-tauri/target/
+
 # Local session notes / Consciousness Stream (optional privacy; not versioned)
 .notes/
 

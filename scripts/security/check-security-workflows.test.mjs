@@ -22,8 +22,8 @@ test('dependency health fails closed and still runs later checks', () => {
     const yaml = readFileSync('.github/workflows/dependency-health.yml', 'utf8')
     assert.equal(yaml.includes('continue-on-error'), false)
     assert.match(yaml, /id:\s*setup/)
-    assert.match(yaml, /pnpm audit --audit-level=high --prod/)
-    assert.match(yaml, /pnpm audit --audit-level=high/)
+    assert.match(yaml, /run: pnpm audit --audit-level=high --prod\s*$/m)
+    assert.match(yaml, /run: pnpm audit --audit-level=high\s*$/m)
     const guarded = yaml.match(/if: always\(\) && steps\.setup\.outcome == 'success'/g) ?? []
     assert.equal(guarded.length, 5)
 })

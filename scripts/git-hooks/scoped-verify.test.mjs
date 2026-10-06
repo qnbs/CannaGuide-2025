@@ -23,6 +23,15 @@ test('change discovery combines branch, index, worktree and untracked paths', ()
 test('shared and unrecognized inputs fail safe while documentation stays scoped out', () => {
     assert.deepEqual([...affectedWorkspaces(['apps/web/view.tsx'])], ['@cannaguide/web'])
     assert.equal(affectedWorkspaces(['docs/guide.md', 'README.md']).size, 0)
+    assert.equal(
+        affectedWorkspaces(['SECURITY.md', 'CLAUDE.md', 'ARCHITECTURE.md']).size,
+        0,
+    )
+    assert.deepEqual(
+        [...affectedWorkspaces(['SECURITY.md', 'apps/web/view.tsx'])],
+        ['@cannaguide/web'],
+    )
+    assert.equal(affectedWorkspaces(['notes/SECRET.md']).size, 4)
     assert.equal(affectedWorkspaces(['eslint.config.js']).size, 4)
     assert.equal(affectedWorkspaces(['packages/new-workspace/index.ts']).size, 4)
 })

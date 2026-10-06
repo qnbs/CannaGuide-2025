@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { test } from 'node:test'
-import { readCargoDependency, sameVersion, updaterPolicyProblems } from './check-updater-policy.mjs'
+import {
+    declaredFloor,
+    exactSemver,
+    readCargoDependency,
+    sameVersion,
+    updaterPolicyProblems,
+} from './check-updater-policy.mjs'
 
 const conf = {
     plugins: {
@@ -51,6 +57,22 @@ tauri-plugin-updater = "2.13.1"
         conf,
     })
     assert.ok(problems.some((problem) => problem.includes('must declare the same version')))
+})
+
+test('an alternate or prerelease cannot pass on its first numeric triplet', () => {
+    assert.equal(declaredFloor('^2.13.1 || 2.0.0'), null)
+    assert.equal(declaredFloor('2.13.1-beta.1'), null)
+    assert.equal(exactSemver('2.13.1-rc.1'), null)
+    assert.deepEqual(declaredFloor('^2.13.1'), [2, 13, 1])
+    const problems = updaterPolicyProblems({
+        declared: '^2.13.1 || 2.0.0',
+        cargoToml: `
+[dependencies]
+tauri-plugin-updater = "2.13.1"
+`,
+        conf,
+    })
+    assert.ok(problems.some((problem) => problem.includes('found "^2.13.1 || 2.0.0"')))
 })
 
 test('an inline Cargo table version is read from dependencies only', () => {

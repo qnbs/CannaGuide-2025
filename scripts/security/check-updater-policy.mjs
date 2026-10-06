@@ -20,8 +20,23 @@ const PKG = resolve('apps/desktop/package.json')
 const CARGO = resolve('apps/desktop/src-tauri/Cargo.toml')
 const CONF = resolve('apps/desktop/src-tauri/tauri.conf.json')
 
-export function parseSemver(text) {
-    const match = String(text).match(/(\d+)\.(\d+)\.(\d+)/)
+/**
+ * Minimum version a JavaScript specifier can select.
+ * The whole string must be an exact x.y.z or one lower bound (^, ~, >=).
+ * Alternates, wildcards, and prereleases are rejected: a search for the
+ * first numeric triplet would otherwise accept `^2.13.1 || 2.0.0`.
+ */
+export function declaredFloor(text) {
+    const raw = String(text).trim()
+    if (!/^(?:\^|~|>=)?\d+\.\d+\.\d+$/.test(raw)) return null
+    const match = raw.match(/(\d+)\.(\d+)\.(\d+)$/)
+    return [Number(match[1]), Number(match[2]), Number(match[3])]
+}
+
+export function exactSemver(text) {
+    const match = String(text)
+        .trim()
+        .match(/^(\d+)\.(\d+)\.(\d+)$/)
     if (!match) return null
     return [Number(match[1]), Number(match[2]), Number(match[3])]
 }
@@ -80,13 +95,13 @@ export function readCargoDependency(toml, name) {
 
 export function updaterPolicyProblems({ declared, cargoToml, conf }) {
     const problems = []
-    const declaredVersion = parseSemver(declared)
+    const declaredVersion = declaredFloor(declared)
     if (!declaredVersion || !atLeast(declaredVersion, MIN)) {
         problems.push(`@tauri-apps/plugin-updater must declare >=2.12.0 (found "${declared}")`)
     }
 
     const cargoDeclared = readCargoDependency(cargoToml, 'tauri-plugin-updater')
-    const cargoVersion = parseSemver(cargoDeclared ?? '')
+    const cargoVersion = exactSemver(cargoDeclared ?? '')
     if (!cargoVersion || !atLeast(cargoVersion, MIN)) {
         problems.push(
             `Cargo.toml tauri-plugin-updater must be >=2.12.0 (found "${cargoDeclared ?? ''}")`,

@@ -13,6 +13,11 @@ test('snyk scan cannot continue on error', () => {
     assert.equal(scanBlock.includes('continue-on-error'), false)
 })
 
+test('ci runs the security policy node tests', () => {
+    const yaml = readFileSync('.github/workflows/ci.yml', 'utf8')
+    assert.match(yaml, /node --test --test-concurrency=1 \.\/scripts\/security\/\*\.test\.mjs/)
+})
+
 test('dependency health fails closed and still runs later checks', () => {
     const yaml = readFileSync('.github/workflows/dependency-health.yml', 'utf8')
     assert.equal(yaml.includes('continue-on-error'), false)

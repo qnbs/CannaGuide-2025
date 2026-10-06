@@ -13,9 +13,12 @@ test('snyk scan cannot continue on error', () => {
     assert.equal(scanBlock.includes('continue-on-error'), false)
 })
 
-test('dependency health fails closed', () => {
+test('dependency health fails closed and still runs later checks', () => {
     const yaml = readFileSync('.github/workflows/dependency-health.yml', 'utf8')
     assert.equal(yaml.includes('continue-on-error'), false)
+    assert.match(yaml, /id:\s*setup/)
     assert.match(yaml, /pnpm audit --audit-level=high --prod/)
     assert.match(yaml, /pnpm audit --audit-level=high/)
+    const guarded = yaml.match(/if: always\(\) && steps\.setup\.outcome == 'success'/g) ?? []
+    assert.equal(guarded.length, 5)
 })

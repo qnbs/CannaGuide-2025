@@ -31,19 +31,28 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
             - name: Setup Node + install dependencies
+              id: setup
               uses: ./.github/actions/setup-node-ci
 
+            # Independent controls. `always()` keeps a failed audit from
+            # skipping the later checks. A failed step still fails the job.
+            # Setup must have succeeded first.
             - name: Security audit (high, production)
+              if: always() && steps.setup.outcome == 'success'
               run: pnpm audit --audit-level=high --prod
 
             - name: Security audit (high, all deps)
+              if: always() && steps.setup.outcome == 'success'
               run: pnpm audit --audit-level=high
 
             - name: Override floor check
+              if: always() && steps.setup.outcome == 'success'
               run: node scripts/security/check-override-floors.mjs
 
             - name: Audit exception expiry and registry
+              if: always() && steps.setup.outcome == 'success'
               run: node scripts/security/check-audit-exceptions.mjs --check-registry
 
             - name: Updater policy
+              if: always() && steps.setup.outcome == 'success'
               run: node scripts/security/check-updater-policy.mjs

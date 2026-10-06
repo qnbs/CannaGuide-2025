@@ -326,7 +326,7 @@ happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = *
     - Body lines **max 100 characters** -- wrap longer lines
     - **Blank line required** between subject and body
     - Subject must not end with a period
-- **Push workflow:** Direct `git push origin main` works (admin bypass). For CI-gated pushes use `pnpm run pr:push` (branch -> PR -> auto-merge).
+- **Push workflow:** Do not push product changes directly to `main`. Open a pull request. `pnpm run pr:push` is an optional helper, not a bypass.
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
 - **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. Hooks are serialized, never install implicitly, and report heartbeats for slow checks. Pre-commit runs staged checks with concurrency 1; pre-push runs bounded affected checks while CI remains exhaustive. If an emergency truly forces `--no-verify`, run the equivalent checks by hand **before** pushing and document the reason in the commit body:
@@ -418,7 +418,7 @@ pnpm run lint             # turbo run lint
 pnpm run typecheck        # turbo run typecheck
 pnpm run format           # Prettier format
 pnpm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
-git push origin main     # Direct push (admin bypass)
+# Do not: git push origin main
 node ./scripts/github/pr-push.mjs  # CI-gated push via automated PR workflow (optional)
 pnpm run changelog        # Generate full CHANGELOG from conventional commits
 pnpm run changelog:latest # Append latest release to CHANGELOG

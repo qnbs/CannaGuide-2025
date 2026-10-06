@@ -1,0 +1,6 @@
+{
+    "name": "Tag Protection",
+    "enforcement": "active",
+    "requiredRuleTypes": ["creation", "update", "deletion"],
+    "forbidBypassActors": true
+}

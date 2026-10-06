@@ -1,3 +1,5 @@
+import { readDeployVersion } from '@/services/deployIdentity'
+
 type SentryModule = typeof import('@sentry/react')
 
 let _sentry: SentryModule | null = null
@@ -56,39 +58,41 @@ export const initSentry = (): void => {
         return
     }
 
-    _initPromise = import('@sentry/react').then((mod) => {
-        _sentry = mod
-        mod.init({
-            dsn,
-            environment: 'production',
-            release: `cannaguide@${__APP_VERSION__}`,
-            tracesSampleRate: 0.1,
-            replaysSessionSampleRate: 0.01,
-            replaysOnErrorSampleRate: 1.0,
-            integrations: [
-                mod.browserTracingIntegration(),
-                mod.replayIntegration({
-                    maskAllText: false,
-                    blockAllMedia: false,
-                }),
-            ],
-            beforeSend(event) {
-                if (shouldDropSentryEvent(event)) {
-                    return null
-                }
-                return event
-            },
-            ignoreErrors: [
-                'ResizeObserver loop',
-                'Non-Error promise rejection',
-                'AbortError',
-                'NetworkError',
-                'Load failed',
-                'Failed to fetch',
-                'ChunkLoadError',
-            ],
-        })
-    })
+    _initPromise = Promise.all([import('@sentry/react'), readDeployVersion()]).then(
+        ([mod, version]) => {
+            _sentry = mod
+            mod.init({
+                dsn,
+                environment: 'production',
+                release: `cannaguide@${version}`,
+                tracesSampleRate: 0.1,
+                replaysSessionSampleRate: 0.01,
+                replaysOnErrorSampleRate: 1.0,
+                integrations: [
+                    mod.browserTracingIntegration(),
+                    mod.replayIntegration({
+                        maskAllText: false,
+                        blockAllMedia: false,
+                    }),
+                ],
+                beforeSend(event) {
+                    if (shouldDropSentryEvent(event)) {
+                        return null
+                    }
+                    return event
+                },
+                ignoreErrors: [
+                    'ResizeObserver loop',
+                    'Non-Error promise rejection',
+                    'AbortError',
+                    'NetworkError',
+                    'Load failed',
+                    'Failed to fetch',
+                    'ChunkLoadError',
+                ],
+            })
+        },
+    )
 }
 
 /** Lazy Sentry proxy — no-ops safely when SDK is not loaded or Local-Only Mode is active. */

@@ -155,15 +155,11 @@ everybody bypasses.
 
 ### PR / review comments (Cloud Agent)
 
-When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): **resolve them in the
-same iteration** — fix the code, push, and re-run the relevant gates before summarizing. Do
-not leave valid review items for a follow-up unless the user explicitly defers them.
+Implementation PRs are **Ready for review** (`draft=false`) once the first reviewable commit exists. A Draft PR is not a review result: missing comments on a Draft, skipped, or still-running reviewer are not approval.
 
-**Loop until quiescent.** One pass is not enough: a fix routinely raises the next wave. After
-each push, re-trigger the bot, fetch unresolved threads again, and repeat until a fresh review
-yields **0 new comments and 0 unresolved threads**. Nitpicks and "outside diff range" comments
-are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor
-so the rule passes honestly.
+When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): fix the valid ones. Do not leave valid review items for a follow-up unless the user explicitly defers them.
+
+**One correction wave per head.** After a push, wait until CI and the reviewers that actually run have finished on that exact SHA. Collect every finding, then push one consolidated fix. Do not cascade tiny pushes while the current head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor so the rule passes honestly. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded limits, not a clean review.
 
 **Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
 larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch

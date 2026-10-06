@@ -1,4 +1,5 @@
-import React, { memo, useState } from 'react'
+import React, { memo, useEffect, useState } from 'react'
+import { readDeployVersion } from '@/services/deployIdentity'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/ui/button'
@@ -37,6 +38,16 @@ const ListItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> =
 const AboutAppContent = memo(() => {
     const { t } = useTranslation()
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
+    const [appVersion, setAppVersion] = useState(__APP_VERSION__)
+    useEffect(() => {
+        let active = true
+        void readDeployVersion().then((version) => {
+            if (active) setAppVersion(version)
+        })
+        return () => {
+            active = false
+        }
+    }, [])
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const whatsNewItems = t('settingsView.about.whatsNew.items', { returnObjects: true }) as Record<
         string,
@@ -50,7 +61,7 @@ const AboutAppContent = memo(() => {
                     <CannabisLeafIcon className="w-20 h-20 mx-auto" />
                     <h2 className="text-3xl font-bold font-display mt-2">CannaGuide 2025</h2>
                     <p className="text-slate-400 font-semibold">
-                        {t('settingsView.about.version')} {__APP_VERSION__}
+                        {t('settingsView.about.version')} {appVersion}
                     </p>
                     <p className="text-sm text-slate-300 max-w-xl mx-auto mt-2">
                         {t('common.appShortDescription')}

@@ -59,6 +59,16 @@ export function compareRuleset(actual, expected) {
             failures.push(`${expected.name}: unexpected bypass actors: ${JSON.stringify(actors)}`)
         }
     }
+    if (Array.isArray(expected.refInclude)) {
+        const include = actual?.conditions?.ref_name?.include ?? []
+        for (const ref of expected.refInclude) {
+            if (!include.includes(ref)) {
+                failures.push(
+                    `${expected.name}: ref include missing ${ref} (found ${JSON.stringify(include)})`,
+                )
+            }
+        }
+    }
     return failures
 }
 

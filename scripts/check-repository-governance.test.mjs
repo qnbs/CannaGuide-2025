@@ -42,3 +42,11 @@ test('bypass actor fails', () => {
     const actual = live({ bypass_actors: [{ actor_type: 'RepositoryRole' }] })
     assert.match(compareRuleset(actual, expected).join('\n'), /bypass/)
 })
+
+test('a branch ruleset that no longer includes the default branch fails', () => {
+    const actual = live({
+        conditions: { ref_name: { include: ['refs/heads/feature'], exclude: [] } },
+    })
+    const withRefs = { ...expected, refInclude: ['~DEFAULT_BRANCH'] }
+    assert.match(compareRuleset(actual, withRefs).join('\n'), /ref include missing/)
+})

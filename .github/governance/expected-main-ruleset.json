@@ -12,6 +12,7 @@
         "allowedMergeMethods": ["squash"]
     },
     "requiredStatusChecks": ["✅ CI Status"],
+    "refInclude": ["~DEFAULT_BRANCH"],
     "forbidBypassActors": true,
     "gaps": [
         "required_review_thread_resolution is false. Target: true.",

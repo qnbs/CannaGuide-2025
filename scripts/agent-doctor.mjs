@@ -41,8 +41,7 @@ check('pnpm version', pnpmVersion === wantedPnpm, `${pnpmVersion} (packageManage
 
 check('git', run('git', ['--version']).startsWith('git version'))
 const signing = run('git', ['config', '--get', 'commit.gpgsign'])
-if (signing !== 'true') warnings.push('git commit.gpgsign is not true')
-else console.log('[OK] git commit.gpgsign')
+check('git commit.gpgsign', signing === 'true', signing || 'unset')
 
 const gh = run('gh', ['--version'])
 check('gh', gh.startsWith('gh version'), gh.split('\n')[0] || 'missing')

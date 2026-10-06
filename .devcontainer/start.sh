@@ -10,6 +10,18 @@ PID_FILE="${CANNAGUIDE_MOCK_PID_FILE:-/tmp/cannaguide-iot-mock.pid}"
 HEALTH_URL="${CANNAGUIDE_MOCK_HEALTH_URL:-http://localhost:3001/health}"
 TIMEOUT_SECONDS="${CANNAGUIDE_MOCK_HEALTH_TIMEOUT:-15}"
 
+pid_is_iot_mock() {
+    local pid="$1"
+    local cmd=""
+    if [ -r "/proc/${pid}/cmdline" ]; then
+        cmd="$(tr '\0' ' ' <"/proc/${pid}/cmdline" 2>/dev/null || true)"
+    fi
+    case "$cmd" in
+        *iot-mocks/src/server.mjs*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
 stop_owned_pid() {
     if [ ! -f "$PID_FILE" ]; then
         return 0
@@ -17,7 +29,11 @@ stop_owned_pid() {
     local old_pid
     old_pid="$(tr -cd '0-9' <"$PID_FILE" || true)"
     if [ -n "$old_pid" ] && kill -0 "$old_pid" 2>/dev/null; then
-        kill "$old_pid" 2>/dev/null || true
+        if pid_is_iot_mock "$old_pid"; then
+            kill "$old_pid" 2>/dev/null || true
+        else
+            echo "[start] pid ${old_pid} is not the IoT mock; leaving it alone"
+        fi
     fi
     rm -f "$PID_FILE"
 }
@@ -42,7 +58,7 @@ echo $! >"$PID_FILE"
 
 healthy=0
 for _ in $(seq 1 "$TIMEOUT_SECONDS"); do
-    if curl -sf "$HEALTH_URL" >/dev/null; then
+    if curl -sf --connect-timeout 2 --max-time 2 "$HEALTH_URL" >/dev/null; then
         healthy=1
         break
     fi

@@ -49,6 +49,15 @@ updates:
               update-types:
                   - minor
                   - patch
+          # Vitest and its coverage provider are one family. A lone vitest 5
+          # bump with @vitest/coverage-v8 still on 4.x breaks coverage
+          # ("Expected string coverage payload, received object").
+          testing-vitest-majors:
+              patterns:
+                  - 'vitest'
+                  - '@vitest/*'
+              update-types:
+                  - major
           ui-and-styling:
               patterns:
                   - '@radix-ui/*'

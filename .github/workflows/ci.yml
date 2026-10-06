@@ -498,6 +498,14 @@ jobs:
               if: always() && steps.setup.outcome == 'success'
               run: node scripts/security/check-override-floors.mjs
 
+            - name: Audit exception expiry
+              if: always() && steps.setup.outcome == 'success'
+              run: node scripts/security/check-audit-exceptions.mjs
+
+            - name: Desktop updater policy
+              if: always() && steps.setup.outcome == 'success'
+              run: node scripts/security/check-updater-policy.mjs
+
             - name: Trojan-source scan
               if: always() && steps.setup.outcome == 'success'
               run: pnpm run security:trojan-source

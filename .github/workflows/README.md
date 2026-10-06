@@ -34,15 +34,16 @@ and stacked pull requests receive the same CI graph as pull requests targeting `
 
 ## Security & quality
 
-| Workflow                                                   | Purpose                                                                                                                  |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| [`codeql.yml`](./codeql.yml)                               | CodeQL **advanced** scan — single source (default setup disabled); matrix js-ts/actions/python/rust on push/PR/schedule. |
-| [`security-scan.yml`](./security-scan.yml)                 | Composite security scans.                                                                                                |
-| [`security-full.yml`](./security-full.yml)                 | Extended / scheduled security suite.                                                                                     |
-| [`snyk.yml`](./snyk.yml)                                   | Weekly Snyk advisory (`SNYK_TOKEN`; scan + monitor, no SARIF — Snyk App for alerts).                                     |
-| [`quarantine-provenance.yml`](./quarantine-provenance.yml) | Weekly advisory: re-verify `minimumReleaseAgeExclude` packages still ship npm provenance attestations.                   |
-| [`scorecard.yml`](./scorecard.yml)                         | OpenSSF Scorecard.                                                                                                       |
-| [`config-guard.yml`](./config-guard.yml)                   | Devcontainer/VS Code guard on PRs.                                                                                       |
+| Workflow                                                   | Purpose                                                                                                                                      |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`codeql.yml`](./codeql.yml)                               | CodeQL **advanced** scan — single source (default setup disabled); matrix js-ts/actions/python/rust on push/PR/schedule.                     |
+| [`security-scan.yml`](./security-scan.yml)                 | Composite security scans.                                                                                                                    |
+| [`security-full.yml`](./security-full.yml)                 | Extended / scheduled security suite.                                                                                                         |
+| [`snyk.yml`](./snyk.yml)                                   | Weekly Snyk health signal. A High/Critical finding fails the workflow. Missing `SNYK_TOKEN` is an explicit skip, not a clean scan. No SARIF. |
+| [`dependency-health.yml`](./dependency-health.yml)         | Daily frozen-lockfile `pnpm audit` (high) plus override-floor and audit-exception checks. Does not modify the repo.                          |
+| [`quarantine-provenance.yml`](./quarantine-provenance.yml) | Weekly advisory: re-verify `minimumReleaseAgeExclude` packages still ship npm provenance attestations.                                       |
+| [`scorecard.yml`](./scorecard.yml)                         | OpenSSF Scorecard.                                                                                                                           |
+| [`config-guard.yml`](./config-guard.yml)                   | Devcontainer/VS Code guard on PRs.                                                                                                           |
 
 ## Testing & experiments
 

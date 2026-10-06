@@ -11,12 +11,12 @@ The banner appears when **two** CodeQL sources run at once — GitHub **default 
 `Analyze (*)` jobs) **and** an advanced `codeql.yml` with push/PR triggers. This repo now runs
 **advanced only** (default setup disabled), so there is a single source.
 
-| Source               | Integration                                                                                                                                            |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| CodeQL (advanced)    | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) — matrix (`javascript-typescript`, `actions`, `python`, `rust`), on push/PR/schedule |
-| CodeQL default setup | **Disabled** (Settings → Code security → CodeQL), so it cannot conflict with the advanced workflow                                                     |
-| Snyk Open Source     | **Snyk GitHub App** (`security/snyk` PR check)                                                                                                         |
-| Snyk (weekly)        | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — advisory scan + monitor when `SNYK_TOKEN` is set; **no SARIF upload**                  |
+| Source               | Integration                                                                                                                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CodeQL (advanced)    | [`.github/workflows/codeql.yml`](../.github/workflows/codeql.yml) — matrix (`javascript-typescript`, `actions`, `python`, `rust`), on push/PR/schedule                                                 |
+| CodeQL default setup | **Disabled** (Settings → Code security → CodeQL), so it cannot conflict with the advanced workflow                                                                                                     |
+| Snyk Open Source     | **Snyk GitHub App** (`security/snyk` PR check)                                                                                                                                                         |
+| Snyk (weekly)        | [`.github/workflows/snyk.yml`](../.github/workflows/snyk.yml) — health signal: a High/Critical finding fails the workflow; a missing token is an explicit skip, not a clean scan. **No SARIF upload.** |
 
 ---
 

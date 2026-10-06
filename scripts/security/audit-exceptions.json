@@ -1,0 +1,28 @@
+{
+    "exceptions": [
+        {
+            "ghsa": "GHSA-jmr9-qjv8-65gv",
+            "package": "extract-zip",
+            "patched": "2.0.2",
+            "expiry": "2026-11-15",
+            "reachability": "Dev-only via @lhci/cli -> lighthouse -> puppeteer-core -> @puppeteer/browsers. Not imported by the browser PWA. Exploitation needs a malicious zip consumed by extract-zip during a browser download.",
+            "reason": "npm has no extract-zip@2.0.2 (latest 2.x is 2.0.1 as of 2026-10-06). An override cannot select an unpublished release."
+        },
+        {
+            "ghsa": "GHSA-7pqw-9j4j-h8q3",
+            "package": "extract-zip",
+            "patched": "2.0.2",
+            "expiry": "2026-11-15",
+            "reachability": "Same dev-only Lighthouse/Puppeteer browser-download chain as GHSA-jmr9-qjv8-65gv. Not in the production web bundle.",
+            "reason": "Patched extract-zip 2.0.2 is not published. Re-check npm before the expiry and replace this exception with an override."
+        },
+        {
+            "ghsa": "GHSA-vfj7-8cjw-p6xm",
+            "package": "braces",
+            "patched": "3.0.4",
+            "expiry": "2026-11-15",
+            "reachability": "Dev-only via anti-trojan-source/depcheck -> globby/findup-sync -> micromatch -> braces. A DoS needs a deeply nested brace pattern to reach those tools. Not in the browser bundle.",
+            "reason": "braces@3.0.4 is not published (latest 3.x is 3.0.3 as of 2026-10-06)."
+        }
+    ]
+}

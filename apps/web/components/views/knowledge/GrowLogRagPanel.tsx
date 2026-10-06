@@ -16,16 +16,19 @@ const GrowLogRagPanelComponent: React.FC = () => {
     const lang = useAppSelector(selectLanguage)
     const [query, setQuery] = useState('')
     const [answer, setAnswer] = useState('')
+    const [failure, setFailure] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
     const handleAnalyze = async () => {
         if (!query.trim()) return
         setIsLoading(true)
+        setAnswer('')
+        setFailure('')
         try {
             const result = await aiService.getGrowLogRagAnswer(plants, query.trim(), lang)
             setAnswer(`${result.title}\n\n${result.content}`)
         } catch (error) {
-            setAnswer(error instanceof Error ? error.message : 'Analysis failed.')
+            setFailure(error instanceof Error ? error.message : 'Analysis failed.')
         } finally {
             setIsLoading(false)
         }
@@ -62,6 +65,11 @@ const GrowLogRagPanelComponent: React.FC = () => {
                         </pre>
                         <AiDisclaimer />
                     </>
+                )}
+                {failure && (
+                    <p role="alert" className="text-sm text-red-300">
+                        {failure}
+                    </p>
                 )}
                 <p className="text-xs text-slate-400">
                     {t('knowledgeView.growLog.activeCorpus', { count: plants.length })}

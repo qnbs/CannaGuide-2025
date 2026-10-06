@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { aiService } from '@/services/aiFacade'
 import { GrowLogRagPanel } from './GrowLogRagPanel'
 
 vi.mock('@/hooks/useSimulationBridge', () => ({
@@ -27,6 +28,14 @@ vi.mock('react-i18next', () => ({
 }))
 
 describe('GrowLogRagPanel', () => {
+    beforeEach(() => {
+        vi.mocked(aiService.getGrowLogRagAnswer).mockReset()
+        vi.mocked(aiService.getGrowLogRagAnswer).mockResolvedValue({
+            title: 'Title',
+            content: 'Answer body',
+        })
+    })
+
     it('shows the shared disclaimer with an AI answer', async () => {
         render(<GrowLogRagPanel />)
         fireEvent.change(screen.getByPlaceholderText('knowledgeView.growLog.placeholder'), {
@@ -35,5 +44,16 @@ describe('GrowLogRagPanel', () => {
         fireEvent.click(screen.getByText('knowledgeView.growLog.startAnalysis'))
         expect(await screen.findByTestId('ai-disclaimer')).toBeInTheDocument()
         expect(screen.getByText(/Answer body/)).toBeInTheDocument()
+    })
+
+    it('does not show the disclaimer when analysis fails', async () => {
+        vi.mocked(aiService.getGrowLogRagAnswer).mockRejectedValueOnce(new Error('offline'))
+        render(<GrowLogRagPanel />)
+        fireEvent.change(screen.getByPlaceholderText('knowledgeView.growLog.placeholder'), {
+            target: { value: 'why are the leaves pale' },
+        })
+        fireEvent.click(screen.getByText('knowledgeView.growLog.startAnalysis'))
+        expect(await screen.findByRole('alert')).toHaveTextContent('offline')
+        expect(screen.queryByTestId('ai-disclaimer')).not.toBeInTheDocument()
     })
 })

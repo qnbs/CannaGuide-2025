@@ -105,10 +105,10 @@ These look like the safe command. They are not. Each one has cost a session.
 
     `node scripts/security/check-override-floors.mjs` (Security job) **fails** on a new
     unbounded floor, on an orphaned `name@major` selector, and on an ignored package with no
-    override. The 12 pre-existing unbounded pins are an explicit `LEGACY_UNBOUNDED` allowlist
-    inside that script -- a ratchet that **may only shrink**, since three of them have already
-    crossed a major (`uuid >=11.1.1` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
-    and retiring each is a per-package compatibility call.
+    override. The 11 pre-existing unbounded pins are an explicit `LEGACY_UNBOUNDED` allowlist
+    inside that script -- a ratchet that **may only shrink**, since two of them have already
+    crossed a major (`uuid >=11.1.1` -> 14.0.0, `linkify-it` -> 6.0.0). `basic-ftp` was
+    retired onto `>=6.2.1 <7`. Retiring each remaining pin is a per-package compatibility call.
 
 ## Do not reach for tsgo
 

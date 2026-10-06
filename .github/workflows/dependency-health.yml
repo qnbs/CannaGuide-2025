@@ -1,0 +1,58 @@
+name: Dependency Health
+
+# main can sit unchanged for weeks while advisories move. This scheduled lane
+# re-audits the frozen lockfile and fails on new High/Critical findings.
+# It does not modify the repository and it does not dismiss alerts.
+
+on:
+    schedule:
+        - cron: '17 4 * * *'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: dependency-health-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    audit:
+        name: Dependency audit
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Setup Node + install dependencies
+              id: setup
+              uses: ./.github/actions/setup-node-ci
+
+            # Independent controls. `always()` keeps a failed audit from
+            # skipping the later checks. A failed step still fails the job.
+            # Setup must have succeeded first.
+            - name: Security audit (high, production)
+              if: always() && steps.setup.outcome == 'success'
+              run: pnpm audit --audit-level=high --prod
+
+            - name: Security audit (high, all deps)
+              if: always() && steps.setup.outcome == 'success'
+              run: pnpm audit --audit-level=high
+
+            - name: Override floor check
+              if: always() && steps.setup.outcome == 'success'
+              run: node scripts/security/check-override-floors.mjs
+
+            - name: Audit exception expiry and registry
+              if: always() && steps.setup.outcome == 'success'
+              run: node scripts/security/check-audit-exceptions.mjs --check-registry
+
+            - name: Updater policy
+              if: always() && steps.setup.outcome == 'success'
+              run: node scripts/security/check-updater-policy.mjs

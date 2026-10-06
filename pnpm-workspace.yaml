@@ -81,11 +81,17 @@ overrides:
     tmp: '>=0.2.6'
     lodash-es: 4.18.1
     lodash: '>=4.18.0'
-    basic-ftp: '>=5.3.1'
-    fast-uri: '>=4.1.2 <5'
+    # Retired from the unbounded legacy list. The open floor had already
+    # crossed to 6.x; 6.2.1 fixes GHSA-c475-qrg2-pj4r (quadratic list()).
+    basic-ftp: '>=6.2.1 <7'
+    # 4.1.4 fixed GHSA authority/host confusion; 4.1.5+ covers the later
+    # September 2026 moderate set. Upper bound stays on 4.x.
+    fast-uri: '>=4.1.5 <5'
     protobufjs: '>=8.2.0'
     ip-address: '>=10.3.1 <11'
-    undici: '>=7.29.0 <8.0.0'
+    # 7.29.1 fixes GHSA-w293-vg96-wgc3 (BalancedPool TLS validation).
+    # Stay on 7.x: undici 8 breaks jsdom 29 require() integration.
+    undici: '>=7.29.1 <8.0.0'
     qs: '>=6.15.2'
     uuid: '>=11.1.1'
     esbuild: '>=0.25.0'
@@ -101,17 +107,36 @@ overrides:
     # CREATED it, while dependabot.yml stayed muted on js-yaml because the package
     # was "pinned here". Bounded, depcheck gets the patched 3.15.1 and the advisory
     # disappears. There is no js-yaml 5.x consumer in this tree at all.
-    js-yaml@3: '>=3.15.1 <4'
-    js-yaml@4: '>=4.3.1 <5'
+    # 4.3.2 / 3.15.2 fix GHSA-2883-xcg3-v3hh (merge-key CPU). Stay off 5.x:
+    # an unbounded 3.x floor previously resolved into the vulnerable 5.x line.
+    js-yaml@3: '>=3.15.2 <4'
+    js-yaml@4: '>=4.3.2 <5'
     # postcss@8 currently accepts nanoid@3, including the advisory range. Remove
     # this override once every resolved postcss consumer requires >=3.3.17 itself.
-    nanoid@3: '>=3.3.17 <4'
-    brace-expansion@1: '>=1.1.18 <2'
-    brace-expansion@2: '>=2.1.4 <3'
-    brace-expansion@5: '>=5.0.9 <6'
+    nanoid@3: '>=3.3.18 <4'
+    brace-expansion@1: '>=1.1.20 <2'
+    brace-expansion@2: '>=2.1.6 <3'
+    brace-expansion@5: '>=5.0.11 <6'
     postcss: '>=8.5.23 <9'
     body-parser@1: '>=1.20.6 <2'
     # sharp: reached only through @xenova/transformers (optional, Node-only image
     # decode) and wrangler>miniflare. Never bundled into the browser PWA, but the
     # libvips CVEs are real for anyone running those tools locally.
-    sharp: '>=0.35.0 <1'
+    # 0.35.4+ fixes GHSA-rgj7-g3m4-5g8c (libheif). Node-only (transformers,
+    # wrangler/miniflare); not part of the browser PWA bundle.
+    sharp: '>=0.35.4 <1'
+    # Dev-tool advisories with published patches (Lighthouse, Vite, ESLint).
+    proxy-addr: '>=2.0.8 <3'
+    compression: '>=1.8.2 <2'
+    source-map-js: '>=1.2.2 <2'
+    browserslist: '>=4.28.7 <5'
+
+# Advisories whose patched release is not on npm yet. Each entry must also
+# exist in scripts/security/audit-exceptions.json with reachability notes and
+# an expiry. The checker fails when the expiry passes or the patched version
+# appears, so these cannot become a permanent mute.
+auditConfig:
+    ignoreGhsas:
+        - GHSA-jmr9-qjv8-65gv # extract-zip, patched 2.0.2 unpublished
+        - GHSA-7pqw-9j4j-h8q3 # extract-zip, patched 2.0.2 unpublished
+        - GHSA-vfj7-8cjw-p6xm # braces, patched 3.0.4 unpublished

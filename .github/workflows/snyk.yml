@@ -1,10 +1,9 @@
 name: Snyk Security
 
-# Advisory weekly scan. Primary gates: CodeQL + Grype + Semgrep + pnpm audit.
-# PR checks use the Snyk GitHub App (security/snyk). When SNYK_TOKEN is set this
-# workflow runs a Snyk Open Source scan + monitor; it does NOT upload SARIF
-# (alerts surface via the Snyk App -- see the note at the end of the job and
-# docs/code-scanning-setup.md).
+# Scheduled repository health signal. This is not a merge gate (the merge gate
+# is pnpm audit + CodeQL inside CI). A High/Critical Snyk finding fails this
+# workflow. A missing SNYK_TOKEN is an explicit skip, not a clean scan.
+# SARIF is not uploaded here; the Snyk GitHub App owns PR annotations.
 
 on:
     schedule:
@@ -23,7 +22,6 @@ jobs:
         name: Snyk Security Scan
         runs-on: ubuntu-latest
         timeout-minutes: 20
-        continue-on-error: true
         permissions:
             contents: read
         steps:
@@ -34,7 +32,7 @@ jobs:
                     echo "present=true" >> "$GITHUB_OUTPUT"
                   else
                     echo "present=false" >> "$GITHUB_OUTPUT"
-                    echo "::notice::SNYK_TOKEN not configured — weekly Snyk workflow skipped (advisory)."
+                    echo "::notice::SNYK_TOKEN not configured. Weekly Snyk scan skipped. This is not a clean result."
                   fi
 
             - name: Harden runner
@@ -54,7 +52,6 @@ jobs:
             - name: Snyk Open Source scan
               id: snyk-scan
               if: steps.snyk-token.outputs.present == 'true'
-              continue-on-error: true
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
               env:
                   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -62,6 +59,7 @@ jobs:
                   args: --severity-threshold=high --all-projects
 
             - name: Snyk Monitor (track vulnerabilities)
+              id: snyk-monitor
               if: steps.snyk-token.outputs.present == 'true' && steps.snyk-scan.outcome == 'success'
               continue-on-error: true
               uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
@@ -71,6 +69,22 @@ jobs:
                   command: monitor
                   args: --all-projects
 
-            # SARIF upload omitted: Snyk Open Source alerts come from the Snyk
-            # GitHub App (security/snyk PR check). Uploading SARIF here while
-            # default CodeQL setup is active can trigger code-scanning config errors.
+            - name: Record health signal
+              if: always()
+              run: |
+                  {
+                    echo "## Snyk health signal"
+                    echo ""
+                    if [ "${{ steps.snyk-token.outputs.present }}" != "true" ]; then
+                      echo "- Result: **skipped** (SNYK_TOKEN is not configured). This is not a clean scan."
+                    elif [ "${{ steps.snyk-scan.outcome }}" != "success" ]; then
+                      echo "- Result: **failed**. Snyk reported a High or Critical finding, or the scanner itself failed."
+                    else
+                      echo "- Result: **clean** at severity threshold high."
+                    fi
+                    echo "- Monitor: ${{ steps.snyk-monitor.outcome || 'skipped' }}"
+                  } >> "$GITHUB_STEP_SUMMARY"
+                  if [ "${{ steps.snyk-token.outputs.present }}" = "true" ] && [ "${{ steps.snyk-scan.outcome }}" != "success" ]; then
+                    echo "[FAIL] Snyk scan did not succeed."
+                    exit 1
+                  fi

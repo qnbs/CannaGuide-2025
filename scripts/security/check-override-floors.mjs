@@ -33,9 +33,9 @@
  *          `js-yaml@^3` to 5.2.1, *creating* GHSA-pm4m-ph32-ghv5.
  *
  * The unbounded rule is a RATCHET, not a flag day. Bounding the pre-existing
- * pins is not mechanical: three of them have already crossed a major
- * (`uuid` >=11.1.1 -> 14.0.0, `basic-ftp` >=5.3.1 -> 6.0.1,
- * `linkify-it` >=5.0.1 -> 6.0.0), so each needs its own call on whether to
+ * pins is not mechanical: two of them have already crossed a major
+ * (`uuid` >=11.1.1 -> 14.0.0, `linkify-it` >=5.0.1 -> 6.0.0). `basic-ftp` was
+ * retired onto `>=6.2.1 <7`. Each remaining pin needs its own call on whether to
  * revert the crossing or bless it -- a judgement that does not belong in an
  * unrelated PR. They are listed explicitly in LEGACY_UNBOUNDED so they are
  * visible rather than tolerated, and the list may only shrink: bounding one
@@ -67,7 +67,7 @@ const DEPENDABOT_PATH = resolve('.github/dependabot.yml')
  *
  * Retiring an entry means deciding what its unbounded floor already did:
  *   uuid        '>=11.1.1'  -> resolved 14.0.0  (three majors up, via zustand)
- *   basic-ftp   '>=5.3.1'   -> resolved 6.0.1   (via get-uri)
+ *   basic-ftp   retired 2026-10-06: bounded to '>=6.2.1 <7' (GHSA-c475-qrg2-pj4r)
  *   linkify-it  '>=5.0.1'   -> resolved 6.0.0   (via markdown-it)
  *   @babel/core '>=7.29.6'  -> resolves to NOTHING; neither @babel/core nor
  *                              @stryker-mutator is in the lockfile, so the
@@ -79,7 +79,6 @@ const LEGACY_UNBOUNDED = new Map([
     ['@babel/plugin-transform-modules-systemjs', '>=7.29.4'],
     ['tmp', '>=0.2.6'],
     ['lodash', '>=4.18.0'],
-    ['basic-ftp', '>=5.3.1'],
     ['protobufjs', '>=8.2.0'],
     ['qs', '>=6.15.2'],
     ['uuid', '>=11.1.1'],

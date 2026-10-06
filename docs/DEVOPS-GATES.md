@@ -87,11 +87,11 @@ An open floor resolves to the newest major in the registry. That is not theoreti
 `js-yaml@3: '>=3.15.0'` resolved depcheck's `js-yaml@^3` up two majors to 5.2.1 -- **creating**
 GHSA-pm4m-ph32-ghv5 rather than preventing it.
 
-The unbounded rule is a **ratchet**. The 12 pre-existing unbounded pins are listed in
+The unbounded rule is a **ratchet**. The 11 pre-existing unbounded pins are listed in
 `LEGACY_UNBOUNDED` inside the script and warn rather than fail; that list may only shrink, and
 bounding a pin without delisting it fails too. Retiring them is a per-package call, because
-three have already crossed a major (`uuid` -> 14.0.0, `basic-ftp` -> 6.0.1, `linkify-it` -> 6.0.0)
-and `@babel/core` resolves to nothing at all. Offline -- lockfile and config only, no registry call.
+two have already crossed a major (`uuid` -> 14.0.0, `linkify-it` -> 6.0.0). `basic-ftp` was
+retired onto `>=6.2.1 <7`. `@babel/core` resolves to nothing at all. Offline -- lockfile and config only, no registry call.
 
 ### Bundle and precache budget
 

@@ -61,6 +61,15 @@ function fail(msg) {
     process.exit(1)
 }
 
+function readText(file) {
+    try {
+        return readFileSync(file, 'utf8')
+    } catch (error) {
+        if (error && error.code === 'ENOENT') return null
+        throw error
+    }
+}
+
 function resolveCommit() {
     for (const key of ['BUILD_COMMIT', 'VERCEL_GIT_COMMIT_SHA', 'GITHUB_SHA']) {
         const value = process.env[key]?.trim()
@@ -115,12 +124,13 @@ function main() {
     const version = readVersion()
 
     if (verifyOnly) {
-        if (!existsSync(TARGET)) {
+        const stampedText = readText(TARGET)
+        if (stampedText === null) {
             fail(`${path.relative(ROOT, TARGET)} is missing -- the stamping step did not run.`)
         }
         let stamped
         try {
-            stamped = JSON.parse(readFileSync(TARGET, 'utf8'))
+            stamped = JSON.parse(stampedText)
         } catch (err) {
             fail(`${path.relative(ROOT, TARGET)} is not valid JSON: ${err.message}`)
         }
@@ -146,12 +156,13 @@ function main() {
             )
         }
         const indexPath = path.join(DIST, 'index.html')
-        if (!existsSync(indexPath)) {
+        const indexHtml = readText(indexPath)
+        if (indexHtml === null) {
             fail(
                 `${path.relative(ROOT, indexPath)} is missing -- the running build meta cannot be checked.`,
             )
         }
-        const meta = readFileSync(indexPath, 'utf8').match(BUILD_META)
+        const meta = indexHtml.match(BUILD_META)
         if (!meta || meta[1] !== expectedBuild) {
             fail(
                 `index.html cannaguide-build is ${meta?.[1] ?? 'missing'}, expected ${expectedBuild}.\n` +
@@ -171,12 +182,10 @@ function main() {
     }
     writeFileSync(TARGET, `${JSON.stringify(payload, null, 2)}\n`)
     const indexPath = path.join(DIST, 'index.html')
-    if (!existsSync(indexPath)) {
-        fail(
-            `${path.relative(ROOT, indexPath)} is missing -- refusing to stamp version.json alone.`,
-        )
+    const html = readText(indexPath)
+    if (html === null) {
+        fail(`${path.relative(ROOT, indexPath)} is missing -- refusing to stamp version.json alone.`)
     }
-    const html = readFileSync(indexPath, 'utf8')
     writeFileSync(indexPath, upsertBuildMeta(html, payload.buildVersion))
     console.log(`[OK] Stamped version.json: ${payload.buildVersion} (via ${source})`)
 }

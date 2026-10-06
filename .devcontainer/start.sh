@@ -54,10 +54,16 @@ fi
 
 stop_owned_pid
 node docker/iot-mocks/src/server.mjs >/tmp/iot-mocks-3001.log 2>&1 &
-echo $! >"$PID_FILE"
+mock_pid=$!
+echo "$mock_pid" >"$PID_FILE"
 
 healthy=0
 for _ in $(seq 1 "$TIMEOUT_SECONDS"); do
+    if ! pid_is_iot_mock "$mock_pid"; then
+        echo "[start] IoT mock pid ${mock_pid} exited; see /tmp/iot-mocks-3001.log"
+        rm -f "$PID_FILE"
+        break
+    fi
     if curl -sf --connect-timeout 2 --max-time 2 "$HEALTH_URL" >/dev/null; then
         healthy=1
         break

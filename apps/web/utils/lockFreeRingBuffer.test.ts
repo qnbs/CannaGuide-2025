@@ -228,6 +228,11 @@ describe('LockFreeRingBuffer', () => {
             expect(() => LockFreeRingBuffer.create(Number.NaN)).toThrow(RangeError)
         })
 
+        it('rejects capacities that overflow the 32-bit power-of-two helper', () => {
+            expect(() => LockFreeRingBuffer.create(2 ** 30 + 1)).toThrow(RangeError)
+            expect(() => LockFreeRingBuffer.create(2 ** 31)).toThrow(RangeError)
+        })
+
         it('drains a full buffer back to empty and accepts new writes', () => {
             const ring = LockFreeRingBuffer.create(4)
             expect(ring.push(1)).toBe(true)

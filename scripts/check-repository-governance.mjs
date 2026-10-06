@@ -61,6 +61,7 @@ export function compareRuleset(actual, expected) {
     }
     if (Array.isArray(expected.refInclude)) {
         const include = actual?.conditions?.ref_name?.include ?? []
+        const exclude = actual?.conditions?.ref_name?.exclude ?? []
         for (const ref of expected.refInclude) {
             if (!include.includes(ref)) {
                 failures.push(
@@ -68,8 +69,25 @@ export function compareRuleset(actual, expected) {
                 )
             }
         }
+        const dropsProtectedBranch = exclude.some(
+            (ref) => ref === 'refs/heads/main' || ref === '~DEFAULT_BRANCH',
+        )
+        if (dropsProtectedBranch) {
+            failures.push(
+                `${expected.name}: ref exclude removes the protected branch (${JSON.stringify(exclude)})`,
+            )
+        }
     }
     return failures
+}
+
+export function parseRulesetList(raw) {
+    const parsed = JSON.parse(raw)
+    if (!Array.isArray(parsed)) {
+        throw new Error('ruleset list was not a JSON array')
+    }
+    if (parsed.some((entry) => Array.isArray(entry))) return parsed.flat()
+    return parsed
 }
 
 function load(path) {
@@ -77,10 +95,10 @@ function load(path) {
 }
 
 function fetchRulesets() {
-    const raw = execFileSync('gh', ['api', `repos/${repo}/rulesets`, '--paginate'], {
+    const raw = execFileSync('gh', ['api', '--paginate', '--slurp', `repos/${repo}/rulesets`], {
         encoding: 'utf8',
     })
-    const listed = JSON.parse(raw)
+    const listed = parseRulesetList(raw)
     return listed.map((entry) =>
         JSON.parse(
             execFileSync('gh', ['api', `repos/${repo}/rulesets/${entry.id}`], { encoding: 'utf8' }),

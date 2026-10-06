@@ -220,9 +220,9 @@ Dokumentierter Zielzustand (Solo-Dev, CI-gated):
 | Auto-merge             | ✅                    |
 | Delete branch on merge | ✅                    |
 
-### Direkt-Push auf `main`
+### Delivery to `main`
 
-Normal delivery is a pull request. Do not push product changes to `main`, and do not treat an admin or ruleset bypass as the fallback when `gh pr create` fails. Leave the branch ready and report the platform limit.
+Normal delivery is a pull request. Do not push product changes to `main`, and do not treat an admin or ruleset bypass as the fallback when `gh pr create` fails. Leave the branch ready and report the platform limit. The table below is a point-in-time record. `node scripts/check-repository-governance.mjs --live` is the check that fails when the live ruleset regresses.
 
 Live `Main` ruleset (read 2026-10-06 via `gh api repos/qnbs/CannaGuide-2025/rulesets/18940388`):
 

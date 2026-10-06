@@ -50,6 +50,12 @@ const DATA_OFFSET = 2
 /** Default capacity (must be power of 2). */
 const DEFAULT_CAPACITY = 256
 
+/**
+ * `nextPowerOf2` uses 32-bit shifts. A capacity above 2^30 wraps to a negative
+ * or zero size and can build an invalid buffer. 2^30 is the last safe value.
+ */
+const MAX_CAPACITY = 2 ** 30
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -104,9 +110,9 @@ export class LockFreeRingBuffer {
      * @param capacity Must be a power of 2. Rounded up if not.
      */
     static create(capacity = DEFAULT_CAPACITY): LockFreeRingBuffer {
-        if (!Number.isInteger(capacity) || capacity < 2) {
+        if (!Number.isInteger(capacity) || capacity < 2 || capacity > MAX_CAPACITY) {
             throw new RangeError(
-                `[LockFreeRingBuffer] capacity must be an integer >= 2, received ${capacity}`,
+                `[LockFreeRingBuffer] capacity must be an integer from 2 to ${MAX_CAPACITY}, received ${capacity}`,
             )
         }
         const cap = isPowerOf2(capacity) ? capacity : nextPowerOf2(capacity)

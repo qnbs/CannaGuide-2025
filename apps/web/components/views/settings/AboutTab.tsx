@@ -1,5 +1,5 @@
-import React, { memo, useEffect, useState } from 'react'
-import { readDeployVersion } from '@/services/deployIdentity'
+import React, { memo, useState } from 'react'
+import { readRunningBuildVersion } from '@/services/deployIdentity'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/ui/button'
@@ -38,16 +38,7 @@ const ListItem: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> =
 const AboutAppContent = memo(() => {
     const { t } = useTranslation()
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
-    const [appVersion, setAppVersion] = useState(__APP_VERSION__)
-    useEffect(() => {
-        let active = true
-        void readDeployVersion().then((version) => {
-            if (active) setAppVersion(version)
-        })
-        return () => {
-            active = false
-        }
-    }, [])
+    const appVersion = readRunningBuildVersion()
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const whatsNewItems = t('settingsView.about.whatsNew.items', { returnObjects: true }) as Record<
         string,

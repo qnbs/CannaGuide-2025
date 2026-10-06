@@ -10,6 +10,7 @@ import {
     getRelatedGeneticForGrowTech,
 } from '@/services/trendsEcosystemService'
 import { aiService } from '@/services/aiFacade'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 
 const CATEGORIES: Array<{
     id: GrowTechCategory
@@ -172,6 +173,7 @@ export const GrowTechView: React.FC = React.memo(() => {
                             {t('knowledgeView.growTech.aiInsightLabel')}
                         </span>
                         {aiResult.content}
+                        <AiDisclaimer />
                     </div>
                 )}
             </div>

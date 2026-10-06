@@ -82,6 +82,13 @@ describe('GrowTechView', () => {
         expect(screen.getByText('knowledgeView.growTech.aiAnalyze')).toBeInTheDocument()
     })
 
+    it('shows the shared disclaimer with the AI recommendation', async () => {
+        render(<GrowTechView />)
+        fireEvent.click(screen.getByText('knowledgeView.growTech.aiAnalyze'))
+        expect(await screen.findByTestId('ai-disclaimer')).toBeInTheDocument()
+        expect(screen.getByText('AI content')).toBeInTheDocument()
+    })
+
     it('renders all 8 technology category accordion items', () => {
         render(<GrowTechView />)
         const items = screen.getAllByRole('listitem')

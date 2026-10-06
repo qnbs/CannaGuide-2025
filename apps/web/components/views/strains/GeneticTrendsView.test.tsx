@@ -127,4 +127,16 @@ describe('GeneticTrendsView', () => {
         const badges = screen.getAllByText('80%')
         expect(badges.length).toBeGreaterThan(0)
     })
+
+    it('shows the shared disclaimer with an AI insight', async () => {
+        render(<GeneticTrendsView />)
+        const trigger = screen.getByRole('button', {
+            name: (name) =>
+                name.includes('strainsView.geneticTrends.categories.terpeneDiversity.title'),
+        })
+        fireEvent.click(trigger)
+        fireEvent.click(screen.getByText('strainsView.geneticTrends.aiAnalyze'))
+        expect(await screen.findByTestId('ai-disclaimer')).toBeInTheDocument()
+        expect(screen.getByText('AI content')).toBeInTheDocument()
+    })
 })

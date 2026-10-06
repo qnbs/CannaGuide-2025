@@ -8,6 +8,7 @@ import { selectLanguage } from '@/stores/selectors'
 import { aiService } from '@/services/aiFacade'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 
 const GrowLogRagPanelComponent: React.FC = () => {
     const { t } = useTranslation()
@@ -55,9 +56,12 @@ const GrowLogRagPanelComponent: React.FC = () => {
                         : t('knowledgeView.growLog.startAnalysis')}
                 </Button>
                 {answer && (
-                    <pre className="whitespace-pre-wrap text-sm bg-slate-900/60 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-slate-200">
-                        {answer}
-                    </pre>
+                    <>
+                        <pre className="whitespace-pre-wrap text-sm bg-slate-900/60 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-slate-200">
+                            {answer}
+                        </pre>
+                        <AiDisclaimer />
+                    </>
                 )}
                 <p className="text-xs text-slate-400">
                     {t('knowledgeView.growLog.activeCorpus', { count: plants.length })}

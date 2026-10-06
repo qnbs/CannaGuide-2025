@@ -204,5 +204,42 @@ describe('LockFreeRingBuffer', () => {
             const batch = consumer.popBatch(10)
             expect(batch).toEqual([10, 20, 30, 40, 50])
         })
+
+        it('SAB waitForData times out when the buffer stays empty', () => {
+            const byteLength = (2 + 8) * Int32Array.BYTES_PER_ELEMENT
+            const sab = new SharedArrayBuffer(byteLength)
+            const view = new Int32Array(sab)
+            Atomics.store(view, 0, 0)
+            Atomics.store(view, 1, 0)
+            const consumer = LockFreeRingBuffer.fromTransfer(sab, 'consumer')
+            expect(consumer.waitForData(5)).toBe(false)
+        })
+    })
+
+    describe('capacity bounds', () => {
+        it('rejects capacities below 2', () => {
+            expect(() => LockFreeRingBuffer.create(0)).toThrow(RangeError)
+            expect(() => LockFreeRingBuffer.create(1)).toThrow(RangeError)
+            expect(() => LockFreeRingBuffer.create(-4)).toThrow(RangeError)
+        })
+
+        it('rejects non-integers', () => {
+            expect(() => LockFreeRingBuffer.create(1.5)).toThrow(RangeError)
+            expect(() => LockFreeRingBuffer.create(Number.NaN)).toThrow(RangeError)
+        })
+
+        it('drains a full buffer back to empty and accepts new writes', () => {
+            const ring = LockFreeRingBuffer.create(4)
+            expect(ring.push(1)).toBe(true)
+            expect(ring.push(2)).toBe(true)
+            expect(ring.push(3)).toBe(true)
+            expect(ring.isFull()).toBe(true)
+            expect(ring.pop()).toBe(1)
+            expect(ring.pop()).toBe(2)
+            expect(ring.pop()).toBe(3)
+            expect(ring.isEmpty()).toBe(true)
+            expect(ring.push(9)).toBe(true)
+            expect(ring.pop()).toBe(9)
+        })
     })
 })

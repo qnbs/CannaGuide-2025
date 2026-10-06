@@ -104,6 +104,11 @@ export class LockFreeRingBuffer {
      * @param capacity Must be a power of 2. Rounded up if not.
      */
     static create(capacity = DEFAULT_CAPACITY): LockFreeRingBuffer {
+        if (!Number.isInteger(capacity) || capacity < 2) {
+            throw new RangeError(
+                `[LockFreeRingBuffer] capacity must be an integer >= 2, received ${capacity}`,
+            )
+        }
         const cap = isPowerOf2(capacity) ? capacity : nextPowerOf2(capacity)
         const byteLength = (DATA_OFFSET + cap) * Int32Array.BYTES_PER_ELEMENT
         const useShared = canUseSharedArrayBuffer()

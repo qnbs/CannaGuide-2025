@@ -186,5 +186,25 @@ describe('AtomicsChannel', () => {
             const view = new Int32Array(buffer)
             expect(Atomics.load(view, 1)).toBe(30)
         })
+
+        it('waitForSignal returns null on timeout', async () => {
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32)
+            const view = new Int32Array(buffer)
+            for (let i = 0; i < 8; i++) Atomics.store(view, i, 0)
+            const ch = AtomicsChannel.fromTransfer(buffer)
+            expect(ch.waitForSignal(5)).toBeNull()
+        })
+
+        it('waitForSignal returns a value that is already stored', async () => {
+            const { AtomicsChannel } = await import('./atomicsChannel')
+            const buffer = new SharedArrayBuffer(32)
+            const view = new Int32Array(buffer)
+            for (let i = 0; i < 8; i++) Atomics.store(view, i, 0)
+            Atomics.store(view, 0, 44)
+            const ch = AtomicsChannel.fromTransfer(buffer)
+            expect(ch.waitForSignal(50)).toBe(44)
+            expect(Atomics.load(view, 0)).toBe(0)
+        })
     })
 })

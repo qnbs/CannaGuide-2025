@@ -36,6 +36,7 @@ import { execFileSync } from 'node:child_process'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
+import { RELEASE_MODEL, buildVersion } from './build-identity.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '..')
 const DIST = path.join(ROOT, 'apps', 'web', 'dist')
@@ -120,12 +121,23 @@ if (verifyOnly) {
     if (stamped.version !== version) {
         fail(`version.json says version ${stamped.version}, expected ${version}.`)
     }
-    console.log(`[OK] version.json matches: ${version} @ ${commit} (via ${source})`)
+    const expectedBuild = buildVersion(version, commit)
+    if (stamped.buildVersion !== expectedBuild) {
+        fail(`version.json says buildVersion ${stamped.buildVersion}, expected ${expectedBuild}.`)
+    }
+    if (stamped.releaseModel !== RELEASE_MODEL) {
+        fail(`version.json says releaseModel ${stamped.releaseModel}, expected ${RELEASE_MODEL}.`)
+    }
+    console.log(`[OK] version.json matches: ${expectedBuild} (via ${source})`)
     process.exit(0)
 }
 
-writeFileSync(
-    TARGET,
-    `${JSON.stringify({ version, commit, builtAt: new Date().toISOString() }, null, 2)}\n`,
-)
-console.log(`[OK] Stamped version.json: ${version} @ ${commit} (via ${source})`)
+const payload = {
+    version,
+    commit,
+    builtAt: new Date().toISOString(),
+    releaseModel: RELEASE_MODEL,
+    buildVersion: buildVersion(version, commit),
+}
+writeFileSync(TARGET, `${JSON.stringify(payload, null, 2)}\n`)
+console.log(`[OK] Stamped version.json: ${payload.buildVersion} (via ${source})`)

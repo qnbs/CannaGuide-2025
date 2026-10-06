@@ -11,6 +11,7 @@ import type { PluginOption } from 'vite'
 const __webRoot = path.dirname(fileURLToPath(import.meta.url))
 const requireFromConfig = createRequire(import.meta.url)
 import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP, HSTS, REFERRER_POLICY } from './securityHeaders'
+import { buildVersion, resolveCommitFromEnv } from '../../scripts/build-identity.mjs'
 
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
 // When missing, dynamic imports at runtime will fail gracefully — the app guards these.
@@ -206,7 +207,9 @@ function resolveManualChunk(id: string): string | undefined {
 export default defineConfig({
     base,
     define: {
-        __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
+        __APP_VERSION__: JSON.stringify(
+            buildVersion(process.env.npm_package_version ?? '0.0.0', resolveCommitFromEnv().commit),
+        ),
     },
     plugins: [
         optionalMlPlugin(),

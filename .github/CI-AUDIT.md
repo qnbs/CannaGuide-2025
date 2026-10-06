@@ -152,10 +152,10 @@ See [workflows/README.md](workflows/README.md). Shared setup: [setup-node-ci](ac
 | Cloudflare Workers Builds (PR check) | Dashboard: disable Worker Git build (see `docs/distribution.md` P0-03)                                               |
 | CVE-2026-41242 (protobufjs)          | `auditConfig.ignoreCves` — false positive; see AUDIT_BACKLOG S-07                                                    |
 | Dependabot override packages         | Ignored in `dependabot.yml`; bump via manual PR + `pnpm.overrides`                                                   |
-| Doc-only commits skip CI             | Touch non-ignored path or `workflow_dispatch` CI                                                                     |
+| Doc-only pushes to `main` skip CI    | Pull requests still run CI. A direct push of docs can use `workflow_dispatch`.                                       |
 | Coverage target 50 %                 | Stufe A gates 40/40/30/40 in `vite.config.ts` (Session 177)                                                          |
 | Local Node 22 vs CI 24               | Use Node ≥24 (`engines`)                                                                                             |
-| Mutation testing                     | Weekly `mutation-testing.yml`; advisory ≥50 % score target                                                           |
+| Mutation testing                     | Weekly `mutation-testing.yml` fails below break score 50. That job is not part of the required CI Status check.      |
 | GitKraken MCP (`gk`)                 | Requires GitKraken CLI + `gk auth login`; see `pnpm run mcp:doctor`                                                  |
 
 ## Recommended pre-push

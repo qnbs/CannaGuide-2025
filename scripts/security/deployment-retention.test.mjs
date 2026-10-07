@@ -1142,6 +1142,24 @@ test('Cloudflare null aliases delete only with fresh canonical main authority', 
             },
             message: /production branch is not main/,
         },
+        {
+            body: project({ ...canonical, latest_stage: { status: 'active' } }),
+            message: /canonical deployment is not a successful production/,
+        },
+        {
+            body: project({
+                ...canonical,
+                environment: 'preview',
+            }),
+            message: /canonical deployment is not a successful production/,
+        },
+        {
+            body: project({
+                ...canonical,
+                deployment_trigger: { metadata: { commit_hash: MAIN, branch: 'feature' } },
+            }),
+            message: /production branch is not main/,
+        },
     ]
     for (const item of cases) {
         const attempt = await run(item)

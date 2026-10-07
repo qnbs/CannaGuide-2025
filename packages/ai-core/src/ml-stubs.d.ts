@@ -42,3 +42,17 @@ declare module '@mlc-ai/web-llm' {
     const content: Record<string, unknown>
     export = content
 }
+
+/**
+ * Present so `ml.ts` still typechecks when optionalDependencies are omitted
+ * (`pnpm install --no-optional`). When the package is installed, this merges
+ * with its own `declare module 'onnxruntime-web'`.
+ */
+declare module 'onnxruntime-web' {
+    export const env: {
+        wasm: {
+            numThreads?: number
+            wasmPaths?: string | { wasm?: URL | string; mjs?: URL | string }
+        }
+    }
+}

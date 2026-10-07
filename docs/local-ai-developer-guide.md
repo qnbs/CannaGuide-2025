@@ -81,7 +81,7 @@ The model loader (`localAIModelLoader.ts`) automatically detects the best ONNX e
 1. **WebGPU** – used when `navigator.gpu` is available (modern Chrome, Edge).
 2. **WASM** – universal fallback for all browsers.
 
-`onnxruntime-web` is installed as a direct dependency (v1.20.0) for stable WebGPU and WASM support.
+`onnxruntime-web` is a direct dependency of `@cannaguide/ai-core` (`^1.30.0`) for WebGPU and WASM support. The CDN pin is `ORT_VERSION` in `packages/ai-core/src/ml.ts`.
 
 ## Adding or Replacing Models
 

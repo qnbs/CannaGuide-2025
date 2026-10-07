@@ -17,7 +17,7 @@
  * `ort-version-pin.test.ts` asserts this against the installed package, so the
  * drift fails a test instead of a user's inference call.
  */
-export const ORT_VERSION = '1.27.0'
+export const ORT_VERSION = '1.30.0'
 
 /**
  * Where onnxruntime-web loads its `.wasm` from.
@@ -40,7 +40,7 @@ export const ORT_WASM_CDN_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@$
  *
  * transformers.js bundles its OWN onnxruntime-web -- 1.14.0, nested in its
  * node_modules -- while `loadOnnxRuntime` below drives the direct dependency at
- * 1.27.0. Two different runtimes, and ORT's JS and wasm are not interchangeable
+ * 1.30.0. Two different runtimes, and ORT's JS and wasm are not interchangeable
  * across versions.
  *
  * It also already points its copy at a CDN, matched to its own version
@@ -51,7 +51,7 @@ export const ORT_WASM_CDN_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@$
  *         : `https://cdn.jsdelivr.net/npm/@xenova/transformers@${VERSION}/dist/`
  *
  * So in a browser this path is already served remotely and correctly. Assigning
- * ORT_WASM_CDN_BASE here would REPLACE that working default with 1.27.0 wasm and
+ * ORT_WASM_CDN_BASE here would REPLACE that working default with 1.30.0 wasm and
  * hand it to 1.14.0 JS -- the exact mismatch these constants exist to prevent,
  * reintroduced in the other direction. An earlier revision of this branch did
  * precisely that; the phantom-dependency gate is what forced a look at the

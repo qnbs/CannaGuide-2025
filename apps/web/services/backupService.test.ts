@@ -107,6 +107,10 @@ describe('backupService', () => {
         it('creates and clicks a download link', () => {
             const createElementSpy = vi.spyOn(document, 'createElement')
             const appendSpy = vi.spyOn(document.body, 'appendChild')
+            // jsdom 30 createObjectURL reads an internal blob buffer that Node's Blob
+            // does not have. The download path only needs a URL string.
+            vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
+            vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
             const blob = new Blob(['test'])
 
             backupService.downloadBlob(blob, 'test.zip')

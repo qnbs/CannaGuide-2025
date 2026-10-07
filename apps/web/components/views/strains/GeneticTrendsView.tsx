@@ -9,6 +9,7 @@ import {
     getRelatedGrowTechForGenetic,
 } from '@/services/trendsEcosystemService'
 import { aiService } from '@/services/aiFacade'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { selectLanguage } from '@/stores/selectors'
 
 const CATEGORIES: Array<{
@@ -279,6 +280,7 @@ export const GeneticTrendsView: React.FC = React.memo(() => {
                                                     {t('strainsView.geneticTrends.aiInsightLabel')}
                                                 </span>
                                                 {aiResult.content}
+                                                <AiDisclaimer />
                                             </div>
                                         )}
                                     </div>

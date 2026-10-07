@@ -8,6 +8,7 @@ import { selectLanguage } from '@/stores/selectors'
 import { aiService } from '@/services/aiFacade'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 
 const GrowLogRagPanelComponent: React.FC = () => {
     const { t } = useTranslation()
@@ -15,16 +16,19 @@ const GrowLogRagPanelComponent: React.FC = () => {
     const lang = useAppSelector(selectLanguage)
     const [query, setQuery] = useState('')
     const [answer, setAnswer] = useState('')
+    const [failure, setFailure] = useState('')
     const [isLoading, setIsLoading] = useState(false)
 
     const handleAnalyze = async () => {
         if (!query.trim()) return
         setIsLoading(true)
+        setAnswer('')
+        setFailure('')
         try {
             const result = await aiService.getGrowLogRagAnswer(plants, query.trim(), lang)
             setAnswer(`${result.title}\n\n${result.content}`)
         } catch (error) {
-            setAnswer(error instanceof Error ? error.message : 'Analysis failed.')
+            setFailure(error instanceof Error ? error.message : 'Analysis failed.')
         } finally {
             setIsLoading(false)
         }
@@ -55,9 +59,17 @@ const GrowLogRagPanelComponent: React.FC = () => {
                         : t('knowledgeView.growLog.startAnalysis')}
                 </Button>
                 {answer && (
-                    <pre className="whitespace-pre-wrap text-sm bg-slate-900/60 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-slate-200">
-                        {answer}
-                    </pre>
+                    <>
+                        <pre className="whitespace-pre-wrap text-sm bg-slate-900/60 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-slate-200">
+                            {answer}
+                        </pre>
+                        <AiDisclaimer />
+                    </>
+                )}
+                {failure && (
+                    <p role="alert" className="text-sm text-red-300">
+                        {failure}
+                    </p>
                 )}
                 <p className="text-xs text-slate-400">
                     {t('knowledgeView.growLog.activeCorpus', { count: plants.length })}

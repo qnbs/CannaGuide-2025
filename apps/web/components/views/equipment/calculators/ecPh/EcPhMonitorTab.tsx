@@ -15,6 +15,7 @@ import {
 import type { EcPhReading, OptimalRange } from '@/stores/slices/nutrientPlannerSlice'
 import { selectActivePlants, selectSettings } from '@/stores/selectors'
 import { aiService } from '@/services/aiFacade'
+import { AiDisclaimer } from '@/components/common/AiDisclaimer'
 import { OptimalRangeBar, StageLabel } from './EcPhSubcomponents'
 
 export interface EcPhMonitorTabProps {
@@ -244,12 +245,15 @@ export const EcPhMonitorTab: React.FC<EcPhMonitorTabProps> = memo(
                         )}
                     </Button>
                     {aiRecommendation && (
-                        <div
-                            className="prose prose-sm prose-invert max-w-none text-slate-300 bg-slate-800/30 rounded-lg p-3"
-                            dangerouslySetInnerHTML={{
-                                __html: DOMPurify.sanitize(aiRecommendation),
-                            }}
-                        />
+                        <>
+                            <div
+                                className="prose prose-sm prose-invert max-w-none text-slate-300 bg-slate-800/30 rounded-lg p-3"
+                                dangerouslySetInnerHTML={{
+                                    __html: DOMPurify.sanitize(aiRecommendation),
+                                }}
+                            />
+                            <AiDisclaimer />
+                        </>
                     )}
                 </Card>
             </div>

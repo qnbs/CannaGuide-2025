@@ -1000,6 +1000,32 @@ test('proven unaliased Cloudflare production history deletes with force=false', 
             }),
         /environment is not old production/,
     )
+    const nullAliases = []
+    const nullResult = await deleteProvenDeployments({
+        backend: 'cloudflare',
+        plan,
+        ids: ['oldprod'],
+        token: 'test-token',
+        accountId: 'account',
+        projectName: 'cannaguide-2025',
+        fetchImpl: async (url, init) => {
+            nullAliases.push({ url: String(url), method: init?.method || 'GET' })
+            return {
+                ok: true,
+                status: 200,
+                text: async () =>
+                    JSON.stringify({
+                        success: true,
+                        result: { environment: 'production', aliases: null },
+                    }),
+            }
+        },
+    })
+    assert.equal(nullResult.length, 1)
+    assert.equal(nullResult[0].ok, true)
+    assert.equal(nullAliases[1].method, 'DELETE')
+    assert.match(nullAliases[1].url, /force=false/)
+    assert.ok(nullAliases.every((call) => !call.url.includes('force=true')))
     const unknownAliases = []
     await assert.rejects(
         () =>
@@ -1018,7 +1044,7 @@ test('proven unaliased Cloudflare production history deletes with force=false', 
                         text: async () =>
                             JSON.stringify({
                                 success: true,
-                                result: { environment: 'production', aliases: null },
+                                result: { environment: 'production', aliases: 'not-a-list' },
                             }),
                     }
                 },

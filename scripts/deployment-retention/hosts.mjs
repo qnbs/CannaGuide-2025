@@ -7,11 +7,11 @@
  * Cloudflare deletes always use force=false. Wrangler `--force` is not used:
  * in wrangler 4.110.0 that flag also permits deleting aliased deployments.
  * A proven old production row may be deleted only when the live record is
- * still production, the alias list is an explicit empty array, and the class
- * is SAFE_DELETE_OLD_PRODUCTION_HISTORY (Cloudflare) or
- * SAFE_DELETE_OLD_PRODUCTION (Vercel). A null alias list is not empty.
- * Preview deletes stay
- * preview-only. Current production and the rollback window never reach this
+ * still production and unaliased. Cloudflare list and get use null when
+ * there are no aliases, and that null is empty. A non-empty list and any
+ * non-array value other than null stay refused. Vercel still requires an
+ * explicit empty alias array. Preview deletes stay preview-only. Current
+ * production and the rollback window never reach this
  * function: assertSafeDeleteBatch rejects those ids first.
  */
 
@@ -225,9 +225,12 @@ export async function assertStillDisposable({
             if (record.environment !== 'production') {
                 throw new Error(`refusing to delete ${safeId}: environment is not old production`)
             }
-            // null or a missing list is not proof that the deployment is unaliased.
-            if (!Array.isArray(record.aliases) || record.aliases.length > 0) {
+            // Inventory already treats null as no aliases via uniqueHosts.
+            if (record.aliases != null && !Array.isArray(record.aliases)) {
                 throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
+            }
+            if (aliases.length > 0) {
+                throw new Error(`refusing to delete ${safeId}: alias appeared`)
             }
             return { skip: false, id: safeId }
         }

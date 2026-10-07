@@ -55,8 +55,9 @@ function writeJson(filePath, value) {
 
 /**
  * `--apply` runs only for schedule, workflow_dispatch, or a workflow_run
- * that the trusted workflow proved is a successful push to main.
- * A pull_request completion also emits workflow_run; that source is refused.
+ * that the trusted workflow proved is a successful push to main in this
+ * repository. A pull_request completion also emits workflow_run, and a fork
+ * can name its own branch main; both sources are refused.
  */
 export function assertTrustedApply(env = process.env) {
     if (env.RETENTION_ALLOW_LOCAL === '1') return
@@ -74,7 +75,17 @@ export function assertTrustedApply(env = process.env) {
         const source = env.RETENTION_SOURCE_EVENT || ''
         const branch = env.RETENTION_SOURCE_BRANCH || ''
         const conclusion = env.RETENTION_SOURCE_CONCLUSION || ''
-        if (source === 'push' && branch === 'main' && conclusion === 'success') return
+        const sourceRepository = env.RETENTION_SOURCE_REPOSITORY || ''
+        const repository = env.GITHUB_REPOSITORY || ''
+        if (
+            source === 'push' &&
+            branch === 'main' &&
+            conclusion === 'success' &&
+            sourceRepository !== '' &&
+            sourceRepository === repository
+        ) {
+            return
+        }
         throw new Error('refusing --apply for an untrusted workflow_run')
     }
     throw new Error(`refusing --apply for event ${event || '(missing)'}`)

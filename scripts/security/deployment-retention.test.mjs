@@ -608,9 +608,12 @@ test('cleanup workflow keeps host retention on trusted main and off pull request
     assert.match(workflow, /workflow_run:/)
     assert.match(workflow, /workflow_run.event == 'push'/)
     assert.match(workflow, /head_branch == 'main'/)
+    assert.match(workflow, /head_repository\.full_name == github\.repository/)
     assert.match(workflow, /inputs\.dry_run != true && inputs\.dry_run != 'true'/)
     assert.doesNotMatch(workflow, /inputs\.dry_run == false/)
     assert.match(workflow, /RETENTION_SOURCE_EVENT:/)
+    assert.match(workflow, /RETENTION_SOURCE_REPOSITORY:/)
+    assert.equal((workflow.match(/head_repository\.full_name/g) || []).length, 4)
     assert.doesNotMatch(workflow, /pull_request:/)
     assert.doesNotMatch(workflow, /pull_request_target:/)
     assert.match(workflow, /refs\/heads\/main/)
@@ -630,19 +633,36 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
     const main = {
         GITHUB_ACTIONS: 'true',
         GITHUB_REF: 'refs/heads/main',
+        GITHUB_REPOSITORY: 'qnbs/CannaGuide-2025',
+    }
+    const trustedRun = {
+        ...main,
+        GITHUB_EVENT_NAME: 'workflow_run',
+        RETENTION_SOURCE_EVENT: 'push',
+        RETENTION_SOURCE_BRANCH: 'main',
+        RETENTION_SOURCE_CONCLUSION: 'success',
+        RETENTION_SOURCE_REPOSITORY: 'qnbs/CannaGuide-2025',
     }
     assert.doesNotThrow(() => assertTrustedApply({ ...main, GITHUB_EVENT_NAME: 'schedule' }))
     assert.doesNotThrow(() =>
         assertTrustedApply({ ...main, GITHUB_EVENT_NAME: 'workflow_dispatch' }),
     )
-    assert.doesNotThrow(() =>
-        assertTrustedApply({
-            ...main,
-            GITHUB_EVENT_NAME: 'workflow_run',
-            RETENTION_SOURCE_EVENT: 'push',
-            RETENTION_SOURCE_BRANCH: 'main',
-            RETENTION_SOURCE_CONCLUSION: 'success',
-        }),
+    assert.doesNotThrow(() => assertTrustedApply(trustedRun))
+    assert.throws(
+        () =>
+            assertTrustedApply({
+                ...trustedRun,
+                RETENTION_SOURCE_REPOSITORY: 'fork/CannaGuide-2025',
+            }),
+        /untrusted workflow_run/,
+    )
+    assert.throws(
+        () =>
+            assertTrustedApply({
+                ...trustedRun,
+                RETENTION_SOURCE_REPOSITORY: '',
+            }),
+        /untrusted workflow_run/,
     )
     assert.throws(
         () =>
@@ -652,6 +672,7 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
                 RETENTION_SOURCE_EVENT: 'pull_request',
                 RETENTION_SOURCE_BRANCH: 'cursor/example-af4f',
                 RETENTION_SOURCE_CONCLUSION: 'success',
+                RETENTION_SOURCE_REPOSITORY: 'qnbs/CannaGuide-2025',
             }),
         /untrusted workflow_run/,
     )

@@ -98,6 +98,19 @@ export function assertTrustedApply(env = process.env) {
     throw new Error(`refusing --apply for event ${event || '(missing)'}`)
 }
 
+export function assertPostDeleteAnchors({ remainingIds, deletedIds, productionIds, rollbackIds }) {
+    const remaining = remainingIds instanceof Set ? remainingIds : new Set(remainingIds || [])
+    for (const id of deletedIds || []) {
+        if (remaining.has(id)) throw new Error(`deployment ${id} is still present after delete`)
+    }
+    for (const id of productionIds || []) {
+        if (!remaining.has(id)) throw new Error(`production deployment ${id} disappeared`)
+    }
+    for (const id of rollbackIds || []) {
+        if (!remaining.has(id)) throw new Error(`rollback deployment ${id} disappeared`)
+    }
+}
+
 /**
  * A deploy-triggered apply must name the same commit GitHub main currently
  * points at. An empty deploy SHA means schedule or workflow_dispatch.
@@ -372,15 +385,12 @@ async function applyDeletes(backend, planPath) {
             .filter((row) => row && row.id)
             .map((row) => row.id),
     )
-    for (const id of decision.ids) {
-        if (remainingIds.has(id)) throw new Error(`deployment ${id} is still present after delete`)
-    }
-    for (const id of fresh.anchors.productionIds) {
-        if (!remainingIds.has(id)) throw new Error(`production deployment ${id} disappeared`)
-    }
-    for (const id of fresh.anchors.rollbackIds) {
-        if (!remainingIds.has(id)) throw new Error(`rollback deployment ${id} disappeared`)
-    }
+    assertPostDeleteAnchors({
+        remainingIds,
+        deletedIds: decision.ids,
+        productionIds: fresh.anchors.productionIds,
+        rollbackIds: fresh.anchors.rollbackIds,
+    })
 }
 
 async function main() {

@@ -7,12 +7,14 @@
  * Cloudflare deletes always use force=false. Wrangler `--force` is not used:
  * in wrangler 4.110.0 that flag also permits deleting aliased deployments.
  * A proven old production row may be deleted only when the live record is
- * still production, the alias list is an explicit empty array, and the class
- * is SAFE_DELETE_OLD_PRODUCTION_HISTORY (Cloudflare) or
- * SAFE_DELETE_OLD_PRODUCTION (Vercel). A null alias list is not empty.
- * Preview deletes stay
- * preview-only. Current production and the rollback window never reach this
- * function: assertSafeDeleteBatch rejects those ids first.
+ * still production and unaliased. An explicit empty Cloudflare alias array
+ * may be deleted. `aliases: null` is not rewritten to `[]`; it is allowed
+ * only when a fresh Pages project lookup proves a different successful
+ * canonical production deployment of exact current main on branch main.
+ * Omitted aliases, a non-empty list, and any other non-array value are
+ * refused. Vercel still requires an explicit empty alias array. Preview
+ * deletes stay preview-only. Current production and the rollback window
+ * never reach this function: assertSafeDeleteBatch rejects those ids first.
  */
 
 import {
@@ -193,10 +195,73 @@ function aliasList(value) {
     return Array.isArray(value) ? value : []
 }
 
+function cloudflareProjectUrl(accountId, projectName) {
+    const account = requireResourceId(accountId, 'account id')
+    const project = requireResourceId(projectName, 'project name')
+    return (
+        `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}` +
+        `/pages/projects/${encodeURIComponent(project)}`
+    )
+}
+
+async function assertNullAliasCanonical({
+    token,
+    accountId,
+    projectName,
+    candidateId,
+    mainSha,
+    fetchImpl,
+}) {
+    const expected = String(mainSha || '').toLowerCase()
+    if (!/^[0-9a-f]{40}$/.test(expected)) {
+        throw new Error(`refusing to delete ${candidateId}: main SHA is not exact`)
+    }
+    const url = cloudflareProjectUrl(accountId, projectName)
+    if (url.includes('/deployments') || url.includes('force=')) {
+        throw new Error('refusing a project lookup that is not the project resource')
+    }
+    const response = await fetchImpl(url, { headers: authHeaders(token) })
+    const body = await readJson(response)
+    if (!response.ok || body.success === false) {
+        throw new Error(`refusing to delete ${candidateId}: live Cloudflare project lookup failed`)
+    }
+    const canonical = body.result?.canonical_deployment
+    if (!canonical || !canonical.id) {
+        throw new Error(`refusing to delete ${candidateId}: canonical deployment is missing`)
+    }
+    if (String(canonical.id) === candidateId) {
+        throw new Error(`refusing to delete ${candidateId}: canonical deployment is the candidate`)
+    }
+    if (canonical.environment !== 'production' || canonical.latest_stage?.status !== 'success') {
+        throw new Error(
+            `refusing to delete ${candidateId}: canonical deployment is not a successful production`,
+        )
+    }
+    const sha = String(
+        canonical.deployment_trigger?.metadata?.commit_hash ||
+            canonical.deployment_trigger?.metadata?.commit_sha ||
+            '',
+    ).toLowerCase()
+    if (sha !== expected) {
+        throw new Error(
+            `refusing to delete ${candidateId}: canonical deployment SHA is not current main`,
+        )
+    }
+    if (body.result?.production_branch !== 'main') {
+        throw new Error(`refusing to delete ${candidateId}: production branch is not main`)
+    }
+    const canonicalBranch = canonical.deployment_trigger?.metadata?.branch
+    if (canonicalBranch && canonicalBranch !== 'main') {
+        throw new Error(`refusing to delete ${candidateId}: production branch is not main`)
+    }
+}
+
 export async function assertStillDisposable({
     backend,
     id,
     expectedClass,
+    mainSha,
+    protectedIds,
     token,
     accountId,
     projectName,
@@ -222,13 +287,37 @@ export async function assertStillDisposable({
             throw new Error(`refusing to delete ${safeId}: production alias appeared`)
         }
         if (expectedClass === 'SAFE_DELETE_OLD_PRODUCTION_HISTORY') {
+            if (protectedIds?.has(safeId)) {
+                throw new Error(`refusing to delete protected deployment ${safeId}`)
+            }
             if (record.environment !== 'production') {
                 throw new Error(`refusing to delete ${safeId}: environment is not old production`)
             }
-            // null or a missing list is not proof that the deployment is unaliased.
-            if (!Array.isArray(record.aliases) || record.aliases.length > 0) {
+            if (record.aliases === undefined) {
+                throw new Error(`refusing to delete ${safeId}: alias list was omitted`)
+            }
+            if (Array.isArray(record.aliases)) {
+                if (record.aliases.length > 0) {
+                    throw new Error(`refusing to delete ${safeId}: alias appeared`)
+                }
+                return { skip: false, id: safeId }
+            }
+            if (record.aliases !== null) {
                 throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
             }
+            if (record.latest_stage?.status !== 'success') {
+                throw new Error(
+                    `refusing to delete ${safeId}: candidate is not a successful production`,
+                )
+            }
+            await assertNullAliasCanonical({
+                token,
+                accountId,
+                projectName,
+                candidateId: safeId,
+                mainSha,
+                fetchImpl,
+            })
             return { skip: false, id: safeId }
         }
         if (record.environment !== 'preview') {
@@ -279,12 +368,18 @@ export async function deleteProvenDeployments({
 }) {
     assertSafeDeleteBatch(plan, ids)
     const classById = new Map((plan?.deployments || []).map((row) => [row.id, row.class]))
+    const protectedIds = new Set([
+        ...(plan?.anchors?.productionIds || []),
+        ...(plan?.anchors?.rollbackIds || []),
+    ])
     const results = []
     for (const id of ids) {
         const gate = await assertStillDisposable({
             backend,
             id,
             expectedClass: classById.get(id),
+            mainSha: plan?.mainSha,
+            protectedIds,
             token,
             accountId,
             projectName,

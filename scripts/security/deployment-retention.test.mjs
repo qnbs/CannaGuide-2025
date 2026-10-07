@@ -23,6 +23,7 @@ import {
 } from '../deployment-retention/hosts.mjs'
 import {
     assertDeploySha,
+    assertPostDeleteAnchors,
     assertTrustedApply,
     verifyPublicVersion,
 } from '../deployment-retention/cli.mjs'
@@ -1000,7 +1001,7 @@ test('proven unaliased Cloudflare production history deletes with force=false', 
             }),
         /environment is not old production/,
     )
-    const unknownAliases = []
+    const omitted = []
     await assert.rejects(
         () =>
             deleteProvenDeployments({
@@ -1011,21 +1012,24 @@ test('proven unaliased Cloudflare production history deletes with force=false', 
                 accountId: 'account',
                 projectName: 'cannaguide-2025',
                 fetchImpl: async (_url, init) => {
-                    unknownAliases.push(init?.method || 'GET')
+                    omitted.push(init?.method || 'GET')
                     return {
                         ok: true,
                         status: 200,
                         text: async () =>
                             JSON.stringify({
                                 success: true,
-                                result: { environment: 'production', aliases: null },
+                                result: {
+                                    environment: 'production',
+                                    latest_stage: { status: 'success' },
+                                },
                             }),
                     }
                 },
             }),
-        /alias state is not an empty list/,
+        /alias list was omitted/,
     )
-    assert.deepEqual(unknownAliases, ['GET'])
+    assert.deepEqual(omitted, ['GET'])
     await assert.rejects(
         () =>
             deleteProvenDeployments({
@@ -1040,6 +1044,233 @@ test('proven unaliased Cloudflare production history deletes with force=false', 
                 },
             }),
         /refusing to delete/,
+    )
+})
+
+test('Cloudflare null aliases delete only with fresh canonical main authority', async () => {
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: productionSet('cloudflare'),
+    })
+    const candidate = {
+        environment: 'production',
+        aliases: null,
+        latest_stage: { status: 'success' },
+    }
+    const project = (canonical) => ({
+        success: true,
+        result: {
+            production_branch: 'main',
+            canonical_deployment: canonical,
+        },
+    })
+    const canonical = {
+        id: 'canonical-prod',
+        environment: 'production',
+        latest_stage: { status: 'success' },
+        deployment_trigger: { metadata: { commit_hash: MAIN, branch: 'main' } },
+    }
+    const run = async ({ deployment = candidate, body = project(canonical), status = 200 }) => {
+        const calls = []
+        const result = deleteProvenDeployments({
+            backend: 'cloudflare',
+            plan,
+            ids: ['oldprod'],
+            token: 'test-token',
+            accountId: 'account',
+            projectName: 'cannaguide-2025',
+            fetchImpl: async (url, init) => {
+                const method = init?.method || 'GET'
+                calls.push({ url: String(url), method })
+                if (method === 'DELETE') {
+                    return {
+                        ok: true,
+                        status: 200,
+                        text: async () => JSON.stringify({ success: true }),
+                    }
+                }
+                if (String(url).includes('/deployments/')) {
+                    return {
+                        ok: true,
+                        status: 200,
+                        text: async () => JSON.stringify({ success: true, result: deployment }),
+                    }
+                }
+                return {
+                    ok: status === 200,
+                    status,
+                    text: async () => JSON.stringify(body),
+                }
+            },
+        })
+        return { calls, result }
+    }
+    const allowed = await run({})
+    const deleted = await allowed.result
+    assert.equal(deleted.length, 1)
+    assert.equal(deleted[0].ok, true)
+    assert.deepEqual(
+        allowed.calls.map((call) => call.method),
+        ['GET', 'GET', 'DELETE'],
+    )
+    assert.ok(allowed.calls[1].url.endsWith('/pages/projects/cannaguide-2025'))
+    assert.match(allowed.calls[2].url, /force=false/)
+    assert.ok(allowed.calls.every((call) => !call.url.includes('force=true')))
+
+    const cases = [
+        { status: 500, body: { success: false }, message: /project lookup failed/ },
+        { body: project(null), message: /canonical deployment is missing/ },
+        {
+            body: project({ ...canonical, id: 'oldprod' }),
+            message: /canonical deployment is the candidate/,
+        },
+        {
+            body: project({
+                ...canonical,
+                deployment_trigger: {
+                    metadata: { commit_hash: SHA_A, branch: 'main' },
+                },
+            }),
+            message: /canonical deployment SHA is not current main/,
+        },
+        {
+            body: {
+                success: true,
+                result: { production_branch: 'preview', canonical_deployment: canonical },
+            },
+            message: /production branch is not main/,
+        },
+        {
+            body: project({ ...canonical, latest_stage: { status: 'active' } }),
+            message: /canonical deployment is not a successful production/,
+        },
+        {
+            body: project({
+                ...canonical,
+                environment: 'preview',
+            }),
+            message: /canonical deployment is not a successful production/,
+        },
+        {
+            body: project({
+                ...canonical,
+                deployment_trigger: { metadata: { commit_hash: MAIN, branch: 'feature' } },
+            }),
+            message: /production branch is not main/,
+        },
+    ]
+    for (const item of cases) {
+        const attempt = await run(item)
+        await assert.rejects(attempt.result, item.message)
+        assert.deepEqual(
+            attempt.calls.map((call) => call.method),
+            ['GET', 'GET'],
+        )
+    }
+    const unfinished = await run({
+        deployment: { ...candidate, latest_stage: { status: 'active' } },
+    })
+    await assert.rejects(unfinished.result, /not a successful production/)
+    assert.deepEqual(
+        unfinished.calls.map((call) => call.method),
+        ['GET'],
+    )
+})
+
+test('a failed Cloudflare delete stops the rest of the batch', async () => {
+    const calls = []
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: productionSet('cloudflare').concat(
+            deploy({
+                id: 'older-prod',
+                createdAt: 50,
+                sha: '7777777777777777777777777777777777777777',
+                branch: 'main',
+                target: 'production',
+                state: 'success',
+            }),
+        ),
+    })
+    assert.ok(plan.queuedDeleteIds.includes('oldprod'))
+    assert.ok(plan.queuedDeleteIds.includes('older-prod'))
+    const results = await deleteProvenDeployments({
+        backend: 'cloudflare',
+        plan,
+        ids: ['oldprod', 'older-prod'],
+        token: 'test-token',
+        accountId: 'account',
+        projectName: 'cannaguide-2025',
+        fetchImpl: async (url, init) => {
+            const method = init?.method || 'GET'
+            calls.push(method)
+            if (method === 'DELETE') {
+                return {
+                    ok: false,
+                    status: 409,
+                    text: async () =>
+                        JSON.stringify({ success: false, errors: [{ message: 'rejected' }] }),
+                }
+            }
+            return {
+                ok: true,
+                status: 200,
+                text: async () =>
+                    JSON.stringify({
+                        success: true,
+                        result: { environment: 'production', aliases: [] },
+                    }),
+            }
+        },
+    })
+    assert.equal(results.length, 1)
+    assert.equal(results[0].ok, false)
+    assert.equal(calls.filter((method) => method === 'DELETE').length, 1)
+    assert.ok(calls.every((method, index) => method !== 'DELETE' || calls[index - 1] === 'GET'))
+})
+
+test('post-delete checks keep production and both rollback anchors', () => {
+    assert.doesNotThrow(() =>
+        assertPostDeleteAnchors({
+            remainingIds: new Set(['prod', 'roll1', 'roll2']),
+            deletedIds: ['oldprod'],
+            productionIds: ['prod'],
+            rollbackIds: ['roll1', 'roll2'],
+        }),
+    )
+    assert.throws(
+        () =>
+            assertPostDeleteAnchors({
+                remainingIds: new Set(['roll1', 'roll2']),
+                deletedIds: ['oldprod'],
+                productionIds: ['prod'],
+                rollbackIds: ['roll1', 'roll2'],
+            }),
+        /production deployment prod disappeared/,
+    )
+    assert.throws(
+        () =>
+            assertPostDeleteAnchors({
+                remainingIds: new Set(['prod', 'roll2']),
+                deletedIds: ['oldprod'],
+                productionIds: ['prod'],
+                rollbackIds: ['roll1', 'roll2'],
+            }),
+        /rollback deployment roll1 disappeared/,
+    )
+    assert.throws(
+        () =>
+            assertPostDeleteAnchors({
+                remainingIds: new Set(['prod', 'roll1', 'roll2', 'oldprod']),
+                deletedIds: ['oldprod'],
+                productionIds: ['prod'],
+                rollbackIds: ['roll1', 'roll2'],
+            }),
+        /oldprod is still present after delete/,
     )
 })
 

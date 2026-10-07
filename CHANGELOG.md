@@ -6,6 +6,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-10-07
+
 ### Added
 
 - **feat(ui):** `text-muted` semantic token — `--color-text-muted` (base, inherited by all 9 themes) + the `text-muted` Tailwind utility. This is the muted-body-text role that `text-slate-500` couldn't fill: `text-slate-500` fails WCAG-AA on cards in 8/9 themes, whereas `text-muted` is AA-verified on every theme's `bg-primary` and `bg-component` (worst 5.56:1, via `check-contrast.mjs`). The ~253 `text-slate-500` body-text call sites migrate onto it per surface during WS-C (WS-A)

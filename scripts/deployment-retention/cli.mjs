@@ -16,6 +16,8 @@ import {
     classifyRetention,
     formatReport,
     normalizeDeployment,
+    projectAliasRecord,
+    projectRetentionRecord,
     reconcilePlans,
 } from './classify.mjs'
 import {
@@ -72,8 +74,9 @@ function gh(args) {
 }
 
 function capture(value, pattern) {
-    const match = pattern.exec(String(value ?? ''))
-    return match ? match[0] : ''
+    const text = String(value ?? '')
+    if (!pattern.test(text)) return ''
+    return text
 }
 
 function projectPull(pull) {
@@ -184,11 +187,14 @@ async function inventoryCloudflare(outPath) {
         console.log('SKIP Cloudflare inventory: credentials are not set')
         return
     }
-    const deployments = await listCloudflareDeployments({
+    const listed = await listCloudflareDeployments({
         token,
         accountId,
         projectName: PAGES_PROJECT,
     })
+    const deployments = listed
+        .map((row) => projectRetentionRecord(row, 'cloudflare'))
+        .filter(Boolean)
     writeJson(outPath, { skipped: false, project: PAGES_PROJECT, deployments })
     console.log(`Cloudflare inventory ${deployments.length}`)
 }
@@ -202,10 +208,12 @@ async function inventoryVercel(outPath) {
     }
     const projectId = process.env.VERCEL_PROJECT_ID || VERCEL_PROJECT
     const teamId = process.env.VERCEL_TEAM_ID || VERCEL_TEAM
-    const [deployments, aliases] = await Promise.all([
+    const [listed, listedAliases] = await Promise.all([
         listVercelDeployments({ token, projectId, teamId }),
         listVercelAliases({ token, projectId, teamId }),
     ])
+    const deployments = listed.map((row) => projectRetentionRecord(row, 'vercel')).filter(Boolean)
+    const aliases = listedAliases.map((row) => projectAliasRecord(row)).filter(Boolean)
     writeJson(outPath, { skipped: false, projectId, deployments, aliases })
     console.log(`Vercel inventory ${deployments.length} aliases ${aliases.length}`)
 }

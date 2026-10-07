@@ -59,18 +59,108 @@ export const LABELS = {
 }
 
 const FULL_SHA = /^[0-9a-f]{40}$/i
-const SAFE_ID = /^[A-Za-z0-9_-]{6,128}$/
+const UNPARSED_ALIAS = 'needs-review.invalid'
+
+/**
+ * Return `value` only when it matches an anchored allowlist.
+ *
+ * The tested string is what a generic regexp barrier clears. `match[0]` from
+ * `exec` is a different value and stays tainted, so callers must not use it.
+ */
+function allowListed(value, pattern) {
+    const text = String(value ?? '')
+    if (!pattern.test(text)) return ''
+    return text
+}
+
+function allowId(value) {
+    return allowListed(value, /^[A-Za-z0-9_-]{6,128}$/)
+}
+
+function allowSha(value) {
+    return allowListed(String(value ?? '').toLowerCase(), /^[0-9a-f]{40}$/)
+}
+
+function allowBranch(value) {
+    return allowListed(value, /^[A-Za-z0-9._/-]{1,200}$/)
+}
+
+function allowHost(value) {
+    return allowListed(aliasHostname(value), /^[a-z0-9.-]{1,253}$/)
+}
+
+function allowState(value) {
+    const text = allowListed(value, /^[A-Za-z0-9_-]{1,40}$/)
+    return text || 'unknown'
+}
+
+function allowUrl(value) {
+    return allowListed(value, /^[A-Za-z0-9._~:/?#&=%+-]{1,500}$/)
+}
+
+function allowCreatedAt(value) {
+    const text = allowListed(value, /^(0|[1-9][0-9]{0,15})$/)
+    if (!text) return 0
+    return Number(text)
+}
 
 export function requireDeploymentId(id) {
-    const match = SAFE_ID.exec(String(id ?? ''))
-    if (!match) throw new Error('refusing a deployment id with unexpected characters')
-    return match[0]
+    const value = allowId(id)
+    if (!value) throw new Error('refusing a deployment id with unexpected characters')
+    return value
 }
 
 export function requireResourceId(value, label) {
-    const match = SAFE_ID.exec(String(value ?? ''))
-    if (!match) throw new Error(`refusing ${label} with unexpected characters`)
-    return match[0]
+    const safe = allowId(value)
+    if (!safe) throw new Error(`refusing ${label} with unexpected characters`)
+    return safe
+}
+
+/**
+ * Copy one host deployment into an allowlisted record.
+ *
+ * Inventory files must not store the raw API payload. A field that fails the
+ * allowlist becomes empty, and a branch or alias that cannot be proven forces
+ * a non-deletable state instead of a guessed preview.
+ */
+export function projectRetentionRecord(raw, backend) {
+    const normalized = normalizeDeployment(raw, backend)
+    if (!normalized) return null
+    const id = allowId(normalized.id)
+    if (!id) return null
+    const rawBranch = String(normalized.branch || '')
+    const branch = allowBranch(rawBranch)
+    let state = allowState(normalized.state)
+    if ((rawBranch && !branch) || state === 'unknown') state = 'unknown'
+    const aliases = []
+    let aliasFailed = false
+    for (const host of normalized.aliases || []) {
+        const safeHost = allowHost(host)
+        if (!safeHost) aliasFailed = true
+        else aliases.push(safeHost)
+    }
+    if (aliasFailed) aliases.push(UNPARSED_ALIAS)
+    const sha = allowSha(normalized.sha)
+    return {
+        id,
+        url: allowUrl(normalized.url),
+        createdAt: allowCreatedAt(normalized.createdAt),
+        sha,
+        shaComplete: Boolean(sha),
+        branch,
+        target: normalized.target === 'production' ? 'production' : 'preview',
+        state,
+        aliases,
+        source: 'retention-record',
+    }
+}
+
+export function projectAliasRecord(record) {
+    if (!record || record.deletedAt) return null
+    const id = allowId(record.deploymentId || record.deployment?.id || '')
+    if (!id) return null
+    const host = allowHost(record.alias || record.host || '')
+    return { deploymentId: id, alias: host || UNPARSED_ALIAS }
 }
 
 export function isDeletableClass(className) {
@@ -156,6 +246,21 @@ function latestIdsByBranch(deployments) {
 
 export function normalizeDeployment(raw, backend) {
     if (!raw || typeof raw !== 'object') return null
+    if (raw.source === 'retention-record') {
+        const sha = String(raw.sha || '')
+        return {
+            id: String(raw.id || ''),
+            url: String(raw.url || ''),
+            createdAt: Number(raw.createdAt) || 0,
+            sha,
+            shaComplete: FULL_SHA.test(sha),
+            branch: String(raw.branch || ''),
+            target: raw.target === 'production' ? 'production' : 'preview',
+            state: String(raw.state || 'unknown'),
+            aliases: uniqueHosts(raw.aliases),
+            source: 'retention-record',
+        }
+    }
     if (raw.Id && raw.Environment && !raw.deployment_trigger && !raw.meta) {
         const sha = String(raw.Source || '')
         return {

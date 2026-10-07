@@ -10,6 +10,8 @@ import {
     cloudflareDeleteUrl,
     isDeletableClass,
     normalizeDeployment,
+    projectAliasRecord,
+    projectRetentionRecord,
     reconcilePlans,
     vercelDeleteUrl,
 } from '../deployment-retention/classify.mjs'
@@ -504,6 +506,51 @@ test('version identity is retried before the cleanup run is failed', async () =>
     })
     assert.equal(version.attempts, 3)
     assert.equal(version.commit, MAIN)
+})
+
+test('inventory records keep proven fields and fail closed on unexpected text', () => {
+    const cloudflare = projectRetentionRecord(
+        {
+            id: 'pages-deploy-1',
+            url: 'https://preview.cannaguide-2025.pages.dev',
+            created_on: '2026-10-07T07:55:28Z',
+            environment: 'preview',
+            latest_stage: { status: 'success' },
+            aliases: ['preview.cannaguide-2025.pages.dev', 'not a host'],
+            deployment_trigger: {
+                metadata: { commit_hash: MERGED_SHA, branch: 'cursor/testing-library-patch-af4f' },
+            },
+        },
+        'cloudflare',
+    )
+    assert.equal(cloudflare.id, 'pages-deploy-1')
+    assert.equal(cloudflare.sha, MERGED_SHA)
+    assert.equal(cloudflare.branch, 'cursor/testing-library-patch-af4f')
+    assert.equal(cloudflare.state, 'success')
+    assert.ok(cloudflare.aliases.includes('needs-review.invalid'))
+    const reread = normalizeDeployment(cloudflare, 'cloudflare')
+    assert.equal(reread.sha, MERGED_SHA)
+    assert.equal(reread.branch, cloudflare.branch)
+    assert.equal(reread.target, 'preview')
+
+    const tainted = projectRetentionRecord(
+        {
+            id: 'pages-deploy-2',
+            created_on: '2026-10-07T07:55:28Z',
+            environment: 'preview',
+            latest_stage: { status: 'success' },
+            deployment_trigger: { metadata: { commit_hash: MERGED_SHA, branch: 'feature\nmain' } },
+        },
+        'cloudflare',
+    )
+    assert.equal(tainted.branch, '')
+    assert.equal(tainted.state, 'unknown')
+    assert.equal(projectRetentionRecord({ id: 'a/b' }, 'vercel'), null)
+    assert.equal(
+        projectAliasRecord({ deploymentId: 'dpl_123456', alias: 'bad host.example' }).alias,
+        'needs-review.invalid',
+    )
+    assert.equal(projectAliasRecord({ deploymentId: 'dpl_123456', deletedAt: 1 }), null)
 })
 
 test('cleanup workflow keeps host retention on trusted main and off pull requests', () => {

@@ -21,7 +21,11 @@ import {
     listCloudflareDeployments,
     listVercelDeployments,
 } from '../deployment-retention/hosts.mjs'
-import { assertTrustedApply, verifyPublicVersion } from '../deployment-retention/cli.mjs'
+import {
+    assertDeploySha,
+    assertTrustedApply,
+    verifyPublicVersion,
+} from '../deployment-retention/cli.mjs'
 
 const MAIN = 'cb6d4054d2229b4a5e1b8fba0ffbfc1de6f33f52'
 const SHA_A = '585937cf2a2ac1755a897185e50a7a3d924b41ae'
@@ -134,6 +138,240 @@ test('vercel keeps production, two rollback deployments, and deletes older unali
     assert.equal(byId.roll2, 'PROTECT_ROLLBACK')
     assert.equal(byId.oldprod, 'SAFE_DELETE_OLD_PRODUCTION')
     assert.deepEqual(plan.queuedDeleteIds, ['oldprod'])
+})
+
+test('cloudflare without a canonical alias keeps the newest main production and the rollback window', () => {
+    const rows = productionSet('cloudflare').map((row) => ({ ...row, aliases: [] }))
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: rows,
+    })
+    const byId = Object.fromEntries(plan.deployments.map((row) => [row.id, row.class]))
+    assert.equal(plan.productionAmbiguous, false)
+    assert.deepEqual(plan.anchors.productionIds, ['prod'])
+    assert.equal(byId.prod, 'PROTECT_CURRENT_PRODUCTION')
+    assert.equal(byId.roll1, 'PROTECT_RECENT_PRODUCTION_ROLLBACK')
+    assert.equal(byId.roll2, 'PROTECT_RECENT_PRODUCTION_ROLLBACK')
+    assert.equal(byId.oldprod, 'SAFE_DELETE_OLD_PRODUCTION_HISTORY')
+    assert.equal(byId.prod && plan.deployments.find((row) => row.id === 'prod').deletable, false)
+    assert.equal(plan.deployments.find((row) => row.id === 'oldprod').deletable, true)
+})
+
+test('cloudflare production stays ambiguous with no candidate, a tie, or a conflicting branch', () => {
+    const ready = 'success'
+    const stale = productionSet('cloudflare').map((row) => ({ ...row, aliases: [], sha: SHA_A }))
+    const none = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: stale,
+    })
+    assert.equal(none.productionAmbiguous, true)
+    assert.equal(none.queuedDeleteIds.length, 0)
+    assert.ok(none.deployments.every((row) => row.class === 'PROTECT_CURRENT_PRODUCTION'))
+
+    const tie = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: [
+            deploy({
+                id: 'tie-a',
+                createdAt: 400,
+                sha: MAIN,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+            deploy({
+                id: 'tie-b',
+                createdAt: 400,
+                sha: MAIN,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+        ],
+    })
+    assert.equal(tie.productionAmbiguous, true)
+    assert.equal(tie.queuedDeleteIds.length, 0)
+
+    const conflict = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: [
+            deploy({
+                id: 'live',
+                createdAt: 500,
+                sha: MAIN,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+            deploy({
+                id: 'other-branch',
+                createdAt: 450,
+                sha: MAIN,
+                branch: 'cursor/other-af4f',
+                target: 'production',
+                state: ready,
+            }),
+        ],
+    })
+    assert.equal(conflict.productionAmbiguous, true)
+    assert.equal(conflict.queuedDeleteIds.length, 0)
+})
+
+test('an older duplicate of the current cloudflare main sha stays inside the rollback window', () => {
+    const ready = 'success'
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: [
+            deploy({
+                id: 'newest',
+                createdAt: 500,
+                sha: MAIN,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+            deploy({
+                id: 'older-same',
+                createdAt: 400,
+                sha: MAIN,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+            deploy({
+                id: 'prev',
+                createdAt: 300,
+                sha: SHA_A,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+            deploy({
+                id: 'older',
+                createdAt: 100,
+                sha: SHA_C,
+                branch: 'main',
+                target: 'production',
+                state: ready,
+            }),
+        ],
+    })
+    const byId = Object.fromEntries(plan.deployments.map((row) => [row.id, row.class]))
+    assert.equal(plan.productionAmbiguous, false)
+    assert.deepEqual(plan.anchors.productionIds, ['newest'])
+    assert.equal(byId.newest, 'PROTECT_CURRENT_PRODUCTION')
+    assert.equal(byId['older-same'], 'PROTECT_RECENT_PRODUCTION_ROLLBACK')
+    assert.equal(byId.prev, 'PROTECT_RECENT_PRODUCTION_ROLLBACK')
+    assert.equal(byId.older, 'SAFE_DELETE_OLD_PRODUCTION_HISTORY')
+    assert.deepEqual(plan.queuedDeleteIds, ['older'])
+})
+
+test('sanitized cloudflare branch names follow the pull request head sha', () => {
+    const closedSha = '4444444444444444444444444444444444444444'
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [
+            ...pulls(),
+            {
+                number: 9,
+                state: 'MERGED',
+                mergedAt: '2026-10-02T00:00:00Z',
+                closedAt: '2026-10-02T00:00:00Z',
+                headRefName: 'cursor/one-af4f',
+                headRefOid: MERGED_OLD,
+            },
+            {
+                number: 10,
+                state: 'CLOSED',
+                mergedAt: null,
+                closedAt: '2026-10-03T00:00:00Z',
+                headRefName: 'cursor/two-af4f',
+                headRefOid: MERGED_OLD,
+            },
+        ],
+        deployments: [
+            ...productionSet('cloudflare'),
+            deploy({
+                id: 'sanitized-latest',
+                createdAt: 50,
+                sha: MERGED_SHA,
+                branch: 'cursor-testing-library-patch-af4f',
+                state: 'success',
+            }),
+            deploy({
+                id: 'sanitized-old',
+                createdAt: 40,
+                sha: MERGED_SHA,
+                branch: 'cursor-testing-library-patch-af4f',
+                state: 'success',
+            }),
+            deploy({
+                id: 'sanitized-alias',
+                createdAt: 39,
+                sha: MERGED_SHA,
+                branch: 'cursor-testing-library-patch-af4f',
+                state: 'success',
+                aliases: ['cursor-testing-library-patch-af4f.cannaguide-2025.pages.dev'],
+            }),
+            deploy({
+                id: 'open-sanitized',
+                createdAt: 30,
+                sha: OPEN_SHA,
+                branch: 'cursor-ai-ml-bump-af4f',
+                state: 'success',
+            }),
+            deploy({
+                id: 'closed-latest',
+                createdAt: 28,
+                sha: closedSha,
+                branch: 'cursor-abandoned-af4f',
+                state: 'success',
+            }),
+            deploy({
+                id: 'closed-old',
+                createdAt: 27,
+                sha: closedSha,
+                branch: 'cursor-abandoned-af4f',
+                state: 'success',
+            }),
+            deploy({
+                id: 'conflict-old',
+                createdAt: 12,
+                sha: MERGED_OLD,
+                branch: 'cursor-unrelated-af4f',
+                state: 'success',
+            }),
+            deploy({
+                id: 'conflict-latest',
+                createdAt: 13,
+                sha: SHA_C,
+                branch: 'cursor-unrelated-af4f',
+                state: 'success',
+            }),
+        ],
+    })
+    const byId = Object.fromEntries(plan.deployments.map((row) => [row.id, row.class]))
+    assert.equal(byId['sanitized-latest'], 'PROTECT_LATEST_ACTIVE_BRANCH')
+    assert.equal(byId['sanitized-old'], 'SAFE_DELETE_MERGED_PR_HISTORY')
+    assert.equal(byId['sanitized-alias'], 'PROTECT_ACTIVE_ALIAS')
+    assert.equal(byId['open-sanitized'], 'PROTECT_OPEN_PR')
+    assert.equal(byId['closed-latest'], 'PROTECT_LATEST_ACTIVE_BRANCH')
+    assert.equal(byId['closed-old'], 'SAFE_DELETE_CLOSED_PR_HISTORY')
+    assert.equal(byId['conflict-latest'], 'PROTECT_LATEST_ACTIVE_BRANCH')
+    assert.equal(byId['conflict-old'], 'UNKNOWN')
+    assert.equal(plan.deployments.find((row) => row.id === 'conflict-old').deletable, false)
+    assert.equal(plan.deployments.find((row) => row.id === 'sanitized-old').deletable, true)
 })
 
 test('cloudflare uses its own labels and still keeps the rollback window', () => {
@@ -555,6 +793,46 @@ test('version identity is retried before the cleanup run is failed', async () =>
     )
     assert.equal(version.attempts, 3)
     assert.equal(version.commit, MAIN)
+
+    let transportCalls = 0
+    const recovered = await verifyPublicVersion(
+        'https://cannaguide-2025.pages.dev/version.json',
+        MAIN,
+        {
+            attempts: 3,
+            pauseMs: 0,
+            fetchImpl: async () => {
+                transportCalls += 1
+                if (transportCalls === 1) throw new Error('temporary network failure')
+                if (transportCalls === 2) {
+                    return {
+                        status: 200,
+                        json: async () => {
+                            throw new Error('invalid json')
+                        },
+                    }
+                }
+                return {
+                    status: 200,
+                    json: async () => ({ commit: MAIN, buildVersion: `1.9.0+${MAIN}` }),
+                }
+            },
+        },
+    )
+    assert.equal(transportCalls, 3)
+    assert.equal(recovered.attempts, 3)
+    assert.equal(recovered.commit, MAIN)
+    await assert.rejects(
+        () =>
+            verifyPublicVersion('https://cannaguide-2025.pages.dev/version.json', MAIN, {
+                attempts: 2,
+                pauseMs: 0,
+                fetchImpl: async () => {
+                    throw new Error('still down')
+                },
+            }),
+        /version check failed after 2 attempts: still down/,
+    )
 })
 
 test('inventory records keep proven fields and fail closed on unexpected text', () => {
@@ -607,13 +885,21 @@ test('cleanup workflow keeps host retention on trusted main and off pull request
     assert.match(workflow, /host-retention:/)
     assert.match(workflow, /workflow_run:/)
     assert.match(workflow, /workflow_run.event == 'push'/)
+    assert.match(workflow, /workflows: \['CI', 'Deploy to Cloudflare Pages'\]/)
     assert.match(workflow, /head_branch == 'main'/)
     assert.match(workflow, /head_repository\.full_name == github\.repository/)
     assert.match(workflow, /inputs\.dry_run != true && inputs\.dry_run != 'true'/)
     assert.doesNotMatch(workflow, /inputs\.dry_run == false/)
     assert.match(workflow, /RETENTION_SOURCE_EVENT:/)
     assert.match(workflow, /RETENTION_SOURCE_REPOSITORY:/)
+    assert.match(workflow, /RETENTION_SOURCE_WORKFLOW:/)
+    assert.match(workflow, /RETENTION_DEPLOY_SHA:/)
     assert.equal((workflow.match(/head_repository\.full_name/g) || []).length, 4)
+    const host = workflow.slice(workflow.indexOf('host-retention:'))
+    const hostIf = host.slice(0, host.indexOf('steps:'))
+    assert.match(hostIf, /workflow_run.name == 'Deploy to Cloudflare Pages'/)
+    assert.match(hostIf, /workflow_run.event == 'workflow_run'/)
+    assert.doesNotMatch(hostIf, /event == 'push'/)
     assert.doesNotMatch(workflow, /pull_request:/)
     assert.doesNotMatch(workflow, /pull_request_target:/)
     assert.match(workflow, /refs\/heads\/main/)
@@ -648,6 +934,36 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
         assertTrustedApply({ ...main, GITHUB_EVENT_NAME: 'workflow_dispatch' }),
     )
     assert.doesNotThrow(() => assertTrustedApply(trustedRun))
+    assert.doesNotThrow(() =>
+        assertTrustedApply({
+            ...main,
+            GITHUB_EVENT_NAME: 'workflow_run',
+            RETENTION_SOURCE_EVENT: 'workflow_run',
+            RETENTION_SOURCE_BRANCH: 'main',
+            RETENTION_SOURCE_CONCLUSION: 'success',
+            RETENTION_SOURCE_REPOSITORY: 'qnbs/CannaGuide-2025',
+            RETENTION_SOURCE_WORKFLOW: 'Deploy to Cloudflare Pages',
+        }),
+    )
+    assert.throws(
+        () =>
+            assertTrustedApply({
+                ...main,
+                GITHUB_EVENT_NAME: 'workflow_run',
+                RETENTION_SOURCE_EVENT: 'workflow_run',
+                RETENTION_SOURCE_BRANCH: 'main',
+                RETENTION_SOURCE_CONCLUSION: 'success',
+                RETENTION_SOURCE_REPOSITORY: 'qnbs/CannaGuide-2025',
+                RETENTION_SOURCE_WORKFLOW: 'CI',
+            }),
+        /untrusted workflow_run/,
+    )
+    assert.doesNotThrow(() => assertDeploySha({}, MAIN))
+    assert.doesNotThrow(() => assertDeploySha({ RETENTION_DEPLOY_SHA: MAIN }, MAIN))
+    assert.throws(
+        () => assertDeploySha({ RETENTION_DEPLOY_SHA: SHA_A }, MAIN),
+        /deploy SHA is not current main/,
+    )
     assert.throws(
         () =>
             assertTrustedApply({

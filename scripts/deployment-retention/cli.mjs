@@ -53,11 +53,16 @@ function writeJson(filePath, value) {
     writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`)
 }
 
+const DEPLOY_WORKFLOW = 'Deploy to Cloudflare Pages'
+const SHA = /^[0-9a-f]{40}$/i
+
 /**
- * `--apply` runs only for schedule, workflow_dispatch, or a workflow_run
- * that the trusted workflow proved is a successful push to main in this
- * repository. A pull_request completion also emits workflow_run, and a fork
- * can name its own branch main; both sources are refused.
+ * `--apply` runs only for schedule, workflow_dispatch, a workflow_run that
+ * the trusted workflow proved is a successful push to main in this repository,
+ * or the Cloudflare Pages deploy workflow that follows that push. Retention
+ * must not start from the CI workflow_run itself: that races the deploy and
+ * observes the previous production version. A pull_request completion also
+ * emits workflow_run, and a fork can name its own branch main; both are refused.
  */
 export function assertTrustedApply(env = process.env) {
     if (env.RETENTION_ALLOW_LOCAL === '1') return
@@ -77,18 +82,33 @@ export function assertTrustedApply(env = process.env) {
         const conclusion = env.RETENTION_SOURCE_CONCLUSION || ''
         const sourceRepository = env.RETENTION_SOURCE_REPOSITORY || ''
         const repository = env.GITHUB_REPOSITORY || ''
-        if (
-            source === 'push' &&
+        const sourceWorkflow = env.RETENTION_SOURCE_WORKFLOW || ''
+        const sameRepo = sourceRepository !== '' && sourceRepository === repository
+        const trustedPush =
+            source === 'push' && branch === 'main' && conclusion === 'success' && sameRepo
+        const trustedDeploy =
+            source === 'workflow_run' &&
+            sourceWorkflow === DEPLOY_WORKFLOW &&
             branch === 'main' &&
             conclusion === 'success' &&
-            sourceRepository !== '' &&
-            sourceRepository === repository
-        ) {
-            return
-        }
+            sameRepo
+        if (trustedPush || trustedDeploy) return
         throw new Error('refusing --apply for an untrusted workflow_run')
     }
     throw new Error(`refusing --apply for event ${event || '(missing)'}`)
+}
+
+/**
+ * A deploy-triggered apply must name the same commit GitHub main currently
+ * points at. An empty deploy SHA means schedule or workflow_dispatch.
+ */
+export function assertDeploySha(env, mainSha) {
+    const deployed = String(env.RETENTION_DEPLOY_SHA || '').toLowerCase()
+    if (!deployed) return
+    const main = String(mainSha || '').toLowerCase()
+    if (!SHA.test(deployed) || deployed !== main) {
+        throw new Error('refusing retention: deploy SHA is not current main')
+    }
 }
 
 function gh(args) {
@@ -187,24 +207,41 @@ export async function verifyPublicVersion(url, expectedSha, options = {}) {
     const pauseMs = options.pauseMs ?? 2000
     let lastStatus = 0
     let lastCommit = ''
+    let lastError = ''
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
-        const response = await fetchImpl(url, { headers: { 'User-Agent': 'CannaGuide-retention' } })
-        const body = await response.json()
-        const commit = String(body.commit || '')
-        if (response.status === 200 && commit.toLowerCase() === String(expectedSha).toLowerCase()) {
-            return {
-                url,
-                status: response.status,
-                commit,
-                buildVersion: body.buildVersion || '',
-                attempts: attempt,
+        try {
+            const response = await fetchImpl(url, {
+                headers: { 'User-Agent': 'CannaGuide-retention' },
+            })
+            const body = await response.json()
+            const commit = String(body?.commit || '')
+            if (
+                response.status === 200 &&
+                commit.toLowerCase() === String(expectedSha).toLowerCase()
+            ) {
+                return {
+                    url,
+                    status: response.status,
+                    commit,
+                    buildVersion: body.buildVersion || '',
+                    attempts: attempt,
+                }
             }
+            lastStatus = response.status
+            lastCommit = commit
+            lastError = ''
+        } catch (error) {
+            lastStatus = 0
+            lastCommit = ''
+            const message = error instanceof Error ? error.message : 'version request failed'
+            lastError = message.slice(0, 200)
         }
-        lastStatus = response.status
-        lastCommit = commit
         if (attempt < attempts && pauseMs > 0) {
             await new Promise((resolveDelay) => setTimeout(resolveDelay, pauseMs))
         }
+    }
+    if (lastError) {
+        throw new Error(`${url} version check failed after ${attempts} attempts: ${lastError}`)
     }
     throw new Error(`${url} served ${lastCommit || '(missing)'} HTTP ${lastStatus}`)
 }
@@ -256,6 +293,13 @@ async function applyDeletes(backend, planPath) {
         return
     }
     const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    assertDeploySha(process.env, github.mainSha)
+    const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
+    const version = await verifyPublicVersion(versionUrl, github.mainSha, {
+        attempts: 6,
+        pauseMs: 5000,
+    })
+    console.log(`version ${version.buildVersion} commit ${version.commit}`)
     let freshInventory
     if (backend === 'cloudflare') {
         const deployments = await listCloudflareDeployments({
@@ -309,12 +353,6 @@ async function applyDeletes(backend, planPath) {
         )
     }
     if (failed.length) throw new Error(`${backend} delete stopped after HTTP ${failed[0].status}`)
-
-    const version = await verifyPublicVersion(
-        backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL,
-        fresh.anchors.mainSha,
-    )
-    console.log(`version ${version.buildVersion} commit ${version.commit}`)
 
     const remainingRaw =
         backend === 'cloudflare'

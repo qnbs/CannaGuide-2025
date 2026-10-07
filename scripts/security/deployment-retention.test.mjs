@@ -793,6 +793,46 @@ test('version identity is retried before the cleanup run is failed', async () =>
     )
     assert.equal(version.attempts, 3)
     assert.equal(version.commit, MAIN)
+
+    let transportCalls = 0
+    const recovered = await verifyPublicVersion(
+        'https://cannaguide-2025.pages.dev/version.json',
+        MAIN,
+        {
+            attempts: 3,
+            pauseMs: 0,
+            fetchImpl: async () => {
+                transportCalls += 1
+                if (transportCalls === 1) throw new Error('temporary network failure')
+                if (transportCalls === 2) {
+                    return {
+                        status: 200,
+                        json: async () => {
+                            throw new Error('invalid json')
+                        },
+                    }
+                }
+                return {
+                    status: 200,
+                    json: async () => ({ commit: MAIN, buildVersion: `1.9.0+${MAIN}` }),
+                }
+            },
+        },
+    )
+    assert.equal(transportCalls, 3)
+    assert.equal(recovered.attempts, 3)
+    assert.equal(recovered.commit, MAIN)
+    await assert.rejects(
+        () =>
+            verifyPublicVersion('https://cannaguide-2025.pages.dev/version.json', MAIN, {
+                attempts: 2,
+                pauseMs: 0,
+                fetchImpl: async () => {
+                    throw new Error('still down')
+                },
+            }),
+        /version check failed after 2 attempts: still down/,
+    )
 })
 
 test('inventory records keep proven fields and fail closed on unexpected text', () => {

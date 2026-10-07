@@ -207,24 +207,41 @@ export async function verifyPublicVersion(url, expectedSha, options = {}) {
     const pauseMs = options.pauseMs ?? 2000
     let lastStatus = 0
     let lastCommit = ''
+    let lastError = ''
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
-        const response = await fetchImpl(url, { headers: { 'User-Agent': 'CannaGuide-retention' } })
-        const body = await response.json()
-        const commit = String(body.commit || '')
-        if (response.status === 200 && commit.toLowerCase() === String(expectedSha).toLowerCase()) {
-            return {
-                url,
-                status: response.status,
-                commit,
-                buildVersion: body.buildVersion || '',
-                attempts: attempt,
+        try {
+            const response = await fetchImpl(url, {
+                headers: { 'User-Agent': 'CannaGuide-retention' },
+            })
+            const body = await response.json()
+            const commit = String(body?.commit || '')
+            if (
+                response.status === 200 &&
+                commit.toLowerCase() === String(expectedSha).toLowerCase()
+            ) {
+                return {
+                    url,
+                    status: response.status,
+                    commit,
+                    buildVersion: body.buildVersion || '',
+                    attempts: attempt,
+                }
             }
+            lastStatus = response.status
+            lastCommit = commit
+            lastError = ''
+        } catch (error) {
+            lastStatus = 0
+            lastCommit = ''
+            const message = error instanceof Error ? error.message : 'version request failed'
+            lastError = message.slice(0, 200)
         }
-        lastStatus = response.status
-        lastCommit = commit
         if (attempt < attempts && pauseMs > 0) {
             await new Promise((resolveDelay) => setTimeout(resolveDelay, pauseMs))
         }
+    }
+    if (lastError) {
+        throw new Error(`${url} version check failed after ${attempts} attempts: ${lastError}`)
     }
     throw new Error(`${url} served ${lastCommit || '(missing)'} HTTP ${lastStatus}`)
 }

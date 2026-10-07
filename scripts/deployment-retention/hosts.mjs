@@ -7,8 +7,10 @@
  * Cloudflare deletes always use force=false. Wrangler `--force` is not used:
  * in wrangler 4.110.0 that flag also permits deleting aliased deployments.
  * A proven old production row may be deleted only when the live record is
- * still production, unaliased, and classified SAFE_DELETE_OLD_PRODUCTION_HISTORY
- * (Cloudflare) or SAFE_DELETE_OLD_PRODUCTION (Vercel). Preview deletes stay
+ * still production, the alias list is an explicit empty array, and the class
+ * is SAFE_DELETE_OLD_PRODUCTION_HISTORY (Cloudflare) or
+ * SAFE_DELETE_OLD_PRODUCTION (Vercel). A null alias list is not empty.
+ * Preview deletes stay
  * preview-only. Current production and the rollback window never reach this
  * function: assertSafeDeleteBatch rejects those ids first.
  */
@@ -223,8 +225,9 @@ export async function assertStillDisposable({
             if (record.environment !== 'production') {
                 throw new Error(`refusing to delete ${safeId}: environment is not old production`)
             }
-            if (aliases.length > 0) {
-                throw new Error(`refusing to delete ${safeId}: alias appeared`)
+            // null or a missing list is not proof that the deployment is unaliased.
+            if (!Array.isArray(record.aliases) || record.aliases.length > 0) {
+                throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
             }
             return { skip: false, id: safeId }
         }
@@ -239,16 +242,23 @@ export async function assertStillDisposable({
     const body = await readJson(response)
     if (response.status === 404) return { skip: true, id: safeId }
     if (!response.ok) throw new Error(`refusing to delete ${safeId}: live Vercel lookup failed`)
+    const aliasValues = []
+    let aliasKnown = true
+    for (const field of [body.alias, body.aliases]) {
+        if (field === undefined) continue
+        if (!Array.isArray(field)) aliasKnown = false
+        else aliasValues.push(...field)
+    }
     if (expectedClass === 'SAFE_DELETE_OLD_PRODUCTION') {
         if (body.target !== 'production') {
             throw new Error(`refusing to delete ${safeId}: target is ${body.target ?? 'unset'}`)
         }
+        if (!aliasKnown || aliasValues.length > 0) {
+            throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
+        }
     } else if (body.target != null && body.target !== 'preview') {
         throw new Error(`refusing to delete ${safeId}: target is ${body.target}`)
     }
-    const aliasValues = []
-    if (Array.isArray(body.alias)) aliasValues.push(...body.alias)
-    if (Array.isArray(body.aliases)) aliasValues.push(...body.aliases)
     if (carriesProductionAlias(aliasValues, 'vercel')) {
         throw new Error(`refusing to delete ${safeId}: production alias appeared`)
     }

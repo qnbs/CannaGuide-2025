@@ -739,38 +739,178 @@ test('a partial inventory past the page ceiling is refused', async () => {
     assert.equal(listed.length, 1)
 })
 
-test('a deployment that became production between classify and delete is not removed', async () => {
+test('a preview that becomes production between classify and delete is not removed', async () => {
     const plan = classifyRetention({
         backend: 'vercel',
         mainSha: MAIN,
-        pulls: [],
-        deployments: productionSet('vercel'),
+        pulls: pulls(),
+        deployments: [
+            ...productionSet('vercel'),
+            deploy({
+                id: 'open-latest',
+                createdAt: 50,
+                sha: OPEN_SHA,
+                branch: 'cursor/ai-ml-bump-af4f',
+                state: 'READY',
+            }),
+            deploy({
+                id: 'promoted-preview',
+                createdAt: 40,
+                sha: OLD_OPEN,
+                branch: 'cursor/ai-ml-bump-af4f',
+                state: 'READY',
+            }),
+        ],
     })
+    const row = plan.deployments.find((item) => item.id === 'promoted-preview')
+    assert.equal(row.class, 'SAFE_DELETE_SUPERSEDED_PREVIEW')
+    assert.equal(row.deletable, true)
     const calls = []
     await assert.rejects(
         () =>
             deleteProvenDeployments({
                 backend: 'vercel',
                 plan,
-                ids: ['oldprod'],
+                ids: ['promoted-preview'],
                 token: 'test-token',
                 teamId: 'team_test',
-                fetchImpl: async (url, init) => {
+                fetchImpl: async (_url, init) => {
                     calls.push(init?.method || 'GET')
                     return {
                         ok: true,
                         status: 200,
-                        text: async () =>
-                            JSON.stringify({
-                                target: 'production',
-                                alias: ['canna-guide-2025-web.vercel.app'],
-                            }),
+                        text: async () => JSON.stringify({ target: 'production', alias: [] }),
                     }
                 },
             }),
-        /refusing to delete/,
+        /target is production/,
     )
     assert.deepEqual(calls, ['GET'])
+})
+
+test('unaliased old Vercel production is deleted and any live alias blocks it', async () => {
+    const plan = classifyRetention({
+        backend: 'vercel',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: productionSet('vercel'),
+    })
+    assert.equal(
+        plan.deployments.find((row) => row.id === 'oldprod').class,
+        'SAFE_DELETE_OLD_PRODUCTION',
+    )
+    const calls = []
+    const results = await deleteProvenDeployments({
+        backend: 'vercel',
+        plan,
+        ids: ['oldprod'],
+        token: 'test-token',
+        teamId: 'team_test',
+        fetchImpl: async (url, init) => {
+            calls.push({ url: String(url), method: init?.method || 'GET' })
+            return {
+                ok: true,
+                status: 200,
+                text: async () => JSON.stringify({ target: 'production', alias: [], aliases: [] }),
+            }
+        },
+    })
+    assert.equal(results.length, 1)
+    assert.equal(results[0].ok, true)
+    assert.equal(calls[0].method, 'GET')
+    assert.equal(calls[1].method, 'DELETE')
+    assert.match(calls[1].url, /\/v13\/deployments\/oldprod\?teamId=team_test$/)
+    assert.ok(calls.every((call) => !call.url.includes('force=true')))
+
+    for (const alias of [['archive.example.com'], null]) {
+        const blocked = []
+        await assert.rejects(
+            () =>
+                deleteProvenDeployments({
+                    backend: 'vercel',
+                    plan,
+                    ids: ['oldprod'],
+                    token: 'test-token',
+                    teamId: 'team_test',
+                    fetchImpl: async (_url, init) => {
+                        blocked.push(init?.method || 'GET')
+                        return {
+                            ok: true,
+                            status: 200,
+                            text: async () => JSON.stringify({ target: 'production', alias }),
+                        }
+                    },
+                }),
+            /alias state is not an empty list/,
+        )
+        assert.deepEqual(blocked, ['GET'])
+    }
+})
+
+test('current production and both rollback ids never reach a delete request', async () => {
+    const protectClass = {
+        vercel: {
+            prod: 'PROTECT_PRODUCTION',
+            roll1: 'PROTECT_ROLLBACK',
+            roll2: 'PROTECT_ROLLBACK',
+        },
+        cloudflare: {
+            prod: 'PROTECT_CURRENT_PRODUCTION',
+            roll1: 'PROTECT_RECENT_PRODUCTION_ROLLBACK',
+            roll2: 'PROTECT_RECENT_PRODUCTION_ROLLBACK',
+        },
+    }
+    for (const backend of ['vercel', 'cloudflare']) {
+        const plan = classifyRetention({
+            backend,
+            mainSha: MAIN,
+            pulls: [],
+            deployments: productionSet(backend),
+        })
+        assert.deepEqual(plan.anchors.productionIds, ['prod'])
+        assert.deepEqual(plan.anchors.rollbackIds, ['roll1', 'roll2'])
+        const oldClass =
+            backend === 'vercel'
+                ? 'SAFE_DELETE_OLD_PRODUCTION'
+                : 'SAFE_DELETE_OLD_PRODUCTION_HISTORY'
+        for (const id of ['prod', 'roll1', 'roll2']) {
+            const row = plan.deployments.find((item) => item.id === id)
+            assert.equal(row.class, protectClass[backend][id])
+            assert.equal(row.deletable, false)
+            const calls = []
+            await assert.rejects(
+                () =>
+                    deleteProvenDeployments({
+                        backend,
+                        plan,
+                        ids: [id],
+                        token: 'test-token',
+                        accountId: 'account',
+                        projectName: 'cannaguide-2025',
+                        teamId: 'team_test',
+                        fetchImpl: async () => {
+                            calls.push('network')
+                            throw new Error('network must not run')
+                        },
+                    }),
+                /not a proven safe-delete row/,
+            )
+            assert.deepEqual(calls, [])
+            assert.throws(() => assertSafeDeleteBatch(plan, [id]), /not a proven safe-delete row/)
+            const forced = {
+                ...plan,
+                deployments: plan.deployments.map((item) =>
+                    item.id === id
+                        ? { ...item, class: oldClass, deletable: true, aliases: [] }
+                        : item,
+                ),
+            }
+            assert.throws(
+                () => assertSafeDeleteBatch(forced, [id]),
+                /refusing to delete protected deployment/,
+            )
+        }
+    }
 })
 
 test('proven unaliased Cloudflare production history deletes with force=false', async () => {
@@ -860,6 +1000,32 @@ test('proven unaliased Cloudflare production history deletes with force=false', 
             }),
         /environment is not old production/,
     )
+    const unknownAliases = []
+    await assert.rejects(
+        () =>
+            deleteProvenDeployments({
+                backend: 'cloudflare',
+                plan,
+                ids: ['oldprod'],
+                token: 'test-token',
+                accountId: 'account',
+                projectName: 'cannaguide-2025',
+                fetchImpl: async (_url, init) => {
+                    unknownAliases.push(init?.method || 'GET')
+                    return {
+                        ok: true,
+                        status: 200,
+                        text: async () =>
+                            JSON.stringify({
+                                success: true,
+                                result: { environment: 'production', aliases: null },
+                            }),
+                    }
+                },
+            }),
+        /alias state is not an empty list/,
+    )
+    assert.deepEqual(unknownAliases, ['GET'])
     await assert.rejects(
         () =>
             deleteProvenDeployments({

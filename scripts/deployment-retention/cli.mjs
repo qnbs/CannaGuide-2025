@@ -53,20 +53,31 @@ function writeJson(filePath, value) {
     writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`)
 }
 
-function assertTrustedApply() {
-    if (process.env.RETENTION_ALLOW_LOCAL === '1') return
-    if (!process.env.GITHUB_ACTIONS) {
+/**
+ * `--apply` runs only for schedule, workflow_dispatch, or a workflow_run
+ * that the trusted workflow proved is a successful push to main.
+ * A pull_request completion also emits workflow_run; that source is refused.
+ */
+export function assertTrustedApply(env = process.env) {
+    if (env.RETENTION_ALLOW_LOCAL === '1') return
+    if (!env.GITHUB_ACTIONS) {
         throw new Error('refusing --apply outside GitHub Actions on main')
     }
-    const event = process.env.GITHUB_EVENT_NAME || ''
-    const ref = process.env.GITHUB_REF || ''
+    const event = env.GITHUB_EVENT_NAME || ''
+    const ref = env.GITHUB_REF || ''
     if (event === 'pull_request' || event === 'pull_request_target') {
         throw new Error('refusing --apply for a pull_request event')
     }
     if (ref !== 'refs/heads/main') throw new Error('refusing --apply off refs/heads/main')
-    if (event !== 'schedule' && event !== 'workflow_dispatch') {
-        throw new Error(`refusing --apply for event ${event || '(missing)'}`)
+    if (event === 'schedule' || event === 'workflow_dispatch') return
+    if (event === 'workflow_run') {
+        const source = env.RETENTION_SOURCE_EVENT || ''
+        const branch = env.RETENTION_SOURCE_BRANCH || ''
+        const conclusion = env.RETENTION_SOURCE_CONCLUSION || ''
+        if (source === 'push' && branch === 'main' && conclusion === 'success') return
+        throw new Error('refusing --apply for an untrusted workflow_run')
     }
+    throw new Error(`refusing --apply for event ${event || '(missing)'}`)
 }
 
 function gh(args) {
@@ -88,8 +99,10 @@ function projectPull(pull) {
     return {
         number,
         state,
-        mergedAt: capture(pull.mergedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/) || null,
-        closedAt: capture(pull.closedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/) || null,
+        mergedAt:
+            capture(pull.mergedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/) || null,
+        closedAt:
+            capture(pull.closedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/) || null,
         headRefName: branch,
         headRefOid: sha,
     }
@@ -168,7 +181,13 @@ export async function verifyPublicVersion(url, expectedSha, options = {}) {
         const body = await response.json()
         const commit = String(body.commit || '')
         if (response.status === 200 && commit.toLowerCase() === String(expectedSha).toLowerCase()) {
-            return { url, status: response.status, commit, buildVersion: body.buildVersion || '', attempts: attempt }
+            return {
+                url,
+                status: response.status,
+                commit,
+                buildVersion: body.buildVersion || '',
+                attempts: attempt,
+            }
         }
         lastStatus = response.status
         lastCommit = commit
@@ -243,7 +262,9 @@ async function applyDeletes(backend, planPath) {
         const deployments = await listVercelDeployments({ token, projectId, teamId })
         const aliases = await listVercelAliases({ token, projectId, teamId })
         freshInventory = attachAliasRecords(
-            deployments.map((row) => normalizeDeployment(row, 'vercel')).filter((row) => row && row.id),
+            deployments
+                .map((row) => normalizeDeployment(row, 'vercel'))
+                .filter((row) => row && row.id),
             aliases,
         )
     }
@@ -261,7 +282,8 @@ async function applyDeletes(backend, planPath) {
         backend,
         plan: fresh,
         ids: decision.ids,
-        token: backend === 'cloudflare' ? process.env.CLOUDFLARE_API_TOKEN : process.env.VERCEL_TOKEN,
+        token:
+            backend === 'cloudflare' ? process.env.CLOUDFLARE_API_TOKEN : process.env.VERCEL_TOKEN,
         accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
         projectName: PAGES_PROJECT,
         teamId: process.env.VERCEL_TEAM_ID || VERCEL_TEAM,
@@ -271,7 +293,9 @@ async function applyDeletes(backend, planPath) {
         `${backend} delete attempted ${results.length} ok ${results.length - failed.length} failed ${failed.length}`,
     )
     for (const result of results) {
-        console.log(`${result.ok ? 'deleted' : 'kept'} ${result.id} HTTP ${result.status} ${result.detail}`)
+        console.log(
+            `${result.ok ? 'deleted' : 'kept'} ${result.id} HTTP ${result.status} ${result.detail}`,
+        )
     }
     if (failed.length) throw new Error(`${backend} delete stopped after HTTP ${failed[0].status}`)
 

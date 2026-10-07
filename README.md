@@ -32,7 +32,7 @@
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24.15-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24.15%20%3C25-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
 <!-- Code Quality & Security -->
 
@@ -128,7 +128,7 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 
 ## Getting Started
 
-**Prerequisites:** Node.js 24.15+, the `package.json`-pinned pnpm version via Corepack
+**Prerequisites:** Node.js >=24.15.0 <25, the `package.json`-pinned pnpm version via Corepack
 
 ```bash
 corepack enable pnpm
@@ -488,7 +488,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Redux Toolkit](https://img.shields.io/badge/Redux_Toolkit-2.x-764ABC?logo=redux&logoColor=white)](https://redux-toolkit.js.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24.15-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D24.15%20%3C25-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
 <!-- Code-Qualitaet & Sicherheit -->
 

@@ -13,7 +13,8 @@ import {
     reconcilePlans,
     vercelDeleteUrl,
 } from '../deployment-retention/classify.mjs'
-import { deleteCloudflareDeployment, deleteProvenDeployments } from '../deployment-retention/hosts.mjs'
+import { deleteCloudflareDeployment, deleteProvenDeployments, listCloudflareDeployments, listVercelDeployments } from '../deployment-retention/hosts.mjs'
+import { verifyPublicVersion } from '../deployment-retention/cli.mjs'
 
 const MAIN = 'cb6d4054d2229b4a5e1b8fba0ffbfc1de6f33f52'
 const SHA_A = '585937cf2a2ac1755a897185e50a7a3d924b41ae'
@@ -344,7 +345,7 @@ test('cloudflare and vercel delete URLs cannot enable force or a project delete'
     assert.doesNotMatch(cloudflare, /\/projects\/cannaguide-2025\?/)
     const vercel = vercelDeleteUrl('dpl_123', 'team_123')
     assert.match(vercel, /\/v13\/deployments\/dpl_123\?teamId=team_123$/)
-    assert.throws(() => cloudflareDeleteUrl('account', 'cannaguide-2025', 'a/b'), /path separator/)
+    assert.throws(() => cloudflareDeleteUrl('account', 'cannaguide-2025', 'a/b'), /unexpected characters/)
 })
 
 test('delete helper stops on the first API rejection and never sends force=true', async () => {
@@ -380,6 +381,14 @@ test('delete helper stops on the first API rejection and never sends force=true'
     })
     const fetchImpl = async (url, init) => {
         calls.push({ url, method: init?.method || 'GET' })
+        const method = init?.method || 'GET'
+        if (method === 'GET') {
+            return {
+                ok: true,
+                status: 200,
+                text: async () => JSON.stringify({ success: true, result: { environment: 'preview', aliases: [] }, target: null }),
+            }
+        }
         if (String(url).includes('merged-older')) {
             return { ok: false, status: 400, text: async () => JSON.stringify({ success: false, errors: [{ message: 'latest' }] }) }
         }
@@ -398,7 +407,7 @@ test('delete helper stops on the first API rejection and never sends force=true'
     assert.equal(results.length, 2)
     assert.equal(results[0].ok, true)
     assert.equal(results[1].ok, false)
-    assert.ok(calls.every((call) => call.url.includes('force=false')))
+    assert.ok(calls.filter((call) => call.method === 'DELETE').every((call) => call.url.includes('force=false')))
     assert.ok(calls.every((call) => !call.url.includes('force=true')))
     assert.equal(ids.includes('merged-latest'), false)
     await assert.rejects(
@@ -407,13 +416,94 @@ test('delete helper stops on the first API rejection and never sends force=true'
                 token: 'test-token',
                 accountId: 'account',
                 projectName: 'cannaguide-2025',
-                deploymentId: 'x',
+                deploymentId: 'deploy-1',
                 fetchImpl: async () => {
                     throw new Error('should build the URL before fetch')
                 },
             }),
         /should build the URL before fetch/,
     )
+})
+
+test('a partial inventory past the page ceiling is refused', async () => {
+    const page = (totalPages) => ({
+        ok: true,
+        status: 200,
+        text: async () =>
+            JSON.stringify({
+                success: true,
+                result: Array.from({ length: 25 }, (_, index) => ({ id: `page-row-${index}` })),
+                result_info: { total_pages: totalPages },
+            }),
+    })
+    await assert.rejects(
+        () =>
+            listCloudflareDeployments({
+                token: 'test-token',
+                accountId: 'account1',
+                projectName: 'cannaguide-2025',
+                maxPages: 2,
+                fetchImpl: async () => page(5),
+            }),
+        /refusing a partial inventory/,
+    )
+    const listed = await listVercelDeployments({
+        token: 'test-token',
+        projectId: 'prj_test',
+        teamId: 'team_test',
+        maxPages: 2,
+        fetchImpl: async () => ({
+            ok: true,
+            status: 200,
+            text: async () => JSON.stringify({ deployments: [{ id: 'dpl_done1' }], pagination: {} }),
+        }),
+    })
+    assert.equal(listed.length, 1)
+})
+
+test('a deployment that became production between classify and delete is not removed', async () => {
+    const plan = classifyRetention({
+        backend: 'vercel',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: productionSet('vercel'),
+    })
+    const calls = []
+    await assert.rejects(
+        () =>
+            deleteProvenDeployments({
+                backend: 'vercel',
+                plan,
+                ids: ['oldprod'],
+                token: 'test-token',
+                teamId: 'team_test',
+                fetchImpl: async (url, init) => {
+                    calls.push(init?.method || 'GET')
+                    return {
+                        ok: true,
+                        status: 200,
+                        text: async () => JSON.stringify({ target: 'production', alias: ['canna-guide-2025-web.vercel.app'] }),
+                    }
+                },
+            }),
+        /refusing to delete/,
+    )
+    assert.deepEqual(calls, ['GET'])
+})
+
+test('version identity is retried before the cleanup run is failed', async () => {
+    let calls = 0
+    const version = await verifyPublicVersion('https://cannaguide-2025.pages.dev/version.json', MAIN, {
+        attempts: 3,
+        pauseMs: 0,
+        fetchImpl: async () => {
+            calls += 1
+            const commit = calls < 3 ? 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' : MAIN
+            return { status: 200, json: async () => ({ commit, buildVersion: `1.9.0+${commit}` }) }
+        },
+    })
+    assert.equal(version.attempts, 3)
+    assert.equal(version.commit, MAIN)
 })
 
 test('cleanup workflow keeps host retention on trusted main and off pull requests', () => {

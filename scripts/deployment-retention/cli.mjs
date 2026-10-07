@@ -8,7 +8,8 @@
 
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { dirname, resolve, sep } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 import {
     attachAliasRecords,
@@ -40,9 +41,14 @@ function readJson(path) {
     return JSON.parse(readFileSync(path, 'utf8'))
 }
 
-function writeJson(path, value) {
-    mkdirSync(dirname(path), { recursive: true })
-    writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`)
+function writeJson(filePath, value) {
+    const root = resolve('retention-reports')
+    const target = resolve(filePath)
+    if (target !== root && !target.startsWith(`${root}${sep}`)) {
+        throw new Error('refusing to write outside retention-reports')
+    }
+    mkdirSync(dirname(target), { recursive: true })
+    writeFileSync(target, `${JSON.stringify(value, null, 2)}\n`)
 }
 
 function assertTrustedApply() {
@@ -65,23 +71,48 @@ function gh(args) {
     return execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim()
 }
 
+function capture(value, pattern) {
+    const match = pattern.exec(String(value ?? ''))
+    return match ? match[0] : ''
+}
+
+function projectPull(pull) {
+    const number = Number(pull.number)
+    const sha = capture(pull.headRefOid, /^[0-9a-f]{40}$/i).toLowerCase()
+    const branch = capture(pull.headRefName, /^[A-Za-z0-9._/-]{1,200}$/)
+    const state = capture(String(pull.state || '').toUpperCase(), /^(OPEN|CLOSED|MERGED)$/)
+    if (!Number.isInteger(number) || number < 1 || !sha || !branch || !state) return null
+    return {
+        number,
+        state,
+        mergedAt: capture(pull.mergedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/) || null,
+        closedAt: capture(pull.closedAt, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/) || null,
+        headRefName: branch,
+        headRefOid: sha,
+    }
+}
+
 function collectGithubState(repo) {
-    const mainSha = gh(['api', `repos/${repo}/commits/main`, '--jq', '.sha'])
-    const pulls = JSON.parse(
-        gh([
-            'pr',
-            'list',
-            '--repo',
-            repo,
-            '--state',
-            'all',
-            '--limit',
-            '300',
-            '--json',
-            'number,state,mergedAt,closedAt,headRefName,headRefOid',
-        ]),
-    )
-    return { repo, mainSha, pulls }
+    const safeRepo = capture(repo, /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/)
+    if (!safeRepo) throw new Error('refusing a repository name with unexpected characters')
+    const mainSha = capture(
+        gh(['api', `repos/${safeRepo}/commits/main`, '--jq', '.sha']),
+        /^[0-9a-f]{40}$/i,
+    ).toLowerCase()
+    if (!mainSha) throw new Error('GitHub main SHA was not a full commit id')
+    const raw = gh([
+        'api',
+        '--paginate',
+        `repos/${safeRepo}/pulls?state=all&per_page=100`,
+        '--jq',
+        '.[] | {number,state,mergedAt:.merged_at,closedAt:.closed_at,headRefName:.head.ref,headRefOid:.head.sha}',
+    ])
+    const pulls = raw
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => projectPull(JSON.parse(line)))
+        .filter(Boolean)
+    return { repo: safeRepo, mainSha, pulls }
 }
 
 function inventoryFromFile(backend, file) {
@@ -123,14 +154,26 @@ function classifyFile(backend, inventoryPath, githubPath) {
     })
 }
 
-async function verifyPublicVersion(url, expectedSha) {
-    const response = await fetch(url, { headers: { 'User-Agent': 'CannaGuide-retention' } })
-    const body = await response.json()
-    const commit = String(body.commit || '')
-    if (response.status !== 200 || commit.toLowerCase() !== expectedSha.toLowerCase()) {
-        throw new Error(`${url} served ${commit || '(missing)'} HTTP ${response.status}`)
+export async function verifyPublicVersion(url, expectedSha, options = {}) {
+    const fetchImpl = options.fetchImpl || fetch
+    const attempts = options.attempts || 3
+    const pauseMs = options.pauseMs ?? 2000
+    let lastStatus = 0
+    let lastCommit = ''
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        const response = await fetchImpl(url, { headers: { 'User-Agent': 'CannaGuide-retention' } })
+        const body = await response.json()
+        const commit = String(body.commit || '')
+        if (response.status === 200 && commit.toLowerCase() === String(expectedSha).toLowerCase()) {
+            return { url, status: response.status, commit, buildVersion: body.buildVersion || '', attempts: attempt }
+        }
+        lastStatus = response.status
+        lastCommit = commit
+        if (attempt < attempts && pauseMs > 0) {
+            await new Promise((resolveDelay) => setTimeout(resolveDelay, pauseMs))
+        }
     }
-    return { url, status: response.status, commit, buildVersion: body.buildVersion || '' }
+    throw new Error(`${url} served ${lastCommit || '(missing)'} HTTP ${lastStatus}`)
 }
 
 async function inventoryCloudflare(outPath) {
@@ -298,7 +341,10 @@ async function main() {
     )
 }
 
-main().catch((error) => {
-    console.error(error instanceof Error ? error.message : 'retention command failed')
-    process.exitCode = 1
-})
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (invokedDirectly) {
+    main().catch((error) => {
+        console.error(error instanceof Error ? error.message : 'retention command failed')
+        process.exitCode = 1
+    })
+}

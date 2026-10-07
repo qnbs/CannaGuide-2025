@@ -59,6 +59,19 @@ export const LABELS = {
 }
 
 const FULL_SHA = /^[0-9a-f]{40}$/i
+const SAFE_ID = /^[A-Za-z0-9_-]{6,128}$/
+
+export function requireDeploymentId(id) {
+    const match = SAFE_ID.exec(String(id ?? ''))
+    if (!match) throw new Error('refusing a deployment id with unexpected characters')
+    return match[0]
+}
+
+export function requireResourceId(value, label) {
+    const match = SAFE_ID.exec(String(value ?? ''))
+    if (!match) throw new Error(`refusing ${label} with unexpected characters`)
+    return match[0]
+}
 
 export function isDeletableClass(className) {
     return typeof className === 'string' && className.startsWith('SAFE_DELETE_')
@@ -478,19 +491,18 @@ export function reconcilePlans(frozen, fresh) {
 }
 
 export function cloudflareDeleteUrl(accountId, projectName, deploymentId) {
-    if (!accountId || !projectName || !deploymentId) throw new Error('incomplete Cloudflare delete target')
-    if (String(deploymentId).includes('/') || String(projectName).includes('/')) {
-        throw new Error('refusing to build a Cloudflare delete URL with a path separator')
-    }
+    const account = requireResourceId(accountId, 'account id')
+    const project = requireResourceId(projectName, 'project name')
+    const id = requireDeploymentId(deploymentId)
     const query = 'force=false'
     if (query !== 'force=false') throw new Error('force query drifted')
-    return `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/pages/projects/${encodeURIComponent(projectName)}/deployments/${encodeURIComponent(deploymentId)}?${query}`
+    return `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(account)}/pages/projects/${encodeURIComponent(project)}/deployments/${encodeURIComponent(id)}?${query}`
 }
 
 export function vercelDeleteUrl(deploymentId, teamId) {
-    if (!deploymentId || !teamId) throw new Error('incomplete Vercel delete target')
-    if (String(deploymentId).includes('/')) throw new Error('refusing a Vercel deployment id with a slash')
-    return `https://api.vercel.com/v13/deployments/${encodeURIComponent(deploymentId)}?teamId=${encodeURIComponent(teamId)}`
+    const id = requireDeploymentId(deploymentId)
+    const team = requireResourceId(teamId, 'team id')
+    return `https://api.vercel.com/v13/deployments/${encodeURIComponent(id)}?teamId=${encodeURIComponent(team)}`
 }
 
 export function assertSafeDeleteBatch(plan, ids) {

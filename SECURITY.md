@@ -52,7 +52,7 @@ We will review reports as quickly as possible and coordinate remediation before 
 
 ## CI operations
 
-Merge policy, gate inventory, deploy E2E/Lighthouse notes, and remaining risks are documented in [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md). Required check on `main`: **CI Status** (quality + security). Cloudflare Workers build status from the dashboard integration is informational only and does not block merges.
+Merge policy, gate inventory, deploy E2E/Lighthouse notes, and remaining risks are documented in [`.github/CI-AUDIT.md`](.github/CI-AUDIT.md). Required check on `main`: **✅ CI Status** (build, unit tests and coverage, lint/types, security, and blocking Chromium E2E). Cloudflare Workers build status from the dashboard integration is informational only and does not block merges.
 
 ### Code scanning configuration
 

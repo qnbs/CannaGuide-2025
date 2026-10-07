@@ -1,6 +1,24 @@
 # CI Audit & Health Dashboard
 
-Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
+Last updated: 2026-10-06 (live merge gate reconciled with `ci.yml`)
+
+## Current policy (2026-10-06)
+
+The dated session notes below are history. They are not the live merge gate.
+`workflow-inventory: 29`
+
+| Fact                    | Live behavior                                                                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Required check          | `✅ CI Status`                                                                                                                                                                              |
+| What it requires        | build, unit tests and coverage, lint/types, security, and Chromium E2E. Rust runs when `apps/desktop` changes.                                                                              |
+| Chromium E2E            | Blocking. `ci-status` fails unless `needs.e2e.result` is `success`.                                                                                                                         |
+| Cross-browser E2E       | Advisory (`continue-on-error`) and label-gated. A skip there does not satisfy Chromium E2E.                                                                                                 |
+| Docs-only pull requests | The workflow still runs. `changes` skips the code pipeline, and `✅ CI Status` passes only after that decision. A push to `main` still ignores `**/*.md`, `docs/**`, and `graphify-out/**`. |
+| Signatures              | Required by the Main ruleset (`required_signatures`). Merges are squash-only. There is no admin bypass.                                                                                     |
+| Snyk weekly scan        | Not a merge gate. A missing `SNYK_TOKEN` is an explicit skip, not a clean scan. High or Critical findings fail that workflow.                                                               |
+| Mutation                | Weekly Stryker job. The break score stays at 50. It is not part of `✅ CI Status`.                                                                                                          |
+
+`.github/workflows/ci.yml` header: `workflow-version: 2026-08-04-e2e-blocking`.
 
 ## Quick commands
 
@@ -12,6 +30,8 @@ Last updated: 2026-05-31 (Session 177 — Master Audit + Windows DX)
 | Full CI quality (heavy)      | GitHub Actions `ci.yml` on PR/push |
 
 ## 2026-06-01 — Phase 0 (Master Audit execution)
+
+Historical snapshot. Chromium E2E later became blocking. Do not treat this table as the live gate.
 
 | Change           | Detail                                                                                  |
 | ---------------- | --------------------------------------------------------------------------------------- |
@@ -100,45 +120,43 @@ Full Vitest (2812 tests) and E2E remain in GitHub Actions `ci.yml`.
 | Deploy cleanup   | Post-deploy prune in `deploy.yml` + `deploy-cloudflare.yml`; nightly `cleanup-deployments.yml` (keep 3/env) |
 | harden-runner    | v2.19.4 repo-wide                                                                                           |
 
-**CI note:** `ci.yml` ignores `**/*.md` and `docs/**` — doc-only commits do not run CI.
+**CI note:** A push to `main` ignores `**/*.md` and `docs/**`. Pull requests do not use that filter; the `changes` job decides whether the code pipeline runs.
 
 ---
 
 ## Merge policy (main)
 
-- **Required gate:** GitHub check **CI Status** (quality + security; E2E advisory).
-- **Code owner review:** disabled on `main` for iterative solo-dev workflow.
-- **Signatures:** disabled on `main` until SSH signing configured locally.
+See [Current policy (2026-10-06)](#current-policy-2026-10-06). The required check is `✅ CI Status` (build + unit/coverage + lint/types + security + Chromium E2E). Signatures are required. Squash is the only merge method.
 
 ## Architecture decisions (unchanged)
 
 ### E2E blocking policy (`ci.yml`)
 
-`ci-status` **hard-fails** on `quality` and `security`; **E2E is advisory** (`[WARN]` only).
+Chromium E2E is blocking inside `✅ CI Status`. Cross-browser E2E stays advisory.
 
 ### Lighthouse
 
 - Deploy: `deploy.yml` + `lighthouserc.json`
 - Weekly: `benchmark.yml` (`continue-on-error`)
 
-## Inventory (25 workflows)
+## Inventory (29 workflows)
 
 See [workflows/README.md](workflows/README.md). Shared setup: [setup-node-ci](actions/setup-node-ci/action.yml).
 
 ## Remaining risks
 
-| Risk                                 | Mitigation                                                                       |
-| ------------------------------------ | -------------------------------------------------------------------------------- |
-| GitHub Actions billing lock          | Restore billing; stale/scheduled jobs show “account locked”                      |
-| `SNYK_TOKEN` missing                 | `snyk-skipped` job succeeds with notice; add token for scans (cron Mo 02:00 UTC) |
-| Cloudflare Workers Builds (PR check) | Dashboard: disable Worker Git build (see `docs/distribution.md` P0-03)           |
-| CVE-2026-41242 (protobufjs)          | `auditConfig.ignoreCves` — false positive; see AUDIT_BACKLOG S-07                |
-| Dependabot override packages         | Ignored in `dependabot.yml`; bump via manual PR + `pnpm.overrides`               |
-| Doc-only commits skip CI             | Touch non-ignored path or `workflow_dispatch` CI                                 |
-| Coverage target 50 %                 | Stufe A gates 40/40/30/40 in `vite.config.ts` (Session 177)                      |
-| Local Node 22 vs CI 24               | Use Node ≥24 (`engines`)                                                         |
-| Mutation testing                     | Weekly `mutation-testing.yml`; advisory ≥50 % score target                       |
-| GitKraken MCP (`gk`)                 | Requires GitKraken CLI + `gk auth login`; see `pnpm run mcp:doctor`              |
+| Risk                                 | Mitigation                                                                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| GitHub Actions billing lock          | Restore billing; stale/scheduled jobs show “account locked”                                                          |
+| `SNYK_TOKEN` missing                 | Weekly scan records an explicit skip and is not a clean result. High/Critical fails that workflow. Not a merge gate. |
+| Cloudflare Workers Builds (PR check) | Dashboard: disable Worker Git build (see `docs/distribution.md` P0-03)                                               |
+| CVE-2026-41242 (protobufjs)          | `auditConfig.ignoreCves` — false positive; see AUDIT_BACKLOG S-07                                                    |
+| Dependabot override packages         | Ignored in `dependabot.yml`; bump via manual PR + `pnpm.overrides`                                                   |
+| Doc-only pushes to `main` skip CI    | Pull requests still run CI. A direct push of docs can use `workflow_dispatch`.                                       |
+| Coverage target 50 %                 | Stufe A gates 40/40/30/40 in `vite.config.ts` (Session 177)                                                          |
+| Local Node 22 vs CI 24               | Use Node ≥24 (`engines`)                                                                                             |
+| Mutation testing                     | Weekly `mutation-testing.yml` fails below break score 50. That job is not part of the required CI Status check.      |
+| GitKraken MCP (`gk`)                 | Requires GitKraken CLI + `gk auth login`; see `pnpm run mcp:doctor`                                                  |
 
 ## Recommended pre-push
 

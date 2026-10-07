@@ -57,6 +57,15 @@ const WORKSPACE_NEUTRAL_ROOT_FILES = new Set([
     'README.md',
 ])
 
+function isWorkspaceNeutral(file) {
+    if (WORKSPACE_NEUTRAL_ROOT_FILES.has(file)) return true
+    if (WORKSPACE_NEUTRAL_PREFIXES.some((prefix) => file.startsWith(prefix))) return true
+    // Root markdown is documentation (SECURITY.md, CLAUDE.md, ARCHITECTURE.md, ...).
+    // It does not change a workspace TypeScript program. Leaving it unrecognized
+    // widens every docs-only push to a full typecheck.
+    return !file.includes('/') && file.endsWith('.md')
+}
+
 /**
  * Changing a library means its consumers have to be re-checked against it, so
  * these are filtered with turbo's leading `...` (the package *and everything
@@ -106,11 +115,7 @@ export function affectedWorkspaces(files) {
                 matched = true
             }
         }
-        if (
-            !matched &&
-            !WORKSPACE_NEUTRAL_ROOT_FILES.has(file) &&
-            !WORKSPACE_NEUTRAL_PREFIXES.some((prefix) => file.startsWith(prefix))
-        ) {
+        if (!matched && !isWorkspaceNeutral(file)) {
             console.log(`${TAG} unrecognized shared input '${file}' -- verifying every workspace`)
             return new Set(ALL_WORKSPACES)
         }

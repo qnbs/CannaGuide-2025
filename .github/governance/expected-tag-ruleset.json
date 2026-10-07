@@ -1,0 +1,7 @@
+{
+    "name": "Tag Protection",
+    "enforcement": "active",
+    "requiredRuleTypes": ["creation", "update", "deletion"],
+    "refInclude": ["refs/tags/v*"],
+    "forbidBypassActors": true
+}

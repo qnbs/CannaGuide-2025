@@ -1,0 +1,22 @@
+{
+    "name": "Main",
+    "enforcement": "active",
+    "requiredRuleTypes": [
+        "deletion",
+        "non_fast_forward",
+        "required_signatures",
+        "pull_request",
+        "required_status_checks"
+    ],
+    "pullRequest": {
+        "allowedMergeMethods": ["squash"]
+    },
+    "requiredStatusChecks": ["✅ CI Status"],
+    "refInclude": ["~DEFAULT_BRANCH"],
+    "forbidBypassActors": true,
+    "gaps": [
+        "required_review_thread_resolution is false. Target: true.",
+        "strict_required_status_checks_policy is false. Target: true, or a merge queue.",
+        "CodeQL is not a required ruleset check. It must stay in its workflow until an admin adds it or folds a deterministic CodeQL result into CI Status."
+    ]
+}

@@ -200,15 +200,15 @@ Bei Tag-**Push** (nicht `workflow_dispatch`): Workflow prüft, ob **CI Status** 
 
 Dokumentierter Zielzustand (Solo-Dev, CI-gated):
 
-| Setting          | Wert                            | UI-Pfad                                               |
-| ---------------- | ------------------------------- | ----------------------------------------------------- |
-| `enforce_admins` | ✅                              | Settings → Branches → `main` → Include administrators |
-| PR required      | ✅, 0 Approvals                 | Require pull request → 0 approving reviews            |
-| Required checks  | `quality`, `ci-status` (strict) | Require status checks                                 |
-| Signed commits   | ✅                              | Require signed commits                                |
-| Linear history   | ✅                              | Require linear history                                |
-| Force push       | ❌                              | Block force pushes                                    |
-| Branch deletion  | ❌                              | Block deletions                                       |
+| Setting          | Wert                             | UI-Pfad                                               |
+| ---------------- | -------------------------------- | ----------------------------------------------------- |
+| `enforce_admins` | ✅                               | Settings → Branches → `main` → Include administrators |
+| PR required      | ✅, 0 Approvals                  | Require pull request → 0 approving reviews            |
+| Required checks  | `✅ CI Status` only (strict off) | Require status checks                                 |
+| Signed commits   | ✅                               | Require signed commits                                |
+| Linear history   | ✅                               | Require linear history                                |
+| Force push       | ❌                               | Block force pushes                                    |
+| Branch deletion  | ❌                               | Block deletions                                       |
 
 **Merge-Strategien** (Settings → General → Pull Requests):
 
@@ -220,9 +220,23 @@ Dokumentierter Zielzustand (Solo-Dev, CI-gated):
 | Auto-merge             | ✅                    |
 | Delete branch on merge | ✅                    |
 
-### Direkt-Push auf `main`
+### Delivery to `main`
 
-Cloud Agents und Maintainer mit Admin-Bypass können `git push origin main` nutzen, wenn `enforce_admins` aktiv ist — **nur für Accounts mit Bypass**. CI muss danach grün sein.
+Normal delivery is a pull request. Do not push product changes to `main`, and do not treat an admin or ruleset bypass as the fallback when `gh pr create` fails. Leave the branch ready and report the platform limit. The table below is a point-in-time record. `node scripts/check-repository-governance.mjs --live` is the check that fails when the live ruleset regresses.
+
+Live `Main` ruleset (read 2026-10-06 via `gh api repos/qnbs/CannaGuide-2025/rulesets/18940388`):
+
+| Rule                                                | Live value                         |
+| --------------------------------------------------- | ---------------------------------- |
+| Deletion / non-fast-forward                         | blocked                            |
+| Signatures                                          | required                           |
+| Pull request                                        | required, squash only, 0 approvals |
+| Review thread resolution                            | not required                       |
+| Required check                                      | `✅ CI Status` only                |
+| Strict status checks                                | off                                |
+| `current_user_can_bypass` for the cloud-agent token | `never`                            |
+
+`✅ CI Status` aggregates build, unit/coverage, verify, security, and Chromium E2E. CodeQL runs in its own workflow and is not itself a required ruleset check. Desired follow-up, applied by a repo admin rather than by CI: require review-thread resolution, strict checks or a merge queue, and an explicit CodeQL authority. `scripts/check-repository-governance.mjs` compares the live ruleset to `.github/governance/expected-main-ruleset.json` and fails on regression. Known gaps warn; they do not fail the default mode.
 
 ---
 
@@ -258,13 +272,13 @@ Curated allowlist aktiv (nur vertrauenswürdige Actions). Neue `uses:`-Referenze
 
 ## 7. Cursor Cloud Agent — Grenzen & Workarounds
 
-| Aktion                             | Cloud Agent                                 | Workaround                                                 |
-| ---------------------------------- | ------------------------------------------- | ---------------------------------------------------------- |
-| `git push origin main`             | ✅ (wenn Token Bypass hat)                  | Gates lokal, dann push                                     |
-| `git push origin v1.9.0`           | ❌ Ruleset `never` bypass                   | `RELEASE_PAT` + `workflow_dispatch` oder manuell als Owner |
-| `gh pr create` / ManagePullRequest | ❌ `Resource not accessible by integration` | Lokal mergen + `git push origin main`                      |
-| `gh pr close` / Kommentare         | ❌ gleicher Fehler                          | PRs manuell in GitHub UI schließen                         |
-| Branch Protection lesen            | ❌ 403 für Integration                      | Diese Anleitung + `gh api rulesets`                        |
+| Action                             | Cloud Agent                        | What to do instead                                                 |
+| ---------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| `git push origin main`             | Not allowed for normal delivery    | Push a branch and open a pull request                              |
+| `git push origin v1.9.0`           | Blocked by tag ruleset             | Release Publish `workflow_dispatch` with a narrow token            |
+| `gh pr create` / ManagePullRequest | May fail for the integration token | Leave the branch pushed and report the limit                       |
+| `gh pr close` / comments           | May fail for the integration token | Close or comment in the GitHub UI                                  |
+| Ruleset read                       | `gh api repos/.../rulesets`        | Compare with `node scripts/check-repository-governance.mjs --live` |
 
 ### Offene PRs (manuell schließen)
 
@@ -282,9 +296,9 @@ Details: [`docs/audits/SUPERSEDED-PRS-2026-07-01.md`](./audits/SUPERSEDED-PRS-20
 
 ### Solo-Developer-Setup
 
-- **0 Required Approvals** — CI (`quality` + `ci-status`) ist das Gate
-- **Signed commits** — SSH- oder GPG-Signing erforderlich
-- **Squash-only** — lineare History
+- **0 Required Approvals** — single-maintainer policy. The compensating gate is the required **✅ CI Status** check, not a second human.
+- **Signed commits** — SSH or GPG signatures required
+- **Squash-only** — linear history
 
 ### Feature branches
 
@@ -293,13 +307,12 @@ Details: [`docs/audits/SUPERSEDED-PRS-2026-07-01.md`](./audits/SUPERSEDED-PRS-20
 
 ### Merge Gate (CI)
 
-| Check                  | Required?                  |
-| ---------------------- | -------------------------- |
-| Quality Gates          | ✅                         |
-| Security               | ✅                         |
-| CI Status (Aggregator) | ✅                         |
-| E2E                    | Advisory                   |
-| Deploy                 | Advisory (nach CI success) |
+| Check        | Required?                                                                |
+| ------------ | ------------------------------------------------------------------------ |
+| ✅ CI Status | Yes. Aggregates build, unit/coverage, verify, security, and Chromium E2E |
+| Chromium E2E | Yes, inside CI Status. It is not advisory.                               |
+| CodeQL       | Runs on push/PR/schedule. Not a ruleset-required check today.            |
+| Deploy       | After CI success. Not a substitute for CI Status.                        |
 
 ---
 

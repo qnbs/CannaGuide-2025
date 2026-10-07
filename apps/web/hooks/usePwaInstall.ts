@@ -4,6 +4,7 @@ import { getUISnapshot } from '../stores/useUIStore'
 import { getT } from '@/i18n'
 import type { BeforeInstallPromptEvent } from '@/types'
 import { PWA_INSTALLED_KEY } from '@/constants'
+import { readDeployVersion } from '@/services/deployIdentity'
 
 const PWA_INSTALL_HINT_KEY = 'cg.pwa.install_hint.dismissed_at'
 const PWA_UPDATE_DISMISSED_KEY = 'cg.pwa.update.dismissed_at'
@@ -89,9 +90,11 @@ if (typeof window !== 'undefined') {
         _emit()
         const lastDismissed = Number(localStorage.getItem(PWA_UPDATE_DISMISSED_KEY) ?? 0)
         if (Date.now() - lastDismissed < UPDATE_DISMISSAL_COOLDOWN_MS) return
-        getUISnapshot().addNotification({
-            message: `${getT()('common.swUpdateAvailable')} (v${__APP_VERSION__})`,
-            type: 'info',
+        void readDeployVersion().then((version) => {
+            getUISnapshot().addNotification({
+                message: `${getT()('common.swUpdateAvailable')} (v${version})`,
+                type: 'info',
+            })
         })
     })
 }

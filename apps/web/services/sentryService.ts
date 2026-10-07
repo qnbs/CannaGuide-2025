@@ -1,3 +1,5 @@
+import { readRunningBuildVersion } from '@/services/deployIdentity'
+
 type SentryModule = typeof import('@sentry/react')
 
 let _sentry: SentryModule | null = null
@@ -56,12 +58,13 @@ export const initSentry = (): void => {
         return
     }
 
+    const version = readRunningBuildVersion()
     _initPromise = import('@sentry/react').then((mod) => {
         _sentry = mod
         mod.init({
             dsn,
             environment: 'production',
-            release: `cannaguide@${__APP_VERSION__}`,
+            release: `cannaguide@${version}`,
             tracesSampleRate: 0.1,
             replaysSessionSampleRate: 0.01,
             replaysOnErrorSampleRate: 1.0,

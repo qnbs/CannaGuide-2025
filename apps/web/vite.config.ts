@@ -205,6 +205,10 @@ function resolveManualChunk(id: string): string | undefined {
 // https://vitejs.dev/config/
 export default defineConfig({
     base,
+    // Package version only. Turbo caches dist/**, and the commit is not a task
+    // env input, so baking a SHA here either sticks at 1.9.0 or replays the SHA
+    // from an older cache hit. Commit identity is stamped into version.json
+    // after the build and read at runtime.
     define: {
         __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
     },

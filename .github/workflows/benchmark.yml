@@ -1,6 +1,8 @@
 name: Performance Benchmark
 
 # Advisory only -- runs weekly + on-demand. Does NOT block main pushes.
+# Dependency hygiene and the performance measurement are separate jobs so a
+# depcheck failure cannot hide bundle and Lighthouse evidence.
 on:
     workflow_dispatch:
     schedule:
@@ -13,10 +15,10 @@ env:
     NODE_VERSION: '24'
 
 jobs:
-    benchmark:
-        name: Benchmark
+    hygiene:
+        name: Dependency hygiene
         runs-on: ubuntu-latest
-        timeout-minutes: 30
+        timeout-minutes: 15
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
@@ -25,9 +27,8 @@ jobs:
 
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-
-            - name: Capture benchmark start
-              run: echo "BENCHMARK_START=$(date +%s)" >> "$GITHUB_ENV"
+              with:
+                  persist-credentials: false
 
             - name: Enable Corepack
               run: corepack enable
@@ -43,6 +44,36 @@ jobs:
 
             - name: depcheck
               run: pnpm run depcheck
+
+    benchmark:
+        name: Benchmark
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: Capture benchmark start
+              run: echo "BENCHMARK_START=$(date +%s)" >> "$GITHUB_ENV"
+
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: pnpm
+
+            - name: Install dependencies
+              run: pnpm install --frozen-lockfile
 
             - name: Build
               working-directory: apps/web

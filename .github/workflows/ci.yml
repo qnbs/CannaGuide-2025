@@ -260,6 +260,8 @@ jobs:
               run: node --test --test-concurrency=1 ./scripts/git-hooks/*.test.mjs
             - name: Security policy regression tests
               run: node --test --test-concurrency=1 ./scripts/security/*.test.mjs
+            - name: Governance and harness regression tests
+              run: node --test --test-concurrency=1 ./scripts/check-repository-governance.test.mjs ./scripts/build-identity.test.mjs ./scripts/harness-guards.test.mjs
             - name: Install pinned uv
               env:
                   UV_VERSION: '0.8.10'

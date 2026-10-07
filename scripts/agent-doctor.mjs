@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+/**
+ * Fail-closed preflight for a cloud or devcontainer agent.
+ * It does not install packages, browsers, or models.
+ *
+ * Run: pnpm run agent:doctor
+ */
+
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import os from 'node:os'
+import { pathToFileURL } from 'node:url'
+
+export function captureCommand(cmd, args) {
+    try {
+        const stdout = execFileSync(cmd, args, {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'pipe'],
+        }).trim()
+        return { ok: true, stdout, detail: '' }
+    } catch (error) {
+        const detail = error instanceof Error ? error.message.split('\n')[0] : 'command failed'
+        return { ok: false, stdout: '', detail }
+    }
+}
+
+/** Major.minor match, so image 1.62.1 satisfies a range of ^1.62.0. */
+export function playwrightMajorMinorMatch(imageVersion, range) {
+    const image = /^(\d+)\.(\d+)\.\d+$/.exec(imageVersion)
+    const declared = /(\d+)\.(\d+)\.\d+/.exec(range)
+    if (!image || !declared) return false
+    return image[1] === declared[1] && image[2] === declared[2]
+}
+
+function main() {
+    const problems = []
+    const warnings = []
+
+    function check(label, ok, detail) {
+        if (ok) console.log(`[OK] ${label}${detail ? `: ${detail}` : ''}`)
+        else problems.push(`${label}${detail ? `: ${detail}` : ''}`)
+    }
+
+    const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
+    const wantedNode = Number((pkg.engines?.node ?? '>=24').replace(/[^\d]/g, '') || 24)
+    const nodeMajor = Number(process.versions.node.split('.')[0])
+    check('Node major', nodeMajor >= wantedNode, process.version)
+
+    const wantedPnpm = (pkg.packageManager ?? '').replace(/^pnpm@/, '')
+    const pnpmCommand = captureCommand('pnpm', ['--version'])
+    check(
+        'pnpm version',
+        pnpmCommand.ok && pnpmCommand.stdout === wantedPnpm,
+        pnpmCommand.ok
+            ? `${pnpmCommand.stdout} (packageManager ${wantedPnpm})`
+            : pnpmCommand.detail,
+    )
+
+    const gitCommand = captureCommand('git', ['--version'])
+    check(
+        'git',
+        gitCommand.ok && gitCommand.stdout.startsWith('git version'),
+        gitCommand.ok ? gitCommand.stdout : gitCommand.detail,
+    )
+    const signing = captureCommand('git', ['config', '--get', 'commit.gpgsign'])
+    check(
+        'git commit.gpgsign',
+        signing.ok && signing.stdout === 'true',
+        signing.ok ? signing.stdout : signing.detail || 'unset',
+    )
+
+    const gh = captureCommand('gh', ['--version'])
+    check(
+        'gh',
+        gh.ok && gh.stdout.startsWith('gh version'),
+        gh.ok ? gh.stdout.split('\n')[0] : gh.detail || 'missing',
+    )
+
+    const freeMb = Math.round(os.freemem() / 1024 / 1024)
+    if (freeMb < 512) problems.push(`low memory: ${freeMb} MB free`)
+    else console.log(`[OK] memory free ${freeMb} MB`)
+
+    check('MCP config', existsSync('.mcp.json'))
+    try {
+        JSON.parse(readFileSync('.mcp.json', 'utf8'))
+        console.log('[OK] .mcp.json parses')
+    } catch (error) {
+        problems.push(`.mcp.json is not JSON: ${error.message}`)
+    }
+
+    const dockerFile = existsSync('.devcontainer/Dockerfile')
+        ? readFileSync('.devcontainer/Dockerfile', 'utf8')
+        : ''
+    const image = dockerFile.match(/playwright:v([0-9.]+)-/)
+    const webPkgPath = 'apps/web/package.json'
+    let playwright = ''
+    if (!existsSync(webPkgPath)) {
+        problems.push('apps/web/package.json is missing')
+    } else {
+        try {
+            const webPkg = JSON.parse(readFileSync(webPkgPath, 'utf8'))
+            playwright = webPkg.devDependencies?.['@playwright/test'] ?? ''
+        } catch (error) {
+            problems.push(`apps/web/package.json is not JSON: ${error.message}`)
+        }
+    }
+    if (image && !playwrightMajorMinorMatch(image[1], playwright)) {
+        warnings.push(
+            `Playwright image v${image[1]} does not match apps/web @playwright/test ${playwright || 'missing'}`,
+        )
+    } else if (image) {
+        console.log(`[OK] Playwright image v${image[1]} matches the workspace range`)
+    }
+
+    const setup = existsSync('.devcontainer/setup.sh')
+        ? readFileSync('.devcontainer/setup.sh', 'utf8')
+        : ''
+    check('devcontainer setup fails closed', /set -euo pipefail/.test(setup))
+
+    try {
+        execFileSync('node', ['scripts/check-repository-governance.mjs'], { stdio: 'inherit' })
+    } catch {
+        problems.push('governance expected-ruleset check failed')
+    }
+
+    if (warnings.length > 0) {
+        console.log(`[WARN] ${warnings.length} optional gap(s):`)
+        for (const warning of warnings) console.log(`       - ${warning}`)
+    }
+    if (problems.length > 0) {
+        console.error(`[FAIL] ${problems.length} doctor check(s):`)
+        for (const problem of problems) console.error(`       - ${problem}`)
+        process.exit(1)
+    }
+    console.log('[OK] agent doctor')
+}
+
+const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (isDirectRun) main()

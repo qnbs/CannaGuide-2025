@@ -155,15 +155,11 @@ everybody bypasses.
 
 ### PR / review comments (Cloud Agent)
 
-When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): **resolve them in the
-same iteration** — fix the code, push, and re-run the relevant gates before summarizing. Do
-not leave valid review items for a follow-up unless the user explicitly defers them.
+Implementation PRs are **Ready for review** (`draft=false`) once the first reviewable commit exists. A Draft PR is not a review result: missing comments on a Draft, skipped, or still-running reviewer are not approval.
 
-**Loop until quiescent.** One pass is not enough: a fix routinely raises the next wave. After
-each push, re-trigger the bot, fetch unresolved threads again, and repeat until a fresh review
-yields **0 new comments and 0 unresolved threads**. Nitpicks and "outside diff range" comments
-are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor
-so the rule passes honestly.
+When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): fix the valid ones. Do not leave valid review items for a follow-up unless the user explicitly defers them.
+
+**One correction wave per head.** After a push, wait until CI and the reviewers that actually run have finished on that exact SHA. Collect every finding, then push one consolidated fix. Do not cascade tiny pushes while the current head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor so the rule passes honestly. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded limits, not a clean review.
 
 **Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
 larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch
@@ -175,15 +171,15 @@ git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
 
 ### Git workflow (Cloud Agent)
 
-- **Merge target:** `main` directly is fine when local gates pass (`lint:changed`, `lint:scopes`, `typecheck`, relevant `vitest`).
-- **Branches:** use an editor-neutral `<area>/<descriptive-name>` branch off `main` (for example `security/workflow-gate-hardening`). CI runs for every pull request target; direct push CI is reserved for `main` to avoid duplicate push/PR runs.
-- **Pull requests:** `gh pr create` / ManagePullRequest may fail with `Resource not accessible by integration` — no blocker; merge locally and `git push origin main` after Quality + Security are green.
-- **Merge gate (CI):** **Quality + Security** required; E2E and deploy workflows are advisory unless explicitly requested.
-- **Housekeeping:** After merge to `main`, watch [Actions](https://github.com/qnbs/CannaGuide-2025/actions) on `main` until **CI Status** passes; fix regressions on `main` or a follow-up editor-neutral branch.
+- **Never push product changes straight to `main`.** Open an editor-neutral branch and a pull request. If PR creation is unavailable to the integration, leave the branch pushed and report the platform limit. Do not merge locally and push `main` as a fallback.
+- **Never use `--no-verify`.** Do not bypass rulesets, signature enforcement, or required checks.
+- **Merge gate:** the required check is **✅ CI Status**. That aggregator is build + unit/coverage + verify + security + Chromium E2E. Chromium E2E is blocking. Deploy, Snyk, mutation, and the performance benchmark are scheduled or downstream health signals; they are not a reason to skip E2E.
+- **Branches:** `<area>/<descriptive-name>` off `main` (for example `security/workflow-gate-hardening`). CI runs for every pull request target, including stacked PRs.
+- **Housekeeping:** After merge to `main`, watch [Actions](https://github.com/qnbs/CannaGuide-2025/actions) until **CI Status** is green on that SHA. Fix regressions on a follow-up branch, not by pushing `main` directly.
 
 ### Releases & Git tags (Cloud Agent)
 
 - **Tag push blocked:** Repository ruleset **Tag Protection** (`refs/tags/v*`) rejects tag creation by the Cloud Agent token (`GH013`). The agent cannot push `vX.Y.Z` tags.
-- **Workaround (maintainer):** Set repository secret **`RELEASE_PAT`** (classic PAT, `repo` scope), then run **Release Publish** via `workflow_dispatch` with `tag: vX.Y.Z`. Or push the tag manually as repo owner if your account has ruleset bypass.
+- **Workaround (maintainer):** Tag protection blocks agent tag pushes (`GH013`). Prefer a fine-grained token or GitHub App with the minimum contents permission the Release Publish workflow needs, stored as **`RELEASE_PAT`**, and run **Release Publish** via `workflow_dispatch` with `tag: vX.Y.Z`. A classic PAT is a fallback, not the target design: keep the scope minimal, rotate it, and do not use it to bypass branch rules on `main`.
 - **Full guide:** [`docs/GITHUB-SETTINGS-GUIDE.md`](docs/GITHUB-SETTINGS-GUIDE.md) — rulesets, secrets, branch protection, PR limits.
 - **Process:** [`docs/release-process.md`](docs/release-process.md) — CHANGELOG, version bump, supply-chain verification.

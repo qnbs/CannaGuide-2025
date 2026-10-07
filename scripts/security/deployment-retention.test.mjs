@@ -773,6 +773,110 @@ test('a deployment that became production between classify and delete is not rem
     assert.deepEqual(calls, ['GET'])
 })
 
+test('proven unaliased Cloudflare production history deletes with force=false', async () => {
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: productionSet('cloudflare'),
+    })
+    assert.deepEqual(plan.queuedDeleteIds, ['oldprod'])
+    const calls = []
+    const results = await deleteProvenDeployments({
+        backend: 'cloudflare',
+        plan,
+        ids: ['oldprod'],
+        token: 'test-token',
+        accountId: 'account',
+        projectName: 'cannaguide-2025',
+        fetchImpl: async (url, init) => {
+            calls.push({ url: String(url), method: init?.method || 'GET' })
+            return {
+                ok: true,
+                status: 200,
+                text: async () =>
+                    JSON.stringify({
+                        success: true,
+                        result: { environment: 'production', aliases: [] },
+                    }),
+            }
+        },
+    })
+    assert.equal(results.length, 1)
+    assert.equal(results[0].ok, true)
+    assert.equal(calls[0].method, 'GET')
+    assert.equal(calls[1].method, 'DELETE')
+    assert.match(calls[1].url, /force=false/)
+    assert.ok(calls.every((call) => !call.url.includes('force=true')))
+
+    const blocked = []
+    await assert.rejects(
+        () =>
+            deleteProvenDeployments({
+                backend: 'cloudflare',
+                plan,
+                ids: ['oldprod'],
+                token: 'test-token',
+                accountId: 'account',
+                projectName: 'cannaguide-2025',
+                fetchImpl: async (_url, init) => {
+                    blocked.push(init?.method || 'GET')
+                    return {
+                        ok: true,
+                        status: 200,
+                        text: async () =>
+                            JSON.stringify({
+                                success: true,
+                                result: {
+                                    environment: 'production',
+                                    aliases: ['cannaguide-2025.pages.dev'],
+                                },
+                            }),
+                    }
+                },
+            }),
+        /production alias appeared/,
+    )
+    assert.deepEqual(blocked, ['GET'])
+
+    await assert.rejects(
+        () =>
+            deleteProvenDeployments({
+                backend: 'cloudflare',
+                plan,
+                ids: ['oldprod'],
+                token: 'test-token',
+                accountId: 'account',
+                projectName: 'cannaguide-2025',
+                fetchImpl: async () => ({
+                    ok: true,
+                    status: 200,
+                    text: async () =>
+                        JSON.stringify({
+                            success: true,
+                            result: { environment: 'preview', aliases: [] },
+                        }),
+                }),
+            }),
+        /environment is not old production/,
+    )
+    await assert.rejects(
+        () =>
+            deleteProvenDeployments({
+                backend: 'cloudflare',
+                plan,
+                ids: ['prod'],
+                token: 'test-token',
+                accountId: 'account',
+                projectName: 'cannaguide-2025',
+                fetchImpl: async () => {
+                    throw new Error('current production must not be looked up')
+                },
+            }),
+        /refusing to delete/,
+    )
+})
+
 test('version identity is retried before the cleanup run is failed', async () => {
     let calls = 0
     const version = await verifyPublicVersion(

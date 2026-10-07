@@ -6,6 +6,11 @@
  *
  * Cloudflare deletes always use force=false. Wrangler `--force` is not used:
  * in wrangler 4.110.0 that flag also permits deleting aliased deployments.
+ * A proven old production row may be deleted only when the live record is
+ * still production, unaliased, and classified SAFE_DELETE_OLD_PRODUCTION_HISTORY
+ * (Cloudflare) or SAFE_DELETE_OLD_PRODUCTION (Vercel). Preview deletes stay
+ * preview-only. Current production and the rollback window never reach this
+ * function: assertSafeDeleteBatch rejects those ids first.
  */
 
 import {
@@ -121,14 +126,17 @@ export async function listVercelDeployments({
             headers: authHeaders(token),
         })
         const body = await readJson(response)
-        if (!response.ok) throw new Error(`Vercel deployment list failed with HTTP ${response.status}`)
+        if (!response.ok)
+            throw new Error(`Vercel deployment list failed with HTTP ${response.status}`)
         const batch = Array.isArray(body.deployments) ? body.deployments : []
         deployments.push(...batch)
         const next = body.pagination?.next
         if (!next || batch.length === 0) return deployments
         until = String(next)
     }
-    throw new Error(`Vercel deployment inventory exceeded ${ceiling} pages; refusing a partial inventory`)
+    throw new Error(
+        `Vercel deployment inventory exceeded ${ceiling} pages; refusing a partial inventory`,
+    )
 }
 
 export async function listVercelAliases({
@@ -157,15 +165,12 @@ export async function listVercelAliases({
         if (!next || batch.length === 0) return aliases
         until = String(next)
     }
-    throw new Error(`Vercel alias inventory exceeded ${ceiling} pages; refusing a partial inventory`)
+    throw new Error(
+        `Vercel alias inventory exceeded ${ceiling} pages; refusing a partial inventory`,
+    )
 }
 
-export async function deleteVercelDeployment({
-    token,
-    teamId,
-    deploymentId,
-    fetchImpl = fetch,
-}) {
+export async function deleteVercelDeployment({ token, teamId, deploymentId, fetchImpl = fetch }) {
     const url = vercelDeleteUrl(deploymentId, teamId)
     const response = await fetchImpl(url, { method: 'DELETE', headers: authHeaders(token) })
     const body = await readJson(response)
@@ -182,9 +187,14 @@ function carriesProductionAlias(aliases, backend) {
     return (aliases || []).map(aliasHostname).some((host) => canonical.has(host))
 }
 
+function aliasList(value) {
+    return Array.isArray(value) ? value : []
+}
+
 export async function assertStillDisposable({
     backend,
     id,
+    expectedClass,
     token,
     accountId,
     projectName,
@@ -205,11 +215,21 @@ export async function assertStillDisposable({
             throw new Error(`refusing to delete ${safeId}: live Cloudflare lookup failed`)
         }
         const record = body.result || {}
+        const aliases = aliasList(record.aliases)
+        if (carriesProductionAlias(aliases, 'cloudflare')) {
+            throw new Error(`refusing to delete ${safeId}: production alias appeared`)
+        }
+        if (expectedClass === 'SAFE_DELETE_OLD_PRODUCTION_HISTORY') {
+            if (record.environment !== 'production') {
+                throw new Error(`refusing to delete ${safeId}: environment is not old production`)
+            }
+            if (aliases.length > 0) {
+                throw new Error(`refusing to delete ${safeId}: alias appeared`)
+            }
+            return { skip: false, id: safeId }
+        }
         if (record.environment !== 'preview') {
             throw new Error(`refusing to delete ${safeId}: environment is not preview`)
-        }
-        if (carriesProductionAlias(record.aliases, 'cloudflare')) {
-            throw new Error(`refusing to delete ${safeId}: production alias appeared`)
         }
         return { skip: false, id: safeId }
     }
@@ -219,7 +239,11 @@ export async function assertStillDisposable({
     const body = await readJson(response)
     if (response.status === 404) return { skip: true, id: safeId }
     if (!response.ok) throw new Error(`refusing to delete ${safeId}: live Vercel lookup failed`)
-    if (body.target != null && body.target !== 'preview') {
+    if (expectedClass === 'SAFE_DELETE_OLD_PRODUCTION') {
+        if (body.target !== 'production') {
+            throw new Error(`refusing to delete ${safeId}: target is ${body.target ?? 'unset'}`)
+        }
+    } else if (body.target != null && body.target !== 'preview') {
         throw new Error(`refusing to delete ${safeId}: target is ${body.target}`)
     }
     const aliasValues = []
@@ -242,11 +266,13 @@ export async function deleteProvenDeployments({
     fetchImpl = fetch,
 }) {
     assertSafeDeleteBatch(plan, ids)
+    const classById = new Map((plan?.deployments || []).map((row) => [row.id, row.class]))
     const results = []
     for (const id of ids) {
         const gate = await assertStillDisposable({
             backend,
             id,
+            expectedClass: classById.get(id),
             token,
             accountId,
             projectName,

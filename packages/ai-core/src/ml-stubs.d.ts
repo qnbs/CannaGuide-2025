@@ -51,7 +51,8 @@ declare module '@mlc-ai/web-llm' {
 declare module 'onnxruntime-web' {
     export const env: {
         wasm: {
-            wasmPaths: string
+            numThreads?: number
+            wasmPaths?: string | { wasm?: URL | string; mjs?: URL | string }
         }
     }
 }

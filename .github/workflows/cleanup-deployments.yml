@@ -2,8 +2,12 @@ name: Cleanup Old Deployments
 
 on:
     schedule:
-        # Nightly safety net (post-deploy workflows prune after each deploy)
+        # Nightly ceiling. Host retention also reconciles after a successful
+        # push to main. Pull requests never run that job.
         - cron: '0 3 * * *'
+    workflow_run:
+        workflows: ['CI']
+        types: [completed]
     workflow_dispatch:
         inputs:
             keep_count:
@@ -24,6 +28,13 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 45
         continue-on-error: true
+        # workflow_run fires for every CI completion, including pull requests.
+        # Only a successful push to main is a trusted reconciliation epoch.
+        if: >-
+            github.event_name != 'workflow_run' ||
+            (github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'push' &&
+            github.event.workflow_run.head_branch == 'main')
         permissions:
             contents: read
             deployments: write
@@ -54,7 +65,11 @@ jobs:
         if: >-
             github.repository == 'qnbs/CannaGuide-2025' &&
             (github.event_name == 'schedule' ||
-            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+            (github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.event == 'push' &&
+            github.event.workflow_run.head_branch == 'main'))
         permissions:
             contents: read
             pull-requests: read
@@ -94,8 +109,10 @@ jobs:
                   --github retention-reports/github.json
                   --out retention-reports/cloudflare-plan.json
 
+            # workflow_dispatch booleans arrive as the strings "true" and "false".
+            # Comparing them to a boolean skipped every manual delete (run 37626782555).
             - name: Delete proven Cloudflare Pages deployments
-              if: github.event_name == 'schedule' || inputs.dry_run == false
+              if: inputs.dry_run != 'true'
               env:
                   GH_TOKEN: ${{ github.token }}
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -116,7 +133,7 @@ jobs:
                   --out retention-reports/vercel-plan.json
 
             - name: Delete proven Vercel deployments
-              if: github.event_name == 'schedule' || inputs.dry_run == false
+              if: inputs.dry_run != 'true'
               env:
                   GH_TOKEN: ${{ github.token }}
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

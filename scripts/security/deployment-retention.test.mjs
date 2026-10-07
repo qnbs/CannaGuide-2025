@@ -15,7 +15,12 @@ import {
     reconcilePlans,
     vercelDeleteUrl,
 } from '../deployment-retention/classify.mjs'
-import { deleteCloudflareDeployment, deleteProvenDeployments, listCloudflareDeployments, listVercelDeployments } from '../deployment-retention/hosts.mjs'
+import {
+    deleteCloudflareDeployment,
+    deleteProvenDeployments,
+    listCloudflareDeployments,
+    listVercelDeployments,
+} from '../deployment-retention/hosts.mjs'
 import { verifyPublicVersion } from '../deployment-retention/cli.mjs'
 
 const MAIN = 'cb6d4054d2229b4a5e1b8fba0ffbfc1de6f33f52'
@@ -160,7 +165,9 @@ test('open PR head and superseded preview are classified differently from a stal
                 sha: OPEN_SHA,
                 branch: 'cursor/ai-ml-bump-af4f',
                 state: ready,
-                aliases: ['canna-guide-2025-web-git-cursor-ai-ml-bump-af4f-qnbs-projects.vercel.app'],
+                aliases: [
+                    'canna-guide-2025-web-git-cursor-ai-ml-bump-af4f-qnbs-projects.vercel.app',
+                ],
             }),
             deploy({
                 id: 'open-old',
@@ -175,7 +182,9 @@ test('open PR head and superseded preview are classified differently from a stal
                 sha: MERGED_SHA,
                 branch: 'cursor/testing-library-patch-af4f',
                 state: ready,
-                aliases: ['canna-guide-2025-web-git-cursor-testing-library-patch-af4f-qnbs-projects.vercel.app'],
+                aliases: [
+                    'canna-guide-2025-web-git-cursor-testing-library-patch-af4f-qnbs-projects.vercel.app',
+                ],
             }),
             deploy({
                 id: 'merged-old',
@@ -205,7 +214,13 @@ test('open PR head and superseded preview are classified differently from a stal
                 branch: 'cursor/unknown-af4f',
                 state: ready,
             }),
-            deploy({ id: 'building', createdAt: 7, sha: OLD_OPEN, branch: 'cursor/ai-ml-bump-af4f', state: 'BUILDING' }),
+            deploy({
+                id: 'building',
+                createdAt: 7,
+                sha: OLD_OPEN,
+                branch: 'cursor/ai-ml-bump-af4f',
+                state: 'BUILDING',
+            }),
         ],
     })
     const byId = Object.fromEntries(plan.deployments.map((row) => [row.id, row]))
@@ -269,7 +284,10 @@ test('a short commit sha and an alias-only record fail closed', () => {
         'cloudflare',
     )
     assert.equal(wrangler.shaComplete, false)
-    const aliasOnly = attachAliasRecords([], [{ alias: 'mystery.example', deploymentId: 'missing-deploy' }])
+    const aliasOnly = attachAliasRecords(
+        [],
+        [{ alias: 'mystery.example', deploymentId: 'missing-deploy' }],
+    )
     const plan = classifyRetention({
         backend: 'cloudflare',
         mainSha: MAIN,
@@ -320,7 +338,9 @@ test('reconcile aborts when main or a safe row changes and never deletes UNKNOWN
         mainSha: SHA_A,
         pulls: [],
         deployments: productionSet('vercel').map((row) =>
-            row.id === 'prod' ? { ...row, sha: SHA_A, aliases: ['canna-guide-2025-web.vercel.app'] } : row,
+            row.id === 'prod'
+                ? { ...row, sha: SHA_A, aliases: ['canna-guide-2025-web.vercel.app'] }
+                : row,
         ),
     })
     const aborted = reconcilePlans(frozen, moved)
@@ -347,7 +367,10 @@ test('cloudflare and vercel delete URLs cannot enable force or a project delete'
     assert.doesNotMatch(cloudflare, /\/projects\/cannaguide-2025\?/)
     const vercel = vercelDeleteUrl('dpl_123', 'team_123')
     assert.match(vercel, /\/v13\/deployments\/dpl_123\?teamId=team_123$/)
-    assert.throws(() => cloudflareDeleteUrl('account', 'cannaguide-2025', 'a/b'), /unexpected characters/)
+    assert.throws(
+        () => cloudflareDeleteUrl('account', 'cannaguide-2025', 'a/b'),
+        /unexpected characters/,
+    )
 })
 
 test('delete helper stops on the first API rejection and never sends force=true', async () => {
@@ -388,11 +411,21 @@ test('delete helper stops on the first API rejection and never sends force=true'
             return {
                 ok: true,
                 status: 200,
-                text: async () => JSON.stringify({ success: true, result: { environment: 'preview', aliases: [] }, target: null }),
+                text: async () =>
+                    JSON.stringify({
+                        success: true,
+                        result: { environment: 'preview', aliases: [] },
+                        target: null,
+                    }),
             }
         }
         if (String(url).includes('merged-older')) {
-            return { ok: false, status: 400, text: async () => JSON.stringify({ success: false, errors: [{ message: 'latest' }] }) }
+            return {
+                ok: false,
+                status: 400,
+                text: async () =>
+                    JSON.stringify({ success: false, errors: [{ message: 'latest' }] }),
+            }
         }
         return { ok: true, status: 200, text: async () => JSON.stringify({ success: true }) }
     }
@@ -409,7 +442,11 @@ test('delete helper stops on the first API rejection and never sends force=true'
     assert.equal(results.length, 2)
     assert.equal(results[0].ok, true)
     assert.equal(results[1].ok, false)
-    assert.ok(calls.filter((call) => call.method === 'DELETE').every((call) => call.url.includes('force=false')))
+    assert.ok(
+        calls
+            .filter((call) => call.method === 'DELETE')
+            .every((call) => call.url.includes('force=false')),
+    )
     assert.ok(calls.every((call) => !call.url.includes('force=true')))
     assert.equal(ids.includes('merged-latest'), false)
     await assert.rejects(
@@ -457,7 +494,8 @@ test('a partial inventory past the page ceiling is refused', async () => {
         fetchImpl: async () => ({
             ok: true,
             status: 200,
-            text: async () => JSON.stringify({ deployments: [{ id: 'dpl_done1' }], pagination: {} }),
+            text: async () =>
+                JSON.stringify({ deployments: [{ id: 'dpl_done1' }], pagination: {} }),
         }),
     })
     assert.equal(listed.length, 1)
@@ -484,7 +522,11 @@ test('a deployment that became production between classify and delete is not rem
                     return {
                         ok: true,
                         status: 200,
-                        text: async () => JSON.stringify({ target: 'production', alias: ['canna-guide-2025-web.vercel.app'] }),
+                        text: async () =>
+                            JSON.stringify({
+                                target: 'production',
+                                alias: ['canna-guide-2025-web.vercel.app'],
+                            }),
                     }
                 },
             }),
@@ -495,15 +537,22 @@ test('a deployment that became production between classify and delete is not rem
 
 test('version identity is retried before the cleanup run is failed', async () => {
     let calls = 0
-    const version = await verifyPublicVersion('https://cannaguide-2025.pages.dev/version.json', MAIN, {
-        attempts: 3,
-        pauseMs: 0,
-        fetchImpl: async () => {
-            calls += 1
-            const commit = calls < 3 ? 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' : MAIN
-            return { status: 200, json: async () => ({ commit, buildVersion: `1.9.0+${commit}` }) }
+    const version = await verifyPublicVersion(
+        'https://cannaguide-2025.pages.dev/version.json',
+        MAIN,
+        {
+            attempts: 3,
+            pauseMs: 0,
+            fetchImpl: async () => {
+                calls += 1
+                const commit = calls < 3 ? 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' : MAIN
+                return {
+                    status: 200,
+                    json: async () => ({ commit, buildVersion: `1.9.0+${commit}` }),
+                }
+            },
         },
-    })
+    )
     assert.equal(version.attempts, 3)
     assert.equal(version.commit, MAIN)
 })
@@ -556,7 +605,13 @@ test('inventory records keep proven fields and fail closed on unexpected text', 
 test('cleanup workflow keeps host retention on trusted main and off pull requests', () => {
     const workflow = readFileSync('.github/workflows/cleanup-deployments.yml', 'utf8')
     assert.match(workflow, /host-retention:/)
+    assert.match(workflow, /workflow_run:/)
+    assert.match(workflow, /workflow_run.event == 'push'/)
+    assert.match(workflow, /head_branch == 'main'/)
+    assert.match(workflow, /inputs\.dry_run != 'true'/)
+    assert.doesNotMatch(workflow, /inputs\.dry_run == false/)
     assert.doesNotMatch(workflow, /pull_request:/)
+    assert.doesNotMatch(workflow, /pull_request_target:/)
     assert.match(workflow, /refs\/heads\/main/)
     assert.match(workflow, /delete-cloudflare/)
     assert.match(workflow, /delete-vercel/)

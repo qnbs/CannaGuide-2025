@@ -41,3 +41,91 @@ jobs:
               with:
                   keep_count: ${{ inputs.keep_count || '3' }}
                   dry_run: ${{ inputs.dry_run || 'false' }}
+
+    # GitHub Deployment records are not Vercel or Cloudflare Pages deployments.
+    # This job inventories those hosts, classifies without credentials, and
+    # deletes only proven SAFE_DELETE ids. CLOUDFLARE_API_TOKEN and VERCEL_TOKEN
+    # are injected into inventory and delete steps only. Classification steps
+    # do not receive them. Pull requests never run this job.
+    host-retention:
+        name: Retain Vercel and Cloudflare deployments
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        if: >-
+            github.repository == 'qnbs/CannaGuide-2025' &&
+            (github.event_name == 'schedule' ||
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+        permissions:
+            contents: read
+            pull-requests: read
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: '24'
+
+            - name: Confirm pinned Wrangler
+              run: pnpm exec wrangler --version
+
+            - name: Collect GitHub pull state
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: node ./scripts/deployment-retention/cli.mjs github-state --out retention-reports/github.json
+
+            - name: Inventory Cloudflare Pages
+              env:
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: node ./scripts/deployment-retention/cli.mjs inventory-cloudflare --out retention-reports/cloudflare.json
+
+            - name: Classify Cloudflare Pages
+              run: >-
+                  node ./scripts/deployment-retention/cli.mjs classify
+                  --backend cloudflare
+                  --inventory retention-reports/cloudflare.json
+                  --github retention-reports/github.json
+                  --out retention-reports/cloudflare-plan.json
+
+            - name: Delete proven Cloudflare Pages deployments
+              if: github.event_name == 'schedule' || inputs.dry_run == false
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+              run: node ./scripts/deployment-retention/cli.mjs delete-cloudflare --plan retention-reports/cloudflare-plan.json --apply
+
+            - name: Inventory Vercel
+              env:
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: node ./scripts/deployment-retention/cli.mjs inventory-vercel --out retention-reports/vercel.json
+
+            - name: Classify Vercel
+              run: >-
+                  node ./scripts/deployment-retention/cli.mjs classify
+                  --backend vercel
+                  --inventory retention-reports/vercel.json
+                  --github retention-reports/github.json
+                  --out retention-reports/vercel-plan.json
+
+            - name: Delete proven Vercel deployments
+              if: github.event_name == 'schedule' || inputs.dry_run == false
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+              run: node ./scripts/deployment-retention/cli.mjs delete-vercel --plan retention-reports/vercel-plan.json --apply
+
+            - name: Upload retention plans
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: deployment-retention-plans
+                  path: retention-reports/
+                  retention-days: 14

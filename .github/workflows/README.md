@@ -21,16 +21,16 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 CI runs on direct pushes to `main` and on every pull request target. Branch names are editor-neutral,
 and stacked pull requests receive the same CI graph as pull requests targeting `main`.
 
-| Workflow                                                   | Purpose                                                                                                |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).                                         |
-| [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Nightly + manual prune of GitHub Deployments (keep 3/env); also runs post-deploy via composite action. |
-| [`cleanup-branches.yml`](./cleanup-branches.yml)           | Weekly + manual prune of fully merged and squash/rebase-merged PR branches.                            |
-| [`graphify-update.yml`](./graphify-update.yml)             | Generate a pinned, validated `graphify-out/` review artifact; never pushes to `main`.                  |
-| [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                                                     |
-| [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                                                                  |
-| [`strains-daily-update.yml`](./strains-daily-update.yml)   | Strain catalog sync (manual; schedule currently commented out).                                        |
-| [`strains-merge.yml`](./strains-merge.yml)                 | Strain catalog merge check on PRs touching `data/strains/**`.                                          |
+| Workflow                                                   | Purpose                                                                                                                                                                                                               |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).                                                                                                                                                        |
+| [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Nightly + manual prune of GitHub Deployments (keep 3/env). On `main` only, also classifies Vercel and Cloudflare Pages history, keeps production plus two rollback deployments, and deletes proven unaliased history. |
+| [`cleanup-branches.yml`](./cleanup-branches.yml)           | Weekly + manual prune of fully merged and squash/rebase-merged PR branches.                                                                                                                                           |
+| [`graphify-update.yml`](./graphify-update.yml)             | Generate a pinned, validated `graphify-out/` review artifact; never pushes to `main`.                                                                                                                                 |
+| [`stale.yml`](./stale.yml)                                 | Mark stale issues/PRs (scheduled).                                                                                                                                                                                    |
+| [`labeler.yml`](./labeler.yml)                             | PR labels from `.github/labeler.yml`.                                                                                                                                                                                 |
+| [`strains-daily-update.yml`](./strains-daily-update.yml)   | Strain catalog sync (manual; schedule currently commented out).                                                                                                                                                       |
+| [`strains-merge.yml`](./strains-merge.yml)                 | Strain catalog merge check on PRs touching `data/strains/**`.                                                                                                                                                         |
 
 ## Security & quality
 

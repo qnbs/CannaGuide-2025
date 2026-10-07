@@ -25,6 +25,8 @@ Stale GitHub **deployment** records are pruned automatically:
 - **Nightly safety net:** [`.github/workflows/cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml) (45 min timeout; re-run `workflow_dispatch` if backlog is large).
 - **Local / maintainer:** `node scripts/github/prune-deployments.mjs --keep=3` (requires `gh auth` with `repo` scope).
 
+The same nightly workflow also retains **Vercel** and **Cloudflare Pages** deployments. That path is separate from the GitHub Deployments API: it runs only for `schedule` and `workflow_dispatch` on `main`, classifies from live pull-request state, and deletes individual deployment ids. It keeps the active production deployment and the two previous known-good production deployments. Cloudflare's latest deployment for a branch is left in place. `CLOUDFLARE_API_TOKEN` and `VERCEL_TOKEN` are not passed to the classification step, and the delete path does not use Wrangler `--force`. A missing host token skips that host and deletes nothing. Dry-run: dispatch the workflow with `dry_run` set.
+
 **Branches:** Fully merged and squash/rebase-merged PR branches are pruned post-deploy and weekly via [`.github/workflows/cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml). Closed but unmerged branches are preserved.
 
 **Build:** `BUILD_BASE_PATH=/CannaGuide-2025/` (subpath hosting).

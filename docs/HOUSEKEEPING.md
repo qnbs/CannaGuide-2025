@@ -79,6 +79,7 @@ Grandfathered list is empty (2026-07-01 god-file sprint). `geminiService.ts` and
 - [ ] Dependabot / `pnpm audit` reviewed (non-critical dev transitive accepted with rationale in `SECURITY.md`)
 - [ ] Gitleaks / Semgrep / CodeQL — no new findings on changed paths
 - [ ] GitHub Deployments ≤3 per environment ([`cleanup-deployments.yml`](../.github/workflows/cleanup-deployments.yml))
+- [ ] Vercel and Cloudflare Pages retention plan reviewed (same workflow; production plus two rollback deployments kept)
 - [ ] Fully merged and squash/rebase-merged PR branches pruned ([`cleanup-branches.yml`](../.github/workflows/cleanup-branches.yml))
 
 ---

@@ -33,6 +33,40 @@ export function playwrightMajorMinorMatch(imageVersion, range) {
     return image[1] === declared[1] && image[2] === declared[2]
 }
 
+/** True when two declared ranges name the same major.minor release line. */
+export function playwrightSpecsShareMinor(leftRange, rightRange) {
+    const left = /(\d+)\.(\d+)\.\d+/.exec(String(leftRange ?? ''))
+    const right = /(\d+)\.(\d+)\.\d+/.exec(String(rightRange ?? ''))
+    if (!left || !right) return false
+    return left[1] === right[1] && left[2] === right[2]
+}
+
+/**
+ * engines.node is either `>=MAJOR` or `>=MAJOR.MINOR.PATCH <NEXT_MAJOR`.
+ * Stripping every non-digit would turn `>=24.15.0 <25` into 2415025.
+ */
+export function nodeSatisfiesDeclaredEngines(nodeVersion, enginesRange) {
+    const parts = String(nodeVersion)
+        .replace(/^v/, '')
+        .split('.')
+        .map((part) => Number(part))
+    if (parts.length < 3 || parts.some((part) => !Number.isInteger(part))) return false
+    const [major, minor, patch] = parts
+    const range = String(enginesRange ?? '').trim()
+    const bounded = /^>=(\d+)\.(\d+)\.(\d+) <(\d+)$/.exec(range)
+    if (bounded) {
+        const floor = [Number(bounded[1]), Number(bounded[2]), Number(bounded[3])]
+        const ceiling = Number(bounded[4])
+        if (major >= ceiling) return false
+        if (major !== floor[0]) return major > floor[0] && major < ceiling
+        if (minor !== floor[1]) return minor > floor[1]
+        return patch >= floor[2]
+    }
+    const majorOnly = /^>=(\d+)$/.exec(range)
+    if (majorOnly) return major >= Number(majorOnly[1])
+    return false
+}
+
 function main() {
     const problems = []
     const warnings = []
@@ -43,9 +77,12 @@ function main() {
     }
 
     const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'))
-    const wantedNode = Number((pkg.engines?.node ?? '>=24').replace(/[^\d]/g, '') || 24)
-    const nodeMajor = Number(process.versions.node.split('.')[0])
-    check('Node major', nodeMajor >= wantedNode, process.version)
+    const enginesNode = pkg.engines?.node ?? '>=24'
+    check(
+        'Node engines',
+        nodeSatisfiesDeclaredEngines(process.versions.node, enginesNode),
+        `${process.version} against ${enginesNode}`,
+    )
 
     const wantedPnpm = (pkg.packageManager ?? '').replace(/^pnpm@/, '')
     const pnpmCommand = captureCommand('pnpm', ['--version'])
@@ -101,6 +138,18 @@ function main() {
         try {
             const webPkg = JSON.parse(readFileSync(webPkgPath, 'utf8'))
             playwright = webPkg.devDependencies?.['@playwright/test'] ?? ''
+            const component = webPkg.devDependencies?.['@playwright/experimental-ct-react'] ?? ''
+            const rootPlaywright = pkg.devDependencies?.['@playwright/test'] ?? ''
+            if (
+                !playwrightSpecsShareMinor(playwright, component) ||
+                !playwrightSpecsShareMinor(playwright, rootPlaywright)
+            ) {
+                problems.push(
+                    `Playwright packages must share a major.minor: test ${playwright || 'missing'}, component ${component || 'missing'}, root ${rootPlaywright || 'missing'}`,
+                )
+            } else {
+                console.log(`[OK] Playwright packages share ${playwright}`)
+            }
         } catch (error) {
             problems.push(`apps/web/package.json is not JSON: ${error.message}`)
         }

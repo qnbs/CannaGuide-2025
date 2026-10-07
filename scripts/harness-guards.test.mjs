@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { captureCommand, playwrightMajorMinorMatch } from './agent-doctor.mjs'
+import {
+    captureCommand,
+    nodeSatisfiesDeclaredEngines,
+    playwrightMajorMinorMatch,
+    playwrightSpecsShareMinor,
+} from './agent-doctor.mjs'
 import { upsertBuildMeta } from './stamp-build-metadata.mjs'
 
 const SHA = '40c2d9020cc8d01f8df0a4f6ecf6629d501c0eef'
@@ -29,6 +34,31 @@ test('playwright image match uses major.minor, not a substring', () => {
     assert.equal(playwrightMajorMinorMatch('1.62.1', '^1.62.0'), true)
     assert.equal(playwrightMajorMinorMatch('1.62.1', '^1.63.0'), false)
     assert.equal(playwrightMajorMinorMatch('1.62.1', '^1.62.10'), true)
+    assert.equal(playwrightSpecsShareMinor('^1.62.1', '^1.62.1'), true)
+    assert.equal(playwrightSpecsShareMinor('^1.63.0', '^1.62.1'), false)
+})
+
+test('declared node engines accept 24.15 through 24.x and reject 24.14 and 25', () => {
+    const range = JSON.parse(readFileSync('package.json', 'utf8')).engines.node
+    assert.equal(range, '>=24.15.0 <25')
+    assert.equal(nodeSatisfiesDeclaredEngines('24.15.0', range), true)
+    assert.equal(nodeSatisfiesDeclaredEngines('24.21.0', range), true)
+    assert.equal(nodeSatisfiesDeclaredEngines('v24.21.0', range), true)
+    assert.equal(nodeSatisfiesDeclaredEngines('24.14.0', range), false)
+    assert.equal(nodeSatisfiesDeclaredEngines('25.0.0', range), false)
+    assert.equal(nodeSatisfiesDeclaredEngines('22.22.2', range), false)
+    assert.equal(nodeSatisfiesDeclaredEngines('24.0.0', '>=24'), true)
+    assert.equal(nodeSatisfiesDeclaredEngines('22.0.0', '>=24'), false)
+})
+
+test('playwright test and component packages stay on one release line', () => {
+    const root = JSON.parse(readFileSync('package.json', 'utf8'))
+    const web = JSON.parse(readFileSync('apps/web/package.json', 'utf8'))
+    const testSpec = web.devDependencies['@playwright/test']
+    const componentSpec = web.devDependencies['@playwright/experimental-ct-react']
+    const rootSpec = root.devDependencies['@playwright/test']
+    assert.equal(playwrightSpecsShareMinor(testSpec, componentSpec), true)
+    assert.equal(playwrightSpecsShareMinor(testSpec, rootSpec), true)
 })
 
 test('running build meta is stamped into the document head', () => {

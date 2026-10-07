@@ -244,8 +244,10 @@ export async function assertStillDisposable({
     if (!response.ok) throw new Error(`refusing to delete ${safeId}: live Vercel lookup failed`)
     const aliasValues = []
     let aliasKnown = true
+    let aliasSeen = false
     for (const field of [body.alias, body.aliases]) {
         if (field === undefined) continue
+        aliasSeen = true
         if (!Array.isArray(field)) aliasKnown = false
         else aliasValues.push(...field)
     }
@@ -253,7 +255,7 @@ export async function assertStillDisposable({
         if (body.target !== 'production') {
             throw new Error(`refusing to delete ${safeId}: target is ${body.target ?? 'unset'}`)
         }
-        if (!aliasKnown || aliasValues.length > 0) {
+        if (!aliasSeen || !aliasKnown || aliasValues.length > 0) {
             throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
         }
     } else if (body.target != null && body.target !== 'preview') {

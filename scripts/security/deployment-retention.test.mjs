@@ -822,7 +822,7 @@ test('unaliased old Vercel production is deleted and any live alias blocks it', 
     assert.match(calls[1].url, /\/v13\/deployments\/oldprod\?teamId=team_test$/)
     assert.ok(calls.every((call) => !call.url.includes('force=true')))
 
-    for (const alias of [['archive.example.com'], null]) {
+    for (const alias of [['archive.example.com'], null, undefined]) {
         const blocked = []
         await assert.rejects(
             () =>

@@ -1,7 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { aiService } from '@/services/aiFacade'
 import { GrowLogRagPanel } from './GrowLogRagPanel'
+
+const aiMocks = vi.hoisted(() => ({
+    getGrowLogRagAnswer: vi.fn(),
+}))
 
 vi.mock('@/hooks/useSimulationBridge', () => ({
     useActivePlants: () => [],
@@ -16,9 +19,7 @@ vi.mock('@/stores/selectors', () => ({
 }))
 
 vi.mock('@/services/aiFacade', () => ({
-    aiService: {
-        getGrowLogRagAnswer: vi.fn().mockResolvedValue({ title: 'Title', content: 'Answer body' }),
-    },
+    aiService: aiMocks,
 }))
 
 vi.mock('react-i18next', () => ({
@@ -27,31 +28,34 @@ vi.mock('react-i18next', () => ({
     }),
 }))
 
+async function ask(query: string) {
+    render(<GrowLogRagPanel />)
+    fireEvent.change(screen.getByPlaceholderText('knowledgeView.growLog.placeholder'), {
+        target: { value: query },
+    })
+    fireEvent.click(screen.getByText('knowledgeView.growLog.startAnalysis'))
+}
+
 describe('GrowLogRagPanel', () => {
     beforeEach(() => {
-        vi.mocked(aiService.getGrowLogRagAnswer).mockImplementation(async (_plants, query) => {
-            if (String(query).includes('fail')) throw new Error('offline')
-            return { title: 'Title', content: 'Answer body' }
-        })
+        aiMocks.getGrowLogRagAnswer.mockReset()
     })
 
     it('shows the shared disclaimer with an AI answer', async () => {
-        render(<GrowLogRagPanel />)
-        fireEvent.change(screen.getByPlaceholderText('knowledgeView.growLog.placeholder'), {
-            target: { value: 'why are the leaves pale' },
+        aiMocks.getGrowLogRagAnswer.mockResolvedValue({
+            title: 'Title',
+            content: 'Answer body',
         })
-        fireEvent.click(screen.getByText('knowledgeView.growLog.startAnalysis'))
+        await ask('why are the leaves pale')
         expect(await screen.findByTestId('ai-disclaimer')).toBeInTheDocument()
         expect(screen.getByText(/Answer body/)).toBeInTheDocument()
     })
 
     it('does not show the disclaimer when analysis fails', async () => {
-        render(<GrowLogRagPanel />)
-        fireEvent.change(screen.getByPlaceholderText('knowledgeView.growLog.placeholder'), {
-            target: { value: 'fail this analysis' },
-        })
-        fireEvent.click(screen.getByText('knowledgeView.growLog.startAnalysis'))
+        aiMocks.getGrowLogRagAnswer.mockRejectedValue(new Error('offline'))
+        await ask('fail this analysis')
         expect(await screen.findByRole('alert')).toHaveTextContent('offline')
         expect(screen.queryByTestId('ai-disclaimer')).not.toBeInTheDocument()
+        expect(aiMocks.getGrowLogRagAnswer).toHaveBeenCalled()
     })
 })

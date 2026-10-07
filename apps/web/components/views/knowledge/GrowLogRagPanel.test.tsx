@@ -29,10 +29,9 @@ vi.mock('react-i18next', () => ({
 
 describe('GrowLogRagPanel', () => {
     beforeEach(() => {
-        vi.mocked(aiService.getGrowLogRagAnswer).mockReset()
-        vi.mocked(aiService.getGrowLogRagAnswer).mockResolvedValue({
-            title: 'Title',
-            content: 'Answer body',
+        vi.mocked(aiService.getGrowLogRagAnswer).mockImplementation(async (_plants, query) => {
+            if (String(query).includes('fail')) throw new Error('offline')
+            return { title: 'Title', content: 'Answer body' }
         })
     })
 
@@ -47,10 +46,9 @@ describe('GrowLogRagPanel', () => {
     })
 
     it('does not show the disclaimer when analysis fails', async () => {
-        vi.mocked(aiService.getGrowLogRagAnswer).mockRejectedValueOnce(new Error('offline'))
         render(<GrowLogRagPanel />)
         fireEvent.change(screen.getByPlaceholderText('knowledgeView.growLog.placeholder'), {
-            target: { value: 'why are the leaves pale' },
+            target: { value: 'fail this analysis' },
         })
         fireEvent.click(screen.getByText('knowledgeView.growLog.startAnalysis'))
         expect(await screen.findByRole('alert')).toHaveTextContent('offline')

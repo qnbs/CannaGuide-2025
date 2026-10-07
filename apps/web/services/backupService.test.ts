@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
     loadZip: vi.fn(),
@@ -50,6 +50,12 @@ describe('backupService', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
+    })
+
+    afterEach(() => {
+        // Windows runs this suite with isolate: false. clearAllMocks keeps
+        // spy implementations, so restore the real URL methods before the next file.
+        vi.restoreAllMocks()
     })
 
     describe('exportBackup', () => {

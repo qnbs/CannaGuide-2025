@@ -8,7 +8,7 @@ CannaGuide 2025 is an offline-first React/Vite PWA (pnpm monorepo). The primary 
 
 ### Node.js version (required)
 
-The repo requires **Node.js ≥24** (`package.json` `engines`). The VM ships `/exec-daemon/node` at **v22**, which takes precedence over `nvm` unless you fix `PATH`.
+The repo requires **Node.js ≥24.15** (`package.json` `engines`). The VM ships `/exec-daemon/node` at **v22**, which takes precedence over `nvm` unless you fix `PATH`.
 
 In every shell session, before `pnpm` commands:
 

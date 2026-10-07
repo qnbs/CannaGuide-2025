@@ -188,6 +188,14 @@ if ! CANNAGUIDE_NODE="$(nvm which 24)" || [ ! -x "$CANNAGUIDE_NODE" ]; then
   echo "Node.js 24 is unavailable; PATH was not modified." >&2
   return 1 2>/dev/null || exit 1
 fi
+CANNAGUIDE_NODE_VER="$("$CANNAGUIDE_NODE" -p "process.versions.node")"
+CANNAGUIDE_NODE_MAJOR="${CANNAGUIDE_NODE_VER%%.*}"
+CANNAGUIDE_NODE_MINOR="${CANNAGUIDE_NODE_VER#*.}"
+CANNAGUIDE_NODE_MINOR="${CANNAGUIDE_NODE_MINOR%%.*}"
+if [ "$CANNAGUIDE_NODE_MAJOR" -ne 24 ] || [ "$CANNAGUIDE_NODE_MINOR" -lt 15 ]; then
+  echo "Node.js ${CANNAGUIDE_NODE_VER} is outside >=24.15.0 <25; PATH was not modified." >&2
+  return 1 2>/dev/null || exit 1
+fi
 CANNAGUIDE_NODE_BIN="$(dirname "$CANNAGUIDE_NODE")"
 export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
 corepack enable pnpm

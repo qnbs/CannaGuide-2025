@@ -19,10 +19,18 @@ if ! CANNAGUIDE_NODE="$(nvm which 24)" || [ ! -x "$CANNAGUIDE_NODE" ]; then
   echo "Node.js 24 is unavailable; PATH was not modified." >&2
   return 1 2>/dev/null || exit 1
 fi
+CANNAGUIDE_NODE_VER="$("$CANNAGUIDE_NODE" -p "process.versions.node")"
+CANNAGUIDE_NODE_MAJOR="${CANNAGUIDE_NODE_VER%%.*}"
+CANNAGUIDE_NODE_MINOR="${CANNAGUIDE_NODE_VER#*.}"
+CANNAGUIDE_NODE_MINOR="${CANNAGUIDE_NODE_MINOR%%.*}"
+if [ "$CANNAGUIDE_NODE_MAJOR" -ne 24 ] || [ "$CANNAGUIDE_NODE_MINOR" -lt 15 ]; then
+  echo "Node.js ${CANNAGUIDE_NODE_VER} is outside >=24.15.0 <25; PATH was not modified." >&2
+  return 1 2>/dev/null || exit 1
+fi
 CANNAGUIDE_NODE_BIN="$(dirname "$CANNAGUIDE_NODE")"
 export PATH="$CANNAGUIDE_NODE_BIN:$PATH"
 corepack enable pnpm
-node -v   # must show v24.x
+node -v   # must show v24.15.0 or newer on the 24 line
 pnpm --version   # must match package.json packageManager (currently 11.19.0)
 ```
 
@@ -30,7 +38,7 @@ pnpm --version   # must match package.json packageManager (currently 11.19.0)
 
 ### Install / bootstrap
 
-Ensure Node 24 is on `PATH` (see above), then install with the frozen lockfile:
+Ensure Node >=24.15.0 <25 is on `PATH` (see above), then install with the frozen lockfile:
 
 ```bash
 corepack enable pnpm

@@ -4,8 +4,10 @@ import { test } from 'node:test'
 import {
     captureCommand,
     nodeSatisfiesDeclaredEngines,
+    playwrightLockfileSharesMinor,
     playwrightMajorMinorMatch,
     playwrightSpecsShareMinor,
+    resolvedPlaywrightVersions,
 } from './agent-doctor.mjs'
 import { upsertBuildMeta } from './stamp-build-metadata.mjs'
 
@@ -59,6 +61,35 @@ test('playwright test and component packages stay on one release line', () => {
     const rootSpec = root.devDependencies['@playwright/test']
     assert.equal(playwrightSpecsShareMinor(testSpec, componentSpec), true)
     assert.equal(playwrightSpecsShareMinor(testSpec, rootSpec), true)
+    const live = playwrightLockfileSharesMinor(
+        resolvedPlaywrightVersions(readFileSync('pnpm-lock.yaml', 'utf8')),
+    )
+    assert.equal(live.ok, true)
+})
+
+test('matching caret specs fail when the lockfile resolved different minors', () => {
+    const lock = `
+importers:
+
+  .:
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.62.1
+        version: 1.63.0
+
+  apps/web:
+    devDependencies:
+      '@playwright/experimental-ct-react':
+        specifier: ^1.62.1
+        version: 1.62.1(vite@8.3.2)
+      '@playwright/test':
+        specifier: ^1.62.1
+        version: 1.63.0
+`
+    const resolved = playwrightLockfileSharesMinor(resolvedPlaywrightVersions(lock))
+    assert.equal(resolved.ok, false)
+    assert.match(resolved.detail, /1\.63\.0/)
+    assert.match(resolved.detail, /1\.62\.1/)
 })
 
 test('running build meta is stamped into the document head', () => {

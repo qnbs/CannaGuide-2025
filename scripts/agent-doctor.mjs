@@ -41,6 +41,82 @@ export function playwrightSpecsShareMinor(leftRange, rightRange) {
     return left[1] === right[1] && left[2] === right[2]
 }
 
+const PLAYWRIGHT_LOCK_SLOTS = [
+    ['.', '@playwright/test'],
+    ['apps/web', '@playwright/test'],
+    ['apps/web', '@playwright/experimental-ct-react'],
+]
+
+/**
+ * Importer resolutions from a pnpm v9 lockfile. A shared caret such as
+ * `^1.62.1` still allows a later 1.x minor, so the installed version is
+ * the value before any peer suffix: `1.63.0` or `1.62.1(vite@8)`.
+ */
+export function resolvedPlaywrightVersions(lockText) {
+    const entries = []
+    let inImporters = false
+    let importer = null
+    let inDev = false
+    let currentPkg = null
+    for (const line of String(lockText).split(/\r?\n/)) {
+        if (!inImporters) {
+            if (line === 'importers:') inImporters = true
+            continue
+        }
+        if (line.length > 0 && !line.startsWith(' ')) break
+        const importerMatch = /^ {2}(\S+):$/.exec(line)
+        if (importerMatch) {
+            importer = importerMatch[1]
+            inDev = false
+            currentPkg = null
+            continue
+        }
+        if (line === '    devDependencies:') {
+            inDev = true
+            currentPkg = null
+            continue
+        }
+        if (/^ {4}\S/.test(line)) {
+            inDev = false
+            currentPkg = null
+            continue
+        }
+        if (!inDev) continue
+        const pkgMatch = /^ {6}'(@playwright\/(?:test|experimental-ct-react))':$/.exec(line)
+        if (pkgMatch) {
+            currentPkg = pkgMatch[1]
+            continue
+        }
+        if (/^ {6}'/.test(line)) {
+            currentPkg = null
+            continue
+        }
+        const versionMatch = currentPkg ? /^ {8}version: (\d+\.\d+\.\d+)/.exec(line) : null
+        if (versionMatch) {
+            entries.push({ importer, name: currentPkg, version: versionMatch[1] })
+            currentPkg = null
+        }
+    }
+    return entries
+}
+
+/** Fail closed unless every required Playwright slot resolves to one major.minor. */
+export function playwrightLockfileSharesMinor(entries) {
+    const described = []
+    const lines = []
+    for (const [importer, name] of PLAYWRIGHT_LOCK_SLOTS) {
+        const hit = entries.find((entry) => entry.importer === importer && entry.name === name)
+        const match = hit ? /^(\d+)\.(\d+)\.\d+$/.exec(hit.version) : null
+        if (!hit || !match) {
+            return { ok: false, detail: `missing lockfile resolution for ${importer} ${name}` }
+        }
+        lines.push(`${match[1]}.${match[2]}`)
+        described.push(`${importer} ${name}@${hit.version}`)
+    }
+    const ok = lines.every((line) => line === lines[0])
+    return { ok, detail: described.join('; ') }
+}
+
 /**
  * engines.node is either `>=MAJOR` or `>=MAJOR.MINOR.PATCH <NEXT_MAJOR`.
  * Stripping every non-digit would turn `>=24.15.0 <25` into 2415025.
@@ -148,11 +224,22 @@ function main() {
                     `Playwright packages must share a major.minor: test ${playwright || 'missing'}, component ${component || 'missing'}, root ${rootPlaywright || 'missing'}`,
                 )
             } else {
-                console.log(`[OK] Playwright packages share ${playwright}`)
+                console.log(`[OK] Playwright package ranges share ${playwright}`)
             }
         } catch (error) {
             problems.push(`apps/web/package.json is not JSON: ${error.message}`)
         }
+    }
+    try {
+        const lock = readFileSync(resolve('pnpm-lock.yaml'), 'utf8')
+        const resolved = playwrightLockfileSharesMinor(resolvedPlaywrightVersions(lock))
+        if (!resolved.ok) {
+            problems.push(`Playwright lockfile resolutions diverged: ${resolved.detail}`)
+        } else {
+            console.log('[OK] Playwright lockfile resolutions share one release line')
+        }
+    } catch (error) {
+        problems.push(`pnpm-lock.yaml could not be read: ${error.message}`)
     }
     if (image && !playwrightMajorMinorMatch(image[1], playwright)) {
         warnings.push(

@@ -10,6 +10,14 @@
  * branch; that row stays protected. Vercel can delete an unaliased latest
  * preview, but an automatic branch alias is still an active alias.
  *
+ * When Cloudflare's list has no canonical production alias, current production
+ * is the single newest successful deployment of the current main SHA on main.
+ * Zero candidates, a createdAt tie, or the same SHA on another branch stay
+ * ambiguous and protect every production row. Merged and closed previews are
+ * proven by the full GitHub pull-request head SHA, so a slash-stripped
+ * Cloudflare branch name is not required. A missing or conflicting SHA stays
+ * UNKNOWN.
+ *
  * Wrangler 4.110.0 `pages deployment list --json` is not a complete inventory:
  * it calls the unpaged Pages API helper and shortens commit hashes to 7
  * characters, dropping aliases. `pages deployment delete --force` both skips
@@ -224,7 +232,8 @@ function resolveBranchPull(pulls, branch) {
     if (open.length === 1) return { ambiguous: false, pull: open[0] }
     if (rows.length === 0) return { ambiguous: false, pull: null }
     const ranked = [...rows].sort(
-        (a, b) => Date.parse(b.closedAt || b.mergedAt || 0) - Date.parse(a.closedAt || a.mergedAt || 0),
+        (a, b) =>
+            Date.parse(b.closedAt || b.mergedAt || 0) - Date.parse(a.closedAt || a.mergedAt || 0),
     )
     return { ambiguous: false, pull: ranked[0] }
 }
@@ -234,7 +243,8 @@ function latestIdsByBranch(deployments) {
     for (const deployment of deployments) {
         if (!deployment.branch) continue
         const current = newest.get(deployment.branch)
-        if (!current || deployment.createdAt > current) newest.set(deployment.branch, deployment.createdAt)
+        if (!current || deployment.createdAt > current)
+            newest.set(deployment.branch, deployment.createdAt)
     }
     const ids = new Set()
     for (const deployment of deployments) {
@@ -270,7 +280,8 @@ export function normalizeDeployment(raw, backend) {
             sha,
             shaComplete: FULL_SHA.test(sha),
             branch: String(raw.Branch || ''),
-            target: String(raw.Environment).toLowerCase() === 'production' ? 'production' : 'preview',
+            target:
+                String(raw.Environment).toLowerCase() === 'production' ? 'production' : 'preview',
             state: 'unknown',
             aliases: [],
             source: 'wrangler-list',
@@ -342,15 +353,113 @@ export function attachAliasRecords(deployments, aliasRecords) {
     return [...byId.values()]
 }
 
+function isDependabotName(name) {
+    const text = String(name || '')
+    return text.startsWith('dependabot/') || text.startsWith('dependabot-')
+}
+
 function historyClass(labels, pull, branch) {
-    if (String(branch || '').startsWith('dependabot/')) return labels.dependabot
+    if (isDependabotName(branch) || isDependabotName(pull?.headRefName)) return labels.dependabot
     if (pullState(pull) === 'merged') return labels.merged
     if (pullState(pull) === 'closed') return labels.closed
     return null
 }
 
+function pullsBySha(pulls) {
+    const grouped = new Map()
+    for (const pull of pulls || []) {
+        const sha = String(pull?.headRefOid || '').toLowerCase()
+        if (!FULL_SHA.test(sha)) continue
+        const rows = grouped.get(sha) || []
+        rows.push(pull)
+        grouped.set(sha, rows)
+    }
+    return grouped
+}
+
+function classByPullSha(deployment, context) {
+    if (!deployment.shaComplete) return null
+    const matches = context.pullsBySha.get(deployment.sha.toLowerCase()) || []
+    if (matches.length === 0) return null
+    if (matches.some((pull) => pullState(pull) === 'open')) {
+        return { className: context.labels.openPr, limitation: '' }
+    }
+    const states = new Set(matches.map((pull) => pullState(pull)))
+    if (states.size !== 1 || states.has('unknown')) {
+        return {
+            className: context.labels.unknown,
+            limitation: 'commit matches pull requests in conflicting states',
+        }
+    }
+    if (!isReady(deployment, context.backend)) {
+        return {
+            className: context.labels.unknown,
+            limitation: 'preview is not in a terminal success state',
+        }
+    }
+    const closedClass = historyClass(context.labels, matches[0], deployment.branch)
+    if (!closedClass) {
+        return {
+            className: context.labels.unknown,
+            limitation: 'pull request state is not merged or closed',
+        }
+    }
+    return { className: closedClass, limitation: '' }
+}
+
+function protectEveryProduction(normalized) {
+    const productionIds = new Set()
+    for (const deployment of normalized) {
+        if (deployment.target === 'production') productionIds.add(deployment.id)
+    }
+    return { productionAmbiguous: true, productionIds }
+}
+
+function cloudflareCurrentProductionId(normalized, main) {
+    const onMainSha = normalized.filter(
+        (deployment) =>
+            deployment.target === 'production' &&
+            deployment.shaComplete &&
+            deployment.sha.toLowerCase() === main &&
+            isReady(deployment, 'cloudflare'),
+    )
+    const consistent = onMainSha.filter(
+        (deployment) => !deployment.branch || deployment.branch === 'main',
+    )
+    const inconsistent = onMainSha.filter(
+        (deployment) => deployment.branch && deployment.branch !== 'main',
+    )
+    if (consistent.length === 0 || inconsistent.length > 0) return ''
+    const newestAt = Math.max(...consistent.map((deployment) => deployment.createdAt))
+    const newest = consistent.filter((deployment) => deployment.createdAt === newestAt)
+    if (newest.length !== 1) return ''
+    return newest[0].id
+}
+
+function resolveProduction(normalized, backend, main) {
+    const canonical = normalized.filter((deployment) =>
+        hasCanonicalProductionAlias(deployment, backend),
+    )
+    if (canonical.length === 0 && backend === 'cloudflare') {
+        const currentId = cloudflareCurrentProductionId(normalized, main)
+        if (!currentId) return protectEveryProduction(normalized)
+        return { productionAmbiguous: false, productionIds: new Set([currentId]) }
+    }
+    if (canonical.length === 0) return protectEveryProduction(normalized)
+    const productionIds = new Set()
+    for (const deployment of canonical) productionIds.add(deployment.id)
+    for (const deployment of normalized) {
+        if (deployment.target !== 'production') continue
+        if (deployment.shaComplete && deployment.sha.toLowerCase() === main) {
+            productionIds.add(deployment.id)
+        }
+    }
+    return { productionAmbiguous: false, productionIds }
+}
+
 function classifyOne(deployment, context) {
-    const { backend, labels, productionIds, rollbackIds, latestIds, openBySha, branchPulls } = context
+    const { backend, labels, productionIds, rollbackIds, latestIds, openBySha, branchPulls } =
+        context
     if (!deployment.id) return { className: labels.unknown, limitation: 'missing id' }
     if (productionIds.has(deployment.id)) return { className: labels.production, limitation: '' }
     if (rollbackIds.has(deployment.id)) return { className: labels.rollback, limitation: '' }
@@ -379,21 +488,33 @@ function classifyOne(deployment, context) {
     }
 
     if (deployment.aliases.length > 0) {
-        return { className: labels.alias, limitation: 'active alias requires investigation before removal' }
+        return {
+            className: labels.alias,
+            limitation: 'active alias requires investigation before removal',
+        }
     }
     if (!deployment.shaComplete) {
         return { className: labels.unknown, limitation: 'commit sha is not a full 40-character id' }
     }
     if (branchPull?.ambiguous) {
-        return { className: labels.unknown, limitation: 'more than one open pull request for the branch' }
+        return {
+            className: labels.unknown,
+            limitation: 'more than one open pull request for the branch',
+        }
     }
 
     if (deployment.target === 'production') {
         if (context.productionAmbiguous) {
-            return { className: labels.unknown, limitation: 'production deployment could not be identified' }
+            return {
+                className: labels.unknown,
+                limitation: 'production deployment could not be identified',
+            }
         }
         if (!isReady(deployment, backend)) {
-            return { className: labels.unknown, limitation: 'production deployment is not a known-good success' }
+            return {
+                className: labels.unknown,
+                limitation: 'production deployment is not a known-good success',
+            }
         }
         if (deployment.branch && deployment.branch !== 'main') {
             return { className: labels.unknown, limitation: 'production deployment is not on main' }
@@ -403,24 +524,42 @@ function classifyOne(deployment, context) {
 
     if (openBranch) {
         if (!isReady(deployment, backend)) {
-            return { className: labels.unknown, limitation: 'preview is not in a terminal success state' }
+            return {
+                className: labels.unknown,
+                limitation: 'preview is not in a terminal success state',
+            }
         }
         return { className: labels.superseded, limitation: '' }
     }
 
     if (deployment.branch === 'main') {
         if (latestIds.has(deployment.id)) return { className: labels.latestBranch, limitation: '' }
-        return { className: labels.unknown, limitation: 'non-production main deployment is not proven disposable' }
+        return {
+            className: labels.unknown,
+            limitation: 'non-production main deployment is not proven disposable',
+        }
     }
 
     if (!branchPull || !branchPull.pull) {
-        return { className: labels.unknown, limitation: 'no GitHub pull request proves this branch is closed' }
+        const bySha = classByPullSha(deployment, context)
+        if (bySha) return bySha
+        return {
+            className: labels.unknown,
+            limitation: 'no GitHub pull request proves this branch is closed',
+        }
     }
     if (!isReady(deployment, backend)) {
-        return { className: labels.unknown, limitation: 'preview is not in a terminal success state' }
+        return {
+            className: labels.unknown,
+            limitation: 'preview is not in a terminal success state',
+        }
     }
     const closedClass = historyClass(labels, branchPull.pull, deployment.branch)
-    if (!closedClass) return { className: labels.unknown, limitation: 'pull request state is not merged or closed' }
+    if (!closedClass)
+        return {
+            className: labels.unknown,
+            limitation: 'pull request state is not merged or closed',
+        }
     return { className: closedClass, limitation: '' }
 }
 
@@ -452,23 +591,9 @@ export function classifyRetention({
     const branchNames = new Set(normalized.map((deployment) => deployment.branch).filter(Boolean))
     const branchPulls = new Map()
     for (const branch of branchNames) branchPulls.set(branch, resolveBranchPull(pulls, branch))
+    const shaPulls = pullsBySha(pulls)
 
-    const canonical = normalized.filter((deployment) => hasCanonicalProductionAlias(deployment, backend))
-    const productionAmbiguous = canonical.length === 0
-    const productionIds = new Set()
-    if (productionAmbiguous) {
-        for (const deployment of normalized) {
-            if (deployment.target === 'production') productionIds.add(deployment.id)
-        }
-    } else {
-        for (const deployment of canonical) productionIds.add(deployment.id)
-        for (const deployment of normalized) {
-            if (deployment.target !== 'production') continue
-            if (deployment.shaComplete && deployment.sha.toLowerCase() === main) {
-                productionIds.add(deployment.id)
-            }
-        }
-    }
+    const { productionAmbiguous, productionIds } = resolveProduction(normalized, backend, main)
 
     const rollbackIds = new Set()
     if (!productionAmbiguous) {
@@ -482,7 +607,8 @@ export function classifyRetention({
             )
             .sort((a, b) => b.createdAt - a.createdAt)
         const selected = previous.slice(0, rollbackPrevious)
-        const cutoff = selected.length === rollbackPrevious ? selected[selected.length - 1].createdAt : null
+        const cutoff =
+            selected.length === rollbackPrevious ? selected[selected.length - 1].createdAt : null
         for (const deployment of selected) rollbackIds.add(deployment.id)
         if (cutoff !== null) {
             for (const deployment of previous) {
@@ -500,6 +626,7 @@ export function classifyRetention({
             latestIds,
             openBySha,
             branchPulls,
+            pullsBySha: shaPulls,
             productionAmbiguous,
         })
         let className = result.className
@@ -526,7 +653,9 @@ export function classifyRetention({
     const counts = {}
     for (const decision of decisions) counts[decision.class] = (counts[decision.class] || 0) + 1
 
-    const deleteIds = decisions.filter((decision) => decision.deletable).map((decision) => decision.id)
+    const deleteIds = decisions
+        .filter((decision) => decision.deletable)
+        .map((decision) => decision.id)
     const deferred = deleteIds.slice(MAX_DELETE_PER_RUN)
     const queued = deleteIds.slice(0, MAX_DELETE_PER_RUN)
 
@@ -540,7 +669,11 @@ export function classifyRetention({
         deferredDeleteIds: deferred,
         limitations: decisions
             .filter((decision) => decision.limitation)
-            .map((decision) => ({ id: decision.id, class: decision.class, limitation: decision.limitation })),
+            .map((decision) => ({
+                id: decision.id,
+                class: decision.class,
+                limitation: decision.limitation,
+            })),
         anchors: {
             mainSha: main,
             productionIds: [...productionIds].sort(),
@@ -563,7 +696,12 @@ export function reconcilePlans(frozen, fresh) {
     if (!same(frozen?.anchors?.productionIds, fresh?.anchors?.productionIds)) {
         errors.push('production deployment set changed')
     }
-    if (!same([...(frozen?.anchors?.rollbackIds || [])].sort(), [...(fresh?.anchors?.rollbackIds || [])].sort())) {
+    if (
+        !same(
+            [...(frozen?.anchors?.rollbackIds || [])].sort(),
+            [...(fresh?.anchors?.rollbackIds || [])].sort(),
+        )
+    ) {
         errors.push('rollback window changed')
     }
     const heads = (plan) =>
@@ -579,7 +717,11 @@ export function reconcilePlans(frozen, fresh) {
     for (const row of frozen.deployments || []) {
         if (!row.deletable) continue
         if (!isDeletableClass(row.class) || row.class === 'UNKNOWN') {
-            return { abort: true, errors: [`frozen row ${row.id} is not a safe-delete class`], ids: [] }
+            return {
+                abort: true,
+                errors: [`frozen row ${row.id} is not a safe-delete class`],
+                ids: [],
+            }
         }
         const now = freshById.get(row.id)
         if (!now) continue

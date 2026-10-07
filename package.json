@@ -5,7 +5,7 @@
     "version": "1.9.0",
     "packageManager": "pnpm@11.19.0",
     "engines": {
-        "node": ">=24"
+        "node": ">=24.15.0 <25"
     },
     "homepage": "https://qnbs.github.io/CannaGuide-2025/",
     "type": "module",

@@ -51,28 +51,28 @@ files; the full details stay in the private tracker.
 
 ## Finding index (all waves)
 
-| ID          | Wave | Area               | One-line finding                                                                                             | Sev | Conf.                                  | Draft / owner     |
-| ----------- | ---- | ------------------ | ------------------------------------------------------------------------------------------------------------ | --- | -------------------------------------- | ----------------- |
-| PRIV-001    | 1    | Privacy / data     | Privacy copy, onboarding sync claim and erase-all do not match runtime; CRDT and RAG databases survive erase | S2  | CONFIRMED                              | QNB-273 (PR #550) |
-| CSP-001     | 1    | Product / security | Community Share, strain lookups and Cansativa call hosts the production CSP blocks                           | S2  | CONFIRMED                              | QNB-274           |
-| SYNC-001    | 1    | Product            | Cloud sync is only a stopgap flag; path undecided                                                            | S2  | CONFIRMED                              | QNB-275           |
-| A11Y-001    | 1, 3 | Accessibility      | 14 AA contrast failures (static) and critical axe violations in 10 of 12 Settings tabs (runtime)             | S2  | CONFIRMED                              | D1                |
-| UX-001      | 1, 3 | First-run UX       | 10 mandatory screens, no skip / close, double language choice, ASCII-transliterated labels                   | S2  | CONFIRMED                              | D2                |
-| PWA-001     | 1    | PWA                | Service worker calls `skipWaiting()` unconditionally and the page reloads on `controllerchange`              | S2  | HIGH                                   | QNB-237           |
-| CI-001      | 1    | CI / CD            | Credential scoping for deploy, signing and release workflows (design level)                                  | S2  | HIGH                                   | D3                |
-| GOV-001     | 1    | Governance         | Live ruleset check not green; CLAUDE.md claims differ from live state (design level)                         | S3  | CONFIRMED                              | D4                |
-| TYPE-001    | 1    | Type safety        | 34 `JSON.parse(...) as T` sites at persistence / network boundaries                                          | S2  | CONFIRMED                              | D5                |
-| DESKTOP-001 | 1, 2 | Desktop            | Tauri `fs` scope covers any `$DOCUMENT/**/*.json`; CSP keeps `unsafe-inline`                                 | S2  | HIGH                                   | D6                |
-| TEST-001    | 1    | Testing            | Critical-path coverage gate lists 4 files; persistence adapter has no test                                   | S3  | CONFIRMED                              | QNB-256           |
-| DOC-001     | 1, 2 | Docs truth         | Dangling `.cursor/rules` pointer; CLAUDE.md i18n and ruleset claims differ from reality                      | S3  | CONFIRMED                              | QNB-266, D7       |
-| DEP-001     | 2    | Supply chain       | 11 moderate advisories; override floors below patched versions and Dependabot-ignored                        | S3  | CONFIRMED                              | D8                |
-| I18N-001    | 2    | i18n               | Only `check:i18n` is wired, only for `de`; usage and hardcoded checks run nowhere                            | S3  | CONFIRMED                              | D7                |
-| DESKTOP-002 | 2    | Desktop / CI       | Desktop Build never starts (`startup_failure` on every tag); updater `latest.json` returns 404               | S3  | CONFIRMED (effect) / PLAUSIBLE (cause) | D9                |
-| PERF-001    | 1, 3 | Performance        | Entry preloads 50 assets (~679 KB brotli); 58% is feature-specific code; repo metric is blind to it          | S3  | CONFIRMED                              | D10, QNB-236      |
-| EVAL-001    | 3    | Runtime / CSP      | Two `eval` CSP reports per load come from Zod 4's JIT probe; fix is `jitless`                                | S3  | CONFIRMED                              | QNB-274           |
-| SENTRY-001  | 3    | Privacy (latent)   | Sentry replay masking explicitly disabled (inert today: no DSN, CSP)                                         | S3  | CONFIRMED                              | D11               |
-| AI-001      | 3    | Supply chain       | ONNX Runtime WASM loaded from a CDN at runtime without an integrity check                                    | S3  | CONFIRMED                              | note in wave 3    |
-| PARITY-001  | 3    | Delivery           | GitHub Pages is not cross-origin isolated (no `SharedArrayBuffer`); local-AI impact unmeasured               | S3  | CONFIRMED (fact)                       | note in wave 3    |
+| ID          | Wave | Area               | One-line finding                                                                                                                                                                            | Sev | Conf.                                  | Draft / owner     |
+| ----------- | ---- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- | -------------------------------------- | ----------------- |
+| PRIV-001    | 1    | Privacy / data     | Privacy copy, onboarding sync claim and erase-all do not match runtime; CRDT and RAG databases survive erase                                                                                | S2  | CONFIRMED                              | QNB-273 (PR #550) |
+| CSP-001     | 1    | Product / security | Community Share, strain lookups and Cansativa call hosts the production CSP blocks                                                                                                          | S2  | CONFIRMED                              | QNB-274           |
+| SYNC-001    | 1    | Product            | Cloud sync is only a stopgap flag; path undecided                                                                                                                                           | S2  | CONFIRMED                              | QNB-275           |
+| A11Y-001    | 1, 3 | Accessibility      | 14 AA contrast failures (static) and critical axe violations in 10 of 12 Settings tabs (runtime)                                                                                            | S2  | CONFIRMED                              | D1                |
+| UX-001      | 1, 3 | First-run UX       | 10 mandatory screens, no skip / close, double language choice, ASCII-transliterated labels                                                                                                  | S2  | CONFIRMED                              | D2                |
+| PWA-001     | 1    | PWA                | Service worker calls `skipWaiting()` unconditionally and the page reloads on `controllerchange`                                                                                             | S2  | HIGH                                   | QNB-237           |
+| CI-001      | 1    | CI / CD            | Credential scoping for deploy, signing and release workflows (design level)                                                                                                                 | S2  | HIGH                                   | D3                |
+| GOV-001     | 1    | Governance         | Live ruleset check not green; CLAUDE.md claims differ from live state (design level)                                                                                                        | S3  | CONFIRMED                              | D4                |
+| TYPE-001    | 1    | Type safety        | 34 `JSON.parse(...) as T` sites at persistence / network boundaries                                                                                                                         | S2  | CONFIRMED                              | D5                |
+| DESKTOP-001 | 1, 2 | Desktop            | Tauri `fs` scope covers any `$DOCUMENT/**/*.json`; CSP keeps `unsafe-inline`                                                                                                                | S2  | HIGH                                   | D6                |
+| TEST-001    | 1    | Testing            | Critical-path coverage gate lists 4 files; persistence adapter has no test                                                                                                                  | S3  | CONFIRMED                              | QNB-256           |
+| DOC-001     | 1, 2 | Docs truth         | Dangling `.cursor/rules` pointer; CLAUDE.md i18n and ruleset claims differ from reality                                                                                                     | S3  | CONFIRMED                              | QNB-266, D7       |
+| DEP-001     | 2    | Supply chain       | 11 `pnpm audit` advisories (moderate) plus 2 high Dependabot alerts (dev-only `extract-zip`, no fix) and a Rust `glib` alert; override floors below patched versions and Dependabot-ignored | S3  | CONFIRMED                              | D8                |
+| I18N-001    | 2    | i18n               | Only `check:i18n` is wired, only for `de`; usage and hardcoded checks run nowhere                                                                                                           | S3  | CONFIRMED                              | D7                |
+| DESKTOP-002 | 2    | Desktop / CI       | Desktop Build never starts (`startup_failure` on every tag); updater `latest.json` returns 404                                                                                              | S3  | CONFIRMED (effect) / PLAUSIBLE (cause) | D9                |
+| PERF-001    | 1, 3 | Performance        | Entry preloads 50 assets (~679 KB brotli); 58% is feature-specific code; repo metric is blind to it                                                                                         | S3  | CONFIRMED                              | D10, QNB-236      |
+| EVAL-001    | 3    | Runtime / CSP      | Two `eval` CSP reports per load come from Zod 4's JIT probe; fix is `jitless`                                                                                                               | S3  | CONFIRMED                              | QNB-274           |
+| SENTRY-001  | 3    | Privacy (latent)   | Sentry replay masking explicitly disabled (inert today: no DSN, CSP)                                                                                                                        | S3  | CONFIRMED                              | D11               |
+| AI-001      | 3    | Supply chain       | ONNX Runtime WASM loaded from a CDN at runtime without an integrity check                                                                                                                   | S3  | CONFIRMED                              | note in wave 3    |
+| PARITY-001  | 3    | Delivery           | GitHub Pages is not cross-origin isolated (no `SharedArrayBuffer`); local-AI impact unmeasured                                                                                              | S3  | CONFIRMED (fact)                       | note in wave 3    |
 
 ## Corrections made during the audit
 
@@ -88,6 +88,10 @@ Recorded for transparency; the wave documents contain the corrected statements o
    already been confirmed and released (wave 2).
 5. A first statement about Sentry replay masking was wrong in direction (masking is explicitly
    disabled, not defaulted) (wave 3).
+6. The dependency scan was first summarised as "all moderate". The push to this branch surfaced
+   GitHub's Dependabot view (2 high, 9 moderate), which differs from `pnpm audit`; the union is now
+   recorded in wave 2, including the dev-only `extract-zip` pair (high, no fix) and a Rust `glib`
+   alert.
 
 ## Conversion procedure for the issue drafts
 

@@ -210,9 +210,11 @@ the es / fr / nl tier is explicit in docs and in the script header.
 
 **Origin and class.** Wave 2, finding DEP-001. S3 (Medium for the runtime pair), CONFIRMED.
 
-**Evidence.** See wave 2, section 1: 11 moderate advisories; `qs` and `markdown-it` are pinned by
-override floors below the patched versions and are Dependabot-ignored; `ip-address` is bounded but
-its floor is below the patched versions; `fflate` has a vulnerable copy under `jspdf`.
+**Evidence.** See wave 2, section 1: 11 `pnpm audit` advisories (moderate) and, from Dependabot, 2
+high alerts for the dev-only `extract-zip` (no patched version) plus a Rust `glib 0.18.5` alert;
+`qs` and `markdown-it` are pinned by override floors below the patched versions and are
+Dependabot-ignored; `ip-address` is bounded but its floor is below the patched versions; `fflate`
+has a vulnerable copy under `jspdf`.
 
 **Brief.**
 
@@ -221,6 +223,13 @@ its floor is below the patched versions; `fflate` has a vulnerable copy under `j
 - `fflate`: a bounded override `>=0.8.3 <0.9`, or a `jspdf` bump that dedupes to 0.8.3.
 - Let Dependabot update `postcss-selector-parser`, `@humanfs/node`, `sprintf-js` (no override exists;
   find out why the lockfile did not move).
+- `extract-zip` (high, development scope, no fix): decide between removing the dependency chain
+  (Lighthouse CI -> puppeteer), an override to a maintained fork, or a documented, time-boxed audit
+  exception with the Dependabot alert dismissed as "no fix, dev tooling only" and the reason
+  recorded in the repository's audit-exception file.
+- `glib` 0.18.5 (Rust): track the Tauri / wry upstream GTK bindings upgrade; add a `cargo audit`
+  (or equivalent) step to `dependency-health.yml` so the Rust lockfile has coverage independent of
+  Dependabot.
 - Shrink `LEGACY_UNBOUNDED` in `scripts/security/check-override-floors.mjs` by removing `qs` and
   `markdown-it` (the ratchet may only shrink).
 - Add a gate that fails when the lockfile-resolved version of an override-pinned package is below

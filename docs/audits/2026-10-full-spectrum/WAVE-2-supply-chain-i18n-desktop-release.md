@@ -9,11 +9,25 @@ scratch directory (it contacts the registry advisory endpoint; nothing was insta
 
 ## 1. Dependency advisories (DEP-001, S3, CONFIRMED)
 
-The scan covered 1688 dependencies (261 production, 1369 development, 198 optional) and returned
-**11 advisories, all severity moderate**. The tool's summary object additionally states `high: 3`,
-but the advisory list contains none with severity high; this was not reconciled. The CI gate
-(`pnpm audit --audit-level=high` in `ci.yml` and `dependency-health.yml`) is the authority and its
-latest run should be consulted before relying on either number.
+The `pnpm audit` scan covered 1688 dependencies (261 production, 1369 development, 198 optional)
+and returned **11 advisories, all labelled moderate**; its summary object additionally states
+`high: 3`, which its advisory list does not show. GitHub's Dependabot alerts for the same
+repository (read through the GET API on 2026-10-08, also announced by the push hook) list **11 open
+alerts: 2 high and 9 moderate**, and the two sources overlap only partly:
+
+- **Only in Dependabot:** `extract-zip <= 2.0.1` (two **high** advisories, GHSA-7pqw-9j4j-h8q3 and
+  GHSA-jmr9-qjv8-65gv; no patched version exists; resolved 2.0.1 via `@puppeteer/browsers`, which is
+  reached through the Lighthouse CI tooling -- development scope) and `glib 0.18.5` (Rust crate in
+  `apps/desktop/src-tauri/Cargo.lock`, GHSA-wrw7-89jp-8q8g, fixed in 0.20.0; the GTK3 bindings come
+  in through the Tauri / wry stack on Linux, so the fix depends on upstream).
+- **Only in `pnpm audit`:** both `qs` advisories and `ip-address` GHSA-h3mg-xc3c-68pw.
+- **Scope labels disagree:** Dependabot marks `ip-address` as development and
+  `postcss-selector-parser` as runtime; the dependency paths above say the opposite for both. Treat
+  scope labels from either tool as hints.
+
+The CI gate (`pnpm audit --audit-level=high` in `ci.yml` and `dependency-health.yml`) never saw the
+`extract-zip` pair, and Dependabot's `glib` alert is the only coverage for the Rust lockfile (no
+`cargo audit` step exists). The latest CI run should be consulted before relying on either number.
 
 | Package (resolved)               | Advisories                                                                         | Patched in         | Reaches via                                                            | Class                                                  |
 | -------------------------------- | ---------------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -24,6 +38,8 @@ latest run should be consulted before relying on either number.
 | `@humanfs/node` 0.16.7           | GHSA-p498-v437-472g                                                                | >= 0.16.8          | `eslint`                                                               | dev tooling                                            |
 | `sprintf-js` 1.0.3               | GHSA-hp3w-g68c-fv3c                                                                | >= 1.1.4           | `@lhci/cli`, `depcheck` via `argparse` / `js-yaml@3`                   | dev tooling                                            |
 | `postcss-selector-parser` 6.0.10 | GHSA-rj75-hqrm-r3gf                                                                | >= 7.1.6           | `@tailwindcss/typography`                                              | build tooling                                          |
+| `extract-zip` 2.0.1              | GHSA-7pqw-9j4j-h8q3, GHSA-jmr9-qjv8-65gv (**high**, Dependabot only)               | none               | `@puppeteer/browsers` <- Lighthouse CI tooling                         | dev tooling, no fix available                          |
+| `glib` 0.18.5 (Rust)             | GHSA-wrw7-89jp-8q8g (Dependabot only)                                              | >= 0.20.0          | Tauri / wry GTK3 bindings (Linux desktop builds)                       | desktop runtime, fix depends on upstream               |
 
 Not assessed: exploitability (needs per-advisory reading of attacker-controlled input paths). The
 table is reachability by dependency edge only.

@@ -121,7 +121,7 @@ be triggered manually via `workflow_dispatch`:
 ```
 
 **Manual dispatch without a pre-pushed tag:** Checkout uses the job
-token (`github.token`) only. When `dry-run` is false and the tag is
+token (`github.token`) only and does not persist it. When `dry-run` is false and the tag is
 missing, the "Ensure tag exists" step creates the annotated tag and
 pushes it with `RELEASE_PAT`. That secret is not used for checkout or
 for `gh release create`.

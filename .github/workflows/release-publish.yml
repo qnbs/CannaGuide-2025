@@ -53,8 +53,9 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
-                  # Job token only. A stale RELEASE_PAT must not fail checkout
-                  # before the tag step, which is the only step that uses it.
+                  # Do not persist the read-only job token. checkout stores it as
+                  # an extraheader that can override the RELEASE_PAT push URL.
+                  persist-credentials: false
                   token: ${{ github.token }}
 
             - name: Resolve tag name
@@ -93,6 +94,7 @@ jobs:
               env:
                   TAG: ${{ steps.tag.outputs.name }}
                   RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+                  REPO: ${{ github.repository }}
               shell: bash
               run: |
                   if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
@@ -122,7 +124,7 @@ jobs:
 
                   PERM_ERR_FILE=$(mktemp)
                   set +e
-                  PERM_OUT=$(GH_TOKEN="${RELEASE_PAT}" gh api "repos/${{ github.repository }}" --jq '.permissions.push' 2>"${PERM_ERR_FILE}")
+                  PERM_OUT=$(GH_TOKEN="${RELEASE_PAT}" gh api "repos/${REPO}" --jq '.permissions.push' 2>"${PERM_ERR_FILE}")
                   PERM_CODE=$?
                   set -e
                   SAFE_ERR=$(redact "$(cat "${PERM_ERR_FILE}")" "${RELEASE_PAT}")
@@ -143,8 +145,20 @@ jobs:
                   git config user.name "github-actions[bot]"
                   git tag -a "${TAG}" -m "Release ${TAG}" HEAD
 
+                  # Drop the checkout extraheader and its includeIf file. A contents:read
+                  # header on https://github.com can be sent ahead of the token in
+                  # the push URL, so the PAT preflight can pass and the push still
+                  # uses the read-only job token.
+                  git config --local --unset-all "http.https://github.com/.extraheader" || true
                   set +e
-                  PUSH_OUT=$(git push "https://x-access-token:${RELEASE_PAT}@github.com/${{ github.repository }}.git" "refs/tags/${TAG}" 2>&1)
+                  mapfile -t INCLUDE_KEYS < <(git config --local --name-only --get-regexp '^includeIf\.gitdir:.*\.path$' 2>/dev/null)
+                  set -e
+                  for key in "${INCLUDE_KEYS[@]}"; do
+                    git config --local --unset-all "$key" || true
+                  done
+
+                  set +e
+                  PUSH_OUT=$(git push "https://x-access-token:${RELEASE_PAT}@github.com/${REPO}.git" "refs/tags/${TAG}" 2>&1)
                   PUSH_CODE=$?
                   set -e
                   SAFE_PUSH=$(redact "${PUSH_OUT}" "${RELEASE_PAT}")
@@ -416,6 +430,7 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
+                  persist-credentials: false
                   token: ${{ github.token }}
 
             - name: Verify tag exists on remote

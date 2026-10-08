@@ -32,6 +32,9 @@ export function problemsInReleasePublish(text) {
         if (!/token:\s*\$\{\{\s*github\.token\s*\}\}/.test(step.code)) {
             problems.push(`checkout step "${step.name}" does not set token to github.token`)
         }
+        if (!/persist-credentials:\s*false/.test(step.code)) {
+            problems.push(`checkout step "${step.name}" persists the read-only job token`)
+        }
     }
 
     const ensure = steps.find((step) => step.name === ENSURE)
@@ -52,6 +55,22 @@ export function problemsInReleasePublish(text) {
         }
         if (/github\.token|secrets\.GITHUB_TOKEN/.test(ensure.code)) {
             problems.push(`"${ENSURE}" falls back to the job token for the tag push`)
+        }
+        const pushes = ensure.code.split('\n').filter((line) => /\bgit\s+push\b/.test(line))
+        if (
+            pushes.length !== 1 ||
+            !pushes[0].includes('x-access-token:${RELEASE_PAT}@')
+        ) {
+            problems.push(`"${ENSURE}" must push only through the RELEASE_PAT URL`)
+        }
+        if (/\bgit\s+push\s+["']?origin\b/.test(ensure.code)) {
+            problems.push(`"${ENSURE}" pushes through origin and can reuse the checkout token`)
+        }
+        if (!/http\.https:\/\/github\.com\/\.extraheader/.test(ensure.code)) {
+            problems.push(`"${ENSURE}" does not drop the checkout extraheader before the push`)
+        }
+        if (!/includeIf\\\.gitdir:/.test(ensure.code)) {
+            problems.push(`"${ENSURE}" does not drop checkout includeIf credentials`)
         }
     }
 

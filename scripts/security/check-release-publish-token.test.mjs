@@ -50,6 +50,21 @@ printf '%s' "\${OUT}"
     assert.equal(out.split('[REDACTED]').length, 3)
 })
 
+test('a tag push through origin fails the policy', () => {
+    const text = LIVE.replace(
+        'git push "https://x-access-token:${RELEASE_PAT}@github.com/${REPO}.git" "refs/tags/${TAG}"',
+        'git push origin "refs/tags/${TAG}"',
+    )
+    const problems = problemsInReleasePublish(text)
+    assert.ok(problems.some((problem) => problem.includes('RELEASE_PAT URL')))
+})
+
+test('persisting the checkout token fails the policy', () => {
+    const text = LIVE.replaceAll('persist-credentials: false', 'persist-credentials: true')
+    const problems = problemsInReleasePublish(text)
+    assert.ok(problems.some((problem) => problem.includes('persists the read-only job token')))
+})
+
 test('publishing the release with RELEASE_PAT fails the policy', () => {
     const text = LIVE.replace(
         'GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}',

@@ -34,6 +34,12 @@ describe('CSP fetch host gate', () => {
         assert.equal(flagEnabled(constantsSource, 'CANSATIVA_LOOKUP_DISABLED'), true)
     })
 
+    it('does not treat a longer token as the flag', () => {
+        const name = 'EXTERNAL_STRAIN_LOOKUPS_DISABLED'
+        assert.equal(flagEnabled(`export const ${name} = trueish\n`, name), false)
+        assert.equal(flagEnabled(`export const ${name} = true\n`, name), true)
+    })
+
     it('fails a fetch host that is neither allowlisted nor gated', () => {
         const source = 'export async function probe() { await fetch("https://evil.example/x") }'
         const violations = violationsInSource(source, allowed, constantsSource, 'probe.ts')

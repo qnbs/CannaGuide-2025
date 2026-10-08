@@ -6,12 +6,11 @@
  * A third-party CORS proxy must not appear in app source at all.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
-const APP = join(ROOT, 'apps', 'web')
 
 /** Hosts that stay in source but must not be requested while their flags are true. */
 export const GATED_FETCH_HOSTS = [
@@ -105,8 +104,32 @@ export function connectSrcHosts(securityHeadersSource) {
     return hosts
 }
 
+function isWordChar(ch) {
+    if (!ch) return false
+    const code = ch.charCodeAt(0)
+    return (
+        (code >= 48 && code <= 57) ||
+        (code >= 65 && code <= 90) ||
+        (code >= 97 && code <= 122) ||
+        ch === '_'
+    )
+}
+
+/**
+ * True when `constantsSource` contains `export const <name> = true` as a
+ * whole token. A literal search keeps the host strings in GATED_FETCH_HOSTS
+ * out of `RegExp`, which CodeQL reads as an unanchored hostname pattern.
+ */
 export function flagEnabled(constantsSource, name) {
-    return new RegExp(`export const ${name} = true\\b`).test(constantsSource)
+    const needle = `export const ${name} = true`
+    let from = 0
+    while (from < constantsSource.length) {
+        const at = constantsSource.indexOf(needle, from)
+        if (at < 0) return false
+        if (!isWordChar(constantsSource.charAt(at + needle.length))) return true
+        from = at + needle.length
+    }
+    return false
 }
 
 export function fetchTargetHosts(source) {
@@ -162,29 +185,31 @@ function isSkippedFile(name) {
 }
 
 function walkApp(dir, files) {
-    for (const name of readdirSync(dir)) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const name = entry.name
         const path = join(dir, name)
-        const info = statSync(path)
-        if (info.isDirectory()) {
+        if (entry.isDirectory()) {
             if (name === 'node_modules' || name === 'dist' || name === 'locales') continue
             walkApp(path, files)
             continue
         }
-        if (!/\.(ts|tsx)$/.test(name) || isSkippedFile(name)) continue
+        if (!entry.isFile() || !/\.(ts|tsx)$/.test(name) || isSkippedFile(name)) continue
         files.push(path)
     }
 }
 
 function walkProxy(dir, hits) {
-    for (const name of readdirSync(dir)) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const name = entry.name
         const path = join(dir, name)
-        const info = statSync(path)
-        if (info.isDirectory()) {
+        if (entry.isDirectory()) {
             if (name === 'node_modules' || name === 'dist') continue
             walkProxy(path, hits)
             continue
         }
-        if (!/\.(ts|tsx|js|mjs|html|json)$/.test(name) || isSkippedFile(name)) continue
+        if (!entry.isFile() || !/\.(ts|tsx|js|mjs|html|json)$/.test(name) || isSkippedFile(name)) {
+            continue
+        }
         const text = readFileSync(path, 'utf8')
         for (const marker of PROXY_MARKERS) {
             if (text.includes(marker)) {

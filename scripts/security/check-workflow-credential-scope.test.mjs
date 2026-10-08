@@ -207,6 +207,39 @@ jobs:
     )
 })
 
+test('a workflow-level env secret is visible to a pull_request job', () => {
+    const text = `
+on:
+    pull_request:
+
+env:
+    CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "\$CLOUDFLARE_API_TOKEN"
+`
+    assert.match(violationsInWorkflow('preview.yml', text).join('\n'), /CLOUDFLARE_API_TOKEN/)
+
+    const guarded = `
+on:
+    workflow_dispatch:
+
+env:
+    RELEASE_PAT: \${{ secrets.RELEASE_PAT }}
+
+jobs:
+    publish:
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo ok
+`
+    assert.deepEqual(violationsInWorkflow('release.yml', guarded), [])
+})
+
 test('GITHUB_TOKEN on pull_request is not a privileged secret', () => {
     const text = `
 on:

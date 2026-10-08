@@ -60,8 +60,9 @@ export function violationsInWorkflow(filename, text) {
         ]
     }
     const problems = []
+    const workflowEnv = workflowEnvLines(normalized)
     for (const job of jobs.jobs) {
-        const secrets = privilegedSecrets(job.lines)
+        const secrets = privilegedSecrets([...workflowEnv, ...job.lines])
         if (secrets.length === 0) continue
         const ifText = jobIf(job.lines)
         const listed = secrets.join(', ')
@@ -106,6 +107,12 @@ export function expressionCanRun(ifText, ctx) {
 
 function fileReadsPrivileged(text) {
     return privilegedSecrets(text.split('\n')).length > 0
+}
+
+function workflowEnvLines(text) {
+    const env = topLevelBlocks(text).find((block) => block.key === 'env')
+    if (!env) return []
+    return [env.rest, ...env.body]
 }
 
 function triggersOf(text) {

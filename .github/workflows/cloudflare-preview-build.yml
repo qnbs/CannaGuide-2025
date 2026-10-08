@@ -1,10 +1,13 @@
 name: Cloudflare Preview Build
 
-# Secret-free build for a same-repo pull request. The Cloudflare token is not
-# available here: pull_request runs this file from the merge commit, so a
-# same-repo PR could otherwise print the token. Publish happens in
-# deploy-cloudflare.yml, which workflow_run takes from the default branch
-# and which only uploads the artifact produced below.
+# Build for a same-repo pull request. This file does not reference a deploy
+# secret. Publish happens in deploy-cloudflare.yml, which workflow_run takes
+# from the default branch and which only uploads the artifact produced below.
+# A same-repo pull_request can still add a secret reference: GitHub passes
+# repository secrets to that event, including to a workflow file the pull
+# request creates. An Environment is what withholds them, and that is an
+# owner setting. The credential-scope check fails CI if the committed file
+# references a privileged secret.
 #
 # Fork PRs are skipped. The publish job also refuses a head repository that
 # is not this one, so building a fork artifact would only spend minutes.

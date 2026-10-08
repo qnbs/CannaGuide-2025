@@ -44,7 +44,7 @@ export const legal = {
             thirdParty: {
                 title: 'Diensten van Derden',
                 content:
-                    "De enige externe verbindingen zijn: (1) Google Fonts voor typografie, (2) AI-provider API's als je AI-functies inschakelt met je eigen API-sleutel. Er worden geen gegevens gedeeld met adverteerders of analyticsproviders.",
+                    'De lettertypen zitten in de app. Optionele functies kunnen deze hosts bereiken: generativelanguage.googleapis.com, api.openai.com, api.x.ai en api.anthropic.com wanneer je AI inschakelt met je eigen API-sleutel; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co en huggingfaceusercontent.com plus cdn.jsdelivr.net wanneer een lokaal model of een runtime wordt gedownload; api.elevenlabs.io wanneer cloud-spraak is ingeschakeld. Er worden geen gegevens gedeeld met adverteerders of analyticsproviders. Cloudsynchronisatie is niet actief in deze versie.',
             },
             rights: {
                 title: 'Jouw Rechten (AVG/DSGVO)',
@@ -68,7 +68,7 @@ export const legal = {
     impressum: {
         title: 'Juridische Mededeling (Impressum)',
         content:
-            'CannaGuide 2025 is een open-source project gehost op GitHub. Dit is een niet-commerciele, educatieve applicatie. Er is geen Impressum vereist volgens paragraaf 5 TMG voor niet-commerciele particuliere projecten.',
+            'CannaGuide 2025 is een open-source project gehost op GitHub. Dit is een niet-commerciele, educatieve applicatie. De aanbiederidentificatie werd eerder beschreven onder paragraaf 5 TMG. Die regeling is vervangen door de Digitale-Dienste-Gesetz (DDG). Of dit project een Impressum moet publiceren is een juridische vraag en wordt door deze applicatie niet beslist. Juridische toetsing is nog nodig.',
     },
     imageConsent: {
         banner: 'De afbeelding wordt naar je geselecteerde AI-provider gestuurd voor analyse. EXIF/GPS-metadata wordt automatisch verwijderd voor verzending.',

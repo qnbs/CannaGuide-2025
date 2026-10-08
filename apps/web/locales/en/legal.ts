@@ -18,35 +18,43 @@ export const legal = {
         sections: {
             overview: {
                 title: 'Overview',
-                content: 'CannaGuide 2025 is a privacy-first application. All your data is stored locally on your device. We do not operate servers that collect or store your personal data.',
+                content:
+                    'CannaGuide 2025 is a privacy-first application. All your data is stored locally on your device. We do not operate servers that collect or store your personal data.',
             },
             dataStorage: {
                 title: 'Data Storage',
-                content: 'All grow logs, plant data, settings, and preferences are stored exclusively in your browser\'s IndexedDB and localStorage. No data is transmitted to our servers.',
+                content:
+                    "All grow logs, plant data, settings, and preferences are stored exclusively in your browser's IndexedDB and localStorage. No data is transmitted to our servers.",
             },
             aiServices: {
                 title: 'AI Services (Optional)',
-                content: 'If you choose to use AI features, your queries and optionally uploaded images are sent directly from your browser to the AI provider you selected (e.g. Google Gemini, OpenAI, Anthropic, xAI). Your API key is encrypted locally with AES-256-GCM and never leaves your device unencrypted. We have no access to your API keys or AI conversations.',
+                content:
+                    'If you choose to use AI features, your queries and optionally uploaded images are sent directly from your browser to the AI provider you selected (e.g. Google Gemini, OpenAI, Anthropic, xAI). Your API key is encrypted locally with AES-256-GCM and never leaves your device unencrypted. We have no access to your API keys or AI conversations.',
             },
             imageProcessing: {
                 title: 'Image Processing',
-                content: 'Images uploaded for AI plant diagnosis are re-encoded via canvas to strip EXIF/GPS metadata before transmission. Image upload requires your explicit consent.',
+                content:
+                    'Images uploaded for AI plant diagnosis are re-encoded via canvas to strip EXIF/GPS metadata before transmission. Image upload requires your explicit consent.',
             },
             cookies: {
                 title: 'Cookies & Local Storage',
-                content: 'This app does not use tracking cookies. We use localStorage and IndexedDB solely for app functionality (settings, plant data, consent flags). No analytics or third-party tracking is employed.',
+                content:
+                    'This app does not use tracking cookies. We use localStorage and IndexedDB solely for app functionality (settings, plant data, consent flags). No analytics or third-party tracking is employed.',
             },
             thirdParty: {
                 title: 'Third-Party Services',
-                content: 'The only external connections are: (1) Google Fonts for typography, (2) AI provider APIs if you enable AI features with your own API key. No data is shared with advertisers or analytics providers.',
+                content:
+                    'Typography is bundled with the app. Optional features can contact these hosts: generativelanguage.googleapis.com, api.openai.com, api.x.ai, and api.anthropic.com when you enable AI with your own API key; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co, and huggingfaceusercontent.com plus cdn.jsdelivr.net when a local model or runtime is downloaded; api.elevenlabs.io when cloud text-to-speech is enabled. No data is shared with advertisers or analytics providers. Cloud sync is not enabled in this version.',
             },
             rights: {
                 title: 'Your Rights (GDPR/DSGVO)',
-                content: 'Since all data is stored locally, you have full control. You can export all data via Settings, or delete all data by clearing your browser storage. No request to us is necessary.',
+                content:
+                    'Since all data is stored locally, you have full control. You can export all data via Settings, or delete all data by clearing your browser storage. No request to us is necessary.',
             },
             contact: {
                 title: 'Contact',
-                content: 'For privacy-related questions, please open an issue on the project\'s GitHub repository.',
+                content:
+                    "For privacy-related questions, please open an issue on the project's GitHub repository.",
             },
         },
     },
@@ -57,9 +65,11 @@ export const legal = {
         learnMore: 'Privacy Policy',
         required: 'Consent is required to use this app.',
     },
+    // LEGAL_REVIEW_REQUIRED: DDG replaced section 5 TMG. This text does not decide whether an Impressum is mandatory.
     impressum: {
         title: 'Legal Notice (Impressum)',
-        content: 'CannaGuide 2025 is an open-source project hosted on GitHub. This is a non-commercial, educational application. No Impressum according to § 5 TMG is required for non-commercial private projects.',
+        content:
+            'CannaGuide 2025 is an open-source project hosted on GitHub. This is a non-commercial, educational application. Provider identification was previously described under section 5 TMG. That statute was replaced by the Digitale-Dienste-Gesetz (DDG). Whether this project must publish an Impressum is a legal question and is not decided by this application. Legal review is still required.',
     },
     imageConsent: {
         banner: 'The image will be sent to your selected AI provider for analysis. EXIF/GPS metadata is stripped automatically before transmission.',
@@ -68,5 +78,6 @@ export const legal = {
         revoke: 'Revoke image consent',
         revoked: 'Image consent revoked. You will be asked again before the next upload.',
     },
-    medicalDisclaimer: 'This is not medical advice. Always consult a qualified professional for health-related decisions.',
+    medicalDisclaimer:
+        'This is not medical advice. Always consult a qualified professional for health-related decisions.',
 }

@@ -80,6 +80,13 @@ const performTx = async <T>(
     })
 }
 
+/** Close the Redux persistence connection before an erase. */
+export const closeIndexedDBStorage = (): void => {
+    db?.close()
+    db = null
+    dbPromise = null
+}
+
 export const indexedDBStorage: StateStorage = {
     getItem: async (name: string): Promise<string | null> => {
         const result = await performTx('readonly', (store) => store.get(name))

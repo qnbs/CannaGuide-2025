@@ -51,6 +51,9 @@ export const clearImageGenCache = async (): Promise<void> => {
     await cache.clear()
 }
 
+/** Close the image-cache connection before an erase. */
+export const closeImageGenCache = (): Promise<void> => cache.close()
+
 /** Get the number of cached images. */
 export const getImageGenCacheCount = async (): Promise<number> => {
     return cache.count()

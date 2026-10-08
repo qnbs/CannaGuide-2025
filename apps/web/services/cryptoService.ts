@@ -201,6 +201,13 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
     }
 }
 
+/** Close the secure-key database connection before an erase. */
+export function closeSecureDb(): void {
+    secureDb?.close()
+    secureDb = null
+    secureDbPromise = null
+}
+
 export async function encrypt(plaintext: string): Promise<string> {
     const iv = crypto.getRandomValues(new Uint8Array(12))
     const key = await getOrCreateEncryptionKey()

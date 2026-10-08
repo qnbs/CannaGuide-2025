@@ -148,6 +148,13 @@ export const openDB = (): Promise<IDBDatabase> => {
     return dbPromise
 }
 
+/** Close the cached domain-database connection before an erase. */
+export const closeDB = (): void => {
+    db?.close()
+    db = null
+    dbPromise = null
+}
+
 export const performTx = async <T>(
     storeName: string,
     mode: IDBTransactionMode,

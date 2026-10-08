@@ -18,8 +18,7 @@ export const onboarding = {
     },
     languageTitle: 'Choisissez Votre Langue',
     languageSubtitle: 'Selectionnez votre langue preferee pour continuer.',
-    languageLoadFailed:
-        'Impossible de charger la langue selectionnee. Veuillez reessayer.',
+    languageLoadFailed: 'Impossible de charger la langue selectionnee. Veuillez reessayer.',
     german: 'Allemand',
     english: 'Anglais',
     step1: {
@@ -39,12 +38,12 @@ export const onboarding = {
         text: 'Apprenez avec le guide interactif, demandez conseil au mentor IA et utilisez les lexiques pour approfondir vos connaissances.',
     },
     step5: {
-        title: 'Synchronisation Hors Ligne',
-        text: 'Vos donnees se synchronisent parfaitement entre appareils grace a la technologie CRDT sans conflit. Fonctionne hors ligne -- les modifications fusionnent automatiquement a la reconnexion.',
+        title: 'Sur cet appareil',
+        text: "Vos donnees de culture restent dans ce navigateur. Une copie locale reste sur l'appareil pour un usage hors ligne. La synchronisation avec d'autres appareils n'est pas disponible dans cette version.",
     },
     startGrow: 'Commencons Votre Premier Culture !',
     localOnlyNote:
-        'Aucun compte necessaire. Toutes les donnees restent sur votre appareil. Vous pouvez activer la synchronisation cloud plus tard dans les Parametres.',
+        "Aucun compte necessaire. Toutes les donnees restent sur votre appareil. La synchronisation cloud n'est pas disponible dans cette version.",
     wizard: {
         stepExperience: {
             title: "Votre Niveau d'Experience",

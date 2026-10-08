@@ -218,6 +218,9 @@ const buildChunkText = (entry: JournalEntry): string => {
     return DOMPurify.sanitize(rawText, { ALLOWED_TAGS: [] })
 }
 
+/** Close the embedding-cache connection before an erase. */
+export const closeEmbeddingCache = (): Promise<void> => cache.close()
+
 /** Reset internal state (for tests). */
 export const resetCacheState = (): void => {
     _hits = 0

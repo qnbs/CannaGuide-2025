@@ -33,6 +33,8 @@ interface CacheOps<T extends BaseCacheEntry> {
     clear: () => Promise<void>
     count: () => Promise<number>
     resetDbPromise: () => void
+    /** Close the cached connection so a later deleteDatabase is not blocked. */
+    close: () => Promise<void>
     /** Update maxEntries and/or ttlMs at runtime. */
     updateConfig: (patch: { maxEntries?: number; ttlMs?: number }) => void
 }
@@ -195,6 +197,16 @@ export function createIndexedDbLruCache<T extends BaseCacheEntry>(
         clear,
         count,
         resetDbPromise: () => {
+            dbPromise = null
+        },
+        close: async () => {
+            if (!dbPromise) return
+            try {
+                const conn = await dbPromise
+                conn.close()
+            } catch {
+                // Open failed or the connection is already closed.
+            }
             dbPromise = null
         },
         updateConfig: (patch: { maxEntries?: number; ttlMs?: number }) => {

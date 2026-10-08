@@ -18,8 +18,7 @@ export const onboarding = {
     },
     languageTitle: 'Kies Je Taal',
     languageSubtitle: 'Selecteer je voorkeurstaal om verder te gaan.',
-    languageLoadFailed:
-        'De geselecteerde taal kon niet worden geladen. Probeer het opnieuw.',
+    languageLoadFailed: 'De geselecteerde taal kon niet worden geladen. Probeer het opnieuw.',
     german: 'Duits',
     english: 'Engels',
     step1: {
@@ -39,12 +38,12 @@ export const onboarding = {
         text: 'Leer met de interactieve gids, vraag advies aan de AI-mentor en gebruik de lexicons om je kennis te verdiepen.',
     },
     step5: {
-        title: 'Offline Synchronisatie',
-        text: 'Je gegevens synchroniseren naadloos tussen apparaten met conflictvrije CRDT-technologie. Werkt offline -- wijzigingen worden automatisch samengevoegd wanneer je opnieuw verbindt.',
+        title: 'Op dit apparaat',
+        text: 'Je kweekgegevens blijven in deze browser. Een lokale kopie staat op het apparaat voor offline gebruik. Synchronisatie met andere apparaten is niet beschikbaar in deze versie.',
     },
     startGrow: 'Laten We Beginnen Met Je Eerste Kweek!',
     localOnlyNote:
-        'Geen account nodig. Alle gegevens blijven op je apparaat. Je kunt later optioneel cloudsynchronisatie inschakelen in Instellingen.',
+        'Geen account nodig. Alle gegevens blijven op je apparaat. Cloudsynchronisatie is niet beschikbaar in deze versie.',
     wizard: {
         stepExperience: {
             title: 'Jouw Ervaringsniveau',

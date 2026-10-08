@@ -34,6 +34,55 @@ describe('privacyService', () => {
             const result = await eraseAllData()
             expect(result).toBe(true)
         })
+
+        it('returns false when a delete stays blocked', async () => {
+            const realIndexedDb = globalThis.indexedDB
+            const blockedDb = {
+                deleteDatabase: () => {
+                    const request = {
+                        onsuccess: null as (() => void) | null,
+                        onerror: null as (() => void) | null,
+                        onblocked: null as (() => void) | null,
+                    }
+                    queueMicrotask(() => {
+                        request.onblocked?.()
+                    })
+                    return request
+                },
+            }
+            vi.stubGlobal('indexedDB', blockedDb)
+            try {
+                const { eraseAllData } = await import('./privacyService')
+                await expect(eraseAllData()).resolves.toBe(false)
+            } finally {
+                vi.stubGlobal('indexedDB', realIndexedDb)
+            }
+        }, 15000)
+
+        it('returns false when a registered database is still listed', async () => {
+            const realIndexedDb = globalThis.indexedDB
+            const leftoverDb = {
+                deleteDatabase: () => {
+                    const request = {
+                        onsuccess: null as (() => void) | null,
+                        onerror: null as (() => void) | null,
+                        onblocked: null as (() => void) | null,
+                    }
+                    queueMicrotask(() => {
+                        request.onsuccess?.()
+                    })
+                    return request
+                },
+                databases: async () => [{ name: 'cannaguide-crdt-v1', version: 1 }],
+            }
+            vi.stubGlobal('indexedDB', leftoverDb)
+            try {
+                const { eraseAllData } = await import('./privacyService')
+                await expect(eraseAllData()).resolves.toBe(false)
+            } finally {
+                vi.stubGlobal('indexedDB', realIndexedDb)
+            }
+        })
     })
 
     describe('exportAllUserData', () => {
@@ -66,13 +115,16 @@ describe('privacyService', () => {
     })
 
     describe('getKnownDatabaseNames', () => {
-        it('should return all 7 known database names', async () => {
+        it('should return every registered database name', async () => {
             const { getKnownDatabaseNames } = await import('./privacyService')
             const names = getKnownDatabaseNames()
-            expect(names).toHaveLength(7)
+            expect(names).toHaveLength(10)
             expect(names).toContain('CannaGuideDB')
             expect(names).toContain('CannaGuideStateDB')
             expect(names).toContain('CannaGuideSecureDB')
+            expect(names).toContain('cannaguide-crdt-v1')
+            expect(names).toContain('CannaGuideRagEmbeddingCache')
+            expect(names).toContain('plantDiseaseModel')
         })
     })
 

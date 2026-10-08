@@ -2,7 +2,8 @@
  * IndexedDB Monitor Service
  *
  * Provides health monitoring, storage quota inspection, and maintenance
- * utilities for the three CannaGuide IndexedDB databases:
+ * utilities for the three databases whose object stores this module knows.
+ * Erase coverage is the full list in privacyDatabaseRegistry, which is wider.
  *   - CannaGuideStateDB  (Redux persistence)
  *   - CannaGuideDB       (strains + images + search index)
  *   - CannaGuideSecureDB (crypto keys)
@@ -10,6 +11,8 @@
  * All functions are safe to call in any order and will degrade gracefully
  * when the Storage API is unavailable (e.g., private browsing, old browsers).
  */
+
+import type { ApplicationDatabaseName } from './privacyDatabaseRegistry'
 
 export interface DbStoreStats {
     db: string
@@ -35,7 +38,7 @@ export interface DbHealthStatus {
 const USAGE_WARN_THRESHOLD = 70
 const USAGE_CRITICAL_THRESHOLD = 90
 
-const DB_DEFINITIONS: Array<{ name: string; stores: string[] }> = [
+const DB_DEFINITIONS: Array<{ name: ApplicationDatabaseName; stores: string[] }> = [
     { name: 'CannaGuideStateDB', stores: ['keyval'] },
     { name: 'CannaGuideDB', stores: ['strains', 'images', 'search'] },
     { name: 'CannaGuideSecureDB', stores: ['crypto_keys'] },

@@ -113,17 +113,16 @@ function isIdentContinue(ch) {
     )
 }
 
-function blankStrings(source) {
+function blankCode(source, i, end, baseDepth) {
     let out = ''
-    let i = 0
-    const n = source.length
-    while (i < n) {
+    let depth = baseDepth
+    while (i < end) {
         const c = source[i]
         if (c === "'" || c === '"') {
             const q = c
             out += q
             i += 1
-            while (i < n) {
+            while (i < end) {
                 if (source[i] === '\\') {
                     i += 2
                     continue
@@ -140,7 +139,7 @@ function blankStrings(source) {
         if (c === '`') {
             out += '`'
             i += 1
-            while (i < n) {
+            while (i < end) {
                 if (source[i] === '\\') {
                     i += 2
                     continue
@@ -148,14 +147,9 @@ function blankStrings(source) {
                 if (source[i] === '$' && source[i + 1] === '{') {
                     out += '${'
                     i += 2
-                    let depth = 1
-                    while (i < n && depth > 0) {
-                        const ch = source[i]
-                        out += ch
-                        if (ch === '{') depth += 1
-                        else if (ch === '}') depth -= 1
-                        i += 1
-                    }
+                    const inner = blankCode(source, i, end, 1)
+                    out += inner.out
+                    i = inner.i
                     continue
                 }
                 if (source[i] === '`') {
@@ -167,10 +161,22 @@ function blankStrings(source) {
             }
             continue
         }
+        if (baseDepth > 0 && c === '{') depth += 1
+        if (baseDepth > 0 && c === '}') {
+            depth -= 1
+            if (depth === 0) {
+                out += '}'
+                return { out, i: i + 1 }
+            }
+        }
         out += c
         i += 1
     }
-    return out
+    return { out, i }
+}
+
+function blankStrings(source) {
+    return blankCode(source, 0, source.length, 0).out
 }
 
 /**
@@ -208,8 +214,81 @@ function fetchOriginKey(scheme, host, port) {
     return `//${host}`
 }
 
-function originFromLiteral(literal) {
-    const text = literal.replace(/\\(.)/g, '$1')
+function decodeJsString(body) {
+    let out = ''
+    let i = 0
+    while (i < body.length) {
+        if (body[i] !== '\\') {
+            out += body[i]
+            i += 1
+            continue
+        }
+        if (i + 1 >= body.length) return null
+        const esc = body[i + 1]
+        if (esc === 'u' && body[i + 2] === '{') {
+            const end = body.indexOf('}', i + 3)
+            const hex = end < 0 ? '' : body.slice(i + 3, end)
+            const code = /^[0-9a-fA-F]{1,6}$/.test(hex) ? Number.parseInt(hex, 16) : Number.NaN
+            if (!Number.isInteger(code) || code > 0x10ffff) return null
+            out += String.fromCodePoint(code)
+            i = end + 1
+            continue
+        }
+        if (esc === 'u') {
+            const hex = body.slice(i + 2, i + 6)
+            if (!/^[0-9a-fA-F]{4}$/.test(hex)) return null
+            out += String.fromCharCode(Number.parseInt(hex, 16))
+            i += 6
+            continue
+        }
+        if (esc === 'x') {
+            const hex = body.slice(i + 2, i + 4)
+            if (!/^[0-9a-fA-F]{2}$/.test(hex)) return null
+            out += String.fromCharCode(Number.parseInt(hex, 16))
+            i += 4
+            continue
+        }
+        if (esc === '\n') {
+            i += 2
+            continue
+        }
+        if (esc === '\r') {
+            i += 2
+            if (body[i] === '\n') i += 1
+            continue
+        }
+        const simple = { n: '\n', r: '\r', t: '\t', b: '\b', f: '\f', v: '\v', '0': '\0' }
+        out += Object.hasOwn(simple, esc) ? simple[esc] : esc
+        i += 2
+    }
+    return out
+}
+
+function readQuotedLiteral(source, quoteIndex) {
+    const quote = source[quoteIndex]
+    const bodyStart = quoteIndex + 1
+    let i = bodyStart
+    while (i < source.length) {
+        if (source[i] === '\\') {
+            i += 2
+            continue
+        }
+        if (source[i] === quote) {
+            const decoded = decodeJsString(source.slice(bodyStart, i))
+            if (decoded === null) return null
+            return { decoded, next: i + 1 }
+        }
+        if (source[i] === '\n') return null
+        i += 1
+    }
+    return null
+}
+
+function looksLikeFetchUrl(text) {
+    return /^(?:https?:)?\/\//i.test(text)
+}
+
+function originFromLiteral(text) {
     const protocolRelative = text.startsWith('//')
     let parsed
     try {
@@ -230,10 +309,21 @@ export function fetchTargetHosts(source) {
     const code = stripComments(source)
     if (!/\bfetch\s*\(/.test(code)) return []
     const hosts = new Set()
-    const re = /(['"`])((?:[Hh][Tt][Tt][Pp][Ss]?:)?\/\/[^'"`\n\\]*)/g
-    let match
-    while ((match = re.exec(code))) {
-        if (match[2]) hosts.add(originFromLiteral(match[2]))
+    for (let i = 0; i < code.length; i += 1) {
+        const quote = code[i]
+        if (quote !== "'" && quote !== '"' && quote !== '`') continue
+        const literal = readQuotedLiteral(code, i)
+        if (!literal) {
+            const head = code.slice(i + 1, i + 16)
+            if (looksLikeFetchUrl(head) || /^(?:https?:)?\\/i.test(head)) {
+                hosts.add('unparsed:truncated-literal')
+            }
+            continue
+        }
+        i = literal.next - 1
+        const text = literal.decoded.trim()
+        if (!looksLikeFetchUrl(text)) continue
+        hosts.add(originFromLiteral(text))
     }
     return [...hosts]
 }

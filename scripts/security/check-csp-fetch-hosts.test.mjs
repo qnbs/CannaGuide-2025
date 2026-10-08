@@ -53,6 +53,8 @@ describe('CSP fetch host gate', () => {
         assert.equal(flagEnabled(source, name), false)
         const active = `const note = "export const ${name} = false"\nexport const ${name} = true\n`
         assert.equal(flagEnabled(active, name), true)
+        const nested = `const note = \`x \${"export const ${name} = true"}\`\nexport const ${name} = false\n`
+        assert.equal(flagEnabled(nested, name), false)
     })
 
     it('rejects a non-default port, another scheme, and a protocol-relative host', () => {
@@ -83,6 +85,10 @@ describe('CSP fetch host gate', () => {
             violationsInSource(credentialed, allowed, constantsSource, 'probe.ts'),
             [],
         )
+        const escaped = 'await fetch("https://api.openai.com\\u0040evil.example/v1")'
+        const escapedViolations = violationsInSource(escaped, allowed, constantsSource, 'probe.ts')
+        assert.equal(escapedViolations.length, 1)
+        assert.match(escapedViolations[0], /evil\.example/)
         const upperScheme = 'await fetch("HTTPS://evil.example/v1")'
         const upperViolations = violationsInSource(
             upperScheme,

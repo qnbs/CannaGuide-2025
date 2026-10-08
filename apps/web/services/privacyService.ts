@@ -30,67 +30,118 @@ const deleteDatabase = (name: string): Promise<DeleteOutcome> =>
         }
 
         let settled = false
-        let blocked = false
-        let timer: ReturnType<typeof setTimeout>
+        let timer: ReturnType<typeof setTimeout> | undefined
         const finish = (outcome: DeleteOutcome): void => {
             if (settled) return
             settled = true
-            clearTimeout(timer)
+            if (timer !== undefined) clearTimeout(timer)
             resolve(outcome)
         }
-        timer = setTimeout(() => {
-            finish(blocked ? 'blocked' : 'error')
-        }, DELETE_DATABASE_TIMEOUT_MS)
 
         try {
             const req = indexedDB.deleteDatabase(name)
             req.onsuccess = (): void => finish('deleted')
             req.onerror = (): void => finish('error')
             req.onblocked = (): void => {
-                blocked = true
+                if (settled || timer !== undefined) return
+                timer = setTimeout(() => {
+                    finish('blocked')
+                }, DELETE_DATABASE_TIMEOUT_MS)
             }
         } catch {
             finish('error')
         }
     })
 
+const logCloserError = (error: unknown): undefined => {
+    console.debug('[privacyService] connection close failed:', error)
+    return undefined
+}
+
 /** Close page-owned connections so deleteDatabase is not blocked by this tab. */
 const closeOwnedConnections = async (): Promise<void> => {
     const closers: Array<Promise<unknown>> = [
-        import('./crdtService').then((mod) => mod.crdtService.destroy()).catch(() => undefined),
+        import('./crdtService').then((mod) => mod.crdtService.destroy()).catch(logCloserError),
         import('./db/connection')
             .then((mod) => {
                 mod.closeDB()
             })
-            .catch(() => undefined),
+            .catch(logCloserError),
         import('@/stores/indexedDBStorage')
             .then((mod) => {
                 mod.closeIndexedDBStorage()
             })
-            .catch(() => undefined),
+            .catch(logCloserError),
         import('./cryptoService')
             .then((mod) => {
                 mod.closeSecureDb()
             })
-            .catch(() => undefined),
+            .catch(logCloserError),
         import('./timeSeriesService')
             .then((mod) => {
-                mod.timeSeriesService.close()
+                mod.holdTimeSeriesForErase()
             })
-            .catch(() => undefined),
+            .catch(logCloserError),
         import('./local-ai/cache/cacheService')
             .then((mod) => mod.closeLocalAiCache())
-            .catch(() => undefined),
+            .catch(logCloserError),
         import('./imageGenerationCacheService')
             .then((mod) => mod.closeImageGenCache())
-            .catch(() => undefined),
+            .catch(logCloserError),
         import('./local-ai/nlp/ragEmbeddingCacheService')
             .then((mod) => mod.closeEmbeddingCache())
-            .catch(() => undefined),
+            .catch(logCloserError),
     ]
     await Promise.all(closers)
 }
 
+/** Re-open is allowed only when erase did not finish. A full success reloads. */
+const releaseOwnedConnections = async (): Promise<void> => {
+    const releasers: Array<Promise<unknown>> = [
+        import('./db/connection')
+            .then((mod) => {
+                mod.releaseDBAfterErase()
+            })
+            .catch(logCloserError),
+        import('@/stores/indexedDBStorage')
+            .then((mod) => {
+                mod.releaseIndexedDBStorageAfterErase()
+            })
+            .catch(logCloserError),
+        import('./cryptoService')
+            .then((mod) => {
+                mod.releaseSecureDbAfterErase()
+            })
+            .catch(logCloserError),
+        import('./timeSeriesService')
+            .then((mod) => {
+                mod.releaseTimeSeriesAfterErase()
+            })
+            .catch(logCloserError),
+        import('./local-ai/cache/cacheService')
+            .then((mod) => {
+                mod.resumeLocalAiCache()
+            })
+            .catch(logCloserError),
+        import('./imageGenerationCacheService')
+            .then((mod) => {
+                mod.resumeImageGenCache()
+            })
+            .catch(logCloserError),
+        import('./local-ai/nlp/ragEmbeddingCacheService')
+            .then((mod) => {
+                mod.resumeEmbeddingCache()
+            })
+            .catch(logCloserError),
+    ]
+    await Promise.all(releasers)
+}
+
+/**
+ * True when indexedDB.databases() still lists one of `names`.
+ * Browsers without databases() cannot confirm leftovers, so this returns false
+ * and erase then depends on deleteDatabase outcomes alone.
+ */
 const namedDatabasesStillPresent = async (names: readonly string[]): Promise<boolean> => {
     if (typeof indexedDB === 'undefined' || typeof indexedDB.databases !== 'function') {
         return false
@@ -123,13 +174,17 @@ export const eraseSingleDatabase = async (dbName: string): Promise<boolean> => {
         return false
     }
 
+    let deleted = false
     try {
         await closeOwnedConnections()
         const outcome = await deleteDatabase(dbName)
-        return outcome === 'deleted' && !(await namedDatabasesStillPresent([dbName]))
+        deleted = outcome === 'deleted' && !(await namedDatabasesStillPresent([dbName]))
+        return deleted
     } catch (error) {
         Sentry.captureException(error)
         return false
+    } finally {
+        await releaseOwnedConnections()
     }
 }
 
@@ -172,14 +227,17 @@ const clearServiceWorkers = async (): Promise<void> => {
  * @returns true if erasure completed (caller should reload)
  */
 export const eraseAllData = async (): Promise<boolean> => {
+    let databasesDeleted = false
     try {
         await closeOwnedConnections()
 
         // 1. Delete every registered IndexedDB database
         const outcomes = await Promise.all(APPLICATION_DATABASE_NAMES.map(deleteDatabase))
-        const databasesDeleted =
+        databasesDeleted =
             outcomes.every((outcome) => outcome === 'deleted') &&
             !(await namedDatabasesStillPresent(APPLICATION_DATABASE_NAMES))
+
+        if (!databasesDeleted) return false
 
         // 2. Clear localStorage
         localStorage.clear()
@@ -193,11 +251,16 @@ export const eraseAllData = async (): Promise<boolean> => {
         // 5. Unregister Service Workers + clear caches
         await clearServiceWorkers()
 
-        return databasesDeleted
+        return true
     } catch (error) {
+        databasesDeleted = false
         Sentry.captureException(error)
         console.debug('[privacyService] eraseAllData failed:', error)
         return false
+    } finally {
+        if (!databasesDeleted) {
+            await releaseOwnedConnections()
+        }
     }
 }
 
@@ -250,6 +313,12 @@ const readAllFromDatabase = (dbName: string): Promise<Record<string, unknown[]> 
         try {
             const req = indexedDB.open(dbName)
             req.onerror = (): void => resolve(null)
+            req.onupgradeneeded = (event): void => {
+                // open() without a version creates a missing database at version 1
+                // and then skips the real service upgrade. Abort that creation.
+                if (event.oldVersion !== 0) return
+                req.transaction?.abort()
+            }
 
             req.onsuccess = (): void => {
                 const db = req.result

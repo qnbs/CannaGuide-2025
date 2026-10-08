@@ -81,6 +81,26 @@ const COMPACTION_COOLDOWN_MS = MS_PER_HOUR
 
 let tsDb: IDBDatabase | null = null
 let tsDbPromise: Promise<IDBDatabase> | null = null
+let tsDbEpoch = 0
+let tsEraseHold = false
+
+const discardTsConnection = (): void => {
+    tsDbEpoch += 1
+    tsDb?.close()
+    tsDb = null
+    tsDbPromise = null
+}
+
+/** Refuse new time-series opens until release. Test cleanup uses close() and can reopen. */
+export const holdTimeSeriesForErase = (): void => {
+    tsEraseHold = true
+    discardTsConnection()
+}
+
+/** Allow new opens after a failed erase. A successful full erase reloads instead. */
+export const releaseTimeSeriesAfterErase = (): void => {
+    tsEraseHold = false
+}
 let lastCompactionTs = 0
 
 const buildBucketKey = (deviceId: string, bucketStart: number): string =>
@@ -161,9 +181,13 @@ const buildAggregatedEntry = (
 // ---------------------------------------------------------------------------
 
 const openTsDb = (): Promise<IDBDatabase> => {
+    if (tsEraseHold) {
+        return Promise.reject(new Error('[timeSeriesService] Database is closed for erase.'))
+    }
     if (tsDb) return Promise.resolve(tsDb)
     if (tsDbPromise) return tsDbPromise
 
+    const epoch = tsDbEpoch
     tsDbPromise = new Promise<IDBDatabase>((resolve, reject) => {
         const request = indexedDB.open(TS_DB_NAME, TS_DB_VERSION)
 
@@ -189,7 +213,13 @@ const openTsDb = (): Promise<IDBDatabase> => {
 
         request.onsuccess = (event) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            tsDb = (event.target as IDBOpenDBRequest).result
+            const opened = (event.target as IDBOpenDBRequest).result
+            if (epoch !== tsDbEpoch || tsEraseHold) {
+                opened.close()
+                reject(new Error('[timeSeriesService] Database closed before open finished.'))
+                return
+            }
+            tsDb = opened
             tsDb.onclose = () => {
                 tsDb = null
                 tsDbPromise = null
@@ -561,8 +591,6 @@ export const timeSeriesService = {
      * Force-close the database connection (useful for testing).
      */
     close(): void {
-        tsDb?.close()
-        tsDb = null
-        tsDbPromise = null
+        discardTsConnection()
     },
 }

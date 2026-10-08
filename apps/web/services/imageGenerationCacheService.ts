@@ -54,6 +54,11 @@ export const clearImageGenCache = async (): Promise<void> => {
 /** Close the image-cache connection before an erase. */
 export const closeImageGenCache = (): Promise<void> => cache.close()
 
+/** Allow image-cache opens again after a failed erase. */
+export const resumeImageGenCache = (): void => {
+    cache.resume()
+}
+
 /** Get the number of cached images. */
 export const getImageGenCacheCount = async (): Promise<number> => {
     return cache.count()

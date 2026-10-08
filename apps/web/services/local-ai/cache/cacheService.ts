@@ -157,3 +157,8 @@ export const resetCacheDb = (): void => {
 
 /** Close the inference-cache connection before an erase. */
 export const closeLocalAiCache = (): Promise<void> => cache.close()
+
+/** Allow inference-cache opens again after a failed erase. */
+export const resumeLocalAiCache = (): void => {
+    cache.resume()
+}

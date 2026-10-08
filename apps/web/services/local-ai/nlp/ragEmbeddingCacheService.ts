@@ -221,6 +221,11 @@ const buildChunkText = (entry: JournalEntry): string => {
 /** Close the embedding-cache connection before an erase. */
 export const closeEmbeddingCache = (): Promise<void> => cache.close()
 
+/** Allow embedding-cache opens again after a failed erase. */
+export const resumeEmbeddingCache = (): void => {
+    cache.resume()
+}
+
 /** Reset internal state (for tests). */
 export const resetCacheState = (): void => {
     _hits = 0

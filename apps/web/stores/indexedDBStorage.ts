@@ -11,11 +11,24 @@ const STORE_NAME = 'zustand_state'
 let db: IDBDatabase | null = null
 // Promise lock – prevents concurrent openDB() calls from opening duplicate connections
 let dbPromise: Promise<IDBDatabase> | null = null
+let dbEpoch = 0
+let dbEraseHold = false
+
+const discardStateDb = (): void => {
+    dbEpoch += 1
+    db?.close()
+    db = null
+    dbPromise = null
+}
 
 const openDB = (): Promise<IDBDatabase> => {
+    if (dbEraseHold) {
+        return Promise.reject(new Error('IndexedDB state connection is closed for erase.'))
+    }
     if (db) return Promise.resolve(db)
     if (dbPromise) return dbPromise
 
+    const epoch = dbEpoch
     dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
 
@@ -29,7 +42,13 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onsuccess = (event) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- IDB event target
-            db = (event.target as IDBOpenDBRequest).result
+            const opened = (event.target as IDBOpenDBRequest).result
+            if (epoch !== dbEpoch || dbEraseHold) {
+                opened.close()
+                reject(new Error('IndexedDB state connection closed before open finished.'))
+                return
+            }
+            db = opened
             // Handle connection loss (storage pressure, version upgrade from another tab)
             db.onclose = () => {
                 db = null
@@ -80,11 +99,15 @@ const performTx = async <T>(
     })
 }
 
-/** Close the Redux persistence connection before an erase. */
+/** Close the Redux persistence connection and refuse new opens until release. */
 export const closeIndexedDBStorage = (): void => {
-    db?.close()
-    db = null
-    dbPromise = null
+    dbEraseHold = true
+    discardStateDb()
+}
+
+/** Allow new opens after a failed erase. A successful full erase reloads instead. */
+export const releaseIndexedDBStorageAfterErase = (): void => {
+    dbEraseHold = false
 }
 
 export const indexedDBStorage: StateStorage = {

@@ -220,10 +220,9 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                     setImage(resizedImage)
                 } catch (err) {
                     console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    setImage(reader.result as string) // fallback to original
+                    setImage(null)
                     getUISnapshot().addNotification({
-                        message: t('common.imageResizeFailed'),
+                        message: t('common.imageResizeBlocked'),
                         type: 'error',
                     })
                 }
@@ -267,9 +266,9 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             setImage(resizedImage)
         } catch (err) {
             console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
-            setImage(dataUrl) // fallback to original
+            setImage(null)
             getUISnapshot().addNotification({
-                message: t('common.imageResizeFailed'),
+                message: t('common.imageResizeBlocked'),
                 type: 'error',
             })
         }
@@ -296,8 +295,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
 
     const errorMessage =
         error && typeof error === 'object' && 'message' in error
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            ? (error as { message: string }).message
+            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+              (error as { message: string }).message
             : t('ai.error.unknown')
 
     return (

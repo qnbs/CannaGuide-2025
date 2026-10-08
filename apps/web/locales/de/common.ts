@@ -242,6 +242,8 @@ export const common = {
     appShortDescription:
         'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
     imageResizeFailed: 'Bildverkleinerung fehlgeschlagen, verwende Original.',
+    imageResizeBlocked:
+        'Bildverkleinerung fehlgeschlagen. Das Foto wurde nicht übernommen und wird nicht gesendet.',
     critical: 'kritisch',
     dismiss: 'Verwerfen',
     metrics: {

@@ -13,6 +13,15 @@ const SECURE_KEY_ID = 'api-key-encryption'
 
 let secureDb: IDBDatabase | null = null
 let secureDbPromise: Promise<IDBDatabase> | null = null
+let secureDbEpoch = 0
+let secureDbEraseHold = false
+
+const discardSecureDb = (): void => {
+    secureDbEpoch += 1
+    secureDb?.close()
+    secureDb = null
+    secureDbPromise = null
+}
 let cachedEncryptionKey: CryptoKey | null = null
 
 const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): Error =>
@@ -94,9 +103,13 @@ async function getOrCreateEncryptionKey(): Promise<CryptoKey> {
 }
 
 function openSecureDb(): Promise<IDBDatabase> {
+    if (secureDbEraseHold) {
+        return Promise.reject(new Error('[cryptoService] Secure database is closed for erase.'))
+    }
     if (secureDb) return Promise.resolve(secureDb)
     if (secureDbPromise) return secureDbPromise
 
+    const epoch = secureDbEpoch
     secureDbPromise = new Promise<IDBDatabase>((resolve, reject) => {
         const request = indexedDB.open(SECURE_DB_NAME, SECURE_DB_VERSION)
 
@@ -108,7 +121,13 @@ function openSecureDb(): Promise<IDBDatabase> {
         }
 
         request.onsuccess = () => {
-            secureDb = request.result
+            const opened = request.result
+            if (epoch !== secureDbEpoch || secureDbEraseHold) {
+                opened.close()
+                reject(new Error('[cryptoService] Secure database closed before open finished.'))
+                return
+            }
+            secureDb = opened
             secureDb.onclose = () => {
                 secureDb = null
                 secureDbPromise = null
@@ -201,11 +220,15 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
     }
 }
 
-/** Close the secure-key database connection before an erase. */
+/** Close the secure-key database connection and refuse new opens until release. */
 export function closeSecureDb(): void {
-    secureDb?.close()
-    secureDb = null
-    secureDbPromise = null
+    secureDbEraseHold = true
+    discardSecureDb()
+}
+
+/** Allow new opens after a failed erase. A successful full erase reloads instead. */
+export function releaseSecureDbAfterErase(): void {
+    secureDbEraseHold = false
 }
 
 export async function encrypt(plaintext: string): Promise<string> {

@@ -1,4 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { DELETE_DATABASE_TIMEOUT_MS } from './privacyDatabaseRegistry'
 
 // Mock Sentry before importing the service
 vi.mock('@sentry/browser', () => ({
@@ -10,6 +11,10 @@ describe('privacyService', () => {
         vi.clearAllMocks()
         localStorage.clear()
         sessionStorage.clear()
+    })
+
+    afterEach(() => {
+        vi.useRealTimers()
     })
 
     describe('eraseAllData', () => {
@@ -50,14 +55,58 @@ describe('privacyService', () => {
                     return request
                 },
             }
+            vi.useFakeTimers()
             vi.stubGlobal('indexedDB', blockedDb)
             try {
                 const { eraseAllData } = await import('./privacyService')
-                await expect(eraseAllData()).resolves.toBe(false)
+                const pending = eraseAllData()
+                await vi.advanceTimersByTimeAsync(DELETE_DATABASE_TIMEOUT_MS)
+                await expect(pending).resolves.toBe(false)
             } finally {
+                vi.useRealTimers()
                 vi.stubGlobal('indexedDB', realIndexedDb)
             }
-        }, 15000)
+        })
+
+        it('does not fail an unblocked delete when the blocked timeout elapses', async () => {
+            const realIndexedDb = globalThis.indexedDB
+            const requests: Array<{
+                onsuccess: (() => void) | null
+                onerror: (() => void) | null
+                onblocked: (() => void) | null
+            }> = []
+            const slowDb = {
+                deleteDatabase: () => {
+                    const request = {
+                        onsuccess: null,
+                        onerror: null,
+                        onblocked: null,
+                    }
+                    requests.push(request)
+                    return request
+                },
+                databases: async () => [],
+            }
+            vi.useFakeTimers()
+            vi.stubGlobal('indexedDB', slowDb)
+            try {
+                const { eraseAllData } = await import('./privacyService')
+                const pending = eraseAllData()
+                await vi.advanceTimersByTimeAsync(DELETE_DATABASE_TIMEOUT_MS)
+                let settled = false
+                void pending.then(() => {
+                    settled = true
+                })
+                await Promise.resolve()
+                expect(settled).toBe(false)
+                expect(requests.length).toBeGreaterThan(0)
+                for (const request of requests) request.onsuccess?.()
+                await expect(pending).resolves.toBe(true)
+            } finally {
+                vi.useRealTimers()
+                vi.stubGlobal('indexedDB', realIndexedDb)
+            }
+        })
 
         it('returns false when a registered database is still listed', async () => {
             const realIndexedDb = globalThis.indexedDB
@@ -111,6 +160,42 @@ describe('privacyService', () => {
             expect(() => JSON.parse(json)).not.toThrow()
             const data = JSON.parse(json)
             expect(data.databases).toBeDefined()
+        })
+
+        it('aborts export opens that would create a missing database', async () => {
+            const realIndexedDb = globalThis.indexedDB
+            let abortCount = 0
+            const fakeIndexedDb = {
+                open: () => {
+                    const request = {
+                        onerror: null as (() => void) | null,
+                        onsuccess: null as (() => void) | null,
+                        onupgradeneeded: null as ((event: { oldVersion: number }) => void) | null,
+                        transaction: {
+                            abort: () => {
+                                abortCount += 1
+                            },
+                        },
+                    }
+                    queueMicrotask(() => {
+                        request.onupgradeneeded?.({ oldVersion: 0 })
+                        if (abortCount > 0) request.onerror?.()
+                        else request.onsuccess?.()
+                    })
+                    return request
+                },
+            }
+            vi.stubGlobal('indexedDB', fakeIndexedDb)
+            try {
+                const { exportAllUserData } = await import('./privacyService')
+                const data = JSON.parse(await exportAllUserData()) as {
+                    databases: Record<string, unknown>
+                }
+                expect(abortCount).toBeGreaterThan(0)
+                expect(data.databases).toEqual({})
+            } finally {
+                vi.stubGlobal('indexedDB', realIndexedDb)
+            }
         })
     })
 

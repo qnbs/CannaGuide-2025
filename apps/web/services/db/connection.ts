@@ -18,6 +18,15 @@ const BASE_RETRY_DELAY_MS = 500
 
 let db: IDBDatabase | null = null
 let dbPromise: Promise<IDBDatabase> | null = null
+let dbEpoch = 0
+let dbEraseHold = false
+
+const discardDbConnection = (): void => {
+    dbEpoch += 1
+    db?.close()
+    db = null
+    dbPromise = null
+}
 
 export const toIndexedDbError = (error: DOMException | null, fallbackMessage: string): Error =>
     error ?? new Error(fallbackMessage)
@@ -41,8 +50,7 @@ export const withRetry = async <T>(
                 `[dbService] ${context} attempt ${attempt + 1} failed, retrying in ${delay}ms`,
             )
             await new Promise((resolve) => setTimeout(resolve, delay))
-            db = null
-            dbPromise = null
+            discardDbConnection()
         }
     }
     throw new Error(`[dbService] ${context} exhausted retries`)
@@ -107,9 +115,13 @@ const runMigrations = (
 }
 
 export const openDB = (): Promise<IDBDatabase> => {
+    if (dbEraseHold) {
+        return Promise.reject(new Error('[dbService] IndexedDB connection is closed for erase.'))
+    }
     if (db) return Promise.resolve(db)
     if (dbPromise) return dbPromise
 
+    const epoch = dbEpoch
     dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION)
 
@@ -123,7 +135,13 @@ export const openDB = (): Promise<IDBDatabase> => {
 
         request.onsuccess = (event) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            db = (event.target as IDBOpenDBRequest).result
+            const opened = (event.target as IDBOpenDBRequest).result
+            if (epoch !== dbEpoch || dbEraseHold) {
+                opened.close()
+                reject(new Error('[dbService] IndexedDB connection closed before open finished.'))
+                return
+            }
+            db = opened
             db.onclose = () => {
                 db = null
                 dbPromise = null
@@ -148,11 +166,15 @@ export const openDB = (): Promise<IDBDatabase> => {
     return dbPromise
 }
 
-/** Close the cached domain-database connection before an erase. */
+/** Close the cached domain-database connection and refuse new opens until release. */
 export const closeDB = (): void => {
-    db?.close()
-    db = null
-    dbPromise = null
+    dbEraseHold = true
+    discardDbConnection()
+}
+
+/** Allow new opens after a failed erase. A successful full erase reloads instead. */
+export const releaseDBAfterErase = (): void => {
+    dbEraseHold = false
 }
 
 export const performTx = async <T>(

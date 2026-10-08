@@ -120,21 +120,23 @@ be triggered manually via `workflow_dispatch`:
 #   Input: dry-run = false (default)
 ```
 
-**Manual dispatch without pre-pushed tag:** The workflow automatically
-creates an annotated tag on HEAD when the tag does not exist yet. This
-requires the checkout token to have tag-push permissions. If repository
-rulesets block tag creation by `GITHUB_TOKEN`, choose one of:
+**Manual dispatch without a pre-pushed tag:** Checkout uses the job
+token (`github.token`) only. When `dry-run` is false and the tag is
+missing, the "Ensure tag exists" step creates the annotated tag and
+pushes it with `RELEASE_PAT`. That secret is not used for checkout or
+for `gh release create`.
 
-1. **Push the tag manually first:**
-   `git tag -a vX.Y.Z -m "vX.Y.Z" && git push origin vX.Y.Z`
-2. **Add a `RELEASE_PAT` repository secret** (classic PAT with `repo`
-   scope) that can bypass tag rulesets. The workflow uses it
-   automatically when available.
-3. **Add `github-actions[bot]` to the tag ruleset bypass list:**
-   Settings > Rules > Rulesets > (tag rule) > Bypass list.
+`RELEASE_PAT` needs Contents read and write. The step checks
+`permissions.push` before creating the tag. A missing secret, a token
+GitHub rejects, a read-only token, and a `GH013` ruleset refusal are
+separate failures. A ruleset refusal still needs an actor who is
+allowed to bypass Tag Protection; widening the token does not replace
+that. See [`docs/GITHUB-SETTINGS-GUIDE.md`](./GITHUB-SETTINGS-GUIDE.md).
 
-**Dry-run mode:** Set `dry-run: true` to build + generate SBOM +
-verify attestations without publishing the release.
+**Dry-run mode:** `dry-run: true` builds, generates the SBOM, and
+verifies attestations. It does not publish. If the tag does not
+already exist, the run fails and creates nothing. A rehearsal needs a
+tag that is already on the remote.
 
 **Workflow flow:**
 
@@ -146,13 +148,10 @@ verify attestations without publishing the release.
 4. Release Publish release job generates attestations + publishes
    GitHub Release
 
-**CI Status Guard:** On tag push events, the build job queries the
-GitHub Checks API to verify that the CI status check passed on the
-tagged commit before proceeding. If CI is not green, the release
-aborts. For `workflow_dispatch` (manual trigger), the guard is
-skipped -- the maintainer is responsible for verifying CI status.
-Docs-only commits (where CI is skipped via `paths-ignore`) produce
-a warning but do not block the release.
+**CI Status Guard:** The build job queries the GitHub Checks API and
+requires the CI Status check on the resolved tag commit to be
+`success`, including a manual `workflow_dispatch`. A missing or
+unsuccessful check aborts the release.
 
 > **History:** Prior to April 2026, `release-publish.yml` used a
 > `workflow_run` trigger chained to Release Gate. This was replaced
@@ -171,15 +170,15 @@ workflow (PR #122 accidentally downgraded the version from 1.6.0 to 1.5.0).
 
 ## Release History
 
-| Version | Date       | Theme                                     |
-| ------- | ---------- | ----------------------------------------- |
+| Version | Date       | Theme                                                               |
+| ------- | ---------- | ------------------------------------------------------------------- |
 | v1.9.0  | 2026-07-01 | God-file splits, dbService refactor, AI disclaimers, Privacy Policy |
-| v1.7.0  | 2026-04-11 | Voice & Accessibility Edition             |
-| v1.6.3  | 2026-04-10 | Build Attestation + CycloneDX + Lint Ph5  |
-| v1.6.2  | 2026-04-10 | Release pipeline fix + SLSA L1 provenance |
-| v1.6.0  | 2026-04-10 | WorkerBus W-02/W-04, CRDT Sync, API Docs  |
-| v1.5.1  | 2026-04-09 | Quality & Polish                          |
-| v1.5.0  | 2026-04-08 | Multi-Grow, CRDT Sync, Dead Infra Cleanup |
-| v1.4.1  | 2026-04-06 | Patch release                             |
-| v1.4.0  | 2026-04-06 | Stable release                            |
-| v1.3.0  | 2026-04-01 | Beta (alpha -> beta transition)           |
+| v1.7.0  | 2026-04-11 | Voice & Accessibility Edition                                       |
+| v1.6.3  | 2026-04-10 | Build Attestation + CycloneDX + Lint Ph5                            |
+| v1.6.2  | 2026-04-10 | Release pipeline fix + SLSA L1 provenance                           |
+| v1.6.0  | 2026-04-10 | WorkerBus W-02/W-04, CRDT Sync, API Docs                            |
+| v1.5.1  | 2026-04-09 | Quality & Polish                                                    |
+| v1.5.0  | 2026-04-08 | Multi-Grow, CRDT Sync, Dead Infra Cleanup                           |
+| v1.4.1  | 2026-04-06 | Patch release                                                       |
+| v1.4.0  | 2026-04-06 | Stable release                                                      |
+| v1.3.0  | 2026-04-01 | Beta (alpha -> beta transition)                                     |

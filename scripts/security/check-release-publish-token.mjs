@@ -66,7 +66,7 @@ export function problemsInReleasePublish(text) {
         if (/\bgit\s+push\s+["']?origin\b/.test(ensure.code)) {
             problems.push(`"${ENSURE}" pushes through origin and can reuse the checkout token`)
         }
-        if (!/http\.https:\/\/github\.com\/\.extraheader/.test(ensure.code)) {
+        if (!ensure.code.includes('http.https://github.com/.extraheader')) {
             problems.push(`"${ENSURE}" does not drop the checkout extraheader before the push`)
         }
         if (!/includeIf\\\.gitdir:/.test(ensure.code)) {

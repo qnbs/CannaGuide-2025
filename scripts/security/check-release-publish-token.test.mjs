@@ -59,6 +59,15 @@ test('a tag push through origin fails the policy', () => {
     assert.ok(problems.some((problem) => problem.includes('RELEASE_PAT URL')))
 })
 
+test('a lookalike host does not satisfy the extraheader check', () => {
+    const text = LIVE.replaceAll(
+        'http.https://github.com/.extraheader',
+        'http.https://notgithub.com/.extraheader',
+    )
+    const problems = problemsInReleasePublish(text)
+    assert.ok(problems.some((problem) => problem.includes('extraheader')))
+})
+
 test('persisting the checkout token fails the policy', () => {
     const text = LIVE.replaceAll('persist-credentials: false', 'persist-credentials: true')
     const problems = problemsInReleasePublish(text)

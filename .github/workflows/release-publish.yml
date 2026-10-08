@@ -6,7 +6,7 @@ on:
     workflow_dispatch:
         inputs:
             tag:
-                description: 'Tag to release (e.g. v1.7.0). Tag must exist or will be created.'
+                description: 'Tag to release (e.g. v1.7.0). A missing tag is created only when dry-run is false.'
                 required: true
                 type: string
             dry-run:
@@ -53,9 +53,10 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
-                  # Use RELEASE_PAT if available (bypasses tag rulesets),
-                  # otherwise fall back to the default GITHUB_TOKEN.
-                  token: ${{ secrets.RELEASE_PAT || github.token }}
+                  # Do not persist the read-only job token. checkout stores it as
+                  # an extraheader that can override the RELEASE_PAT push URL.
+                  persist-credentials: false
+                  token: ${{ github.token }}
 
             - name: Resolve tag name
               id: tag
@@ -93,14 +94,49 @@ jobs:
               env:
                   TAG: ${{ steps.tag.outputs.name }}
                   RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
+                  REPO: ${{ github.repository }}
               shell: bash
               run: |
                   if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
                     echo "[OK] Tag ${TAG} already exists on remote"
                     exit 0
                   fi
+                  redact() {
+                    local input="$1"
+                    local secret="$2"
+                    local out=""
+                    if [[ -z "${secret}" ]]; then
+                      printf '%s' "${input}"
+                      return
+                    fi
+                    while [[ "${input}" == *"${secret}"* ]]; do
+                      out+="${input%%"${secret}"*}[REDACTED]"
+                      input="${input#*"${secret}"}"
+                    done
+                    printf '%s%s' "${out}" "${input}"
+                  }
+
                   if [[ -z "${RELEASE_PAT}" ]]; then
-                    echo "[FAIL] RELEASE_PAT is required to create/push tags from workflow_dispatch."
+                    echo "[FAIL] RELEASE_PAT is missing. Checkout uses the job token; only this step creates tags."
+                    echo "[FAIL] Set a fine-grained token with Contents read and write, eligible for the tag ruleset."
+                    exit 1
+                  fi
+
+                  PERM_ERR_FILE=$(mktemp)
+                  set +e
+                  PERM_OUT=$(GH_TOKEN="${RELEASE_PAT}" gh api "repos/${REPO}" --jq '.permissions.push' 2>"${PERM_ERR_FILE}")
+                  PERM_CODE=$?
+                  set -e
+                  SAFE_ERR=$(redact "$(cat "${PERM_ERR_FILE}")" "${RELEASE_PAT}")
+                  rm -f "${PERM_ERR_FILE}"
+                  if [[ ${PERM_CODE} -ne 0 ]]; then
+                    echo "[FAIL] RELEASE_PAT was rejected before the tag push (authentication)."
+                    printf '%s\n' "${SAFE_ERR}"
+                    exit 1
+                  fi
+                  if [[ "${PERM_OUT}" != "true" ]]; then
+                    echo "[FAIL] RELEASE_PAT authenticated but Contents write is missing (permissions.push=${PERM_OUT})."
+                    echo "[FAIL] A read-only token stops here, not at checkout."
                     exit 1
                   fi
 
@@ -109,22 +145,39 @@ jobs:
                   git config user.name "github-actions[bot]"
                   git tag -a "${TAG}" -m "Release ${TAG}" HEAD
 
-                  if git push "https://x-access-token:${RELEASE_PAT}@github.com/${{ github.repository }}.git" "refs/tags/${TAG}"; then
+                  # Drop the checkout extraheader and its includeIf file. A contents:read
+                  # header on https://github.com can be sent ahead of the token in
+                  # the push URL, so the PAT preflight can pass and the push still
+                  # uses the read-only job token.
+                  git config --local --unset-all "http.https://github.com/.extraheader" || true
+                  set +e
+                  mapfile -t INCLUDE_KEYS < <(git config --local --name-only --get-regexp '^includeIf\.gitdir:.*\.path$' 2>/dev/null)
+                  set -e
+                  for key in "${INCLUDE_KEYS[@]}"; do
+                    git config --local --unset-all "$key" || true
+                  done
+
+                  set +e
+                  PUSH_OUT=$(git push "https://x-access-token:${RELEASE_PAT}@github.com/${REPO}.git" "refs/tags/${TAG}" 2>&1)
+                  PUSH_CODE=$?
+                  set -e
+                  SAFE_PUSH=$(redact "${PUSH_OUT}" "${RELEASE_PAT}")
+                  if [[ ${PUSH_CODE} -eq 0 ]]; then
                     echo "[OK] Tag ${TAG} created and pushed"
-                  else
-                    echo ""
-                    echo "[FAIL] Could not push tag ${TAG}."
-                    echo "[FAIL] Repository rulesets likely block tag creation by GITHUB_TOKEN."
-                    echo ""
-                    echo "[FIX] Choose one of the following:"
-                    echo "  1. Push the tag manually before triggering this workflow:"
-                    echo "     git tag -a ${TAG} -m 'Release ${TAG}' && git push origin ${TAG}"
-                    echo "  2. Add a RELEASE_PAT repository secret (classic PAT with repo scope)"
-                    echo "     that has permission to bypass tag rulesets."
-                    echo "  3. Add 'github-actions[bot]' to the tag ruleset bypass list:"
-                    echo "     Settings > Rules > Rulesets > Tags > Bypass list"
-                    exit 1
+                    exit 0
                   fi
+                  echo "[FAIL] Could not push tag ${TAG}."
+                  if printf '%s\n' "${SAFE_PUSH}" | grep -q 'GH013'; then
+                    echo "[FAIL] Tag ruleset refused the creation (GH013). The actor needs ruleset bypass."
+                  elif printf '%s\n' "${SAFE_PUSH}" | grep -qiE 'authentication failed|invalid username or token|bad credentials|HTTP 401'; then
+                    echo "[FAIL] RELEASE_PAT authentication failed."
+                  elif printf '%s\n' "${SAFE_PUSH}" | grep -qiE 'HTTP 403|permission denied|write access'; then
+                    echo "[FAIL] RELEASE_PAT lacks permission to push the tag (write refused)."
+                  else
+                    echo "[FAIL] Tag push failed for an unclassified reason."
+                  fi
+                  printf '%s\n' "${SAFE_PUSH}"
+                  exit 1
 
             - name: Refuse dry-run when the tag is missing
               if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run == 'true'
@@ -199,12 +252,6 @@ jobs:
 
                   echo "[OK] Tag, root package.json and apps/web/package.json all agree on ${PKG_VERSION}."
 
-            # -------- Ensure Tag Exists --------
-            # For workflow_dispatch the tag may not exist yet.
-            # Create an annotated tag on HEAD and push it.
-            # The checkout token (RELEASE_PAT or GITHUB_TOKEN) is used
-            # for git push.  If repository rulesets block tag creation,
-            # the step fails with a clear error message.
             # -- CI Status guard ---------------------------------------
             # Release Publish and Release Gate both fire on the same tag push and
             # run concurrently; Actions has no cross-workflow `needs:`. Both this
@@ -383,7 +430,8 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
-                  token: ${{ secrets.RELEASE_PAT || github.token }}
+                  persist-credentials: false
+                  token: ${{ github.token }}
 
             - name: Verify tag exists on remote
               env:
@@ -423,7 +471,9 @@ jobs:
 
             - name: Create GitHub Release
               env:
-                  GH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}
+                  # The job token has contents: write. RELEASE_PAT stays on the
+                  # tag push, so a stale PAT cannot block publication.
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   TAG: ${{ needs.build.outputs.tag }}
                   TARBALL: ${{ needs.build.outputs.tarball-name }}
                   SHA256: ${{ needs.build.outputs.sha256 }}

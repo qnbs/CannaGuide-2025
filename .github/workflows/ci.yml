@@ -517,6 +517,12 @@ jobs:
               if: always() && steps.checkout.outcome == 'success'
               run: node scripts/security/check-workflow-credential-scope.mjs
 
+            # Checkout must not prefer RELEASE_PAT. That secret is only the
+            # tag-create step; dry-run must not create the tag.
+            - name: Release publish token scope
+              if: always() && steps.checkout.outcome == 'success'
+              run: node scripts/security/check-release-publish-token.mjs
+
             # Fetch hosts must be in connect-src or gated by a hard flag.
             # CORS proxy hostnames are refused outright.
             - name: CSP fetch host gate

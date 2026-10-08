@@ -126,22 +126,26 @@ Nur wenn Bypass-Liste nicht ausreicht.
 
 ## 3. RELEASE_PAT einrichten (empfohlen)
 
-Der Workflow `release-publish.yml` nutzt optional ein Classic PAT, um Tag-Rulesets zu umgehen.
+Checkout und `gh release create` nutzen den Job-Token. Nur der Schritt „Ensure tag exists“ liest `RELEASE_PAT`, und nur wenn `dry-run` falsch ist und der Tag fehlt.
+
+Mindestens: Fine-grained Token mit **Contents: Read and write**, plus Eligibility für das Tag-Ruleset (Bypass). Ein nur lesendes Token scheitert an `permissions.push`, bevor ein Tag entsteht. Ein Classic PAT mit `repo` ist breiter als dieser Schritt braucht.
 
 ### PAT erstellen
 
 1. GitHub → **Settings** (Profil, nicht Repo) → **Developer settings** → **Personal access tokens**
-2. **Tokens (classic)** → **Generate new token (classic)**
-3. Scopes: **`repo`** (Full control of private repositories)
-4. Ablauf: z. B. 90 Tage oder „No expiration" (mit Rotation planen)
-5. Token kopieren (nur einmal sichtbar)
+2. **Fine-grained tokens** → **Generate new token**
+3. Repository access: nur `qnbs/CannaGuide-2025`
+4. Permission: **Contents: Read and write**. Kein `admin:org`
+5. Ablauf setzen, rotieren, Token einmalig kopieren
+
+Ein Classic PAT mit `repo` kann denselben Push, ist aber nicht das Minimum.
 
 ### Als Repository-Secret speichern
 
 1. Repository → **Settings** → **Secrets and variables** → **Actions**
 2. **New repository secret**
 3. Name: **`RELEASE_PAT`** (exakt so — Workflow referenziert diesen Namen)
-4. Value: das Classic PAT einfügen
+4. Value: das Token einfügen
 
 ### Verifikation
 
@@ -154,10 +158,10 @@ Dann **Release Publish** → `workflow_dispatch` mit `tag: v1.9.0`.
 
 ### Sicherheitshinweise
 
-- PAT nur mit `repo`-Scope, nicht `admin:org` o. Ä.
+- Contents read/write reicht für den Tag-Schritt. Tag-Ruleset-Bypass ist eine eigene Actor-Regel
 - Secret rotieren bei Verdacht auf Leak
-- PAT-Account muss Schreibrechte auf das Repo haben
-- Fine-grained PATs funktionieren nur, wenn **Contents: Read and write** + Tag-Bypass erlaubt ist
+- Der Token-Account muss Contents schreiben dürfen
+- Checkout liest dieses Secret nicht. Ein ungültiges Token darf den Checkout nicht mehr stoppen
 
 ---
 
@@ -167,10 +171,10 @@ Dann **Release Publish** → `workflow_dispatch` mit `tag: v1.9.0`.
 
 ### Trigger
 
-| Event                | Verhalten                                                              |
-| -------------------- | ---------------------------------------------------------------------- |
-| `push: tags: ['v*']` | Parallel zu `release-gate.yml`; CI-Status-Guard prüft Checks           |
-| `workflow_dispatch`  | Manuell; erstellt Tag wenn nicht vorhanden (**braucht `RELEASE_PAT`**) |
+| Event                | Verhalten                                                             |
+| -------------------- | --------------------------------------------------------------------- |
+| `push: tags: ['v*']` | Parallel zu `release-gate.yml`; CI-Status-Guard prüft Checks          |
+| `workflow_dispatch`  | Manuell. Fehlenden Tag nur ohne `dry-run` anlegen (**`RELEASE_PAT`**) |
 
 ### Ablauf
 
@@ -185,14 +189,14 @@ flowchart LR
 
 ### Wichtige Inputs bei manuellem Start
 
-| Input     | Wert für v1.9.0                                               |
-| --------- | ------------------------------------------------------------- |
-| `tag`     | `v1.9.0`                                                      |
-| `dry-run` | `true` zum Testen (kein Release), `false` zum Veröffentlichen |
+| Input     | Wert für v1.9.0                                                        |
+| --------- | ---------------------------------------------------------------------- |
+| `tag`     | `v1.9.0`                                                               |
+| `dry-run` | `true` baut nur, wenn der Tag schon existiert. Kein Tag, kein Release. |
 
 ### CI-Status-Guard
 
-Bei Tag-**Push** (nicht `workflow_dispatch`): Workflow prüft, ob **CI Status** auf dem getaggten Commit `success` ist. Docs-only Commits ohne CI erzeugen eine Warnung, blockieren aber nicht.
+Tag-Push und `workflow_dispatch` prüfen **CI Status** auf dem aufgelösten Tag-Commit. Fehlt der Check oder ist er nicht `success`, bricht der Lauf ab.
 
 ---
 

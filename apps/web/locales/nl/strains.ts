@@ -844,11 +844,13 @@ export const strainLookup = {
     sectionLabel: 'Intelligente soort opzoeking',
     sectionHint:
         "Lokale catalogus + Cannlytics labdata + Open Cannabis API's + AI -- multi-laags opzoeking",
+    sectionHintLocal: 'Lokale catalogus en AI. Online catalogi staan uit in deze build.',
     placeholder:
         'Nieuwe soort ontdekt? Voer de naam in (bijv. Gorilla Pie, Lemon Cherry Gelato...)',
     analyze: 'Analyseren',
     clear: 'Wissen',
     searching: 'Zoeken in alle bronnen...',
+    searchingLocal: 'Zoeken in de lokale catalogus en de AI...',
     notFound: 'Geen gegevens gevonden voor "{{name}}". Probeer een andere spelling.',
     lookupError: 'Opzoeking mislukt. Probeer het opnieuw.',
     addToDB: 'Toevoegen aan bibliotheek',

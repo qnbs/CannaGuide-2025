@@ -15,6 +15,28 @@ export const CURRENT_STRAIN_DATA_VERSION = 7
 export const CLOUD_SYNC_DISABLED = true
 
 /**
+ * Anonymous Gist share calls `api.github.com`, which production `connect-src`
+ * does not allow. The panel stays visible and disabled. Do not widen CSP to
+ * turn this back on.
+ */
+export const COMMUNITY_SHARE_DISABLED = true
+
+/**
+ * Otreeba, Cannlytics, The Cannabis API, and the other enrichment hosts in
+ * the provider registry are not in production `connect-src`. Local catalog
+ * lookup and the allowlisted AI fallback stay on. Do not widen CSP to turn
+ * this back on.
+ */
+export const EXTERNAL_STRAIN_LOOKUPS_DISABLED = true
+
+/**
+ * Cansativa's Azure gateway is not in production `connect-src`. Inventory,
+ * menu, partner, and postal-code calls stay off. Do not widen CSP to turn
+ * this back on.
+ */
+export const CANSATIVA_LOOKUP_DISABLED = true
+
+/**
  * Per-slice schema versions. Bump a slice version whenever its persisted shape
  * changes so the migration system can detect stale data and auto-reset that
  * specific slice without nuking the entire store.

@@ -918,10 +918,11 @@ export const settingsView = {
             phosphor: 'Icons bereitgestellt von Phosphor Icons.',
             dataProvidersLabel: 'Datenanbieter:',
             strainProviders:
-                'Sorten-Anreicherung via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa und Kushy.',
+                'Der mitgelieferte Sortenkatalog ist lokal. Online-Anreicherung ist in diesem Build ausgeschaltet. Kushy bleibt ein statischer Offline-Datensatz.',
             webLlmOnnxLabel: 'WebLLM / ONNX:',
             corsProxiesLabel: 'CORS-Proxies:',
-            corsProxies: 'CORS-Proxy-Relay durch allorigins.win und corsproxy.io.',
+            corsProxies:
+                'Dieser Build leitet Sortensuchen nicht über CORS-Proxys von Dritten weiter.',
             transformersJs:
                 'On-Device NLP und Embeddings via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Lokale LLM-Inferenz via WebLLM (MLC AI).',
@@ -1082,6 +1083,9 @@ export const settingsView = {
     communityShare: {
         title: 'Community Sorten-Teilen',
         description: 'Anonymes Teilen über GitHub Gist (leichtgewichtige Alternative zu IPFS).',
+        unavailableDescription: 'Anonymes Gist-Teilen ist in diesem Build nicht verfügbar.',
+        temporarilyUnavailable:
+            'Export und Import sind ausgeschaltet, weil sie GitHub aus dieser App nicht erreichen. Es werden keine Sortendaten gesendet.',
         exportButton: 'Eigene Sorten als anonymes Gist exportieren',
         gistPlaceholder: 'Gist-URL oder ID einfügen',
         importButton: 'Sorten aus Gist importieren',

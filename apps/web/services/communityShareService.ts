@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { Strain, StrainType } from '@/types'
+import { COMMUNITY_SHARE_DISABLED } from '@/constants'
 import { getT } from '@/i18n'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
@@ -49,6 +50,9 @@ class CommunityShareService {
     public async exportStrainsToAnonymousGist(
         strains: Strain[],
     ): Promise<{ id: string; url: string }> {
+        if (COMMUNITY_SHARE_DISABLED) {
+            throw new Error(getT()('common.communityShare.unavailable'))
+        }
         if (isLocalOnlyMode()) {
             throw new Error(getT()('common.communityShare.blockedByLocalOnly'))
         }
@@ -89,6 +93,9 @@ class CommunityShareService {
     }
 
     public async importStrainsFromGist(gistUrlOrId: string): Promise<Strain[]> {
+        if (COMMUNITY_SHARE_DISABLED) {
+            throw new Error(getT()('common.communityShare.unavailable'))
+        }
         if (isLocalOnlyMode()) {
             throw new Error(getT()('common.communityShare.blockedByLocalOnly'))
         }

@@ -109,6 +109,7 @@ import {
     type TerpeneDataPoint,
     type LookupStrainResult,
 } from './strainLookupService'
+import { setCached } from '@/services/strain-lookup/strainLookupCache'
 
 // ---------------------------------------------------------------------------
 // getFuzzySuggestions
@@ -171,6 +172,35 @@ describe('lookupStrain (local catalog)', () => {
         const result1 = await lookupStrain('OG Kush')
         const result2 = await lookupStrain('OG Kush')
         expect(result1?.id).toBe(result2?.id)
+    })
+
+    it('ignores a cached external catalog result while lookups are disabled', async () => {
+        sessionStorage.clear()
+        const cachedExternal: LookupStrainResult = {
+            id: 'cached-external',
+            name: 'OG Kush',
+            breeder: 'Cache',
+            type: 'Hybrid',
+            floweringType: 'Photoperiod',
+            thc: 1,
+            cbd: 0,
+            cbg: 0,
+            thcv: 0,
+            description: '',
+            genetics: '',
+            terpenes: [],
+            cannabinoids: [],
+            aiSummary: '',
+            matchScore: 0,
+            confidenceScore: 10,
+            confidenceSource: 'cannlytics',
+            discoveredAt: '2026-10-08T00:00:00.000Z',
+            sourceUrl: 'https://cannlytics.com/strains/og-kush',
+        }
+        setCached('OG Kush', cachedExternal)
+        const result = await lookupStrain('OG Kush')
+        expect(result?.confidenceSource).toBe('local')
+        expect(result?.id).not.toBe('cached-external')
     })
 })
 

@@ -963,10 +963,13 @@ export const strainLookup = {
     sectionLabel: 'Sorten-Intelligenz-Suche',
     sectionHint:
         'Lokaler Katalog + Cannlytics Lab-Daten + Open Cannabis APIs + KI -- mehrschichtige Suche',
+    sectionHintLocal:
+        'Lokaler Katalog und KI. Online-Sortenkataloge sind in diesem Build ausgeschaltet.',
     placeholder: 'Neue Sorte entdeckt? Namen eingeben (z. B. Gorilla Pie, Lemon Cherry Gelato...)',
     analyze: 'Analysieren',
     clear: 'Löschen',
     searching: 'Alle Quellen werden durchsucht...',
+    searchingLocal: 'Der lokale Katalog und die KI werden durchsucht...',
     notFound: 'Keine Daten für "{{name}}" gefunden. Versuche eine andere Schreibweise.',
     lookupError: 'Suche fehlgeschlagen. Bitte erneut versuchen.',
     addToDB: 'Zur Bibliothek hinzufügen',

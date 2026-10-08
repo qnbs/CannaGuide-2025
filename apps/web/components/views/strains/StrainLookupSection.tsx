@@ -8,6 +8,7 @@ import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { selectUserStrains } from '@/stores/selectors'
 import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
 import { toggleFavorite } from '@/stores/slices/favoritesSlice'
+import { EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { resolveDiscoveredToStrain } from '@/services/dailyStrainsService'
 import {
     lookupStrain,
@@ -239,10 +240,15 @@ export const StrainLookupSection: React.FC = memo(() => {
                         </span>
                     </div>
                     <p className="text-xs text-muted">
-                        {t(
-                            'strainLookup.sectionHint',
-                            'Local catalog + Cannlytics lab data + Open Cannabis APIs + AI -- multi-layer lookup',
-                        )}
+                        {EXTERNAL_STRAIN_LOOKUPS_DISABLED
+                            ? t(
+                                  'strainLookup.sectionHintLocal',
+                                  'Local catalog and AI. Online strain catalogs are switched off in this build.',
+                              )
+                            : t(
+                                  'strainLookup.sectionHint',
+                                  'Local catalog + Cannlytics lab data + Open Cannabis APIs + AI -- multi-layer lookup',
+                              )}
                     </p>
 
                     {/* Search input + button */}
@@ -335,14 +341,15 @@ export const StrainLookupSection: React.FC = memo(() => {
                     {isLoading && (
                         <div className="flex items-center gap-3 py-2">
                             <div className="flex gap-1">
-                                {(
-                                    [
-                                        'local',
-                                        'cannlytics',
-                                        'otreeba',
-                                        'cannabis-api',
-                                        'ai',
-                                    ] as ConfidenceSource[]
+                                {(EXTERNAL_STRAIN_LOOKUPS_DISABLED
+                                    ? (['local', 'ai'] as ConfidenceSource[])
+                                    : ([
+                                          'local',
+                                          'cannlytics',
+                                          'otreeba',
+                                          'cannabis-api',
+                                          'ai',
+                                      ] as ConfidenceSource[])
                                 ).map((src, i) => (
                                     <span
                                         key={src}
@@ -365,7 +372,12 @@ export const StrainLookupSection: React.FC = memo(() => {
                                 ))}
                             </div>
                             <span className="text-xs text-muted">
-                                {t('strainLookup.searching', 'Searching all sources...')}
+                                {EXTERNAL_STRAIN_LOOKUPS_DISABLED
+                                    ? t(
+                                          'strainLookup.searchingLocal',
+                                          'Searching the local catalog...',
+                                      )
+                                    : t('strainLookup.searching', 'Searching all sources...')}
                             </span>
                         </div>
                     )}

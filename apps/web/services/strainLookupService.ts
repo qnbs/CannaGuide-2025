@@ -16,6 +16,7 @@ export type {
 
 export { getFuzzySuggestions } from '@/services/strain-lookup/localStrainLookup'
 
+import { EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { getCached, setCached } from '@/services/strain-lookup/strainLookupCache'
 import { lookupLocalCatalog } from '@/services/strain-lookup/localStrainLookup'
@@ -35,14 +36,26 @@ import type { LookupStrainResult } from '@/services/strain-lookup/strainLookupTy
  * 4. The Cannabis API (public)
  * 5. AI-generated summary (last resort)
  *
- * Results are cached in sessionStorage for 5 minutes.
+ * Results are cached in sessionStorage for 5 minutes. While external catalogs
+ * are gated off, a cached external hit is ignored and the lookup continues
+ * with the local catalog and AI.
  */
+const EXTERNAL_CACHE_SOURCES = new Set<LookupStrainResult['confidenceSource']>([
+    'cannlytics',
+    'otreeba',
+    'cannabis-api',
+])
+
 export async function lookupStrain(name: string): Promise<LookupStrainResult | null> {
     const trimmed = name.trim()
     if (trimmed.length < 2) return null
 
     const cached = getCached(trimmed)
-    if (cached) return cached
+    const blockedExternalCache =
+        EXTERNAL_STRAIN_LOOKUPS_DISABLED &&
+        cached !== null &&
+        EXTERNAL_CACHE_SOURCES.has(cached.confidenceSource)
+    if (cached && !blockedExternalCache) return cached
 
     const local = lookupLocalCatalog(trimmed)
     if (local) {

@@ -191,6 +191,11 @@ const CHUNK_GROUPS: ReadonlyArray<{ name: string; patterns: string[] }> = [
 ]
 
 function resolveManualChunk(id: string): string | undefined {
+    // strains-data is the letter-split catalog plus strainFactory and the
+    // @/types bridge. That first-party source does not call eval or
+    // new Function. Production still reports two script-src eval violations
+    // at strains-data-*.js:1 on load; the call site is not a catalog string.
+    // Do not add 'unsafe-eval' to script-src to hide them (QNB-274).
     if (id.includes('/data/strains/') && !id.endsWith('index.ts')) return 'strains-data'
     // Split locale bundles into per-language chunks (de.js, es.js, fr.js, nl.js)
     const localeMatch = id.match(/\/locales\/(de|es|fr|nl)\//)

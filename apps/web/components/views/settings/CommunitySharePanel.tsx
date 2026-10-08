@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectUserStrains } from '@/stores/selectors'
+import { COMMUNITY_SHARE_DISABLED } from '@/constants'
 import { communityShareService } from '@/services/communityShareService'
 import { addUserStrain } from '@/stores/slices/userStrainsSlice'
 import { getUISnapshot } from '@/stores/useUIStore'
@@ -19,6 +20,7 @@ const CommunitySharePanelComponent: React.FC = () => {
     const [isBusy, setIsBusy] = useState(false)
 
     const handleExport = async () => {
+        if (COMMUNITY_SHARE_DISABLED) return
         setIsBusy(true)
         try {
             const gist = await communityShareService.exportStrainsToAnonymousGist(userStrains)
@@ -41,7 +43,7 @@ const CommunitySharePanelComponent: React.FC = () => {
     }
 
     const handleImport = async () => {
-        if (!gistInput.trim()) return
+        if (COMMUNITY_SHARE_DISABLED || !gistInput.trim()) return
         setIsBusy(true)
         try {
             const imported = await communityShareService.importStrainsFromGist(gistInput.trim())
@@ -75,13 +77,29 @@ const CommunitySharePanelComponent: React.FC = () => {
             <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2">
                 <PhosphorIcons.ShareNetwork /> {t('settingsView.communityShare.title')}
             </h3>
-            <p className="text-sm text-slate-300 mb-3">
-                {t('settingsView.communityShare.description')}
+            <p
+                data-testid={
+                    COMMUNITY_SHARE_DISABLED ? 'community-share-unavailable-description' : undefined
+                }
+                className="text-sm text-slate-300 mb-3"
+            >
+                {COMMUNITY_SHARE_DISABLED
+                    ? t('settingsView.communityShare.unavailableDescription')
+                    : t('settingsView.communityShare.description')}
             </p>
+            {COMMUNITY_SHARE_DISABLED && (
+                <div
+                    data-testid="community-share-unavailable-banner"
+                    className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300 mb-3"
+                >
+                    <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
+                    {t('settingsView.communityShare.temporarilyUnavailable')}
+                </div>
+            )}
             <div className="space-y-3">
                 <Button
                     onClick={handleExport}
-                    disabled={isBusy || userStrains.length === 0}
+                    disabled={COMMUNITY_SHARE_DISABLED || isBusy || userStrains.length === 0}
                     className="w-full"
                 >
                     <PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />
@@ -101,11 +119,12 @@ const CommunitySharePanelComponent: React.FC = () => {
                     value={gistInput}
                     onChange={(e) => setGistInput(e.target.value)}
                     placeholder={t('settingsView.communityShare.gistPlaceholder')}
+                    disabled={COMMUNITY_SHARE_DISABLED}
                 />
                 <Button
                     onClick={handleImport}
                     variant="secondary"
-                    disabled={isBusy || !gistInput.trim()}
+                    disabled={COMMUNITY_SHARE_DISABLED || isBusy || !gistInput.trim()}
                     className="w-full"
                 >
                     <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />

@@ -272,6 +272,7 @@ export const common = {
         noPayload: 'Gist enthält keine importierbaren Sortendaten.',
         invalidPayload: 'Ungültiges Sortenformat im Gist: {{details}}',
         blockedByLocalOnly: 'Community-Sharing ist im lokalen Modus deaktiviert.',
+        unavailable: 'Community-Sharing ist in diesem Build ausgeschaltet.',
     },
     noImageGenerated: 'Die API hat kein Bild generiert.',
     noJournalEntries: 'Keine Journal-Einträge verfügbar.',

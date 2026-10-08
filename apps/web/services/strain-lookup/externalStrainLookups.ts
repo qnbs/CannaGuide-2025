@@ -2,22 +2,24 @@
  * External API responses return untyped JSON; runtime guards and ?? fallbacks apply. */
 
 import type {
-  CannabinoidDataPoint,
-  FlavonoidDataPoint,
-  LookupStrainResult,
-  TerpeneDataPoint,
+    CannabinoidDataPoint,
+    FlavonoidDataPoint,
+    LookupStrainResult,
+    TerpeneDataPoint,
 } from '@/services/strain-lookup/strainLookupTypes'
 import type { KnownFlavonoid } from '@/services/strain-lookup/flavonoidProfiles'
 import { FLAVONOID_PROFILES } from '@/services/strain-lookup/flavonoidProfiles'
 import {
-  buildFlavonoidDataPoints,
-  calculateEntourageScore,
-  enrichTerpeneDataPoints,
-  shannonDiversity,
+    buildFlavonoidDataPoints,
+    calculateEntourageScore,
+    enrichTerpeneDataPoints,
+    shannonDiversity,
 } from '@/services/strain-lookup/strainLookupEnrichment'
+import { EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { throttleExternal } from '@/services/strain-lookup/strainLookupCache'
 
 export async function lookupCannlytics(name: string): Promise<LookupStrainResult | null> {
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return null
     const apiKey =
         (import.meta.env as Record<string, string | undefined>)['VITE_CANNLYTICS_API_KEY'] ?? ''
     if (!apiKey) return null
@@ -92,10 +94,11 @@ export async function lookupCannlytics(name: string): Promise<LookupStrainResult
 
 // ---------------------------------------------------------------------------
 // Otreeba Open Cannabis API (secondary external source)
-// Uses both the direct API and the strainApiService proxy cascade.
+// Direct API only. Refuses while EXTERNAL_STRAIN_LOOKUPS_DISABLED is true.
 // ---------------------------------------------------------------------------
 
 export async function lookupOtreeba(name: string): Promise<LookupStrainResult | null> {
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return null
     try {
         await throttleExternal()
         const encoded = encodeURIComponent(name)
@@ -215,6 +218,7 @@ interface CannabisApiStrain {
 }
 
 export async function lookupCannabisApi(name: string): Promise<LookupStrainResult | null> {
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return null
     try {
         await throttleExternal()
         const encoded = encodeURIComponent(name)
@@ -239,8 +243,7 @@ export async function lookupCannabisApi(name: string): Promise<LookupStrainResul
                 const list = Array.isArray(raw)
                     ? (raw as CannabisApiStrain[])
                     : (((raw as Record<string, unknown>)['strains'] as
-                          | CannabisApiStrain[]
-                          | undefined) ??
+                          CannabisApiStrain[] | undefined) ??
                       ((raw as Record<string, unknown>)['data'] as CannabisApiStrain[] | undefined))
                 if (Array.isArray(list) && list.length > 0) {
                     hit = list[0] as CannabisApiStrain

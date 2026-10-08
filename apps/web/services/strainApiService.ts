@@ -5,13 +5,14 @@
  * - **Otreeba** (otreeba.com) -- General strain catalog with REST/JSON
  * - **Cannlytics** (docs.cannlytics.com) -- Lab-grade analytics platform
  *
- * All external requests respect isLocalOnlyMode() and use the CORS proxy
- * cascade pattern from seedbankService. Results are cached in-memory with
- * TTL to reduce API calls.
+ * External requests are off while EXTERNAL_STRAIN_LOOKUPS_DISABLED is true.
+ * There is no CORS-proxy fallback: a search term must never reach a
+ * third-party relay. Results are cached in-memory with a TTL.
  *
  * BYOK: API keys are stored encrypted via cryptoService (same as AI providers).
  */
 
+import { EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import type { TerpeneProfile, CannabinoidProfile, StrainApiProvider } from '@/types'
 import { resolveTerpeneName } from '@/services/terpeneService'
@@ -22,11 +23,6 @@ import { resolveTerpeneName } from '@/services/terpeneService'
 
 const OTREEBA_BASE = 'https://api.otreeba.com/v1'
 const CANNLYTICS_BASE = 'https://cannlytics.com/api'
-
-const CORS_PROXIES = [
-    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-] as const
 
 const FETCH_TIMEOUT_MS = 10_000
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -55,10 +51,12 @@ const setCache = <T>(key: string, data: T): void => {
 }
 
 // ---------------------------------------------------------------------------
-// CORS proxy fetch
+// Direct fetch. No third-party proxy. The feature flag refuses first.
 // ---------------------------------------------------------------------------
 
-async function fetchViaProxy(directUrl: string, apiKey?: string): Promise<unknown> {
+async function fetchDirect(directUrl: string, apiKey?: string): Promise<unknown> {
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return null
+
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
 
@@ -68,31 +66,14 @@ async function fetchViaProxy(directUrl: string, apiKey?: string): Promise<unknow
     }
 
     try {
-        // Try direct first (works if API has CORS headers)
-        try {
-            const res = await fetch(directUrl, { signal: controller.signal, headers })
-            if (res.ok) return await res.json()
-        } catch {
-            // Fall through to proxies
-        }
-
-        // Try CORS proxies
-        for (const proxyFn of CORS_PROXIES) {
-            const proxiedUrl = proxyFn(directUrl)
-            try {
-                const res = await fetch(proxiedUrl, {
-                    signal: controller.signal,
-                    headers: { Accept: 'application/json' },
-                })
-                if (res.ok) return await res.json()
-            } catch {
-                // Try next proxy
-            }
-        }
+        const res = await fetch(directUrl, { signal: controller.signal, headers })
+        if (!res.ok) return null
+        return await res.json()
+    } catch {
+        return null
     } finally {
         clearTimeout(timer)
     }
-    return null
 }
 
 // ---------------------------------------------------------------------------
@@ -185,7 +166,7 @@ export const searchOtreeba = async (
     query: string,
     limit: number = 10,
 ): Promise<ExternalStrainData[]> => {
-    if (isLocalOnlyMode()) return []
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED || isLocalOnlyMode()) return []
 
     const cacheKey = `otreeba:search:${query}:${limit}`
     const cached = getCached<ExternalStrainData[]>(cacheKey)
@@ -193,7 +174,7 @@ export const searchOtreeba = async (
 
     const apiKey = getApiKey('otreeba')
     const url = `${OTREEBA_BASE}/strains?search=${encodeURIComponent(query)}&limit=${limit}`
-    const json = await fetchViaProxy(url, apiKey)
+    const json = await fetchDirect(url, apiKey)
 
     if (!json) return []
 
@@ -216,7 +197,7 @@ export const searchOtreeba = async (
 export const fetchOtreebaStrain = async (
     strainName: string,
 ): Promise<ExternalStrainData | null> => {
-    if (isLocalOnlyMode()) return null
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED || isLocalOnlyMode()) return null
 
     const cacheKey = `otreeba:strain:${strainName}`
     const cached = getCached<ExternalStrainData | null>(cacheKey)
@@ -224,7 +205,7 @@ export const fetchOtreebaStrain = async (
 
     const apiKey = getApiKey('otreeba')
     const url = `${OTREEBA_BASE}/strains?name=${encodeURIComponent(strainName)}&limit=1`
-    const json = await fetchViaProxy(url, apiKey)
+    const json = await fetchDirect(url, apiKey)
 
     if (!json) return null
 
@@ -318,7 +299,7 @@ export const searchCannlytics = async (
     query: string,
     limit: number = 10,
 ): Promise<ExternalStrainData[]> => {
-    if (isLocalOnlyMode()) return []
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED || isLocalOnlyMode()) return []
 
     const cacheKey = `cannlytics:search:${query}:${limit}`
     const cached = getCached<ExternalStrainData[]>(cacheKey)
@@ -326,7 +307,7 @@ export const searchCannlytics = async (
 
     const apiKey = getApiKey('cannlytics')
     const url = `${CANNLYTICS_BASE}/strains?search=${encodeURIComponent(query)}&limit=${limit}`
-    const json = await fetchViaProxy(url, apiKey)
+    const json = await fetchDirect(url, apiKey)
 
     if (!json) return []
 
@@ -357,7 +338,7 @@ export const searchExternalStrainData = async (
     query: string,
     limit: number = 10,
 ): Promise<ExternalStrainData[]> => {
-    if (isLocalOnlyMode()) return []
+    if (EXTERNAL_STRAIN_LOOKUPS_DISABLED || isLocalOnlyMode()) return []
 
     const results = await Promise.allSettled([
         searchOtreeba(query, limit),

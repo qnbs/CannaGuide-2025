@@ -5,6 +5,10 @@ import { getT } from '@/i18n'
 import type { BeforeInstallPromptEvent } from '@/types'
 import { PWA_INSTALLED_KEY } from '@/constants'
 import { readDeployVersion } from '@/services/deployIdentity'
+import {
+    acceptServiceWorkerUpdate,
+    readPendingServiceWorkerUpdate,
+} from '@/bootstrap/serviceWorker'
 
 const PWA_INSTALL_HINT_KEY = 'cg.pwa.install_hint.dismissed_at'
 const PWA_UPDATE_DISMISSED_KEY = 'cg.pwa.update.dismissed_at'
@@ -112,6 +116,12 @@ export const usePwaInstall = () => {
     useEffect(() => {
         const trigger = () => forceUpdate((n) => n + 1)
         _subs.add(trigger)
+        const pending = readPendingServiceWorkerUpdate()
+        if (pending?.waiting && !_swRegistration) {
+            _swRegistration = pending
+            _updateAvailable = true
+            _emit()
+        }
         return () => {
             _subs.delete(trigger)
         }
@@ -153,10 +163,8 @@ export const usePwaInstall = () => {
 
     const handleUpdateClick = useCallback(() => {
         const applyUpdate = (): void => {
-            if (_swRegistration?.waiting) {
-                _swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' })
-            } else {
-                // Fallback: force reload if no waiting worker is present
+            if (!acceptServiceWorkerUpdate(_swRegistration?.waiting ?? null)) {
+                // No waiting worker left to activate.
                 window.location.reload()
             }
         }

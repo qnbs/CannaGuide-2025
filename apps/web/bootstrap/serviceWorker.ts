@@ -1,5 +1,29 @@
 import { growReminderService } from '@/services/growReminderService'
 
+const postSkipWaiting = (worker: ServiceWorker): void => {
+    worker.postMessage({ type: 'SKIP_WAITING' })
+}
+
+let pendingUpdate: ServiceWorkerRegistration | null = null
+
+/** The latest update that is still waiting. Survives a listener that mounts later. */
+export const readPendingServiceWorkerUpdate = (): ServiceWorkerRegistration | null => {
+    if (!pendingUpdate?.waiting) {
+        pendingUpdate = null
+        return null
+    }
+    return pendingUpdate
+}
+
+/** User accepted the prompt. Posts SKIP_WAITING to the waiting worker only. */
+export const acceptServiceWorkerUpdate = (waiting: ServiceWorker | null): boolean => {
+    if (!waiting) {
+        return false
+    }
+    postSkipWaiting(waiting)
+    return true
+}
+
 export const registerServiceWorker = (): void => {
     if (!('serviceWorker' in navigator)) {
         return
@@ -18,6 +42,8 @@ export const registerServiceWorker = (): void => {
                     console.debug('[SW] Could not register periodic reminder sync:', error)
                 })
 
+                // controllerchange means a client already posted SKIP_WAITING.
+                // A worker that is only installed does not reach this listener.
                 if (navigator.serviceWorker.controller) {
                     navigator.serviceWorker.addEventListener(
                         'controllerchange',
@@ -28,33 +54,43 @@ export const registerServiceWorker = (): void => {
                     )
                 }
 
-                const dispatchSwUpdate = () => {
-                    const event = new CustomEvent('swUpdate', { detail: registration })
-                    window.dispatchEvent(event)
-                }
-
-                if (registration.waiting && navigator.serviceWorker.controller) {
-                    dispatchSwUpdate()
-                }
-
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing
-                    if (newWorker) {
-                        newWorker.addEventListener('statechange', () => {
-                            if (
-                                newWorker.state === 'installed' &&
-                                navigator.serviceWorker.controller
-                            ) {
-                                dispatchSwUpdate()
-                                console.debug(
-                                    '[SW] New content is available and will be used when all tabs for this page are closed. Firing swUpdate event.',
-                                )
-                            }
-                        })
+                const watched = new WeakSet<ServiceWorker>()
+                const watchInstalled = (worker: ServiceWorker | null): void => {
+                    if (!worker || watched.has(worker)) {
+                        return
                     }
+                    watched.add(worker)
+
+                    const onInstalled = (): void => {
+                        if (worker.state !== 'installed') {
+                            return
+                        }
+                        // First visit: take control so offline works without a
+                        // second load. An update stays waiting for the prompt.
+                        if (!navigator.serviceWorker.controller) {
+                            postSkipWaiting(worker)
+                            return
+                        }
+                        pendingUpdate = registration
+                        window.dispatchEvent(new CustomEvent('swUpdate', { detail: registration }))
+                        console.debug(
+                            '[SW] Update is waiting. The page reloads after the user accepts it.',
+                        )
+                    }
+
+                    if (worker.state === 'installed') {
+                        onInstalled()
+                        return
+                    }
+                    worker.addEventListener('statechange', onInstalled)
+                }
+
+                watchInstalled(registration.installing ?? registration.waiting)
+                registration.addEventListener('updatefound', () => {
+                    watchInstalled(registration.installing)
                 })
 
-                const triggerUpdateCheck = () => {
+                const triggerUpdateCheck = (): void => {
                     registration.update().catch((error) => {
                         console.debug('[SW] Update check failed:', error)
                     })

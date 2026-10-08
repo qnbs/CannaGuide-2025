@@ -239,6 +239,8 @@ export const common = {
     appShortDescription:
         'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 800+ strains, get AI equipment advice, and master your grow with an interactive guide.',
     imageResizeFailed: 'Image resizing failed, using original.',
+    imageResizeBlocked:
+        'Image resizing failed. The photo was not kept, so it cannot be sent with its original metadata.',
     critical: 'critical',
     dismiss: 'Dismiss',
     metrics: {

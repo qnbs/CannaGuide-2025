@@ -172,6 +172,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     const [isDragging, setIsDragging] = useState(false)
     const [isCameraOpen, setIsCameraOpen] = useState(false)
     const cameraButtonRef = useRef<HTMLButtonElement>(null)
+    const imageSelectionRef = useRef(0)
     const [userNotes, setUserNotes] = useState('')
     const [loadingMessage, setLoadingMessage] = useState('')
     const [consentGiven, setConsentGiven] = useState(
@@ -211,19 +212,22 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                 })
                 return
             }
+            const selection = imageSelectionRef.current + 1
+            imageSelectionRef.current = selection
             const reader = new FileReader()
             reader.onload = async () => {
                 try {
                     // browser-image-compression re-encodes via canvas -> strips EXIF/GPS metadata
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     const resizedImage = await resizeImage(reader.result as string)
+                    if (selection !== imageSelectionRef.current) return
                     setImage(resizedImage)
                 } catch (err) {
                     console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    setImage(reader.result as string) // fallback to original
+                    if (selection !== imageSelectionRef.current) return
+                    setImage(null)
                     getUISnapshot().addNotification({
-                        message: t('common.imageResizeFailed'),
+                        message: t('common.imageResizeBlocked'),
                         type: 'error',
                     })
                 }
@@ -262,18 +266,23 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
 
     const handleCapture = async (dataUrl: string) => {
         resetDiagnosis()
+        const selection = imageSelectionRef.current + 1
+        imageSelectionRef.current = selection
         try {
             const resizedImage = await resizeImage(dataUrl)
+            if (selection !== imageSelectionRef.current) return
             setImage(resizedImage)
         } catch (err) {
             console.debug('[AiDiagnosticsModal] Image resizing failed:', err)
-            setImage(dataUrl) // fallback to original
+            if (selection !== imageSelectionRef.current) return
+            setImage(null)
             getUISnapshot().addNotification({
-                message: t('common.imageResizeFailed'),
+                message: t('common.imageResizeBlocked'),
                 type: 'error',
             })
+        } finally {
+            setIsCameraOpen(false)
         }
-        setIsCameraOpen(false)
     }
 
     const handleGetDiagnosis = () => {
@@ -296,8 +305,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
 
     const errorMessage =
         error && typeof error === 'object' && 'message' in error
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            ? (error as { message: string }).message
+            ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+              (error as { message: string }).message
             : t('ai.error.unknown')
 
     return (

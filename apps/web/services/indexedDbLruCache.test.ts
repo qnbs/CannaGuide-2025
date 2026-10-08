@@ -262,3 +262,14 @@ describe('updateConfig', () => {
         cache.updateConfig({})
     })
 })
+
+describe('erase hold', () => {
+    it('rejects cache use while closed and allows it after resume', async () => {
+        const cache = makeCache()
+        await cache.set(makeEntry('k1', 'val'))
+        await cache.close()
+        await expect(cache.get('k1')).resolves.toBeNull()
+        cache.resume()
+        await expect(cache.get('k1')).resolves.toMatchObject({ value: 'val' })
+    })
+})

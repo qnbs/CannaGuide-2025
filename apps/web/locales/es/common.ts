@@ -78,6 +78,7 @@ export const common = {
             'Si el inicio sigue fallando, puedes restaurar expresamente la ultima copia de seguridad validada.',
     },
     imageResizeFailed: 'Fallo al redimensionar imagen, usando original.',
+    imageResizeBlocked: 'Fallo al redimensionar imagen. La foto no se conservo y no se enviara.',
     offlineQueued: 'Sin conexion. Accion en cola para sincronizar.',
     failedToSave: 'Error al guardar la configuracion.',
     noDescription: 'Sin descripcion disponible.',

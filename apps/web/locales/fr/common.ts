@@ -78,6 +78,8 @@ export const common = {
             'Si le demarrage echoue toujours, vous pouvez restaurer explicitement la derniere sauvegarde validee.',
     },
     imageResizeFailed: "Echec du redimensionnement de l'image, utilisation de l'original.",
+    imageResizeBlocked:
+        "Echec du redimensionnement de l'image. La photo n'a pas ete conservee et ne sera pas envoyee.",
     offlineQueued: "Hors ligne. Action mise en file d'attente pour synchronisation.",
     failedToSave: 'Echec de la sauvegarde.',
     noDescription: 'Aucune description disponible.',

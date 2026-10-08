@@ -33,6 +33,10 @@ interface CacheOps<T extends BaseCacheEntry> {
     clear: () => Promise<void>
     count: () => Promise<number>
     resetDbPromise: () => void
+    /** Close the cached connection and reject later opens until resume. */
+    close: () => Promise<void>
+    /** Allow opens again after a failed erase. */
+    resume: () => void
     /** Update maxEntries and/or ttlMs at runtime. */
     updateConfig: (patch: { maxEntries?: number; ttlMs?: number }) => void
 }
@@ -41,9 +45,15 @@ export function createIndexedDbLruCache<T extends BaseCacheEntry>(
     config: CacheConfig,
 ): CacheOps<T> {
     let dbPromise: Promise<IDBDatabase> | null = null
+    let suspended = false
+    let openEpoch = 0
 
     const openDb = (): Promise<IDBDatabase> => {
+        if (suspended) {
+            return Promise.reject(new Error('IndexedDB cache is closed for erase'))
+        }
         if (dbPromise) return dbPromise
+        const epoch = openEpoch
         dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
             if (typeof indexedDB === 'undefined') {
                 reject(new Error('IndexedDB unavailable'))
@@ -58,11 +68,16 @@ export function createIndexedDbLruCache<T extends BaseCacheEntry>(
                 }
             }
             request.onsuccess = () => {
-                const db = request.result
-                db.onclose = () => {
+                const opened = request.result
+                if (suspended || epoch !== openEpoch) {
+                    opened.close()
+                    reject(new Error('IndexedDB cache closed before open finished'))
+                    return
+                }
+                opened.onclose = () => {
                     dbPromise = null
                 }
-                resolve(db)
+                resolve(opened)
             }
             request.onerror = () => {
                 dbPromise = null
@@ -196,6 +211,22 @@ export function createIndexedDbLruCache<T extends BaseCacheEntry>(
         count,
         resetDbPromise: () => {
             dbPromise = null
+        },
+        close: async () => {
+            suspended = true
+            openEpoch += 1
+            const pending = dbPromise
+            dbPromise = null
+            if (!pending) return
+            try {
+                const conn = await pending
+                conn.close()
+            } catch {
+                // Open failed, or the in-flight open was rejected because erase started.
+            }
+        },
+        resume: () => {
+            suspended = false
         },
         updateConfig: (patch: { maxEntries?: number; ttlMs?: number }) => {
             if (patch.maxEntries !== undefined && patch.maxEntries > 0) {

@@ -38,12 +38,12 @@ export const onboarding = {
         text: 'Learn with the interactive guide, ask the AI mentor for advice, and use the lexicons to deepen your knowledge.',
     },
     step5: {
-        title: 'Offline Sync',
-        text: 'Your data syncs seamlessly across devices using conflict-free CRDT technology. Works offline -- changes merge automatically when you reconnect.',
+        title: 'On this device',
+        text: 'Your grow data stays in this browser. A local copy is kept on the device for offline use. Sync with other devices is not available in this version.',
     },
     startGrow: "Let's Start Your First Grow!",
     localOnlyNote:
-        'No account needed. All data stays on your device. You can optionally enable cloud sync later in Settings.',
+        'No account needed. All data stays on your device. Cloud sync is not available in this version.',
     wizard: {
         stepExperience: {
             title: '🌱 Your Experience Level',

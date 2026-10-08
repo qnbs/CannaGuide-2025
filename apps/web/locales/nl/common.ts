@@ -77,6 +77,8 @@ export const common = {
             'Als het opstarten blijft mislukken, kun je de laatst gevalideerde back-up expliciet herstellen.',
     },
     imageResizeFailed: 'Afbeelding verkleinen mislukt, origineel wordt gebruikt.',
+    imageResizeBlocked:
+        'Afbeelding verkleinen mislukt. De foto is niet bewaard en wordt niet verzonden.',
     offlineQueued: 'Offline. Actie in wachtrij voor synchronisatie.',
     failedToSave: 'Opslaan mislukt.',
     noDescription: 'Geen beschrijving beschikbaar.',

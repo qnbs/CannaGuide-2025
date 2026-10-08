@@ -154,3 +154,11 @@ export const getCacheBreakdown = async (): Promise<Record<string, number>> => {
 export const resetCacheDb = (): void => {
     cache.resetDbPromise()
 }
+
+/** Close the inference-cache connection before an erase. */
+export const closeLocalAiCache = (): Promise<void> => cache.close()
+
+/** Allow inference-cache opens again after a failed erase. */
+export const resumeLocalAiCache = (): void => {
+    cache.resume()
+}

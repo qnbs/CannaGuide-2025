@@ -18,35 +18,43 @@ export const legal = {
         sections: {
             overview: {
                 title: 'Überblick',
-                content: 'CannaGuide 2025 ist eine Privacy-First-Anwendung. Alle deine Daten werden lokal auf deinem Gerät gespeichert. Wir betreiben keine Server, die deine persönlichen Daten sammeln oder speichern.',
+                content:
+                    'CannaGuide 2025 ist eine Privacy-First-Anwendung. Alle deine Daten werden lokal auf deinem Gerät gespeichert. Wir betreiben keine Server, die deine persönlichen Daten sammeln oder speichern.',
             },
             dataStorage: {
                 title: 'Datenspeicherung',
-                content: 'Alle Anbau-Protokolle, Pflanzendaten, Einstellungen und Präferenzen werden ausschließlich in der IndexedDB und im localStorage deines Browsers gespeichert. Es werden keine Daten an unsere Server übertragen.',
+                content:
+                    'Alle Anbau-Protokolle, Pflanzendaten, Einstellungen und Präferenzen werden ausschließlich in der IndexedDB und im localStorage deines Browsers gespeichert. Es werden keine Daten an unsere Server übertragen.',
             },
             aiServices: {
                 title: 'KI-Dienste (Optional)',
-                content: 'Wenn du KI-Funktionen nutzt, werden deine Anfragen und optional hochgeladene Bilder direkt von deinem Browser an den von dir gewählten KI-Anbieter gesendet (z.B. Google Gemini, OpenAI, Anthropic, xAI). Dein API-Key wird lokal mit AES-256-GCM verschlüsselt und verlässt dein Gerät niemals unverschlüsselt. Wir haben keinen Zugang zu deinen API-Keys oder KI-Konversationen.',
+                content:
+                    'Wenn du KI-Funktionen nutzt, werden deine Anfragen und optional hochgeladene Bilder direkt von deinem Browser an den von dir gewählten KI-Anbieter gesendet (z.B. Google Gemini, OpenAI, Anthropic, xAI). Dein API-Key wird lokal mit AES-256-GCM verschlüsselt und verlässt dein Gerät niemals unverschlüsselt. Wir haben keinen Zugang zu deinen API-Keys oder KI-Konversationen.',
             },
             imageProcessing: {
                 title: 'Bildverarbeitung',
-                content: 'Bilder, die für die KI-Pflanzendiagnose hochgeladen werden, werden über Canvas neu kodiert, um EXIF-/GPS-Metadaten vor der Übertragung zu entfernen. Der Bild-Upload erfordert deine ausdrückliche Zustimmung.',
+                content:
+                    'Bilder, die für die KI-Pflanzendiagnose hochgeladen werden, werden über Canvas neu kodiert, um EXIF-/GPS-Metadaten vor der Übertragung zu entfernen. Der Bild-Upload erfordert deine ausdrückliche Zustimmung.',
             },
             cookies: {
                 title: 'Cookies & Lokale Speicherung',
-                content: 'Diese App verwendet keine Tracking-Cookies. Wir nutzen localStorage und IndexedDB ausschließlich für die App-Funktionalität (Einstellungen, Pflanzendaten, Zustimmungs-Flags). Es werden keine Analyse- oder Drittanbieter-Tracking-Tools eingesetzt.',
+                content:
+                    'Diese App verwendet keine Tracking-Cookies. Wir nutzen localStorage und IndexedDB ausschließlich für die App-Funktionalität (Einstellungen, Pflanzendaten, Zustimmungs-Flags). Es werden keine Analyse- oder Drittanbieter-Tracking-Tools eingesetzt.',
             },
             thirdParty: {
                 title: 'Drittanbieter-Dienste',
-                content: 'Die einzigen externen Verbindungen sind: (1) Google Fonts für Typografie, (2) KI-Anbieter-APIs, wenn du KI-Funktionen mit deinem eigenen API-Key aktivierst. Es werden keine Daten an Werbetreibende oder Analyse-Anbieter weitergegeben.',
+                content:
+                    'Die Schriftarten sind Teil der App. Optionale Funktionen können diese Hosts kontaktieren: generativelanguage.googleapis.com, api.openai.com, api.x.ai und api.anthropic.com, wenn du KI mit deinem eigenen API-Key aktivierst; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co und huggingfaceusercontent.com sowie cdn.jsdelivr.net, wenn ein lokales Modell oder eine Laufzeit heruntergeladen wird; api.elevenlabs.io, wenn Cloud-Sprachausgabe aktiviert ist. Es werden keine Daten an Werbetreibende oder Analyse-Anbieter weitergegeben. Cloud-Sync ist in dieser Version nicht aktiv.',
             },
             rights: {
                 title: 'Deine Rechte (DSGVO)',
-                content: 'Da alle Daten lokal gespeichert werden, hast du die volle Kontrolle. Du kannst alle Daten über die Einstellungen exportieren oder alle Daten durch das Löschen deines Browser-Speichers entfernen. Eine Anfrage an uns ist nicht erforderlich.',
+                content:
+                    'Da alle Daten lokal gespeichert werden, hast du die volle Kontrolle. Du kannst alle Daten über die Einstellungen exportieren oder alle Daten durch das Löschen deines Browser-Speichers entfernen. Eine Anfrage an uns ist nicht erforderlich.',
             },
             contact: {
                 title: 'Kontakt',
-                content: 'Bei datenschutzrelevanten Fragen erstelle bitte ein Issue im GitHub-Repository des Projekts.',
+                content:
+                    'Bei datenschutzrelevanten Fragen erstelle bitte ein Issue im GitHub-Repository des Projekts.',
             },
         },
     },
@@ -59,7 +67,8 @@ export const legal = {
     },
     impressum: {
         title: 'Impressum',
-        content: 'CannaGuide 2025 ist ein Open-Source-Projekt auf GitHub. Dies ist eine nicht-kommerzielle, bildungsbezogene Anwendung. Für nicht-kommerzielle private Projekte ist kein Impressum gemäß § 5 TMG erforderlich.',
+        content:
+            'CannaGuide 2025 ist ein Open-Source-Projekt auf GitHub. Dies ist eine nicht-kommerzielle, bildungsbezogene Anwendung. Die Anbieterkennzeichnung wurde früher unter § 5 TMG beschrieben. Dieses Gesetz wurde durch das Digitale-Dienste-Gesetz (DDG) ersetzt. Ob dieses Projekt ein Impressum veröffentlichen muss, ist eine Rechtsfrage und wird von dieser Anwendung nicht entschieden. Eine rechtliche Prüfung steht noch aus.',
     },
     imageConsent: {
         banner: 'Das Bild wird an deinen ausgewählten KI-Anbieter zur Analyse gesendet. EXIF-/GPS-Metadaten werden vor der Übertragung automatisch entfernt.',
@@ -68,5 +77,6 @@ export const legal = {
         revoke: 'Bild-Zustimmung widerrufen',
         revoked: 'Bild-Zustimmung widerrufen. Du wirst vor dem nächsten Upload erneut gefragt.',
     },
-    medicalDisclaimer: 'Dies ist kein medizinischer Rat. Konsultiere immer einen qualifizierten Fachmann für gesundheitsbezogene Entscheidungen.',
+    medicalDisclaimer:
+        'Dies ist kein medizinischer Rat. Konsultiere immer einen qualifizierten Fachmann für gesundheitsbezogene Entscheidungen.',
 }

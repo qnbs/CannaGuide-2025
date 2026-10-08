@@ -44,7 +44,7 @@ export const legal = {
             thirdParty: {
                 title: 'Services Tiers',
                 content:
-                    "Les seules connexions externes sont : (1) Google Fonts pour la typographie, (2) les APIs des fournisseurs IA si vous activez les fonctionnalites IA avec votre propre cle API. Aucune donnee n'est partagee avec des annonceurs ou des fournisseurs d'analytique.",
+                    "La typographie est fournie avec l'application. Les fonctions optionnelles peuvent contacter ces hotes : generativelanguage.googleapis.com, api.openai.com, api.x.ai et api.anthropic.com si vous activez l'IA avec votre propre cle API ; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co et huggingfaceusercontent.com ainsi que cdn.jsdelivr.net lorsqu'un modele local ou un runtime est telecharge ; api.elevenlabs.io lorsque la synthese vocale cloud est activee. Aucune donnee n'est partagee avec des annonceurs ou des fournisseurs d'analytique. La synchronisation cloud n'est pas activee dans cette version.",
             },
             rights: {
                 title: 'Vos Droits (RGPD/DSGVO)',
@@ -68,7 +68,7 @@ export const legal = {
     impressum: {
         title: 'Mentions Legales (Impressum)',
         content:
-            "CannaGuide 2025 est un projet open source heberge sur GitHub. Il s'agit d'une application educative non commerciale. Aucun Impressum selon le paragraphe 5 TMG n'est requis pour les projets prives non commerciaux.",
+            "CannaGuide 2025 est un projet open source heberge sur GitHub. Il s'agit d'une application educative non commerciale. L'identification du fournisseur etait auparavant decrite au paragraphe 5 TMG. Ce texte a ete remplace par la Digitale-Dienste-Gesetz (DDG). Savoir si ce projet doit publier un Impressum est une question juridique que cette application ne tranche pas. Un examen juridique reste necessaire.",
     },
     imageConsent: {
         banner: "L'image sera envoyee a votre fournisseur IA selectionne pour analyse. Les metadonnees EXIF/GPS sont automatiquement supprimees avant la transmission.",

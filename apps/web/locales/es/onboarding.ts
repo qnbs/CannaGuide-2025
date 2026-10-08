@@ -18,8 +18,7 @@ export const onboarding = {
     },
     languageTitle: 'Elige Tu Idioma',
     languageSubtitle: 'Selecciona tu idioma preferido para continuar.',
-    languageLoadFailed:
-        'No se pudo cargar el idioma seleccionado. Por favor, intentalo de nuevo.',
+    languageLoadFailed: 'No se pudo cargar el idioma seleccionado. Por favor, intentalo de nuevo.',
     german: 'Aleman',
     english: 'Ingles',
     step1: {
@@ -39,12 +38,12 @@ export const onboarding = {
         text: 'Aprende con la guia interactiva, pide consejo al mentor IA y usa los lexicos para profundizar tu conocimiento.',
     },
     step5: {
-        title: 'Sincronizacion Sin Conexion',
-        text: 'Tus datos se sincronizan perfectamente entre dispositivos usando tecnologia CRDT libre de conflictos. Funciona sin conexion -- los cambios se fusionan automaticamente al reconectarte.',
+        title: 'En este dispositivo',
+        text: 'Tus datos de cultivo permanecen en este navegador. Una copia local queda en el dispositivo para uso sin conexion. La sincronizacion con otros dispositivos no esta disponible en esta version.',
     },
     startGrow: 'Comencemos Tu Primer Cultivo!',
     localOnlyNote:
-        'No se necesita cuenta. Todos los datos permanecen en tu dispositivo. Puedes activar la sincronizacion en la nube mas tarde en Configuracion.',
+        'No se necesita cuenta. Todos los datos permanecen en tu dispositivo. La sincronizacion en la nube no esta disponible en esta version.',
     wizard: {
         stepExperience: {
             title: 'Tu Nivel de Experiencia',

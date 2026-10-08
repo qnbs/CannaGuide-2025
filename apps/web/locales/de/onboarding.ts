@@ -18,8 +18,7 @@ export const onboarding = {
     },
     languageTitle: 'Sprache waehlen',
     languageSubtitle: 'Wähle deine bevorzugte Sprache, um fortzufahren.',
-    languageLoadFailed:
-        'Die gewählte Sprache konnte nicht geladen werden. Bitte erneut versuchen.',
+    languageLoadFailed: 'Die gewählte Sprache konnte nicht geladen werden. Bitte erneut versuchen.',
     german: 'Deutsch',
     english: 'Englisch',
     step1: {
@@ -39,12 +38,12 @@ export const onboarding = {
         text: 'Lerne mit dem interaktiven Guide, frage den KI-Mentor um Rat und nutze die Lexika, um dein Wissen zu vertiefen.',
     },
     step5: {
-        title: 'Offline-Synchronisation',
-        text: 'Deine Daten werden nahtlos zwischen Geraeten synchronisiert -- mit konfliktfreier CRDT-Technologie. Funktioniert offline und Aenderungen werden beim Wiederherstellen der Verbindung automatisch zusammengefuehrt.',
+        title: 'Auf diesem Gerät',
+        text: 'Deine Anbaudaten bleiben in diesem Browser. Eine lokale Kopie liegt auf dem Gerät und funktioniert offline. Eine Synchronisation mit anderen Geräten ist in dieser Version nicht verfügbar.',
     },
     startGrow: 'Lass uns deinen ersten Anbau starten!',
     localOnlyNote:
-        'Kein Konto nötig. Alle Daten bleiben auf deinem Gerät. Du kannst Cloud-Sync später optional in den Einstellungen aktivieren.',
+        'Kein Konto nötig. Alle Daten bleiben auf deinem Gerät. Cloud-Sync ist in dieser Version nicht verfügbar.',
     wizard: {
         stepExperience: {
             title: '🌱 Dein Erfahrungsstand',

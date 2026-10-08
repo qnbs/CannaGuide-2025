@@ -6,15 +6,16 @@ CI health, local audit script, and merge policy: [`.github/CI-AUDIT.md`](../CI-A
 
 ## Core CI/CD
 
-| Workflow                                           | Trigger                             | Purpose                                                                              |
-| -------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
-| [`ci.yml`](./ci.yml)                               | `main` push, every PR, dispatch     | Quality + security + E2E; required check **CI Status**.                              |
-| [`ci-docs.yml`](./ci-docs.yml)                     | `push`/`PR` on `**/*.md`, `docs/**` | Docs quality gates (advisory).                                                       |
-| [`deploy.yml`](./deploy.yml)                       | After **successful CI** on `main`   | GitHub Pages (`BUILD_BASE_PATH=/CannaGuide-2025/`); trusts CI on `workflow_run`.     |
-| [`deploy-cloudflare.yml`](./deploy-cloudflare.yml) | CI success on `main`, PR previews   | Cloudflare Pages mirror (`BUILD_BASE_PATH=/`); skips without `CLOUDFLARE_*` secrets. |
-| [`desktop-build.yml`](./desktop-build.yml)         | Tag `v*`                            | Tauri desktop matrix (optional signing secrets).                                     |
-| [`release-gate.yml`](./release-gate.yml)           | Tag `v*`                            | Pre-release checks.                                                                  |
-| [`release-publish.yml`](./release-publish.yml)     | Tag `v*`                            | SBOM + GitHub Release.                                                               |
+| Workflow                                                         | Trigger                             | Purpose                                                                                                                          |
+| ---------------------------------------------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| [`ci.yml`](./ci.yml)                                             | `main` push, every PR, dispatch     | Quality + security + E2E; required check **CI Status**.                                                                          |
+| [`ci-docs.yml`](./ci-docs.yml)                                   | `push`/`PR` on `**/*.md`, `docs/**` | Docs quality gates (advisory).                                                                                                   |
+| [`deploy.yml`](./deploy.yml)                                     | After **successful CI** on `main`   | GitHub Pages (`BUILD_BASE_PATH=/CannaGuide-2025/`); trusts CI on `workflow_run`.                                                 |
+| [`deploy-cloudflare.yml`](./deploy-cloudflare.yml)               | Trusted `workflow_run` only         | Cloudflare production after CI on `main`, and PR preview publish from an artifact. The token is not available to `pull_request`. |
+| [`cloudflare-preview-build.yml`](./cloudflare-preview-build.yml) | Same-repo PR to `main`              | Secret-free preview build. Publish stays in `deploy-cloudflare.yml`.                                                             |
+| [`desktop-build.yml`](./desktop-build.yml)                       | Tag `v*`, dispatch from `main`      | Tauri desktop matrix (optional signing secrets).                                                                                 |
+| [`release-gate.yml`](./release-gate.yml)                         | Tag `v*`                            | Pre-release checks.                                                                                                              |
+| [`release-publish.yml`](./release-publish.yml)                   | Tag `v*`, dispatch from `main`      | SBOM + GitHub Release.                                                                                                           |
 
 ## Maintenance & automation
 

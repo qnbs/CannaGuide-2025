@@ -1,0 +1,91 @@
+name: Cloudflare Preview Build
+
+# Secret-free build for a same-repo pull request. The Cloudflare token is not
+# available here: pull_request runs this file from the merge commit, so a
+# same-repo PR could otherwise print the token. Publish happens in
+# deploy-cloudflare.yml, which workflow_run takes from the default branch
+# and which only uploads the artifact produced below.
+#
+# Fork PRs are skipped. The publish job also refuses a head repository that
+# is not this one, so building a fork artifact would only spend minutes.
+
+on:
+    pull_request:
+        branches: [main]
+        types: [opened, synchronize, reopened]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: cloudflare-preview-build-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+env:
+    NODE_VERSION: '24'
+
+jobs:
+    build:
+        name: Build preview artifact
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+
+            - name: Checkout PR
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  persist-credentials: false
+
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+
+            - name: Build for preview
+              env:
+                  BUILD_BASE_PATH: /
+              run: |
+                  echo "::group::vite build (preview)"
+                  pnpm run build
+                  echo "::endgroup::"
+
+            - name: Stamp build metadata
+              env:
+                  BUILD_COMMIT: ${{ github.event.pull_request.head.sha }}
+              run: |
+                  node scripts/stamp-build-metadata.mjs
+                  node scripts/stamp-build-metadata.mjs --verify
+
+            - name: Check Cloudflare Pages file-size limit
+              uses: ./.github/actions/check-pages-file-size
+              with:
+                  path: apps/web/dist
+
+            - name: Record preview metadata
+              env:
+                  PREVIEW_SHA: ${{ github.event.pull_request.head.sha }}
+                  PREVIEW_PR: ${{ github.event.pull_request.number }}
+                  RAW_HEAD_REF: ${{ github.head_ref }}
+              run: node scripts/cloudflare-preview-meta.mjs write
+
+            - name: Upload preview dist
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: cloudflare-preview-dist
+                  path: apps/web/dist
+                  if-no-files-found: error
+                  retention-days: 1
+
+            - name: Upload preview metadata
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: cloudflare-preview-meta
+                  path: preview-meta.json
+                  if-no-files-found: error
+                  retention-days: 1

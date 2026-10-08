@@ -5,7 +5,7 @@ Last updated: 2026-10-06 (live merge gate reconciled with `ci.yml`)
 ## Current policy (2026-10-06)
 
 The dated session notes below are history. They are not the live merge gate.
-`workflow-inventory: 29`
+`workflow-inventory: 30`
 
 | Fact                    | Live behavior                                                                                                                                                                               |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -510,6 +510,13 @@ jobs:
               if: always() && steps.setup.outcome == 'success'
               run: node scripts/security/check-updater-policy.mjs
 
+            # Reads workflow YAML only. A pull_request job must not see a deploy,
+            # signing, or release secret, and workflow_dispatch of those secrets
+            # must be pinned to main.
+            - name: Workflow credential scope
+              if: always() && steps.checkout.outcome == 'success'
+              run: node scripts/security/check-workflow-credential-scope.mjs
+
             - name: Trojan-source scan
               if: always() && steps.setup.outcome == 'success'
               run: pnpm run security:trojan-source

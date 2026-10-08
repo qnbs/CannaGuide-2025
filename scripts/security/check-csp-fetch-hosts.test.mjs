@@ -37,7 +37,32 @@ describe('CSP fetch host gate', () => {
     it('does not treat a longer token as the flag', () => {
         const name = 'EXTERNAL_STRAIN_LOOKUPS_DISABLED'
         assert.equal(flagEnabled(`export const ${name} = trueish\n`, name), false)
+        assert.equal(flagEnabled(`export const ${name} = true$\n`, name), false)
         assert.equal(flagEnabled(`export const ${name} = true\n`, name), true)
+    })
+
+    it('ignores a commented true beside an active false', () => {
+        const name = 'EXTERNAL_STRAIN_LOOKUPS_DISABLED'
+        const source = `// export const ${name} = true\nexport const ${name} = false\n`
+        assert.equal(flagEnabled(source, name), false)
+    })
+
+    it('rejects a non-default port, another scheme, and a protocol-relative host', () => {
+        const allowedHost = 'await fetch("https://api.openai.com/v1")'
+        const explicitDefault = 'await fetch("https://api.openai.com:443/v1")'
+        assert.deepEqual(violationsInSource(allowedHost, allowed, constantsSource, 'probe.ts'), [])
+        assert.deepEqual(
+            violationsInSource(explicitDefault, allowed, constantsSource, 'probe.ts'),
+            [],
+        )
+        for (const source of [
+            'await fetch("https://api.openai.com:4443/v1")',
+            'await fetch("http://api.openai.com/v1")',
+            'await fetch("//evil.example/v1")',
+        ]) {
+            const violations = violationsInSource(source, allowed, constantsSource, 'probe.ts')
+            assert.equal(violations.length, 1, source)
+        }
     })
 
     it('fails a fetch host that is neither allowlisted nor gated', () => {

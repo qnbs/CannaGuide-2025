@@ -104,42 +104,59 @@ export function connectSrcHosts(securityHeadersSource) {
     return hosts
 }
 
-function isWordChar(ch) {
+function isIdentContinue(ch) {
     if (!ch) return false
+    if (ch === '_' || ch === '$') return true
     const code = ch.charCodeAt(0)
     return (
-        (code >= 48 && code <= 57) ||
-        (code >= 65 && code <= 90) ||
-        (code >= 97 && code <= 122) ||
-        ch === '_'
+        (code >= 48 && code <= 57) || (code >= 65 && code <= 90) || (code >= 97 && code <= 122)
     )
 }
 
 /**
- * True when `constantsSource` contains `export const <name> = true` as a
- * whole token. A literal search keeps the host strings in GATED_FETCH_HOSTS
- * out of `RegExp`, which CodeQL reads as an unanchored hostname pattern.
+ * True when active source contains `export const <name> = true` as a whole
+ * token. Comments are removed first, and `$` continues an identifier, so a
+ * commented `true` or a `true$` token does not count. A literal search keeps
+ * the host strings in GATED_FETCH_HOSTS out of `RegExp`.
  */
 export function flagEnabled(constantsSource, name) {
+    const code = stripComments(constantsSource)
     const needle = `export const ${name} = true`
     let from = 0
-    while (from < constantsSource.length) {
-        const at = constantsSource.indexOf(needle, from)
+    while (from < code.length) {
+        const at = code.indexOf(needle, from)
         if (at < 0) return false
-        if (!isWordChar(constantsSource.charAt(at + needle.length))) return true
+        const before = at > 0 ? code.charAt(at - 1) : ''
+        const after = code.charAt(at + needle.length)
+        if (!isIdentContinue(before) && !isIdentContinue(after)) return true
         from = at + needle.length
     }
     return false
+}
+
+/**
+ * https on the default port stays a bare host so it matches connect-src.
+ * Any other scheme or explicit port stays distinct and fails closed.
+ */
+function fetchOriginKey(scheme, host, port) {
+    if (scheme === 'https' && (port === '' || port === '443')) return host
+    if (scheme === 'https') return `${host}:${port}`
+    if (scheme === 'http' && port !== '' && port !== '80') return `http://${host}:${port}`
+    if (scheme === 'http') return `http://${host}`
+    if (port) return `//${host}:${port}`
+    return `//${host}`
 }
 
 export function fetchTargetHosts(source) {
     const code = stripComments(source)
     if (!/\bfetch\s*\(/.test(code)) return []
     const hosts = new Set()
-    const re = /(['"`])https:\/\/([A-Za-z0-9.-]+)/g
+    const re = /(['"`])(?:(https?):)?\/\/([A-Za-z0-9.-]+)(?::(\d+))?/g
     let match
     while ((match = re.exec(code))) {
-        if (match[2]) hosts.add(match[2].toLowerCase())
+        const host = match[3] ? match[3].toLowerCase() : ''
+        if (!host) continue
+        hosts.add(fetchOriginKey(match[2] ? match[2].toLowerCase() : '', host, match[4] || ''))
     }
     return [...hosts]
 }

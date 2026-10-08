@@ -1,31 +1,29 @@
-# Issue Drafts D1-D11
+# Implementation Briefs D1-D12
 
-Implementation-ready drafts for every actionable finding of the 2026-10 full-spectrum audit that the
-private tracker could not hold. Each draft follows the tracker's issue shape: origin and class,
-evidence, scope, implementation brief, acceptance. All drafts are **post-release** work (v1.10.0 is
-published) unless stated; none of them should be started while another mutation lane owns the same
-files.
+Implementation-ready briefs for the findings of the 2026-10 full-spectrum audit that no existing tracker owner covers (and for the larger slices of those that do). Briefs live in the repository because the tracker is a compact control plane (decision CG-DEC-001): **nothing here is filed as an issue by default.** If the owner later authorizes issue creation, the proposal is one issue per workstream (see [`WORKSTREAMS.md`](./WORKSTREAMS.md)), each citing its brief and finding IDs.
 
-Repository verification rules that apply to every brief (see `CLAUDE.md`): use `pnpm verify`,
-`pnpm verify:test`, `pnpm verify:lint` (scoped), never a bare `turbo run`; scoped single-spec runs
-without `--`; no new `eslint-disable` or `biome-ignore`; new source is ASCII-only; keep each PR well
-under 100 changed files; run prettier over `git status --porcelain`.
+All briefs are post-release work (v1.10.0 is published). None may start while another mutation lane owns the same files; the current source lane (QNB-273 / PR #550) forbids parallel source PRs, workflow edits, desktop edits and CSP changes until it is merged and proved.
 
-## Conversion table
+Repository verification rules that apply to every brief (see `CLAUDE.md`): use `pnpm verify`, `pnpm verify:test`, `pnpm verify:lint` (scoped), never a bare `turbo run`; scoped single-spec runs without `--`; no new `eslint-disable` or `biome-ignore`; new source is ASCII-only; keep each PR well under 100 changed files; run prettier over `git status --porcelain`; frozen-lockfile installs only.
 
-| Draft | Title (tracker prefix `CannaGuide-2025 `)                                                                                                | Parent / relations                       | Priority                         | Labels                                                           | Tracker issue |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | -------------------------------- | ---------------------------------------------------------------- | ------------- |
-| D1    | a11y(settings): name every Settings control via SettingsRow (critical axe violations) and burn down the 14 AA contrast failures          | parent QNB-238; related QNB-256, QNB-255 | High                             | Docs / i18n / A11y, Product / UX                                 | pending       |
-| D2    | ux(onboarding): shorten the 10-screen mandatory first-run path, make it dismissible, merge the double language choice, fix ASCII labels  | parent QNB-238; related QNB-273, QNB-275 | Medium                           | Product / UX, Docs / i18n / A11y                                 | pending       |
-| D3    | ci(security): scope deploy, signing and release credentials with GitHub Environments and narrower tokens                                 | related QNB-252, QNB-267                 | Medium                           | Security, DevOps / Release, Toolchain / Governance, Gated / Hold | pending       |
-| D4    | governance(rulesets): reconcile live GitHub rulesets with the expected state and CLAUDE.md                                               | related QNB-266                          | Low                              | Toolchain / Governance, Security, Gated / Hold                   | pending       |
-| D5    | type(trust-boundary): validate persisted state and provider JSON at runtime instead of `as T`                                            | related QNB-256                          | Low                              | Data Integrity, Security, Toolchain / Governance                 | pending       |
-| D6    | desktop(fs): narrow the Tauri filesystem scope, CSP and unused plugins                                                                   | related D9                               | Medium                           | Security, Native / Core                                          | pending       |
-| D7    | i18n(gates): make the locale gates match what the docs claim                                                                             | related QNB-266                          | Low                              | Docs / i18n / A11y, CI / Testing                                 | pending       |
-| D8    | deps(security): lift override floors above advisory-patched versions                                                                     | related QNB-266                          | Medium (runtime pair), Low (dev) | Security, Toolchain / Governance                                 | pending       |
-| D9    | ci(desktop): make the Desktop Build workflow start, publish updater artifacts, guard it in the release gate                              | related QNB-266, QNB-255                 | Medium                           | CI / Testing, DevOps / Release                                   | pending       |
-| D10   | perf(critical-path): measure the real modulepreload set and move jsPDF, charts, strain data and local-AI services out of the entry graph | related QNB-236                          | Medium                           | CI / Testing (and a performance label if one exists)             | pending       |
-| D11   | privacy(sentry): stop disabling replay masking before any DSN is ever set                                                                | related QNB-273                          | Low                              | Security, Data Integrity                                         | pending       |
+## Brief index
+
+| Brief | Title                                                                         | Findings                                       | Existing Linear owner           | Workstream           |
+| ----- | ----------------------------------------------------------------------------- | ---------------------------------------------- | ------------------------------- | -------------------- |
+| D1    | Name every Settings control via SettingsRow; burn down contrast failures      | CG-AUD-20261008-025, CG-AUD-20261008-041       | QNB-238                         | WS-UX-A11Y           |
+| D2    | Shorten and make the first-run path dismissible                               | CG-AUD-20261008-026                            | QNB-238                         | WS-UX-A11Y           |
+| D3    | Scope deploy, signing and release credentials                                 | CG-AUD-20261008-027 (with CG-AUD-20261008-010) | none (related QNB-252, QNB-267) | WS-CI-GOVERNANCE     |
+| D4    | Reconcile live rulesets with the expected state and CLAUDE.md                 | CG-AUD-20261008-028                            | none (related QNB-266)          | WS-CI-GOVERNANCE     |
+| D5    | Validate persisted state and provider JSON at runtime                         | CG-AUD-20261008-029                            | none (related QNB-256)          | WS-TEST-QUALITY      |
+| D6    | Narrow the Tauri filesystem scope, CSP and unused plugins                     | CG-AUD-20261008-030, CG-AUD-20261008-039       | none                            | WS-DESKTOP           |
+| D7    | Make the locale gates match what the docs claim                               | CG-AUD-20261008-037                            | none (related QNB-266)          | WS-I18N              |
+| D8    | Lift override floors above patched versions; cover Rust and no-fix advisories | CG-AUD-20261008-033 to CG-AUD-20261008-036     | none (related QNB-266)          | WS-DEPS-SUPPLY-CHAIN |
+| D9    | Make the Desktop Build workflow start and guard it                            | CG-AUD-20261008-038                            | QNB-254 (sequencing)            | WS-RELEASE-OPS       |
+| D10   | Measure the real preload set; slim the entry graph                            | CG-AUD-20261008-044                            | QNB-236                         | WS-PERFORMANCE       |
+| D11   | Keep Sentry replay masking on                                                 | CG-AUD-20261008-046                            | none (related QNB-273)          | WS-PRIVACY           |
+| D12   | Verify the ONNX Runtime WASM by hash                                          | CG-AUD-20261008-045                            | none                            | WS-DEPS-SUPPLY-CHAIN |
+
+Findings with an existing owner and no brief here (for example CG-AUD-20261008-009 dry-run, CG-AUD-20261008-022 CSP-blocked features, CG-AUD-20261008-043 Zod jitless) carry their implementation brief in the owner issue; the ledger block says so.
 
 ---
 
@@ -73,6 +71,16 @@ test fails when a `SettingsRow` child has no accessible name; no new suppression
 **Note.** The Strains view has 21 targets below 24x24 CSS px (WCAG 2.2 SC 2.5.8); track separately
 if the product commits to WCAG 2.2.
 
+**Brief completion.**
+
+- **Findings:** 025, 041
+- **Non-goals:** No brand-hue change; no Settings redesign; WCAG 2.2 target size is separate.
+- **Negative tests:** A SettingsRow child without an accessible name fails a test; an axe test fails on aria-label on a role-less element.
+- **Production proof:** axe-core run on production after deploy: 0 critical/serious on every Settings tab, desktop and mobile.
+- **Existing owner:** QNB-238
+- **Suggested PR titles:** fix(a11y): name Settings controls through SettingsRow; chore(a11y): switch check-contrast to strict
+- **Stop conditions:** Token fixes would change pinned brand hues, or a PR would exceed the review-size limit.
+
 ---
 
 ## D2 -- ux(onboarding): shorten, make dismissible, merge language choice, fix ASCII labels
@@ -104,6 +112,16 @@ seconds). Keep the sync-step text change inside the privacy PR; do not duplicate
 dismissible by keyboard and resumable from Help; no ASCII-transliterated user-visible labels; e2e
 green; axe stays at 0 on every first-run screen.
 
+**Brief completion.**
+
+- **Findings:** 026
+- **Non-goals:** No change to the legal age-gate wording without owner review; no new onboarding content.
+- **Negative tests:** The age gate cannot be skipped; the tour closes by keyboard; reopening from Help works.
+- **Production proof:** Programmatic walk on production counts at most 3 mandatory screens.
+- **Existing owner:** QNB-238
+- **Suggested PR title:** feat(onboarding): short dismissible first-run path
+- **Stop conditions:** Owner decisions on required gate steps are missing.
+
 ---
 
 ## D3 -- ci(security): scope deploy, signing and release credentials
@@ -130,6 +148,16 @@ personal-access-token for the release workflow.
 the release token is replaced or narrowed and documented. **Sequencing:** after the release lane is
 quiet; do not alter the release path mid-release.
 
+**Brief completion.**
+
+- **Findings:** 027, 010
+- **Non-goals:** No secret rotation in the same PR; no change to the release path mid-release.
+- **Negative tests:** A workflow policy test fails when a secret-bearing job lacks an approval environment or ref guard.
+- **Production proof:** A dispatch from a non-main branch cannot reach the credential (owner verifies in settings).
+- **Existing owner:** none (related QNB-252, QNB-267)
+- **Suggested PR title:** ci(security): scope deploy, signing and release credentials
+- **Stop conditions:** The change needs owner/admin settings: hand over instead of editing around them.
+
 ---
 
 ## D4 -- governance(rulesets): reconcile live rulesets with the expected state and CLAUDE.md
@@ -146,6 +174,16 @@ merge queue) or correct `CLAUDE.md`; fold a deterministic CodeQL result into `CI
 **Acceptance.** The live check is green or the expected files record each accepted exception;
 `CLAUDE.md` matches the live state. The exact-head discipline of the correction process assumes
 strict status checks.
+
+**Brief completion.**
+
+- **Findings:** 028
+- **Non-goals:** No agent changes rulesets; owner/admin action only.
+- **Negative tests:** The live governance check fails on an unrecorded exception.
+- **Production proof:** Live check output is green or lists only recorded exceptions.
+- **Existing owner:** none (related QNB-266)
+- **Suggested PR title:** docs(governance): align CLAUDE.md with the live rulesets
+- **Stop conditions:** Any step would change a ruleset.
 
 ---
 
@@ -165,6 +203,16 @@ responses. Tests for malformed and old-version payloads; ratchet the suppression
 
 **Acceptance.** No `JSON.parse(...) as T` left for persisted state; negative-path tests; lower
 suppression count.
+
+**Brief completion.**
+
+- **Findings:** 029
+- **Non-goals:** No behaviour change beyond safe defaults and diagnostics.
+- **Negative tests:** Malformed, old-version and tampered payloads fall back safely and record a diagnostic.
+- **Production proof:** n/a (internal); the suppression ratchet count drops.
+- **Existing owner:** none (related QNB-256)
+- **Suggested PR title:** refactor(services): validate persisted and provider JSON with Zod
+- **Stop conditions:** More than 100 files: split per service.
 
 ---
 
@@ -188,6 +236,16 @@ capabilities; add a test asserting the capability files contain no `$DOCUMENT/**
 **Acceptance.** No wildcard allow outside app data; import / export still works through dialogs on
 Windows, macOS and Linux.
 
+**Brief completion.**
+
+- **Findings:** 030, 039
+- **Non-goals:** No new desktop features; no distribution work.
+- **Negative tests:** A test asserts the capability files contain no $DOCUMENT wildcard allow.
+- **Production proof:** n/a (no distribution); manual import/export through dialogs on a dev build.
+- **Existing owner:** none
+- **Suggested PR title:** fix(desktop): narrow filesystem scope and CSP
+- **Stop conditions:** The source lease still forbids desktop edits.
+
 ---
 
 ## D7 -- i18n(gates): make the locale gates match what the docs claim
@@ -203,6 +261,16 @@ behaviour. (5) Add the "untranslated value identical to EN" heuristic from the b
 
 **Acceptance.** Every gate named in `CLAUDE.md` is enforced somewhere or removed from the claim;
 the es / fr / nl tier is explicit in docs and in the script header.
+
+**Brief completion.**
+
+- **Findings:** 037
+- **Non-goals:** No translation backfill.
+- **Negative tests:** The gate fails on a key missing in a required language and on a key used in code but missing in EN.
+- **Production proof:** CI wiring shown in a run.
+- **Existing owner:** none (related QNB-266)
+- **Suggested PR title:** ci(i18n): enforce the locale gates the docs claim
+- **Stop conditions:** Promoting es/fr/nl to blocking would turn CI red before the backfill.
 
 ---
 
@@ -240,6 +308,16 @@ has a vulnerable copy under `jspdf`.
 scoped verify commands and never a bare `pnpm install` (trap 2). Re-run `pnpm audit` read-only to
 confirm the count drops. **Sequencing:** do not touch the lockfile mid-release.
 
+**Brief completion.**
+
+- **Findings:** 033, 034, 035, 036
+- **Non-goals:** No major-version dependency upgrades.
+- **Negative tests:** The override gate fails when a pinned resolution is below its patched advisory version.
+- **Production proof:** Next read-only pnpm audit and Dependabot alert count drop.
+- **Existing owner:** none (related QNB-266)
+- **Suggested PR title:** fix(deps): lift override floors above patched versions
+- **Stop conditions:** The lockfile change fails the supply-chain policy (minimum release age) or the source lease is active.
+
 ---
 
 ## D9 -- ci(desktop): make the Desktop Build workflow start, publish updater artifacts, guard it
@@ -270,6 +348,16 @@ or `releaseId`; `docs/distribution.md` and ADR 0012 document the endpoint as wor
 `startup_failure`); the next tag push does not end in `startup_failure`; docs match reality and the
 updater endpoint resolves or is removed.
 
+**Brief completion.**
+
+- **Findings:** 038
+- **Non-goals:** No signing certificates or notarization work.
+- **Negative tests:** The release check fails when the tag's Desktop Build concludes startup_failure.
+- **Production proof:** A workflow_dispatch run URL showing the four targets start.
+- **Existing owner:** QNB-254 (sequencing)
+- **Suggested PR title:** fix(ci): start the desktop build workflow and guard it
+- **Stop conditions:** A zero-job startup_failure needs control-plane diagnosis before source mutation; never create retrigger commits.
+
 ---
 
 ## D10 -- perf(critical-path): measure the real preload set and slim the entry graph
@@ -292,6 +380,16 @@ reference host.
 **Acceptance.** Preloaded brotli at most 400 KB (owner may adjust); `jspdf`, recharts, d3 and
 local-AI chunks absent from the `index.html` preloads; ratchet in CI; no behaviour change in e2e.
 
+**Brief completion.**
+
+- **Findings:** 044
+- **Non-goals:** No feature removal.
+- **Negative tests:** The budget gate fails when a feature chunk appears in the index.html preload set.
+- **Production proof:** Re-measure the production index.html preload set.
+- **Existing owner:** QNB-236
+- **Suggested PR title:** perf(web): keep feature chunks out of the entry graph
+- **Stop conditions:** A dynamic import changes behaviour covered by e2e.
+
 ---
 
 ## D11 -- privacy(sentry): stop disabling replay masking before any DSN is set
@@ -309,3 +407,35 @@ unit test asserting the replay options keep masking on; document the DSN knob an
 consequence, or remove the dead path.
 
 **Acceptance.** Replay cannot capture unmasked text or media; the test enforces it.
+
+**Brief completion.**
+
+- **Findings:** 046
+- **Non-goals:** No Sentry enablement.
+- **Negative tests:** A unit test fails when the replay options disable masking.
+- **Production proof:** n/a (inert in hosted builds).
+- **Existing owner:** none (related QNB-273)
+- **Suggested PR title:** fix(privacy): keep Sentry replay masking on
+- **Stop conditions:** The change would also alter the privacy copy owned by the active lane.
+
+---
+
+## D12 -- local-ai(supply-chain): verify the ONNX Runtime WASM by hash
+
+**Origin and class.** Wave 3, finding CG-AUD-20261008-045. DESIGN_RISK, S3, CONFIRMED (source).
+
+**Evidence.** `packages/ai-core/src/ml.ts` loads `ort-wasm-simd-threaded.jsep.wasm` (about 25.6 MiB) from `https://cdn.jsdelivr.net/npm/onnxruntime-web@<version>/dist/` at runtime; the version is pinned and a test keeps it equal to the installed package, but ONNX Runtime fetches the file internally with no integrity check. transformers.js loads its own pinned WASM from jsDelivr the same way. The CDN is used because the file exceeds Cloudflare Pages' 25 MiB per-file limit.
+
+**Brief.** Goal: the runtime binary is verified before execution. Smallest safe slice: a loader that fetches the `.wasm` with `fetch(url, { integrity })` and passes the bytes as `wasmBinary`; the expected hash lives next to `ORT_VERSION` and a test recomputes it from the installed package. Alternative: self-host on hosts that allow the size. Also verify whether the service worker caches the cross-origin file (offline-first claim) and list jsDelivr and Hugging Face in the privacy copy (lane PR #550).
+
+**Acceptance.** A wrong hash is rejected before execution; the happy path loads; a unit test covers both; the hash updates with `ORT_VERSION` in one place.
+
+**Brief completion.**
+
+- **Findings:** 045
+- **Non-goals:** No model changes; no change to transformers.js beyond the same check if feasible.
+- **Negative tests:** A tampered binary (wrong hash) is rejected; a network failure surfaces a clear error.
+- **Production proof:** First local inference on production with a network trace showing the verified fetch.
+- **Existing owner:** none
+- **Suggested PR title:** fix(local-ai): verify the ONNX Runtime WASM by hash
+- **Stop conditions:** The ONNX Runtime API cannot accept `wasmBinary` for the used backend; or the source lease is active.

@@ -6,35 +6,55 @@ name: Deploy to Cloudflare Pages
 
 on:
     workflow_run:
-        workflows: [CI]
+        # CI on main publishes production. Cloudflare Preview Build publishes
+        # a PR preview. This file is taken from the default branch, so a PR
+        # cannot rewrite the steps that read the Cloudflare token. Do not add
+        # pull_request here: that event runs the workflow from the merge commit.
+        workflows: [CI, Cloudflare Preview Build]
         types: [completed]
-        branches: [main]
-    pull_request:
-        branches: [main]
-        types: [opened, synchronize, reopened]
 
 permissions:
     contents: read
 
+# Ignored CI completions must not share the production group. cancel-in-progress
+# would otherwise abort a main deploy when a pull-request CI run finishes.
+# Production is CI on main via push or workflow_dispatch. Preview keeps its
+# own group. Every other run is isolated by workflow run id.
 concurrency:
-    group: cloudflare-pages-${{ github.event.pull_request.number || github.ref }}
+    group: ${{ github.event.workflow_run.name == 'Cloudflare Preview Build' && format('cloudflare-preview-{0}', github.event.workflow_run.pull_requests[0].number) || (github.event.workflow_run.name == 'CI' && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) && 'cloudflare-pages-main' || format('cloudflare-ignored-{0}', github.event.workflow_run.id) }}
     cancel-in-progress: true
 
 env:
     NODE_VERSION: '24'
     CF_PROJECT_NAME: cannaguide-2025
     CF_PAGES_URL: https://cannaguide-2025.pages.dev
-    # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
-    # default branch head at dispatch time, NOT the commit whose CI succeeded --
-    # so if main advances between CI finishing and this workflow starting, using
-    # it would build, deploy and then STAMP an untested commit as verified.
-    # deploy.yml already derives it this way; this workflow did not, which mattered
-    # more once artifact identity started being asserted here.
-    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.event.pull_request.head.sha }}
+    # The commit this production deployment is FOR. On `workflow_run`,
+    # `github.sha` is the default branch head at dispatch time, NOT the commit
+    # whose CI succeeded -- so if main advances between CI finishing and this
+    # workflow starting, using it would build, deploy and then STAMP an
+    # untested commit as verified. Preview publishes do not read this value;
+    # they deploy the artifact built for the pull request head.
+    DEPLOY_SHA: ${{ github.event.workflow_run.head_sha }}
 
 jobs:
     gate:
         name: Cloudflare secrets gate
+        # Only the two trusted workflow_run shapes may see the token. A CI run
+        # on a pull request still triggers this workflow, and this if skips it
+        # before the secret check.
+        if: >-
+            github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.head_repository.full_name == github.repository &&
+            (
+              (github.event.workflow_run.name == 'CI' &&
+               github.event.workflow_run.head_branch == 'main' &&
+               (github.event.workflow_run.event == 'push' ||
+                github.event.workflow_run.event == 'workflow_dispatch')) ||
+              (github.event.workflow_run.name == 'Cloudflare Preview Build' &&
+               github.event.workflow_run.event == 'pull_request' &&
+               github.event.workflow_run.pull_requests[0].base.ref == 'main')
+            )
         runs-on: ubuntu-latest
         outputs:
             configured: ${{ steps.secrets.outputs.configured }}
@@ -70,7 +90,12 @@ jobs:
         if: >-
             needs.gate.outputs.configured == 'true' &&
             github.event_name == 'workflow_run' &&
-            github.event.workflow_run.conclusion == 'success'
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.name == 'CI' &&
+            github.event.workflow_run.head_branch == 'main' &&
+            (github.event.workflow_run.event == 'push' ||
+            github.event.workflow_run.event == 'workflow_dispatch') &&
+            github.event.workflow_run.head_repository.full_name == github.repository
         runs-on: ubuntu-latest
         timeout-minutes: 25
         steps:
@@ -247,19 +272,24 @@ jobs:
                   echo "        different commit than the one this run built."
                   exit 1
 
-    preview:
-        name: PR Preview Deploy
+    publish-preview:
+        name: Publish PR preview
         needs: gate
-        # Advisory -- Vercel is the primary PR preview. Same reasoning as the
-        # production job above: advisory is expressed by not being a required
-        # check, not by swallowing failures. This job posts the preview URL to the
-        # PR, so a swallowed failure showed green AND silently posted nothing,
-        # which is precisely the state that hid the wrangler breakage.
+        # The artifact was built without the token. This job runs the default
+        # branch workflow, checks the metadata against the triggering event,
+        # and only then calls wrangler. It does not checkout or execute the
+        # pull request.
         if: >-
             needs.gate.outputs.configured == 'true' &&
-            github.event_name == 'pull_request'
+            github.event_name == 'workflow_run' &&
+            github.event.workflow_run.conclusion == 'success' &&
+            github.event.workflow_run.name == 'Cloudflare Preview Build' &&
+            github.event.workflow_run.event == 'pull_request' &&
+            github.event.workflow_run.head_repository.full_name == github.repository &&
+            github.event.workflow_run.pull_requests[0].base.ref == 'main'
         runs-on: ubuntu-latest
         permissions:
+            actions: read
             contents: read
             pull-requests: write
         timeout-minutes: 25
@@ -269,17 +299,9 @@ jobs:
               with:
                   egress-policy: audit
 
-            - name: Checkout PR
+            - name: Checkout default branch
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
-                  # Without this, checkout resolves refs/pull/<n>/merge (the merge
-                  # commit) rather than the PR head -- so the preview would build a
-                  # tree that doesn't match the commit dist/version.json gets
-                  # stamped with two steps below, and the PR comment further down
-                  # would report a third, different SHA (context.sha). Pinning here
-                  # is what makes build tree, stamped version, and posted commit
-                  # agree, matching the production job's DEPLOY_SHA checkout above.
-                  ref: ${{ env.DEPLOY_SHA }}
                   persist-credentials: false
 
             - name: Setup Node + install dependencies
@@ -287,87 +309,51 @@ jobs:
               with:
                   node-version: ${{ env.NODE_VERSION }}
 
-            - name: Build for preview
-              env:
-                  BUILD_BASE_PATH: /
-              run: |
-                  echo "::group::vite build (preview)"
-                  pnpm run build
-                  echo "::endgroup::"
+            - name: Download preview dist
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: cloudflare-preview-dist
+                  path: preview-dist
+                  run-id: ${{ github.event.workflow_run.id }}
+                  github-token: ${{ github.token }}
 
-            # Uncached: `pnpm run build` is a turbo task caching dist/**, so on a
-            # cache hit the previous commit's version.json is replayed. Stamp and
-            # assert here so the preview/production upload carries this commit.
-            - name: Stamp build metadata
-              env:
-                  BUILD_COMMIT: ${{ env.DEPLOY_SHA }}
-              run: |
-                  node scripts/stamp-build-metadata.mjs
-                  node scripts/stamp-build-metadata.mjs --verify
+            - name: Download preview metadata
+              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              with:
+                  name: cloudflare-preview-meta
+                  path: preview-meta
+                  run-id: ${{ github.event.workflow_run.id }}
+                  github-token: ${{ github.token }}
 
-            - name: Resolve Cloudflare preview branch name
-              id: cf_preview_branch
+            - name: Validate preview metadata
+              id: meta
               env:
-                  RAW_HEAD_REF: ${{ github.head_ref }}
-              run: |
-                  RAW="${RAW_HEAD_REF}"
-                  if ! printf '%s' "$RAW" | grep -Eq '^[a-zA-Z0-9._/-]+$'; then
-                    RAW=""
-                  fi
-                  SAFE=$(printf '%s' "$RAW" | sed 's/[^a-zA-Z0-9._-]/-/g' | sed 's/^-*//;s/-*$//' | cut -c1-63)
-                  if [ -z "$SAFE" ]; then SAFE="pr-${{ github.event.pull_request.number }}"; fi
-                  echo "name=${SAFE}" >> "$GITHUB_OUTPUT"
-                  echo "::notice::Cloudflare preview branch: ${SAFE} (from ${RAW})"
+                  EVENT_SHA: ${{ github.event.workflow_run.head_sha }}
+                  EVENT_PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+              run: node scripts/cloudflare-preview-meta.mjs check
+
+            - name: Check Cloudflare Pages file-size limit
+              uses: ./.github/actions/check-pages-file-size
+              with:
+                  path: preview-dist
 
             - name: Verify wrangler CLI
               run: pnpm exec wrangler --version
 
-            - name: Ensure Cloudflare Pages project exists
-              env:
-                  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-                  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-              run: |
-                  set +e
-                  OUT=$(pnpm exec wrangler pages project create "${{ env.CF_PROJECT_NAME }}" --production-branch=main 2>&1)
-                  CODE=$?
-                  echo "$OUT"
-                  if [ "$CODE" -eq 0 ]; then
-                    echo "::notice::Created Pages project ${{ env.CF_PROJECT_NAME }}"
-                  elif echo "$OUT" | grep -qiE 'already exists|80000133|8000002'; then
-                    echo "::notice::Pages project ${{ env.CF_PROJECT_NAME }} already exists"
-                  else
-                    echo "::warning::Could not ensure Pages project (exit ${CODE})"
-                  fi
-                  set -e
-            # Cloudflare Pages rejects any single file over 25 MiB, and does so
-            # only after uploading the rest -- so the failure arrives late and names
-            # the file in wrangler output nobody reads when the job is advisory.
-            # Check first and say exactly what is wrong.
-            #
-            # This is not hypothetical: assets/ort-wasm-simd-threaded.jsep-*.wasm is
-            # 25.6 MiB, so the deploy has never been able to succeed. It was hidden
-            # because the job carried continue-on-error, which this PR removes.
-            - name: Check Cloudflare Pages file-size limit
-              uses: ./.github/actions/check-pages-file-size
-              with:
-                  path: apps/web/dist
-
-            # Same change as the production job: lockfile-pinned wrangler via
-            # `pnpm exec`, no forced version, no swallowed failure.
             - name: Deploy preview to Cloudflare Pages
               id: preview-deploy
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  PREVIEW_BRANCH: ${{ steps.cf_preview_branch.outputs.name }}
+                  # pr-<number> comes from the trusted workflow_run, not from the
+                  # artifact branch. A metadata file that says "main" must not
+                  # become `wrangler pages deploy --branch main`.
+                  PREVIEW_BRANCH: pr-${{ steps.meta.outputs.pr }}
               run: |
                   set -o pipefail
-                  OUT=$(pnpm exec wrangler pages deploy apps/web/dist \
+                  OUT=$(pnpm exec wrangler pages deploy preview-dist \
                           --project-name="${CF_PROJECT_NAME}" \
                           --branch="${PREVIEW_BRANCH}" 2>&1 | tee /dev/stderr)
-
-                  # See the production job's identical guard for why `|| true` is
-                  # required here under `bash -e` + `pipefail`.
                   URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1 || true)
                   if [ -z "$URL" ]; then
                     echo "::error::wrangler reported success but printed no deployment URL."
@@ -376,29 +362,45 @@ jobs:
                   echo "deployment-url=${URL}" >> "$GITHUB_OUTPUT"
                   echo "[OK] Preview deployed to ${URL}"
 
+            - name: Verify served version marker
+              env:
+                  EXPECTED_SHA: ${{ steps.meta.outputs.sha }}
+                  CF_URL: ${{ steps.preview-deploy.outputs.deployment-url }}
+              run: |
+                  URL="${CF_URL%/}/version.json"
+                  echo "[INFO] Expecting ${EXPECTED_SHA} at ${URL}"
+                  for attempt in $(seq 1 15); do
+                    BODY=$(curl -fsSL --max-time 20 "${URL}" 2>/dev/null || echo "")
+                    if [ -n "${BODY}" ]; then
+                      SERVED=$(printf '%s' "${BODY}" | jq -r '.commit // empty')
+                      if [ "${SERVED}" = "${EXPECTED_SHA}" ]; then
+                        echo "[OK] Serving ${SERVED} (attempt ${attempt})."
+                        exit 0
+                      fi
+                      echo "  attempt ${attempt}: serving ${SERVED:-<none>}, waiting for ${EXPECTED_SHA}"
+                    else
+                      echo "  attempt ${attempt}: no version.json yet"
+                    fi
+                    sleep 10
+                  done
+                  echo "::error::Preview is not serving ${EXPECTED_SHA} after 15 attempts."
+                  exit 1
+
             - name: Comment preview URL on PR
-              if: steps.preview-deploy.outcome == 'success'
               uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
               env:
-                  # Passed via env, not interpolated straight into the script below:
-                  # a `${{ }}` expression inside a github-script `script:` is spliced
-                  # into the JS source as text BEFORE it runs, so untrusted context
-                  # data (PR_HEAD_REF is attacker-controlled on a fork PR) could break
-                  # out of the string literal and execute arbitrary code with this
-                  # step's GITHUB_TOKEN. `process.env.X` never gets that treatment --
-                  # it is always a plain string value (opengrep: github-script-injection).
                   DEPLOY_URL: ${{ steps.preview-deploy.outputs.deployment-url }}
-                  DEPLOY_SHA_FULL: ${{ env.DEPLOY_SHA }}
-                  PR_HEAD_REF: ${{ github.head_ref }}
+                  DEPLOY_SHA_FULL: ${{ steps.meta.outputs.sha }}
+                  PR_NUMBER: ${{ steps.meta.outputs.pr }}
+                  PR_HEAD_REF: ${{ steps.meta.outputs.label }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
                   script: |
                       const deployUrl = process.env.DEPLOY_URL;
-                      // context.sha is the merge commit under pull_request, not what
-                      // was actually checked out/built/stamped above -- DEPLOY_SHA is.
                       const sha = process.env.DEPLOY_SHA_FULL.substring(0, 7);
                       const headRef = process.env.PR_HEAD_REF;
                       const runUrl = process.env.RUN_URL;
+                      const pr = Number(process.env.PR_NUMBER);
                       const marker = '<!-- cf-preview-comment -->';
                       const body = [
                         marker,
@@ -416,7 +418,7 @@ jobs:
                       const { data: comments } = await github.rest.issues.listComments({
                         owner: context.repo.owner,
                         repo: context.repo.repo,
-                        issue_number: context.issue.number,
+                        issue_number: pr,
                         per_page: 50,
                       });
                       const existing = comments.find((c) => c.body && c.body.includes(marker));
@@ -432,19 +434,23 @@ jobs:
                         await github.rest.issues.createComment({
                           owner: context.repo.owner,
                           repo: context.repo.repo,
-                          issue_number: context.issue.number,
+                          issue_number: pr,
                           body,
                         });
                       }
 
     # -------------------------------------------------------------------------
     # PRUNE -- GitHub Deployments API (all environments, keep 3 newest each)
-    # Runs even when deploy/preview jobs are skipped (no Cloudflare secrets).
+    # Runs after a successful production or preview publish.
     # -------------------------------------------------------------------------
     prune-deployments:
         name: Prune stale GitHub deployments
-        needs: [deploy, preview]
-        if: always() && !cancelled()
+        needs: [deploy, publish-preview]
+        # Every CI completion triggers this workflow. Prune only after a
+        # real Cloudflare publish, not after a skipped pull-request CI run.
+        if: >-
+            always() && !cancelled() &&
+            (needs.deploy.result == 'success' || needs.publish-preview.result == 'success')
         runs-on: ubuntu-latest
         continue-on-error: true
         permissions:

@@ -38,7 +38,7 @@ jobs:
             contents: read
         if: >-
             github.event_name == 'push' ||
-            github.event_name == 'workflow_dispatch'
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         outputs:
             tag: ${{ steps.tag.outputs.name }}
             tarball-name: ${{ steps.tarball.outputs.name }}
@@ -87,7 +87,9 @@ jobs:
                   echo "[INFO] Resolved tag: ${TAG}"
 
             - name: Ensure tag exists
-              if: github.event_name == 'workflow_dispatch'
+              # Dry-run must not push. A tag push starts the v* workflow, and
+              # that run has no dry-run input, so it would publish the release.
+              if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run != 'true'
               env:
                   TAG: ${{ steps.tag.outputs.name }}
                   RELEASE_PAT: ${{ secrets.RELEASE_PAT }}
@@ -123,6 +125,20 @@ jobs:
                     echo "     Settings > Rules > Rulesets > Tags > Bypass list"
                     exit 1
                   fi
+
+            - name: Refuse dry-run when the tag is missing
+              if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run == 'true'
+              env:
+                  TAG: ${{ steps.tag.outputs.name }}
+              shell: bash
+              run: |
+                  if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
+                    echo "[OK] Tag ${TAG} exists. Dry-run will not create or push it."
+                    exit 0
+                  fi
+                  echo "[FAIL] Dry-run will not create tag ${TAG}."
+                  echo "[FAIL] Push the tag first, or re-run without dry-run."
+                  exit 1
 
             # -- Resolve the commit the tag actually points at ---------
             # Everything downstream must judge THAT commit, not the ref the
@@ -349,7 +365,10 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         needs: [build]
-        if: ${{ !(github.event.inputs.dry-run == 'true') }}
+        if: >-
+            (github.event_name == 'push' ||
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) &&
+            !(github.event.inputs.dry-run == 'true')
         permissions:
             contents: write
             id-token: write

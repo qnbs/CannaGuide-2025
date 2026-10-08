@@ -36,6 +36,7 @@ GitHub Actions job **`CI Status`** passes only when the `build`, `test`, `verify
 | pnpm audit (high, all deps)                         | `security` | `pnpm audit --audit-level=high`                                                                                                              |
 | **Override / dependabot-ignore drift**              | `security` | `node scripts/security/check-override-floors.mjs`                                                                                            |
 | Trojan-source scan                                  | `security` | `pnpm run security:trojan-source`                                                                                                            |
+| **Workflow credential scope**                       | `security` | `node scripts/security/check-workflow-credential-scope.mjs`                                                                                  |
 | Gitleaks                                            | `security` | `pnpm run security:secrets`                                                                                                                  |
 
 Every **scan** step in the `security` job is guarded with

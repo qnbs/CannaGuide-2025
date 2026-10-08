@@ -31,6 +31,7 @@ GitHub Actions job **`CI Status`** passes only when the `build`, `test`, `verify
 | Audit backlog (open CRITICAL/HIGH)                  | `verify`   | `node scripts/check-audit-backlog.mjs`                                                                                                       |
 | E2E selector stability                              | `verify`   | `node scripts/check-e2e-selectors.mjs`                                                                                                       |
 | CSP consistency                                     | `verify`   | `node scripts/security/check-csp-consistency.mjs`                                                                                            |
+| CSP fetch host gate                                 | `security` | `node scripts/security/check-csp-fetch-hosts.mjs`                                                                                            |
 | **Rust fmt / clippy / tests (Tauri)**               | `rust`     | `cd apps/desktop/src-tauri && cargo fmt --all -- --check && cargo clippy --locked --all-targets -- -D warnings && cargo test --locked --lib` |
 | pnpm audit (high, prod)                             | `security` | `pnpm audit --audit-level=high --prod`                                                                                                       |
 | pnpm audit (high, all deps)                         | `security` | `pnpm audit --audit-level=high`                                                                                                              |

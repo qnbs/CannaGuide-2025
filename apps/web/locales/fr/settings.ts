@@ -943,10 +943,11 @@ export const settingsView = {
             phosphor: 'Icones fournies par Phosphor Icons.',
             dataProvidersLabel: 'Fournisseurs de Donnees:',
             strainProviders:
-                'Enrichissement des varietes via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa et Kushy.', // machine-translated, review needed
+                "Le catalogue inclus est local. L'enrichissement en ligne est desactive dans cette version. Kushy reste un jeu de donnees statique hors ligne.", // machine-translated, review needed
             webLlmOnnxLabel: 'WebLLM / ONNX:',
             corsProxiesLabel: 'Proxies CORS:',
-            corsProxies: 'Relais de proxy CORS par allorigins.win et corsproxy.io.',
+            corsProxies:
+                'Cette version ne relaie pas les recherches de varietes via des proxys CORS tiers.',
             transformersJs:
                 'NLP et embeddings sur appareil via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Inference LLM locale via WebLLM (MLC AI).',
@@ -1108,6 +1109,9 @@ export const settingsView = {
     communityShare: {
         title: 'Partages communautaires de varietes',
         description: 'Partage anonyme via GitHub Gist (alternative legere a IPFS).',
+        unavailableDescription: 'Le partage anonyme par Gist est indisponible dans cette version.',
+        temporarilyUnavailable:
+            "L'export et l'import sont desactives, car ils ne peuvent pas atteindre GitHub depuis cette application. Aucune donnee de variete n'est envoyee.",
         exportButton: 'Exporter les varietes utilisateur vers un Gist anonyme',
         gistPlaceholder: "Collez l'URL ou l'ID du Gist",
         importButton: 'Importer des varietes depuis un Gist',

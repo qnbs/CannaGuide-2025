@@ -919,10 +919,11 @@ export const settingsView = {
             phosphor: 'Pictogrammen geleverd door Phosphor Icons.',
             dataProvidersLabel: 'Gegevensproviders:',
             strainProviders:
-                'Rasenrijking via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa en Kushy.', // machine-translated, review needed
+                'De meegeleverde catalogus is lokaal. Online verrijking staat uit in deze build. Kushy blijft een statische offline dataset.', // machine-translated, review needed
             webLlmOnnxLabel: 'WebLLM / ONNX:',
             corsProxiesLabel: 'CORS-proxies:',
-            corsProxies: 'CORS-proxy-relay door allorigins.win en corsproxy.io.',
+            corsProxies:
+                'Deze build stuurt soortzoekopdrachten niet door via CORS-proxys van derden.',
             transformersJs:
                 'On-device NLP en embeddings via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Lokale LLM-inferentie via WebLLM (MLC AI).',
@@ -1083,6 +1084,9 @@ export const settingsView = {
     communityShare: {
         title: 'Community rassenuitwisseling',
         description: 'Anoniem delen via GitHub Gist (lichtgewicht alternatief voor IPFS).',
+        unavailableDescription: 'Anoniem delen via Gist is niet beschikbaar in deze build.',
+        temporarilyUnavailable:
+            'Exporteren en importeren staan uit omdat ze GitHub vanuit deze app niet kunnen bereiken. Er worden geen soortgegevens verzonden.',
         exportButton: 'Gebruikersrassen exporteren naar anonieme Gist',
         gistPlaceholder: 'Plak Gist-URL of ID',
         importButton: 'Rassen importeren vanuit Gist',

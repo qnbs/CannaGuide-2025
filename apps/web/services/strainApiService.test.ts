@@ -118,60 +118,40 @@ describe('strainApiService', () => {
         })
     })
 
-    describe('searchOtreeba with fetch mock', () => {
-        it('returns parsed results on success', async () => {
-            const fetchMock = vi.fn().mockResolvedValue({
-                ok: true,
-                json: () =>
-                    Promise.resolve({
-                        data: [{ name: 'Blue Dream', type: 'Hybrid', thc: '20' }],
-                    }),
-            })
+    describe('disabled external lookups', () => {
+        it('searchOtreeba does not call fetch', async () => {
+            const fetchMock = vi.fn()
             vi.stubGlobal('fetch', fetchMock)
-
             const results = await searchOtreeba('blue', 5)
-            expect(results).toHaveLength(1)
-            expect(results[0]?.name).toBe('Blue Dream')
-            expect(results[0]?.provider).toBe('otreeba')
-
-            vi.unstubAllGlobals()
-        })
-
-        it('returns empty on fetch failure', async () => {
-            const fetchMock = vi.fn().mockRejectedValue(new Error('Network'))
-            vi.stubGlobal('fetch', fetchMock)
-
-            const results = await searchOtreeba('fail')
             expect(results).toEqual([])
-
+            expect(fetchMock).not.toHaveBeenCalled()
             vi.unstubAllGlobals()
         })
-    })
 
-    describe('searchCannlytics with fetch mock', () => {
-        it('returns parsed results on success', async () => {
-            const fetchMock = vi.fn().mockResolvedValue({
-                ok: true,
-                json: () =>
-                    Promise.resolve({
-                        data: [
-                            {
-                                strain_name: 'Gorilla Glue',
-                                strain_type: 'Hybrid',
-                                total_thc: 25,
-                            },
-                        ],
-                    }),
-            })
+        it('fetchOtreebaStrain does not call fetch', async () => {
+            const fetchMock = vi.fn()
             vi.stubGlobal('fetch', fetchMock)
+            const result = await fetchOtreebaStrain('blue')
+            expect(result).toBeNull()
+            expect(fetchMock).not.toHaveBeenCalled()
+            vi.unstubAllGlobals()
+        })
 
-            clearStrainApiCache()
+        it('searchCannlytics does not call fetch', async () => {
+            const fetchMock = vi.fn()
+            vi.stubGlobal('fetch', fetchMock)
             const results = await searchCannlytics('gorilla', 5)
-            expect(results).toHaveLength(1)
-            expect(results[0]?.name).toBe('Gorilla Glue')
-            expect(results[0]?.provider).toBe('cannlytics')
-            expect(results[0]?.labTested).toBe(true)
+            expect(results).toEqual([])
+            expect(fetchMock).not.toHaveBeenCalled()
+            vi.unstubAllGlobals()
+        })
 
+        it('searchExternalStrainData does not call fetch', async () => {
+            const fetchMock = vi.fn()
+            vi.stubGlobal('fetch', fetchMock)
+            const results = await searchExternalStrainData('blue')
+            expect(results).toEqual([])
+            expect(fetchMock).not.toHaveBeenCalled()
             vi.unstubAllGlobals()
         })
     })

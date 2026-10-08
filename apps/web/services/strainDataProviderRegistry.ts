@@ -3,8 +3,10 @@
  *
  * Centralized registry for external strain data enrichment providers.
  * Each provider has a standardized interface for search, fetch, and
- * capability reporting. The registry handles provider selection, CORS
- * proxy routing, rate limiting, and result normalization via Zod schemas.
+ * capability reporting. Network providers stay unavailable while the
+ * external-lookup and Cansativa flags are on. There is no CORS proxy.
+ * The registry handles provider selection, rate limiting, and Zod
+ * normalization.
  *
  * Note: The core 776-strain catalog was curated via AI-assisted research
  * (Gemini, Opus) based on publicly available breeder/seedbank/community
@@ -22,6 +24,7 @@
 
 import type { StrainApiProvider, DataProvenance } from '@/types'
 import { externalStrainDataSchema, type ValidatedExternalStrainData } from '@/types/strainSchemas'
+import { CANSATIVA_LOOKUP_DISABLED, EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 // ---------------------------------------------------------------------------
@@ -85,41 +88,17 @@ export interface ProviderSearchResult {
 }
 
 // ---------------------------------------------------------------------------
-// CORS Proxy Cascade
+// Direct provider fetch. No third-party proxy.
 // ---------------------------------------------------------------------------
 
-const CORS_PROXIES = [
-    (url: string): string => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    (url: string): string => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-]
-
-export const fetchWithCorsProxy = async (
-    url: string,
-    options?: globalThis.RequestInit,
-): Promise<Response> => {
+const fetchProvider = async (url: string, options?: globalThis.RequestInit): Promise<Response> => {
     if (isLocalOnlyMode()) throw new Error('Network requests blocked in local-only mode')
+    return fetch(url, { ...options, signal: AbortSignal.timeout(8000) })
+}
 
-    // Try direct first (works in non-browser or CORS-enabled APIs)
-    try {
-        const direct = await fetch(url, { ...options, signal: AbortSignal.timeout(8000) })
-        if (direct.ok) return direct
-    } catch {
-        // Direct failed, try proxies
-    }
-
-    for (const proxy of CORS_PROXIES) {
-        try {
-            const proxied = await fetch(proxy(url), {
-                ...options,
-                signal: AbortSignal.timeout(10000),
-            })
-            if (proxied.ok) return proxied
-        } catch {
-            continue
-        }
-    }
-
-    throw new Error(`All CORS proxies failed for: ${url}`)
+const networkLookupDisabled = (providerId: StrainApiProvider): boolean => {
+    if (providerId === 'cansativa') return CANSATIVA_LOOKUP_DISABLED
+    return EXTERNAL_STRAIN_LOOKUPS_DISABLED
 }
 
 // ---------------------------------------------------------------------------
@@ -150,7 +129,7 @@ export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
         requiresApiKey: false,
         capabilities: ['search', 'strain-detail', 'terpenes', 'cannabinoids', 'effects'],
         rateLimitPerMin: 60,
-        needsCorsProxy: true,
+        needsCorsProxy: false,
         hasStaticDataset: false,
         qualityTier: 2,
         region: 'global',
@@ -164,7 +143,7 @@ export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
         apiKeyEnvVar: 'VITE_CANNLYTICS_API_KEY',
         capabilities: ['search', 'lab-results', 'terpenes', 'cannabinoids'],
         rateLimitPerMin: 30,
-        needsCorsProxy: true,
+        needsCorsProxy: false,
         hasStaticDataset: false,
         qualityTier: 1,
         region: 'us',
@@ -191,7 +170,7 @@ export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
         requiresApiKey: false,
         capabilities: ['search', 'genetic-markers', 'lineage'],
         rateLimitPerMin: 10,
-        needsCorsProxy: true,
+        needsCorsProxy: false,
         hasStaticDataset: false,
         qualityTier: 1,
         region: 'global',
@@ -204,7 +183,7 @@ export const PROVIDER_CONFIGS: Record<StrainApiProvider, ProviderConfig> = {
         requiresApiKey: false,
         capabilities: ['search', 'lab-results', 'cannabinoids', 'terpenes'],
         rateLimitPerMin: 30,
-        needsCorsProxy: true,
+        needsCorsProxy: false,
         hasStaticDataset: false,
         qualityTier: 1,
         region: 'us',
@@ -271,6 +250,10 @@ export const getProviderStatus = (providerId: StrainApiProvider): ProviderStatus
     if (!config) return 'unavailable'
 
     if (isLocalOnlyMode()) return 'unavailable'
+
+    if (!config.hasStaticDataset && config.baseUrl && networkLookupDisabled(providerId)) {
+        return 'unavailable'
+    }
 
     if (config.requiresApiKey) {
         const key = config.apiKeyEnvVar ? import.meta.env[config.apiKeyEnvVar] : undefined
@@ -428,9 +411,10 @@ const providerFetchers: Partial<
     >
 > = {
     otreeba: async (query, config) => {
+        if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return []
         const url = `${config.baseUrl}/strains?sort=-name&page[limit]=10&filter[name]=${encodeURIComponent(query)}`
         try {
-            const res = await fetchWithCorsProxy(url)
+            const res = await fetchProvider(url)
             const json = await res.json()
             const items = json?.data ?? json ?? []
             if (!Array.isArray(items)) return []
@@ -441,11 +425,12 @@ const providerFetchers: Partial<
     },
 
     cannlytics: async (query, config) => {
+        if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return []
         const apiKey = import.meta.env.VITE_CANNLYTICS_API_KEY
         if (!apiKey) return []
         const url = `${config.baseUrl}/strains?q=${encodeURIComponent(query)}&limit=10`
         try {
-            const res = await fetchWithCorsProxy(url, {
+            const res = await fetchProvider(url, {
                 headers: { Authorization: `Bearer ${apiKey}` },
             })
             const json = await res.json()
@@ -458,6 +443,7 @@ const providerFetchers: Partial<
     },
 
     cansativa: async (_query, config) => {
+        if (CANSATIVA_LOOKUP_DISABLED) return []
         const apiKey = import.meta.env.VITE_CANSATIVA_API_KEY
         if (!apiKey) return []
         const headers: Record<string, string> = {

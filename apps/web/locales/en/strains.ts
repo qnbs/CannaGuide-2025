@@ -958,10 +958,13 @@ export const strainLookup = {
     sectionLabel: 'Strain Intelligence Lookup',
     sectionHint:
         'Local catalog + Cannlytics lab data + Open Cannabis APIs + AI -- multi-layer lookup',
+    sectionHintLocal:
+        'Local catalog and AI. Online strain catalogs are switched off in this build.',
     placeholder: 'New strain discovered? Enter name (e.g. Gorilla Pie, Lemon Cherry Gelato...)',
     analyze: 'Analyze',
     clear: 'Clear',
     searching: 'Searching all sources...',
+    searchingLocal: 'Searching the local catalog...',
     notFound: 'No data found for "{{name}}". Try a different spelling.',
     lookupError: 'Lookup failed. Please try again.',
     addToDB: 'Add to Library',

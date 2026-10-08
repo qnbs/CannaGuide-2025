@@ -20,6 +20,7 @@
  *  - 10s request timeout via AbortSignal
  */
 
+import { CANSATIVA_LOOKUP_DISABLED } from '@/constants'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion --
@@ -95,7 +96,7 @@ const buildHeaders = (apiKey: string): Record<string, string> => ({
 })
 
 const fetchEndpoint = async <T>(endpoint: string): Promise<T | null> => {
-    if (isLocalOnlyMode()) return null
+    if (CANSATIVA_LOOKUP_DISABLED || isLocalOnlyMode()) return null
 
     const apiKey = getApiKey()
     if (!apiKey) return null
@@ -164,7 +165,7 @@ export const fetchPartners = async (): Promise<CansativaPartner[]> => {
  * Search partner pharmacies by postal code (PLZ).
  */
 export const fetchByPostalCode = async (plz: string): Promise<CansativaPartner[]> => {
-    if (isLocalOnlyMode()) return []
+    if (CANSATIVA_LOOKUP_DISABLED || isLocalOnlyMode()) return []
 
     const apiKey = getApiKey()
     if (!apiKey) return []
@@ -196,6 +197,7 @@ export const fetchByPostalCode = async (plz: string): Promise<CansativaPartner[]
  * Check if the Cansativa API is configured and reachable.
  */
 export const isCansativaAvailable = (): boolean => {
+    if (CANSATIVA_LOOKUP_DISABLED) return false
     return !isLocalOnlyMode() && !!getApiKey()
 }
 

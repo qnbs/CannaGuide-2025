@@ -22,75 +22,40 @@ describe('communityShareService', () => {
         global.fetch = vi.fn()
     })
 
-    it('exports strains to anonymous gist', async () => {
-        vi.mocked(global.fetch).mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({ id: 'share-1', html_url: 'https://gist.github.com/x/share-1' }),
-        } as Response)
-
+    it('does not export while community share is disabled', async () => {
         const service = await loadService()
-        const result = await service.exportStrainsToAnonymousGist([
-            {
-                id: 's-1',
-                name: 'Test',
-                type: 'Sativa',
-                thc: 18,
-                cbd: 1,
-            } as never,
-        ])
-
-        expect(result.id).toBe('share-1')
-        expect(vi.mocked(global.fetch)).toHaveBeenCalledTimes(1)
-    })
-
-    it('imports strains from gist payload', async () => {
-        vi.mocked(global.fetch).mockResolvedValueOnce({
-            ok: true,
-            json: async () => ({
-                files: {
-                    'cannaguide-strains.json': {
-                        content: JSON.stringify({
-                            version: 1,
-                            strains: [
-                                {
-                                    id: 's-1',
-                                    name: 'Imported',
-                                    type: 'Sativa',
-                                    thc: 19,
-                                    cbd: 0.5,
-                                },
-                            ],
-                        }),
-                    },
-                },
-            }),
-        } as Response)
-
-        const service = await loadService()
-        const strains = await service.importStrainsFromGist(
-            'https://gist.github.com/user/1234567890abcdef1234',
+        await expect(service.exportStrainsToAnonymousGist([] as never)).rejects.toThrow(
+            'common.communityShare.unavailable',
         )
-
-        expect(strains.length).toBe(1)
-        expect(strains[0]?.name).toBe('Imported')
+        expect(vi.mocked(global.fetch)).not.toHaveBeenCalled()
     })
 
-    it('rejects invalid gist id/url', async () => {
+    it('does not import while community share is disabled', async () => {
+        const service = await loadService()
+        await expect(
+            service.importStrainsFromGist('https://gist.github.com/user/1234567890abcdef1234'),
+        ).rejects.toThrow('common.communityShare.unavailable')
+        expect(vi.mocked(global.fetch)).not.toHaveBeenCalled()
+    })
+
+    it('refuses an invalid gist before any request while share is disabled', async () => {
         const service = await loadService()
         await expect(service.importStrainsFromGist('not-a-valid-gist-url')).rejects.toThrow(
-            'common.communityShare.invalidGistUrl',
+            'common.communityShare.unavailable',
         )
+        expect(vi.mocked(global.fetch)).not.toHaveBeenCalled()
     })
 
-    it('blocks import/export in local-only mode', async () => {
+    it('does not reach local-only handling while share is disabled', async () => {
         isLocalOnlyModeMock.mockReturnValue(true)
         const service = await loadService()
 
         await expect(service.exportStrainsToAnonymousGist([] as never)).rejects.toThrow(
-            'common.communityShare.blockedByLocalOnly',
+            'common.communityShare.unavailable',
         )
         await expect(service.importStrainsFromGist('1234567890abcdef1234')).rejects.toThrow(
-            'common.communityShare.blockedByLocalOnly',
+            'common.communityShare.unavailable',
         )
+        expect(vi.mocked(global.fetch)).not.toHaveBeenCalled()
     })
 })

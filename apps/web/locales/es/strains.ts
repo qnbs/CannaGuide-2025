@@ -844,11 +844,14 @@ export const strainsView = {
 export const strainLookup = {
     sectionLabel: 'Busqueda inteligente de variedades',
     sectionHint: 'Catalogo local + datos Cannlytics + APIs Cannabis + IA -- busqueda multicapa',
+    sectionHintLocal:
+        'Catalogo local e IA. Los catalogos en linea estan desactivados en esta version.',
     placeholder:
         'Nueva variedad descubierta? Introduce el nombre (ej. Gorilla Pie, Lemon Cherry Gelato...)',
     analyze: 'Analizar',
     clear: 'Borrar',
     searching: 'Buscando en todas las fuentes...',
+    searchingLocal: 'Buscando en el catalogo local...',
     notFound: 'No se encontraron datos para "{{name}}". Intenta con una ortografia diferente.',
     lookupError: 'La busqueda fallo. Por favor intentalo de nuevo.',
     addToDB: 'Agregar a la biblioteca',

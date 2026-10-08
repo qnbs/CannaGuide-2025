@@ -892,10 +892,11 @@ export const settingsView = {
             phosphor: 'Icons provided by Phosphor Icons.',
             dataProvidersLabel: 'Data Providers:',
             strainProviders:
-                'Strain enrichment via Otreeba, Cannlytics, StrainAPI, CannSeek, OpenTHC, Cansativa, and Kushy.',
+                'The bundled strain catalog is local. Online enrichment is switched off in this build. Kushy stays a static offline dataset.',
             webLlmOnnxLabel: 'WebLLM / ONNX:',
             corsProxiesLabel: 'CORS Proxies:',
-            corsProxies: 'CORS proxy relay by allorigins.win and corsproxy.io.',
+            corsProxies:
+                'This build does not relay strain searches through third-party CORS proxies.',
             transformersJs:
                 'On-device NLP and embeddings via Transformers.js (Xenova/Hugging Face).',
             webLlm: 'Local LLM inference via WebLLM (MLC AI).',
@@ -1056,6 +1057,9 @@ export const settingsView = {
     communityShare: {
         title: 'Community Strain Shares',
         description: 'Anonymous sharing via GitHub Gist (lightweight alternative to IPFS).',
+        unavailableDescription: 'Anonymous Gist sharing is unavailable in this build.',
+        temporarilyUnavailable:
+            'Export and import are switched off because they cannot reach GitHub from this app. No strain data is sent.',
         exportButton: 'Export User Strains to Anonymous Gist',
         gistPlaceholder: 'Paste Gist URL or ID',
         importButton: 'Import Strains from Gist',

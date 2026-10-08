@@ -4,6 +4,26 @@ const postSkipWaiting = (worker: ServiceWorker): void => {
     worker.postMessage({ type: 'SKIP_WAITING' })
 }
 
+let pendingUpdate: ServiceWorkerRegistration | null = null
+
+/** The latest update that is still waiting. Survives a listener that mounts later. */
+export const readPendingServiceWorkerUpdate = (): ServiceWorkerRegistration | null => {
+    if (!pendingUpdate?.waiting) {
+        pendingUpdate = null
+        return null
+    }
+    return pendingUpdate
+}
+
+/** User accepted the prompt. Posts SKIP_WAITING to the waiting worker only. */
+export const acceptServiceWorkerUpdate = (waiting: ServiceWorker | null): boolean => {
+    if (!waiting) {
+        return false
+    }
+    postSkipWaiting(waiting)
+    return true
+}
+
 export const registerServiceWorker = (): void => {
     if (!('serviceWorker' in navigator)) {
         return
@@ -51,6 +71,7 @@ export const registerServiceWorker = (): void => {
                             postSkipWaiting(worker)
                             return
                         }
+                        pendingUpdate = registration
                         window.dispatchEvent(new CustomEvent('swUpdate', { detail: registration }))
                         console.debug(
                             '[SW] Update is waiting. The page reloads after the user accepts it.',

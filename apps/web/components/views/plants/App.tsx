@@ -10,6 +10,10 @@ import { OnboardingModal, ONBOARDING_TOTAL_STEPS } from '@/components/common/Onb
 import { CommandPalette } from '@/components/common/CommandPalette'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { usePwaInstall } from '@/hooks/usePwaInstall'
+import {
+    acceptServiceWorkerUpdate,
+    readPendingServiceWorkerUpdate,
+} from '@/bootstrap/serviceWorker'
 import { useBadgeApi } from '@/hooks/useBadgeApi'
 import { TTSControls } from '@/components/common/TTSControls'
 import { VoiceHUD } from '@/components/common/VoiceHUD'
@@ -258,20 +262,28 @@ export const App: React.FC = () => {
             { once: true },
         )
 
-        navigator.serviceWorker.controller?.postMessage({ type: 'SKIP_WAITING' })
-        waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' })
+        acceptServiceWorkerUpdate(waitingWorkerRef.current)
     }, [])
 
     useEffect(() => {
-        const handleSwUpdate = (event: Event) => {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            const registration = (event as CustomEvent).detail
-            if (registration?.waiting) {
-                waitingWorkerRef.current = registration.waiting
-                setShowUpdateBanner(true)
-                // User must explicitly click "Update Now" in the banner.
-                // No auto-reload -- prevents interrupting active user sessions.
+        const showWaitingUpdate = (registration: { waiting?: ServiceWorker | null } | null) => {
+            if (!registration?.waiting) {
+                return
             }
+            waitingWorkerRef.current = registration.waiting
+            setShowUpdateBanner(true)
+            // User must explicitly click "Update Now" in the banner.
+            // No auto-reload -- prevents interrupting active user sessions.
+        }
+
+        showWaitingUpdate(readPendingServiceWorkerUpdate())
+
+        const handleSwUpdate = (event: Event) => {
+            if (!(event instanceof CustomEvent)) {
+                return
+            }
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+            showWaitingUpdate(event.detail as { waiting?: ServiceWorker | null })
         }
 
         browserWindow?.addEventListener('swUpdate', handleSwUpdate)

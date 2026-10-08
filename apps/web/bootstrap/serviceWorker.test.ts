@@ -21,10 +21,9 @@ class FakeWorker extends EventTarget {
     }
 }
 
-const loadRegistrar = async () => {
+const loadServiceWorker = async () => {
     vi.resetModules()
-    const module = await import('./serviceWorker')
-    return module.registerServiceWorker
+    return import('./serviceWorker')
 }
 
 const flush = async () => {
@@ -53,7 +52,14 @@ describe('registerServiceWorker update order', () => {
 
     const installNavigator = (controller: ServiceWorker | null, worker: FakeWorker) => {
         listeners.clear()
-        const registration = {
+        const registration: {
+            installing: FakeWorker | null
+            waiting: ServiceWorker | null
+            active: null
+            scope: string
+            update: ReturnType<typeof vi.fn>
+            addEventListener: ReturnType<typeof vi.fn>
+        } = {
             installing: worker,
             waiting: null,
             active: null,
@@ -89,7 +95,7 @@ describe('registerServiceWorker update order', () => {
         const worker = new FakeWorker()
         const controller = new FakeWorker()
         const { serviceWorker } = installNavigator(controller as unknown as ServiceWorker, worker)
-        const registerServiceWorker = await loadRegistrar()
+        const { registerServiceWorker } = await loadServiceWorker()
 
         const updates: Event[] = []
         window.addEventListener('swUpdate', (event) => {
@@ -117,7 +123,7 @@ describe('registerServiceWorker update order', () => {
     it('activates the first install without reloading the page', async () => {
         const worker = new FakeWorker()
         installNavigator(null, worker)
-        const registerServiceWorker = await loadRegistrar()
+        const { registerServiceWorker } = await loadServiceWorker()
 
         const updates: Event[] = []
         window.addEventListener('swUpdate', (event) => {
@@ -135,6 +141,37 @@ describe('registerServiceWorker update order', () => {
         expect(reload).not.toHaveBeenCalled()
         expect(updates).toHaveLength(0)
         expect(listeners.get('controllerchange') ?? []).toHaveLength(0)
+    })
+
+    it('keeps a waiting update for a late subscriber and accepts it with SKIP_WAITING', async () => {
+        const worker = new FakeWorker()
+        const controller = new FakeWorker()
+        const { registration } = installNavigator(controller as unknown as ServiceWorker, worker)
+        const { registerServiceWorker, readPendingServiceWorkerUpdate, acceptServiceWorkerUpdate } =
+            await loadServiceWorker()
+
+        registerServiceWorker()
+        window.dispatchEvent(new Event('load'))
+        await flush()
+
+        registration.waiting = worker as unknown as ServiceWorker
+        worker.becomeInstalled()
+
+        const lateUpdates: Event[] = []
+        window.addEventListener('swUpdate', (event) => {
+            lateUpdates.push(event)
+        })
+
+        const pending = readPendingServiceWorkerUpdate()
+        expect(pending?.waiting).toBe(worker)
+        expect(lateUpdates).toHaveLength(0)
+        expect(reload).not.toHaveBeenCalled()
+
+        expect(acceptServiceWorkerUpdate(pending?.waiting ?? null)).toBe(true)
+        expect(worker.postMessage).toHaveBeenCalledTimes(1)
+        expect(worker.postMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' })
+        expect(acceptServiceWorkerUpdate(null)).toBe(false)
+        expect(reload).not.toHaveBeenCalled()
     })
 })
 

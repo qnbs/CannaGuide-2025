@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
@@ -18,6 +18,8 @@ export const PersistenceSettingsPanel: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const settings = useAppSelector(selectSettings)
+    const autoBackupId = useId()
+    const persistenceIntervalId = useId()
 
     return (
         <Card>
@@ -28,7 +30,10 @@ export const PersistenceSettingsPanel: React.FC = () => {
             >
                 <div className="sm:col-span-2 space-y-4">
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-100">
+                        <label
+                            htmlFor={autoBackupId}
+                            className="text-sm font-semibold text-slate-100"
+                        >
                             {t('settingsView.data.autoBackup')}
                         </label>
                         <Select
@@ -37,7 +42,7 @@ export const PersistenceSettingsPanel: React.FC = () => {
                                 dispatch(setSetting({ path: 'data.autoBackup', value }))
                             }
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id={autoBackupId}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -54,7 +59,10 @@ export const PersistenceSettingsPanel: React.FC = () => {
                         </Select>
                     </div>
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-semibold text-slate-100">
+                        <label
+                            htmlFor={persistenceIntervalId}
+                            className="text-sm font-semibold text-slate-100"
+                        >
                             {t('settingsView.data.persistenceInterval')}
                         </label>
                         <Select
@@ -68,7 +76,7 @@ export const PersistenceSettingsPanel: React.FC = () => {
                                 )
                             }
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id={persistenceIntervalId}>
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>

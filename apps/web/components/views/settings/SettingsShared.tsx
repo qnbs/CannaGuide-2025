@@ -1,4 +1,4 @@
-import type React from 'react'
+import { Children, cloneElement, useId, type ReactElement, type ReactNode } from 'react'
 import {
     Select,
     SelectContent,
@@ -6,14 +6,48 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
+import {
+    SettingsRowLabelProvider,
+    useSettingsRowLabelProps,
+} from '@/components/common/settingsRowLabel'
 
-export const SettingsRow: React.FC<{
+function labelDomControl(child: ReactNode, labelId: string): ReactNode {
+    if (!isDomControl(child)) return child
+    const labelled =
+        typeof child.props['aria-label'] === 'string' && child.props['aria-label'].trim().length > 0
+    const labelledBy =
+        typeof child.props['aria-labelledby'] === 'string' &&
+        child.props['aria-labelledby'].trim().length > 0
+    if (labelled || labelledBy) return child
+    return cloneElement(child, { 'aria-labelledby': labelId })
+}
+
+function isDomControl(child: ReactNode): child is ReactElement<{
+    'aria-label'?: string
+    'aria-labelledby'?: string
+}> {
+    return (
+        typeof child === 'object' &&
+        child !== null &&
+        'type' in child &&
+        (child.type === 'input' || child.type === 'select' || child.type === 'textarea')
+    )
+}
+
+export function SettingsRow({
+    label,
+    description,
+    children,
+    id,
+}: {
     label: string
     description?: string
-    children: React.ReactNode
+    children: ReactNode
     id?: string
-}> = ({ label, description, children, id }) => {
-    const labelId = id ? `${id}-label` : undefined
+}) {
+    const generatedId = useId()
+    const labelId = id ? `${id}-label` : generatedId
+    const namedChildren = Children.map(children, (child) => labelDomControl(child, labelId))
     return (
         <div
             id={id}
@@ -25,35 +59,43 @@ export const SettingsRow: React.FC<{
                 </h4>
                 {description && <p className="text-sm text-slate-400 mt-0.5">{description}</p>}
             </div>
-            <div className="w-full flex-shrink-0 sm:w-auto sm:max-w-xs" aria-label={label}>
-                {children}
-            </div>
+            <SettingsRowLabelProvider labelId={labelId}>
+                <div className="w-full flex-shrink-0 sm:w-auto sm:max-w-xs">{namedChildren}</div>
+            </SettingsRowLabelProvider>
         </div>
     )
 }
 SettingsRow.displayName = 'SettingsRow'
 
-export const SettingsSelect: React.FC<{
+export function SettingsSelect({
+    value,
+    options,
+    onChange,
+    disabled,
+}: {
     value: string
     options: { value: string; label: string }[]
     onChange: (value: string) => void
     disabled?: boolean
-}> = ({ value, options, onChange, disabled }) => (
-    <Select
-        value={value ?? ''}
-        onValueChange={onChange}
-        {...(disabled != null ? { disabled } : {})}
-    >
-        <SelectTrigger>
-            <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-            {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                </SelectItem>
-            ))}
-        </SelectContent>
-    </Select>
-)
+}) {
+    const labelProps = useSettingsRowLabelProps()
+    return (
+        <Select
+            value={value ?? ''}
+            onValueChange={onChange}
+            {...(disabled != null ? { disabled } : {})}
+        >
+            <SelectTrigger {...labelProps}>
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {options.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    )
+}
 SettingsSelect.displayName = 'SettingsSelect'

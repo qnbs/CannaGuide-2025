@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState, useId } from 'react'
+import { useSettingsRowLabelProps } from '@/components/common/settingsRowLabel'
 
 // Define props using a discriminated union for type safety between range and single value modes
 type RangeSliderProps = {
@@ -24,6 +25,9 @@ type RangeSliderProps = {
 export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     const { min, max, step, label, unit, color = 'primary' } = props
     const rangeId = useId()
+    const rowName = useSettingsRowLabelProps(label)
+    const minName = label.trim() ? { 'aria-label': `${label} minimum` } : rowName
+    const maxName = label.trim() ? { 'aria-label': `${label} maximum` } : rowName
     const isSingleValue = props.singleValue === true
 
     const [minZIndex, setMinZIndex] = useState(1)
@@ -114,6 +118,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                     <div className="relative">
                         <input
                             type="number"
+                            {...rowName}
                             value={String(value)} // Use string to allow temporary empty state while typing
                             onChange={handleInputChange}
                             onBlur={handleInputBlur}
@@ -143,7 +148,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onChange={handleSliderChange}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
                             style={singleThumbStyle}
-                            aria-label={label}
+                            {...rowName}
                         />
                     </div>
                 </div>
@@ -210,7 +215,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onTouchStart={handleMinInteraction}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
                             style={minThumbStyle}
-                            aria-label={`${label} minimum`}
+                            {...minName}
                         />
                         <input
                             id={`${rangeId}-max`}
@@ -225,7 +230,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             onTouchStart={handleMaxInteraction}
                             className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
                             style={maxThumbStyle}
-                            aria-label={`${label} maximum`}
+                            {...maxName}
                         />
                     </div>
                 </div>

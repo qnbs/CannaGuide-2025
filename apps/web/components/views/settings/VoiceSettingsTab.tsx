@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SettingsRow } from './SettingsShared'
+import { useSettingsRowLabelProps } from '@/components/common/settingsRowLabel'
 import { PORCUPINE_BUILTIN_KEYWORDS } from '@/constants'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 import type { VoiceTelemetrySnapshot } from '@/types'
@@ -45,20 +46,23 @@ const VoiceSelect: React.FC<{
     onChange: (value: string) => void
     disabled?: boolean
     options: { value: string; label: string }[]
-}> = ({ value, onChange, disabled, options }) => (
-    <Select value={value} onValueChange={onChange} {...(disabled != null ? { disabled } : {})}>
-        <SelectTrigger>
-            <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-            {options.map((option) => (
-                <SelectItem key={option.value || '__empty'} value={option.value || '__empty'}>
-                    {option.label}
-                </SelectItem>
-            ))}
-        </SelectContent>
-    </Select>
-)
+}> = ({ value, onChange, disabled, options }) => {
+    const labelProps = useSettingsRowLabelProps()
+    return (
+        <Select value={value} onValueChange={onChange} {...(disabled != null ? { disabled } : {})}>
+            <SelectTrigger {...labelProps}>
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {options.map((option) => (
+                    <SelectItem key={option.value || '__empty'} value={option.value || '__empty'}>
+                        {option.label}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    )
+}
 
 const VoiceSettingsTab: React.FC = () => {
     const { t } = useTranslation()

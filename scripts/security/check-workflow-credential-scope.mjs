@@ -60,9 +60,9 @@ export function violationsInWorkflow(filename, text) {
         ]
     }
     const problems = []
-    const workflowEnv = workflowEnvLines(normalized)
+    const inherited = workflowLevelLines(normalized)
     for (const job of jobs.jobs) {
-        const secrets = privilegedSecrets([...workflowEnv, ...job.lines])
+        const secrets = privilegedSecrets([...inherited, ...job.lines])
         if (secrets.length === 0) continue
         const ifText = jobIf(job.lines)
         const listed = secrets.join(', ')
@@ -109,10 +109,10 @@ function fileReadsPrivileged(text) {
     return privilegedSecrets(text.split('\n')).length > 0
 }
 
-function workflowEnvLines(text) {
-    const env = topLevelBlocks(text).find((block) => block.key === 'env')
-    if (!env) return []
-    return [env.rest, ...env.body]
+function workflowLevelLines(text) {
+    return topLevelBlocks(text)
+        .filter((block) => block.key !== 'jobs')
+        .flatMap((block) => [block.rest, ...block.body])
 }
 
 function triggersOf(text) {
@@ -442,7 +442,8 @@ function parsePrimary(tokens) {
                 type: 'cmp',
                 op: tokens[1].type,
                 left: tokens[0].value,
-                right: tokens[2].type === 'str' ? tokens[2].value : tokens[2].value,
+                right: tokens[2].value,
+                rightLiteral: tokens[2].type === 'str',
             },
             rest: tokens.slice(3),
         }
@@ -483,6 +484,7 @@ function fold(values, short, identity) {
 }
 
 function evalCmp(node, ctx) {
+    if (!node.rightLiteral) return UNKNOWN
     let actual = null
     if (node.left === 'github.event_name') actual = ctx.event
     else if (node.left === 'github.ref') actual = ctx.ref

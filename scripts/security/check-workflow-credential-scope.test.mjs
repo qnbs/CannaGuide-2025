@@ -207,6 +207,40 @@ jobs:
     )
 })
 
+test('an identifier comparison is not treated as unreachable', () => {
+    const text = `
+on:
+    pull_request:
+
+jobs:
+    preview:
+        if: github.event_name == inputs.mode
+        runs-on: ubuntu-latest
+        steps:
+            - env:
+                  CLOUDFLARE_API_TOKEN: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+              run: echo deploy
+`
+    assert.match(violationsInWorkflow('preview.yml', text).join('\n'), /pull_request/)
+})
+
+test('a secret outside jobs is visible to a pull_request job', () => {
+    const text = `
+on:
+    pull_request:
+
+concurrency:
+    group: \${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+jobs:
+    preview:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo deploy
+`
+    assert.match(violationsInWorkflow('preview.yml', text).join('\n'), /CLOUDFLARE_API_TOKEN/)
+})
+
 test('a workflow-level env secret is visible to a pull_request job', () => {
     const text = `
 on:

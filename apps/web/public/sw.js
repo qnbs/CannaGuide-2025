@@ -132,9 +132,10 @@ const offlineFallback = new Response(
 )
 
 self.addEventListener('install', (event) => {
-    // Auto-activate: skip waiting so updates apply immediately.
-    // The app's controllerchange listener will reload the page.
-    self.skipWaiting()
+    // Do not skipWaiting here. Doing so activates this worker, claims the
+    // page, and reloads an open client before the update prompt can run.
+    // A client posts { type: 'SKIP_WAITING' } to activate: the first visit
+    // does that itself, and an update does it only after the user accepts.
     event.waitUntil(
         caches.open(CACHE_NAME).then(async (cache) => {
             console.debug('[SW] Pre-caching App Shell')

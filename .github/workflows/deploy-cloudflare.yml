@@ -16,8 +16,12 @@ on:
 permissions:
     contents: read
 
+# Ignored CI completions must not share the production group. cancel-in-progress
+# would otherwise abort a main deploy when a pull-request CI run finishes.
+# Production is CI on main via push or workflow_dispatch. Preview keeps its
+# own group. Every other run is isolated by workflow run id.
 concurrency:
-    group: ${{ github.event.workflow_run.name == 'Cloudflare Preview Build' && format('cloudflare-preview-{0}', github.event.workflow_run.pull_requests[0].number) || 'cloudflare-pages-main' }}
+    group: ${{ github.event.workflow_run.name == 'Cloudflare Preview Build' && format('cloudflare-preview-{0}', github.event.workflow_run.pull_requests[0].number) || (github.event.workflow_run.name == 'CI' && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch')) && 'cloudflare-pages-main' || format('cloudflare-ignored-{0}', github.event.workflow_run.id) }}
     cancel-in-progress: true
 
 env:
@@ -44,7 +48,9 @@ jobs:
             github.event.workflow_run.head_repository.full_name == github.repository &&
             (
               (github.event.workflow_run.name == 'CI' &&
-               github.event.workflow_run.head_branch == 'main') ||
+               github.event.workflow_run.head_branch == 'main' &&
+               (github.event.workflow_run.event == 'push' ||
+                github.event.workflow_run.event == 'workflow_dispatch')) ||
               (github.event.workflow_run.name == 'Cloudflare Preview Build' &&
                github.event.workflow_run.event == 'pull_request' &&
                github.event.workflow_run.pull_requests[0].base.ref == 'main')
@@ -87,6 +93,8 @@ jobs:
             github.event.workflow_run.conclusion == 'success' &&
             github.event.workflow_run.name == 'CI' &&
             github.event.workflow_run.head_branch == 'main' &&
+            (github.event.workflow_run.event == 'push' ||
+            github.event.workflow_run.event == 'workflow_dispatch') &&
             github.event.workflow_run.head_repository.full_name == github.repository
         runs-on: ubuntu-latest
         timeout-minutes: 25
@@ -337,7 +345,10 @@ jobs:
               env:
                   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-                  PREVIEW_BRANCH: ${{ steps.meta.outputs.branch }}
+                  # pr-<number> comes from the trusted workflow_run, not from the
+                  # artifact branch. A metadata file that says "main" must not
+                  # become `wrangler pages deploy --branch main`.
+                  PREVIEW_BRANCH: pr-${{ steps.meta.outputs.pr }}
               run: |
                   set -o pipefail
                   OUT=$(pnpm exec wrangler pages deploy preview-dist \
@@ -381,7 +392,7 @@ jobs:
                   DEPLOY_URL: ${{ steps.preview-deploy.outputs.deployment-url }}
                   DEPLOY_SHA_FULL: ${{ steps.meta.outputs.sha }}
                   PR_NUMBER: ${{ steps.meta.outputs.pr }}
-                  PR_HEAD_REF: ${{ steps.meta.outputs.branch }}
+                  PR_HEAD_REF: ${{ steps.meta.outputs.label }}
                   RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
               with:
                   script: |

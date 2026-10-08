@@ -16,13 +16,14 @@ import { pathToFileURL } from 'node:url'
 const BRANCH = /^[a-zA-Z0-9._-]{1,63}$/
 const SHA = /^[0-9a-f]{40}$/
 const PR = /^[0-9]+$/
+const PRODUCTION_BRANCH = /^(main|master|production)$/i
 
 export function safeBranch(raw, pr) {
     const safe = String(raw ?? '')
         .replace(/[^a-zA-Z0-9._-]/g, '-')
         .replace(/^-+|-+$/g, '')
         .slice(0, 63)
-    if (BRANCH.test(safe)) return safe
+    if (BRANCH.test(safe) && !PRODUCTION_BRANCH.test(safe)) return safe
     const fallback = `pr-${pr}`
     if (!BRANCH.test(fallback)) return null
     return fallback
@@ -45,7 +46,12 @@ export function checkedPreviewMeta(meta, eventSha, eventPr) {
     if (!record) return null
     if (record.sha !== String(eventSha ?? '')) return null
     if (record.pr !== String(eventPr ?? '')) return null
-    return record
+    // The artifact chooses the label. The deploy branch is only the PR
+    // number from the trusted workflow_run, so a metadata file cannot
+    // select the production branch (`main`) or any other git ref.
+    const branch = `pr-${record.pr}`
+    if (!BRANCH.test(branch)) return null
+    return { branch, label: record.branch, sha: record.sha, pr: record.pr }
 }
 
 function writeMeta() {
@@ -71,7 +77,7 @@ function checkMeta() {
     }
     appendFileSync(
         process.env.GITHUB_OUTPUT,
-        `branch=${record.branch}\nsha=${record.sha}\npr=${record.pr}\n`,
+        `branch=${record.branch}\nlabel=${record.label}\nsha=${record.sha}\npr=${record.pr}\n`,
     )
     console.log(`[OK] Preview metadata matches PR ${record.pr}`)
 }

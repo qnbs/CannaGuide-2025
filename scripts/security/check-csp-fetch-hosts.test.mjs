@@ -47,6 +47,14 @@ describe('CSP fetch host gate', () => {
         assert.equal(flagEnabled(source, name), false)
     })
 
+    it('ignores a true declaration written inside a string', () => {
+        const name = 'EXTERNAL_STRAIN_LOOKUPS_DISABLED'
+        const source = `const note = "export const ${name} = true"\nexport const ${name} = false\n`
+        assert.equal(flagEnabled(source, name), false)
+        const active = `const note = "export const ${name} = false"\nexport const ${name} = true\n`
+        assert.equal(flagEnabled(active, name), true)
+    })
+
     it('rejects a non-default port, another scheme, and a protocol-relative host', () => {
         const allowedHost = 'await fetch("https://api.openai.com/v1")'
         const explicitDefault = 'await fetch("https://api.openai.com:443/v1")'
@@ -63,6 +71,27 @@ describe('CSP fetch host gate', () => {
             const violations = violationsInSource(source, allowed, constantsSource, 'probe.ts')
             assert.equal(violations.length, 1, source)
         }
+    })
+
+    it('uses the host after userinfo, not the text before @', () => {
+        const spoofed = 'await fetch("https://api.openai.com@evil.example/v1")'
+        const violations = violationsInSource(spoofed, allowed, constantsSource, 'probe.ts')
+        assert.equal(violations.length, 1)
+        assert.match(violations[0], /evil\.example/)
+        const credentialed = 'await fetch("https://user:secret@api.openai.com/v1")'
+        assert.deepEqual(
+            violationsInSource(credentialed, allowed, constantsSource, 'probe.ts'),
+            [],
+        )
+        const upperScheme = 'await fetch("HTTPS://evil.example/v1")'
+        const upperViolations = violationsInSource(
+            upperScheme,
+            allowed,
+            constantsSource,
+            'probe.ts',
+        )
+        assert.equal(upperViolations.length, 1)
+        assert.match(upperViolations[0], /evil\.example/)
     })
 
     it('fails a fetch host that is neither allowlisted nor gated', () => {

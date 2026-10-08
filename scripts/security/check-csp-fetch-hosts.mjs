@@ -113,14 +113,75 @@ function isIdentContinue(ch) {
     )
 }
 
+function blankStrings(source) {
+    let out = ''
+    let i = 0
+    const n = source.length
+    while (i < n) {
+        const c = source[i]
+        if (c === "'" || c === '"') {
+            const q = c
+            out += q
+            i += 1
+            while (i < n) {
+                if (source[i] === '\\') {
+                    i += 2
+                    continue
+                }
+                if (source[i] === q) {
+                    out += q
+                    i += 1
+                    break
+                }
+                i += 1
+            }
+            continue
+        }
+        if (c === '`') {
+            out += '`'
+            i += 1
+            while (i < n) {
+                if (source[i] === '\\') {
+                    i += 2
+                    continue
+                }
+                if (source[i] === '$' && source[i + 1] === '{') {
+                    out += '${'
+                    i += 2
+                    let depth = 1
+                    while (i < n && depth > 0) {
+                        const ch = source[i]
+                        out += ch
+                        if (ch === '{') depth += 1
+                        else if (ch === '}') depth -= 1
+                        i += 1
+                    }
+                    continue
+                }
+                if (source[i] === '`') {
+                    out += '`'
+                    i += 1
+                    break
+                }
+                i += 1
+            }
+            continue
+        }
+        out += c
+        i += 1
+    }
+    return out
+}
+
 /**
  * True when active source contains `export const <name> = true` as a whole
- * token. Comments are removed first, and `$` continues an identifier, so a
- * commented `true` or a `true$` token does not count. A literal search keeps
- * the host strings in GATED_FETCH_HOSTS out of `RegExp`.
+ * token. Comments and string contents are removed first, and `$` continues
+ * an identifier, so a commented `true`, a `true$` token, or the same text
+ * inside a string does not count. A literal search keeps the host strings
+ * in GATED_FETCH_HOSTS out of `RegExp`.
  */
 export function flagEnabled(constantsSource, name) {
-    const code = stripComments(constantsSource)
+    const code = blankStrings(stripComments(constantsSource))
     const needle = `export const ${name} = true`
     let from = 0
     while (from < code.length) {
@@ -147,16 +208,32 @@ function fetchOriginKey(scheme, host, port) {
     return `//${host}`
 }
 
+function originFromLiteral(literal) {
+    const text = literal.replace(/\\(.)/g, '$1')
+    const protocolRelative = text.startsWith('//')
+    let parsed
+    try {
+        parsed = new URL(protocolRelative ? `https:${text}` : text)
+    } catch {
+        return `unparsed:${text}`
+    }
+    const host = parsed.hostname.toLowerCase()
+    if (!host) return `unparsed:${text}`
+    if (protocolRelative) return fetchOriginKey('', host, parsed.port)
+    if (parsed.protocol === 'https:') return fetchOriginKey('https', host, parsed.port)
+    if (parsed.protocol === 'http:') return fetchOriginKey('http', host, parsed.port)
+    const scheme = parsed.protocol.replace(':', '')
+    return `${scheme}://${host}${parsed.port ? `:${parsed.port}` : ''}`
+}
+
 export function fetchTargetHosts(source) {
     const code = stripComments(source)
     if (!/\bfetch\s*\(/.test(code)) return []
     const hosts = new Set()
-    const re = /(['"`])(?:(https?):)?\/\/([A-Za-z0-9.-]+)(?::(\d+))?/g
+    const re = /(['"`])((?:[Hh][Tt][Tt][Pp][Ss]?:)?\/\/[^'"`\n\\]*)/g
     let match
     while ((match = re.exec(code))) {
-        const host = match[3] ? match[3].toLowerCase() : ''
-        if (!host) continue
-        hosts.add(fetchOriginKey(match[2] ? match[2].toLowerCase() : '', host, match[4] || ''))
+        if (match[2]) hosts.add(originFromLiteral(match[2]))
     }
     return [...hosts]
 }

@@ -856,7 +856,7 @@ export const strainLookup = {
     analyze: 'Analyser',
     clear: 'Effacer',
     searching: 'Recherche dans toutes les sources...',
-    searchingLocal: 'Recherche dans le catalogue local...',
+    searchingLocal: 'Recherche dans le catalogue local et l\'IA...',
     notFound: 'Aucune donnee trouvee pour "{{name}}". Essayez une autre orthographe.',
     lookupError: 'Recherche echouee. Veuillez reessayer.',
     addToDB: 'Ajouter a la bibliotheque',

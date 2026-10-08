@@ -964,7 +964,7 @@ export const strainLookup = {
     analyze: 'Analyze',
     clear: 'Clear',
     searching: 'Searching all sources...',
-    searchingLocal: 'Searching the local catalog...',
+    searchingLocal: 'Searching the local catalog and AI...',
     notFound: 'No data found for "{{name}}". Try a different spelling.',
     lookupError: 'Lookup failed. Please try again.',
     addToDB: 'Add to Library',

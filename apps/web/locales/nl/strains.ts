@@ -850,7 +850,7 @@ export const strainLookup = {
     analyze: 'Analyseren',
     clear: 'Wissen',
     searching: 'Zoeken in alle bronnen...',
-    searchingLocal: 'Zoeken in de lokale catalogus...',
+    searchingLocal: 'Zoeken in de lokale catalogus en de AI...',
     notFound: 'Geen gegevens gevonden voor "{{name}}". Probeer een andere spelling.',
     lookupError: 'Opzoeking mislukt. Probeer het opnieuw.',
     addToDB: 'Toevoegen aan bibliotheek',

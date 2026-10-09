@@ -8,7 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
-- **chore(deps):** `pnpm.overrides` — `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f — critical JS injection in `compile`; dev-only path via `conventional-changelog-writer`)
+- **chore(deps):** `pnpm.overrides` — `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj: JS injection via an untrusted AST passed to `compile`; GHSA-p8wg-vrv2-v86f: prototype-method bypass when `allowProtoMethodsByDefault` is true; dev-only path via `conventional-changelog-writer`)
 
 ## [1.10.0] - 2026-10-07
 

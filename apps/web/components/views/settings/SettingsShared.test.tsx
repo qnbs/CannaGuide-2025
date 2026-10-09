@@ -16,6 +16,14 @@ describe('SettingsRow accessible names', () => {
         expect(container.querySelector('[aria-label]')).toBeNull()
     })
 
+    it('does not copy a visible switch label into aria-label', () => {
+        render(<Switch checked={false} onChange={() => undefined} label="Dark mode" />)
+
+        const control = screen.getByRole('switch', { name: 'Dark mode' })
+        expect(control).not.toHaveAttribute('aria-label')
+        expect(control).not.toHaveAttribute('aria-labelledby')
+    })
+
     it('keeps an explicit switch name', () => {
         render(
             <SettingsRow label="Notifications">

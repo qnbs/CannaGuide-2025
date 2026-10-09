@@ -11,7 +11,11 @@ interface SwitchProps {
 export const Switch: React.FC<SwitchProps> = memo(
     ({ checked, onChange, label, 'aria-label': ariaLabel }) => {
         const id = useId()
-        const nameProps = useSettingsRowLabelProps(ariaLabel || label)
+        // A visible <label htmlFor> is the accessible name. Passing that same
+        // text as aria-label makes some screen readers announce it twice.
+        // aria-label is only for an explicit ariaLabel, otherwise the row label.
+        const fallbackName = useSettingsRowLabelProps(ariaLabel)
+        const nameProps = label && !ariaLabel ? {} : fallbackName
         return (
             <div className="flex items-center">
                 {label && (

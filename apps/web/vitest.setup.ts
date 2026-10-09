@@ -1,3 +1,4 @@
+import './bootstrap/zodJitless'
 import '@testing-library/jest-dom/vitest'
 import { webcrypto } from 'node:crypto'
 import { beforeAll } from 'vitest'

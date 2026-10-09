@@ -4,6 +4,10 @@
 
 import { z } from 'zod'
 
+// Same global flag as apps/web/bootstrap/zodJitless.ts. Any realm that loads
+// these schemas (including a worker) skips the CSP eval probe before parse.
+z.config({ jitless: true })
+
 export const AIResponseSchema = z.object({
     title: z.string().min(1).max(200),
     content: z.string().min(1).max(8000),

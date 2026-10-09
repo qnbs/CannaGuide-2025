@@ -1,7 +1,7 @@
 name: Labeler
 
 on:
-    pull_request_target:
+    pull_request:
         types: [opened, synchronize, reopened]
 
 concurrency:
@@ -13,6 +13,9 @@ permissions:
 
 jobs:
     label:
+        # Fork pull_request runs downgrade pull-requests: write to read-only.
+        # Skipping the job avoids a 403 from actions/labeler. Same-repo pulls still label.
+        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         timeout-minutes: 10
         permissions:

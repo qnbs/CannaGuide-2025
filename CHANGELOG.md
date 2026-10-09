@@ -12,6 +12,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **fix(ci):** Labeler runs on `pull_request` instead of `pull_request_target`. The job still has `contents: read` and `pull-requests: write`, and it does not check out the pull request. Same-repo pulls keep labels. The job is skipped when the head repository is not this one, so a fork pull does not fail the check with a 403.
 - **fix(csp):** Zod runs with `jitless` before app or AI-core schemas parse. Zod 4 otherwise probes `new Function`, and a strict CSP reports that caught call. `script-src` stays `'self' 'unsafe-inline' 'wasm-unsafe-eval'` with no `unsafe-eval`.
 - **chore(deps):** `pnpm.overrides` — `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj: JS injection via an untrusted AST passed to `compile`; GHSA-p8wg-vrv2-v86f: prototype-method bypass when `allowProtoMethodsByDefault` is true; dev-only path via `conventional-changelog-writer`)
 

@@ -1,11 +1,7 @@
 import React, { useState, useMemo, memo, useCallback } from 'react'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import {
-    JournalEntry,
-    JournalEntryType,
-    JournalEntryDetails,
-} from '@/types'
+import { JournalEntry, JournalEntryType, JournalEntryDetails } from '@/types'
 import { useTranslation } from 'react-i18next'
 
 interface JournalTabProps {
@@ -82,9 +78,7 @@ const renderPhotoDetails = (
         detailsArray.push(`${t('plantsView.journal.details.category')}: ${translatedCategory}`)
     }
     if ('timelineLabel' in d && d.timelineLabel)
-        detailsArray.push(
-            `${t('plantsView.journal.details.timeline')}: ${String(d.timelineLabel)}`,
-        )
+        detailsArray.push(`${t('plantsView.journal.details.timeline')}: ${String(d.timelineLabel)}`)
 }
 
 const renderPestControlDetails = (
@@ -281,7 +275,7 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
 
     const getFilterButtonClassName = (isSelected: boolean): string => {
         const stateClassName = isSelected
-            ? 'bg-primary-600 text-white font-semibold'
+            ? 'bg-primary-600 text-on-accent font-semibold'
             : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
         return `flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors ${stateClassName} ring-1 ring-inset ring-white/20`
     }

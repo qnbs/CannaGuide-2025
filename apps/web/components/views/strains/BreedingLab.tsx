@@ -73,7 +73,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                         className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap
                             ${
                                 activeTab === tab.id
-                                    ? 'bg-primary-600 text-white shadow-lg ring-1 ring-primary-400'
+                                    ? 'bg-primary-600 text-on-accent shadow-lg ring-1 ring-primary-400'
                                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                             }`}
                         aria-current={activeTab === tab.id ? 'page' : undefined}

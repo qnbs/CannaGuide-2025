@@ -57,7 +57,7 @@ export const AgeGateModal: React.FC<AgeGateModalProps> = ({ onVerified }) => {
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                     <button
                         onClick={onVerified}
-                        className="px-6 py-3 min-h-11 rounded-lg bg-primary-600 hover:bg-primary-500 text-white font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-[rgb(var(--color-bg-primary))]"
+                        className="px-6 py-3 min-h-11 rounded-lg bg-primary-600 hover:bg-primary-500 text-on-accent font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-[rgb(var(--color-bg-primary))]"
                     >
                         {t('legal.ageGate.confirm')}
                     </button>

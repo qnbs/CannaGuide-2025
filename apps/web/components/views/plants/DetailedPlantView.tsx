@@ -418,7 +418,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                         tabIndex={activeTab === tab.id ? 0 : -1}
                         className={`relative flex flex-col items-center justify-center gap-1 p-2 sm:p-3 rounded-xl transition-all duration-200 w-[4.5rem] h-16 sm:w-24 sm:h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
                             activeTab === tab.id
-                                ? 'bg-primary-600/90 text-white scale-105 shadow-lg shadow-primary-500/20 ring-1 ring-primary-400/60'
+                                ? 'bg-primary-600 text-on-accent scale-105 shadow-lg shadow-primary-500/20 ring-1 ring-primary-400/60'
                                 : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80 hover:text-white hover:scale-[1.02]'
                         }`}
                         role="tab"

@@ -52,12 +52,15 @@ const SensorIntegrationPanelComponent: React.FC = () => {
         try {
             const nextReading = await webBluetoothSensorService.readEsp32EnvironmentalSensor()
             applyReading(nextReading)
-            getUISnapshot().addNotification({ message: t('plantsView.sensor.success'), type: 'success' })
+            getUISnapshot().addNotification({
+                message: t('plantsView.sensor.success'),
+                type: 'success',
+            })
         } catch (error) {
             getUISnapshot().addNotification({
-                    message: error instanceof Error ? error.message : t('plantsView.sensor.error'),
-                    type: 'error',
-                })
+                message: error instanceof Error ? error.message : t('plantsView.sensor.error'),
+                type: 'error',
+            })
         } finally {
             setIsConnecting(false)
         }
@@ -76,9 +79,9 @@ const SensorIntegrationPanelComponent: React.FC = () => {
 
         if (!/^wss?:\/\/.+/i.test(brokerUrl)) {
             getUISnapshot().addNotification({
-                    message: t('plantsView.sensor.mqttError'),
-                    type: 'error',
-                })
+                message: t('plantsView.sensor.mqttError'),
+                type: 'error',
+            })
             return
         }
 
@@ -92,12 +95,15 @@ const SensorIntegrationPanelComponent: React.FC = () => {
             setMqttState(state)
             if (state === 'connected') {
                 getUISnapshot().addNotification({
-                        message: t('plantsView.sensor.mqttConnected'),
-                        type: 'success',
-                    })
+                    message: t('plantsView.sensor.mqttConnected'),
+                    type: 'success',
+                })
             }
             if (state === 'error') {
-                getUISnapshot().addNotification({ message: t('plantsView.sensor.mqttError'), type: 'error' })
+                getUISnapshot().addNotification({
+                    message: t('plantsView.sensor.mqttError'),
+                    type: 'error',
+                })
             }
         })
 
@@ -114,7 +120,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
         mqttToggleLabel = t('plantsView.sensor.mqttDisconnect')
     }
     const getModeButtonClassName = (isSelected: boolean): string =>
-        `flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${isSelected ? 'bg-primary-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`
+        `flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${isSelected ? 'bg-primary-600 text-on-accent' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`
 
     return (
         <Card>

@@ -87,7 +87,7 @@ const CalculatorHubViewComponent: React.FC = () => {
                         }}
                         className={`flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                             activeTab === tab.id
-                                ? 'bg-primary-600 text-white shadow-lg'
+                                ? 'bg-primary-600 text-on-accent shadow-lg'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                         }`}
                     >

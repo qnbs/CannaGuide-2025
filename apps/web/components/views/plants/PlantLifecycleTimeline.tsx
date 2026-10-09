@@ -17,7 +17,7 @@ const stageColors: Record<PlantStage, string> = {
     [PlantStage.Flowering]: 'bg-accent-500',
     [PlantStage.Harvest]: 'bg-orange-500',
     [PlantStage.Drying]: 'bg-amber-700',
-    [PlantStage.Curing]: 'bg-slate-500',
+    [PlantStage.Curing]: 'bg-slate-700',
     [PlantStage.Finished]: 'bg-primary-500',
 }
 

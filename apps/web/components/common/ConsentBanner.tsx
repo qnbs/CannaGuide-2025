@@ -42,7 +42,7 @@ export const ConsentBanner: React.FC<ConsentBannerProps> = ({ onAccept, onShowPr
                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
                     <button
                         onClick={onAccept}
-                        className="flex-1 px-5 py-3 min-h-11 rounded-lg bg-primary-600 hover:bg-primary-500 text-white font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                        className="flex-1 px-5 py-3 min-h-11 rounded-lg bg-primary-600 hover:bg-primary-500 text-on-accent font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-slate-900"
                     >
                         {t('legal.consent.accept')}
                     </button>

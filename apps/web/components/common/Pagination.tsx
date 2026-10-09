@@ -86,7 +86,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                         onClick={() => onPageChange(num)}
                         className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-md text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${
                             currentPage === num
-                                ? 'bg-primary-600 text-white shadow-md'
+                                ? 'bg-primary-600 text-on-accent shadow-md'
                                 : 'bg-slate-700/50 hover:bg-slate-700 text-slate-300'
                         }`}
                         aria-current={currentPage === num ? 'page' : undefined}

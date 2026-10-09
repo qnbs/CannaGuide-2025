@@ -137,7 +137,8 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                 let badgeCls =
                                     'px-3 py-1 rounded-full text-xs font-bold transition-colors '
                                 if (isActive) {
-                                    badgeCls += 'bg-primary-600 text-white ring-2 ring-primary-400'
+                                    badgeCls +=
+                                        'bg-primary-600 text-on-accent ring-2 ring-primary-400'
                                 } else if (isPast) {
                                     badgeCls += 'bg-slate-600 text-slate-300'
                                 } else {

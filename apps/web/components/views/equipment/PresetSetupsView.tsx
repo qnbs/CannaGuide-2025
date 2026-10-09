@@ -149,7 +149,7 @@ const PresetSetupsViewComponent: React.FC = () => {
                         onClick={() => setActiveFilter(f.key)}
                         className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-200 ${
                             activeFilter === f.key
-                                ? 'bg-primary-600 text-white shadow-md ring-1 ring-primary-400'
+                                ? 'bg-primary-600 text-on-accent shadow-md ring-1 ring-primary-400'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                         }`}
                     >

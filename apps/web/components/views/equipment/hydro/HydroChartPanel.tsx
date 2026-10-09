@@ -53,7 +53,7 @@ export const HydroChartPanel: React.FC<HydroChartPanelProps> = memo(({ readings 
                             className={cn(
                                 'text-xs px-2.5 py-1 rounded min-h-[44px] min-w-[44px]',
                                 timeRange === tr
-                                    ? 'bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white shadow-[0_0_12px_rgba(var(--color-primary-500),0.25)]'
+                                    ? 'bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent shadow-[0_0_12px_rgba(var(--color-primary-500),0.25)]'
                                     : 'bg-white/[0.06] text-slate-400 ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.1]',
                             )}
                         >

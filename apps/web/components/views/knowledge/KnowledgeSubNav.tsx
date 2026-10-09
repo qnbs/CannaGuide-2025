@@ -76,7 +76,7 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
                     className={`flex flex-col items-center justify-center gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200 min-h-[56px] sm:min-h-[64px] overflow-hidden
                         ${
                             activeTab === item.id
-                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
+                                ? 'bg-primary-600 text-on-accent scale-105 shadow-lg ring-1 ring-primary-400'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                         }`}
                     aria-label={item.label}

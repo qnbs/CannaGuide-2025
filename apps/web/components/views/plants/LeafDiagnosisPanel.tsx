@@ -185,7 +185,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                     className={cn(
                         'flex-1 text-xs font-medium rounded-md px-3 py-1.5 transition-colors',
                         activeTab === 'ai'
-                            ? 'bg-primary-600 text-white'
+                            ? 'bg-primary-600 text-on-accent'
                             : 'text-slate-400 hover:text-slate-200',
                     )}
                     onClick={() => setActiveTab('ai')}
@@ -199,7 +199,7 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
                     className={cn(
                         'flex-1 text-xs font-medium rounded-md px-3 py-1.5 transition-colors',
                         activeTab === 'manual'
-                            ? 'bg-primary-600 text-white'
+                            ? 'bg-primary-600 text-on-accent'
                             : 'text-slate-400 hover:text-slate-200',
                     )}
                     onClick={() => setActiveTab('manual')}

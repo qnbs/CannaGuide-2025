@@ -228,7 +228,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
                     onClick={() => setActiveCategory('all')}
                     className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${
                         activeCategory === 'all'
-                            ? 'bg-primary-600 text-white ring-1 ring-primary-400'
+                            ? 'bg-primary-600 text-on-accent ring-1 ring-primary-400'
                             : 'bg-slate-800 text-slate-300 hover:bg-slate-700 ring-1 ring-inset ring-slate-700/50'
                     }`}
                 >
@@ -242,7 +242,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
                         onClick={() => setActiveCategory(cat.id)}
                         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${
                             activeCategory === cat.id
-                                ? 'bg-primary-600 text-white ring-1 ring-primary-400'
+                                ? 'bg-primary-600 text-on-accent ring-1 ring-primary-400'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 ring-1 ring-inset ring-slate-700/50'
                         }`}
                     >
@@ -261,7 +261,7 @@ export const ScreenshotGallery: React.FC = memo(() => {
                         onClick={() => setViewportFilter(vp)}
                         className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200 ${
                             viewportFilter === vp
-                                ? 'bg-primary-600/80 text-white'
+                                ? 'bg-primary-600 text-on-accent'
                                 : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
                         }`}
                     >

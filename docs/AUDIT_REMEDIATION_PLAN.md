@@ -22,13 +22,16 @@ Measured state as of this pass:
   `no-autofocus`, 1 `no-interactive-element-to-noninteractive-role`, 1
   `role-supports-aria-props`). `check-a11y-ratchet.mjs` only fails if this count _rises_ -- it is a
   ceiling, not a target, and does not block release on the existing 83.
-- `node scripts/check-contrast.mjs` reports 14 WCAG-AA failures across 9 themes, several badly
-  under the 4.5:1 threshold (`purpleHaze` `neutral-500` on `bg-component`: 2.21:1; `runtzRainbow`:
-  2.56:1; `lemonSkunk` primary-button label: 2.93:1). The check runs in CI (`verify` job) but in
-  advisory mode -- `--strict` is not passed, so these findings do not fail the gate.
-- README.md now qualifies both EN and DE badges as `WCAG 2.1 AA (partial)` and links here. The
-  badge should not be treated as a full compliance claim until the contrast failures are at zero
-  and the ratchet baseline reflects real fixes, not just a raised ceiling.
+- `node scripts/check-contrast.mjs` reports 0 pairs below WCAG-AA across 9 themes (126 checks)
+  as of 2026-10-09. The 14 failures from the previous measured state (`purpleHaze` `neutral-500`
+  on `bg-component` at 2.21:1, `runtzRainbow` at 2.56:1, `lemonSkunk` primary-button label at
+  2.93:1, and the rest of that set) are cleared by per-theme `neutral-500` lifts, a small desert
+  `danger` and rainbow `info` nudge, and a dark `text-on-accent` on the four themes where white
+  fails on `primary-600`. Primary controls consume that token on a solid `primary-600`. The check
+  still runs in CI (`verify` job) in advisory mode -- `--strict` is not passed.
+- README.md still qualifies both EN and DE badges as `WCAG 2.1 AA (partial)` and links here. The
+  badge is not a full compliance claim: the jsx-a11y ratchet is still 83, and `--strict` is a
+  follow-up.
 
 **This is not new, unscoped work.** A prior session (paused 2026-07-18, "weekly limit ~97%") did
 the classification and produced a full execution plan with three of six sub-phases merged:

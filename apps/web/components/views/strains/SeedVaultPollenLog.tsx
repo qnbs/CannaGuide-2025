@@ -110,7 +110,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                         <button
                             type="button"
                             onClick={() => setShowAddForm(!showAddForm)}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-xs font-semibold shadow-[0_4px_16px_rgba(var(--color-primary-500),0.2)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent text-xs font-semibold shadow-[0_4px_16px_rgba(var(--color-primary-500),0.2)] hover:shadow-[0_6px_20px_rgba(var(--color-primary-500),0.3)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                         >
                             <PhosphorIcons.Plus className="h-3.5 w-3.5" />
                             {t('strainsView.seedVault.pollenSection.addRecord')}
@@ -213,7 +213,7 @@ export const SeedVaultPollenLog: React.FC = memo(() => {
                                     type="button"
                                     onClick={handleAdd}
                                     disabled={!donorName.trim()}
-                                    className="px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-xs font-semibold hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all duration-200"
+                                    className="px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent text-xs font-semibold hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all duration-200"
                                 >
                                     {t('strainsView.seedVault.save')}
                                 </button>

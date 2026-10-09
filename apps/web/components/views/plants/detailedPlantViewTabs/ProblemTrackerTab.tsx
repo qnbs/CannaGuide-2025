@@ -139,7 +139,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                 <button
                     type="button"
                     onClick={() => setShowAddForm(!showAddForm)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] text-white text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] text-on-accent text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0"
                 >
                     <PhosphorIcons.Plus className="h-4 w-4" />
                     {t('plantsView.problemTracker.addIssue')}
@@ -229,7 +229,7 @@ export const ProblemTrackerTab: React.FC<ProblemTrackerTabProps> = memo(({ plant
                             type="button"
                             onClick={handleAddIssue}
                             disabled={!formTitle.trim()}
-                            className="px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-sm font-semibold hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all"
+                            className="px-3 py-1.5 rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent text-sm font-semibold hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 transition-all"
                         >
                             {t('plantsView.problemTracker.save')}
                         </button>

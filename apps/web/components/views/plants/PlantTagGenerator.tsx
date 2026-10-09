@@ -137,7 +137,7 @@ export const PlantTagGenerator: React.FC<PlantTagGeneratorProps> = memo(({ plant
                         aria-label={t('plantsView.tags.exportPdfAria', {
                             defaultValue: 'Export plant tags as PDF',
                         })}
-                        className="rounded-lg bg-primary-600 hover:bg-primary-500 px-3 py-1.5 text-sm text-white transition-colors"
+                        className="rounded-lg bg-primary-600 hover:bg-primary-500 px-3 py-1.5 text-sm text-on-accent transition-colors"
                     >
                         {t('plantsView.tags.exportPdf', { defaultValue: 'Export PDF' })}
                     </button>

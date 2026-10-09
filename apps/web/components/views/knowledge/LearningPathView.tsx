@@ -215,7 +215,7 @@ const LearningPathViewComponent: React.FC = () => {
                             }}
                             className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
                                 levelFilter === lvl
-                                    ? 'bg-primary-600 text-white border-primary-400'
+                                    ? 'bg-primary-600 text-on-accent border-primary-400'
                                     : 'bg-slate-800 text-slate-300 border-slate-600 hover:border-slate-400'
                             }`}
                             aria-pressed={levelFilter === lvl}

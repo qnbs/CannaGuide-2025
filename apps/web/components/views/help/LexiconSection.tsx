@@ -7,13 +7,7 @@ import { LexiconCard } from './LexiconCard'
 import { SearchBar } from '@/components/common/SearchBar'
 
 export type LexiconCategory =
-    | 'All'
-    | 'Cannabinoid'
-    | 'Terpene'
-    | 'Flavonoid'
-    | 'Nutrient'
-    | 'Disease'
-    | 'General'
+    'All' | 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'Nutrient' | 'Disease' | 'General'
 
 export const CATEGORY_COLORS: Record<string, { ring: string; text: string; bg: string }> = {
     Cannabinoid: { ring: 'ring-emerald-500/30', text: 'text-emerald-400', bg: 'bg-emerald-500/10' },
@@ -145,7 +139,7 @@ export const LexiconSection: React.FC = memo(() => {
                     const isActive = activeCategory === cat
                     const colors = cat !== 'All' ? CATEGORY_COLORS[cat] : undefined
                     const categoryButtonClass = isActive
-                        ? `bg-primary-600 text-white shadow-lg ring-1 ring-primary-400 ${colors?.bg ?? ''}`
+                        ? `bg-primary-600 text-on-accent shadow-lg ring-1 ring-primary-400 ${colors?.bg ?? ''}`
                         : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white ring-1 ring-inset ring-slate-700/50'
                     const countPillClass = isActive
                         ? 'bg-white/20 text-white'
@@ -192,7 +186,7 @@ export const LexiconSection: React.FC = memo(() => {
                             key={letter}
                             type="button"
                             onClick={() => scrollToLetter(letter)}
-                            className="w-7 h-7 rounded text-xs font-bold text-slate-400 bg-slate-800/60 hover:bg-primary-600 hover:text-white transition-colors duration-150 flex items-center justify-center"
+                            className="w-7 h-7 rounded text-xs font-bold text-slate-400 bg-slate-800/60 hover:bg-primary-600 hover:text-on-accent transition-colors duration-150 flex items-center justify-center"
                         >
                             {letter}
                         </button>

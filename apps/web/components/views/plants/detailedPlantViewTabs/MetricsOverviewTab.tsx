@@ -142,7 +142,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                         onClick={() => setActiveTab(tab.id)}
                         className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
                             activeTab === tab.id
-                                ? 'bg-primary-600/80 text-white'
+                                ? 'bg-primary-600 text-on-accent'
                                 : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700/60'
                         }`}
                     >
@@ -172,7 +172,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                                 onClick={() => setTimeRange(range)}
                                 className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
                                     timeRange === range
-                                        ? 'bg-primary-600/80 text-white'
+                                        ? 'bg-primary-600 text-on-accent'
                                         : 'bg-slate-800/60 text-slate-400 hover:text-white'
                                 }`}
                             >
@@ -387,7 +387,7 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
                         type="button"
                         onClick={handleAddReading}
                         disabled={height === '' && potWeight === '' && co2 === ''}
-                        className="w-full rounded-lg bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium text-white transition-colors"
+                        className="w-full rounded-lg bg-primary-600 hover:bg-primary-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium text-on-accent transition-colors"
                     >
                         {t('plantsView.metrics.addReading', {
                             defaultValue: 'Add Metrics Reading',

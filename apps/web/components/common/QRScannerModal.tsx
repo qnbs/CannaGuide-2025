@@ -163,7 +163,7 @@ export const QRScannerModal: React.FC<QRScannerModalProps> = memo(({ isOpen, onC
                                 type="button"
                                 onClick={handleManualSubmit}
                                 disabled={manualId.trim().length === 0}
-                                className="rounded-lg bg-primary-600 hover:bg-primary-500 disabled:opacity-40 px-4 py-2 text-sm font-medium text-white transition-colors"
+                                className="rounded-lg bg-primary-600 hover:bg-primary-500 disabled:opacity-40 px-4 py-2 text-sm font-medium text-on-accent transition-colors"
                             >
                                 {t('common.confirm', { defaultValue: 'Go' })}
                             </button>

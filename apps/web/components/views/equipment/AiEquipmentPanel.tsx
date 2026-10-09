@@ -183,7 +183,7 @@ export const AiEquipmentPanel: React.FC = memo(() => {
                     <button
                         type="button"
                         onClick={handleExportPdf}
-                        className="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium transition-colors flex items-center gap-2"
+                        className="px-4 py-2 rounded-md bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium transition-colors flex items-center gap-2"
                     >
                         <PhosphorIcons.ArrowDown className="w-4 h-4" />
                         {t('equipmentView.calculators.aiPanel.exportPdf')}

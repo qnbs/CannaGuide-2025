@@ -24,7 +24,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
 
     const variantClasses = {
         primary:
-            'border border-primary-400/35 bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white font-bold shadow-[0_18px_40px_rgba(8,145,178,0.3)] hover:shadow-[0_24px_52px_rgba(8,145,178,0.38)] hover:brightness-110 focus-visible:ring-primary-300',
+            'border border-primary-400/35 bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent font-bold shadow-[0_18px_40px_rgba(8,145,178,0.3)] hover:shadow-[0_24px_52px_rgba(8,145,178,0.38)] hover:brightness-110 focus-visible:ring-primary-300',
         secondary:
             'border border-white/12 bg-white/7 text-slate-100 backdrop-blur-sm hover:border-white/18 hover:bg-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] focus-visible:ring-primary-500',
         danger: 'border border-red-400/30 bg-[linear-gradient(135deg,rgba(248,113,113,0.95),rgba(220,38,38,0.92))] text-white font-bold shadow-[0_18px_40px_rgba(220,38,38,0.24)] hover:shadow-[0_24px_52px_rgba(220,38,38,0.32)] hover:brightness-105 focus-visible:ring-red-300',

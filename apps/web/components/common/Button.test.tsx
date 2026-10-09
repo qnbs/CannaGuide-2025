@@ -1,60 +1,72 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { Button } from './Button';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { Button } from './Button'
+import { PhosphorIcons } from '../icons/PhosphorIcons'
 
 describe('Button', () => {
     it('renders children correctly', () => {
-        render(<Button>Click me</Button>);
-        expect(screen.getByText('Click me')).toBeInTheDocument();
-    });
+        render(<Button>Click me</Button>)
+        expect(screen.getByText('Click me')).toBeInTheDocument()
+    })
 
     it('handles click events', () => {
-        const handleClick = vi.fn();
-        render(<Button onClick={handleClick}>Click me</Button>);
-        fireEvent.click(screen.getByText('Click me'));
-        expect(handleClick).toHaveBeenCalledTimes(1);
-    });
+        const handleClick = vi.fn()
+        render(<Button onClick={handleClick}>Click me</Button>)
+        fireEvent.click(screen.getByText('Click me'))
+        expect(handleClick).toHaveBeenCalledTimes(1)
+    })
 
     it('applies variant classes correctly', () => {
-        const { rerender } = render(<Button variant="primary">Primary</Button>);
-        expect(screen.getByText('Primary')).toHaveClass('border-primary-400/35');
-        expect(screen.getByText('Primary')).toHaveClass('text-white');
+        const { rerender } = render(<Button variant="primary">Primary</Button>)
+        expect(screen.getByText('Primary')).toHaveClass('border-primary-400/35')
+        expect(screen.getByText('Primary')).toHaveClass('text-on-accent')
 
-        rerender(<Button variant="secondary">Secondary</Button>);
-        expect(screen.getByText('Secondary')).toHaveClass('border-white/12');
-        expect(screen.getByText('Secondary')).toHaveClass('text-slate-100');
-    });
+        rerender(<Button variant="secondary">Secondary</Button>)
+        expect(screen.getByText('Secondary')).toHaveClass('border-white/12')
+        expect(screen.getByText('Secondary')).toHaveClass('text-slate-100')
+    })
 
     it('applies size classes correctly', () => {
-        const { rerender } = render(<Button size="sm">Small</Button>);
-        expect(screen.getByText('Small')).toHaveClass('text-sm');
+        const { rerender } = render(<Button size="sm">Small</Button>)
+        expect(screen.getByText('Small')).toHaveClass('text-sm')
 
-        rerender(<Button size="lg">Large</Button>);
-        expect(screen.getByText('Large')).toHaveClass('text-lg');
-    });
+        rerender(<Button size="lg">Large</Button>)
+        expect(screen.getByText('Large')).toHaveClass('text-lg')
+    })
 
     it('is disabled when the disabled prop is true', () => {
-        const handleClick = vi.fn();
-        render(<Button onClick={handleClick} disabled>Disabled</Button>);
-        const button = screen.getByText('Disabled');
-        expect(button).toBeDisabled();
-        fireEvent.click(button);
-        expect(handleClick).not.toHaveBeenCalled();
-    });
+        const handleClick = vi.fn()
+        render(
+            <Button onClick={handleClick} disabled>
+                Disabled
+            </Button>,
+        )
+        const button = screen.getByText('Disabled')
+        expect(button).toBeDisabled()
+        fireEvent.click(button)
+        expect(handleClick).not.toHaveBeenCalled()
+    })
 
     it('renders as a different element using the "as" prop', () => {
-        render(<Button as="a" href="/test">Link</Button>);
-        const linkElement = screen.getByRole('link', { name: 'Link' });
-        expect(linkElement).toBeInTheDocument();
-        expect(linkElement).toHaveAttribute('href', '/test');
-    });
+        render(
+            <Button as="a" href="/test">
+                Link
+            </Button>,
+        )
+        const linkElement = screen.getByRole('link', { name: 'Link' })
+        expect(linkElement).toBeInTheDocument()
+        expect(linkElement).toHaveAttribute('href', '/test')
+    })
 
     it('renders an icon with text', () => {
-        render(<Button><PhosphorIcons.Plus /> Add</Button>);
-        expect(screen.getByText('Add')).toBeInTheDocument();
-        const button = screen.getByRole('button', { name: /add/i });
-        const icon = button.querySelector('svg');
-        expect(icon).toBeInTheDocument();
-    });
-});
+        render(
+            <Button>
+                <PhosphorIcons.Plus /> Add
+            </Button>,
+        )
+        expect(screen.getByText('Add')).toBeInTheDocument()
+        const button = screen.getByRole('button', { name: /add/i })
+        const icon = button.querySelector('svg')
+        expect(icon).toBeInTheDocument()
+    })
+})

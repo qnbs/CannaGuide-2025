@@ -92,7 +92,7 @@ export const PhotoTimelineTab: React.FC<PhotoTimelineTabProps> = memo(
                         }}
                         className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                             compareMode
-                                ? 'bg-primary-600 text-white'
+                                ? 'bg-primary-600 text-on-accent'
                                 : 'bg-slate-700 text-slate-300 hover:text-white'
                         }`}
                     >

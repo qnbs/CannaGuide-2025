@@ -231,7 +231,7 @@ export const SeedVaultTab: React.FC = memo(() => {
                 <button
                     type="button"
                     onClick={openAddForm}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-sm font-semibold shadow-[0_8px_24px_rgba(var(--color-primary-500),0.25)] hover:shadow-[0_12px_32px_rgba(var(--color-primary-500),0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent text-sm font-semibold shadow-[0_8px_24px_rgba(var(--color-primary-500),0.25)] hover:shadow-[0_12px_32px_rgba(var(--color-primary-500),0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
                 >
                     <PhosphorIcons.Plus className="h-4 w-4" />
                     {t('strainsView.seedVault.addEntry')}

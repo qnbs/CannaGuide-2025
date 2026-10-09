@@ -207,7 +207,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             <button
                                 type="button"
                                 onClick={() => setShowAddForm(true)}
-                                className="rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] px-3 py-1.5 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 active:translate-y-0"
+                                className="rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] px-3 py-1.5 text-xs font-semibold text-on-accent transition-all hover:-translate-y-0.5 active:translate-y-0"
                             >
                                 + {t('plantsView.planner.addTask', { defaultValue: 'Add Task' })}
                             </button>
@@ -243,7 +243,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                 <span
                                     className={`rounded-full px-2 py-0.5 ring-1 ring-inset ${getActionStyle(task.type)}`}
                                 >
-                                    {t(`plantsView.planner.taskTypes.${task.type}`, { defaultValue: task.type })}
+                                    {t(`plantsView.planner.taskTypes.${task.type}`, {
+                                        defaultValue: task.type,
+                                    })}
                                 </span>
                                 <div className="flex gap-1">
                                     <button
@@ -311,10 +313,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             new Date(2024, 0, 1 + idx),
                         ),
                     ).map((d) => (
-                        <div
-                            key={d}
-                            className="py-2 text-center text-xs font-medium text-muted"
-                        >
+                        <div key={d} className="py-2 text-center text-xs font-medium text-muted">
                             {d}
                         </div>
                     ))}
@@ -365,7 +364,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                                             }`}
                                             title={`${t(`plantsView.planner.taskTypes.${task.type}`, { defaultValue: task.type })}${task.notes ? ': ' + task.notes : ''}`}
                                         >
-                                            {t(`plantsView.planner.taskTypes.${task.type}`, { defaultValue: task.type })}
+                                            {t(`plantsView.planner.taskTypes.${task.type}`, {
+                                                defaultValue: task.type,
+                                            })}
                                         </button>
                                     ))}
                                     {dayTasks.length > 3 && (
@@ -418,7 +419,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                             >
                                 {GROW_ACTIONS.map((a) => (
                                     <option key={a.type} value={a.type}>
-                                        {t(`plantsView.planner.taskTypes.${a.type}`, { defaultValue: a.type })}
+                                        {t(`plantsView.planner.taskTypes.${a.type}`, {
+                                            defaultValue: a.type,
+                                        })}
                                     </option>
                                 ))}
                             </select>
@@ -495,7 +498,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                         <button
                             type="button"
                             onClick={handleAddTask}
-                            className="rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_12px_rgba(var(--color-primary-500),0.25)] px-4 py-2 text-sm font-semibold text-white transition-all hover:-translate-y-0.5 active:translate-y-0"
+                            className="rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] shadow-[0_0_12px_rgba(var(--color-primary-500),0.25)] px-4 py-2 text-sm font-semibold text-on-accent transition-all hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {t('plantsView.planner.addTask', { defaultValue: 'Add Task' })}
                         </button>

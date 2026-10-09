@@ -48,7 +48,7 @@ export const GrowBibleExportButton: React.FC<GrowBibleExportButtonProps> = memo(
             disabled={isExporting || plants.length === 0}
             className={cn(
                 'inline-flex items-center gap-2 rounded-lg px-4 py-2',
-                'bg-primary-600 text-white transition-colors',
+                'bg-primary-600 text-on-accent transition-colors',
                 'hover:bg-primary-700 active:bg-primary-800',
                 'disabled:cursor-not-allowed disabled:opacity-50',
                 'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500',

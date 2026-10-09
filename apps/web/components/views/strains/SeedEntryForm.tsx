@@ -422,7 +422,7 @@ export const SeedEntryForm: React.FC<SeedEntryFormProps> = memo(
                         type="button"
                         onClick={handleSubmit}
                         disabled={!strainName.trim()}
-                        className="px-4 py-2 rounded-xl bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] text-white text-sm font-semibold shadow-[0_8px_24px_rgba(var(--color-primary-500),0.25)] hover:shadow-[0_12px_32px_rgba(var(--color-primary-500),0.35)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all duration-200"
+                        className="px-4 py-2 rounded-xl bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] text-on-accent text-sm font-semibold shadow-[0_8px_24px_rgba(var(--color-primary-500),0.25)] hover:shadow-[0_12px_32px_rgba(var(--color-primary-500),0.35)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:shadow-none transition-all duration-200"
                     >
                         {t('strainsView.seedVault.save')}
                     </button>

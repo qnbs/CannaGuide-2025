@@ -8,7 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **fix(a11y):** the 14 curated WCAG-AA contrast pairs now pass. `neutral-500` is lightened per theme, desert `danger` and rainbow `info` move just enough to clear 4.5:1, and `text-on-accent` is dark on the four themes where white fails on `primary-600`. The `--color-primary-*` brand scales are unchanged. `node scripts/check-contrast.mjs` reports 0 below AA. `--strict` stays off. `.a11y-baseline.json` is unchanged because this slice does not remove jsx-a11y warnings.
+- **fix(a11y):** the 14 curated WCAG-AA contrast pairs now pass. `neutral-500` is lightened per theme, desert `danger` and rainbow `info` move just enough to clear 4.5:1, and `text-on-accent` is dark on the four themes where white fails on `primary-600`. Primary labels on solid `primary-600` (and the shared primary gradients, now opaque) use `text-on-accent`. White labels that sat on `slate-500` move to `slate-600`/`slate-700`, because the lightened `neutral-500` step is a text color and no longer a safe white-text background. The `--color-primary-*` brand scales are unchanged. `node scripts/check-contrast.mjs` reports 0 below AA. `--strict` stays off. `.a11y-baseline.json` is unchanged because this slice does not remove jsx-a11y warnings.
 
 ### Security
 

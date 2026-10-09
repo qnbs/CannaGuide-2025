@@ -101,7 +101,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
                         className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 p-2 sm:p-3 rounded-xl transition-all duration-200 min-h-[56px] sm:min-h-[64px] overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900
                             ${
                                 isActive
-                                    ? 'bg-primary-600 text-white scale-[1.03] shadow-lg shadow-primary-600/20 ring-1 ring-primary-400/60'
+                                    ? 'bg-primary-600 text-on-accent scale-[1.03] shadow-lg shadow-primary-600/20 ring-1 ring-primary-400/60'
                                     : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white hover:scale-[1.01]'
                             }`}
                     >

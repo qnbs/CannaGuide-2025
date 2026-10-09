@@ -100,7 +100,7 @@ export const HydroReadingForm: React.FC = memo(() => {
                     type="button"
                     onClick={handleAddReading}
                     disabled={!formPh || !formEc || !formTemp}
-                    className="text-xs bg-[linear-gradient(135deg,rgba(var(--color-primary-400),0.95),rgba(var(--color-primary-600),0.92))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_0_20px_rgba(var(--color-primary-500),0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none text-white px-4 py-1.5 rounded-xl transition-all duration-300"
+                    className="text-xs bg-[linear-gradient(135deg,rgb(var(--color-primary-400)),rgb(var(--color-primary-600)))] shadow-[0_0_16px_rgba(var(--color-primary-500),0.3)] hover:shadow-[0_0_20px_rgba(var(--color-primary-500),0.4)] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none text-on-accent px-4 py-1.5 rounded-xl transition-all duration-300"
                 >
                     {t('equipmentView.hydroMonitoring.input.addReading')}
                 </button>

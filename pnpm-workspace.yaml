@@ -130,6 +130,10 @@ overrides:
     compression: '>=1.8.2 <2'
     source-map-js: '>=1.2.2 <2'
     browserslist: '>=4.28.7 <5'
+    # 4.7.9 is named by GHSA-8r5x-fm3f-whwj and GHSA-p8wg-vrv2-v86f (critical
+    # JS injection). conventional-changelog-writer still depends on <=4.7.9.
+    # Dev-only changelog tooling; stay on 4.x.
+    handlebars: '>=4.7.10 <5'
 
 # Advisories whose patched release is not on npm yet. Each entry must also
 # exist in scripts/security/audit-exceptions.json with reachability notes and

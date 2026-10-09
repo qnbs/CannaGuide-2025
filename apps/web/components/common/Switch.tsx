@@ -1,4 +1,5 @@
 import React, { useId, memo } from 'react'
+import { useSettingsRowLabelProps } from '@/components/common/settingsRowLabel'
 
 interface SwitchProps {
     checked: boolean
@@ -10,6 +11,11 @@ interface SwitchProps {
 export const Switch: React.FC<SwitchProps> = memo(
     ({ checked, onChange, label, 'aria-label': ariaLabel }) => {
         const id = useId()
+        // A visible <label htmlFor> is the accessible name. Passing that same
+        // text as aria-label makes some screen readers announce it twice.
+        // aria-label is only for an explicit ariaLabel, otherwise the row label.
+        const fallbackName = useSettingsRowLabelProps(ariaLabel)
+        const nameProps = label && !ariaLabel ? {} : fallbackName
         return (
             <div className="flex items-center">
                 {label && (
@@ -24,7 +30,7 @@ export const Switch: React.FC<SwitchProps> = memo(
                     id={id}
                     role="switch"
                     aria-checked={checked}
-                    aria-label={ariaLabel || label}
+                    {...nameProps}
                     onClick={() => onChange(!checked)}
                     className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 before:absolute before:-inset-[9px] before:content-[''] ${
                         checked

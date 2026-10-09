@@ -30,7 +30,10 @@ afterEach(() => {
 })
 
 const firstImport = (source: string): string | undefined => {
-    const match = source.match(/^\s*import\s+['"]([^'"]+)['"]/m)
+    // Side-effect imports and `import ... from '...'` both count. The match is
+    // anchored at the start so a later side-effect import cannot hide an earlier
+    // named import.
+    const match = source.match(/^\s*import\s+(?:type\s+)?(?:[^'"\n]+from\s+)?['"]([^'"]+)['"]/)
     return match?.[1]
 }
 
@@ -41,6 +44,10 @@ describe('zod jitless', () => {
         const setupSource = readFileSync(resolve(root, 'vitest.setup.ts'), 'utf8')
         expect(firstImport(indexSource)).toBe('./bootstrap/zodJitless')
         expect(firstImport(setupSource)).toBe('./bootstrap/zodJitless')
+        expect(firstImport("import { z } from 'zod'\nimport './bootstrap/zodJitless'\n")).toBe('zod')
+        expect(firstImport("import './bootstrap/zodJitless'\nimport { z } from 'zod'\n")).toBe(
+            './bootstrap/zodJitless',
+        )
     })
 
     it('keeps script-src free of unsafe-eval', () => {

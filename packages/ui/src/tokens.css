@@ -136,13 +136,13 @@
     --color-neutral-200: 226 232 240;
     --color-neutral-300: 203 213 225;
     --color-neutral-400: 148 163 184;
-    --color-neutral-500: 100 116 139;
+    --color-neutral-500: 116 132 155;
     --color-neutral-600: 71 85 105;
     --color-neutral-700: 51 65 85;
     --color-neutral-800: 30 41 59;
     --color-neutral-900: 15 23 42;
     --color-neutral-950: 2 6 23;
-    --color-text-on-accent: 255 255 255;
+    --color-text-on-accent: 15 23 42;
     --color-text-muted: 148 163 184; /* muted body text; AA-verified on every theme bg-component (check-contrast) */
     --color-success: 74 222 128;
     --color-warning: 251 176 60;
@@ -192,7 +192,7 @@
     --color-neutral-200: 229 231 235;
     --color-neutral-300: 209 213 219;
     --color-neutral-400: 156 163 175;
-    --color-neutral-500: 100 116 139;
+    --color-neutral-500: 129 144 165;
     --color-neutral-700: 51 65 85;
     --color-neutral-800: 30 41 59;
     --color-neutral-900: 15 23 42;
@@ -244,7 +244,7 @@
     --color-neutral-200: 233 213 255;
     --color-neutral-300: 216 180 254;
     --color-neutral-400: 192 132 252;
-    --color-neutral-500: 126 34 206;
+    --color-neutral-500: 176 111 231;
     --color-neutral-700: 88 28 135;
     --color-neutral-800: 59 7 100;
     --color-neutral-900: 44 28 69;
@@ -252,6 +252,7 @@
     --color-warning: 251 176 60;
     --color-danger: 248 113 113;
     --color-info: 34 211 238;
+    --color-text-on-accent: 255 255 255;
 }
 
 /* Desert Sky Theme - Refined */
@@ -296,14 +297,15 @@
     --color-neutral-200: 229 231 235;
     --color-neutral-300: 209 213 219;
     --color-neutral-400: 156 163 175;
-    --color-neutral-500: 107 114 128;
+    --color-neutral-500: 138 145 157;
     --color-neutral-700: 55 65 81;
     --color-neutral-800: 31 41 55;
     --color-neutral-900: 17 24 39;
     --color-success: 52 211 153;
     --color-warning: 251 146 60;
-    --color-danger: 239 68 68;
+    --color-danger: 241 96 96;
     --color-info: 96 165 250;
+    --color-text-on-accent: 255 255 255;
 }
 
 /* Rose Quartz Theme - Refined */
@@ -348,7 +350,7 @@
     --color-neutral-200: 251 207 232;
     --color-neutral-300: 249 168 212;
     --color-neutral-400: 244 114 182;
-    --color-neutral-500: 219 39 119;
+    --color-neutral-500: 230 103 159;
     --color-neutral-700: 157 23 77;
     --color-neutral-800: 86 11 38;
     --color-neutral-900: 69 28 54;
@@ -356,6 +358,7 @@
     --color-warning: 251 176 60;
     --color-danger: 248 113 113;
     --color-info: 34 211 238;
+    --color-text-on-accent: 255 255 255;
 }
 
 /* Rainbow Kush Theme */
@@ -402,7 +405,7 @@
     --color-neutral-200: 226 232 240;
     --color-neutral-300: 203 213 225;
     --color-neutral-400: 148 163 184;
-    --color-neutral-500: 100 116 139;
+    --color-neutral-500: 121 137 159;
     --color-neutral-600: 71 85 105;
     --color-neutral-700: 51 65 85;
     --color-neutral-800: 30 41 59;
@@ -411,7 +414,8 @@
     --color-success: 74 222 128;
     --color-warning: 251 191 36;
     --color-danger: 248 113 113;
-    --color-info: 59 130 246;
+    --color-info: 63 132 246;
+    --color-text-on-accent: 255 255 255;
 }
 
 /* OG Kush Green Theme – Deep earthy green, warm amber accents */
@@ -456,7 +460,7 @@
     --color-neutral-200: 187 247 208;
     --color-neutral-300: 134 239 172;
     --color-neutral-400: 74 222 128;
-    --color-neutral-500: 21 128 61;
+    --color-neutral-500: 25 155 74;
     --color-neutral-700: 20 83 45;
     --color-neutral-800: 5 46 22;
     --color-neutral-900: 12 20 14;
@@ -508,7 +512,7 @@
     --color-neutral-200: 233 213 255;
     --color-neutral-300: 216 180 254;
     --color-neutral-400: 192 132 252;
-    --color-neutral-500: 126 34 206;
+    --color-neutral-500: 167 95 229;
     --color-neutral-700: 88 28 135;
     --color-neutral-800: 59 7 100;
     --color-neutral-900: 26 20 40;
@@ -516,6 +520,7 @@
     --color-warning: 251 191 36;
     --color-danger: 248 113 113;
     --color-info: 192 132 252;
+    --color-text-on-accent: 255 255 255;
 }
 
 /* Lemon Skunk Theme – Bright citrus yellow-green, neon lime accents */

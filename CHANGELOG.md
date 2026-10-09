@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **fix(a11y):** the 14 curated WCAG-AA contrast pairs now pass. `neutral-500` is lightened per theme, desert `danger` and rainbow `info` move just enough to clear 4.5:1, and `text-on-accent` is dark on the four themes where white fails on `primary-600`. The `--color-primary-*` brand scales are unchanged. `node scripts/check-contrast.mjs` reports 0 below AA. `--strict` stays off. `.a11y-baseline.json` is unchanged because this slice does not remove jsx-a11y warnings.
+
 ### Security
 
 - **chore(deps):** `pnpm.overrides` — `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj: JS injection via an untrusted AST passed to `compile`; GHSA-p8wg-vrv2-v86f: prototype-method bypass when `allowProtoMethodsByDefault` is true; dev-only path via `conventional-changelog-writer`)

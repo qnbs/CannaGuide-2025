@@ -33,14 +33,14 @@ Measured state as of this pass:
 **This is not new, unscoped work.** A prior session (paused 2026-07-18, "weekly limit ~97%") did
 the classification and produced a full execution plan with three of six sub-phases merged:
 
-| Phase                                                                                                                    | Status      | PRs        |
-| ------------------------------------------------------------------------------------------------------------------------ | ----------- | ---------- |
-| WS-0 (Stryker mutation-testing hardening)                                                                                | Merged      | #452       |
-| WS-C1 (`text-slate-500` -> `text-muted`, 253 sites / 109 files)                                                          | Merged      | #453, #454 |
-| WS-C2 batch 1 (3 unambiguous chart-hex files -> `chartPalette`)                                                          | Merged      | #455       |
-| WS-C2 remaining (~60 hex sites, chart-adjacent files needing classify-or-exclude judgment)                               | Not started | --         |
-| WS-C3 (resolve the 14 AA-contrast pairs via token adjustment, then flip `check-contrast.mjs --strict` in a follow-up PR) | Not started | --         |
-| WS-C4 (fix the 76 real `control-has-associated-label` sites, then `check-a11y-ratchet.mjs --update` in the same PR)      | Not started | --         |
+| Phase                                                                                                                    | Status                                          | PRs        |
+| ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- | ---------- |
+| WS-0 (Stryker mutation-testing hardening)                                                                                | Merged                                          | #452       |
+| WS-C1 (`text-slate-500` -> `text-muted`, 253 sites / 109 files)                                                          | Merged                                          | #453, #454 |
+| WS-C2 batch 1 (3 unambiguous chart-hex files -> `chartPalette`)                                                          | Merged                                          | #455       |
+| WS-C2 remaining (~60 hex sites, chart-adjacent files needing classify-or-exclude judgment)                               | Not started                                     | --         |
+| WS-C3 (resolve the 14 AA-contrast pairs via token adjustment, then flip `check-contrast.mjs --strict` in a follow-up PR) | Token pairs fixed; `--strict` still a follow-up | --         |
+| WS-C4 (fix the 76 real `control-has-associated-label` sites, then `check-a11y-ratchet.mjs --update` in the same PR)      | Not started                                     | --         |
 
 Next step for whoever resumes this: branch fresh off `main`, work the file list documented in
 the original plan (chart-hex files needing case-by-case classification: `settingsConstants.ts`,

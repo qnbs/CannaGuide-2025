@@ -6,6 +6,10 @@ test('labeler does not use pull_request_target', () => {
     const yaml = readFileSync('.github/workflows/labeler.yml', 'utf8')
     assert.equal(yaml.includes('pull_request_target'), false)
     assert.match(yaml, /pull_request:\s*\n\s+types:\s*\[opened, synchronize, reopened\]/)
+    assert.match(
+        yaml,
+        /if:\s*github\.event\.pull_request\.head\.repo\.full_name == github\.repository/,
+    )
     assert.match(yaml, /contents:\s*read/)
     assert.match(yaml, /pull-requests:\s*write/)
     assert.match(yaml, /actions\/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13/)

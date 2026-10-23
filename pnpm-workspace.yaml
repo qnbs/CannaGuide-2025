@@ -88,18 +88,25 @@ overrides:
     # September 2026 moderate set. Upper bound stays on 4.x.
     fast-uri: '>=4.1.5 <5'
     protobufjs: '>=8.2.0'
-    ip-address: '>=10.3.1 <11'
+    ip-address: '>=10.7.4 <11'
     # 7.29.1 fixes GHSA-w293-vg96-wgc3 (BalancedPool TLS validation).
     # Stay on 7.x: undici 8 breaks jsdom 29 require() integration.
     undici: '>=7.29.1 <8.0.0'
-    qs: '>=6.15.2'
+    qs: '>=6.16.1 <7'
+    # jsPDF pins 0.8.2; 0.8.3 patches the ZIP decompression advisory.
+    fflate: '>=0.8.3 <0.9'
     uuid: '>=11.1.1'
     esbuild: '>=0.25.0'
     ws: '>=8.20.1'
     workbox-build: 7.4.1
     workbox-window: 7.4.1
     linkify-it: '>=5.0.1'
-    markdown-it: '>=14.2.0'
+    # Patched typedoc Markdown parser; keep the consumer on its 14.x API.
+    markdown-it: '>=14.3.3 <15'
+    # Include direct rendering and jsPDF's optional HTML conversion.
+    dompurify: '>=3.4.17 <4'
+    # Zod 3 consumers need their own compatibility review, not a forced major.
+    zod@4: '>=4.6.7 <5'
     # js-yaml is the worked example of why the bound matters. `js-yaml@3: '>=3.15.0'`
     # was UNBOUNDED, so pnpm resolved depcheck's `js-yaml@^3` all the way up to
     # 5.2.1 -- a two-major jump, into precisely the range GHSA-pm4m-ph32-ghv5 names

@@ -2,6 +2,13 @@
 
 **Stand:** 2026-07-14 · **Repo:** CannaGuide-2025 @ `main` · **Host:** Ubuntu 22.04.5 LTS (MATE), glibc 2.35, Kernel 5.15
 
+> **Historical migration evidence.** Version tables and proposed migrations below describe
+> the July checkpoint, not today's update backlog. Current executable setup and resource
+> rules are in [AGENTS.md](../AGENTS.md) and current scripts. The manual modernization
+> campaign is [GitHub #579](https://github.com/qnbs/CannaGuide-2025/issues/579).
+> Historical peer limits must be checked again before an upgrade. Section 8 retains the
+> measured typecheck comparison; it is not a timing guarantee for other hosts.
+
 Alle Versionsangaben sind **gemessen** (lokale Runtimes, `package.json`, `.github/`) bzw. **abgefragt** (npm-Registry am 2026-07-14). Peer-Ranges sind wörtlich aus den Paket-Manifesten zitiert — sie sind der Grund, warum zwei naheliegende Upgrades **nicht** gehen.
 
 ---
@@ -200,11 +207,15 @@ pnpm install --frozen-lockfile
 # Lockfile nicht regenerieren, deshalb hier explizit ohne:
 pnpm install --no-frozen-lockfile    # danach pnpm-lock.yaml committen
 
-pnpm run typecheck                   # der einzige lokal sinnvolle Vollcheck
-pnpm --filter web run test:run -- path/to/single.test.ts
+pnpm verify                          # betroffene Workspaces, seriell
+pnpm --filter @cannaguide/web test:run path/to/single.test.ts
 ```
 
-**`git push` fährt einen `pre-push`-Hook** (`.husky/pre-push`: `turbo run typecheck` + `lint:scopes` + `check:file-budget`) — auf dieser Maschine mehrere Minuten. Wenn der Typecheck unmittelbar davor schon grün lief, ist `git push --no-verify` legitim; sonst nicht.
+**Aktueller Hook-Vertrag:** `git push` führt den serialisierten `pre-push`-Hook aus:
+Dependency-/Speicherprüfung, scoped Typecheck, geänderte Lint-Scopes, Dateibudget und
+Dokumentationsmetriken. Hooks dürfen weder beim Commit noch beim Push umgangen werden.
+Root-Manifest-, Workspace-Policy- oder Lockfile-Änderungen wählen alle Workspaces aus;
+`scoped` bedeutet dann nicht klein. Ein vorheriger manueller Typecheck ersetzt den Hook nicht.
 
 **Niemals lokal:** volle Suite, E2E, Coverage, Mutation, Build-Matrix (3,7 GB RAM). Push den Branch, lies die Artefakte:
 
@@ -306,3 +317,64 @@ repo ended up with git hooks everyone bypassed via `--no-verify`.
   `--concurrency=1`. This is what `pre-push` calls.
 - `scripts/typecheck-filter.mjs` is only the `apps/web` wrapper around `tsc --noEmit` (it
   filters the known upstream RTK `TS2719`). It does no scoping of its own.
+
+---
+
+## 9. Manual security campaign checkpoint — 2026-10-24, Europe/Berlin
+
+Current owner: [GitHub #579](https://github.com/qnbs/CannaGuide-2025/issues/579), coordinated
+with Linear QNB-253/259; documentation acceptance remains QNB-266 / U12. This section records
+the first bounded implementation from base `c5088863c168819cd031dd37480ae37a9a7f6211`.
+It does not close the complete dependency inventory, documentation audit or product backlog.
+
+| Family                            | Previous resolution | Prepared resolution           | Primary evidence                                                                                                                                                                                               |
+| --------------------------------- | ------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DOMPurify, including jsPDF        | 3.4.16              | 3.4.17                        | [Release](https://github.com/cure53/DOMPurify/releases/tag/3.4.17), [critical advisory](https://github.com/advisories/GHSA-cg2g-xh64-v4q7), [high advisory](https://github.com/advisories/GHSA-mrv2-3pqr-j5jr) |
+| Vite                              | 8.3.2               | 8.3.5                         | [Release](https://github.com/vitejs/vite/releases/tag/v8.3.5), [patched floor 8.3.3](https://github.com/advisories/GHSA-587h-7wmj-h5pm)                                                                        |
+| Vitest / coverage / mocker family | 4.1.11              | 4.1.12 throughout             | [Backported mock hardening](https://github.com/vitest-dev/vitest/releases/tag/v4.1.12)                                                                                                                         |
+| markdown-it                       | 14.3.0              | 14.3.3, bounded below 15      | [npm metadata](https://registry.npmjs.org/markdown-it/14.3.3), [advisory](https://github.com/advisories/GHSA-gfr2-rv44-r23c)                                                                                   |
+| Zod 4                             | 4.4.2               | 4.6.7 throughout              | [Release](https://github.com/colinhacks/zod/releases/tag/v4.6.7), [advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)                                                                                |
+| qs                                | 6.15.2              | 6.16.1, bounded below 7       | [npm metadata](https://registry.npmjs.org/qs/6.16.1)                                                                                                                                                           |
+| ip-address                        | 10.4.0              | 10.7.4, bounded below 11      | [npm metadata](https://registry.npmjs.org/ip-address/10.7.4)                                                                                                                                                   |
+| fflate                            | 0.8.2 and 0.8.3     | 0.8.3 only, bounded below 0.9 | [npm metadata](https://registry.npmjs.org/fflate/0.8.3)                                                                                                                                                        |
+
+The package manager generated the lockfile, followed by a successful deliberate frozen
+install with the normal Husky preparation and dependency-state stamp. The 24-hour quarantine,
+build-script policy and three existing audit exceptions remain unchanged. qs and markdown-it
+were removed from `LEGACY_UNBOUNDED`; nine pre-existing entries remain. Native Rolldown pins
+move with Vite's Rolldown 1.2.15 dependency, not independently of their JS package.
+
+The local host is Ubuntu 22.04.5 x86_64 with 3793 MiB RAM. Node 24.22.1 was added through the
+existing fnm installation for checks after the official [security release](https://github.com/nodejs/node/releases/tag/v24.22.1)
+was confirmed. System Node and global defaults were not changed. The repository's existing
+`>=24.15.0 <25` contract and pnpm 11.19.0 remain in place; Node-26 admission remains separate.
+
+### Evidence and remaining qualification
+
+- Six focused Vitest files passed, **70 tests**, under Node 24.22.1: SafeHtml,
+  safetyPipeline, Zod jitless, AI response validation, export and PDF report tests. The
+  sanitizer fixtures use the real library and cover both retained useful text/markup and
+  removal of active HTML, SVG handlers and unsafe links. No models or AI requests were used.
+- Production audits at both `--audit-level=high --prod` and `--audit-level=low --prod`
+  returned **exit 0 with zero reported advisories** on the prepared lockfile. This is a
+  dependency-scan result, not proof of absence of all application vulnerabilities.
+- Both all-dependency audit levels still returned **exit 1**. The unignored findings are
+  Zod 3 (high), `@humanfs/node` (moderate) and `postcss-selector-parser` (moderate).
+  Zod 3 remains under Socket patch tooling and Chromium BiDi/Puppeteer. Current Socket
+  CLI metadata still selects socket-patch 2.0.0, which pins Zod 3.25.76; even socket-patch
+  5.0.1 retains that pin. A consumer migration needs separate compatibility proof. No
+  new ignored advisory or forced Zod major was added to turn this gate green.
+- extract-zip 2.0.2 and braces 3.0.4 were still unavailable in the live registry check.
+  The three existing exceptions expire **2026-11-15**; they were not extended.
+- A tiny fixed-code Vite build probe confirmed that the explicit esbuild minifier still
+  removes debug/log calls and debugger statements while preserving warn/error calls.
+  The Oxc-transform warning does not by itself demonstrate leaked production logging.
+  Full production build/browser/coverage qualification remains a CI task.
+- CI, review, merge, resulting-main, production/PWA lifecycle and desktop qualification
+  have not been established for this implementation. The all-dependency audit failure
+  remains a merge blocker; a successful production audit alone cannot satisfy CI Status.
+
+The initial local inventories enumerate 230 documentation/explanatory surfaces, 3502
+dependency/package/peer contexts and 281 toolchain uses. Enumeration is not final semantic
+acceptance: each entry retains read/check/disposition fields, and #551's pinned audit
+artifacts remain a separate historical source. The full U1/U12 reconciliation continues.

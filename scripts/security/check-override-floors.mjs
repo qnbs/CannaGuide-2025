@@ -80,12 +80,10 @@ const LEGACY_UNBOUNDED = new Map([
     ['tmp', '>=0.2.6'],
     ['lodash', '>=4.18.0'],
     ['protobufjs', '>=8.2.0'],
-    ['qs', '>=6.15.2'],
     ['uuid', '>=11.1.1'],
     ['esbuild', '>=0.25.0'],
     ['ws', '>=8.20.1'],
     ['linkify-it', '>=5.0.1'],
-    ['markdown-it', '>=14.2.0'],
 ])
 
 const read = (path, label) => {

@@ -24,22 +24,68 @@ function isInside(directory, file) {
     return path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path)
 }
 
+function findTagEnd(html, start) {
+    let quote = null
+    for (let index = start + 1; index < html.length; index += 1) {
+        const character = html[index]
+        if (quote) {
+            if (character === quote) quote = null
+        } else if (character === '"' || character === "'") {
+            quote = character
+        } else if (character === '>') {
+            return index
+        }
+    }
+    return -1
+}
+
+/** Yield relevant tags from actual markup; comments are skipped without rewriting HTML. */
+function* entryTags(html) {
+    let cursor = 0
+    while (cursor < html.length) {
+        const start = html.indexOf('<', cursor)
+        if (start < 0) return
+        if (html.startsWith('<!--', start)) {
+            const end = html.indexOf('-->', start + 4)
+            if (end < 0) throw new Error('Unterminated HTML comment in frontend index')
+            cursor = end + 3
+            continue
+        }
+
+        const end = findTagEnd(html, start)
+        if (end < 0) throw new Error('Unterminated HTML tag in frontend index')
+        const tag = html.slice(start, end + 1)
+        const name = /^<(script|link)\b/i.exec(tag)?.[1]?.toLowerCase()
+        cursor = end + 1
+        if (!name) continue
+
+        yield { name, tag }
+        if (name === 'script') {
+            const close = /<\/script\s*>/gi
+            close.lastIndex = cursor
+            const match = close.exec(html)
+            if (!match) throw new Error('Unterminated script element in frontend index')
+            cursor = close.lastIndex
+        }
+    }
+}
+
 /** Checks Vite's generated, quoted script/link attributes; never fetches remote content. */
 export function verifyFrontendAssets(configuration, expectedDist) {
     const dist = realpathSync(resolveFrontendDist(configuration, expectedDist))
     const index = resolve(dist, 'index.html')
     if (!isInside(dist, realpathSync(index))) throw new Error('index.html escapes frontendDist')
-    const html = readFileSync(index, 'utf8').replace(/<!--[\s\S]*?-->/g, '')
+    const html = readFileSync(index, 'utf8')
     const assets = new Set()
     let moduleEntries = 0
-    for (const match of html.matchAll(/<(script|link)\b[^>]*>/gi)) {
+    for (const { name, tag } of entryTags(html)) {
         const attributes = new Map(
-            Array.from(match[0].matchAll(/\b([\w-]+)\s*=\s*(["'])(.*?)\2/g), (attribute) => [
+            Array.from(tag.matchAll(/\b([\w-]+)\s*=\s*(["'])(.*?)\2/g), (attribute) => [
                 attribute[1].toLowerCase(),
                 attribute[3],
             ]),
         )
-        const script = match[1].toLowerCase() === 'script'
+        const script = name === 'script'
         const resourceLink = (attributes.get('rel') ?? '')
             .toLowerCase()
             .split(/\s+/)
@@ -57,11 +103,18 @@ export function verifyFrontendAssets(configuration, expectedDist) {
             continue
         }
         if (script && attributes.get('type') === 'module') moduleEntries += 1
+        if (!source.startsWith('/') || source.startsWith('//') || source.includes('\\')) {
+            throw new Error(`Embedded entry asset must be local and root-relative: ${source}`)
+        }
         const url = new URL(source, 'https://desktop.invalid/')
         if (url.origin !== 'https://desktop.invalid') {
             throw new Error(`Embedded entry asset must be local: ${source}`)
         }
-        const path = resolve(dist, `.${decodeURIComponent(url.pathname)}`)
+        const pathname = decodeURIComponent(url.pathname)
+        if (pathname.includes('\\')) {
+            throw new Error(`Embedded entry asset contains a path separator escape: ${source}`)
+        }
+        const path = resolve(dist, `.${pathname}`)
         if (!isInside(dist, path) || !isInside(dist, realpathSync(path))) {
             throw new Error(`Embedded entry asset escapes frontendDist: ${source}`)
         }
@@ -92,6 +145,18 @@ function main() {
         if (result.signal || result.status !== 0) {
             process.exitCode = result.status ?? 1
             return
+        }
+        if (mode === 'build') {
+            const prune = spawnSync(
+                process.execPath,
+                [resolve(repository, 'scripts/prune-bundled-ort-wasm.mjs')],
+                { cwd: repository, stdio: 'inherit' },
+            )
+            if (prune.error) throw prune.error
+            if (prune.signal || prune.status !== 0) {
+                process.exitCode = prune.status ?? 1
+                return
+            }
         }
     }
     if (mode !== 'dev') {

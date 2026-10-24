@@ -238,6 +238,70 @@ describe('backupService', () => {
             ])
             db.close()
         })
+
+        it('removes external image URLs from restored journal state', async () => {
+            const statePath = 'cannaguide-state.json'
+            const state = {
+                version: 6,
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [
+                                    {
+                                        type: 'photo',
+                                        details: {
+                                            imageId: 'photo-1',
+                                            imageUrl: 'https://images.example.test/tracker.png',
+                                        },
+                                    },
+                                    {
+                                        type: 'photo',
+                                        details: {
+                                            imageUrl: 'data:image/jpeg;base64,/9j/AA==',
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            }
+            mocks.loadZip.mockResolvedValueOnce({
+                files: { [statePath]: { name: statePath } },
+                file: (name: string) =>
+                    name === statePath ? { async: async () => JSON.stringify(state) } : null,
+            })
+
+            const result = await backupService.importBackup(
+                new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+            )
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                ...state,
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [
+                                    { type: 'photo', details: { imageId: 'photo-1' } },
+                                    {
+                                        type: 'photo',
+                                        details: {
+                                            imageUrl: 'data:image/jpeg;base64,/9j/AA==',
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            })
+        })
     })
 
     describe('downloadBlob', () => {

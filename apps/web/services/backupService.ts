@@ -90,6 +90,34 @@ const hasSafeStoredImageData = (image: unknown): boolean => {
     return SAFE_IMAGE_DATA_URL.test(image.data)
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const removeExternalJournalImageUrls = (state: unknown): void => {
+    if (!isRecord(state) || !isRecord(state.simulation)) return
+
+    const plants = state.simulation.plants
+    const plantEntities = Array.isArray(plants)
+        ? plants
+        : isRecord(plants) && isRecord(plants.entities)
+          ? Object.values(plants.entities)
+          : []
+
+    for (const plant of plantEntities) {
+        if (!isRecord(plant) || !Array.isArray(plant.journal)) continue
+        for (const entry of plant.journal) {
+            if (!isRecord(entry) || !isRecord(entry.details)) continue
+            if (
+                'imageUrl' in entry.details &&
+                (typeof entry.details.imageUrl !== 'string' ||
+                    !SAFE_IMAGE_DATA_URL.test(entry.details.imageUrl))
+            ) {
+                delete entry.details.imageUrl
+            }
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Service
 // ---------------------------------------------------------------------------
@@ -256,6 +284,12 @@ export const backupService = {
                 }
             }
 
+            // A restored Redux photo URL is rendered directly as an <img src>.
+            // Keep durable local raster data URLs and remove remote or malformed
+            // values before persisting an untrusted backup snapshot.
+            removeExternalJournalImageUrls(parsedState)
+            const sanitizedStateString = JSON.stringify(parsedState)
+
             // 3. Read metadata (optional)
             let metadata: BackupMetadata | null = null
             const metaFile = zip.file(METADATA_FILENAME)
@@ -294,7 +328,7 @@ export const backupService = {
             }
 
             // 4. Restore state to IndexedDB
-            const stateRestored = await replacePrimaryPersistedSnapshot(stateString)
+            const stateRestored = await replacePrimaryPersistedSnapshot(sanitizedStateString)
             if (!stateRestored) {
                 return {
                     success: false,

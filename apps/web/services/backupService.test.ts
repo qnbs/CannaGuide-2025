@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import 'fake-indexeddb/auto'
 
 const mocks = vi.hoisted(() => ({
     loadZip: vi.fn(),
@@ -106,6 +107,68 @@ describe('backupService', () => {
                 metadata: null,
                 error: 'settingsView.data.restoreBlocked',
             })
+        })
+
+        it('writes asynchronously decompressed image data in an active IndexedDB transaction', async () => {
+            const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
+            await new Promise<void>((resolve, reject) => {
+                removeRequest.onsuccess = () => resolve()
+                removeRequest.onerror = () => reject(removeRequest.error)
+                removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
+            })
+
+            const openRequest = indexedDB.open('CannaGuideDB', 1)
+            openRequest.onupgradeneeded = () => {
+                openRequest.result.createObjectStore('images', { keyPath: 'id' })
+            }
+            const db = await new Promise<IDBDatabase>((resolve, reject) => {
+                openRequest.onsuccess = () => resolve(openRequest.result)
+                openRequest.onerror = () => reject(openRequest.error)
+            })
+
+            const image = { id: 'photo-1', data: 'data:image/jpeg;base64,AA==' }
+            const imagePath = 'images/photo-1.json'
+            mocks.loadZip.mockResolvedValueOnce({
+                files: {
+                    'cannaguide-state.json': { name: 'cannaguide-state.json' },
+                    [imagePath]: { name: imagePath },
+                },
+                file: (name: string) => {
+                    if (name === 'cannaguide-state.json') {
+                        return { async: async () => '{"version":6}' }
+                    }
+                    if (name === imagePath) {
+                        return {
+                            async: async () => {
+                                await new Promise((resolve) => setTimeout(resolve, 0))
+                                return JSON.stringify(image)
+                            },
+                        }
+                    }
+                    return null
+                },
+            })
+
+            const importResult = await Promise.race([
+                backupService.importBackup(
+                    new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+                ),
+                new Promise<'timed-out'>((resolve) => setTimeout(() => resolve('timed-out'), 1000)),
+            ])
+
+            expect(importResult).not.toBe('timed-out')
+            expect(importResult).toMatchObject({ success: true })
+
+            const restoredImage = await new Promise<unknown>((resolve, reject) => {
+                const request = db
+                    .transaction('images', 'readonly')
+                    .objectStore('images')
+                    .get('photo-1')
+                request.onsuccess = () => resolve(request.result)
+                request.onerror = () => reject(request.error)
+            })
+            expect(restoredImage).toEqual(image)
+            db.close()
         })
     })
 

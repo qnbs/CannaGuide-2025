@@ -251,6 +251,35 @@ export const backupService = {
                 }
             }
 
+            // ZIP decompression is asynchronous. Resolve every image before opening
+            // an IndexedDB transaction, which can auto-commit while awaiting JSZip.
+            const imageFiles = Object.keys(zip.files).filter(
+                (name) =>
+                    name.startsWith(IMAGES_DIR) &&
+                    name.endsWith('.json') &&
+                    isSafeFilename(name.slice(IMAGES_DIR.length)),
+            )
+            const images: unknown[] = []
+
+            for (const imgPath of imageFiles) {
+                const imgFile = zip.file(imgPath)
+                if (!imgFile) continue
+                try {
+                    const imgString = await imgFile.async('string')
+                    const parsedImage: unknown = JSON.parse(imgString)
+                    if (
+                        parsedImage &&
+                        typeof parsedImage === 'object' &&
+                        'id' in parsedImage &&
+                        typeof parsedImage.id === 'string'
+                    ) {
+                        images.push(parsedImage)
+                    }
+                } catch {
+                    console.debug(`[backupService] Skipping corrupt image: ${imgPath}`)
+                }
+            }
+
             // 4. Restore state to IndexedDB
             const stateRestored = await replacePrimaryPersistedSnapshot(stateString)
             if (!stateRestored) {
@@ -262,52 +291,28 @@ export const backupService = {
             }
 
             // 5. Restore images
-            const imageFiles = Object.keys(zip.files).filter(
-                (name) =>
-                    name.startsWith(IMAGES_DIR) &&
-                    name.endsWith('.json') &&
-                    isSafeFilename(name.slice(IMAGES_DIR.length)),
-            )
-
-            if (imageFiles.length > 0) {
+            if (images.length > 0) {
+                const db = await new Promise<IDBDatabase>((resolve, reject) => {
+                    const request = indexedDB.open('CannaGuideDB')
+                    request.onsuccess = () => resolve(request.result)
+                    request.onerror = () => reject(request.error)
+                })
                 try {
-                    const db = await new Promise<IDBDatabase>((resolve, reject) => {
-                        const request = indexedDB.open('CannaGuideDB')
-                        request.onsuccess = () => resolve(request.result)
-                        request.onerror = () => reject(request.error)
-                    })
-
                     if (db.objectStoreNames.contains('images')) {
                         const tx = db.transaction('images', 'readwrite')
                         const store = tx.objectStore('images')
-
-                        for (const imgPath of imageFiles) {
-                            const imgFile = zip.file(imgPath)
-                            if (!imgFile) continue
-                            try {
-                                const imgString = await imgFile.async('string')
-                                const imgData = JSON.parse(imgString)
-                                if (
-                                    imgData &&
-                                    typeof imgData === 'object' &&
-                                    'id' in imgData &&
-                                    typeof imgData.id === 'string'
-                                ) {
-                                    store.put(imgData)
-                                }
-                            } catch {
-                                console.debug(`[backupService] Skipping corrupt image: ${imgPath}`)
-                            }
-                        }
-
-                        await new Promise<void>((resolve, reject) => {
+                        const transactionComplete = new Promise<void>((resolve, reject) => {
                             tx.oncomplete = () => resolve()
                             tx.onerror = () => reject(tx.error)
+                            tx.onabort = () => reject(tx.error)
                         })
+
+                        // Queue writes synchronously so the transaction remains active.
+                        for (const image of images) store.put(image)
+                        await transactionComplete
                     }
+                } finally {
                     db.close()
-                } catch {
-                    console.debug('[backupService] Could not restore images')
                 }
             }
 

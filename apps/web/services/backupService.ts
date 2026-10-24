@@ -5,7 +5,8 @@
 // Imports restore the state and re-hydrate images.
 //
 // Security: Validates JSON structure on import, rejects oversized payloads,
-// sanitises filenames via allowlist. No eval(), no dynamic code execution.
+// sanitises filenames via allowlist, and keeps imported image URLs local.
+// No eval(), no dynamic code execution.
 // ---------------------------------------------------------------------------
 
 import JSZip from 'jszip'
@@ -23,6 +24,8 @@ const IMAGES_DIR = 'images/'
 const METADATA_FILENAME = 'backup-meta.json'
 const MAX_IMPORT_SIZE_BYTES = 512 * 1024 * 1024 // 512 MB hard limit
 const FILENAME_SAFE_REGEX = /^[a-zA-Z0-9._-]+$/
+const SAFE_IMAGE_DATA_URL =
+    /^data:image\/(?:jpeg|png|webp|gif|heic|heif);base64,[a-z0-9+/]+={0,2}$/iu
 
 // ---------------------------------------------------------------------------
 // Types
@@ -70,6 +73,21 @@ const isSafeFilename = (name: string): boolean => {
             FILENAME_SAFE_REGEX.test(part) &&
             !part.includes('..'),
     )
+}
+
+const hasSafeStoredImageData = (image: unknown): boolean => {
+    if (
+        typeof image !== 'object' ||
+        image === null ||
+        !('id' in image) ||
+        typeof image.id !== 'string' ||
+        !('data' in image) ||
+        typeof image.data !== 'string'
+    ) {
+        return false
+    }
+
+    return SAFE_IMAGE_DATA_URL.test(image.data)
 }
 
 // ---------------------------------------------------------------------------
@@ -267,12 +285,7 @@ export const backupService = {
                 try {
                     const imgString = await imgFile.async('string')
                     const parsedImage: unknown = JSON.parse(imgString)
-                    if (
-                        parsedImage &&
-                        typeof parsedImage === 'object' &&
-                        'id' in parsedImage &&
-                        typeof parsedImage.id === 'string'
-                    ) {
+                    if (hasSafeStoredImageData(parsedImage)) {
                         images.push(parsedImage)
                     }
                 } catch {

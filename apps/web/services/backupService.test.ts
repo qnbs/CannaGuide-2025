@@ -170,6 +170,74 @@ describe('backupService', () => {
             expect(restoredImage).toEqual(image)
             db.close()
         })
+
+        it('does not restore image entries with external or missing image data', async () => {
+            const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
+            await new Promise<void>((resolve, reject) => {
+                removeRequest.onsuccess = () => resolve()
+                removeRequest.onerror = () => reject(removeRequest.error)
+                removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
+            })
+
+            const openRequest = indexedDB.open('CannaGuideDB', 1)
+            openRequest.onupgradeneeded = () => {
+                openRequest.result.createObjectStore('images', { keyPath: 'id' })
+            }
+            const db = await new Promise<IDBDatabase>((resolve, reject) => {
+                openRequest.onsuccess = () => resolve(openRequest.result)
+                openRequest.onerror = () => reject(openRequest.error)
+            })
+
+            const statePath = 'cannaguide-state.json'
+            const validPath = 'images/photo-valid.json'
+            const externalPath = 'images/photo-external.json'
+            const incompletePath = 'images/photo-incomplete.json'
+            const entries: Record<string, { async: () => Promise<string> }> = {
+                [statePath]: { async: async () => '{"version":6}' },
+                [validPath]: {
+                    async: async () =>
+                        JSON.stringify({
+                            id: 'photo-valid',
+                            data: 'data:image/jpeg;base64,/9j/AA==',
+                            createdAt: 10,
+                        }),
+                },
+                [externalPath]: {
+                    async: async () =>
+                        JSON.stringify({
+                            id: 'photo-external',
+                            data: 'https://images.example.test/tracker.png',
+                            createdAt: 11,
+                        }),
+                },
+                [incompletePath]: {
+                    async: async () => JSON.stringify({ id: 'photo-incomplete', createdAt: 12 }),
+                },
+            }
+            mocks.loadZip.mockResolvedValueOnce({
+                files: Object.fromEntries(Object.keys(entries).map((name) => [name, { name }])),
+                file: (name: string) => entries[name] ?? null,
+            })
+
+            const result = await backupService.importBackup(
+                new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+            )
+            const restoredImages = await new Promise<unknown[]>((resolve, reject) => {
+                const request = db.transaction('images', 'readonly').objectStore('images').getAll()
+                request.onsuccess = () => resolve(request.result)
+                request.onerror = () => reject(request.error)
+            })
+
+            expect(result.success).toBe(true)
+            expect(restoredImages).toEqual([
+                {
+                    id: 'photo-valid',
+                    data: 'data:image/jpeg;base64,/9j/AA==',
+                    createdAt: 10,
+                },
+            ])
+            db.close()
+        })
     })
 
     describe('downloadBlob', () => {

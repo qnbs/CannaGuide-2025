@@ -13,6 +13,29 @@ This project is web-first with multiple web distribution targets; **automated** 
 
 **PR previews:** Use **Vercel** once the project is connected; do not rely on Netlify until that workflow is re-enabled. The old Netlify-based Playwright + Lighthouse gate in `preview-validation.yml` should only be restored when Netlify deploy previews work again (see checklist below).
 
+## Read-only production parity check
+
+After the deploy workflows for a resulting `main` commit have had time to finish, compare
+the public hosts against the live remote `main` SHA:
+
+```bash
+CANNAGUIDE_EXPECTED_MAIN_SHA="$(git ls-remote origin refs/heads/main | cut -f1)"
+node scripts/production-parity.mjs --expected-sha "$CANNAGUIDE_EXPECTED_MAIN_SHA" --json
+```
+
+The probe sends unauthenticated `GET`/`HEAD` requests and waits up to 30 minutes for all
+three `version.json` files to report that SHA. It then checks configured security and cache
+headers, the manifest and icon targets, the service worker and its entry registration, and
+known platform-specific routes and redirects. `DRIFT` exits 1; unavailable or invalid
+evidence exits 2. Use `--wait-seconds 0` for an immediate observation without a deployment
+wait. Each response body inspected by the probe is capped at 4 MiB; an oversized or
+unreadable body is reported as unknown. The probe counts modulepreload links but does not
+fetch those assets, model files, or WASM runtimes. A matching `version.json` is deployment
+metadata, not proof that every served asset byte or offline interaction is identical.
+
+This read-only check does not publish a release, change provider settings, or qualify
+desktop installers.
+
 ## GitHub Pages (primary)
 
 Production builds are deployed automatically via `.github/workflows/deploy.yml` when CI passes on `main`.

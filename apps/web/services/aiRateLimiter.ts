@@ -251,6 +251,20 @@ interface MonthlyBudget {
     spent: number
 }
 
+const isFiniteNonNegativeNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0
+
+const isMonthlyBudget = (value: unknown): value is MonthlyBudget =>
+    typeof value === 'object' &&
+    value !== null &&
+    'limit' in value &&
+    isFiniteNonNegativeNumber(value.limit) &&
+    'month' in value &&
+    typeof value.month === 'string' &&
+    /^\d{4}-\d{2}$/.test(value.month) &&
+    'spent' in value &&
+    isFiniteNonNegativeNumber(value.spent)
+
 function currentMonthKey(): string {
     const now = new Date()
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
@@ -260,8 +274,8 @@ function loadBudget(): MonthlyBudget {
     try {
         const raw = localStorage.getItem(BUDGET_STORAGE_KEY)
         if (!raw) return { limit: 0, month: currentMonthKey(), spent: 0 }
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-        const parsed = JSON.parse(raw) as MonthlyBudget
+        const parsed: unknown = JSON.parse(raw)
+        if (!isMonthlyBudget(parsed)) return { limit: 0, month: currentMonthKey(), spent: 0 }
         // Reset if month rolled over
         if (parsed.month !== currentMonthKey()) {
             return { limit: parsed.limit, month: currentMonthKey(), spent: 0 }

@@ -30,6 +30,19 @@ describe('aiRateLimiter', () => {
             aiRateLimiter.acquireSlot(`endpoint-${index}`)
         }
 
-        expect(() => aiRateLimiter.acquireSlot('endpoint-over-limit')).toThrow('ai.error.rateLimited')
+        expect(() => aiRateLimiter.acquireSlot('endpoint-over-limit')).toThrow(
+            'ai.error.rateLimited',
+        )
+    })
+
+    it('falls back to an unlimited budget when persisted budget values are not finite numbers', () => {
+        const month = new Date().toISOString().slice(0, 7)
+        localStorage.setItem(
+            'cg.ai.monthlyBudget',
+            JSON.stringify({ limit: '5000', month, spent: '3200' }),
+        )
+
+        expect(aiRateLimiter.getMonthlyBudget()).toEqual({ limit: 0, month, spent: 0 })
+        expect(aiRateLimiter.getBudgetUsagePercent()).toBeNull()
     })
 })

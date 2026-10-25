@@ -47,9 +47,78 @@ vi.mock('@/i18n', () => ({
 import { backupService } from '@/services/backupService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 
+const VALID_PNG_DATA_URL =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/F7sAAAAASUVORK5CYII='
+const decodeImageMock = vi.fn()
+
+const createPngHeaderDataUrl = (width: number, height: number): string => {
+    const header = new Uint8Array([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52, 0, 0,
+        0, 0, 0, 0, 0, 0,
+    ])
+    const view = new DataView(header.buffer)
+    view.setUint32(16, width)
+    view.setUint32(20, height)
+    return `data:image/png;base64,${btoa(String.fromCharCode(...header))}`
+}
+
+const importMockBackup = (state: unknown, images: Record<string, unknown> = {}) => {
+    const entries = new Map<string, string>([
+        ['cannaguide-state.json', JSON.stringify(state)],
+        ...Object.entries(images).map(([id, image]): [string, string] => [
+            `images/${id}.json`,
+            JSON.stringify(image),
+        ]),
+    ])
+    mocks.loadZip.mockResolvedValueOnce({
+        files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
+        file: (name: string) => {
+            const value = entries.get(name)
+            return value === undefined ? null : { async: async () => value }
+        },
+    })
+    return backupService.importBackup(new File(['zip'], 'backup.zip', { type: 'application/zip' }))
+}
+
+const recreateImageDatabase = async (): Promise<IDBDatabase> => {
+    const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
+    await new Promise<void>((resolve, reject) => {
+        removeRequest.onsuccess = () => resolve()
+        removeRequest.onerror = () => reject(removeRequest.error)
+        removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
+    })
+
+    const openRequest = indexedDB.open('CannaGuideDB', 1)
+    openRequest.onupgradeneeded = () => {
+        openRequest.result.createObjectStore('images', { keyPath: 'id' })
+    }
+    return new Promise((resolve, reject) => {
+        openRequest.onsuccess = () => resolve(openRequest.result)
+        openRequest.onerror = () => reject(openRequest.error)
+    })
+}
+
+const writeStoredImage = (db: IDBDatabase, image: unknown): Promise<void> =>
+    new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite')
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+        tx.onabort = () => reject(tx.error)
+        tx.objectStore('images').put(image)
+    })
+
+const readStoredImage = (db: IDBDatabase, id: string): Promise<unknown> =>
+    new Promise((resolve, reject) => {
+        const request = db.transaction('images', 'readonly').objectStore('images').get(id)
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => reject(request.error)
+    })
+
 describe('backupService', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        decodeImageMock.mockResolvedValue({ width: 1, height: 1, close: vi.fn() })
+        vi.stubGlobal('createImageBitmap', decodeImageMock)
         mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
     })
 
@@ -57,6 +126,7 @@ describe('backupService', () => {
         // Windows runs this suite with isolate: false. clearAllMocks keeps
         // spy implementations, so restore the real URL methods before the next file.
         vi.restoreAllMocks()
+        vi.unstubAllGlobals()
     })
 
     describe('exportBackup', () => {
@@ -131,7 +201,8 @@ describe('backupService', () => {
                             async: async () =>
                                 JSON.stringify({
                                     id: 'photo-1',
-                                    data: 'data:image/jpeg;base64,AA==',
+                                    data: VALID_PNG_DATA_URL,
+                                    createdAt: 10,
                                 }),
                         }
                     }
@@ -165,7 +236,7 @@ describe('backupService', () => {
                 openRequest.onerror = () => reject(openRequest.error)
             })
 
-            const image = { id: 'photo-1', data: 'data:image/jpeg;base64,AA==' }
+            const image = { id: 'photo-1', data: VALID_PNG_DATA_URL, createdAt: 10 }
             const imagePath = 'images/photo-1.json'
             mocks.loadZip.mockResolvedValueOnce({
                 files: {
@@ -237,7 +308,7 @@ describe('backupService', () => {
                     async: async () =>
                         JSON.stringify({
                             id: 'photo-valid',
-                            data: 'data:image/jpeg;base64,/9j/AA==',
+                            data: VALID_PNG_DATA_URL,
                             createdAt: 10,
                         }),
                 },
@@ -271,7 +342,7 @@ describe('backupService', () => {
             expect(restoredImages).toEqual([
                 {
                     id: 'photo-valid',
-                    data: 'data:image/jpeg;base64,/9j/AA==',
+                    data: VALID_PNG_DATA_URL,
                     createdAt: 10,
                 },
             ])
@@ -298,7 +369,7 @@ describe('backupService', () => {
                                     {
                                         type: 'photo',
                                         details: {
-                                            imageUrl: 'data:image/jpeg;base64,/9j/AA==',
+                                            imageUrl: VALID_PNG_DATA_URL,
                                         },
                                     },
                                 ],
@@ -331,7 +402,7 @@ describe('backupService', () => {
                                     {
                                         type: 'photo',
                                         details: {
-                                            imageUrl: 'data:image/jpeg;base64,/9j/AA==',
+                                            imageUrl: VALID_PNG_DATA_URL,
                                         },
                                     },
                                 ],
@@ -340,6 +411,255 @@ describe('backupService', () => {
                     },
                 },
             })
+        })
+    })
+
+    describe('restore hardening regressions', () => {
+        it('removes remote saved strain-tip images before restoring state', async () => {
+            const state = {
+                savedItems: {
+                    savedStrainTips: {
+                        ids: ['tip-1', 'tip-2'],
+                        entities: {
+                            'tip-1': { id: 'tip-1', imageUrl: 'https://tracker.example/image.png' },
+                            'tip-2': { id: 'tip-2', imageUrl: VALID_PNG_DATA_URL },
+                        },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state)
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                savedItems: {
+                    savedStrainTips: {
+                        ids: ['tip-1', 'tip-2'],
+                        entities: {
+                            'tip-1': { id: 'tip-1' },
+                            'tip-2': { id: 'tip-2', imageUrl: VALID_PNG_DATA_URL },
+                        },
+                    },
+                },
+            })
+        })
+
+        it('rejects undecodable image bytes and removes their journal references', async () => {
+            decodeImageMock.mockRejectedValueOnce(new Error('invalid raster bytes'))
+            const state = {
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [{ type: 'photo', details: { imageId: 'photo-invalid' } }],
+                            },
+                        },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state, {
+                'photo-invalid': {
+                    id: 'photo-invalid',
+                    data: VALID_PNG_DATA_URL,
+                    createdAt: 10,
+                },
+            })
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': { journal: [{ type: 'photo', details: {} }] },
+                        },
+                    },
+                },
+            })
+        })
+
+        it('rejects raster dimensions above the bounded decode limit before browser decoding', async () => {
+            const state = {
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [{ type: 'photo', details: { imageId: 'photo-large' } }],
+                            },
+                        },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state, {
+                'photo-large': {
+                    id: 'photo-large',
+                    data: createPngHeaderDataUrl(8193, 8193),
+                    createdAt: 10,
+                },
+            })
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(decodeImageMock).not.toHaveBeenCalled()
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': { journal: [{ type: 'photo', details: {} }] },
+                        },
+                    },
+                },
+            })
+        })
+
+        it('rejects missing or invalid image timestamps and removes their references', async () => {
+            const state = {
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [
+                                    { type: 'photo', details: { imageId: 'photo-legacy' } },
+                                    { type: 'photo', details: { imageId: 'photo-invalid-time' } },
+                                ],
+                            },
+                        },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state, {
+                'photo-legacy': { id: 'photo-legacy', data: VALID_PNG_DATA_URL },
+                'photo-invalid-time': {
+                    id: 'photo-invalid-time',
+                    data: VALID_PNG_DATA_URL,
+                    createdAt: 'yesterday',
+                },
+            })
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(decodeImageMock).not.toHaveBeenCalled()
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [
+                                    { type: 'photo', details: {} },
+                                    { type: 'photo', details: {} },
+                                ],
+                            },
+                        },
+                    },
+                },
+            })
+        })
+
+        it('preserves an existing image and removes references when its backup entry is rejected', async () => {
+            const db = await recreateImageDatabase()
+            const existingImage = {
+                id: 'photo-collision',
+                data: VALID_PNG_DATA_URL,
+                createdAt: 10,
+            }
+            await writeStoredImage(db, existingImage)
+            const state = {
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': {
+                                journal: [
+                                    { type: 'photo', details: { imageId: 'photo-collision' } },
+                                ],
+                            },
+                        },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state, {
+                'photo-collision': {
+                    id: 'photo-collision',
+                    data: 'https://tracker.example/image.png',
+                    createdAt: 20,
+                },
+            })
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+            const preservedImage = await readStoredImage(db, 'photo-collision')
+            db.close()
+
+            expect(result.success).toBe(true)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: {
+                            'plant-1': { journal: [{ type: 'photo', details: {} }] },
+                        },
+                    },
+                },
+            })
+            expect(preservedImage).toEqual(existingImage)
+        })
+
+        it('blocks a conflicting valid image ID before replacing persisted state', async () => {
+            const db = await recreateImageDatabase()
+            const existingImage = {
+                id: 'photo-collision',
+                data: VALID_PNG_DATA_URL,
+                createdAt: 10,
+            }
+            await writeStoredImage(db, existingImage)
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {
+                    'photo-collision': {
+                        id: 'photo-collision',
+                        data: VALID_PNG_DATA_URL,
+                        createdAt: 11,
+                    },
+                },
+            )
+            const preservedImage = await readStoredImage(db, 'photo-collision')
+            db.close()
+
+            expect(result.success).toBe(false)
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+            expect(preservedImage).toEqual(existingImage)
+        })
+
+        it('does not rewrite an existing image when backup content is identical', async () => {
+            const db = await recreateImageDatabase()
+            const existingImage = {
+                id: 'photo-existing',
+                data: VALID_PNG_DATA_URL,
+                createdAt: 10,
+            }
+            await writeStoredImage(db, existingImage)
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {
+                    'photo-existing': existingImage,
+                },
+            )
+            const preservedImage = await readStoredImage(db, 'photo-existing')
+            db.close()
+
+            expect(result.success).toBe(true)
+            expect(preservedImage).toEqual(existingImage)
         })
     })
 

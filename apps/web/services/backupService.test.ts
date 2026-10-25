@@ -109,6 +109,44 @@ describe('backupService', () => {
             })
         })
 
+        it('reports failure when backed-up images have no destination store', async () => {
+            const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
+            await new Promise<void>((resolve, reject) => {
+                removeRequest.onsuccess = () => resolve()
+                removeRequest.onerror = () => reject(removeRequest.error)
+                removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
+            })
+            const imagePath = 'images/photo-1.json'
+            mocks.loadZip.mockResolvedValueOnce({
+                files: {
+                    'cannaguide-state.json': { name: 'cannaguide-state.json' },
+                    [imagePath]: { name: imagePath },
+                },
+                file: (name: string) => {
+                    if (name === 'cannaguide-state.json') {
+                        return { async: async () => '{"version":6}' }
+                    }
+                    if (name === imagePath) {
+                        return {
+                            async: async () =>
+                                JSON.stringify({
+                                    id: 'photo-1',
+                                    data: 'data:image/jpeg;base64,AA==',
+                                }),
+                        }
+                    }
+                    return null
+                },
+            })
+
+            const result = await backupService.importBackup(
+                new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+            )
+
+            expect(result.success).toBe(false)
+            expect(result.error).toContain('Image storage unavailable')
+        })
+
         it('writes asynchronously decompressed image data in an active IndexedDB transaction', async () => {
             const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
             await new Promise<void>((resolve, reject) => {

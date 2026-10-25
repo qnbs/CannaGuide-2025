@@ -345,19 +345,22 @@ export const backupService = {
                     request.onerror = () => reject(request.error)
                 })
                 try {
-                    if (db.objectStoreNames.contains('images')) {
-                        const tx = db.transaction('images', 'readwrite')
-                        const store = tx.objectStore('images')
-                        const transactionComplete = new Promise<void>((resolve, reject) => {
-                            tx.oncomplete = () => resolve()
-                            tx.onerror = () => reject(tx.error)
-                            tx.onabort = () => reject(tx.error)
-                        })
-
-                        // Queue writes synchronously so the transaction remains active.
-                        for (const image of images) store.put(image)
-                        await transactionComplete
+                    if (!db.objectStoreNames.contains('images')) {
+                        throw new Error(
+                            'Image storage unavailable; backup images were not restored',
+                        )
                     }
+                    const tx = db.transaction('images', 'readwrite')
+                    const store = tx.objectStore('images')
+                    const transactionComplete = new Promise<void>((resolve, reject) => {
+                        tx.oncomplete = () => resolve()
+                        tx.onerror = () => reject(tx.error)
+                        tx.onabort = () => reject(tx.error)
+                    })
+
+                    // Queue writes synchronously so the transaction remains active.
+                    for (const image of images) store.put(image)
+                    await transactionComplete
                 } finally {
                     db.close()
                 }

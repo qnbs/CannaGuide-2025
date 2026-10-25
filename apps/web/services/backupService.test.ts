@@ -445,6 +445,40 @@ describe('backupService', () => {
             })
         })
 
+        it('normalizes legacy saved strain-tip image URLs before validating them', async () => {
+            const rawPngBase64 = VALID_PNG_DATA_URL.slice(VALID_PNG_DATA_URL.indexOf(',') + 1)
+            const state = {
+                savedItems: {
+                    savedStrainTips: {
+                        ids: ['tip-raw', 'tip-nested'],
+                        entities: {
+                            'tip-raw': { id: 'tip-raw', imageUrl: rawPngBase64 },
+                            'tip-nested': {
+                                id: 'tip-nested',
+                                imageUrl: `data:image/png;base64,${VALID_PNG_DATA_URL}`,
+                            },
+                        },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state)
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                savedItems: {
+                    savedStrainTips: {
+                        ids: ['tip-raw', 'tip-nested'],
+                        entities: {
+                            'tip-raw': { id: 'tip-raw', imageUrl: VALID_PNG_DATA_URL },
+                            'tip-nested': { id: 'tip-nested', imageUrl: VALID_PNG_DATA_URL },
+                        },
+                    },
+                },
+            })
+        })
+
         it('rejects undecodable image bytes and removes their journal references', async () => {
             decodeImageMock.mockRejectedValueOnce(new Error('invalid raster bytes'))
             const state = {

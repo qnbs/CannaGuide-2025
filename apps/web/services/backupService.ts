@@ -14,6 +14,7 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 import { getT } from '@/i18n'
+import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 import type { StoredImageData } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -264,6 +265,14 @@ const isSafeRasterImageDataUrl = async (value: unknown): Promise<boolean> => {
     }
 }
 
+const normalizeSafeSavedTipImageUrl = async (value: unknown): Promise<string | undefined> => {
+    if (typeof value !== 'string' || value.length > MAX_IMAGE_DATA_URL_LENGTH) return undefined
+
+    const normalized = normalizeImageDataUrl(value)
+    if (!normalized || normalized.length > MAX_IMAGE_DATA_URL_LENGTH) return undefined
+    return (await isSafeRasterImageDataUrl(normalized)) ? normalized : undefined
+}
+
 const sanitizeImportedStateImageReferences = async (
     state: unknown,
     rejectedImageIds: ReadonlySet<string>,
@@ -303,7 +312,12 @@ const sanitizeImportedStateImageReferences = async (
     if (!isRecord(entities)) return
     for (const tip of Object.values(entities)) {
         if (!isRecord(tip) || !('imageUrl' in tip)) continue
-        if (!(await isSafeRasterImageDataUrl(tip.imageUrl))) delete tip.imageUrl
+        const normalizedImageUrl = await normalizeSafeSavedTipImageUrl(tip.imageUrl)
+        if (normalizedImageUrl) {
+            tip.imageUrl = normalizedImageUrl
+        } else {
+            delete tip.imageUrl
+        }
     }
 }
 

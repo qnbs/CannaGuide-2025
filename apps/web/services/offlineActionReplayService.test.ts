@@ -169,6 +169,33 @@ describe('offlineActionReplayService', () => {
         unregister()
     })
 
+    it('acknowledges a readiness probe without mutating or persisting state', async () => {
+        const { registerOfflineActionReplayListener } = await import('./offlineActionReplayService')
+        const store = createTestStore()
+        const addEventListener = vi.mocked(navigator.serviceWorker.addEventListener)
+        const flushPersistedState = vi.fn().mockResolvedValue(true)
+        const replyPort = { postMessage: vi.fn(), close: vi.fn() }
+        const unregister = registerOfflineActionReplayListener(store, flushPersistedState)
+        const listener = addEventListener.mock.calls.at(-1)?.[1] as unknown as (
+            event: MessageEvent,
+        ) => Promise<void>
+
+        await listener({
+            data: { type: 'REPLAY_OFFLINE_ACTION_PROBE', queueId: 45 },
+            ports: [replyPort],
+        } as unknown as MessageEvent)
+
+        expect(flushPersistedState).not.toHaveBeenCalled()
+        expect(replyPort.postMessage).toHaveBeenCalledWith({
+            type: 'REPLAY_OFFLINE_ACTION_READY_ACK',
+            queueId: 45,
+            ready: true,
+        })
+        expect(replyPort.close).toHaveBeenCalledOnce()
+        expect(store.getState().simulation.plants.ids).toHaveLength(0)
+        unregister()
+    })
+
     it('sends a negative acknowledgement when persistence fails', async () => {
         const { registerOfflineActionReplayListener } = await import('./offlineActionReplayService')
         const store = createTestStore()

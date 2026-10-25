@@ -515,15 +515,16 @@ CVE lists through 256 entries, and rejects 257 entries with one `too_big` issue.
 wrapper and native scanner binary are unchanged; no remote/network scan was run as part of this
 local qualification.
 
-The service-worker replay now sends each action to every currently open window and removes the
-queue item only after every client confirms the updated state was flushed to IndexedDB. This
-prevents an older tab snapshot from overwriting a replay acknowledged only by another tab. If any
-client times out or persistence fails, all clients are still tried, the item remains retryable,
-and later actions wait for the next sync. Permanently unsupported or orphaned actions remain
-stored with a blocked marker while following actions proceed. The Node VM regression exercises
-the actual service-worker helpers for no-client, missing-ack with another ready client,
-all-client acknowledgement before deletion, and permanent rejection before a valid action.
-Lighthouse, Socket scanning, and security workflow commands remain unchanged.
+The service-worker replay probes same-scope app windows without mutating state, ignores unrelated
+same-origin pages, and selects one ready tab (focused tabs first) to replay and flush each action.
+Only that tab writes the full Redux snapshot, so one replay does not force competing full-state
+writes from multiple tabs. If no app tab is ready or the selected tab cannot confirm persistence, the queue item remains
+retryable and later actions wait for the next sync. A permanent rejection occurs before mutation,
+so another ready tab may try the action; when all ready tabs reject it, the item remains stored
+with a blocked marker while following actions proceed. The Node VM regression exercises the actual
+service-worker helpers for readiness fallback, scope filtering, single-tab persistence, missing
+acknowledgements, and permanent rejection before a valid action. Lighthouse, Socket scanning, and
+security workflow commands remain unchanged.
 
 On the final local lockfile after a frozen pnpm 11.19.0 install (Node 24.22.0), the unchanged
 `pnpm audit --audit-level=high --prod` and `pnpm audit --audit-level=high` each exited **0**.

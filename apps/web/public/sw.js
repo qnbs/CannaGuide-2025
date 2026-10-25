@@ -72,8 +72,66 @@ const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.s
 const DB_NAME = 'CannaGuideDB'
 const DB_VERSION = 4
 const OFFLINE_ACTIONS_STORE = 'offline_actions'
+const REPLAY_ACTION_PROBE_TYPE = 'REPLAY_OFFLINE_ACTION_PROBE'
+const REPLAY_ACTION_READY_ACK_TYPE = 'REPLAY_OFFLINE_ACTION_READY_ACK'
 const REPLAY_ACTION_ACK_TYPE = 'REPLAY_OFFLINE_ACTION_ACK'
 const REPLAY_ACTION_ACK_TIMEOUT_MS = 5000
+
+function isApplicationWindowClient(client) {
+    try {
+        const scope = new URL(self.registration.scope)
+        const url = new URL(client.url)
+        const scopePath = scope.pathname.endsWith('/') ? scope.pathname : `${scope.pathname}/`
+        return (
+            url.origin === scope.origin &&
+            (url.pathname === scope.pathname || url.pathname.startsWith(scopePath))
+        )
+    } catch {
+        return false
+    }
+}
+
+function orderReplayClients(clients) {
+    return clients
+        .filter(isApplicationWindowClient)
+        .sort(
+            (left, right) =>
+                Number(right.focused === true) - Number(left.focused === true) ||
+                Number(right.visibilityState === 'visible') -
+                    Number(left.visibilityState === 'visible'),
+        )
+}
+
+function requestReplayReadiness(client, queueId) {
+    return new Promise((resolve) => {
+        const channel = new MessageChannel()
+        let settled = false
+        const finish = (ready) => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeoutId)
+            channel.port1.close()
+            resolve(ready)
+        }
+        const timeoutId = setTimeout(() => finish(false), REPLAY_ACTION_ACK_TIMEOUT_MS)
+
+        channel.port1.onmessage = (event) => {
+            const acknowledgement = event.data
+            finish(
+                acknowledgement?.type === REPLAY_ACTION_READY_ACK_TYPE &&
+                    acknowledgement.queueId === queueId &&
+                    acknowledgement.ready === true,
+            )
+        }
+        channel.port1.onmessageerror = () => finish(false)
+
+        try {
+            client.postMessage({ type: REPLAY_ACTION_PROBE_TYPE, queueId }, [channel.port2])
+        } catch {
+            finish(false)
+        }
+    })
+}
 // Note: This app is client-only (no backend). Background sync asks one open client to
 // replay each queued action locally and waits for persisted-state acknowledgement.
 const REMINDER_DB_NAME = 'CannaGuideReminderDB'
@@ -720,24 +778,39 @@ async function syncData() {
         }
 
         console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
-        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        const clients = orderReplayClients(
+            await self.clients.matchAll({ type: 'window', includeUncontrolled: true }),
+        )
 
-        // Every open store must apply an action before it can be removed from
-        // the queue. Contact all clients even when an earlier one is not ready;
-        // retain the action if any client cannot confirm persisted state.
+        // Probe is read-only. Select one ready app tab to perform the full-state
+        // persistence write; asking every tab to flush can let a stale snapshot
+        // overwrite newer data in another tab. Out-of-scope same-origin pages
+        // are excluded before probing.
         if (clients.length === 0) {
-            throw new Error('[SW] No window client is available; queued actions were retained.')
+            throw new Error(
+                '[SW] No application window is available; queued actions were retained.',
+            )
+        }
+
+        const readiness = await Promise.all(
+            clients.map((client) => requestReplayReadiness(client, queuedActions[0].id)),
+        )
+        const readyClients = clients.filter((_client, index) => readiness[index])
+        if (readyClients.length === 0) {
+            throw new Error(
+                '[SW] No application window acknowledged readiness; queued actions were retained.',
+            )
         }
 
         for (const action of queuedActions) {
-            const outcomes = await Promise.allSettled(
-                clients.map((client) => requestReplayAcknowledgement(client, action)),
-            )
-            const transientFailure = outcomes.find((outcome) => outcome.status === 'rejected')
-            if (transientFailure) {
-                throw transientFailure.reason
+            let persisted = false
+            for (const client of readyClients) {
+                if (await requestReplayAcknowledgement(client, action)) {
+                    persisted = true
+                    break
+                }
             }
-            if (outcomes.some((outcome) => outcome.value === false)) {
+            if (!persisted) {
                 await markQueuedActionBlocked(action.id)
                 continue
             }

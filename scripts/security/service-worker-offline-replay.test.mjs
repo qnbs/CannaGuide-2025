@@ -8,6 +8,13 @@ import { fileURLToPath } from 'node:url'
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const serviceWorkerSource = readFileSync(join(repositoryRoot, 'apps/web/public/sw.js'), 'utf8')
+const clientHelpersStart = serviceWorkerSource.indexOf('function isApplicationWindowClient(')
+const clientHelpersEnd = serviceWorkerSource.indexOf(
+    '// Note: This app is client-only',
+    clientHelpersStart,
+)
+assert.ok(clientHelpersStart >= 0 && clientHelpersEnd > clientHelpersStart)
+const clientHelpersSource = serviceWorkerSource.slice(clientHelpersStart, clientHelpersEnd)
 const syncHelpersStart = serviceWorkerSource.indexOf('function openDB()')
 const syncHelpersEnd = serviceWorkerSource.indexOf(
     '// Background Sync event listener',
@@ -15,10 +22,10 @@ const syncHelpersEnd = serviceWorkerSource.indexOf(
 )
 assert.ok(syncHelpersStart >= 0 && syncHelpersEnd > syncHelpersStart)
 const syncHelpersSource = serviceWorkerSource.slice(syncHelpersStart, syncHelpersEnd)
-const ackConstants = serviceWorkerSource.match(
-    /const REPLAY_ACTION_ACK_TYPE = .*\nconst REPLAY_ACTION_ACK_TIMEOUT_MS = .*/u,
+const replayConstants = serviceWorkerSource.match(
+    /const REPLAY_ACTION_PROBE_TYPE = .*\nconst REPLAY_ACTION_READY_ACK_TYPE = .*\nconst REPLAY_ACTION_ACK_TYPE = .*\nconst REPLAY_ACTION_ACK_TIMEOUT_MS = .*/u,
 )
-assert.ok(ackConstants, 'the service worker declares its replay acknowledgement contract')
+assert.ok(replayConstants, 'the service worker declares its replay acknowledgement contract')
 
 function createSyncHarness({ records, clients }) {
     const remaining = records.map(({ key, value }) => ({ key, value: { ...value } }))
@@ -83,6 +90,13 @@ function createSyncHarness({ records, clients }) {
         },
     }
 
+    const scope = 'https://example.test/CannaGuide-2025/'
+    const windowClients = clients.map((client) => ({
+        url: scope,
+        visibilityState: 'visible',
+        focused: false,
+        ...client,
+    }))
     const context = {
         indexedDB: {
             open: () => {
@@ -94,8 +108,12 @@ function createSyncHarness({ records, clients }) {
                 return request
             },
         },
-        self: { clients: { matchAll: async () => clients } },
+        self: {
+            registration: { scope },
+            clients: { matchAll: async () => windowClients },
+        },
         MessageChannel,
+        URL,
         setTimeout: (callback, delay, ...args) =>
             setTimeout(callback, Math.min(delay, 25), ...args),
         clearTimeout,
@@ -110,7 +128,8 @@ function createSyncHarness({ records, clients }) {
         const REMINDER_DB_VERSION = 1
         const REMINDER_STORE = 'grow_reminders'
         const REMINDER_COOLDOWN_MS = 14400000
-        ${ackConstants[0]}
+        ${replayConstants[0]}
+        ${clientHelpersSource}
         ${syncHelpersSource}
         globalThis.syncData = syncData
     `
@@ -136,33 +155,38 @@ const queuedAction = {
 test('service worker retains queued actions when there is no window client', async () => {
     const harness = createSyncHarness({ records: [queuedAction], clients: [] })
 
-    await assert.rejects(harness.syncData(), /No window client is available/u)
+    await assert.rejects(harness.syncData(), /No application window is available/u)
     assert.deepEqual(harness.deleted, [])
     assert.equal(harness.remaining.length, 1)
 })
 
-test('service worker retains queued actions when the client does not acknowledge replay', async () => {
+test('service worker retains queued actions when no application client acknowledges readiness', async () => {
     const client = { postMessage: () => undefined }
     const harness = createSyncHarness({ records: [queuedAction], clients: [client] })
 
-    await assert.rejects(harness.syncData(), /did not acknowledge persisted state/u)
+    await assert.rejects(harness.syncData(), /No application window acknowledged readiness/u)
     assert.deepEqual(harness.deleted, [])
     assert.equal(harness.remaining.length, 1)
 })
 
-test('service worker tries every open client and retains an action if one cannot acknowledge', async () => {
+test('service worker probes other app clients and replays through one ready client', async () => {
     const messages = []
     const firstClient = {
-        postMessage: (message) => messages.push(`first:${message.queueId}`),
+        postMessage: (message) => messages.push(`first:${message.type}:${message.queueId}`),
     }
     const readyClient = {
         postMessage: (message, ports) => {
-            messages.push(`ready:${message.queueId}`)
+            messages.push(`ready:${message.type}:${message.queueId}`)
             setTimeout(() => {
                 ports[0].postMessage({
-                    type: 'REPLAY_OFFLINE_ACTION_ACK',
+                    type:
+                        message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
+                            ? 'REPLAY_OFFLINE_ACTION_READY_ACK'
+                            : 'REPLAY_OFFLINE_ACTION_ACK',
                     queueId: message.queueId,
-                    persisted: true,
+                    ...(message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
+                        ? { ready: true }
+                        : { persisted: true }),
                 })
             }, 1)
         },
@@ -172,36 +196,92 @@ test('service worker tries every open client and retains an action if one cannot
         clients: [firstClient, readyClient],
     })
 
-    await assert.rejects(harness.syncData(), /did not acknowledge persisted state/u)
+    await harness.syncData()
 
-    assert.deepEqual(messages, ['first:27', 'ready:27'])
-    assert.deepEqual(harness.deleted, [])
-    assert.equal(harness.remaining.length, 1)
+    assert.deepEqual(messages, [
+        'first:REPLAY_OFFLINE_ACTION_PROBE:27',
+        'ready:REPLAY_OFFLINE_ACTION_PROBE:27',
+        'ready:REPLAY_OFFLINE_ACTION:27',
+    ])
+    assert.deepEqual(harness.deleted, [27])
+    assert.equal(harness.remaining.length, 0)
 })
 
-test('service worker removes an action only after every open client persists it', async () => {
-    let harness
+test('service worker asks only one ready app client to persist a replay', async () => {
+    const messages = []
     const makeClient = (name) => ({
+        focused: name === 'focused',
         postMessage: (message, ports) => {
+            messages.push(`${name}:${message.type}`)
             setTimeout(() => {
-                harness.eventOrder.push(`ack:${name}:${message.queueId}`)
-                ports[0].postMessage({
-                    type: 'REPLAY_OFFLINE_ACTION_ACK',
-                    queueId: message.queueId,
-                    persisted: true,
-                })
+                ports[0].postMessage(
+                    message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
+                        ? {
+                              type: 'REPLAY_OFFLINE_ACTION_READY_ACK',
+                              queueId: message.queueId,
+                              ready: true,
+                          }
+                        : {
+                              type: 'REPLAY_OFFLINE_ACTION_ACK',
+                              queueId: message.queueId,
+                              persisted: true,
+                          },
+                )
             }, 1)
         },
     })
-    harness = createSyncHarness({
+    const harness = createSyncHarness({
         records: [queuedAction],
-        clients: [makeClient('first'), makeClient('second')],
+        clients: [makeClient('background'), makeClient('focused')],
     })
 
     await harness.syncData()
 
     assert.deepEqual(harness.deleted, [27])
-    assert.deepEqual(harness.eventOrder, ['ack:first:27', 'ack:second:27', 'delete:27'])
+    assert.deepEqual(messages, [
+        'focused:REPLAY_OFFLINE_ACTION_PROBE',
+        'background:REPLAY_OFFLINE_ACTION_PROBE',
+        'focused:REPLAY_OFFLINE_ACTION',
+    ])
+    assert.deepEqual(harness.eventOrder, ['delete:27'])
+})
+
+test('service worker ignores same-origin windows outside the application scope', async () => {
+    const messages = []
+    const makeReadyClient = (name, url) => ({
+        url,
+        postMessage: (message, ports) => {
+            messages.push(`${name}:${message.type}`)
+            setTimeout(() => {
+                ports[0].postMessage(
+                    message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
+                        ? {
+                              type: 'REPLAY_OFFLINE_ACTION_READY_ACK',
+                              queueId: message.queueId,
+                              ready: true,
+                          }
+                        : {
+                              type: 'REPLAY_OFFLINE_ACTION_ACK',
+                              queueId: message.queueId,
+                              persisted: true,
+                          },
+                )
+            }, 1)
+        },
+    })
+    const harness = createSyncHarness({
+        records: [queuedAction],
+        clients: [
+            makeReadyClient('unrelated', 'https://example.test/other-app/'),
+            makeReadyClient('prefix-lookalike', 'https://example.test/CannaGuide-2025-other/'),
+            makeReadyClient('app', 'https://example.test/CannaGuide-2025/journal'),
+        ],
+    })
+
+    await harness.syncData()
+
+    assert.deepEqual(messages, ['app:REPLAY_OFFLINE_ACTION_PROBE', 'app:REPLAY_OFFLINE_ACTION'])
+    assert.deepEqual(harness.deleted, [27])
 })
 
 test('service worker deletes an action only after a matching persisted-state acknowledgement', async () => {
@@ -210,9 +290,14 @@ test('service worker deletes an action only after a matching persisted-state ack
             const replyPort = ports[0]
             setTimeout(() => {
                 replyPort.postMessage({
-                    type: 'REPLAY_OFFLINE_ACTION_ACK',
+                    type:
+                        message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
+                            ? 'REPLAY_OFFLINE_ACTION_READY_ACK'
+                            : 'REPLAY_OFFLINE_ACTION_ACK',
                     queueId: message.queueId,
-                    persisted: true,
+                    ...(message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
+                        ? { ready: true }
+                        : { persisted: true }),
                 })
             }, 1)
         },
@@ -234,22 +319,28 @@ test('service worker quarantines permanently rejected actions and continues repl
     const messages = []
     const makeClient = (name) => ({
         postMessage: (message, ports) => {
-            messages.push(`${name}:${message.queueId}`)
+            messages.push(`${name}:${message.type}:${message.queueId}`)
             const replyPort = ports[0]
             setTimeout(() => {
                 replyPort.postMessage(
-                    message.queueId === 27
+                    message.type === 'REPLAY_OFFLINE_ACTION_PROBE'
                         ? {
-                              type: 'REPLAY_OFFLINE_ACTION_ACK',
+                              type: 'REPLAY_OFFLINE_ACTION_READY_ACK',
                               queueId: message.queueId,
-                              persisted: false,
-                              rejected: true,
+                              ready: true,
                           }
-                        : {
-                              type: 'REPLAY_OFFLINE_ACTION_ACK',
-                              queueId: message.queueId,
-                              persisted: true,
-                          },
+                        : message.queueId === 27
+                          ? {
+                                type: 'REPLAY_OFFLINE_ACTION_ACK',
+                                queueId: message.queueId,
+                                persisted: false,
+                                rejected: true,
+                            }
+                          : {
+                                type: 'REPLAY_OFFLINE_ACTION_ACK',
+                                queueId: message.queueId,
+                                persisted: true,
+                            },
                 )
             }, 1)
         },
@@ -267,7 +358,13 @@ test('service worker quarantines permanently rejected actions and continues repl
     assert.equal(harness.remaining[0].key, 27)
     assert.equal(harness.remaining[0].value.replayBlocked, true)
     assert.deepEqual(harness.eventOrder, ['put:27', 'delete:28'])
-    assert.deepEqual(messages, ['first:27', 'second:27', 'first:28', 'second:28'])
+    assert.deepEqual(messages, [
+        'first:REPLAY_OFFLINE_ACTION_PROBE:27',
+        'second:REPLAY_OFFLINE_ACTION_PROBE:27',
+        'first:REPLAY_OFFLINE_ACTION:27',
+        'second:REPLAY_OFFLINE_ACTION:27',
+        'first:REPLAY_OFFLINE_ACTION:28',
+    ])
 
     const messagesBeforeRetry = messages.length
     await harness.syncData()

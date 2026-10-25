@@ -6,6 +6,8 @@ import {
     OFFLINE_ACTION_TYPES,
     SW_MESSAGE_REPLAY_OFFLINE_ACTION,
     SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
+    SW_MESSAGE_REPLAY_OFFLINE_ACTION_PROBE,
+    SW_MESSAGE_REPLAY_OFFLINE_ACTION_READY_ACK,
 } from '@/constants/offlineActions'
 import type { JournalEntry } from '@/types'
 import { applyQueuedJournalEntry } from '@/stores/slices/simulationSlice'
@@ -92,9 +94,32 @@ export const registerOfflineActionReplayListener = (
     unregisterMessageListener?.()
 
     const handler = async (event: MessageEvent): Promise<void> => {
-        const payload = parseSwReplayPayload(event.data)
-        const queueId = isRecord(event.data) ? event.data.queueId : undefined
+        const message = event.data
+        const queueId = isRecord(message) ? message.queueId : undefined
         const replyPort = event.ports[0]
+        if (isRecord(message) && message.type === SW_MESSAGE_REPLAY_OFFLINE_ACTION_PROBE) {
+            if (!Number.isSafeInteger(queueId) || !replyPort || !flushPersistedState) {
+                replyPort?.close()
+                return
+            }
+            try {
+                replyPort.postMessage({
+                    type: SW_MESSAGE_REPLAY_OFFLINE_ACTION_READY_ACK,
+                    queueId,
+                    ready: true,
+                })
+            } catch (error) {
+                console.debug(
+                    '[offlineReplay] Sending the readiness acknowledgement failed:',
+                    error,
+                )
+            } finally {
+                replyPort.close()
+            }
+            return
+        }
+
+        const payload = parseSwReplayPayload(message)
         if (!payload) {
             replyPort?.close()
             return

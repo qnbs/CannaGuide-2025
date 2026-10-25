@@ -274,13 +274,14 @@ export const isSafeRasterImageDataUrl = async (value: unknown): Promise<boolean>
     if (typeof decode !== 'function') return false
     let bitmap: ImageBitmap | undefined
     try {
-        bitmap = await decode(new Blob([bytes], { type: mimeType }))
+        const decodedBitmap = await decode(new Blob([bytes], { type: mimeType }))
+        bitmap = decodedBitmap
         const dimensionsMatch = dimensionCandidates.some(
             ({ width, height }) =>
-                (bitmap.width === width && bitmap.height === height) ||
-                (bitmap.width === height && bitmap.height === width),
+                (decodedBitmap.width === width && decodedBitmap.height === height) ||
+                (decodedBitmap.width === height && decodedBitmap.height === width),
         )
-        return dimensionsMatch && isWithinImageBounds(bitmap.width, bitmap.height)
+        return dimensionsMatch && isWithinImageBounds(decodedBitmap.width, decodedBitmap.height)
     } catch {
         return false
     } finally {

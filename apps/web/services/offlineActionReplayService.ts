@@ -108,12 +108,13 @@ export const registerOfflineActionReplayListener = (
             return
         }
 
-        const acknowledge = (persisted: boolean): void => {
+        const acknowledge = (persisted: boolean, rejected = false): void => {
             try {
                 replyPort.postMessage({
                     type: SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
                     queueId,
                     persisted,
+                    ...(rejected ? { rejected: true } : {}),
                 })
             } catch (error) {
                 console.debug('[offlineReplay] Sending the replay acknowledgement failed:', error)
@@ -122,7 +123,7 @@ export const registerOfflineActionReplayListener = (
             }
         }
         if (!replayOfflineAction(store, payload)) {
-            acknowledge(false)
+            acknowledge(false, true)
             return
         }
 

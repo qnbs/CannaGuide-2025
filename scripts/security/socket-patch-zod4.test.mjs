@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import Module, { createRequire } from 'node:module'
+import { createRequire } from 'node:module'
 import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const socketPatchVersion = '2.0.0'
-const socketPatchHash = '4af5920ae229cc67b7cc6d2a48b5a59f41676e596c5dfbd39faee135f9d07808'
+const socketPatchHash = '375db8e6bdf3a95986598bdffcecc5defdbe14f45de028c075c3397a02d59e33'
 
 function findPackageRoot(entry) {
     let directory = dirname(entry)
@@ -45,25 +45,26 @@ function makeRecord(cves) {
     }
 }
 
-test('Socket Patch schema compiles and runs from the patched Zod 4 package', () => {
+test('Socket Patch public schema export runs from the patched Zod 4 package', () => {
     const cliManifestPath = join(repositoryRoot, 'node_modules/@socketsecurity/cli/package.json')
     const cli = JSON.parse(readFileSync(cliManifestPath, 'utf8'))
     assert.equal(cli.version, '1.4.1')
 
     const cliRequire = createRequire(cliManifestPath)
-    const schemaSource = realpathSync(
-        join(
-            repositoryRoot,
-            'node_modules/@socketsecurity/socket-patch/src/schema/manifest-schema.ts',
-        ),
-    )
-    assert.ok(
-        existsSync(schemaSource),
-        'the patched schema source is present in the installed package',
-    )
-    const socketPatch = findPackageRoot(schemaSource)
+    const schemaEntry = realpathSync(cliRequire.resolve('@socketsecurity/socket-patch/schema'))
+    assert.ok(existsSync(schemaEntry), 'the package public schema export resolves to a real file')
+    const socketPatch = findPackageRoot(schemaEntry)
     assert.equal(socketPatch.manifest.version, socketPatchVersion)
     assert.match(socketPatch.directory, new RegExp(`patch_hash=${socketPatchHash}`, 'u'))
+    assert.equal(
+        schemaEntry,
+        join(socketPatch.directory, 'dist/schema/manifest-schema.js'),
+        'the CLI consumer resolves the declared runtime export',
+    )
+    assert.ok(
+        existsSync(join(socketPatch.directory, 'dist/schema/manifest-schema.d.ts')),
+        'the declared TypeScript export is present',
+    )
 
     const patchPath = join(repositoryRoot, 'patches/@socketsecurity__socket-patch@2.0.0.patch')
     const patchHash = createHash('sha256').update(readFileSync(patchPath)).digest('hex')
@@ -76,20 +77,7 @@ test('Socket Patch schema compiles and runs from the patched Zod 4 package', () 
     const socketRequire = createRequire(socketPatch.manifestPath)
     const zod = findPackageRoot(socketRequire.resolve('zod'))
     assert.equal(zod.manifest.version, '4.6.7')
-    const rootRequire = createRequire(join(repositoryRoot, 'package.json'))
-    const typescript = rootRequire('typescript')
-    const transpiled = typescript.transpileModule(readFileSync(schemaSource, 'utf8'), {
-        compilerOptions: {
-            module: typescript.ModuleKind.CommonJS,
-            target: typescript.ScriptTarget.ES2022,
-            esModuleInterop: true,
-        },
-    })
-    const schemaModule = new Module(schemaSource)
-    schemaModule.filename = schemaSource
-    schemaModule.paths = Module._nodeModulePaths(dirname(schemaSource))
-    schemaModule._compile(transpiled.outputText, schemaSource)
-    const { PatchRecordSchema } = schemaModule.exports
+    const { PatchRecordSchema } = cliRequire('@socketsecurity/socket-patch/schema')
 
     assert.equal(
         PatchRecordSchema.safeParse(makeRecord(['CVE-2024-12345'])).success,

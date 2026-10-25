@@ -395,5 +395,15 @@ test('Chromium BiDi 14.0.0 collection guard protects the installed Lighthouse ma
             guard.safeParse(zodApi.set(zodApi.string()).max(2), new Set(['a', 'b'])).success,
             true,
         )
+
+        const defaultCollection = zodApi
+            .array(zodApi.string())
+            .max(2)
+            .default(['default'])
+        assert.equal(
+            guard.safeParse(defaultCollection, undefined).success,
+            true,
+            'small default collections still parse',
+        )
     })
 })

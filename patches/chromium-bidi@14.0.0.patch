@@ -1,5 +1,5 @@
 diff --git a/lib/cjs/protocol-parser/protocol-parser.js b/lib/cjs/protocol-parser/protocol-parser.js
-index 9b726b18ebf64eb8dc24dc587ecda59fd5b5afa3..078c5531bea034ddcac7d8843db05186146ae370 100644
+index 9b726b18ebf64eb8dc24dc587ecda59fd5b5afa3..a908fd02adb7ff43cf56b2bf6f4be60f64818ac3 100644
 --- a/lib/cjs/protocol-parser/protocol-parser.js
 +++ b/lib/cjs/protocol-parser/protocol-parser.js
 @@ -55,18 +55,18 @@ exports.parseObject = parseObject;
@@ -26,10 +26,10 @@ index 9b726b18ebf64eb8dc24dc587ecda59fd5b5afa3..078c5531bea034ddcac7d8843db05186
          .join(' ');
 diff --git a/lib/common/collection-guard.cjs b/lib/common/collection-guard.cjs
 new file mode 100644
-index 0000000000000000000000000000000000000000..8b45ff85c01027a26690dcfc1281cc4a5d036933
+index 0000000000000000000000000000000000000000..24bec6ae5b5f1a615d0f4af8e575d81d2ee60183
 --- /dev/null
 +++ b/lib/common/collection-guard.cjs
-@@ -0,0 +1,325 @@
+@@ -0,0 +1,326 @@
 +const PREFLIGHT_COLLECTION_SIZE = 64;
 +
 +function invalidFromSchema(schema, value, path) {
@@ -118,8 +118,9 @@ index 0000000000000000000000000000000000000000..8b45ff85c01027a26690dcfc1281cc4a
 +    if (type === "nullable" && value === null) {
 +        return { invalid: false, collectionError: false, issue: null };
 +    }
++    // Zod 4 exposes the materialized default value instead of a callable factory.
 +    if (type === "default" && value === undefined) {
-+        return inspect(def.defaultValue(), schema, path, withinCollection, depth + 1);
++        return inspect(def.defaultValue, def.innerType, path, withinCollection, depth + 1);
 +    }
 +    if (type === "prefault" && value === undefined) {
 +        return inspect(def.defaultValue, def.innerType, path, withinCollection, depth + 1);
@@ -356,7 +357,7 @@ index 0000000000000000000000000000000000000000..8b45ff85c01027a26690dcfc1281cc4a
 +
 +module.exports = { findInvalidCollection, safeParse };
 diff --git a/lib/esm/protocol-parser/protocol-parser.js b/lib/esm/protocol-parser/protocol-parser.js
-index a4daaae1f2deab3aa1e9d4186b51247c8098696f..8fbf26eb8b3a945f136fa90dacac05b7966bfc19 100644
+index a4daaae1f2deab3aa1e9d4186b51247c8098696f..c5d4d8c4fc7a23274456d0e4a5ab54f9b39dd7fe 100644
 --- a/lib/esm/protocol-parser/protocol-parser.js
 +++ b/lib/esm/protocol-parser/protocol-parser.js
 @@ -18,18 +18,18 @@

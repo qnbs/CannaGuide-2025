@@ -204,4 +204,35 @@ describe('offlineActionReplayService', () => {
         expect(replyPort.close).toHaveBeenCalledOnce()
         unregister()
     })
+
+    it('marks permanently unreplayable actions as rejected', async () => {
+        const { registerOfflineActionReplayListener } = await import('./offlineActionReplayService')
+        const store = createTestStore()
+        const addEventListener = vi.mocked(navigator.serviceWorker.addEventListener)
+        const flushPersistedState = vi.fn().mockResolvedValue(true)
+        const replyPort = { postMessage: vi.fn(), close: vi.fn() }
+        const unregister = registerOfflineActionReplayListener(store, flushPersistedState)
+        const listener = addEventListener.mock.calls.at(-1)?.[1] as unknown as (
+            event: MessageEvent,
+        ) => Promise<void>
+
+        await listener({
+            data: {
+                type: SW_MESSAGE_REPLAY_OFFLINE_ACTION,
+                queueId: 44,
+                payload: { type: 'unsupported/action' },
+            },
+            ports: [replyPort],
+        } as unknown as MessageEvent)
+
+        expect(flushPersistedState).not.toHaveBeenCalled()
+        expect(replyPort.postMessage).toHaveBeenCalledWith({
+            type: SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
+            queueId: 44,
+            persisted: false,
+            rejected: true,
+        })
+        expect(replyPort.close).toHaveBeenCalledOnce()
+        unregister()
+    })
 })

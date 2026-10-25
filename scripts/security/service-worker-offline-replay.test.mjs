@@ -56,6 +56,20 @@ function createSyncHarness({ records, clients }) {
                     })
                     return request
                 },
+                get: (key) => {
+                    const request = {}
+                    setImmediate(() => {
+                        request.result = remaining.find((record) => record.key === key)?.value
+                        request.onsuccess?.()
+                    })
+                    return request
+                },
+                put: (value, key) => {
+                    eventOrder.push(`put:${key}`)
+                    const record = remaining.find((item) => item.key === key)
+                    if (record) record.value = { ...value }
+                    setImmediate(() => transaction.oncomplete?.())
+                },
                 delete: (key) => {
                     eventOrder.push(`delete:${key}`)
                     deleted.push(key)
@@ -156,4 +170,46 @@ test('service worker deletes an action only after a matching persisted-state ack
     assert.deepEqual(harness.deleted, [27])
     assert.equal(harness.remaining.length, 0)
     assert.deepEqual(harness.eventOrder, ['delete:27'])
+})
+
+test('service worker quarantines permanently rejected actions and continues replay', async () => {
+    const invalidAction = {
+        key: 27,
+        value: { type: 'unsupported/action', idempotencyKey: 'unsupported-27' },
+    }
+    const client = {
+        postMessage: (message, ports) => {
+            const replyPort = ports[0]
+            setTimeout(() => {
+                replyPort.postMessage(
+                    message.queueId === 27
+                        ? {
+                              type: 'REPLAY_OFFLINE_ACTION_ACK',
+                              queueId: message.queueId,
+                              persisted: false,
+                              rejected: true,
+                          }
+                        : {
+                              type: 'REPLAY_OFFLINE_ACTION_ACK',
+                              queueId: message.queueId,
+                              persisted: true,
+                          },
+                )
+            }, 1)
+        },
+    }
+    const validAction = { key: 28, value: queuedAction.value }
+    const harness = createSyncHarness({ records: [invalidAction, validAction], clients: [client] })
+
+    await harness.syncData()
+
+    assert.deepEqual(harness.deleted, [28])
+    assert.equal(harness.remaining.length, 1)
+    assert.equal(harness.remaining[0].key, 27)
+    assert.equal(harness.remaining[0].value.replayBlocked, true)
+    assert.deepEqual(harness.eventOrder, ['put:27', 'delete:28'])
+
+    const messagesBeforeRetry = harness.eventOrder.length
+    await harness.syncData()
+    assert.equal(harness.eventOrder.length, messagesBeforeRetry)
 })

@@ -504,7 +504,9 @@ async function getQueuedActions() {
         let keys = []
 
         transaction.oncomplete = () => {
-            const result = items.map((item, index) => ({ id: keys[index], ...item }))
+            const result = items
+                .map((item, index) => ({ id: keys[index], ...item }))
+                .filter((item) => item.replayBlocked !== true)
             resolve(result)
         }
         transaction.onerror = () => reject(transaction.error)
@@ -529,6 +531,28 @@ async function deleteQueuedAction(id) {
         const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
         const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
         store.delete(id)
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(transaction.error)
+    })
+}
+
+/**
+ * Retains a permanently unreplayable action for inspection without retrying it.
+ * @param {number} id The primary key of the item to quarantine.
+ * @returns {Promise<void>}
+ */
+async function markQueuedActionBlocked(id) {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
+        const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+        const request = store.get(id)
+        request.onsuccess = () => {
+            if (request.result) {
+                store.put({ ...request.result, replayBlocked: true }, id)
+            }
+        }
+        request.onerror = () => reject(request.error)
         transaction.oncomplete = () => resolve()
         transaction.onerror = () => reject(transaction.error)
     })
@@ -638,14 +662,14 @@ function requestReplayAcknowledgement(client, action) {
     return new Promise((resolve, reject) => {
         const channel = new MessageChannel()
         let settled = false
-        const finish = (error) => {
+        const finish = (error, persisted = true) => {
             if (settled) return
             settled = true
             clearTimeout(timeout)
             channel.port1.close()
             channel.port2.close()
             if (error) reject(error)
-            else resolve()
+            else resolve(persisted)
         }
         const timeout = setTimeout(
             () => finish(new Error('[SW] Replay client did not acknowledge persisted state.')),
@@ -657,12 +681,21 @@ function requestReplayAcknowledgement(client, action) {
             if (
                 acknowledgement?.type !== REPLAY_ACTION_ACK_TYPE ||
                 acknowledgement.queueId !== action.id ||
-                acknowledgement.persisted !== true
+                (acknowledgement.persisted !== true &&
+                    !(acknowledgement.persisted === false && acknowledgement.rejected === true))
             ) {
                 finish(new Error('[SW] Replay acknowledgement did not match the queued action.'))
                 return
             }
-            finish()
+            if (acknowledgement.rejected === true) {
+                finish(null, false)
+                return
+            }
+            if (acknowledgement.persisted !== true) {
+                finish(new Error('[SW] Replay acknowledgement did not confirm persisted state.'))
+                return
+            }
+            finish(null, true)
         }
         channel.port1.onmessageerror = () =>
             finish(new Error('[SW] Replay acknowledgement could not be deserialized.'))
@@ -696,7 +729,11 @@ async function syncData() {
         }
 
         for (const action of queuedActions) {
-            await requestReplayAcknowledgement(primaryClient, action)
+            const persisted = await requestReplayAcknowledgement(primaryClient, action)
+            if (!persisted) {
+                await markQueuedActionBlocked(action.id)
+                continue
+            }
             await deleteQueuedAction(action.id)
         }
         console.debug('[SW] All queued actions were replayed, persisted, and removed.')

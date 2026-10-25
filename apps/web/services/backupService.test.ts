@@ -145,6 +145,7 @@ describe('backupService', () => {
 
             expect(result.success).toBe(false)
             expect(result.error).toContain('Image storage unavailable')
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
         })
 
         it('writes asynchronously decompressed image data in an active IndexedDB transaction', async () => {

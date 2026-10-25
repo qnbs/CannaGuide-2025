@@ -240,6 +240,7 @@ export const backupService = {
      * CAUTION: This overwrites all current data.
      */
     async importBackup(file: File): Promise<BackupImportResult> {
+        let imageDb: IDBDatabase | undefined
         try {
             // Size guard
             if (file.size > MAX_IMPORT_SIZE_BYTES) {
@@ -327,6 +328,19 @@ export const backupService = {
                 }
             }
 
+            // Check image storage before replacing the current state. Keep the
+            // connection, but open the write transaction only when ready to write.
+            if (images.length > 0) {
+                imageDb = await new Promise<IDBDatabase>((resolve, reject) => {
+                    const request = indexedDB.open('CannaGuideDB')
+                    request.onsuccess = () => resolve(request.result)
+                    request.onerror = () => reject(request.error)
+                })
+                if (!imageDb.objectStoreNames.contains('images')) {
+                    throw new Error('Image storage unavailable; backup images were not restored')
+                }
+            }
+
             // 4. Restore state to IndexedDB
             const stateRestored = await replacePrimaryPersistedSnapshot(sanitizedStateString)
             if (!stateRestored) {
@@ -338,32 +352,18 @@ export const backupService = {
             }
 
             // 5. Restore images
-            if (images.length > 0) {
-                const db = await new Promise<IDBDatabase>((resolve, reject) => {
-                    const request = indexedDB.open('CannaGuideDB')
-                    request.onsuccess = () => resolve(request.result)
-                    request.onerror = () => reject(request.error)
+            if (imageDb) {
+                const tx = imageDb.transaction('images', 'readwrite')
+                const store = tx.objectStore('images')
+                const transactionComplete = new Promise<void>((resolve, reject) => {
+                    tx.oncomplete = () => resolve()
+                    tx.onerror = () => reject(tx.error)
+                    tx.onabort = () => reject(tx.error)
                 })
-                try {
-                    if (!db.objectStoreNames.contains('images')) {
-                        throw new Error(
-                            'Image storage unavailable; backup images were not restored',
-                        )
-                    }
-                    const tx = db.transaction('images', 'readwrite')
-                    const store = tx.objectStore('images')
-                    const transactionComplete = new Promise<void>((resolve, reject) => {
-                        tx.oncomplete = () => resolve()
-                        tx.onerror = () => reject(tx.error)
-                        tx.onabort = () => reject(tx.error)
-                    })
 
-                    // Queue writes synchronously so the transaction remains active.
-                    for (const image of images) store.put(image)
-                    await transactionComplete
-                } finally {
-                    db.close()
-                }
+                // Queue writes synchronously so the transaction remains active.
+                for (const image of images) store.put(image)
+                await transactionComplete
             }
 
             return {
@@ -378,6 +378,8 @@ export const backupService = {
                 metadata: null,
                 error: msg,
             }
+        } finally {
+            imageDb?.close()
         }
     },
 

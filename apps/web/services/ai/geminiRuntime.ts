@@ -6,7 +6,7 @@ import DOMPurify from 'dompurify'
 import { z } from 'zod'
 import type { Language } from '@/types'
 import { apiKeyService } from '@/services/apiKeyService'
-import { aiRateLimiter } from '@/services/aiRateLimiter'
+import { aiRateLimiter, type MonthlyBudgetReservation } from '@/services/aiRateLimiter'
 import { PROVIDER_CONFIGS } from '@cannaguide/ai-core'
 
 export const GEMINI_SAFETY_SETTINGS = [
@@ -142,6 +142,7 @@ export const reportGeminiUsage = (
               }
             | undefined
     },
+    reservation: MonthlyBudgetReservation,
 ): void => {
     try {
         const meta = response.usageMetadata
@@ -155,6 +156,7 @@ export const reportGeminiUsage = (
             endpoint,
             { promptTokens, completionTokens, totalTokens },
             pricing,
+            reservation,
         )
     } catch {
         /* best-effort telemetry */

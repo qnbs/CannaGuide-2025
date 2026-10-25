@@ -113,33 +113,55 @@ function saveCostState(state: CostTrackerState): void {
 }
 
 /** Record estimated token usage for an endpoint. */
-function trackTokenUsage(endpoint: string): void {
+function trackTokenUsage(endpoint: string, date = todayKey()): void {
     const tokens = TOKEN_ESTIMATES[endpoint] ?? 1500
     const state = loadCostState()
-    const today = todayKey()
-    const existing = state.days.find((d) => d.date === today)
+    const existing = state.days.find((d) => d.date === date)
     if (existing) {
         existing.totalTokens += tokens
         existing.requestCount += 1
     } else {
-        state.days.push({ date: today, totalTokens: tokens, requestCount: 1, estimatedCostUsd: 0 })
+        state.days.push({ date, totalTokens: tokens, requestCount: 1, estimatedCostUsd: 0 })
     }
     saveCostState(state)
+}
+
+function isFiniteNonNegativeNumber(value: unknown): value is number {
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0
+}
+
+export interface MonthlyBudgetReservation {
+    endpoint: string
+    /** Local calendar month in which the request was admitted. */
+    month: string
+    /** UTC day bucket used by the daily usage tracker. */
+    date: string
+    /** Estimate charged when the request was admitted. */
+    estimatedTokens: number
 }
 
 /** Report actual token usage from API response metadata + compute cost. */
 function reportActualUsage(
     endpoint: string,
     metadata: { promptTokens: number; completionTokens: number; totalTokens: number },
-    pricing?: { inputPer1MTokens: number; outputPer1MTokens: number } | undefined,
+    pricing: { inputPer1MTokens: number; outputPer1MTokens: number } | undefined,
+    reservation: MonthlyBudgetReservation,
 ): void {
-    const estimated = TOKEN_ESTIMATES[endpoint] ?? 1500
+    if (reservation.endpoint !== endpoint) return
+    if (
+        !isFiniteNonNegativeNumber(metadata.promptTokens) ||
+        !isFiniteNonNegativeNumber(metadata.completionTokens) ||
+        !isFiniteNonNegativeNumber(metadata.totalTokens)
+    ) {
+        return
+    }
+
+    const estimated = reservation.estimatedTokens
     const actualTotal = metadata.totalTokens
     const delta = actualTotal - estimated
 
     const state = loadCostState()
-    const today = todayKey()
-    const existing = state.days.find((d) => d.date === today)
+    const existing = state.days.find((d) => d.date === reservation.date)
     if (existing) {
         // Correct the estimated tokens with actual values
         existing.totalTokens += delta
@@ -156,11 +178,19 @@ function reportActualUsage(
 
     saveCostState(state)
 
-    // Also correct the monthly budget with the delta
+    // Apply the correction only to the month that admitted this request. A late
+    // response must not decrement the next month's already-reset budget.
     if (delta !== 0) {
         const budget = loadBudget()
-        budget.spent += delta
-        saveBudget(budget)
+        if (budget.month === reservation.month) {
+            const correctedSpend = budget.spent + delta
+            // Keep the budget conservative if stale/corrupt state cannot cover
+            // the full negative estimate correction.
+            if (correctedSpend >= 0) {
+                budget.spent = correctedSpend
+                saveBudget(budget)
+            }
+        }
     }
 }
 
@@ -251,9 +281,6 @@ interface MonthlyBudget {
     spent: number
 }
 
-const isFiniteNonNegativeNumber = (value: unknown): value is number =>
-    typeof value === 'number' && Number.isFinite(value) && value >= 0
-
 const isMonthlyBudget = (value: unknown): value is MonthlyBudget =>
     typeof value === 'object' &&
     value !== null &&
@@ -261,7 +288,7 @@ const isMonthlyBudget = (value: unknown): value is MonthlyBudget =>
     isFiniteNonNegativeNumber(value.limit) &&
     'month' in value &&
     typeof value.month === 'string' &&
-    /^\d{4}-\d{2}$/.test(value.month) &&
+    /^\d{4}-(?:0[1-9]|1[0-2])$/.test(value.month) &&
     'spent' in value &&
     isFiniteNonNegativeNumber(value.spent)
 
@@ -313,13 +340,6 @@ function getBudgetUsagePercent(): number | null {
     return Math.min(100, Math.round((budget.spent / budget.limit) * 100))
 }
 
-/** Track tokens against monthly budget. */
-function trackBudgetUsage(tokens: number): void {
-    const budget = loadBudget()
-    budget.spent += tokens
-    saveBudget(budget)
-}
-
 /** Get estimated cost for an endpoint (in estimated tokens). */
 function getEstimatedTokens(endpoint: string): number {
     return TOKEN_ESTIMATES[endpoint] ?? 1500
@@ -330,7 +350,7 @@ function getEstimatedTokens(endpoint: string): number {
 // ---------------------------------------------------------------------------
 
 /** Call before every AI API request. Throws on rate limit or budget exceeded. */
-function acquireSlot(endpoint: string): void {
+function acquireSlot(endpoint: string): MonthlyBudgetReservation {
     checkRateLimit()
 
     // Check monthly budget before allowing request
@@ -341,9 +361,17 @@ function acquireSlot(endpoint: string): void {
 
     recordRequest()
     const tokens = TOKEN_ESTIMATES[endpoint] ?? 1500
-    trackTokenUsage(endpoint)
-    trackBudgetUsage(tokens)
+    const reservation = {
+        endpoint,
+        month: budget.month,
+        date: todayKey(),
+        estimatedTokens: tokens,
+    }
+    trackTokenUsage(endpoint, reservation.date)
+    budget.spent += tokens
+    saveBudget(budget)
     recordAuditEntry(endpoint)
+    return reservation
 }
 
 export const aiRateLimiter = {

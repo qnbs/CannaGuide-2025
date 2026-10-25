@@ -56,11 +56,7 @@ export async function getEquipmentRecommendationFromAlternateProvider(
         MAX_OUTPUT_TOKENS_JSON,
     )
 
-    return parseGeminiJsonFromText<Recommendation>(
-        text,
-        'ai.error.equipment',
-        RecommendationSchema,
-    )
+    return parseGeminiJsonFromText<Recommendation>(text, 'ai.error.equipment', RecommendationSchema)
 }
 
 export async function getEquipmentRecommendationFromGemini(
@@ -68,7 +64,7 @@ export async function getEquipmentRecommendationFromGemini(
     lang: Language,
 ): Promise<Recommendation> {
     const t = getT()
-    aiRateLimiter.acquireSlot('getEquipmentRecommendation')
+    const budgetReservation = aiRateLimiter.acquireSlot('getEquipmentRecommendation')
     const ai = await createGeminiClient()
     const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
     const localizedSystemInstruction = createLocalizedPrompt(
@@ -79,9 +75,7 @@ export async function getEquipmentRecommendationFromGemini(
     const response = await generateWithGeminiFallback({
         ai,
         model: 'gemini-2.5-flash',
-        contents: truncatePromptForModel(
-            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
-        ),
+        contents: truncatePromptForModel(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`),
         config: {
             systemInstruction: localizedSystemInstruction,
             maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
@@ -89,7 +83,7 @@ export async function getEquipmentRecommendationFromGemini(
             responseSchema: buildEquipmentRecommendationResponseSchema(),
         },
     })
-    reportGeminiUsage('getEquipmentRecommendation', response)
+    reportGeminiUsage('getEquipmentRecommendation', response, budgetReservation)
 
     return parseGeminiJsonResponse<Recommendation>(
         response,
@@ -126,7 +120,7 @@ export async function getMentorResponseFromGemini(
     lang: Language,
 ): Promise<Omit<MentorMessage, 'role'>> {
     const t = getT()
-    aiRateLimiter.acquireSlot('getMentorResponse')
+    const budgetReservation = aiRateLimiter.acquireSlot('getMentorResponse')
     const ai = await createGeminiClient()
     const systemInstruction = t('ai.prompts.mentor.systemInstruction')
     const localizedSystemInstruction = createLocalizedPrompt(
@@ -148,7 +142,7 @@ export async function getMentorResponseFromGemini(
             responseSchema: buildMentorResponseSchema(),
         },
     })
-    reportGeminiUsage('getMentorResponse', response)
+    reportGeminiUsage('getMentorResponse', response, budgetReservation)
 
     return parseGeminiJsonResponse<Omit<MentorMessage, 'role'>>(
         response,
@@ -162,7 +156,7 @@ export async function diagnosePlantViaGemini(
     mimeType: string,
     localizedPrompt: string,
 ): Promise<PlantDiagnosisResponse> {
-    aiRateLimiter.acquireSlot('diagnosePlant')
+    const budgetReservation = aiRateLimiter.acquireSlot('diagnosePlant')
     const ai = await createGeminiClient()
     const imagePart = { inlineData: { data: base64Image, mimeType } }
     const textPart = { text: localizedPrompt }
@@ -177,7 +171,7 @@ export async function diagnosePlantViaGemini(
             responseSchema: buildDiagnosePlantResponseSchema(),
         },
     })
-    reportGeminiUsage('diagnosePlant', response)
+    reportGeminiUsage('diagnosePlant', response, budgetReservation)
 
     return parseGeminiJsonResponse<PlantDiagnosisResponse>(
         response,
@@ -206,8 +200,10 @@ export async function getStrainTipsFromAlternateProvider(
     )
 }
 
-export async function getStrainTipsFromGemini(localizedPrompt: string): Promise<StructuredGrowTips> {
-    aiRateLimiter.acquireSlot('getStrainTips')
+export async function getStrainTipsFromGemini(
+    localizedPrompt: string,
+): Promise<StructuredGrowTips> {
+    const budgetReservation = aiRateLimiter.acquireSlot('getStrainTips')
     const ai = await createGeminiClient()
     const response = await generateWithGeminiFallback({
         ai,
@@ -219,7 +215,7 @@ export async function getStrainTipsFromGemini(localizedPrompt: string): Promise<
             responseSchema: buildStrainTipsResponseSchema(),
         },
     })
-    reportGeminiUsage('getStrainTips', response)
+    reportGeminiUsage('getStrainTips', response, budgetReservation)
 
     return parseGeminiJsonResponse<StructuredGrowTips>(
         response,
@@ -245,7 +241,7 @@ export async function generateDeepDiveFromAlternateProvider(
 }
 
 export async function generateDeepDiveFromGemini(localizedPrompt: string): Promise<DeepDiveGuide> {
-    aiRateLimiter.acquireSlot('generateDeepDive')
+    const budgetReservation = aiRateLimiter.acquireSlot('generateDeepDive')
     const ai = await createGeminiClient()
     const response = await generateWithGeminiFallback({
         ai,
@@ -258,7 +254,7 @@ export async function generateDeepDiveFromGemini(localizedPrompt: string): Promi
             responseSchema: buildDeepDiveResponseSchema(),
         },
     })
-    reportGeminiUsage('generateDeepDive', response)
+    reportGeminiUsage('generateDeepDive', response, budgetReservation)
 
     return parseGeminiJsonResponse<DeepDiveGuide>(
         response,

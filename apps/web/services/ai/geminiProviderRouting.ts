@@ -48,7 +48,7 @@ export async function generateViaAlternateProvider(
     jsonMode: boolean,
     maxTokens: number,
 ): Promise<string> {
-    aiRateLimiter.acquireSlot(endpoint)
+    const reservation = aiRateLimiter.acquireSlot(endpoint)
     const provider = getActiveProvider()
     return aiProviderService.generateTextWithProvider(
         provider,
@@ -56,6 +56,7 @@ export async function generateViaAlternateProvider(
         userPrompt,
         jsonMode,
         maxTokens,
+        reservation,
     )
 }
 

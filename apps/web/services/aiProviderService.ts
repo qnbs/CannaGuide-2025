@@ -13,7 +13,7 @@ import {
     isValidProviderKeyFormat as coreIsValidKeyFormat,
 } from '@cannaguide/ai-core'
 import type { AiProvider, AiProviderConfig, AiProviderKeyMetadata } from '@cannaguide/ai-core'
-import { aiRateLimiter } from '@/services/aiRateLimiter'
+import { aiRateLimiter, type MonthlyBudgetReservation } from '@/services/aiRateLimiter'
 
 // Re-export types for existing local consumers
 export type { AiProvider, AiProviderConfig, AiProviderKeyMetadata }
@@ -209,7 +209,8 @@ async function callOpenAiCompatible(
     messages: OpenAiMessage[],
     jsonMode: boolean,
     maxTokens: number,
-    provider?: AiProvider | undefined,
+    provider: AiProvider,
+    reservation: MonthlyBudgetReservation,
 ): Promise<string> {
     const body: Record<string, unknown> = {
         model,
@@ -254,6 +255,7 @@ async function callOpenAiCompatible(
                 totalTokens: data.usage.total_tokens,
             },
             pricing,
+            reservation,
         )
     }
 
@@ -278,6 +280,7 @@ async function callAnthropic(
     systemPrompt: string,
     userContent: string,
     maxTokens: number,
+    reservation: MonthlyBudgetReservation,
 ): Promise<string> {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -322,6 +325,7 @@ async function callAnthropic(
                 totalTokens: inputTokens + outputTokens,
             },
             pricing,
+            reservation,
         )
     }
 
@@ -338,6 +342,7 @@ async function generateTextWithProvider(
     userPrompt: string,
     jsonMode: boolean,
     maxTokens: number,
+    reservation: MonthlyBudgetReservation,
 ): Promise<string> {
     const apiKey = await getProviderApiKey(provider)
     if (!apiKey) throw new Error('ai.error.missingApiKey')
@@ -346,7 +351,7 @@ async function generateTextWithProvider(
     const model = jsonMode ? config.models.json : config.models.text
 
     if (provider === 'anthropic') {
-        return callAnthropic(apiKey, model, systemPrompt, userPrompt, maxTokens)
+        return callAnthropic(apiKey, model, systemPrompt, userPrompt, maxTokens, reservation)
     }
 
     const baseUrl = OPENAI_COMPAT_BASE_URLS[provider]
@@ -362,6 +367,7 @@ async function generateTextWithProvider(
         jsonMode,
         maxTokens,
         provider,
+        reservation,
     )
 }
 

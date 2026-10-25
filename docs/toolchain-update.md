@@ -432,3 +432,46 @@ passed. Production audits at high and low thresholds exited **0**, with zero adv
 Complete audits at both thresholds exited **1**: Zod 3 remains the unignored high; the
 low-threshold report also lists selector-parser 6 as moderate. Metadata counts include
 existing ignored advisories and must not be read as a count of unignored high findings.
+
+## 10. #580 TypeDoc parser compatibility and current Zod 3 boundary — 2026-10-25
+
+On public #580 head `426cbb23c54a1b65a180fa8630ff730814ecff87`, the real
+`require("typedoc")` initialization failed with `The requested module 'linkify-it' does not
+provide an export named 'default'`. The lockfile had `markdown-it@14.3.3` with
+`linkify-it@6.0.0`; Markdown-it 14 imports the 5.x default export. The scoped correction
+sets `linkify-it` to `>=5.0.2 <6`, removes that exact entry from the unbounded-floor
+ratchet, updates the security override table, and adds a serial Node regression for the
+CommonJS/ESM parser APIs, safe HTML/URL behavior, Unicode, and TypeDoc initialization.
+
+The official npm record dates `linkify-it@5.0.2` to 2026-07-01 and gives lockfile integrity
+`sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q==`.
+The GitHub advisory identifies `<=5.0.0` as vulnerable. The lockfile diff changes only the
+linkify-it override and its resolved package/snapshot; an unrelated pnpm metadata refresh
+of `legacy-javascript` was returned to its previous locked version. A frozen install passed
+with the exact lockfile, using two locally stored packages and downloading none.
+
+The regression failed before the resolution change in all three entry paths. Afterward,
+`node --test --test-concurrency=1 ./scripts/security/markdown-parser.test.mjs` passed **7/7**;
+the override-floor checker passed with eight (down from nine) unchanged legacy warnings,
+and the duplicate-key lockfile check passed. Production High audit exited **0** with
+`No known vulnerabilities found`. Full High audit still exits **1** on the unignored
+`GHSA-mrhx-c7xc-m3w5` Zod 3 finding through both LHCI/Puppeteer/BiDi paths and Socket Patch;
+the audit reports 1 moderate and 3 high total, with 2 highs already covered by existing
+exceptions. The TypeDoc fix does not change those paths.
+
+Current official registry metadata still gives `@socketsecurity/cli@1.10.1` a dependency on
+`@socketsecurity/socket-patch@2.0.0`, while `@socketsecurity/socket-patch@5.0.1` declares
+`zod@3.25.76`. LHCI remains at `0.15.1` and pins Lighthouse `12.6.1`. Lighthouse `13.5.0`
+and Puppeteer Core `25.16.0` are newer majors, but Puppeteer Core still pins
+`chromium-bidi@157.0.8090-0`. That BiDi manifest declares `zod@^4.6.5`, and its published
+`mapperTab.js.map` confirms the embedded mapper contains Zod **4.6.5**, below the
+`4.6.6` patched floor. An external Zod override would not replace those bundled bytes, so
+this is not a qualified security fix.
+
+The newly published `chromium-bidi@158.0.8124-0` manifest declares `zod@^4.6.5`, but the
+published source map for its embedded `mapperTab.js` identifies the included Zod core as
+**4.6.5**, still below the advisory's `4.6.6` patched floor. It was also published inside
+the 24-hour quarantine window, is a prerelease, and has no registry provenance attestation.
+It is not an eligible fix. A future BiDi release must be older than the quarantine window,
+embed Zod **4.6.6 or newer**, and remove all Zod 3 paths; the independent Socket path still
+requires its own upstream fix or an explicitly approved equivalent scanner.

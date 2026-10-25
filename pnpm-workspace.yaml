@@ -99,7 +99,7 @@ overrides:
     ws: '>=8.20.1'
     workbox-build: 7.4.1
     workbox-window: 7.4.1
-    linkify-it: '>=5.0.1'
+    linkify-it: '>=5.0.2 <6'
     # Patched typedoc Markdown parser; keep the consumer on its 14.x API.
     markdown-it: '>=14.3.3 <15'
     # Include direct rendering and jsPDF's optional HTML conversion.

@@ -248,7 +248,7 @@ async function callOpenAiCompatible(
     if (data.usage && typeof data.usage.total_tokens === 'number') {
         const pricing = provider ? PROVIDER_CONFIGS[provider].pricing : undefined
         aiRateLimiter.reportActualUsage(
-            'generateTextWithProvider',
+            reservation.endpoint,
             {
                 promptTokens: data.usage.prompt_tokens ?? 0,
                 completionTokens: data.usage.completion_tokens ?? 0,
@@ -318,7 +318,7 @@ async function callAnthropic(
         const outputTokens = data.usage.output_tokens ?? 0
         const pricing = PROVIDER_CONFIGS.anthropic.pricing
         aiRateLimiter.reportActualUsage(
-            'generateTextWithProvider',
+            reservation.endpoint,
             {
                 promptTokens: inputTokens,
                 completionTokens: outputTokens,

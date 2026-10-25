@@ -709,9 +709,10 @@ async function notifyDueReminders() {
  * so they can replay them locally. This app is client-only — there is no backend
  * server to POST to. Adding a real server endpoint here is left as a future extension.
  *
- * The reducer deduplicates journal entries by ID. Every open client must apply
- * and persist each action before its queue entry can be removed, so a stale tab
- * cannot later overwrite the acknowledged replay with an older snapshot.
+ * The reducer deduplicates journal entries by ID. One ready app client applies
+ * the action and persists the full state; the queue entry is removed only after
+ * that client confirms persistence. Replay is deferred while multiple app tabs
+ * are open because another tab may later save a stale full-state snapshot.
  */
 function requestReplayAcknowledgement(client, action) {
     if (!Number.isSafeInteger(action.id)) {
@@ -782,35 +783,29 @@ async function syncData() {
             await self.clients.matchAll({ type: 'window', includeUncontrolled: true }),
         )
 
-        // Probe is read-only. Select one ready app tab to perform the full-state
-        // persistence write; asking every tab to flush can let a stale snapshot
-        // overwrite newer data in another tab. Out-of-scope same-origin pages
-        // are excluded before probing.
+        // Out-of-scope same-origin pages are excluded. Multiple app tabs may hold
+        // different full-state snapshots, so defer replay until only one remains
+        // rather than risk overwriting unrelated newer data.
         if (clients.length === 0) {
             throw new Error(
                 '[SW] No application window is available; queued actions were retained.',
             )
         }
+        if (clients.length > 1) {
+            throw new Error(
+                '[SW] Multiple application windows are open; queued actions were retained.',
+            )
+        }
 
-        const readiness = await Promise.all(
-            clients.map((client) => requestReplayReadiness(client, queuedActions[0].id)),
-        )
-        const readyClients = clients.filter((_client, index) => readiness[index])
-        if (readyClients.length === 0) {
+        const client = clients[0]
+        if (!(await requestReplayReadiness(client, queuedActions[0].id))) {
             throw new Error(
                 '[SW] No application window acknowledged readiness; queued actions were retained.',
             )
         }
 
         for (const action of queuedActions) {
-            let persisted = false
-            for (const client of readyClients) {
-                if (await requestReplayAcknowledgement(client, action)) {
-                    persisted = true
-                    break
-                }
-            }
-            if (!persisted) {
+            if (!(await requestReplayAcknowledgement(client, action))) {
                 await markQueuedActionBlocked(action.id)
                 continue
             }

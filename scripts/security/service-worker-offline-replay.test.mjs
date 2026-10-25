@@ -169,7 +169,7 @@ test('service worker retains queued actions when no application client acknowled
     assert.equal(harness.remaining.length, 1)
 })
 
-test('service worker probes other app clients and replays through one ready client', async () => {
+test('service worker defers replay while multiple app windows could hold stale snapshots', async () => {
     const messages = []
     const firstClient = {
         postMessage: (message) => messages.push(`first:${message.type}:${message.queueId}`),
@@ -196,18 +196,14 @@ test('service worker probes other app clients and replays through one ready clie
         clients: [firstClient, readyClient],
     })
 
-    await harness.syncData()
+    await assert.rejects(harness.syncData(), /Multiple application windows are open/u)
 
-    assert.deepEqual(messages, [
-        'first:REPLAY_OFFLINE_ACTION_PROBE:27',
-        'ready:REPLAY_OFFLINE_ACTION_PROBE:27',
-        'ready:REPLAY_OFFLINE_ACTION:27',
-    ])
-    assert.deepEqual(harness.deleted, [27])
-    assert.equal(harness.remaining.length, 0)
+    assert.deepEqual(messages, [])
+    assert.deepEqual(harness.deleted, [])
+    assert.equal(harness.remaining.length, 1)
 })
 
-test('service worker asks only one ready app client to persist a replay', async () => {
+test('service worker asks one ready app client to persist a replay', async () => {
     const messages = []
     const makeClient = (name) => ({
         focused: name === 'focused',
@@ -232,7 +228,7 @@ test('service worker asks only one ready app client to persist a replay', async 
     })
     const harness = createSyncHarness({
         records: [queuedAction],
-        clients: [makeClient('background'), makeClient('focused')],
+        clients: [makeClient('focused')],
     })
 
     await harness.syncData()
@@ -240,7 +236,6 @@ test('service worker asks only one ready app client to persist a replay', async 
     assert.deepEqual(harness.deleted, [27])
     assert.deepEqual(messages, [
         'focused:REPLAY_OFFLINE_ACTION_PROBE',
-        'background:REPLAY_OFFLINE_ACTION_PROBE',
         'focused:REPLAY_OFFLINE_ACTION',
     ])
     assert.deepEqual(harness.eventOrder, ['delete:27'])
@@ -317,9 +312,9 @@ test('service worker quarantines permanently rejected actions and continues repl
         value: { type: 'unsupported/action', idempotencyKey: 'unsupported-27' },
     }
     const messages = []
-    const makeClient = (name) => ({
+    const client = {
         postMessage: (message, ports) => {
-            messages.push(`${name}:${message.type}:${message.queueId}`)
+            messages.push(`client:${message.type}:${message.queueId}`)
             const replyPort = ports[0]
             setTimeout(() => {
                 replyPort.postMessage(
@@ -344,11 +339,11 @@ test('service worker quarantines permanently rejected actions and continues repl
                 )
             }, 1)
         },
-    })
+    }
     const validAction = { key: 28, value: queuedAction.value }
     const harness = createSyncHarness({
         records: [invalidAction, validAction],
-        clients: [makeClient('first'), makeClient('second')],
+        clients: [client],
     })
 
     await harness.syncData()
@@ -359,11 +354,9 @@ test('service worker quarantines permanently rejected actions and continues repl
     assert.equal(harness.remaining[0].value.replayBlocked, true)
     assert.deepEqual(harness.eventOrder, ['put:27', 'delete:28'])
     assert.deepEqual(messages, [
-        'first:REPLAY_OFFLINE_ACTION_PROBE:27',
-        'second:REPLAY_OFFLINE_ACTION_PROBE:27',
-        'first:REPLAY_OFFLINE_ACTION:27',
-        'second:REPLAY_OFFLINE_ACTION:27',
-        'first:REPLAY_OFFLINE_ACTION:28',
+        'client:REPLAY_OFFLINE_ACTION_PROBE:27',
+        'client:REPLAY_OFFLINE_ACTION:27',
+        'client:REPLAY_OFFLINE_ACTION:28',
     ])
 
     const messagesBeforeRetry = messages.length

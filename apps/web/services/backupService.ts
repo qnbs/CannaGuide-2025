@@ -12,9 +12,11 @@
 import JSZip from 'jszip'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
+import { openDB } from '@/services/db/connection'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 import { getT } from '@/i18n'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
+import { isSafeRasterImageDataUrl, MAX_IMAGE_DATA_URL_LENGTH } from '@/services/backupImageValidation'
 import type { StoredImageData } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -26,18 +28,6 @@ const IMAGES_DIR = 'images/'
 const METADATA_FILENAME = 'backup-meta.json'
 const MAX_IMPORT_SIZE_BYTES = 512 * 1024 * 1024 // 512 MB hard limit
 const FILENAME_SAFE_REGEX = /^[a-zA-Z0-9._-]+$/
-const SAFE_IMAGE_DATA_URL = /^data:image\/(jpeg|png|webp|gif);base64,([a-z0-9+/]+={0,2})$/iu
-const MAX_IMAGE_DATA_URL_BYTES = 10 * 1024 * 1024
-const MAX_IMAGE_DATA_URL_LENGTH = 64 + Math.ceil(MAX_IMAGE_DATA_URL_BYTES / 3) * 4
-const MAX_IMAGE_DIMENSION = 8192
-const MAX_IMAGE_PIXELS = 32 * 1024 * 1024
-const JPEG_START_OF_FRAME_MARKERS = new Set([
-    0xc0, 0xc1, 0xc2, 0xc3, 0xc5, 0xc6, 0xc7, 0xc9, 0xca, 0xcb, 0xcd, 0xce, 0xcf,
-])
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 export interface BackupMetadata {
     version: string
@@ -60,10 +50,6 @@ export interface BackupImportResult {
     metadata: BackupMetadata | null
     error?: string | undefined
 }
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
 
 const createBackupFilename = (): string => {
     const now = new Date()
@@ -102,169 +88,6 @@ const isStoredImageShape = (image: unknown): image is StoredImageData =>
     typeof image.createdAt === 'number' &&
     Number.isSafeInteger(image.createdAt) &&
     image.createdAt >= 0
-
-const readUint32BigEndian = (bytes: Uint8Array, offset: number): number =>
-    bytes[offset]! * 0x1000000 +
-    bytes[offset + 1]! * 0x10000 +
-    bytes[offset + 2]! * 0x100 +
-    bytes[offset + 3]!
-
-const readUint24LittleEndian = (bytes: Uint8Array, offset: number): number =>
-    bytes[offset]! + bytes[offset + 1]! * 0x100 + bytes[offset + 2]! * 0x10000
-
-const readAscii = (bytes: Uint8Array, offset: number, value: string): boolean =>
-    [...value].every((character, index) => bytes[offset + index] === character.charCodeAt(0))
-
-const readJpegDimensions = (bytes: Uint8Array): { width: number; height: number } | undefined => {
-    if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return undefined
-
-    let offset = 2
-    while (offset < bytes.length) {
-        if (bytes[offset] !== 0xff) return undefined
-        while (bytes[offset] === 0xff) offset += 1
-        if (offset >= bytes.length) return undefined
-
-        const marker = bytes[offset++]!
-        if (marker === 0xd9 || marker === 0xda) return undefined
-        if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue
-        if (offset + 2 > bytes.length) return undefined
-
-        const segmentLength = bytes[offset]! * 0x100 + bytes[offset + 1]!
-        if (segmentLength < 2 || offset + segmentLength > bytes.length) return undefined
-        if (JPEG_START_OF_FRAME_MARKERS.has(marker)) {
-            if (segmentLength < 7) return undefined
-            return {
-                height: bytes[offset + 3]! * 0x100 + bytes[offset + 4]!,
-                width: bytes[offset + 5]! * 0x100 + bytes[offset + 6]!,
-            }
-        }
-        offset += segmentLength
-    }
-
-    return undefined
-}
-
-const readImageDimensions = (
-    mimeType: string,
-    bytes: Uint8Array,
-): { width: number; height: number } | undefined => {
-    if (mimeType === 'image/png') {
-        if (
-            bytes.length < 24 ||
-            !readAscii(bytes, 1, 'PNG\r\n\x1a\n') ||
-            readUint32BigEndian(bytes, 8) !== 13 ||
-            !readAscii(bytes, 12, 'IHDR')
-        ) {
-            return undefined
-        }
-        return { width: readUint32BigEndian(bytes, 16), height: readUint32BigEndian(bytes, 20) }
-    }
-
-    if (mimeType === 'image/gif') {
-        if (
-            bytes.length < 10 ||
-            (!readAscii(bytes, 0, 'GIF87a') && !readAscii(bytes, 0, 'GIF89a'))
-        ) {
-            return undefined
-        }
-        return {
-            width: bytes[6]! + bytes[7]! * 0x100,
-            height: bytes[8]! + bytes[9]! * 0x100,
-        }
-    }
-
-    if (mimeType === 'image/jpeg') return readJpegDimensions(bytes)
-
-    if (mimeType === 'image/webp') {
-        if (bytes.length < 25 || !readAscii(bytes, 0, 'RIFF') || !readAscii(bytes, 8, 'WEBP')) {
-            return undefined
-        }
-        const riffSize = bytes[4]! + bytes[5]! * 0x100 + bytes[6]! * 0x10000 + bytes[7]! * 0x1000000
-        if (riffSize + 8 > bytes.length) return undefined
-
-        if (readAscii(bytes, 12, 'VP8X') && bytes.length >= 30) {
-            return {
-                width: readUint24LittleEndian(bytes, 24) + 1,
-                height: readUint24LittleEndian(bytes, 27) + 1,
-            }
-        }
-        if (
-            readAscii(bytes, 12, 'VP8 ') &&
-            bytes.length >= 30 &&
-            readAscii(bytes, 23, '\x9d\x01\x2a')
-        ) {
-            return {
-                width: (bytes[26]! + bytes[27]! * 0x100) & 0x3fff,
-                height: (bytes[28]! + bytes[29]! * 0x100) & 0x3fff,
-            }
-        }
-        if (readAscii(bytes, 12, 'VP8L') && bytes[20] === 0x2f && bytes.length >= 25) {
-            return {
-                width: 1 + bytes[21]! + ((bytes[22]! & 0x3f) << 8),
-                height:
-                    1 +
-                    ((bytes[22]! & 0xc0) >> 6) +
-                    (bytes[23]! << 2) +
-                    ((bytes[24]! & 0x0f) << 10),
-            }
-        }
-    }
-
-    return undefined
-}
-
-const isWithinImageBounds = (width: number, height: number): boolean =>
-    Number.isSafeInteger(width) &&
-    Number.isSafeInteger(height) &&
-    width > 0 &&
-    height > 0 &&
-    width <= MAX_IMAGE_DIMENSION &&
-    height <= MAX_IMAGE_DIMENSION &&
-    width * height <= MAX_IMAGE_PIXELS
-
-const isSafeRasterImageDataUrl = async (value: unknown): Promise<boolean> => {
-    if (typeof value !== 'string' || value.length > MAX_IMAGE_DATA_URL_LENGTH) return false
-    const match = SAFE_IMAGE_DATA_URL.exec(value)
-    if (!match) return false
-
-    const mimeType = `image/${match[1]!.toLowerCase()}`
-    const base64 = match[2]!
-    if (base64.length % 4 !== 0 || base64.length > Math.ceil(MAX_IMAGE_DATA_URL_BYTES / 3) * 4) {
-        return false
-    }
-
-    let binary: string
-    try {
-        binary = atob(base64)
-    } catch {
-        return false
-    }
-    if (binary.length === 0 || binary.length > MAX_IMAGE_DATA_URL_BYTES) return false
-
-    const bytes = new Uint8Array(binary.length)
-    for (let index = 0; index < binary.length; index += 1) {
-        bytes[index] = binary.charCodeAt(index)
-    }
-
-    const dimensions = readImageDimensions(mimeType, bytes)
-    if (!dimensions || !isWithinImageBounds(dimensions.width, dimensions.height)) return false
-
-    const decode = globalThis.createImageBitmap
-    if (typeof decode !== 'function') return false
-    let bitmap: ImageBitmap | undefined
-    try {
-        bitmap = await decode(new Blob([bytes], { type: mimeType }))
-        const dimensionsMatch =
-            (bitmap.width === dimensions.width && bitmap.height === dimensions.height) ||
-            (bitmap.width === dimensions.height && bitmap.height === dimensions.width)
-        return dimensionsMatch && isWithinImageBounds(bitmap.width, bitmap.height)
-    } catch {
-        return false
-    } finally {
-        bitmap?.close()
-    }
-}
-
 const normalizeSafeSavedTipImageUrl = async (value: unknown): Promise<string | undefined> => {
     if (typeof value !== 'string' || value.length > MAX_IMAGE_DATA_URL_LENGTH) return undefined
 
@@ -396,11 +219,7 @@ export const backupService = {
             // 2. Images from IndexedDB (CannaGuideDB.images)
             let imageCount = 0
             try {
-                const db = await new Promise<IDBDatabase>((resolve, reject) => {
-                    const request = indexedDB.open('CannaGuideDB')
-                    request.onsuccess = () => resolve(request.result)
-                    request.onerror = () => reject(request.error)
-                })
+                const db = await openDB()
 
                 if (db.objectStoreNames.contains('images')) {
                     const tx = db.transaction('images', 'readonly')
@@ -423,7 +242,6 @@ export const backupService = {
                         }
                     }
                 }
-                db.close()
             } catch {
                 console.debug('[backupService] Could not export images -- skipping')
             }
@@ -595,11 +413,8 @@ export const backupService = {
             // Check image storage before replacing the current state. Keep the
             // connection, but open the write transaction only when ready to write.
             if (images.length > 0) {
-                imageDb = await new Promise<IDBDatabase>((resolve, reject) => {
-                    const request = indexedDB.open('CannaGuideDB')
-                    request.onsuccess = () => resolve(request.result)
-                    request.onerror = () => reject(request.error)
-                })
+                // The shared database service applies the complete current schema.
+                imageDb = await openDB()
                 if (!imageDb.objectStoreNames.contains('images')) {
                     throw new Error('Image storage unavailable; backup images were not restored')
                 }
@@ -643,8 +458,6 @@ export const backupService = {
                 metadata: null,
                 error: msg,
             }
-        } finally {
-            imageDb?.close()
         }
     },
 

@@ -34,6 +34,18 @@ vi.mock('@/stores/indexedDBStorage', () => ({
 
 vi.mock('@/constants', () => ({
     REDUX_STATE_KEY: 'test-state-key',
+    DB_NAME: 'CannaGuideDB',
+    DB_VERSION: 5,
+    STRAINS_STORE: 'strains',
+    IMAGES_STORE: 'images',
+    METADATA_STORE: 'metadata',
+    STRAIN_SEARCH_INDEX_STORE: 'strain_search_index',
+    OFFLINE_ACTIONS_STORE: 'offline_actions',
+    CALCULATOR_HISTORY_STORE: 'calculator_history',
+    STRAIN_INDEX_TYPE: 'by_type',
+    STRAIN_INDEX_THC: 'by_thc',
+    STRAIN_INDEX_CBD: 'by_cbd',
+    STRAIN_INDEX_FLOWERING: 'by_floweringTime',
 }))
 
 vi.mock('@/services/persistedStateService', () => ({
@@ -46,6 +58,7 @@ vi.mock('@/i18n', () => ({
 
 import { backupService } from '@/services/backupService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { closeDB, releaseDBAfterErase } from '@/services/db/connection'
 
 const VALID_PNG_DATA_URL =
     'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/F7sAAAAASUVORK5CYII='
@@ -60,6 +73,49 @@ const createPngHeaderDataUrl = (width: number, height: number): string => {
     view.setUint32(16, width)
     view.setUint32(20, height)
     return `data:image/png;base64,${btoa(String.fromCharCode(...header))}`
+}
+
+const concatBytes = (...parts: Uint8Array[]): Uint8Array => {
+    const result = new Uint8Array(parts.reduce((size, part) => size + part.length, 0))
+    let offset = 0
+    for (const part of parts) {
+        result.set(part, offset)
+        offset += part.length
+    }
+    return result
+}
+
+const createIsoBmffBox = (type: string, payload: Uint8Array): Uint8Array => {
+    const result = new Uint8Array(8 + payload.length)
+    new DataView(result.buffer).setUint32(0, result.length)
+    result.set([...type].map((character) => character.charCodeAt(0)), 4)
+    result.set(payload, 8)
+    return result
+}
+
+const createHeifDataUrl = (
+    mimeType: 'image/heic' | 'image/heif',
+    width = 1,
+    height = 1,
+): string => {
+    const majorBrand = mimeType === 'image/heic' ? 'heic' : 'mif1'
+    const ftyp = createIsoBmffBox(
+        'ftyp',
+        concatBytes(
+            new TextEncoder().encode(majorBrand),
+            new Uint8Array(4),
+            new TextEncoder().encode('mif1'),
+        ),
+    )
+    const dimensions = new Uint8Array(12)
+    new DataView(dimensions.buffer).setUint32(4, width)
+    new DataView(dimensions.buffer).setUint32(8, height)
+    const ispe = createIsoBmffBox('ispe', dimensions)
+    const ipco = createIsoBmffBox('ipco', ispe)
+    const iprp = createIsoBmffBox('iprp', ipco)
+    const meta = createIsoBmffBox('meta', concatBytes(new Uint8Array(4), iprp))
+    const bytes = concatBytes(ftyp, meta)
+    return `data:${mimeType};base64,${btoa(String.fromCharCode(...bytes))}`
 }
 
 const importMockBackup = (state: unknown, images: Record<string, unknown> = {}) => {
@@ -88,9 +144,19 @@ const recreateImageDatabase = async (): Promise<IDBDatabase> => {
         removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
     })
 
-    const openRequest = indexedDB.open('CannaGuideDB', 1)
+    const openRequest = indexedDB.open('CannaGuideDB', 5)
     openRequest.onupgradeneeded = () => {
-        openRequest.result.createObjectStore('images', { keyPath: 'id' })
+        const db = openRequest.result
+        const strains = db.createObjectStore('strains', { keyPath: 'id' })
+        strains.createIndex('by_type', 'type', { unique: false })
+        strains.createIndex('by_thc', 'thc', { unique: false })
+        strains.createIndex('by_cbd', 'cbd', { unique: false })
+        strains.createIndex('by_floweringTime', 'floweringTime', { unique: false })
+        db.createObjectStore('images', { keyPath: 'id' })
+        db.createObjectStore('metadata', { keyPath: 'key' })
+        db.createObjectStore('strain_search_index', { keyPath: 'word' })
+        db.createObjectStore('offline_actions', { autoIncrement: true })
+        db.createObjectStore('calculator_history', { keyPath: 'id' })
     }
     return new Promise((resolve, reject) => {
         openRequest.onsuccess = () => resolve(openRequest.result)
@@ -123,6 +189,8 @@ describe('backupService', () => {
     })
 
     afterEach(() => {
+        closeDB()
+        releaseDBAfterErase()
         // Windows runs this suite with isolate: false. clearAllMocks keeps
         // spy implementations, so restore the real URL methods before the next file.
         vi.restoreAllMocks()
@@ -179,7 +247,7 @@ describe('backupService', () => {
             })
         })
 
-        it('reports failure when backed-up images have no destination store', async () => {
+        it('opens a missing image database with the current application schema', async () => {
             const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
             await new Promise<void>((resolve, reject) => {
                 removeRequest.onsuccess = () => resolve()
@@ -214,27 +282,95 @@ describe('backupService', () => {
                 new File(['zip'], 'backup.zip', { type: 'application/zip' }),
             )
 
-            expect(result.success).toBe(false)
-            expect(result.error).toContain('Image storage unavailable')
-            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+            expect(result.success).toBe(true)
+            const request = indexedDB.open('CannaGuideDB')
+            const database = await new Promise<IDBDatabase>((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result)
+                request.onerror = () => reject(request.error)
+            })
+            const databaseVersion = database.version
+            const hasImageStore = database.objectStoreNames.contains('images')
+            const hasStrainStore = database.objectStoreNames.contains('strains')
+            const hasSearchIndexStore = database.objectStoreNames.contains('strain_search_index')
+            const hasOfflineActionsStore = database.objectStoreNames.contains('offline_actions')
+            const hasCalculatorHistoryStore = database.objectStoreNames.contains('calculator_history')
+            database.close()
+            expect(databaseVersion).toBe(5)
+            expect(hasImageStore).toBe(true)
+            expect(hasStrainStore).toBe(true)
+            expect(hasSearchIndexStore).toBe(true)
+            expect(hasOfflineActionsStore).toBe(true)
+            expect(hasCalculatorHistoryStore).toBe(true)
+        })
+
+        it.each(['image/heic', 'image/heif'] as const)(
+            'preserves valid bounded %s journal and stored images',
+            async (mimeType) => {
+                const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
+                await new Promise<void>((resolve, reject) => {
+                    removeRequest.onsuccess = () => resolve()
+                    removeRequest.onerror = () => reject(removeRequest.error)
+                    removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
+                })
+                const imageData = createHeifDataUrl(mimeType)
+                const state = {
+                    simulation: {
+                        plants: [
+                            {
+                                journal: [
+                                    { details: { imageId: 'photo-heif', imageUrl: imageData } },
+                                ],
+                            },
+                        ],
+                    },
+                }
+                const result = await importMockBackup(state, {
+                    'photo-heif': { id: 'photo-heif', data: imageData, createdAt: 10 },
+                })
+                const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+                const database = await new Promise<IDBDatabase>((resolve, reject) => {
+                    const request = indexedDB.open('CannaGuideDB')
+                    request.onsuccess = () => resolve(request.result)
+                    request.onerror = () => reject(request.error)
+                })
+                const hasImageStore = database.objectStoreNames.contains('images')
+                const storedImage = hasImageStore
+                    ? await readStoredImage(database, 'photo-heif')
+                    : undefined
+                database.close()
+
+                expect(result.success).toBe(true)
+                expect(JSON.parse(String(persistedSnapshot))).toEqual(state)
+                expect(storedImage).toEqual({
+                    id: 'photo-heif',
+                    data: imageData,
+                    createdAt: 10,
+                })
+            },
+        )
+
+        it('rejects HEIF extents above the bounded decode limit before browser decoding', async () => {
+            const imageData = createHeifDataUrl('image/heic', 8193, 1)
+            const state = {
+                simulation: {
+                    plants: [{ journal: [{ details: { imageUrl: imageData } }] }],
+                },
+            }
+
+            const result = await importMockBackup(state)
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: {
+                    plants: [{ journal: [{ details: {} }] }],
+                },
+            })
+            expect(decodeImageMock).not.toHaveBeenCalled()
         })
 
         it('writes asynchronously decompressed image data in an active IndexedDB transaction', async () => {
-            const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
-            await new Promise<void>((resolve, reject) => {
-                removeRequest.onsuccess = () => resolve()
-                removeRequest.onerror = () => reject(removeRequest.error)
-                removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
-            })
-
-            const openRequest = indexedDB.open('CannaGuideDB', 1)
-            openRequest.onupgradeneeded = () => {
-                openRequest.result.createObjectStore('images', { keyPath: 'id' })
-            }
-            const db = await new Promise<IDBDatabase>((resolve, reject) => {
-                openRequest.onsuccess = () => resolve(openRequest.result)
-                openRequest.onerror = () => reject(openRequest.error)
-            })
+            const db = await recreateImageDatabase()
 
             const image = { id: 'photo-1', data: VALID_PNG_DATA_URL, createdAt: 10 }
             const imagePath = 'images/photo-1.json'
@@ -282,21 +418,7 @@ describe('backupService', () => {
         })
 
         it('does not restore image entries with external or missing image data', async () => {
-            const removeRequest = indexedDB.deleteDatabase('CannaGuideDB')
-            await new Promise<void>((resolve, reject) => {
-                removeRequest.onsuccess = () => resolve()
-                removeRequest.onerror = () => reject(removeRequest.error)
-                removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
-            })
-
-            const openRequest = indexedDB.open('CannaGuideDB', 1)
-            openRequest.onupgradeneeded = () => {
-                openRequest.result.createObjectStore('images', { keyPath: 'id' })
-            }
-            const db = await new Promise<IDBDatabase>((resolve, reject) => {
-                openRequest.onsuccess = () => resolve(openRequest.result)
-                openRequest.onerror = () => reject(openRequest.error)
-            })
+            const db = await recreateImageDatabase()
 
             const statePath = 'cannaguide-state.json'
             const validPath = 'images/photo-valid.json'

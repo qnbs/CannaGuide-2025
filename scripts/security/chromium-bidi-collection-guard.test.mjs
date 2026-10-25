@@ -396,14 +396,18 @@ test('Chromium BiDi 14.0.0 collection guard protects the installed Lighthouse ma
             true,
         )
 
-        const defaultCollection = zodApi
-            .array(zodApi.string())
-            .max(2)
-            .default(['default'])
-        assert.equal(
-            guard.safeParse(defaultCollection, undefined).success,
-            true,
-            'small default collections still parse',
-        )
+        const defaultCollection = zodApi.array(zodApi.string()).min(1).default([])
+        const nativeDefault = defaultCollection.safeParse(undefined)
+        const guardedDefault = guard.safeParse(defaultCollection, undefined)
+        assert.equal(nativeDefault.success, true, 'Zod 4 defaults bypass inner validation')
+        assert.equal(guardedDefault.success, true, 'the preflight preserves Zod 4 default behavior')
+        assert.deepEqual(guardedDefault.data, [])
+
+        const prefaultCollection = zodApi.array(zodApi.string()).min(1).prefault([])
+        const nativePrefault = prefaultCollection.safeParse(undefined)
+        const guardedPrefault = guard.safeParse(prefaultCollection, undefined)
+        assert.equal(nativePrefault.success, false, 'prefault values pass through inner validation')
+        assert.equal(guardedPrefault.success, false)
+        assert.equal(guardedPrefault.error.issues[0].message, nativePrefault.error.issues[0].message)
     })
 })

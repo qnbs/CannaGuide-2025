@@ -651,8 +651,9 @@ async function notifyDueReminders() {
  * so they can replay them locally. This app is client-only — there is no backend
  * server to POST to. Adding a real server endpoint here is left as a future extension.
  *
- * The reducer deduplicates journal entries by ID; only one client receives each action.
- * The queue entry stays in IndexedDB until that client confirms persisted application state.
+ * The reducer deduplicates journal entries by ID. Every open client must apply
+ * and persist each action before its queue entry can be removed, so a stale tab
+ * cannot later overwrite the acknowledged replay with an older snapshot.
  */
 function requestReplayAcknowledgement(client, action) {
     if (!Number.isSafeInteger(action.id)) {
@@ -721,16 +722,22 @@ async function syncData() {
         console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
 
-        // Send each action to one client. Keep it queued until that client
-        // confirms the replayed application state has been persisted.
-        const primaryClient = clients[0]
-        if (!primaryClient) {
+        // Every open store must apply an action before it can be removed from
+        // the queue. Contact all clients even when an earlier one is not ready;
+        // retain the action if any client cannot confirm persisted state.
+        if (clients.length === 0) {
             throw new Error('[SW] No window client is available; queued actions were retained.')
         }
 
         for (const action of queuedActions) {
-            const persisted = await requestReplayAcknowledgement(primaryClient, action)
-            if (!persisted) {
+            const outcomes = await Promise.allSettled(
+                clients.map((client) => requestReplayAcknowledgement(client, action)),
+            )
+            const transientFailure = outcomes.find((outcome) => outcome.status === 'rejected')
+            if (transientFailure) {
+                throw transientFailure.reason
+            }
+            if (outcomes.some((outcome) => outcome.value === false)) {
                 await markQueuedActionBlocked(action.id)
                 continue
             }

@@ -150,6 +150,60 @@ test('service worker retains queued actions when the client does not acknowledge
     assert.equal(harness.remaining.length, 1)
 })
 
+test('service worker tries every open client and retains an action if one cannot acknowledge', async () => {
+    const messages = []
+    const firstClient = {
+        postMessage: (message) => messages.push(`first:${message.queueId}`),
+    }
+    const readyClient = {
+        postMessage: (message, ports) => {
+            messages.push(`ready:${message.queueId}`)
+            setTimeout(() => {
+                ports[0].postMessage({
+                    type: 'REPLAY_OFFLINE_ACTION_ACK',
+                    queueId: message.queueId,
+                    persisted: true,
+                })
+            }, 1)
+        },
+    }
+    const harness = createSyncHarness({
+        records: [queuedAction],
+        clients: [firstClient, readyClient],
+    })
+
+    await assert.rejects(harness.syncData(), /did not acknowledge persisted state/u)
+
+    assert.deepEqual(messages, ['first:27', 'ready:27'])
+    assert.deepEqual(harness.deleted, [])
+    assert.equal(harness.remaining.length, 1)
+})
+
+test('service worker removes an action only after every open client persists it', async () => {
+    let harness
+    const makeClient = (name) => ({
+        postMessage: (message, ports) => {
+            setTimeout(() => {
+                harness.eventOrder.push(`ack:${name}:${message.queueId}`)
+                ports[0].postMessage({
+                    type: 'REPLAY_OFFLINE_ACTION_ACK',
+                    queueId: message.queueId,
+                    persisted: true,
+                })
+            }, 1)
+        },
+    })
+    harness = createSyncHarness({
+        records: [queuedAction],
+        clients: [makeClient('first'), makeClient('second')],
+    })
+
+    await harness.syncData()
+
+    assert.deepEqual(harness.deleted, [27])
+    assert.deepEqual(harness.eventOrder, ['ack:first:27', 'ack:second:27', 'delete:27'])
+})
+
 test('service worker deletes an action only after a matching persisted-state acknowledgement', async () => {
     const client = {
         postMessage: (message, ports) => {
@@ -177,8 +231,10 @@ test('service worker quarantines permanently rejected actions and continues repl
         key: 27,
         value: { type: 'unsupported/action', idempotencyKey: 'unsupported-27' },
     }
-    const client = {
+    const messages = []
+    const makeClient = (name) => ({
         postMessage: (message, ports) => {
+            messages.push(`${name}:${message.queueId}`)
             const replyPort = ports[0]
             setTimeout(() => {
                 replyPort.postMessage(
@@ -197,9 +253,12 @@ test('service worker quarantines permanently rejected actions and continues repl
                 )
             }, 1)
         },
-    }
+    })
     const validAction = { key: 28, value: queuedAction.value }
-    const harness = createSyncHarness({ records: [invalidAction, validAction], clients: [client] })
+    const harness = createSyncHarness({
+        records: [invalidAction, validAction],
+        clients: [makeClient('first'), makeClient('second')],
+    })
 
     await harness.syncData()
 
@@ -208,8 +267,9 @@ test('service worker quarantines permanently rejected actions and continues repl
     assert.equal(harness.remaining[0].key, 27)
     assert.equal(harness.remaining[0].value.replayBlocked, true)
     assert.deepEqual(harness.eventOrder, ['put:27', 'delete:28'])
+    assert.deepEqual(messages, ['first:27', 'second:27', 'first:28', 'second:28'])
 
-    const messagesBeforeRetry = harness.eventOrder.length
+    const messagesBeforeRetry = messages.length
     await harness.syncData()
-    assert.equal(harness.eventOrder.length, messagesBeforeRetry)
+    assert.equal(messages.length, messagesBeforeRetry)
 })

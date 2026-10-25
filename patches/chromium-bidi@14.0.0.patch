@@ -26,7 +26,7 @@ index 9b726b18ebf64eb8dc24dc587ecda59fd5b5afa3..a908fd02adb7ff43cf56b2bf6f4be60f
          .join(' ');
 diff --git a/lib/common/collection-guard.cjs b/lib/common/collection-guard.cjs
 new file mode 100644
-index 0000000000000000000000000000000000000000..24bec6ae5b5f1a615d0f4af8e575d81d2ee60183
+index 0000000000000000000000000000000000000000..9404acdf4b1008f418c1f62fa6a0333f545a23ef
 --- /dev/null
 +++ b/lib/common/collection-guard.cjs
 @@ -0,0 +1,326 @@
@@ -118,9 +118,9 @@ index 0000000000000000000000000000000000000000..24bec6ae5b5f1a615d0f4af8e575d81d
 +    if (type === "nullable" && value === null) {
 +        return { invalid: false, collectionError: false, issue: null };
 +    }
-+    // Zod 4 exposes the materialized default value instead of a callable factory.
++    // Zod 4 defaults short-circuit inner validation; prefaults do not.
 +    if (type === "default" && value === undefined) {
-+        return inspect(def.defaultValue, def.innerType, path, withinCollection, depth + 1);
++        return { invalid: false, collectionError: false, issue: null };
 +    }
 +    if (type === "prefault" && value === undefined) {
 +        return inspect(def.defaultValue, def.innerType, path, withinCollection, depth + 1);

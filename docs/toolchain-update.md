@@ -490,13 +490,15 @@ tarball has SRI `sha512-9gYlLtS6tStdRWzrtXaTMnqcM4dudNegMXJxkR0I/CXObHalYeYcAMPr
 and SHA-256 `02fca611e4320190725ce0d33ff136c77a532dfa593e4a6e8ad7c30c0e11984e`; its embedded
 `lib/iife/mapperTab.js` hash is `d8d4f5580e4431fb2d4d1b55b6259206f558fdec3826316fe219040fbad3778c`.
 The pnpm patch is `patches/chromium-bidi@14.0.0.patch`, SHA-256 / lockfile patch hash
-`2c0060c02767ba11fe3ebe7902487f0516c965df6f0694a848ab038b29b82720`; the installed patched
+`9c67d5b38459536db0d519be301100847e203f10af60df3014b525df4722b7e0`; the installed patched
 mapper hash is `6afb6eb3759e6b47ee128918a858aed797db5397d52ff2bb07c81ac16805687a`.
 
 The mapper patch rejects over-bound arrays before member parsing and processes array, map, and
 set entries sequentially, stopping at the first invalid member. It does not cap valid
 unbounded collections. The CJS/ESM protocol parser uses a scoped Zod 4.6.7 resolution and a
 bounded preflight that prevents Zod from accumulating errors for malformed large collections.
+The preflight preserves Zod 4's `.default()` short-circuit while validating `.prefault()` values
+through their inner schemas, matching native Zod behavior for both.
 The regression fetches the pinned original tarball, verifies its SRI and mapper hash, then
 executes the original and installed IIFE bytes in isolated VM contexts. For 256 malformed
 protocol events the original emits a 12,177-character error; the patched artifact emits one
@@ -513,21 +515,21 @@ CVE lists through 256 entries, and rejects 257 entries with one `too_big` issue.
 wrapper and native scanner binary are unchanged; no remote/network scan was run as part of this
 local qualification.
 
-The single open #580 review thread on README's Background Sync description was also validated
-against `syncData`: the old service worker deleted queued actions without a client or replay
-acknowledgement. It now keeps each queue item until the selected client confirms the updated
-state was flushed to IndexedDB. Permanently unsupported or orphaned actions remain stored with a
-blocked marker and are skipped on later syncs, allowing following actions to proceed. Missing
-clients, missing listeners, timeouts, and failed persistence remain retryable. The app service
-test verifies both permanent rejection and acknowledgement after the flush; a Node VM regression
-executes the actual service-worker replay helpers and verifies rejection-before-valid ordering,
-no-client, no-ack, and persisted-ack behavior. Lighthouse, Socket scanning, and security workflow
-commands remain unchanged.
+The service-worker replay now sends each action to every currently open window and removes the
+queue item only after every client confirms the updated state was flushed to IndexedDB. This
+prevents an older tab snapshot from overwriting a replay acknowledged only by another tab. If any
+client times out or persistence fails, all clients are still tried, the item remains retryable,
+and later actions wait for the next sync. Permanently unsupported or orphaned actions remain
+stored with a blocked marker while following actions proceed. The Node VM regression exercises
+the actual service-worker helpers for no-client, missing-ack with another ready client,
+all-client acknowledgement before deletion, and permanent rejection before a valid action.
+Lighthouse, Socket scanning, and security workflow commands remain unchanged.
 
 On the final local lockfile after a frozen pnpm 11.19.0 install (Node 24.22.0), the unchanged
 `pnpm audit --audit-level=high --prod` and `pnpm audit --audit-level=high` each exited **0**.
 The production audit reported no known vulnerabilities. The full audit reports one moderate
 finding plus two existing, ignored high findings; the unchanged exception and override-floor
-checks passed. The three required Node security regressions passed **10/10 tests**, and the focused
-offline replay service test passed **6/6**. This records local evidence; remote CI and reviewer
-qualification remain tracked separately on the exact PR head.
+checks passed. The three required Node security regressions passed **12/12 tests**, the focused
+offline replay service test passed **6/6**, and the offline queue panel regression passed **1/1**.
+This records local evidence; remote CI and reviewer qualification remain tracked separately on
+the exact PR head.

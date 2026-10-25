@@ -199,7 +199,7 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 | Feature             | Implementation                                                                                                                                           |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Service Worker**  | Network-First navigation, Cache-First assets, InjectManifest via vite-plugin-pwa                                                                         |
-| **Background Sync** | IndexedDB action queue; persisted replays are removed, while permanently rejected actions remain marked as blocked for inspection.                       |
+| **Background Sync** | IndexedDB action queue; an action is removed only after every open tab persists it, while permanently rejected actions remain blocked for inspection.    |
 | **Dual IndexedDB**  | `CannaGuideStateDB` (Redux state, debounce-save 1s, force-save on visibilitychange) + `CannaGuideDB` (strains, images, full-text search)                 |
 | **Safe Recovery**   | Corrupted state auto-clear + restart with session flag to prevent loops                                                                                  |
 | **CRDT Sync**       | Implementation retained; UI disabled pending the cloud-sync product/security decision. See [SECURITY.md](SECURITY.md#cloud-sync-encryption-github-gist). |

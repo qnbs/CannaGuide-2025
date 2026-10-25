@@ -1,9 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { combineReducers, configureStore } from '@reduxjs/toolkit'
-import { OFFLINE_ACTION_TYPES } from '@/constants/offlineActions'
+import {
+    OFFLINE_ACTION_TYPES,
+    SW_MESSAGE_REPLAY_OFFLINE_ACTION,
+    SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
+} from '@/constants/offlineActions'
 import { JournalEntryType } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
-import simulationReducer, { addPlant, applyQueuedJournalEntry } from '@/stores/slices/simulationSlice'
+import simulationReducer, {
+    addPlant,
+    applyQueuedJournalEntry,
+} from '@/stores/slices/simulationSlice'
 import settingsReducer, { defaultSettings } from '@/stores/slices/settingsSlice'
 import type { AppStore } from '@/stores/store'
 import { StrainType, type Strain } from '@/types'
@@ -110,5 +117,91 @@ describe('offlineActionReplayService', () => {
         expect(navigator.serviceWorker.addEventListener).toHaveBeenCalled()
         unregister()
         expect(navigator.serviceWorker.removeEventListener).toHaveBeenCalled()
+    })
+
+    it('acknowledges a replay only after persisted state flush succeeds', async () => {
+        const { registerOfflineActionReplayListener } = await import('./offlineActionReplayService')
+        const store = createTestStore()
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Ack Plant')
+        store.dispatch(addPlant({ plant, slotIndex: 0 }))
+        const entry = makeEntry('journal-ack-1')
+        const addEventListener = vi.mocked(navigator.serviceWorker.addEventListener)
+        const flushPersistedState = vi.fn<() => Promise<boolean>>()
+        let resolveFlush: ((persisted: boolean) => void) | undefined
+        flushPersistedState.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveFlush = resolve
+                }),
+        )
+        const replyPort = { postMessage: vi.fn(), close: vi.fn() }
+        const unregister = registerOfflineActionReplayListener(store, flushPersistedState)
+        const listener = addEventListener.mock.calls.at(-1)?.[1] as unknown as (
+            event: MessageEvent,
+        ) => Promise<void>
+
+        const handling = listener({
+            data: {
+                type: SW_MESSAGE_REPLAY_OFFLINE_ACTION,
+                queueId: 42,
+                payload: {
+                    type: OFFLINE_ACTION_TYPES.ADD_JOURNAL_ENTRY,
+                    plantId: plant.id,
+                    entry,
+                },
+            },
+            ports: [replyPort],
+        } as unknown as MessageEvent)
+
+        expect(store.getState().simulation.plants.entities[plant.id]?.journal).toHaveLength(1)
+        expect(flushPersistedState).toHaveBeenCalledOnce()
+        expect(replyPort.postMessage).not.toHaveBeenCalled()
+
+        resolveFlush?.(true)
+        await handling
+
+        expect(replyPort.postMessage).toHaveBeenCalledWith({
+            type: SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
+            queueId: 42,
+            persisted: true,
+        })
+        expect(replyPort.close).toHaveBeenCalledOnce()
+        unregister()
+    })
+
+    it('sends a negative acknowledgement when persistence fails', async () => {
+        const { registerOfflineActionReplayListener } = await import('./offlineActionReplayService')
+        const store = createTestStore()
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Failed Ack Plant')
+        store.dispatch(addPlant({ plant, slotIndex: 0 }))
+        const entry = makeEntry('journal-ack-fail')
+        const addEventListener = vi.mocked(navigator.serviceWorker.addEventListener)
+        const flushPersistedState = vi.fn().mockResolvedValue(false)
+        const replyPort = { postMessage: vi.fn(), close: vi.fn() }
+        const unregister = registerOfflineActionReplayListener(store, flushPersistedState)
+        const listener = addEventListener.mock.calls.at(-1)?.[1] as unknown as (
+            event: MessageEvent,
+        ) => Promise<void>
+
+        await listener({
+            data: {
+                type: SW_MESSAGE_REPLAY_OFFLINE_ACTION,
+                queueId: 43,
+                payload: {
+                    type: OFFLINE_ACTION_TYPES.ADD_JOURNAL_ENTRY,
+                    plantId: plant.id,
+                    entry,
+                },
+            },
+            ports: [replyPort],
+        } as unknown as MessageEvent)
+
+        expect(replyPort.postMessage).toHaveBeenCalledWith({
+            type: SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
+            queueId: 43,
+            persisted: false,
+        })
+        expect(replyPort.close).toHaveBeenCalledOnce()
+        unregister()
     })
 })

@@ -1,0 +1,60 @@
+diff --git a/package.json b/package.json
+index 8e43a3dd4be9970a45c7db8ff9f5fc9220f1b033..266bfb29e2ba052c651d81ba62cfa9086506d011 100644
+--- a/package.json
++++ b/package.json
+@@ -35,7 +35,7 @@
+     "node": ">=18.0.0"
+   },
+   "dependencies": {
+-    "zod": "^3.24.4"
++    "zod": ">=4.6.7 <5"
+   },
+   "devDependencies": {
+     "typescript": "^5.3.0",
+diff --git a/src/schema/manifest-schema.test.ts b/src/schema/manifest-schema.test.ts
+index d87a0f5cff274c5ff53a85c40e02db36afdbca59..0c21718fce7273892e4cad7763546e74f6befd0c 100644
+--- a/src/schema/manifest-schema.test.ts
++++ b/src/schema/manifest-schema.test.ts
+@@ -123,1 +123,28 @@ describe('PatchManifestSchema', () => {
+   })
++
++  it('rejects an oversized CVE list with one bounded-size issue', () => {
++    const record = {
++      uuid: '550e8400-e29b-41d4-a716-446655440000',
++      exportedAt: '2024-01-01T00:00:00Z',
++      files: {},
++      vulnerabilities: {
++        'GHSA-jrhj-2j3q-xf3v': {
++          cves: Array.from({ length: 257 }, () => null),
++          summary: 'Path traversal vulnerability',
++          severity: 'high',
++          description: 'Allows reading arbitrary files',
++        },
++      },
++      description: 'Fix path traversal',
++      license: 'MIT',
++      tier: 'free',
++    }
++
++    const result = PatchRecordSchema.safeParse(record)
++    assert.ok(!result.success)
++    if (!result.success) {
++      const cveIssues = result.error.issues.filter((issue) => issue.path.includes('cves'))
++      assert.equal(cveIssues.length, 1)
++      assert.equal(cveIssues[0].code, 'too_big')
++    }
++  })
+diff --git a/src/schema/manifest-schema.ts b/src/schema/manifest-schema.ts
+index 96f201bc182c0da705e87563fab1687487de23ea..badefe814399046b45599fc00253da1c43421301 100644
+--- a/src/schema/manifest-schema.ts
++++ b/src/schema/manifest-schema.ts
+@@ -15,7 +15,8 @@ export const PatchRecordSchema = z.object({
+   vulnerabilities: z.record(
+     z.string(), // Vulnerability ID like "GHSA-jrhj-2j3q-xf3v"
+     z.object({
+-      cves: z.array(z.string()),
++      // A manifest can be supplied by a patch source; cap its CVE list before parsing entries.
++      cves: z.array(z.string()).max(256),
+       summary: z.string(),
+       severity: z.string(),
+       description: z.string(),

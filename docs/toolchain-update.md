@@ -475,3 +475,56 @@ the 24-hour quarantine window, is a prerelease, and has no registry provenance a
 It is not an eligible fix. A future BiDi release must be older than the quarantine window,
 embed Zod **4.6.6 or newer**, and remove all Zod 3 paths; the independent Socket path still
 requires its own upstream fix or an explicitly approved equivalent scanner.
+
+## 11. #580 local Socket and Chromium-BiDi remediation candidate — 2026-10-25
+
+The existing #580 worktree at base `09d4291a6e139bfde85ba8f8e67d153a6ac1d014` now contains
+uncommitted, targeted pnpm patches for the two remaining Zod paths. The production security
+updates and the `linkify-it`/TypeDoc correction above are retained. No security workflow,
+scanner command, audit threshold, exception, LHCI configuration, URL, budget, or report step
+was changed in this candidate.
+
+The actual Lighthouse chain resolves as `@lhci/cli@0.15.1` → `lighthouse@12.6.1` →
+`puppeteer-core@24.40.0` → `chromium-bidi@14.0.0` → `zod@4.6.7`. The original official npm
+tarball has SRI `sha512-9gYlLtS6tStdRWzrtXaTMnqcM4dudNegMXJxkR0I/CXObHalYeYcAMPrL19eroNZHtJ8DQmu1E+ZNOYu/IXMXw==`
+and SHA-256 `02fca611e4320190725ce0d33ff136c77a532dfa593e4a6e8ad7c30c0e11984e`; its embedded
+`lib/iife/mapperTab.js` hash is `d8d4f5580e4431fb2d4d1b55b6259206f558fdec3826316fe219040fbad3778c`.
+The pnpm patch is `patches/chromium-bidi@14.0.0.patch`, SHA-256 / lockfile patch hash
+`e8ebd8adcfbd9da5eb0256931c16f321436784c88b687f58eee500706728a8f2`; the installed patched
+mapper hash is `6afb6eb3759e6b47ee128918a858aed797db5397d52ff2bb07c81ac16805687a`.
+
+The mapper patch rejects over-bound arrays before member parsing and processes array, map, and
+set entries sequentially, stopping at the first invalid member. It does not cap valid
+unbounded collections. The CJS/ESM protocol parser uses a scoped Zod 4.6.7 resolution and a
+bounded preflight that prevents Zod from accumulating errors for malformed large collections.
+The regression fetches the pinned original tarball, verifies its SRI and mapper hash, then
+executes the original and installed IIFE bytes in isolated VM contexts. For 256 malformed
+protocol events the original emits a 12,177-character error; the patched artifact emits one
+short issue. The fixture also covers valid arrays through 2,048 entries, array/map/set
+boundaries, early rejection counters, and both external parser module formats.
+
+The retained Socket CLI chain is `@socketsecurity/cli@1.4.1` → patched
+`@socketsecurity/socket-patch@2.0.0` → `zod@4.6.7`. Its scoped pnpm patch hash is
+`4af5920ae229cc67b7cc6d2a48b5a59f41676e596c5dfbd39faee135f9d07808`. The published package
+contains the schema source but not its declared `dist` export target. The regression compiles
+that exact installed source with the repository TypeScript compiler and resolves its Zod import
+from the patched package; the schema accepts CVE lists through 256 entries and rejects 257
+entries with one `too_big` issue. The Socket CLI wrapper and native scanner binary are unchanged;
+no remote/network scan was run as part of this local qualification.
+
+The single open #580 review thread on README's Background Sync description was also validated
+against `syncData`: the old service worker deleted queued actions without a client or replay
+acknowledgement. It now keeps each queue item until the selected client confirms the updated
+state was flushed to IndexedDB. Missing clients, missing listeners, unsupported actions, and
+failed persistence leave the item queued. The app service test verifies acknowledgement after
+the flush; a Node VM regression executes the actual service-worker replay helpers and verifies
+no-client, no-ack, and persisted-ack deletion cases. Lighthouse, Socket scanning, and security
+workflow commands remain unchanged.
+
+On the final local lockfile after a frozen pnpm 11.19.0 install (Node 24.22.0), the unchanged
+`pnpm audit --audit-level=high --prod` and `pnpm audit --audit-level=high` each exited **0**.
+The production audit reported no known vulnerabilities. The full audit reports one moderate
+finding plus two existing, ignored high findings; the unchanged exception and override-floor
+checks passed. The three required Node security regressions passed **9/9 tests**, and the focused
+offline replay service test passed **5/5**. This is local evidence only:
+the candidate is not yet signed, pushed, reviewed, or CI-qualified on a remote PR head.

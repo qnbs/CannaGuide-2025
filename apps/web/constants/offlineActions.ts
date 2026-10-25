@@ -6,3 +6,4 @@ export const OFFLINE_ACTION_TYPES = {
 export type OfflineActionType = (typeof OFFLINE_ACTION_TYPES)[keyof typeof OFFLINE_ACTION_TYPES]
 
 export const SW_MESSAGE_REPLAY_OFFLINE_ACTION = 'REPLAY_OFFLINE_ACTION' as const
+export const SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK = 'REPLAY_OFFLINE_ACTION_ACK' as const

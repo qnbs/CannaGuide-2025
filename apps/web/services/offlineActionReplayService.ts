@@ -5,10 +5,12 @@ import type { AppStore } from '@/stores/store'
 import {
     OFFLINE_ACTION_TYPES,
     SW_MESSAGE_REPLAY_OFFLINE_ACTION,
+    SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
 } from '@/constants/offlineActions'
 import type { JournalEntry } from '@/types'
 import { applyQueuedJournalEntry } from '@/stores/slices/simulationSlice'
 import type { OfflineActionRecord } from '@/services/offlineActionQueueService'
+import type { FlushPersistedState } from '@/bootstrap/persistence'
 
 export type QueuedJournalEntryAction = {
     type: typeof OFFLINE_ACTION_TYPES.ADD_JOURNAL_ENTRY
@@ -58,6 +60,16 @@ export const replayOfflineAction = (store: AppStore, raw: OfflineActionRecord): 
         return false
     }
 
+    const plant = store.getState().simulation.plants.entities[journalAction.plantId]
+    if (!plant) {
+        console.debug(
+            '[offlineReplay] Plant is missing; keep the queued action:',
+            journalAction.plantId,
+        )
+        return false
+    }
+    if (plant.journal.some((entry) => entry.id === journalAction.entry.id)) return true
+
     store.dispatch(
         applyQueuedJournalEntry({
             plantId: journalAction.plantId,
@@ -69,17 +81,57 @@ export const replayOfflineAction = (store: AppStore, raw: OfflineActionRecord): 
 
 let unregisterMessageListener: (() => void) | null = null
 
-export const registerOfflineActionReplayListener = (store: AppStore): (() => void) => {
+export const registerOfflineActionReplayListener = (
+    store: AppStore,
+    flushPersistedState?: FlushPersistedState,
+): (() => void) => {
     if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
         return () => undefined
     }
 
     unregisterMessageListener?.()
 
-    const handler = (event: MessageEvent): void => {
+    const handler = async (event: MessageEvent): Promise<void> => {
         const payload = parseSwReplayPayload(event.data)
-        if (!payload) return
-        replayOfflineAction(store, payload)
+        const queueId = isRecord(event.data) ? event.data.queueId : undefined
+        const replyPort = event.ports[0]
+        if (!payload) {
+            replyPort?.close()
+            return
+        }
+        if (!replyPort) {
+            replayOfflineAction(store, payload)
+            return
+        }
+        if (!Number.isSafeInteger(queueId) || !flushPersistedState) {
+            replyPort.close()
+            return
+        }
+
+        const acknowledge = (persisted: boolean): void => {
+            try {
+                replyPort.postMessage({
+                    type: SW_MESSAGE_REPLAY_OFFLINE_ACTION_ACK,
+                    queueId,
+                    persisted,
+                })
+            } catch (error) {
+                console.debug('[offlineReplay] Sending the replay acknowledgement failed:', error)
+            } finally {
+                replyPort.close()
+            }
+        }
+        if (!replayOfflineAction(store, payload)) {
+            acknowledge(false)
+            return
+        }
+
+        try {
+            acknowledge(await flushPersistedState())
+        } catch (error) {
+            console.debug('[offlineReplay] Persisting the replayed action failed:', error)
+            acknowledge(false)
+        }
     }
 
     navigator.serviceWorker.addEventListener('message', handler)

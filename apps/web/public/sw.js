@@ -72,8 +72,10 @@ const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.s
 const DB_NAME = 'CannaGuideDB'
 const DB_VERSION = 4
 const OFFLINE_ACTIONS_STORE = 'offline_actions'
-// Note: This app is client-only (no backend). The background sync handler notifies
-// open clients to replay queued actions locally rather than POSTing to a server.
+const REPLAY_ACTION_ACK_TYPE = 'REPLAY_OFFLINE_ACTION_ACK'
+const REPLAY_ACTION_ACK_TIMEOUT_MS = 5000
+// Note: This app is client-only (no backend). Background sync asks one open client to
+// replay each queued action locally and waits for persisted-state acknowledgement.
 const REMINDER_DB_NAME = 'CannaGuideReminderDB'
 const REMINDER_DB_VERSION = 1
 const REMINDER_STORE = 'grow_reminders'
@@ -625,9 +627,55 @@ async function notifyDueReminders() {
  * so they can replay them locally. This app is client-only — there is no backend
  * server to POST to. Adding a real server endpoint here is left as a future extension.
  *
- * Uses idempotency keys to prevent duplicate replay when multiple tabs are open.
- * Only ONE client receives each action to avoid duplicate journal entries etc.
+ * The reducer deduplicates journal entries by ID; only one client receives each action.
+ * The queue entry stays in IndexedDB until that client confirms persisted application state.
  */
+function requestReplayAcknowledgement(client, action) {
+    if (!Number.isSafeInteger(action.id)) {
+        return Promise.reject(new Error('[SW] Queued action has no valid IndexedDB key.'))
+    }
+
+    return new Promise((resolve, reject) => {
+        const channel = new MessageChannel()
+        let settled = false
+        const finish = (error) => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeout)
+            channel.port1.close()
+            channel.port2.close()
+            if (error) reject(error)
+            else resolve()
+        }
+        const timeout = setTimeout(
+            () => finish(new Error('[SW] Replay client did not acknowledge persisted state.')),
+            REPLAY_ACTION_ACK_TIMEOUT_MS,
+        )
+
+        channel.port1.onmessage = (event) => {
+            const acknowledgement = event.data
+            if (
+                acknowledgement?.type !== REPLAY_ACTION_ACK_TYPE ||
+                acknowledgement.queueId !== action.id ||
+                acknowledgement.persisted !== true
+            ) {
+                finish(new Error('[SW] Replay acknowledgement did not match the queued action.'))
+                return
+            }
+            finish()
+        }
+        channel.port1.onmessageerror = () =>
+            finish(new Error('[SW] Replay acknowledgement could not be deserialized.'))
+
+        const { id: queueId, ...payload } = action
+        try {
+            client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', queueId, payload }, [channel.port2])
+        } catch (error) {
+            finish(error)
+        }
+    })
+}
+
 async function syncData() {
     console.debug('[SW] Attempting to sync data...')
     try {
@@ -640,31 +688,18 @@ async function syncData() {
         console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
 
-        // Deduplicate by idempotencyKey before dispatching
-        const seenKeys = new Set()
-        const uniqueActions = queuedActions.filter((action) => {
-            const key = action.idempotencyKey
-            if (!key || !seenKeys.has(key)) {
-                if (key) seenKeys.add(key)
-                return true
-            }
-            console.debug(`[SW] Skipping duplicate action: ${key}`)
-            return false
-        })
-
-        // Send each action to only the first available client to prevent
-        // cross-tab duplication. Other tabs hydrate from IndexedDB.
+        // Send each action to one client. Keep it queued until that client
+        // confirms the replayed application state has been persisted.
         const primaryClient = clients[0]
-        if (primaryClient) {
-            uniqueActions.forEach((action) => {
-                const { id: _id, ...actionData } = action
-                primaryClient.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData })
-            })
+        if (!primaryClient) {
+            throw new Error('[SW] No window client is available; queued actions were retained.')
         }
 
-        // Batch-delete all processed actions
-        await Promise.all(queuedActions.map((action) => deleteQueuedAction(action.id)))
-        console.debug('[SW] All queued actions dispatched to primary client.')
+        for (const action of queuedActions) {
+            await requestReplayAcknowledgement(primaryClient, action)
+            await deleteQueuedAction(action.id)
+        }
+        console.debug('[SW] All queued actions were replayed, persisted, and removed.')
     } catch (error) {
         console.debug('[SW] Sync failed, will retry later.', error)
         throw error

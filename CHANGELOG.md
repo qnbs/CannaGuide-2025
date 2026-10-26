@@ -6,16 +6,13 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
-### Security
-
-- Harden ZIP backup restore by removing remote saved strain-tip images, validating bounded raster payloads and image timestamps, and preserving existing IndexedDB images when restored IDs collide.
-
 ### Changed
 
 - **fix(a11y):** the 14 curated WCAG-AA contrast pairs now pass. `neutral-500` is lightened per theme, desert `danger` and rainbow `info` move just enough to clear 4.5:1, and `text-on-accent` is dark on the four themes where white fails on `primary-600`. Primary labels on solid `primary-600` (and the shared primary gradients, now opaque) use `text-on-accent`. White labels that sat on `slate-500` move to `slate-600`/`slate-700`, because the lightened `neutral-500` step is a text color and no longer a safe white-text background. The `--color-primary-*` brand scales are unchanged. `node scripts/check-contrast.mjs` reports 0 below AA. `--strict` stays off. `.a11y-baseline.json` is unchanged because this slice does not remove jsx-a11y warnings.
 
 ### Security
 
+- Harden ZIP backup restore by removing remote saved strain-tip images, validating bounded raster payloads and image timestamps, and preserving existing IndexedDB images when restored IDs collide.
 - **fix(ci):** Labeler runs on `pull_request` instead of `pull_request_target`. The job still has `contents: read` and `pull-requests: write`, and it does not check out the pull request. Same-repo pulls keep labels. The job is skipped when the head repository is not this one, so a fork pull does not fail the check with a 403.
 - **fix(csp):** Zod runs with `jitless` before app or AI-core schemas parse. Zod 4 otherwise probes `new Function`, and a strict CSP reports that caught call. `script-src` stays `'self' 'unsafe-inline' 'wasm-unsafe-eval'` with no `unsafe-eval`.
 - **chore(deps):** `pnpm.overrides` — `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj: JS injection via an untrusted AST passed to `compile`; GHSA-p8wg-vrv2-v86f: prototype-method bypass when `allowProtoMethodsByDefault` is true; dev-only path via `conventional-changelog-writer`)

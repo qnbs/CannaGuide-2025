@@ -16,7 +16,10 @@ import { openDB } from '@/services/db/connection'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 import { getT } from '@/i18n'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
-import { isSafeRasterImageDataUrl, MAX_IMAGE_DATA_URL_LENGTH } from '@/services/backupImageValidation'
+import {
+    isSafeRasterImageDataUrl,
+    MAX_IMAGE_DATA_URL_LENGTH,
+} from '@/services/backupImageValidation'
 import type { StoredImageData } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -48,6 +51,7 @@ export interface BackupExportResult {
 export interface BackupImportResult {
     success: boolean
     metadata: BackupMetadata | null
+    rejectedImageCount: number
     error?: string | undefined
 }
 
@@ -307,12 +311,14 @@ export const backupService = {
      */
     async importBackup(file: File): Promise<BackupImportResult> {
         let imageDb: IDBDatabase | undefined
+        const rejectedImageIds = new Set<string>()
         try {
             // Size guard
             if (file.size > MAX_IMPORT_SIZE_BYTES) {
                 return {
                     success: false,
                     metadata: null,
+                    rejectedImageCount: 0,
                     error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${MAX_IMPORT_SIZE_BYTES / 1024 / 1024} MB.`,
                 }
             }
@@ -326,6 +332,7 @@ export const backupService = {
                 return {
                     success: false,
                     metadata: null,
+                    rejectedImageCount: 0,
                     error: 'Invalid backup: missing state file',
                 }
             }
@@ -339,6 +346,7 @@ export const backupService = {
                 return {
                     success: false,
                     metadata: null,
+                    rejectedImageCount: 0,
                     error: 'Invalid backup: corrupt state JSON',
                 }
             }
@@ -347,6 +355,7 @@ export const backupService = {
                 return {
                     success: false,
                     metadata: null,
+                    rejectedImageCount: 0,
                     error: 'Invalid backup: state is not an object',
                 }
             }
@@ -374,7 +383,6 @@ export const backupService = {
             )
             const imagesById = new Map<string, StoredImageData>()
             const seenImageIds = new Set<string>()
-            const rejectedImageIds = new Set<string>()
 
             for (const imgPath of imageFiles) {
                 const imgFile = zip.file(imgPath)
@@ -427,6 +435,7 @@ export const backupService = {
                 return {
                     success: false,
                     metadata,
+                    rejectedImageCount: rejectedImageIds.size,
                     error: String(getT()('settingsView.data.restoreBlocked')),
                 }
             }
@@ -449,6 +458,7 @@ export const backupService = {
             return {
                 success: true,
                 metadata,
+                rejectedImageCount: rejectedImageIds.size,
             }
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Unknown import error'
@@ -456,6 +466,7 @@ export const backupService = {
             return {
                 success: false,
                 metadata: null,
+                rejectedImageCount: rejectedImageIds.size,
                 error: msg,
             }
         }

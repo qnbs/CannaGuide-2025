@@ -88,7 +88,10 @@ const concatBytes = (...parts: Uint8Array[]): Uint8Array => {
 const createIsoBmffBox = (type: string, payload: Uint8Array): Uint8Array => {
     const result = new Uint8Array(8 + payload.length)
     new DataView(result.buffer).setUint32(0, result.length)
-    result.set([...type].map((character) => character.charCodeAt(0)), 4)
+    result.set(
+        [...type].map((character) => character.charCodeAt(0)),
+        4,
+    )
     result.set(payload, 8)
     return result
 }
@@ -243,6 +246,7 @@ describe('backupService', () => {
             expect(result).toEqual({
                 success: false,
                 metadata: null,
+                rejectedImageCount: 0,
                 error: 'settingsView.data.restoreBlocked',
             })
         })
@@ -293,7 +297,8 @@ describe('backupService', () => {
             const hasStrainStore = database.objectStoreNames.contains('strains')
             const hasSearchIndexStore = database.objectStoreNames.contains('strain_search_index')
             const hasOfflineActionsStore = database.objectStoreNames.contains('offline_actions')
-            const hasCalculatorHistoryStore = database.objectStoreNames.contains('calculator_history')
+            const hasCalculatorHistoryStore =
+                database.objectStoreNames.contains('calculator_history')
             database.close()
             expect(databaseVersion).toBe(5)
             expect(hasImageStore).toBe(true)
@@ -310,7 +315,8 @@ describe('backupService', () => {
                 await new Promise<void>((resolve, reject) => {
                     removeRequest.onsuccess = () => resolve()
                     removeRequest.onerror = () => reject(removeRequest.error)
-                    removeRequest.onblocked = () => reject(new Error('Image database deletion blocked'))
+                    removeRequest.onblocked = () =>
+                        reject(new Error('Image database deletion blocked'))
                 })
                 const imageData = createHeifDataUrl(mimeType)
                 const state = {
@@ -327,7 +333,8 @@ describe('backupService', () => {
                 const result = await importMockBackup(state, {
                     'photo-heif': { id: 'photo-heif', data: imageData, createdAt: 10 },
                 })
-                const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+                const [persistedSnapshot] =
+                    mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
                 const database = await new Promise<IDBDatabase>((resolve, reject) => {
                     const request = indexedDB.open('CannaGuideDB')
                     request.onsuccess = () => resolve(request.result)
@@ -348,6 +355,40 @@ describe('backupService', () => {
                 })
             },
         )
+
+        it('reports browser-unsupported HEIC images after sanitizing their journal reference', async () => {
+            const imageData = createHeifDataUrl('image/heic')
+            decodeImageMock.mockRejectedValue(new Error('Unsupported image format'))
+            const state = {
+                simulation: {
+                    plants: [
+                        {
+                            journal: [
+                                {
+                                    details: {
+                                        imageId: 'photo-heic',
+                                        imageUrl: imageData,
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            }
+
+            const result = await importMockBackup(state, {
+                'photo-heic': { id: 'photo-heic', data: imageData, createdAt: 10 },
+            })
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.success).toBe(true)
+            expect(result.rejectedImageCount).toBe(1)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: {
+                    plants: [{ journal: [{ details: {} }] }],
+                },
+            })
+        })
 
         it('rejects HEIF extents above the bounded decode limit before browser decoding', async () => {
             const imageData = createHeifDataUrl('image/heic', 8193, 1)
@@ -461,6 +502,7 @@ describe('backupService', () => {
             })
 
             expect(result.success).toBe(true)
+            expect(result.rejectedImageCount).toBe(2)
             expect(restoredImages).toEqual([
                 {
                     id: 'photo-valid',

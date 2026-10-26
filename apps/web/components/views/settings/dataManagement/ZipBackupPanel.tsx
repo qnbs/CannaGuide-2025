@@ -5,6 +5,7 @@ import { FormSection } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { backupService } from '@/services/backupService'
+import { getUISnapshot } from '@/stores/useUIStore'
 
 export const ZipBackupPanel: React.FC = () => {
     const { t } = useTranslation()
@@ -57,7 +58,28 @@ export const ZipBackupPanel: React.FC = () => {
                             if (!file) return
                             const result = await backupService.importBackup(file)
                             if (result.success) {
-                                window.location.reload()
+                                if (result.rejectedImageCount > 0) {
+                                    getUISnapshot().addNotification({
+                                        type: 'info',
+                                        message: String(
+                                            t('settingsView.zipBackup.importPartialSuccess', {
+                                                count: result.rejectedImageCount,
+                                            }),
+                                        ),
+                                    })
+                                    // Toast notifications disappear after 3.3 seconds.
+                                    window.setTimeout(() => window.location.reload(), 3500)
+                                } else {
+                                    window.location.reload()
+                                }
+                            } else {
+                                getUISnapshot().addNotification({
+                                    type: 'error',
+                                    message: String(t('settingsView.zipBackup.importError')),
+                                })
+                                if (result.reloadRequired) {
+                                    window.setTimeout(() => window.location.reload(), 3500)
+                                }
                             }
                             e.target.value = ''
                         }}

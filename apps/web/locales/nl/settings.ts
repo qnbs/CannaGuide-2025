@@ -1196,6 +1196,10 @@ export const settingsView = {
         importing: 'Herstellen vanuit ZIP...',
         exportSuccess: 'ZIP-backup succesvol geexporteerd.',
         importSuccess: 'ZIP-backup succesvol geimporteerd. App wordt herladen.',
+        importPartialSuccess_one:
+            'Back-up hersteld; {{count}} afbeelding kon niet worden hersteld. De app wordt herladen.',
+        importPartialSuccess_other:
+            'Back-up hersteld; {{count}} afbeeldingen konden niet worden hersteld. De app wordt herladen.',
         importError: 'ZIP-backup kon niet worden geimporteerd. Het bestand is mogelijk beschadigd.',
         exportError: 'ZIP-backup kon niet worden aangemaakt.',
         includePhotos: "Foto's opnemen",

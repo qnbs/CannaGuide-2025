@@ -1217,6 +1217,10 @@ export const settingsView = {
         importing: 'Restaurando desde ZIP...',
         exportSuccess: 'Copia ZIP exportada con exito.',
         importSuccess: 'Copia ZIP importada con exito. La app se recargara.',
+        importPartialSuccess_one:
+            'Copia restaurada; no se pudo restaurar {{count}} imagen. La app se recargara.',
+        importPartialSuccess_other:
+            'Copia restaurada; no se pudieron restaurar {{count}} imagenes. La app se recargara.',
         importError: 'No se pudo importar la copia ZIP. El archivo puede estar corrupto.',
         exportError: 'No se pudo crear la copia ZIP.',
         includePhotos: 'Incluir fotos',

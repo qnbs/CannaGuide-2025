@@ -124,6 +124,9 @@ overrides:
     # postcss@8 currently accepts nanoid@3, including the advisory range. Remove
     # this override once every resolved postcss consumer requires >=3.3.17 itself.
     nanoid@3: '>=3.3.18 <4'
+    # @tailwindcss/typography 0.5.x pins 6.0.10; 6.1.5 is the 6.x backport for
+    # GHSA-rj75-hqrm-r3gf (quadratic flat-selector parsing). Stay off the 7.x API.
+    postcss-selector-parser@6: '>=6.1.5 <7'
     brace-expansion@1: '>=1.1.20 <2'
     brace-expansion@2: '>=2.1.6 <3'
     brace-expansion@5: '>=5.0.11 <6'

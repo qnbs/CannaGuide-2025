@@ -29,17 +29,31 @@ test('typography resolves the patched 6.x selector parser (GHSA-rj75-hqrm-r3gf)'
     )
 })
 
+const timed = (selector) => {
+    const started = performance.now()
+    const output = roundTrip(selector)
+    return { output, elapsed: performance.now() - started }
+}
+
 test('flat class/id selectors parse in linear, not quadratic, time', () => {
-    // 80k indexes (~160 KB). Measured on a dual-core laptop: 6.0.10 needs ~36 s,
-    // 6.1.5 ~0.6 s. The bound sits far from both, so a fast runner cannot hide the
-    // quadratic parser and a slow one does not flake -- the version contract above
+    // A flat selector with 80k indexes (~160 KB) against a benign descendant selector
+    // of the same byte size, parsed in the same run. Runner speed and load affect
+    // both equally, so the ratio is a property of the algorithm, not the machine.
+    // Measured: 6.0.10 flat/control ~15x, 6.1.5 ~0.3x. The version contract above
     // remains the primary signal.
     const flat = '.a'.repeat(40_000) + '#b'.repeat(40_000)
-    const started = performance.now()
-    const output = roundTrip(flat)
-    const elapsed = performance.now() - started
-    assert.equal(output, flat)
-    assert.ok(elapsed < 5_000, `flat selector took ${Math.round(elapsed)} ms`)
+    const control = `${'.a '.repeat(53_333)}.a`
+    roundTrip('.a.b .c') // warm up the parser before timing
+    const benign = timed(control)
+    const pathological = timed(flat)
+    assert.equal(benign.output, control)
+    assert.equal(pathological.output, flat)
+    const ratio = pathological.elapsed / benign.elapsed
+    assert.ok(
+        ratio < 3,
+        `flat selector took ${Math.round(pathological.elapsed)} ms, ` +
+            `${ratio.toFixed(1)}x the ${Math.round(benign.elapsed)} ms control`,
+    )
 })
 
 test('selectors shaped like the typography plugin output round-trip byte-identically', () => {

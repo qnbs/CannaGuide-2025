@@ -164,7 +164,8 @@ for the boundary between local proof, CI qualification and deployment.
 On **2026-10-26**, the postcss-selector-parser 6 finding was remediated with the
 `postcss-selector-parser@6` override above, once upstream published the 6.1.5 backport.
 `scripts/security/postcss-selector-parser.test.mjs` pins the resolved version through
-the real Typography consumer and bounds the flat-selector parse time. Zod 3 remains open.
+the real Typography consumer and checks flat-selector parse time against a same-size
+benign control. Zod 3 remains open.
 
 After merging an override, confirm in GitHub **Security → Dependabot** that the related alert moves to **resolved** (or dismiss with justification if a false positive).
 

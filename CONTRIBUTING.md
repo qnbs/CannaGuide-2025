@@ -39,11 +39,11 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
     ```
 3. **Install dependencies**:
     ```bash
-    pnpm install
+    corepack pnpm install --frozen-lockfile
     ```
 4. **Start the development server**:
     ```bash
-    pnpm run dev
+    corepack pnpm --filter @cannaguide/web dev
     ```
 
 ---
@@ -52,8 +52,9 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 ### Prerequisites
 
-- **Node.js** >= 24
-- **pnpm** >= 10 (via Corepack: `corepack enable`)
+- **Node.js** >=24.15.0 <25; use an existing repository-specific version manager and verify `node --version` before package commands.
+- **pnpm** exactly as pinned in root `package.json` (`packageManager`), invoked through Corepack. See [AGENTS.md](AGENTS.md#nodejs-version-required) for the cloud-host PATH setup; a native host may already have a compatible Node through another version manager.
+- On the low-memory maintainer host, run one task at a time and follow [the binding verification rules](AGENTS.md#local-verification-on-low-end-hardware-binding). The web server uses `/CannaGuide-2025/` on port 5173.
 
 ### Tech Stack
 
@@ -62,7 +63,7 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 | Frontend | React 19 + TypeScript               |
 | State    | Redux Toolkit + RTK Query           |
 | AI       | Google Gemini API (`@google/genai`) |
-| Build    | Vite 7 + vite-plugin-pwa            |
+| Build    | Vite 8 + vite-plugin-pwa            |
 | Styling  | Tailwind CSS                        |
 | Testing  | Vitest + Playwright                 |
 | i18n     | i18next + react-i18next             |
@@ -90,15 +91,22 @@ git checkout -b feature/my-new-feature
 Direct pushes to `main` are blocked (`enforce_admins: true`). All changes go through Pull Requests:
 
 ```bash
-# 1. Commit your changes on main (signed)
-git add -A && git commit -S -m "feat(scope): description"
+# 1. Create a named branch from freshly verified origin/main
+git switch -c feature/my-feature origin/main
 
-# 2. Push via automated PR workflow
-pnpm run pr:push                          # auto-generated branch name
-pnpm run pr:push -- "feat/my-feature"     # explicit branch name
+# 2. Stage only the intended files, then commit with the approved signing identity
+git add path/to/changed-file
+git commit -S -m "feat(scope): description"
+
+# 3. Push with hooks enabled and open a Ready for Review PR
+git push -u origin feature/my-feature
+gh pr create --repo qnbs/CannaGuide-2025 --base main --head feature/my-feature
 ```
 
-The `pr:push` script (`scripts/github/pr-push.mjs`) automates: branch creation → push → PR → auto-merge (squash) → CI wait → cleanup. PRs are merge-gated by CI checks (`quality` + `ci-status`) and signed commits.
+Do not merge until the required **✅ CI Status** check passes on the current head and review
+findings are addressed. It aggregates build, unit/coverage, verify, security and Chromium E2E
+(plus Rust when desktop files changed). Keep commits signed and hooks enabled. Recheck the
+resulting main and production separately; a green PR is not production evidence.
 
 ---
 
@@ -110,7 +118,8 @@ The repository ships a Graphify knowledge graph under `graphify-out/` and config
 - Codespaces / Dev Container: `.devcontainer/Dockerfile` installs **`uv`** into the image (`/usr/local/bin/uv`) so Graphify-MCP works without extra setup.
 - Refresh the graph with `graphify update .` (AST-only, no API cost).
 
-**Maintainers:** prefer `pnpm run pr:push` for substantive merges so CI gates apply; reserve direct `git push origin main` for emergencies or documented exceptions.
+**Maintainers:** deliver changes through a branch and pull request. A failed PR-creation call
+does not authorize a direct push to main or a ruleset bypass.
 
 ---
 
@@ -154,7 +163,7 @@ test(ai): add rate limiter unit tests
 ## Code Style
 
 - **TypeScript strict mode** — no `any` types, no `@ts-expect-error`.
-- **ESLint 9 flat config** — run `pnpm run lint` before committing.
+- **ESLint 9 flat config** — use the affected-workspace verification below before committing.
 - **Tailwind CSS** — use utility classes, avoid custom CSS where possible.
 - **Functional components** with hooks — no class components.
 - **Named exports** — prefer named over default exports.
@@ -162,10 +171,10 @@ test(ai): add rate limiter unit tests
 
 ```bash
 # Check for lint errors
-pnpm run lint
+pnpm verify:lint
 
 # Type-check without emitting
-pnpm exec tsc --noEmit
+pnpm verify
 ```
 
 ### Rules
@@ -233,14 +242,12 @@ See [ADR-0012](docs/adr/0012-desktop-tauri-architecture.md) for the full archite
 We use **Vitest** for unit/integration tests and **Playwright** for E2E tests.
 
 ```bash
-# Run all unit/integration tests
-pnpm test
+# Run a relevant unit/integration spec (no extra -- before the file)
+pnpm --filter @cannaguide/web test:run path/to/changed.test.ts
 
-# Run tests in watch mode
-pnpm exec vitest --watch
-
-# Run E2E tests (requires build)
-pnpm run build && pnpm exec playwright test
+# Verify affected workspaces serially; inspect the selected scope first
+pnpm verify
+pnpm verify:lint
 ```
 
 ### Guidelines
@@ -249,7 +256,7 @@ pnpm run build && pnpm exec playwright test
 - Bug fixes **should** include a regression test.
 - Test files live next to their source: `MyComponent.test.tsx` or in `tests/`.
 - Use existing mocks from `tests/mocks/` for Gemini, IndexedDB, etc.
-- Current baseline: **2140 tests, 0 failures** (185 test files).
+- Full coverage and browser tests run in CI. Do not run E2E, Playwright, Stryker or Lighthouse on the low-memory maintainer host. Test counts are maintained by `pnpm run docs:sync-metrics`; historical counts do not prove the current branch passed.
 
 ---
 
@@ -287,9 +294,9 @@ console.debug(t('common:error.generic'))
 
 1. **Open an issue first** to discuss significant changes.
 2. Ensure your branch is **up to date** with `main`.
-3. Run the full check suite:
+3. Run affordable affected checks and targeted regression specs:
     ```bash
-    pnpm exec tsc --noEmit && pnpm run lint && pnpm test
+    pnpm verify && pnpm verify:lint
     ```
 4. Write a **clear PR description** explaining what changed and why.
 5. Link the related issue (e.g., `Closes #42`).
@@ -298,9 +305,9 @@ console.debug(t('common:error.generic'))
 
 ### PR Checklist
 
-- [ ] TypeScript compiles with 0 errors (`pnpm exec tsc --noEmit`)
-- [ ] ESLint passes with 0 warnings (`pnpm run lint`)
-- [ ] All existing tests pass (`pnpm test`)
+- [ ] Affected TypeScript and lint checks pass (`pnpm verify`, `pnpm verify:lint`)
+- [ ] Targeted regression tests pass; exact scope and results are recorded
+- [ ] Required current-head CI, including full unit/coverage and Chromium E2E, passes before merge
 - [ ] New features include tests
 - [ ] Translations added for all 5 languages (EN/DE/ES/FR/NL)
 - [ ] No `console.log` statements
@@ -422,12 +429,11 @@ When removing or replacing a public API, component, or feature, follow this proc
 
 ## Release Process
 
-1. Maintainer bumps version in `package.json`.
-2. Generate CHANGELOG: `pnpm run changelog:latest` (or `pnpm run changelog` for full rebuild).
-3. Create a tag: `git tag v1.x.0 && git push --tags`.
-4. GitHub Actions automatically:
-    - Deploys to GitHub Pages, Vercel, and Cloudflare Pages (Netlify paused).
-5. Create a GitHub Release with the CHANGELOG excerpt.
+Prepare version/changelog changes on a branch and qualify their PR first. Release publication
+is a separate maintainer decision, governed by [the release process](docs/release-process.md)
+and [GitHub settings](docs/GITHUB-SETTINGS-GUIDE.md). Do not push release changes directly to
+main, move existing tags or bypass tag protection. A successful web deployment does not
+qualify desktop bundles or publish a release.
 
 ---
 
@@ -438,10 +444,11 @@ Before a release tag or large audit merge, follow [docs/HOUSEKEEPING.md](docs/HO
 ```bash
 pnpm run docs:sync-metrics   # README / ARCHITECTURE test counts
 pnpm run strains:check-integrity
-pnpm run typecheck && pnpm run lint:changed && pnpm run build
+pnpm verify && pnpm verify:lint
 ```
 
-Audit closures: update `docs/audits/AUDIT-CLOSURE-*.md` and `ROADMAP.md` v1.9.x status.
+Record audit closures against current code and exact qualification evidence; retain dated
+reports as historical records. Use CI for the full release/build/coverage/browser checks.
 
 ---
 

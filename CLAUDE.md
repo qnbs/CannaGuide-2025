@@ -105,7 +105,7 @@ These look like the safe command. They are not. Each one has cost a session.
 
     `node scripts/security/check-override-floors.mjs` (Security job) **fails** on a new
     unbounded floor, on an orphaned `name@major` selector, and on an ignored package with no
-    override. The 11 pre-existing unbounded pins are an explicit `LEGACY_UNBOUNDED` allowlist
+    override. Remaining pre-existing unbounded pins are an explicit `LEGACY_UNBOUNDED` allowlist
     inside that script -- a ratchet that **may only shrink**, since two of them have already
     crossed a major (`uuid >=11.1.1` -> 14.0.0, `linkify-it` -> 6.0.0). `basic-ftp` was
     retired onto `>=6.2.1 <7`. Retiring each remaining pin is a per-package compatibility call.
@@ -133,15 +133,15 @@ branch that touched only docs**. Both are now scoped to what the branch actually
 a push that touches nothing in a strict scope skips that step in 0.2 s. CI still runs the
 full matrix and the full strict-scope lint, so nothing is lost.
 
-If you ever must bypass in an emergency, run **exactly what the hook runs** -- the scoped
-commands, not the expensive ones this repo exists to avoid -- and say so in the commit body:
+If a hook fails, preserve the branch and fix its reported cause. Running the following
+checks can diagnose a failure; it does not authorize bypassing the hook:
 
 ```bash
 node ./scripts/scoped-verify.mjs typecheck     # every touched workspace, not just web
 node ./scripts/lint-scopes.mjs --changed
 pnpm run check:file-budget
 node ./scripts/check-doc-metrics.mjs
-npx prettier --check $(git status --porcelain | awk '{print $2}') --ignore-unknown
+node ./scripts/prettier-check-changed.mjs
 pnpm run check:i18n
 ```
 
@@ -256,8 +256,8 @@ Transferable zero-copy. See `docs/worker-bus.md`.
 - `CannaGuideStateDB` -- Redux state (via the storage adapter above).
 - `CannaGuideDB` -- domain data: strains, images, full-text search index (`services/db/*`).
 - Prefer IndexedDB; `localStorage` is only for small non-secret flags (the one sanctioned
-  exception is `useIotStore`'s MQTT connection config). Optional CRDT cloud sync (Yjs +
-  encrypted GitHub Gists) runs through `services/crdtSyncBridge.ts`.
+  exception is `useIotStore`'s MQTT connection config). The retained CRDT cloud-sync code
+  (Yjs + GitHub Gists) lives behind `CLOUD_SYNC_DISABLED`; it is not an available backup path.
 
 ## i18n: five locales, no hardcoded strings
 

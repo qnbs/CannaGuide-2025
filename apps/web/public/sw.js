@@ -72,8 +72,68 @@ const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.s
 const DB_NAME = 'CannaGuideDB'
 const DB_VERSION = 4
 const OFFLINE_ACTIONS_STORE = 'offline_actions'
-// Note: This app is client-only (no backend). The background sync handler notifies
-// open clients to replay queued actions locally rather than POSTing to a server.
+const REPLAY_ACTION_PROBE_TYPE = 'REPLAY_OFFLINE_ACTION_PROBE'
+const REPLAY_ACTION_READY_ACK_TYPE = 'REPLAY_OFFLINE_ACTION_READY_ACK'
+const REPLAY_ACTION_ACK_TYPE = 'REPLAY_OFFLINE_ACTION_ACK'
+const REPLAY_ACTION_ACK_TIMEOUT_MS = 5000
+
+function isApplicationWindowClient(client) {
+    try {
+        const scope = new URL(self.registration.scope)
+        const url = new URL(client.url)
+        const scopePath = scope.pathname.endsWith('/') ? scope.pathname : `${scope.pathname}/`
+        return (
+            url.origin === scope.origin &&
+            (url.pathname === scope.pathname || url.pathname.startsWith(scopePath))
+        )
+    } catch {
+        return false
+    }
+}
+
+function orderReplayClients(clients) {
+    return clients
+        .filter(isApplicationWindowClient)
+        .sort(
+            (left, right) =>
+                Number(right.focused === true) - Number(left.focused === true) ||
+                Number(right.visibilityState === 'visible') -
+                    Number(left.visibilityState === 'visible'),
+        )
+}
+
+function requestReplayReadiness(client, queueId) {
+    return new Promise((resolve) => {
+        const channel = new MessageChannel()
+        let settled = false
+        const finish = (ready) => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeoutId)
+            channel.port1.close()
+            resolve(ready)
+        }
+        const timeoutId = setTimeout(() => finish(false), REPLAY_ACTION_ACK_TIMEOUT_MS)
+
+        channel.port1.onmessage = (event) => {
+            const acknowledgement = event.data
+            finish(
+                acknowledgement?.type === REPLAY_ACTION_READY_ACK_TYPE &&
+                    acknowledgement.queueId === queueId &&
+                    acknowledgement.ready === true,
+            )
+        }
+        channel.port1.onmessageerror = () => finish(false)
+
+        try {
+            client.postMessage({ type: REPLAY_ACTION_PROBE_TYPE, queueId }, [channel.port2])
+        } catch {
+            finish(false)
+        }
+    })
+}
+// Note: This app is client-only (no backend). Background sync asks one open client to
+// replay each queued action locally and waits for persisted-state acknowledgement.
 const REMINDER_DB_NAME = 'CannaGuideReminderDB'
 const REMINDER_DB_VERSION = 1
 const REMINDER_STORE = 'grow_reminders'
@@ -502,7 +562,9 @@ async function getQueuedActions() {
         let keys = []
 
         transaction.oncomplete = () => {
-            const result = items.map((item, index) => ({ id: keys[index], ...item }))
+            const result = items
+                .map((item, index) => ({ id: keys[index], ...item }))
+                .filter((item) => item.replayBlocked !== true)
             resolve(result)
         }
         transaction.onerror = () => reject(transaction.error)
@@ -527,6 +589,28 @@ async function deleteQueuedAction(id) {
         const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
         const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
         store.delete(id)
+        transaction.oncomplete = () => resolve()
+        transaction.onerror = () => reject(transaction.error)
+    })
+}
+
+/**
+ * Retains a permanently unreplayable action for inspection without retrying it.
+ * @param {number} id The primary key of the item to quarantine.
+ * @returns {Promise<void>}
+ */
+async function markQueuedActionBlocked(id) {
+    const db = await openDB()
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
+        const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+        const request = store.get(id)
+        request.onsuccess = () => {
+            if (request.result) {
+                store.put({ ...request.result, replayBlocked: true }, id)
+            }
+        }
+        request.onerror = () => reject(request.error)
         transaction.oncomplete = () => resolve()
         transaction.onerror = () => reject(transaction.error)
     })
@@ -625,9 +709,66 @@ async function notifyDueReminders() {
  * so they can replay them locally. This app is client-only — there is no backend
  * server to POST to. Adding a real server endpoint here is left as a future extension.
  *
- * Uses idempotency keys to prevent duplicate replay when multiple tabs are open.
- * Only ONE client receives each action to avoid duplicate journal entries etc.
+ * The reducer deduplicates journal entries by ID. One ready app client applies
+ * the action and persists the full state; the queue entry is removed only after
+ * that client confirms persistence. Replay is deferred while multiple app tabs
+ * are open because another tab may later save a stale full-state snapshot.
  */
+function requestReplayAcknowledgement(client, action) {
+    if (!Number.isSafeInteger(action.id)) {
+        return Promise.reject(new Error('[SW] Queued action has no valid IndexedDB key.'))
+    }
+
+    return new Promise((resolve, reject) => {
+        const channel = new MessageChannel()
+        let settled = false
+        const finish = (error, persisted = true) => {
+            if (settled) return
+            settled = true
+            clearTimeout(timeout)
+            channel.port1.close()
+            channel.port2.close()
+            if (error) reject(error)
+            else resolve(persisted)
+        }
+        const timeout = setTimeout(
+            () => finish(new Error('[SW] Replay client did not acknowledge persisted state.')),
+            REPLAY_ACTION_ACK_TIMEOUT_MS,
+        )
+
+        channel.port1.onmessage = (event) => {
+            const acknowledgement = event.data
+            if (
+                acknowledgement?.type !== REPLAY_ACTION_ACK_TYPE ||
+                acknowledgement.queueId !== action.id ||
+                (acknowledgement.persisted !== true &&
+                    !(acknowledgement.persisted === false && acknowledgement.rejected === true))
+            ) {
+                finish(new Error('[SW] Replay acknowledgement did not match the queued action.'))
+                return
+            }
+            if (acknowledgement.rejected === true) {
+                finish(null, false)
+                return
+            }
+            if (acknowledgement.persisted !== true) {
+                finish(new Error('[SW] Replay acknowledgement did not confirm persisted state.'))
+                return
+            }
+            finish(null, true)
+        }
+        channel.port1.onmessageerror = () =>
+            finish(new Error('[SW] Replay acknowledgement could not be deserialized.'))
+
+        const { id: queueId, ...payload } = action
+        try {
+            client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', queueId, payload }, [channel.port2])
+        } catch (error) {
+            finish(error)
+        }
+    })
+}
+
 async function syncData() {
     console.debug('[SW] Attempting to sync data...')
     try {
@@ -638,33 +779,39 @@ async function syncData() {
         }
 
         console.debug(`[SW] Found ${queuedActions.length} action(s) to sync.`)
-        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+        const clients = orderReplayClients(
+            await self.clients.matchAll({ type: 'window', includeUncontrolled: true }),
+        )
 
-        // Deduplicate by idempotencyKey before dispatching
-        const seenKeys = new Set()
-        const uniqueActions = queuedActions.filter((action) => {
-            const key = action.idempotencyKey
-            if (!key || !seenKeys.has(key)) {
-                if (key) seenKeys.add(key)
-                return true
-            }
-            console.debug(`[SW] Skipping duplicate action: ${key}`)
-            return false
-        })
-
-        // Send each action to only the first available client to prevent
-        // cross-tab duplication. Other tabs hydrate from IndexedDB.
-        const primaryClient = clients[0]
-        if (primaryClient) {
-            uniqueActions.forEach((action) => {
-                const { id: _id, ...actionData } = action
-                primaryClient.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData })
-            })
+        // Out-of-scope same-origin pages are excluded. Multiple app tabs may hold
+        // different full-state snapshots, so defer replay until only one remains
+        // rather than risk overwriting unrelated newer data.
+        if (clients.length === 0) {
+            throw new Error(
+                '[SW] No application window is available; queued actions were retained.',
+            )
+        }
+        if (clients.length > 1) {
+            throw new Error(
+                '[SW] Multiple application windows are open; queued actions were retained.',
+            )
         }
 
-        // Batch-delete all processed actions
-        await Promise.all(queuedActions.map((action) => deleteQueuedAction(action.id)))
-        console.debug('[SW] All queued actions dispatched to primary client.')
+        const client = clients[0]
+        if (!(await requestReplayReadiness(client, queuedActions[0].id))) {
+            throw new Error(
+                '[SW] No application window acknowledged readiness; queued actions were retained.',
+            )
+        }
+
+        for (const action of queuedActions) {
+            if (!(await requestReplayAcknowledgement(client, action))) {
+                await markQueuedActionBlocked(action.id)
+                continue
+            }
+            await deleteQueuedAction(action.id)
+        }
+        console.debug('[SW] All queued actions were replayed, persisted, and removed.')
     } catch (error) {
         console.debug('[SW] Sync failed, will retry later.', error)
         throw error

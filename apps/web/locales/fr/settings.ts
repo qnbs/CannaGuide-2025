@@ -662,7 +662,7 @@ export const settingsView = {
             description:
                 'Les actions enregistrees hors ligne sont rejouees localement une fois en ligne. Distinct de la synchronisation Gist cloud.',
             loading: 'Chargement de la file...',
-            count: '{{count}} action(s) en attente',
+            count: '{{count}} action(s) enregistrée(s)',
             refresh: 'Actualiser',
             retrySync: 'Relancer la synchronisation',
             syncing: 'Synchronisation demandee...',
@@ -678,6 +678,7 @@ export const settingsView = {
             clearSuccess: "File d'actions hors ligne videe.",
             clearError: 'Impossible de vider la file hors ligne.',
             actionJournal: 'Entree de journal',
+            blocked: 'Non rejouable ; conservée pour examen',
         },
         crdtDocSize: 'Document CRDT',
         crdtFallback:

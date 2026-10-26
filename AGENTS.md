@@ -10,7 +10,10 @@ CannaGuide 2025 is an offline-first React/Vite PWA (pnpm monorepo). The primary 
 
 The repo requires **Node.js >=24.15.0 <25** (`package.json` `engines`). jsdom 30 skips the Node 25 line. The VM ships `/exec-daemon/node` at **v22**, which takes precedence over `nvm` unless you fix `PATH`.
 
-In every shell session, before `pnpm` commands:
+Before every `pnpm` command, verify that the active Node matches the declared range. A native
+host may already have a compatible Node through fnm or another existing version manager;
+keep that working PATH. The following nvm setup is for the cloud VM described above, where
+the incompatible daemon Node otherwise wins:
 
 ```bash
 export NVM_DIR="$HOME/.nvm"
@@ -129,7 +132,9 @@ adopt it. See [`docs/toolchain-update.md`](docs/toolchain-update.md).
 
 ### Secrets
 
-Cloud AI, GitHub Gist sync, Sentry, etc. are **BYOK** in app Settings or via local `.env` (not required for core offline flows).
+Cloud AI uses provider keys configured in app Settings; optional environment configuration is
+not required for core offline flows. GitHub Gist cloud sync remains disabled. Do not activate
+sync, Sentry or Replay merely to verify a dependency update.
 
 ### Code guidelines
 

@@ -136,5 +136,5 @@ export const runPostHydrationServices = async (
 
     const { registerOfflineActionReplayListener } =
         await import('@/services/offlineActionReplayService')
-    registerOfflineActionReplayListener(hydratedStore)
+    registerOfflineActionReplayListener(hydratedStore, flushPersistedState)
 }

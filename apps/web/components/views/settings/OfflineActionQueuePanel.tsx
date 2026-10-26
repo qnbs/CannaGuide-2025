@@ -17,6 +17,7 @@ const OfflineActionQueuePanel: React.FC = () => {
     const [isClearOpen, setIsClearOpen] = useState(false)
     const [isSyncing, setIsSyncing] = useState(false)
     const refreshGenerationRef = useRef(0)
+    const replayableActionCount = actions.filter((action) => action.replayBlocked !== true).length
 
     const refresh = useCallback(async () => {
         const generation = ++refreshGenerationRef.current
@@ -123,6 +124,11 @@ const OfflineActionQueuePanel: React.FC = () => {
                                 className="flex justify-between gap-2 text-xs bg-slate-800/50 rounded px-2 py-1.5 font-mono"
                             >
                                 <span className="text-slate-300 truncate">{label}</span>
+                                {action.replayBlocked === true && (
+                                    <span className="text-amber-300 shrink-0">
+                                        {t('settingsView.data.offlineQueue.blocked')}
+                                    </span>
+                                )}
                                 {typeof action.queuedAt === 'number' && (
                                     <span className="text-muted shrink-0">
                                         {new Date(action.queuedAt).toLocaleString()}
@@ -148,7 +154,7 @@ const OfflineActionQueuePanel: React.FC = () => {
                     variant="secondary"
                     size="sm"
                     onClick={() => void handleRequestSync()}
-                    disabled={isSyncing || actions.length === 0}
+                    disabled={isSyncing || replayableActionCount === 0}
                 >
                     <PhosphorIcons.CloudArrowUp className="mr-2" />
                     {isSyncing

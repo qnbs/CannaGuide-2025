@@ -83,9 +83,6 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
-            - name: Build frontend
-              run: pnpm --filter @cannaguide/web build
-
             - name: Build Tauri
               uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
               env:
@@ -123,4 +120,5 @@ jobs:
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.app
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.msi
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.exe
+                  if-no-files-found: error
                   retention-days: 14

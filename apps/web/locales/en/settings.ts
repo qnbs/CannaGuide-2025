@@ -630,7 +630,7 @@ export const settingsView = {
             description:
                 'Actions saved while offline are replayed locally when you are back online. This is separate from cloud Gist sync.',
             loading: 'Loading queue...',
-            count: '{{count}} action(s) waiting',
+            count: '{{count}} action(s) saved',
             refresh: 'Refresh',
             retrySync: 'Retry sync',
             syncing: 'Requesting sync...',
@@ -645,6 +645,7 @@ export const settingsView = {
             clearSuccess: 'Offline action queue cleared.',
             clearError: 'Could not clear the offline queue.',
             actionJournal: 'Journal entry',
+            blocked: 'Not replayable — retained for review',
         },
         crdtDocSize: 'CRDT Document',
         crdtFallback: 'CRDT sync in fallback mode (LWW). Offline merge disabled.',
@@ -1167,6 +1168,10 @@ export const settingsView = {
         importing: 'Restoring from ZIP...',
         exportSuccess: 'ZIP backup exported successfully.',
         importSuccess: 'ZIP backup imported successfully. App will reload.',
+        importPartialSuccess_one:
+            'Backup restored; {{count}} image could not be restored. App will reload.',
+        importPartialSuccess_other:
+            'Backup restored; {{count}} images could not be restored. App will reload.',
         importError: 'Failed to import ZIP backup. The file may be corrupted.',
         exportError: 'Failed to create ZIP backup.',
         includePhotos: 'Include photos',

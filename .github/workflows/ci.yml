@@ -167,7 +167,7 @@ jobs:
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
             - name: Upload build artifact
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: dist
                   path: apps/web/dist/
@@ -227,7 +227,7 @@ jobs:
 
             - name: Upload coverage
               if: always()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: coverage-report
                   path: apps/web/coverage/
@@ -605,7 +605,7 @@ jobs:
 
             - name: Upload Playwright traces on failure
               if: failure()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: e2e-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
                   path: apps/web/test-results/
@@ -684,7 +684,7 @@ jobs:
 
             - name: Upload Playwright traces on failure
               if: failure()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: e2e-cross-browser-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
                   path: apps/web/test-results/

@@ -50,6 +50,19 @@ vi.mock('@/constants', () => ({
 
 vi.mock('@/services/persistedStateService', () => ({
     replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
+    replacePrimaryPersistedSnapshotForRecovery: async (
+        snapshot: string,
+        afterPrimaryReplace?: () => Promise<void>,
+    ) => {
+        const success = await mocks.replacePrimaryPersistedSnapshot(snapshot)
+        if (!success) return { success: false, reloadRequired: false }
+        try {
+            await afterPrimaryReplace?.()
+            return { success: true, reloadRequired: true }
+        } catch (error) {
+            return { success: false, reloadRequired: true, error }
+        }
+    },
 }))
 
 vi.mock('@/i18n', () => ({
@@ -247,6 +260,7 @@ describe('backupService', () => {
                 success: false,
                 metadata: null,
                 rejectedImageCount: 0,
+                reloadRequired: false,
                 error: 'settingsView.data.restoreBlocked',
             })
         })
@@ -347,6 +361,7 @@ describe('backupService', () => {
                 database.close()
 
                 expect(result.success).toBe(true)
+                expect(result.rejectedImageCount).toBe(0)
                 expect(JSON.parse(String(persistedSnapshot))).toEqual(state)
                 expect(storedImage).toEqual({
                     id: 'photo-heif',
@@ -390,6 +405,53 @@ describe('backupService', () => {
             })
         })
 
+        it('counts and removes image references with unsafe raw IDs', async () => {
+            const state = {
+                simulation: {
+                    plants: [{ journal: [{ details: { imageId: 'unsafe/photo' } }] }],
+                },
+            }
+            const result = await importMockBackup(state, {
+                'unsafe/photo': {
+                    id: 'unsafe/photo',
+                    data: 'https://tracker.example/photo.png',
+                    createdAt: 10,
+                },
+            })
+            const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
+
+            expect(result.rejectedImageCount).toBe(1)
+            expect(JSON.parse(String(persistedSnapshot))).toEqual({
+                simulation: { plants: [{ journal: [{ details: {} }] }] },
+            })
+        })
+
+        it('counts rejected image records without parseable IDs', async () => {
+            const state = { version: 6 }
+            const statePath = 'cannaguide-state.json'
+            const missingIdPath = 'images/missing-id.json'
+            const corruptPath = 'images/corrupt.json'
+            const entries = new Map([
+                [statePath, JSON.stringify(state)],
+                [missingIdPath, JSON.stringify({ data: 'invalid raster', createdAt: 10 })],
+                [corruptPath, '{invalid json'],
+            ])
+            mocks.loadZip.mockResolvedValueOnce({
+                files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
+                file: (name: string) => {
+                    const value = entries.get(name)
+                    return value === undefined ? null : { async: async () => value }
+                },
+            })
+
+            const result = await backupService.importBackup(
+                new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+            )
+
+            expect(result.success).toBe(true)
+            expect(result.rejectedImageCount).toBe(2)
+        })
+
         it('rejects HEIF extents above the bounded decode limit before browser decoding', async () => {
             const imageData = createHeifDataUrl('image/heic', 8193, 1)
             const state = {
@@ -402,6 +464,7 @@ describe('backupService', () => {
             const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
 
             expect(result.success).toBe(true)
+            expect(result.rejectedImageCount).toBe(1)
             expect(JSON.parse(String(persistedSnapshot))).toEqual({
                 simulation: {
                     plants: [{ journal: [{ details: {} }] }],
@@ -554,6 +617,7 @@ describe('backupService', () => {
             const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
 
             expect(result.success).toBe(true)
+            expect(result.rejectedImageCount).toBe(1)
             expect(JSON.parse(String(persistedSnapshot))).toEqual({
                 ...state,
                 simulation: {
@@ -596,6 +660,7 @@ describe('backupService', () => {
             const [persistedSnapshot] = mocks.replacePrimaryPersistedSnapshot.mock.calls[0] ?? []
 
             expect(result.success).toBe(true)
+            expect(result.rejectedImageCount).toBe(1)
             expect(JSON.parse(String(persistedSnapshot))).toEqual({
                 savedItems: {
                     savedStrainTips: {

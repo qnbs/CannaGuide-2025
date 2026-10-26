@@ -72,6 +72,14 @@ export const ZipBackupPanel: React.FC = () => {
                                 } else {
                                     window.location.reload()
                                 }
+                            } else {
+                                getUISnapshot().addNotification({
+                                    type: 'error',
+                                    message: String(t('settingsView.zipBackup.importError')),
+                                })
+                                if (result.reloadRequired) {
+                                    window.setTimeout(() => window.location.reload(), 3500)
+                                }
                             }
                             e.target.value = ''
                         }}

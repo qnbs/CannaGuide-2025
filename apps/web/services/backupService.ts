@@ -13,7 +13,7 @@ import JSZip from 'jszip'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 import { openDB } from '@/services/db/connection'
-import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { replacePrimaryPersistedSnapshotForRecovery } from '@/services/persistedStateService'
 import { getT } from '@/i18n'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 import {
@@ -103,8 +103,9 @@ const normalizeSafeSavedTipImageUrl = async (value: unknown): Promise<string | u
 const sanitizeImportedStateImageReferences = async (
     state: unknown,
     rejectedImageIds: ReadonlySet<string>,
-): Promise<void> => {
-    if (!isRecord(state)) return
+): Promise<number> => {
+    let rejectedInlineImageCount = 0
+    if (!isRecord(state)) return rejectedInlineImageCount
 
     if (isRecord(state.simulation)) {
         const plants = state.simulation.plants
@@ -118,10 +119,10 @@ const sanitizeImportedStateImageReferences = async (
             if (!isRecord(plant) || !Array.isArray(plant.journal)) continue
             for (const entry of plant.journal) {
                 if (!isRecord(entry) || !isRecord(entry.details)) continue
-                if (
+                const referencesRejectedImage =
                     typeof entry.details.imageId === 'string' &&
                     rejectedImageIds.has(entry.details.imageId)
-                ) {
+                if (referencesRejectedImage) {
                     delete entry.details.imageId
                 }
                 if (
@@ -129,14 +130,17 @@ const sanitizeImportedStateImageReferences = async (
                     !(await isSafeRasterImageDataUrl(entry.details.imageUrl))
                 ) {
                     delete entry.details.imageUrl
+                    if (!referencesRejectedImage) rejectedInlineImageCount += 1
                 }
             }
         }
     }
 
-    if (!isRecord(state.savedItems) || !isRecord(state.savedItems.savedStrainTips)) return
+    if (!isRecord(state.savedItems) || !isRecord(state.savedItems.savedStrainTips)) {
+        return rejectedInlineImageCount
+    }
     const entities = state.savedItems.savedStrainTips.entities
-    if (!isRecord(entities)) return
+    if (!isRecord(entities)) return rejectedInlineImageCount
     for (const tip of Object.values(entities)) {
         if (!isRecord(tip) || !('imageUrl' in tip)) continue
         const normalizedImageUrl = await normalizeSafeSavedTipImageUrl(tip.imageUrl)
@@ -144,8 +148,10 @@ const sanitizeImportedStateImageReferences = async (
             tip.imageUrl = normalizedImageUrl
         } else {
             delete tip.imageUrl
+            rejectedInlineImageCount += 1
         }
     }
+    return rejectedInlineImageCount
 }
 
 const findImagesToWrite = async (
@@ -312,6 +318,8 @@ export const backupService = {
     async importBackup(file: File): Promise<BackupImportResult> {
         let imageDb: IDBDatabase | undefined
         const rejectedImageIds = new Set<string>()
+        let rejectedInlineImageCount = 0
+        let unidentifiedRejectedImageCount = 0
         try {
             // Size guard
             if (file.size > MAX_IMPORT_SIZE_BYTES) {
@@ -402,19 +410,31 @@ export const backupService = {
                         !isStoredImageShape(parsedImage) ||
                         !(await isSafeRasterImageDataUrl(parsedImage.data))
                     ) {
-                        if (imageId) rejectedImageIds.add(imageId)
+                        const rawImageId =
+                            isRecord(parsedImage) && typeof parsedImage.id === 'string'
+                                ? parsedImage.id
+                                : undefined
+                        if (rawImageId) {
+                            rejectedImageIds.add(rawImageId)
+                        } else {
+                            unidentifiedRejectedImageCount += 1
+                        }
                         continue
                     }
                     if (imageId && !rejectedImageIds.has(imageId)) {
                         imagesById.set(imageId, parsedImage)
                     }
                 } catch {
+                    unidentifiedRejectedImageCount += 1
                     console.debug(`[backupService] Skipping corrupt image: ${imgPath}`)
                 }
             }
 
             const images = [...imagesById.values()]
-            await sanitizeImportedStateImageReferences(parsedState, rejectedImageIds)
+            rejectedInlineImageCount = await sanitizeImportedStateImageReferences(
+                parsedState,
+                rejectedImageIds,
+            )
             const sanitizedStateString = JSON.stringify(parsedState)
             let imagesToWrite = images
 
@@ -429,36 +449,44 @@ export const backupService = {
                 imagesToWrite = await findImagesToWrite(imageDb, images)
             }
 
-            // 4. Restore state to IndexedDB
-            const stateRestored = await replacePrimaryPersistedSnapshot(sanitizedStateString)
-            if (!stateRestored) {
+            // 4. Replace state and images under the persistence recovery fence. This
+            // prevents an already-hydrated Redux store from writing stale state before
+            // the page reloads after a successful restore.
+            const restoreResult = await replacePrimaryPersistedSnapshotForRecovery(
+                sanitizedStateString,
+                async () => {
+                    if (!imageDb || imagesToWrite.length === 0) return
+
+                    const tx = imageDb.transaction('images', 'readwrite')
+                    const store = tx.objectStore('images')
+                    const transactionComplete = new Promise<void>((resolve, reject) => {
+                        tx.oncomplete = () => resolve()
+                        tx.onerror = () => reject(tx.error)
+                        tx.onabort = () => reject(tx.error)
+                    })
+
+                    // Queue writes synchronously so the transaction remains active.
+                    for (const image of imagesToWrite) store.add(image)
+                    await transactionComplete
+                },
+            )
+            const rejectedImageCount =
+                rejectedImageIds.size + unidentifiedRejectedImageCount + rejectedInlineImageCount
+            if (!restoreResult.success) {
                 return {
                     success: false,
                     metadata,
-                    rejectedImageCount: rejectedImageIds.size,
+                    rejectedImageCount,
+                    reloadRequired: restoreResult.reloadRequired,
                     error: String(getT()('settingsView.data.restoreBlocked')),
                 }
-            }
-
-            // 5. Restore images
-            if (imageDb && imagesToWrite.length > 0) {
-                const tx = imageDb.transaction('images', 'readwrite')
-                const store = tx.objectStore('images')
-                const transactionComplete = new Promise<void>((resolve, reject) => {
-                    tx.oncomplete = () => resolve()
-                    tx.onerror = () => reject(tx.error)
-                    tx.onabort = () => reject(tx.error)
-                })
-
-                // Queue writes synchronously so the transaction remains active.
-                for (const image of imagesToWrite) store.add(image)
-                await transactionComplete
             }
 
             return {
                 success: true,
                 metadata,
-                rejectedImageCount: rejectedImageIds.size,
+                rejectedImageCount,
+                reloadRequired: restoreResult.reloadRequired,
             }
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Unknown import error'
@@ -466,7 +494,10 @@ export const backupService = {
             return {
                 success: false,
                 metadata: null,
-                rejectedImageCount: rejectedImageIds.size,
+                rejectedImageCount:
+                    rejectedImageIds.size +
+                    unidentifiedRejectedImageCount +
+                    rejectedInlineImageCount,
                 error: msg,
             }
         }

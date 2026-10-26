@@ -93,4 +93,62 @@ describe('ZipBackupPanel', () => {
         expect(mocks.addNotification).not.toHaveBeenCalled()
         expect(mocks.reload).toHaveBeenCalledOnce()
     })
+
+    it('shows a failure notification and reloads when restore fencing reports a partial write', async () => {
+        mocks.importBackup.mockResolvedValue({
+            success: false,
+            metadata: null,
+            rejectedImageCount: 0,
+            reloadRequired: true,
+            error: 'settingsView.data.restoreBlocked',
+        })
+        const { container } = render(<ZipBackupPanel />)
+        const input = container.querySelector<HTMLInputElement>('#import-zip-file-input')
+
+        await act(async () => {
+            fireEvent.change(input!, {
+                target: {
+                    files: [new File(['backup'], 'backup.zip', { type: 'application/zip' })],
+                },
+            })
+            await Promise.resolve()
+        })
+
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.zipBackup.importError:',
+        })
+        expect(mocks.reload).not.toHaveBeenCalled()
+
+        await act(async () => {
+            vi.advanceTimersByTime(3500)
+        })
+        expect(mocks.reload).toHaveBeenCalledOnce()
+    })
+
+    it('shows an error notification when import fails before replacing stored state', async () => {
+        mocks.importBackup.mockResolvedValue({
+            success: false,
+            metadata: null,
+            rejectedImageCount: 0,
+            error: 'settingsView.data.restoreBlocked',
+        })
+        const { container } = render(<ZipBackupPanel />)
+        const input = container.querySelector<HTMLInputElement>('#import-zip-file-input')
+
+        await act(async () => {
+            fireEvent.change(input!, {
+                target: {
+                    files: [new File(['backup'], 'backup.zip', { type: 'application/zip' })],
+                },
+            })
+            await Promise.resolve()
+        })
+
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.zipBackup.importError:',
+        })
+        expect(mocks.reload).not.toHaveBeenCalled()
+    })
 })

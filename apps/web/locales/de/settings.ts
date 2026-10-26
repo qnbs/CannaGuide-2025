@@ -648,7 +648,7 @@ export const settingsView = {
             description:
                 'Offline gespeicherte Aktionen werden bei erneuter Verbindung lokal abgespielt. Getrennt von der Cloud-Gist-Synchronisation.',
             loading: 'Warteschlange wird geladen...',
-            count: '{{count}} Aktion(en) ausstehend',
+            count: '{{count}} Aktion(en) gespeichert',
             refresh: 'Aktualisieren',
             retrySync: 'Sync erneut anfordern',
             syncing: 'Sync wird angefordert...',
@@ -664,6 +664,7 @@ export const settingsView = {
             clearSuccess: 'Offline-Warteschlange geleert.',
             clearError: 'Offline-Warteschlange konnte nicht geleert werden.',
             actionJournal: 'Journal-Eintrag',
+            blocked: 'Nicht abspielbar – zur Prüfung gespeichert',
         },
         crdtDocSize: 'CRDT-Dokument',
         crdtFallback: 'CRDT-Sync im Fallback-Modus (LWW). Offline-Zusammenfuehrung deaktiviert.',

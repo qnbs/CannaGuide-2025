@@ -659,7 +659,7 @@ export const settingsView = {
             description:
                 'Las acciones guardadas sin conexion se reproducen localmente al volver en linea. Separado de la sincronizacion Gist en la nube.',
             loading: 'Cargando cola...',
-            count: '{{count}} accion(es) en espera',
+            count: '{{count}} accion(es) guardada(s)',
             refresh: 'Actualizar',
             retrySync: 'Reintentar sincronizacion',
             syncing: 'Solicitando sincronizacion...',
@@ -675,6 +675,7 @@ export const settingsView = {
             clearSuccess: 'Cola de acciones offline vaciada.',
             clearError: 'No se pudo vaciar la cola offline.',
             actionJournal: 'Entrada de diario',
+            blocked: 'No se puede reproducir; se conserva para revisión',
         },
         crdtDocSize: 'Documento CRDT',
         crdtFallback: 'Sincronizacion CRDT en modo alternativo (LWW). Fusion offline desactivada.',

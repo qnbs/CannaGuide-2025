@@ -17,17 +17,17 @@ autoInstallPeers: true
 # Stated explicitly rather than left to the default, because it is load-bearing.
 minimumReleaseAge: 1440 # minutes (24 h)
 
-# The quarantine has one operational edge: Dependabot merges a bump the moment it
-# is published, so every PR that rebases onto it inherits a red CI until the 24 h
-# elapse — regardless of what the PR changes.
+# A newly resolved bump can affect every PR based on that lockfile until the
+# quarantine elapses. This also applies to manual updates while automatic
+# Dependabot version-update PR creation is paused.
 #
 # These packages are exempted. Each is first-party, published from its own repo's
 # CI, and carries a verified npm provenance attestation (checked 2026-07-14):
 #   turbo, @turbo/*       -> github.com/vercel/turborepo
 #   @typescript-eslint/*  -> github.com/typescript-eslint/typescript-eslint
 #   postcss               -> github.com/postcss/postcss
-# Provenance rules out the attack the quarantine exists for (a version pushed
-# with a stolen npm token from outside the project's CI).
+# Provenance links the published artifact to its reported build workflow. It
+# does not prove the source, workflow or dependencies are uncompromised.
 #
 # CAVEAT: this list matches on NAME, not on provenance. A future version of these
 # packages skips the quarantine even if it ships without an attestation. Keep the
@@ -84,22 +84,32 @@ overrides:
     # Retired from the unbounded legacy list. The open floor had already
     # crossed to 6.x; 6.2.1 fixes GHSA-c475-qrg2-pj4r (quadratic list()).
     basic-ftp: '>=6.2.1 <7'
-    # 4.1.4 fixed GHSA authority/host confusion; 4.1.5+ covers the later
-    # September 2026 moderate set. Upper bound stays on 4.x.
-    fast-uri: '>=4.1.5 <5'
+    # 4.2.3 fixes the October 2026 URI parsing advisory set. Stay on 4.x.
+    fast-uri: '>=4.2.3 <5'
     protobufjs: '>=8.2.0'
-    ip-address: '>=10.3.1 <11'
-    # 7.29.1 fixes GHSA-w293-vg96-wgc3 (BalancedPool TLS validation).
-    # Stay on 7.x: undici 8 breaks jsdom 29 require() integration.
-    undici: '>=7.29.1 <8.0.0'
-    qs: '>=6.15.2'
+    ip-address: '>=10.7.4 <11'
+    # 7.30.1 fixes GHSA-xjj6-f33q-929c and the concurrent moderate set.
+    # Keep jsdom and Miniflare consumers on the existing 7.x API.
+    undici: '>=7.30.1 <8'
+    qs: '>=6.16.1 <7'
+    # jsPDF pins 0.8.2; 0.8.3 patches the ZIP decompression advisory.
+    fflate: '>=0.8.3 <0.9'
     uuid: '>=11.1.1'
     esbuild: '>=0.25.0'
     ws: '>=8.20.1'
     workbox-build: 7.4.1
     workbox-window: 7.4.1
-    linkify-it: '>=5.0.1'
-    markdown-it: '>=14.2.0'
+    linkify-it: '>=5.0.2 <6'
+    # Patched typedoc Markdown parser; keep the consumer on its 14.x API.
+    markdown-it: '>=14.3.3 <15'
+    # Include direct rendering and jsPDF's optional HTML conversion.
+    dompurify: '>=3.4.17 <4'
+    # Zod 3 consumers need their own compatibility review, not a forced major.
+    zod@4: '>=4.6.7 <5'
+    # socket-patch@2.0.0's manifest schema is migrated and tested with Zod 4.6.7.
+    '@socketsecurity/socket-patch>zod': '>=4.6.7 <5'
+    # Chromium-BiDi's external parser uses Zod 4; the embedded mapper is patched separately.
+    'chromium-bidi>zod': '>=4.6.7 <5'
     # js-yaml is the worked example of why the bound matters. `js-yaml@3: '>=3.15.0'`
     # was UNBOUNDED, so pnpm resolved depcheck's `js-yaml@^3` all the way up to
     # 5.2.1 -- a two-major jump, into precisely the range GHSA-pm4m-ph32-ghv5 names
@@ -118,7 +128,11 @@ overrides:
     brace-expansion@2: '>=2.1.6 <3'
     brace-expansion@5: '>=5.0.11 <6'
     postcss: '>=8.5.23 <9'
-    body-parser@1: '>=1.20.6 <2'
+    # Express 4 / LHCI: compressed-request DoS, GHSA-27r3-jxmh-p828.
+    body-parser@1: '>=1.20.9 <2'
+    # Preserve the installed minor/API families for ESLint and Rollup tooling.
+    '@humanfs/node': '>=0.16.8 <0.17'
+    serialize-javascript: '>=7.1.3 <8'
     # sharp: reached only through @xenova/transformers (optional, Node-only image
     # decode) and wrangler>miniflare. Never bundled into the browser PWA, but the
     # libvips CVEs are real for anyone running those tools locally.
@@ -144,3 +158,7 @@ auditConfig:
         - GHSA-jmr9-qjv8-65gv # extract-zip, patched 2.0.2 unpublished
         - GHSA-7pqw-9j4j-h8q3 # extract-zip, patched 2.0.2 unpublished
         - GHSA-vfj7-8cjw-p6xm # braces, patched 3.0.4 unpublished
+
+patchedDependencies:
+    '@socketsecurity/socket-patch@2.0.0': patches/@socketsecurity__socket-patch@2.0.0.patch
+    chromium-bidi@14.0.0: patches/chromium-bidi@14.0.0.patch

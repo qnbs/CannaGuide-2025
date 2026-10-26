@@ -48,7 +48,7 @@ function makeRecord(cves) {
 test('Socket Patch public schema export runs from the patched Zod 4 package', () => {
     const cliManifestPath = join(repositoryRoot, 'node_modules/@socketsecurity/cli/package.json')
     const cli = JSON.parse(readFileSync(cliManifestPath, 'utf8'))
-    assert.equal(cli.version, '1.4.1')
+    assert.equal(cli.version, '1.10.0')
 
     const cliRequire = createRequire(cliManifestPath)
     const schemaEntry = realpathSync(cliRequire.resolve('@socketsecurity/socket-patch/schema'))

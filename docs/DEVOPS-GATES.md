@@ -90,7 +90,7 @@ An open floor resolves to the newest major in the registry. That is not theoreti
 `js-yaml@3: '>=3.15.0'` resolved depcheck's `js-yaml@^3` up two majors to 5.2.1 -- **creating**
 GHSA-pm4m-ph32-ghv5 rather than preventing it.
 
-The unbounded rule is a **ratchet**. The 11 pre-existing unbounded pins are listed in
+The unbounded rule is a **ratchet**. Remaining pre-existing unbounded pins are listed in
 `LEGACY_UNBOUNDED` inside the script and warn rather than fail; that list may only shrink, and
 bounding a pin without delisting it fails too. Retiring them is a per-package call, because
 two have already crossed a major (`uuid` -> 14.0.0, `linkify-it` -> 6.0.0). `basic-ftp` was
@@ -158,7 +158,6 @@ every PR.
 
 | Gate                    | CI job              | Local command                                       |
 | ----------------------- | ------------------- | --------------------------------------------------- |
-| E2E Chromium            | `e2e`               | `pnpm run build && pnpm run test:e2e`               |
 | E2E cross-browser       | `e2e-cross-browser` | Playwright firefox/webkit                           |
 | Critical path JS size   | `advisory`          | `pnpm run measure:critical-path`                    |
 | File budget (full scan) | `advisory`          | `FILE_BUDGET_ADVISORY=1 pnpm run check:file-budget` |
@@ -175,7 +174,10 @@ every PR.
 | `pre-push`                     | single-hook lock + memory/dependency preflight + scoped typecheck + changed lint + local gates     |
 | **`gate:push`** (manual, full) | `pnpm run gate:push` — identity, lint, mdc, graphify, typecheck, tests, scopes, file-budget, build |
 
-Skip hooks (emergency only): `git push --no-verify`
+Hooks are mandatory for both commit and push. A failing hook must be repaired or recorded as
+a blocker; manual checks do not replace it. On the low-memory maintainer host, do not run
+E2E, Playwright, Stryker or Lighthouse locally. The command tables describe CI reproduction
+on suitable hosts; they do not override [the local resource rules](../AGENTS.md#local-verification-on-low-end-hardware-binding).
 
 The dependency preflight never launches pnpm. The explicit frozen install records a local stamp
 covering repository dependency inputs, the platform-specific installed lock snapshot, and the
@@ -212,7 +214,7 @@ pnpm run gate:push         # full pre-push gate
 
 ## Security / Dependabot
 
-Transitive vulnerabilities remediated via root `pnpm.overrides` are documented in [`SECURITY.md`](../SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
+Transitive vulnerabilities remediated via `overrides` in `pnpm-workspace.yaml` are documented in [`SECURITY.md`](../SECURITY.md#transitive-dependency-remediation-pnpm-overrides).
 
 After adding overrides: deliberately regenerate with `corepack pnpm install --lockfile-only`, reject
 unrelated changes in `pnpm-lock.yaml`, then run `corepack pnpm install --frozen-lockfile` and

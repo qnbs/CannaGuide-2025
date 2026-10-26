@@ -224,7 +224,7 @@ class GeminiService implements BaseAIProvider {
         const prompt = buildStrainImagePrompt(strain, selectedStyle, criteria)
 
         try {
-            aiRateLimiter.acquireSlot('generateStrainImage')
+            const budgetReservation = aiRateLimiter.acquireSlot('generateStrainImage')
             const ai = await createGeminiClient()
             const response = await generateWithGeminiFallback({
                 ai,
@@ -237,7 +237,7 @@ class GeminiService implements BaseAIProvider {
                     responseModalities: [Modality.IMAGE],
                 },
             })
-            reportGeminiUsage('generateStrainImage', response)
+            reportGeminiUsage('generateStrainImage', response, budgetReservation)
 
             return extractGeneratedImageDataOrThrow(response)
         } catch (error) {
@@ -336,11 +336,7 @@ class GeminiService implements BaseAIProvider {
     async getTrendAnalysis(prompt: string, title: string, lang: Language): Promise<AIResponse> {
         return runWithLocalFallback<AIResponse>(
             async () => {
-                const text = await generateTextWithProviderRouting(
-                    prompt,
-                    lang,
-                    'getTrendAnalysis',
-                )
+                const text = await generateTextWithProviderRouting(prompt, lang, 'getTrendAnalysis')
                 return { title, content: text }
             },
             async (localAiService) => {

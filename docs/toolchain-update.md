@@ -2,6 +2,13 @@
 
 **Stand:** 2026-07-14 · **Repo:** CannaGuide-2025 @ `main` · **Host:** Ubuntu 22.04.5 LTS (MATE), glibc 2.35, Kernel 5.15
 
+> **Historical migration evidence.** Version tables and proposed migrations below describe
+> the July checkpoint, not today's update backlog. Current executable setup and resource
+> rules are in [AGENTS.md](../AGENTS.md) and current scripts. The manual modernization
+> campaign is [GitHub #579](https://github.com/qnbs/CannaGuide-2025/issues/579).
+> Historical peer limits must be checked again before an upgrade. Section 8 retains the
+> measured typecheck comparison; it is not a timing guarantee for other hosts.
+
 Alle Versionsangaben sind **gemessen** (lokale Runtimes, `package.json`, `.github/`) bzw. **abgefragt** (npm-Registry am 2026-07-14). Peer-Ranges sind wörtlich aus den Paket-Manifesten zitiert — sie sind der Grund, warum zwei naheliegende Upgrades **nicht** gehen.
 
 ---
@@ -200,11 +207,15 @@ pnpm install --frozen-lockfile
 # Lockfile nicht regenerieren, deshalb hier explizit ohne:
 pnpm install --no-frozen-lockfile    # danach pnpm-lock.yaml committen
 
-pnpm run typecheck                   # der einzige lokal sinnvolle Vollcheck
-pnpm --filter web run test:run -- path/to/single.test.ts
+pnpm verify                          # betroffene Workspaces, seriell
+pnpm --filter @cannaguide/web test:run path/to/single.test.ts
 ```
 
-**`git push` fährt einen `pre-push`-Hook** (`.husky/pre-push`: `turbo run typecheck` + `lint:scopes` + `check:file-budget`) — auf dieser Maschine mehrere Minuten. Wenn der Typecheck unmittelbar davor schon grün lief, ist `git push --no-verify` legitim; sonst nicht.
+**Aktueller Hook-Vertrag:** `git push` führt den serialisierten `pre-push`-Hook aus:
+Dependency-/Speicherprüfung, scoped Typecheck, geänderte Lint-Scopes, Dateibudget und
+Dokumentationsmetriken. Hooks dürfen weder beim Commit noch beim Push umgangen werden.
+Root-Manifest-, Workspace-Policy- oder Lockfile-Änderungen wählen alle Workspaces aus;
+`scoped` bedeutet dann nicht klein. Ein vorheriger manueller Typecheck ersetzt den Hook nicht.
 
 **Niemals lokal:** volle Suite, E2E, Coverage, Mutation, Build-Matrix (3,7 GB RAM). Push den Branch, lies die Artefakte:
 
@@ -306,3 +317,223 @@ repo ended up with git hooks everyone bypassed via `--no-verify`.
   `--concurrency=1`. This is what `pre-push` calls.
 - `scripts/typecheck-filter.mjs` is only the `apps/web` wrapper around `tsc --noEmit` (it
   filters the known upstream RTK `TS2719`). It does no scoping of its own.
+
+---
+
+## 9. Manual security campaign checkpoint — 2026-10-24, Europe/Berlin
+
+Current owner: [GitHub #579](https://github.com/qnbs/CannaGuide-2025/issues/579), coordinated
+with Linear QNB-253/259; documentation acceptance remains QNB-266 / U12. This section records
+the first bounded implementation from base `c5088863c168819cd031dd37480ae37a9a7f6211`.
+It does not close the complete dependency inventory, documentation audit or product backlog.
+
+| Family                            | Previous resolution | Prepared resolution           | Primary evidence                                                                                                                                                                                               |
+| --------------------------------- | ------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DOMPurify, including jsPDF        | 3.4.16              | 3.4.17                        | [Release](https://github.com/cure53/DOMPurify/releases/tag/3.4.17), [critical advisory](https://github.com/advisories/GHSA-cg2g-xh64-v4q7), [high advisory](https://github.com/advisories/GHSA-mrv2-3pqr-j5jr) |
+| Vite                              | 8.3.2               | 8.3.5                         | [Release](https://github.com/vitejs/vite/releases/tag/v8.3.5), [patched floor 8.3.3](https://github.com/advisories/GHSA-587h-7wmj-h5pm)                                                                        |
+| Vitest / coverage / mocker family | 4.1.11              | 4.1.12 throughout             | [Backported mock hardening](https://github.com/vitest-dev/vitest/releases/tag/v4.1.12)                                                                                                                         |
+| markdown-it                       | 14.3.0              | 14.3.3, bounded below 15      | [npm metadata](https://registry.npmjs.org/markdown-it/14.3.3), [advisory](https://github.com/advisories/GHSA-gfr2-rv44-r23c)                                                                                   |
+| Zod 4                             | 4.4.2               | 4.6.7 throughout              | [Release](https://github.com/colinhacks/zod/releases/tag/v4.6.7), [advisory](https://github.com/advisories/GHSA-mrhx-c7xc-m3w5)                                                                                |
+| qs                                | 6.15.2              | 6.16.1, bounded below 7       | [npm metadata](https://registry.npmjs.org/qs/6.16.1)                                                                                                                                                           |
+| ip-address                        | 10.4.0              | 10.7.4, bounded below 11      | [npm metadata](https://registry.npmjs.org/ip-address/10.7.4)                                                                                                                                                   |
+| fflate                            | 0.8.2 and 0.8.3     | 0.8.3 only, bounded below 0.9 | [npm metadata](https://registry.npmjs.org/fflate/0.8.3)                                                                                                                                                        |
+
+The package manager generated the lockfile, followed by a successful deliberate frozen
+install with the normal Husky preparation and dependency-state stamp. The 24-hour quarantine,
+build-script policy and three existing audit exceptions remain unchanged. qs and markdown-it
+were removed from `LEGACY_UNBOUNDED`; nine pre-existing entries remain. Native Rolldown pins
+move with Vite's Rolldown 1.2.15 dependency, not independently of their JS package.
+
+The local host is Ubuntu 22.04.5 x86_64 with 3793 MiB RAM. Node 24.22.1 was added through the
+existing fnm installation for checks after the official [security release](https://github.com/nodejs/node/releases/tag/v24.22.1)
+was confirmed. System Node and global defaults were not changed. The repository's existing
+`>=24.15.0 <25` contract and pnpm 11.19.0 remain in place; Node-26 admission remains separate.
+
+### Evidence and remaining qualification
+
+- Six focused Vitest files passed, **70 tests**, under Node 24.22.1: SafeHtml,
+  safetyPipeline, Zod jitless, AI response validation, export and PDF report tests. The
+  sanitizer fixtures use the real library and cover both retained useful text/markup and
+  removal of active HTML, SVG handlers and unsafe links. No models or AI requests were used.
+- Production audits at both `--audit-level=high --prod` and `--audit-level=low --prod`
+  returned **exit 0 with zero reported advisories** on the prepared lockfile. This is a
+  dependency-scan result, not proof of absence of all application vulnerabilities.
+- Both all-dependency audit levels still returned **exit 1**. The unignored findings are
+  Zod 3 (high), `@humanfs/node` (moderate) and `postcss-selector-parser` (moderate).
+  Zod 3 remains under Socket patch tooling and Chromium BiDi/Puppeteer. Current Socket
+  CLI metadata still selects socket-patch 2.0.0, which pins Zod 3.25.76; even socket-patch
+  5.0.1 retains that pin. A consumer migration needs separate compatibility proof. No
+  new ignored advisory or forced Zod major was added to turn this gate green.
+- extract-zip 2.0.2 and braces 3.0.4 were still unavailable in the live registry check.
+  The three existing exceptions expire **2026-11-15**; they were not extended.
+- A tiny fixed-code Vite build probe confirmed that the explicit esbuild minifier still
+  removes debug/log calls and debugger statements while preserving warn/error calls.
+  The Oxc-transform warning does not by itself demonstrate leaked production logging.
+  Full production build/browser/coverage qualification remains a CI task.
+- CI, review, merge, resulting-main, production/PWA lifecycle and desktop qualification
+  have not been established for this implementation. The all-dependency audit failure
+  remains a merge blocker; a successful production audit alone cannot satisfy CI Status.
+
+The initial local inventories enumerate 230 documentation/explanatory surfaces, 3502
+dependency/package/peer contexts and 281 toolchain uses. Enumeration is not final semantic
+acceptance: each entry retains read/check/disposition fields, and #551's pinned audit
+artifacts remain a separate historical source. The full U1/U12 reconciliation continues.
+
+### Current-head CI and follow-up evidence — 2026-10-24
+
+[PR #580](https://github.com/qnbs/CannaGuide-2025/pull/580) publishes signed head
+`95db3541ffb82d258e5526b9a8289feb92782ca9` from the base above. Build, unit/coverage,
+lint/types, documentation checks, CodeQL and both Chromium shards passed on that head.
+CodeRabbit completed without actionable comments; CodeAnt and Codex also completed.
+CodeAnt identified inaccurate README wording about background replay, which dispatches to
+the first available window client rather than broadcasting actions to every tab.
+
+The Security job failed on the all-dependency audit. In addition to Zod 3, the registry
+published new body-parser and undici advisories on **2026-10-23** after the earlier audit.
+This is a dependency failure, not evidence of exhausted Actions compute. The production
+audit passed in CI. No merge or production qualification follows from those partial results.
+
+The consolidated follow-up selects these compatible security floors, checked against npm
+metadata on **2026-10-24**. Each selected minimum was published more than 24 hours earlier;
+the quarantine and install-script policy remain unchanged.
+
+| Package                               | Previous resolution | Selected minimum      | Primary evidence                                                                                                  |
+| ------------------------------------- | ------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| body-parser (Express 4 / LHCI)        | 1.20.6              | 1.20.9, below 2       | [Advisory and patched branches](https://github.com/expressjs/body-parser/security/advisories/GHSA-27r3-jxmh-p828) |
+| undici (jsdom / Miniflare)            | 7.30.0              | 7.30.1, below 8       | [Advisory](https://github.com/nodejs/undici/security/advisories/GHSA-xjj6-f33q-929c)                              |
+| fast-uri (schema tooling)             | 4.2.1               | 4.2.3, below 5        | [Registry metadata](https://registry.npmjs.org/fast-uri/4.2.3)                                                    |
+| serialize-javascript (Rollup tooling) | 7.0.7               | 7.1.3, below 8        | [Advisory](https://github.com/advisories/GHSA-m5mm-p8h7-m29v)                                                     |
+| @humanfs/node (ESLint)                | 0.16.7 and 0.16.8   | 0.16.8, below 0.17    | [Advisory](https://github.com/advisories/GHSA-p498-v437-472g)                                                     |
+| ESLint / @eslint/js at root           | 9.39.4              | 9.39.5, interim patch | [Patch release](https://github.com/eslint/eslint/releases/tag/v9.39.5)                                            |
+
+`serialize-javascript@7.1.4` was published less than 24 hours before this check and is
+not selected by bypassing quarantine. The floor admits it only after the normal policy
+permits it. ESLint 9 is now marked unsupported in registry metadata: this patch removes
+the vulnerable duplicate while the supported ESLint 10 migration remains a separate
+plugin/configuration compatibility task. It is not a long-term supported toolchain target.
+
+Zod 3 remains an open tooling security boundary. Chromium BiDi 14 ships its mapper as an
+IIFE containing bundled Zod implementation code; overriding its external dependency does
+not replace those executed bytes. A supported Puppeteer/BiDi migration must cover both
+the declared dependency and the published mapper. Socket patch tooling also retains a
+Zod 3 dependency. The moderate selector-parser finding requires a separately verified
+Tailwind typography/parser migration. Neither finding has a new ignore or a claimed fix.
+
+The follow-up lockfile was generated by pnpm and passed a normal frozen install, including
+Husky preparation and the dependency-state stamp. Only the root importer changed; the
+old ESLint/HumanFS duplicates disappeared along with the vulnerable patch resolutions.
+The selected serialize-javascript resolution is 7.1.3. Focused tests, current audits and
+current-head CI/review remain separate evidence. Results from `95db354` do not qualify a
+later head. Merge, resulting-main, production/PWA lifecycle and desktop proof remain open.
+
+Follow-up local evidence: the same six focused test files passed **70 tests** with
+`undici@7.30.1`. Lockfile, bounded-floor, updater and registry-backed exception checks
+passed. Production audits at high and low thresholds exited **0**, with zero advisories.
+Complete audits at both thresholds exited **1**: Zod 3 remains the unignored high; the
+low-threshold report also lists selector-parser 6 as moderate. Metadata counts include
+existing ignored advisories and must not be read as a count of unignored high findings.
+
+## 10. #580 TypeDoc parser compatibility and current Zod 3 boundary — 2026-10-25
+
+On public #580 head `426cbb23c54a1b65a180fa8630ff730814ecff87`, the real
+`require("typedoc")` initialization failed with `The requested module 'linkify-it' does not
+provide an export named 'default'`. The lockfile had `markdown-it@14.3.3` with
+`linkify-it@6.0.0`; Markdown-it 14 imports the 5.x default export. The scoped correction
+sets `linkify-it` to `>=5.0.2 <6`, removes that exact entry from the unbounded-floor
+ratchet, updates the security override table, and adds a serial Node regression for the
+CommonJS/ESM parser APIs, safe HTML/URL behavior, Unicode, and TypeDoc initialization.
+
+The official npm record dates `linkify-it@5.0.2` to 2026-07-01 and gives lockfile integrity
+`sha512-ONTm2jCMAVZjgQa/Fy1kScXsuOoF5NPTsoFBdE1KVIZ2vAh/r9+Bqo+0jINCBYnavTPQZz38QzFTme79ENoN3Q==`.
+The GitHub advisory identifies `<=5.0.0` as vulnerable. The lockfile diff changes only the
+linkify-it override and its resolved package/snapshot; an unrelated pnpm metadata refresh
+of `legacy-javascript` was returned to its previous locked version. A frozen install passed
+with the exact lockfile, using two locally stored packages and downloading none.
+
+The regression failed before the resolution change in all three entry paths. Afterward,
+`node --test --test-concurrency=1 ./scripts/security/markdown-parser.test.mjs` passed **7/7**;
+the override-floor checker passed with eight (down from nine) unchanged legacy warnings,
+and the duplicate-key lockfile check passed. Production High audit exited **0** with
+`No known vulnerabilities found`. Full High audit still exits **1** on the unignored
+`GHSA-mrhx-c7xc-m3w5` Zod 3 finding through both LHCI/Puppeteer/BiDi paths and Socket Patch;
+the audit reports 1 moderate and 3 high total, with 2 highs already covered by existing
+exceptions. The TypeDoc fix does not change those paths.
+
+Current official registry metadata still gives `@socketsecurity/cli@1.10.1` a dependency on
+`@socketsecurity/socket-patch@2.0.0`, while `@socketsecurity/socket-patch@5.0.1` declares
+`zod@3.25.76`. LHCI remains at `0.15.1` and pins Lighthouse `12.6.1`. Lighthouse `13.5.0`
+and Puppeteer Core `25.16.0` are newer majors, but Puppeteer Core still pins
+`chromium-bidi@157.0.8090-0`. That BiDi manifest declares `zod@^4.6.5`, and its published
+`mapperTab.js.map` confirms the embedded mapper contains Zod **4.6.5**, below the
+`4.6.6` patched floor. An external Zod override would not replace those bundled bytes, so
+this is not a qualified security fix.
+
+The newly published `chromium-bidi@158.0.8124-0` manifest declares `zod@^4.6.5`, but the
+published source map for its embedded `mapperTab.js` identifies the included Zod core as
+**4.6.5**, still below the advisory's `4.6.6` patched floor. It was also published inside
+the 24-hour quarantine window, is a prerelease, and has no registry provenance attestation.
+It is not an eligible fix. A future BiDi release must be older than the quarantine window,
+embed Zod **4.6.6 or newer**, and remove all Zod 3 paths; the independent Socket path still
+requires its own upstream fix or an explicitly approved equivalent scanner.
+
+## 11. #580 Socket and Chromium-BiDi patch qualification — 2026-10-25
+
+The #580 correction wave builds on `09d4291a6e139bfde85ba8f8e67d153a6ac1d014` and carries
+targeted pnpm patches for the remaining Socket and Chromium-BiDi Zod paths. It retains the
+production security updates and the `linkify-it`/TypeDoc correction above. No security workflow,
+scanner command, audit threshold, exception, LHCI configuration, URL, budget, or report step
+was changed.
+
+The actual Lighthouse chain resolves as `@lhci/cli@0.15.1` → `lighthouse@12.6.1` →
+`puppeteer-core@24.40.0` → `chromium-bidi@14.0.0` → `zod@4.6.7`. The original official npm
+tarball has SRI `sha512-9gYlLtS6tStdRWzrtXaTMnqcM4dudNegMXJxkR0I/CXObHalYeYcAMPrL19eroNZHtJ8DQmu1E+ZNOYu/IXMXw==`
+and SHA-256 `02fca611e4320190725ce0d33ff136c77a532dfa593e4a6e8ad7c30c0e11984e`; its embedded
+`lib/iife/mapperTab.js` hash is `d8d4f5580e4431fb2d4d1b55b6259206f558fdec3826316fe219040fbad3778c`.
+The pnpm patch is `patches/chromium-bidi@14.0.0.patch`, SHA-256 / lockfile patch hash
+`43088e269b80a1306563c75e9d8160f23b7f1a6ffa71e6570688933fe7c7e981`; the installed patched
+mapper hash is `6afb6eb3759e6b47ee128918a858aed797db5397d52ff2bb07c81ac16805687a`.
+
+The mapper patch rejects over-bound arrays before member parsing and processes array, map, and
+set entries sequentially, stopping at the first invalid member. It does not cap valid
+unbounded collections. The CJS/ESM protocol parser uses a scoped Zod 4.6.7 resolution and a
+bounded preflight that prevents Zod from accumulating errors for malformed large collections.
+Size-bound shortcuts are skipped after an earlier `.overwrite()` check, so schemas such as
+`.overwrite(() => ['x']).min(1)` retain native Zod ordering and behavior. The preflight also
+preserves Zod 4's `.default()` short-circuit while validating `.prefault()` values through their
+inner schemas, matching native Zod behavior for both.
+The regression fetches the pinned original tarball, verifies its SRI and mapper hash, then
+executes the original and installed IIFE bytes in isolated VM contexts. For 256 malformed
+protocol events the original emits a 12,177-character error; the patched artifact emits one
+short issue. The fixture also covers valid arrays through 2,048 entries, array/map/set
+boundaries, early rejection counters, `.overwrite()` / minimum-bound ordering, and both external
+parser module formats.
+
+The retained Socket CLI chain is `@socketsecurity/cli@1.4.1` → patched
+`@socketsecurity/socket-patch@2.0.0` → `zod@4.6.7`. Its scoped pnpm patch hash is
+`375db8e6bdf3a95986598bdffcecc5defdbe14f45de028c075c3397a02d59e33`. The published package
+contains the schema source but not its declared `dist` export target. The patch supplies the
+declared runtime and TypeScript export files from that source; the regression imports through
+`@socketsecurity/socket-patch/schema`, verifies the patched package and Zod resolution, accepts
+CVE lists through 256 entries, and rejects 257 entries with one `too_big` issue. The Socket CLI
+wrapper and native scanner binary are unchanged; no remote/network scan was run as part of this
+local qualification.
+
+The service-worker replay ignores unrelated same-origin pages and defers while multiple app
+windows are open, because their Redux snapshots may differ and a later full-state write could
+overwrite the replay. With one app window, a read-only readiness probe precedes replay, and the
+queue item is removed only after that window confirms persistence. If no app window is ready or
+the selected window cannot confirm persistence, the queue item remains retryable and later actions
+wait for the next sync. A permanent rejection occurs before mutation, so the item is marked blocked
+and later actions continue. The Node VM regression exercises the actual service-worker helpers for
+multiple-window deferral, scope filtering, single-window persistence, missing acknowledgements, and
+permanent rejection before a valid action. Lighthouse, Socket scanning, and security workflow
+commands remain unchanged.
+
+On the final local lockfile after a frozen pnpm 11.19.0 install (Node 24.22.0), the unchanged
+`pnpm audit --audit-level=high --prod` and `pnpm audit --audit-level=high` each exited **0**.
+The production audit reported no known vulnerabilities. The full audit reports one moderate
+finding plus two existing, ignored high findings; the unchanged exception and override-floor
+checks passed. The three required Node security regressions passed **12/12 tests**, the focused
+offline replay service test passed **6/6**, and the offline queue panel regression passed **1/1**.
+This records local evidence; remote CI and reviewer qualification remain tracked separately on
+the exact PR head.

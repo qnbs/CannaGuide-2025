@@ -1197,6 +1197,10 @@ export const settingsView = {
         importing: 'Wiederherstellung aus ZIP...',
         exportSuccess: 'ZIP-Backup erfolgreich exportiert.',
         importSuccess: 'ZIP-Backup erfolgreich importiert. App wird neu geladen.',
+        importPartialSuccess_one:
+            'Backup wiederhergestellt; {{count}} Bild konnte nicht wiederhergestellt werden. Die App wird neu geladen.',
+        importPartialSuccess_other:
+            'Backup wiederhergestellt; {{count}} Bilder konnten nicht wiederhergestellt werden. Die App wird neu geladen.',
         importError:
             'ZIP-Backup konnte nicht importiert werden. Die Datei ist moeglicherweise beschaedigt.',
         exportError: 'ZIP-Backup konnte nicht erstellt werden.',

@@ -1224,6 +1224,10 @@ export const settingsView = {
         importing: 'Restauration depuis ZIP...',
         exportSuccess: 'Sauvegarde ZIP exportee avec succes.',
         importSuccess: "Sauvegarde ZIP importee avec succes. L'app va se recharger.",
+        importPartialSuccess_one:
+            "Sauvegarde restauree ; {{count}} image n'a pas pu etre restauree. L'application va se recharger.",
+        importPartialSuccess_other:
+            "Sauvegarde restauree ; {{count}} images n'ont pas pu etre restaurees. L'application va se recharger.",
         importError: "Impossible d'importer la sauvegarde ZIP. Le fichier est peut-etre corrompu.",
         exportError: 'Impossible de creer la sauvegarde ZIP.',
         includePhotos: 'Inclure les photos',

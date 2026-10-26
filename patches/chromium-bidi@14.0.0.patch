@@ -24,11 +24,11 @@ index 9b726b18ebf64eb8dc24dc587ecda59fd5b5afa3..a908fd02adb7ff43cf56b2bf6f4be60f
          .map((e) => `${e.message} in ` +
          `${e.path.map((p) => JSON.stringify(p)).join('/')}.`)
          .join(' ');
-diff --git a/lib/common/collection-guard.cjs b/lib/common/collection-guard.cjs
+diff --git a/lib/common/collection-guard.before-check-order-20261026.cjs b/lib/common/collection-guard.before-check-order-20261026.cjs
 new file mode 100644
 index 0000000000000000000000000000000000000000..9404acdf4b1008f418c1f62fa6a0333f545a23ef
 --- /dev/null
-+++ b/lib/common/collection-guard.cjs
++++ b/lib/common/collection-guard.before-check-order-20261026.cjs
 @@ -0,0 +1,326 @@
 +const PREFLIGHT_COLLECTION_SIZE = 64;
 +
@@ -60,6 +60,350 @@ index 0000000000000000000000000000000000000000..9404acdf4b1008f418c1f62fa6a0333f
 +    const size = type === "array" ? value.length : value.size;
 +    for (const check of checks) {
 +        const rule = check._zod?.def ?? check.def ?? check;
++        const isArray = type === "array";
++        const maxCheck = isArray ? "max_length" : "max_size";
++        const minCheck = isArray ? "min_length" : "min_size";
++        const exactCheck = isArray ? "length_equals" : "size_equals";
++        let code;
++        let bound;
++        let exact = false;
++
++        if (rule.check === maxCheck && size > rule.maximum) {
++            code = "too_big";
++            bound = rule.maximum;
++        } else if (rule.check === minCheck && size < rule.minimum) {
++            code = "too_small";
++            bound = rule.minimum;
++        } else if (rule.check === exactCheck && size !== (isArray ? rule.length : rule.size)) {
++            exact = true;
++            bound = isArray ? rule.length : rule.size;
++            code = size < bound ? "too_small" : "too_big";
++        } else {
++            continue;
++        }
++
++        const comparison = code === "too_big" ? "<=" : ">=";
++        const quantity = exact ? `exactly ${bound}` : `${comparison}${bound}`;
++        const direction = code === "too_big" ? "Too big" : "Too small";
++        const unit = type === "map" ? "entries" : "items";
++        const issue = {
++            origin: type,
++            code,
++            [code === "too_big" ? "maximum" : "minimum"]: bound,
++            inclusive: true,
++            path,
++            message: `${direction}: expected ${type} to have ${quantity} ${unit}`,
++        };
++        if (exact) {
++            issue.exact = true;
++        }
++        return { invalid: true, collectionError: true, issue };
++    }
++    return null;
++}
++
++function inspect(value, schema, path = [], withinCollection = false, depth = 0) {
++    if (!schema || depth > 96) {
++        return { invalid: false, collectionError: false, issue: null };
++    }
++    const def = schema._def;
++    const type = def?.type;
++    if (!type) {
++        return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++    }
++
++    if (type === "optional" && value === undefined) {
++        return { invalid: false, collectionError: false, issue: null };
++    }
++    if (type === "nullable" && value === null) {
++        return { invalid: false, collectionError: false, issue: null };
++    }
++    // Zod 4 defaults short-circuit inner validation; prefaults do not.
++    if (type === "default" && value === undefined) {
++        return { invalid: false, collectionError: false, issue: null };
++    }
++    if (type === "prefault" && value === undefined) {
++        return inspect(def.defaultValue, def.innerType, path, withinCollection, depth + 1);
++    }
++    if (type === "catch") {
++        return { invalid: false, collectionError: false, issue: null };
++    }
++    if (type === "lazy") {
++        return inspect(value, def.getter(), path, withinCollection, depth + 1);
++    }
++    if (["optional", "nullable", "default", "prefault", "readonly", "nonoptional"].includes(type)) {
++        return inspect(value, def.innerType, path, withinCollection, depth + 1);
++    }
++    if (type === "pipe") {
++        return inspect(value, def.in, path, withinCollection, depth + 1);
++    }
++
++    if (type === "array") {
++        if (!Array.isArray(value)) {
++            return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++        }
++        const boundFailure = sizeLimitFailure(schema, value, path, "array");
++        if (boundFailure) {
++            return withCollectionScope(boundFailure, withinCollection);
++        }
++        const large = value.length > PREFLIGHT_COLLECTION_SIZE || withinCollection;
++        let firstInvalid = null;
++        for (let index = 0; index < value.length; index++) {
++            const result = inspect(value[index], def.element, [...path, index], large, depth + 1);
++            if (!result.invalid) {
++                continue;
++            }
++            firstInvalid ??= result;
++            if (result.collectionError || large) {
++                return { ...result, collectionError: true };
++            }
++        }
++        return firstInvalid ?? { invalid: false, collectionError: false, issue: null };
++    }
++
++    if (type === "set") {
++        if (!(value instanceof Set)) {
++            return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++        }
++        const boundFailure = sizeLimitFailure(schema, value, path, "set");
++        if (boundFailure) {
++            return withCollectionScope(boundFailure, withinCollection);
++        }
++        const large = value.size > PREFLIGHT_COLLECTION_SIZE || withinCollection;
++        let firstInvalid = null;
++        let index = 0;
++        for (const item of value) {
++            const result = inspect(item, def.valueType, [...path, index], large, depth + 1);
++            if (result.invalid) {
++                firstInvalid ??= result;
++                if (result.collectionError || large) {
++                    return { ...result, collectionError: true };
++                }
++            }
++            index++;
++        }
++        return firstInvalid ?? { invalid: false, collectionError: false, issue: null };
++    }
++
++    if (type === "map") {
++        if (!(value instanceof Map)) {
++            return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++        }
++        const boundFailure = sizeLimitFailure(schema, value, path, "map");
++        if (boundFailure) {
++            return boundFailure;
++        }
++        const large = value.size > PREFLIGHT_COLLECTION_SIZE || withinCollection;
++        let firstInvalid = null;
++        let index = 0;
++        for (const [key, entryValue] of value) {
++            const keyResult = inspect(key, def.keyType, [...path, index, "key"], large, depth + 1);
++            const valueResult = inspect(entryValue, def.valueType, [...path, index, "value"], large, depth + 1);
++            for (const result of [keyResult, valueResult]) {
++                if (!result.invalid) {
++                    continue;
++                }
++                firstInvalid ??= result;
++                if (result.collectionError || large) {
++                    return { ...result, collectionError: true };
++                }
++            }
++            index++;
++        }
++        return firstInvalid ?? { invalid: false, collectionError: false, issue: null };
++    }
++
++    if (type === "object") {
++        if (value === null || typeof value !== "object" || Array.isArray(value)) {
++            return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++        }
++        const shape = typeof def.shape === "function" ? def.shape() : def.shape;
++        const known = new Set(Object.keys(shape ?? {}));
++        let firstInvalid = null;
++        for (const [key, childSchema] of Object.entries(shape ?? {})) {
++            const result = inspect(value[key], childSchema, [...path, key], withinCollection, depth + 1);
++            if (!result.invalid) {
++                continue;
++            }
++            firstInvalid ??= result;
++            if (result.collectionError || withinCollection) {
++                return { ...result, collectionError: true };
++            }
++        }
++        if (def.catchall) {
++            for (const key of Object.keys(value)) {
++                if (known.has(key)) {
++                    continue;
++                }
++                const result = inspect(value[key], def.catchall, [...path, key], withinCollection, depth + 1);
++                if (!result.invalid) {
++                    continue;
++                }
++                firstInvalid ??= result;
++                if (result.collectionError || withinCollection) {
++                    return { ...result, collectionError: true };
++                }
++            }
++        }
++        if (firstInvalid) {
++            return firstInvalid;
++        }
++        if (def.catchall?._def?.type === "never" && Object.keys(value).some((key) => !known.has(key))) {
++            return invalidFromSchema(schema, value, path);
++        }
++        return { invalid: false, collectionError: false, issue: null };
++    }
++
++    if (type === "union") {
++        const results = (def.options ?? []).map((option) => inspect(value, option, path, withinCollection, depth + 1));
++        const invalid = results.length > 0 && results.every((result) => result.invalid);
++        if (!invalid) {
++            return { invalid: false, collectionError: false, issue: null };
++        }
++        const issueResult = results.find((result) => result.collectionError) ?? results[0];
++        return {
++            invalid: true,
++            collectionError: results.some((result) => result.collectionError) || withinCollection,
++            issue: issueResult.issue,
++        };
++    }
++
++    if (type === "intersection") {
++        const left = inspect(value, def.left, path, withinCollection, depth + 1);
++        const right = inspect(value, def.right, path, withinCollection, depth + 1);
++        if (!left.invalid && !right.invalid) {
++            return { invalid: false, collectionError: false, issue: null };
++        }
++        const issueResult = left.collectionError ? left : right.invalid ? right : left;
++        return {
++            invalid: true,
++            collectionError: left.collectionError || right.collectionError || withinCollection,
++            issue: issueResult.issue,
++        };
++    }
++
++    if (type === "record") {
++        if (value === null || typeof value !== "object" || Array.isArray(value)) {
++            return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++        }
++        const entries = Object.entries(value);
++        const large = entries.length > PREFLIGHT_COLLECTION_SIZE || withinCollection;
++        let firstInvalid = null;
++        for (const [key, entryValue] of entries) {
++            const keyResult = inspect(key, def.keyType, [...path, key], large, depth + 1);
++            const valueResult = inspect(entryValue, def.valueType, [...path, key], large, depth + 1);
++            for (const result of [keyResult, valueResult]) {
++                if (!result.invalid) {
++                    continue;
++                }
++                firstInvalid ??= result;
++                if (result.collectionError || large) {
++                    return { ...result, collectionError: true };
++                }
++            }
++        }
++        return firstInvalid ?? { invalid: false, collectionError: false, issue: null };
++    }
++
++    if (type === "tuple") {
++        if (!Array.isArray(value)) {
++            return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++        }
++        const items = def.items ?? [];
++        if (!def.rest && value.length > items.length) {
++            const issue = {
++                origin: "tuple",
++                code: "too_big",
++                maximum: items.length,
++                inclusive: true,
++                path,
++                message: `Too big: expected tuple to have <=${items.length} items`,
++            };
++            return { invalid: true, collectionError: true, issue };
++        }
++        const large = value.length > PREFLIGHT_COLLECTION_SIZE || withinCollection;
++        let firstInvalid = null;
++        for (let index = 0; index < value.length; index++) {
++            const childSchema = items[index] ?? def.rest;
++            if (!childSchema) {
++                continue;
++            }
++            const result = inspect(value[index], childSchema, [...path, index], large, depth + 1);
++            if (result.invalid) {
++                firstInvalid ??= result;
++                if (result.collectionError || large) {
++                    return { ...result, collectionError: true };
++                }
++            }
++        }
++        return firstInvalid ?? invalidFromSchema(schema, value, path);
++    }
++
++    return withCollectionScope(invalidFromSchema(schema, value, path), withinCollection);
++}
++
++function findInvalidCollection(value, schema) {
++    const result = inspect(value, schema);
++    return result.collectionError ? result.issue : null;
++}
++
++function safeParse(schema, value) {
++    const issue = findInvalidCollection(value, schema);
++    if (issue) {
++        return { success: false, error: { issues: [issue] } };
++    }
++    return schema.safeParse(value);
++}
++
++module.exports = { findInvalidCollection, safeParse };
+diff --git a/lib/common/collection-guard.cjs b/lib/common/collection-guard.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..120d06154495c190623962a1cfe173a608a9bc67
+--- /dev/null
++++ b/lib/common/collection-guard.cjs
+@@ -0,0 +1,338 @@
++const PREFLIGHT_COLLECTION_SIZE = 64;
++
++function invalidFromSchema(schema, value, path) {
++    const result = schema.safeParse(value);
++    if (result.success) {
++        return { invalid: false, collectionError: false, issue: null };
++    }
++    const issue = result.error.issues?.[0];
++    return {
++        invalid: true,
++        collectionError: false,
++        issue: {
++            message: issue?.message ?? "Invalid input",
++            path: [...path, ...(issue?.path ?? [])],
++        },
++    };
++}
++
++function withCollectionScope(result, withinCollection) {
++    if (result.invalid && withinCollection) {
++        result.collectionError = true;
++    }
++    return result;
++}
++
++function sizeLimitFailure(schema, value, path, type) {
++    const checks = schema._def.checks ?? [];
++    const size = type === "array" ? value.length : value.size;
++    for (let index = 0; index < checks.length; index++) {
++        const check = checks[index];
++        const rule = check._zod?.def ?? check.def ?? check;
++        let earlierCheckChangesSize = false;
++        for (let earlierIndex = 0; earlierIndex < index; earlierIndex++) {
++            const earlier = checks[earlierIndex]._zod?.def ?? checks[earlierIndex].def ?? checks[earlierIndex];
++            if (earlier.check === "overwrite") {
++                earlierCheckChangesSize = true;
++                break;
++            }
++        }
++        if (earlierCheckChangesSize) {
++            continue;
++        }
 +        const isArray = type === "array";
 +        const maxCheck = isArray ? "max_length" : "max_size";
 +        const minCheck = isArray ? "min_length" : "min_size";

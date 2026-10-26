@@ -48,7 +48,7 @@ overrides:
 
 patchedDependencies:
   '@socketsecurity/socket-patch@2.0.0': 375db8e6bdf3a95986598bdffcecc5defdbe14f45de028c075c3397a02d59e33
-  chromium-bidi@14.0.0: 9c67d5b38459536db0d519be301100847e203f10af60df3014b525df4722b7e0
+  chromium-bidi@14.0.0: 43088e269b80a1306563c75e9d8160f23b7f1a6ffa71e6570688933fe7c7e981
 
 importers:
 
@@ -11654,7 +11654,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  chromium-bidi@14.0.0(patch_hash=9c67d5b38459536db0d519be301100847e203f10af60df3014b525df4722b7e0)(devtools-protocol@0.0.1581282):
+  chromium-bidi@14.0.0(patch_hash=43088e269b80a1306563c75e9d8160f23b7f1a6ffa71e6570688933fe7c7e981)(devtools-protocol@0.0.1581282):
     dependencies:
       devtools-protocol: 0.0.1581282
       mitt: 3.0.1
@@ -14541,7 +14541,7 @@ snapshots:
   puppeteer-core@24.40.0(supports-color@10.2.2):
     dependencies:
       '@puppeteer/browsers': 2.13.0(supports-color@10.2.2)
-      chromium-bidi: 14.0.0(patch_hash=9c67d5b38459536db0d519be301100847e203f10af60df3014b525df4722b7e0)(devtools-protocol@0.0.1581282)
+      chromium-bidi: 14.0.0(patch_hash=43088e269b80a1306563c75e9d8160f23b7f1a6ffa71e6570688933fe7c7e981)(devtools-protocol@0.0.1581282)
       debug: 4.4.3(supports-color@10.2.2)
       devtools-protocol: 0.0.1581282
       typed-query-selector: 2.12.1

@@ -396,6 +396,40 @@ test('Chromium BiDi 14.0.0 collection guard protects the installed Lighthouse ma
             true,
         )
 
+        for (const [name, schema, value] of [
+            [
+                'overwrite before min can increase size',
+                zodApi
+                    .array(zodApi.string())
+                    .overwrite(() => ['x'])
+                    .min(1),
+                [],
+            ],
+            [
+                'overwrite before min can still leave size invalid',
+                zodApi
+                    .array(zodApi.string())
+                    .overwrite(() => [])
+                    .min(1),
+                [],
+            ],
+            [
+                'min before overwrite keeps its original order',
+                zodApi
+                    .array(zodApi.string())
+                    .min(1)
+                    .overwrite(() => ['x']),
+                [],
+            ],
+        ]) {
+            const native = schema.safeParse(value)
+            const guarded = guard.safeParse(schema, value)
+            assert.equal(guarded.success, native.success, name)
+            if (!native.success && !guarded.success) {
+                assert.equal(guarded.error.issues[0].message, native.error.issues[0].message, name)
+            }
+        }
+
         const defaultCollection = zodApi.array(zodApi.string()).min(1).default([])
         const nativeDefault = defaultCollection.safeParse(undefined)
         const guardedDefault = guard.safeParse(defaultCollection, undefined)
@@ -408,6 +442,9 @@ test('Chromium BiDi 14.0.0 collection guard protects the installed Lighthouse ma
         const guardedPrefault = guard.safeParse(prefaultCollection, undefined)
         assert.equal(nativePrefault.success, false, 'prefault values pass through inner validation')
         assert.equal(guardedPrefault.success, false)
-        assert.equal(guardedPrefault.error.issues[0].message, nativePrefault.error.issues[0].message)
+        assert.equal(
+            guardedPrefault.error.issues[0].message,
+            nativePrefault.error.issues[0].message,
+        )
     })
 })

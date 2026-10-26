@@ -490,20 +490,23 @@ tarball has SRI `sha512-9gYlLtS6tStdRWzrtXaTMnqcM4dudNegMXJxkR0I/CXObHalYeYcAMPr
 and SHA-256 `02fca611e4320190725ce0d33ff136c77a532dfa593e4a6e8ad7c30c0e11984e`; its embedded
 `lib/iife/mapperTab.js` hash is `d8d4f5580e4431fb2d4d1b55b6259206f558fdec3826316fe219040fbad3778c`.
 The pnpm patch is `patches/chromium-bidi@14.0.0.patch`, SHA-256 / lockfile patch hash
-`9c67d5b38459536db0d519be301100847e203f10af60df3014b525df4722b7e0`; the installed patched
+`43088e269b80a1306563c75e9d8160f23b7f1a6ffa71e6570688933fe7c7e981`; the installed patched
 mapper hash is `6afb6eb3759e6b47ee128918a858aed797db5397d52ff2bb07c81ac16805687a`.
 
 The mapper patch rejects over-bound arrays before member parsing and processes array, map, and
 set entries sequentially, stopping at the first invalid member. It does not cap valid
 unbounded collections. The CJS/ESM protocol parser uses a scoped Zod 4.6.7 resolution and a
 bounded preflight that prevents Zod from accumulating errors for malformed large collections.
-The preflight preserves Zod 4's `.default()` short-circuit while validating `.prefault()` values
-through their inner schemas, matching native Zod behavior for both.
+Size-bound shortcuts are skipped after an earlier `.overwrite()` check, so schemas such as
+`.overwrite(() => ['x']).min(1)` retain native Zod ordering and behavior. The preflight also
+preserves Zod 4's `.default()` short-circuit while validating `.prefault()` values through their
+inner schemas, matching native Zod behavior for both.
 The regression fetches the pinned original tarball, verifies its SRI and mapper hash, then
 executes the original and installed IIFE bytes in isolated VM contexts. For 256 malformed
 protocol events the original emits a 12,177-character error; the patched artifact emits one
 short issue. The fixture also covers valid arrays through 2,048 entries, array/map/set
-boundaries, early rejection counters, and both external parser module formats.
+boundaries, early rejection counters, `.overwrite()` / minimum-bound ordering, and both external
+parser module formats.
 
 The retained Socket CLI chain is `@socketsecurity/cli@1.4.1` → patched
 `@socketsecurity/socket-patch@2.0.0` → `zod@4.6.7`. Its scoped pnpm patch hash is

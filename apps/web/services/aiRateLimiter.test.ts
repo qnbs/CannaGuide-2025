@@ -43,6 +43,34 @@ describe('aiRateLimiter', () => {
         )
     })
 
+    it('rejects a reservation that would exceed the remaining monthly budget', () => {
+        aiRateLimiter.setMonthlyBudgetLimit(2000)
+
+        aiRateLimiter.acquireSlot('getStrainTips')
+        expect(() => aiRateLimiter.acquireSlot('getStrainTips')).toThrow('ai.error.budgetExceeded')
+
+        expect(aiRateLimiter.getMonthlyBudget()).toEqual({
+            limit: 2000,
+            month: localMonthKey(),
+            spent: 1600,
+        })
+        expect(aiRateLimiter.getAuditLog()).toHaveLength(1)
+    })
+
+    it('allows reservations that land exactly on the monthly budget limit', () => {
+        aiRateLimiter.setMonthlyBudgetLimit(3200)
+
+        aiRateLimiter.acquireSlot('getStrainTips')
+        aiRateLimiter.acquireSlot('getStrainTips')
+
+        expect(aiRateLimiter.getMonthlyBudget()).toEqual({
+            limit: 3200,
+            month: localMonthKey(),
+            spent: 3200,
+        })
+        expect(() => aiRateLimiter.acquireSlot('getStrainTips')).toThrow('ai.error.budgetExceeded')
+    })
+
     it('falls back to an unlimited budget when persisted budget values are not finite numbers', () => {
         const month = localMonthKey()
         localStorage.setItem(

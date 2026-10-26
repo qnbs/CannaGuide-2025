@@ -66,7 +66,7 @@ export async function generateGeminiPlainText(
     endpoint = 'generateText',
 ): Promise<string> {
     try {
-        aiRateLimiter.acquireSlot(endpoint)
+        const reservation = aiRateLimiter.acquireSlot(endpoint)
         const ai = await createGeminiClient()
         const localizedPrompt = createLocalizedPrompt(
             `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
@@ -81,6 +81,7 @@ export async function generateGeminiPlainText(
             config: {
                 maxOutputTokens: MAX_OUTPUT_TOKENS_TEXT,
             },
+            reservation,
         })
     } catch (error) {
         console.debug('Gemini API Error:', error)

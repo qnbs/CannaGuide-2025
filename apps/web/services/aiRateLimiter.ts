@@ -355,12 +355,12 @@ function acquireSlot(endpoint: string): MonthlyBudgetReservation {
 
     // Check monthly budget before allowing request
     const budget = loadBudget()
-    if (budget.limit > 0 && budget.spent >= budget.limit) {
+    const tokens = TOKEN_ESTIMATES[endpoint] ?? 1500
+    if (budget.limit > 0 && budget.spent + tokens > budget.limit) {
         throw new Error('ai.error.budgetExceeded')
     }
 
     recordRequest()
-    const tokens = TOKEN_ESTIMATES[endpoint] ?? 1500
     const reservation = {
         endpoint,
         month: budget.month,

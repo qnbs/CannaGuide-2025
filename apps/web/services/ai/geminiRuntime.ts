@@ -212,11 +212,13 @@ export const generateGeminiTextStreamed = async ({
     model,
     contents,
     config,
+    reservation,
 }: {
     ai: GoogleGenAI
     model: string
     contents: string
     config?: Record<string, unknown>
+    reservation: MonthlyBudgetReservation
 }): Promise<string> => {
     type ModelsWithStream = typeof ai.models & {
         generateContentStream?: (options: Record<string, unknown>) => Promise<unknown>
@@ -226,10 +228,19 @@ export const generateGeminiTextStreamed = async ({
 
     if (typeof streamFn !== 'function') {
         const response = await generateWithGeminiFallback({ ai, model, contents, config })
+        reportGeminiUsage(reservation.endpoint, response, reservation)
         return getGeminiResponseTextOrThrow(response, 'ai.error.generic')
     }
 
-    type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<{ text?: string }> }
+    type StreamChunk = {
+        text?: string
+        usageMetadata?: {
+            promptTokenCount?: number
+            candidatesTokenCount?: number
+            totalTokenCount?: number
+        }
+    }
+    type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<StreamChunk> }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const streamResult = (await streamFn.call(ai.models, {
         model,
@@ -238,10 +249,18 @@ export const generateGeminiTextStreamed = async ({
     })) as StreamResult
 
     let fullText = ''
-    for await (const chunk of streamResult) {
-        if (typeof chunk?.text === 'string') {
-            fullText += chunk.text
+    let usageMetadata: StreamChunk['usageMetadata']
+    try {
+        for await (const chunk of streamResult) {
+            if (typeof chunk?.text === 'string') {
+                fullText += chunk.text
+            }
+            if (chunk?.usageMetadata) {
+                usageMetadata = chunk.usageMetadata
+            }
         }
+    } finally {
+        reportGeminiUsage(reservation.endpoint, { usageMetadata }, reservation)
     }
 
     if (!fullText.trim()) {

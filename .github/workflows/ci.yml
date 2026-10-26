@@ -167,7 +167,7 @@ jobs:
               run: node scripts/check-bundle-budget.mjs apps/web/dist/assets
 
             - name: Upload build artifact
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: dist
                   path: apps/web/dist/
@@ -227,7 +227,7 @@ jobs:
 
             - name: Upload coverage
               if: always()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: coverage-report
                   path: apps/web/coverage/
@@ -578,16 +578,17 @@ jobs:
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: ~/.cache/ms-playwright
-                  key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  key: playwright-browsers-chromium-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
-                      playwright-browsers-${{ runner.os }}-
+                      playwright-browsers-chromium-${{ runner.os }}-
 
+            # This required matrix executes Chromium only; install only its OS/browser payload.
             - name: Install Playwright OS dependencies
-              run: pnpm run test:e2e:deps:ci
+              run: pnpm run test:e2e:deps:chromium
 
             - name: Install Playwright browsers
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: pnpm run test:e2e:install:ci
+              run: pnpm run test:e2e:install:chromium:ci
 
             - name: Download build artifact
               uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -605,7 +606,7 @@ jobs:
 
             - name: Upload Playwright traces on failure
               if: failure()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: e2e-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
                   path: apps/web/test-results/
@@ -653,16 +654,17 @@ jobs:
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: ~/.cache/ms-playwright
-                  key: playwright-browsers-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+                  key: playwright-browsers-firefox-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
                   restore-keys: |
-                      playwright-browsers-${{ runner.os }}-
+                      playwright-browsers-firefox-${{ runner.os }}-
 
+            # This advisory matrix executes Firefox only; WebKit is not part of CI.
             - name: Install Playwright OS dependencies
-              run: pnpm run test:e2e:deps:ci
+              run: pnpm --filter @cannaguide/web exec playwright install-deps firefox
 
             - name: Install Playwright browsers
               if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: pnpm run test:e2e:install:ci
+              run: pnpm --filter @cannaguide/web exec playwright install firefox
 
             - name: Download build artifact
               uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -684,7 +686,7 @@ jobs:
 
             - name: Upload Playwright traces on failure
               if: failure()
-              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: e2e-cross-browser-traces-shard${{ strategy.job-index }}-${{ github.run_id }}
                   path: apps/web/test-results/

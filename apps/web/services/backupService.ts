@@ -52,6 +52,7 @@ export interface BackupImportResult {
     success: boolean
     metadata: BackupMetadata | null
     rejectedImageCount: number
+    reloadRequired?: boolean
     error?: string | undefined
 }
 

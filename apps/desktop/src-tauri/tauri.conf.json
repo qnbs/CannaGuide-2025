@@ -4,10 +4,10 @@
     "version": "0.1.0",
     "identifier": "com.cannaguide.desktop",
     "build": {
-        "frontendDist": "../web/dist",
+        "frontendDist": "../../web/dist",
         "devUrl": "http://localhost:5173",
-        "beforeDevCommand": "pnpm --filter @cannaguide/web dev",
-        "beforeBuildCommand": "pnpm --filter @cannaguide/web build"
+        "beforeDevCommand": "node scripts/frontend.mjs dev",
+        "beforeBuildCommand": "node scripts/frontend.mjs build"
     },
     "app": {
         "withGlobalTauri": false,

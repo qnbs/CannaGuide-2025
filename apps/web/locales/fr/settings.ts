@@ -662,7 +662,7 @@ export const settingsView = {
             description:
                 'Les actions enregistrees hors ligne sont rejouees localement une fois en ligne. Distinct de la synchronisation Gist cloud.',
             loading: 'Chargement de la file...',
-            count: '{{count}} action(s) en attente',
+            count: '{{count}} action(s) enregistrée(s)',
             refresh: 'Actualiser',
             retrySync: 'Relancer la synchronisation',
             syncing: 'Synchronisation demandee...',
@@ -678,6 +678,7 @@ export const settingsView = {
             clearSuccess: "File d'actions hors ligne videe.",
             clearError: 'Impossible de vider la file hors ligne.',
             actionJournal: 'Entree de journal',
+            blocked: 'Non rejouable ; conservée pour examen',
         },
         crdtDocSize: 'Document CRDT',
         crdtFallback:
@@ -1223,6 +1224,10 @@ export const settingsView = {
         importing: 'Restauration depuis ZIP...',
         exportSuccess: 'Sauvegarde ZIP exportee avec succes.',
         importSuccess: "Sauvegarde ZIP importee avec succes. L'app va se recharger.",
+        importPartialSuccess_one:
+            "Sauvegarde restauree ; {{count}} image n'a pas pu etre restauree. L'application va se recharger.",
+        importPartialSuccess_other:
+            "Sauvegarde restauree ; {{count}} images n'ont pas pu etre restaurees. L'application va se recharger.",
         importError: "Impossible d'importer la sauvegarde ZIP. Le fichier est peut-etre corrompu.",
         exportError: 'Impossible de creer la sauvegarde ZIP.',
         includePhotos: 'Inclure les photos',

@@ -1,7 +1,18 @@
 import { REDUX_STATE_KEY } from '@/constants'
-import { schedulePersistenceWrite } from '@/bootstrap/persistenceCoordinator'
+import {
+    commitRecoveryEpoch,
+    runWithExclusiveRecoveryLock,
+    schedulePersistenceWrite,
+    suspendPersistenceForRecovery,
+} from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+
+export interface RecoverySnapshotReplacementResult {
+    success: boolean
+    reloadRequired: boolean
+    error?: unknown
+}
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -12,6 +23,54 @@ export const replacePrimaryPersistedSnapshot = async (snapshot: string): Promise
     return schedulePersistenceWrite(async () => {
         await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
     })
+}
+
+/** Replace a snapshot and any dependent stores while stale persistence is fenced. */
+export const replacePrimaryPersistedSnapshotForRecovery = async (
+    snapshot: string,
+    afterPrimaryReplace?: () => Promise<void>,
+): Promise<RecoverySnapshotReplacementResult> => {
+    const migratedSnapshot = migratePersistedSnapshot(snapshot)
+    const resumePersistence = await suspendPersistenceForRecovery()
+    if (!resumePersistence) {
+        return { success: false, reloadRequired: false }
+    }
+
+    let recoveryEpochCommitted = false
+    try {
+        const result = await runWithExclusiveRecoveryLock(async () => {
+            let primaryReplaced = false
+            try {
+                await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
+                primaryReplaced = true
+                await afterPrimaryReplace?.()
+                if (!commitRecoveryEpoch()) {
+                    throw new Error('Could not commit the cross-tab restore fence.')
+                }
+                recoveryEpochCommitted = true
+                return { success: true, reloadRequired: true }
+            } catch (error) {
+                if (primaryReplaced) {
+                    recoveryEpochCommitted = commitRecoveryEpoch()
+                }
+                return {
+                    success: false,
+                    reloadRequired: primaryReplaced || recoveryEpochCommitted,
+                    error,
+                }
+            }
+        })
+
+        if (result === null) {
+            resumePersistence()
+            return { success: false, reloadRequired: false }
+        }
+        if (!result.reloadRequired) resumePersistence()
+        return result
+    } catch (error) {
+        if (!recoveryEpochCommitted) resumePersistence()
+        return { success: false, reloadRequired: recoveryEpochCommitted, error }
+    }
 }
 
 /** Repair a corrupt primary from backup without treating a fenced/failed write as success. */

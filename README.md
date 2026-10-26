@@ -55,7 +55,7 @@
 
 <!-- App Capabilities -->
 
-[![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
+[![PWA Ready](https://img.shields.io/badge/PWA-offline--first-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![WCAG 2.1 AA (partial)](<https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20(partial)-yellow>)](docs/AUDIT_REMEDIATION_PLAN.md)
 
@@ -63,7 +63,7 @@
 
 [![GitHub Pages](https://img.shields.io/badge/Hosted-GitHub%20Pages-222222?logo=githubpages&logoColor=white)](https://qnbs.github.io/CannaGuide-2025/)
 [![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
-[![Cloudflare Pages (paused)](https://img.shields.io/badge/Cloudflare%20Pages-paused-lightgrey?logo=cloudflarepages&logoColor=white)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy-cloudflare.yml)
+[![Cloudflare Pages workflow](https://img.shields.io/badge/Cloudflare%20Pages-workflow-F38020?logo=cloudflarepages&logoColor=white)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/deploy-cloudflare.yml)
 
 <!-- Project Metrics -->
 
@@ -79,6 +79,17 @@
 **Live:** [qnbs.github.io/CannaGuide-2025](https://qnbs.github.io/CannaGuide-2025/) · **Docs:** [DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025) · **Cloud sync:** temporarily disabled (broken auth + CSP gap — see [docs/AUDIT_REMEDIATION_PLAN.md](docs/AUDIT_REMEDIATION_PLAN.md)); encryption design documented in [SECURITY.md](SECURITY.md#cloud-sync-encryption-github-gist).
 
 AI-powered, offline-first Progressive Web App for cannabis cultivation management. Simulates the full lifecycle from seed selection through harvest using VPD-based environmental modeling, 776-strain library with genealogy tracking, multi-provider AI diagnostics, and comprehensive equipment planning -- all running 100% client-side with no backend.
+
+Local cultivation records and core tools run in the browser without a CannaGuide backend.
+Cloud AI requires a provider key and network access; optional local AI needs an initial
+runtime/model download before its supported offline use. Cloud sync and community Gist
+sharing are currently disabled. Desktop is a separate Tauri shell; a web CI pass does not
+qualify native installers or signed updates.
+
+The static counts below are inherited inventory claims from baseline `c5088863`, not a fresh
+test result for this branch. Current qualification comes from the linked CI run on its exact
+commit; see [the gate inventory](docs/DEVOPS-GATES.md). Documentation reconciliation is tracked
+in [#579 / U12](https://github.com/qnbs/CannaGuide-2025/issues/579).
 
 ---
 
@@ -134,14 +145,18 @@ AI-powered, offline-first Progressive Web App for cannabis cultivation managemen
 corepack enable pnpm
 pnpm --version             # must match package.json packageManager
 corepack pnpm install --frozen-lockfile
-pnpm run dev                # Vite dev server on localhost:5173
-pnpm run build              # Production build (all workspaces)
-pnpm run test:run           # 2812 tests (267 files), single run
-pnpm run typecheck          # tsc --noEmit (TS2719 filtered)
-pnpm run lint               # ESLint (flat config, 0 warnings)
+corepack pnpm --filter @cannaguide/web dev  # http://localhost:5173/CannaGuide-2025/
+pnpm verify                 # affected workspaces, serial execution
+pnpm verify:lint            # affected lint checks
+pnpm --filter @cannaguide/web test:run path/to/changed.test.ts
 ```
 
-> All commands: [docs/release-process.md](docs/release-process.md) · DevContainer: [.devcontainer/](.devcontainer/)
+On the low-memory maintainer host, check available memory and run one task at a time.
+Root manifest, workspace-policy or lockfile changes select all workspaces even through
+`verify`. Full coverage, browser, mutation and Lighthouse checks belong in CI on that host.
+Hooks remain mandatory. The default production build excludes desktop.
+
+> Contributor commands: [CONTRIBUTING.md](CONTRIBUTING.md) · Binding resource rules: [AGENTS.md](AGENTS.md) · DevContainer: [.devcontainer/](.devcontainer/)
 
 **Windows:**
 
@@ -181,13 +196,13 @@ docker/                     IoT mock servers (ESP32 sensor simulator)
 
 ## PWA & Offline Infrastructure
 
-| Feature             | Implementation                                                                                                                           |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Service Worker**  | Network-First navigation, Cache-First assets, InjectManifest via vite-plugin-pwa                                                         |
-| **Background Sync** | Offline action queue in IndexedDB, replayed via `sync` event across all tabs                                                             |
-| **Dual IndexedDB**  | `CannaGuideStateDB` (Redux state, debounce-save 1s, force-save on visibilitychange) + `CannaGuideDB` (strains, images, full-text search) |
-| **Safe Recovery**   | Corrupted state auto-clear + restart with session flag to prevent loops                                                                  |
-| **CRDT Sync**       | Yjs-powered conflict-free replication with encrypted GitHub Gists, 3-way conflict resolution UI                                          |
+| Feature             | Implementation                                                                                                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Service Worker**  | Network-First navigation, Cache-First assets, InjectManifest via vite-plugin-pwa                                                                                                       |
+| **Background Sync** | IndexedDB action queue; same-origin windows outside the app scope are ignored, replay waits until one app tab remains, and permanently rejected actions remain blocked for inspection. |
+| **Dual IndexedDB**  | `CannaGuideStateDB` (Redux state, debounce-save 1s, force-save on visibilitychange) + `CannaGuideDB` (strains, images, full-text search)                                               |
+| **Safe Recovery**   | Corrupted state auto-clear + restart with session flag to prevent loops                                                                                                                |
+| **CRDT Sync**       | Implementation retained; UI disabled pending the cloud-sync product/security decision. See [SECURITY.md](SECURITY.md#cloud-sync-encryption-github-gist).                               |
 
 ---
 
@@ -261,21 +276,21 @@ All calls route through `aiFacade.ts` -> `aiService.ts` -> `aiProviderService.ts
 | **3D Room**      | Three.js OrbitControls equipment placement and grow space planning                                                           |
 | **Reports**      | jsPDF grow reports with canvas-rendered charts, diagnosis history, AI summaries                                              |
 
-Multi-grow management: up to 3 independent grows per German CanG compliance.
+Multi-grow management retains the app's global active-plant limit of 3 across grows.
 
 ---
 
 ## Strain Library & Genetics
 
-| Feature          | Details                                                                           |
-| ---------------- | --------------------------------------------------------------------------------- |
-| **Catalog**      | 776 strains, full-text search, filtering by type/effects/THC/CBD/terpenes         |
-| **Profiles**     | 27 terpenes, 11 cannabinoids, chemovar classification (Type I-V), 12 flavonoids   |
-| **Genealogy**    | D3.js parent-child lineage explorer, breeding lab cross predictions               |
-| **Daily Drop**   | 5 seeded-PRNG daily picks with 7 diversity categories and match scoring           |
-| **Intelligence** | 5-source cascade lookup with entourage effect science context                     |
-| **Trends**       | Genetics 2026 hub: terpene diversity, autoflowering, polyploidy, landrace revival |
-| **Sharing**      | Community strain sharing via anonymous GitHub Gists                               |
+| Feature          | Details                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| **Catalog**      | 776 strains, full-text search, filtering by type/effects/THC/CBD/terpenes                               |
+| **Profiles**     | 27 terpenes, 11 cannabinoids, chemovar classification (Type I-V), 12 flavonoids                         |
+| **Genealogy**    | D3.js parent-child lineage explorer, breeding lab cross predictions                                     |
+| **Daily Drop**   | 5 seeded-PRNG daily picks with 7 diversity categories and match scoring                                 |
+| **Intelligence** | 5-source cascade lookup with entourage effect science context                                           |
+| **Trends**       | Genetics 2026 hub: terpene diversity, autoflowering, polyploidy, landrace revival                       |
+| **Sharing**      | Community Gist sharing is disabled; it needs an explicit product/security decision before reactivation. |
 
 ---
 
@@ -313,7 +328,7 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 | **BYOK**         | AES-256-GCM encrypted API key management, 90-day rotation, cost tracking                           |
 | **WebLLM**       | Card-based model selector (Qwen2.5-0.5B/1.5B, Llama-3.2-3B, Phi-3.5-mini), GPU-tier auto-selection |
 | **Voice**        | 37 voice commands, Porcupine wake-word, ElevenLabs Cloud TTS, Voice HUD, continuous listening      |
-| **CRDT Sync**    | Yjs + encrypted GitHub Gists, 3-way conflict resolution, offline queue with exponential backoff    |
+| **CRDT Sync**    | Disabled in the UI; the retained implementation is not an available cloud-backup promise.          |
 | **Data**         | JSON export/import, local-only mode toggle, TTS for AI responses                                   |
 | **Grow Manager** | Multi-grow CRUD with archive, color picker, CanG compliance limits                                 |
 
@@ -351,16 +366,16 @@ Multi-grow management: up to 3 independent grows per German CanG compliance.
 
 Audit summary, applied fixes, local gate results, and remaining risks: **[`.github/CI-AUDIT.md`](.github/CI-AUDIT.md)** (updated 2026-05-17).
 
-| Gate (local)    | Status                                  |
-| --------------- | --------------------------------------- |
-| typecheck       | pass                                    |
-| lint:scopes     | pass                                    |
-| build + budget  | pass                                    |
-| graphify doctor | pass                                    |
-| CSP check       | pass                                    |
-| full E2E        | CI only (advisory on `main` aggregator) |
+| Gate (local)    | Status                                                                 |
+| --------------- | ---------------------------------------------------------------------- |
+| typecheck       | pass                                                                   |
+| lint:scopes     | pass                                                                   |
+| build + budget  | pass                                                                   |
+| graphify doctor | pass                                                                   |
+| CSP check       | pass                                                                   |
+| full E2E        | Chromium is required inside CI Status; Firefox/WebKit remain advisory. |
 
-### CI/CD Workflows (28)
+### CI/CD Workflows (30)
 
 | Workflow           | Trigger            | Purpose                                                                             |
 | ------------------ | ------------------ | ----------------------------------------------------------------------------------- |
@@ -511,7 +526,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 <!-- App-Funktionen -->
 
-[![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
+[![PWA Ready](https://img.shields.io/badge/PWA-offline--first-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE%20|%20ES%20|%20FR%20|%20NL-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![WCAG 2.1 AA (partial)](<https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20(partial)-yellow>)](docs/AUDIT_REMEDIATION_PLAN.md)
 
@@ -563,11 +578,21 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 corepack enable pnpm
 pnpm --version             # must match package.json packageManager
 corepack pnpm install --frozen-lockfile
-pnpm run dev                # Vite Dev-Server auf localhost:5173
-pnpm run build              # Produktions-Build
-pnpm run test:run           # 2812 Tests (267 Dateien), Einzellauf
-pnpm run typecheck          # tsc --noEmit
+corepack pnpm --filter @cannaguide/web dev  # http://localhost:5173/CannaGuide-2025/
+pnpm verify                 # betroffene Workspaces, seriell
+pnpm verify:lint            # betroffene Lint-Prüfungen
+pnpm --filter @cannaguide/web test:run path/to/changed.test.ts
 ```
+
+Auf dem Rechner mit wenig RAM zuerst den verfügbaren Speicher prüfen und nur eine Aufgabe
+ausführen. Änderungen an Root-Manifest, Workspace-Policy oder Lockfile wählen auch mit
+`verify` alle Workspaces aus. Coverage, Browser-, Mutation- und Lighthouse-Prüfungen gehören
+hier in CI; Hooks bleiben verpflichtend. Die statischen Kennzahlen stammen aus dem bisherigen
+README-Stand, nicht aus einer vollständigen Prüfung dieses Branches. Cloud-KI braucht einen
+Provider-Key und Netzwerk; lokale KI benötigt vor der Offline-Nutzung optionale Runtime-/
+Modell-Downloads. Cloud-Sync und Community-Gist-Sharing bleiben deaktiviert. Web-CI qualifiziert
+keine nativen Desktop-Installer. Siehe [CONTRIBUTING.md](CONTRIBUTING.md),
+[AGENTS.md](AGENTS.md) und [die Gate-Übersicht](docs/DEVOPS-GATES.md).
 
 ---
 
@@ -579,7 +604,7 @@ pnpm run typecheck          # tsc --noEmit
 | **Sorten**        | 776 Sorten, D3.js Genealogie-Explorer, 27 Terpene, 11 Cannabinoide, Chemovar (Typ I-V), 4:20 Daily Drop, Sorten-Intelligenz (5-Quellen-Kaskade)                 |
 | **Ausruestung**   | KI-Konfigurator, Rechner-Suite (CFM/PPFD/DLI/CO2/pH/EC), Hydro-Monitor + ONNX-Forecast, IoT-Dashboard (ESP32), What-If-Sandbox                                  |
 | **Wissen**        | KI-Mentor mit RAG, Lexikon (91 Begriffe), Krankheits-Atlas (22 Eintraege), Rechner-Hub, 5 Lernpfade, Analyse-Dashboard                                          |
-| **Einstellungen** | 9 Themes + 3 Farbenblind-Modi, BYOK (AES-256-GCM), WebLLM-Modellauswahl, 37 Sprachbefehle, CRDT Cloud-Sync, Grow-Manager                                        |
+| **Einstellungen** | 9 Themes + 3 Farbenblind-Modi, BYOK (AES-256-GCM), WebLLM-Modellauswahl, 37 Sprachbefehle, Cloud-Sync deaktiviert, Grow-Manager                                 |
 | **Hilfe**         | Benutzerhandbuch (7), Lexikon (91), Visuelle Guides (4), FAQ (45) -- 138 Hilfe-Eintraege gesamt                                                                 |
 
 ---
@@ -603,7 +628,7 @@ pnpm run typecheck          # tsc --noEmit
 | ---------------- | --------------------------------------------------------------------------------------------------------------- |
 | **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                   |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM         |
-| **CI/CD**        | 28 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
+| **CI/CD**        | 30 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                    |
 | **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                          |
 

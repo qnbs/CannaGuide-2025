@@ -10,7 +10,7 @@ import type { PluginOption } from 'vite'
 
 const __webRoot = path.dirname(fileURLToPath(import.meta.url))
 const requireFromConfig = createRequire(import.meta.url)
-import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP, HSTS, REFERRER_POLICY } from './securityHeaders'
+import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP, HSTS, REFERRER_POLICY } from './securityHeaders.ts'
 
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
 // When missing, dynamic imports at runtime will fail gracefully — the app guards these.
@@ -309,7 +309,8 @@ export default defineConfig({
         },
     },
 
-    // ── ESBuild Transform ───────────────────────────────────────────────
+    // Options for the explicit legacy esbuild minifier below. React uses Oxc
+    // for transforms; these options still remove debug calls during minification.
     esbuild: {
         drop: ['debugger'],
         pure: ['console.debug', 'console.log'],
@@ -319,7 +320,7 @@ export default defineConfig({
     build: {
         // Target modern browsers – enables smaller output (top-level await, ??=, etc.)
         target: 'esnext',
-        // Minify with esbuild (default, fastest)
+        // Explicit legacy minifier; migrating to Oxc is a separate build change.
         minify: 'esbuild',
         // Local AI runtime bundles are lazy-loaded on demand.
         // Budget enforcement is handled by scripts/check-bundle-budget.mjs in CI.

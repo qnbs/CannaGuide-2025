@@ -30,7 +30,7 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
             - name: Initialize CodeQL
-              uses: github/codeql-action/init@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+              uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
               with:
                   languages: javascript-typescript
                   config: |
@@ -55,7 +55,7 @@ jobs:
               run: pnpm run build
 
             - name: Perform CodeQL analysis
-              uses: github/codeql-action/analyze@5595ccaf912efad79be6eef63a5619ff05969be3 # v4.37.6
+              uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
 
     dependabot-check:
         name: Dependabot Check
@@ -194,7 +194,7 @@ jobs:
                   fetch-depth: 0
 
             - name: Run Scorecard
-              uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+              uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
               with:
                   results_file: scorecard-results.sarif
                   results_format: sarif

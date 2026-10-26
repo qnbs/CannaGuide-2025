@@ -659,7 +659,7 @@ export const settingsView = {
             description:
                 'Las acciones guardadas sin conexion se reproducen localmente al volver en linea. Separado de la sincronizacion Gist en la nube.',
             loading: 'Cargando cola...',
-            count: '{{count}} accion(es) en espera',
+            count: '{{count}} accion(es) guardada(s)',
             refresh: 'Actualizar',
             retrySync: 'Reintentar sincronizacion',
             syncing: 'Solicitando sincronizacion...',
@@ -675,6 +675,7 @@ export const settingsView = {
             clearSuccess: 'Cola de acciones offline vaciada.',
             clearError: 'No se pudo vaciar la cola offline.',
             actionJournal: 'Entrada de diario',
+            blocked: 'No se puede reproducir; se conserva para revisión',
         },
         crdtDocSize: 'Documento CRDT',
         crdtFallback: 'Sincronizacion CRDT en modo alternativo (LWW). Fusion offline desactivada.',
@@ -1216,6 +1217,10 @@ export const settingsView = {
         importing: 'Restaurando desde ZIP...',
         exportSuccess: 'Copia ZIP exportada con exito.',
         importSuccess: 'Copia ZIP importada con exito. La app se recargara.',
+        importPartialSuccess_one:
+            'Copia restaurada; no se pudo restaurar {{count}} imagen. La app se recargara.',
+        importPartialSuccess_other:
+            'Copia restaurada; no se pudieron restaurar {{count}} imagenes. La app se recargara.',
         importError: 'No se pudo importar la copia ZIP. El archivo puede estar corrupto.',
         exportError: 'No se pudo crear la copia ZIP.',
         includePhotos: 'Incluir fotos',

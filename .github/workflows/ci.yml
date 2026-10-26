@@ -400,7 +400,7 @@ jobs:
                     libsoup-3.0-dev \
                     libjavascriptcoregtk-4.1-dev
 
-            # tauri.conf.json points frontendDist at `../web/dist` (i.e. apps/web/dist).
+            # frontendDist is relative to src-tauri: `../../web/dist` is apps/web/dist.
             # tauri-build wants that directory to exist; it does not need real assets for
             # a type check, and `beforeBuildCommand` only runs for `tauri build`. The
             # real bundle is still produced by desktop-build.yml.

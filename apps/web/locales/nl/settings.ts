@@ -647,7 +647,7 @@ export const settingsView = {
             description:
                 'Offline opgeslagen acties worden lokaal afgespeeld zodra je weer online bent. Los van cloud Gist-sync.',
             loading: 'Wachtrij laden...',
-            count: '{{count}} actie(s) wachtend',
+            count: '{{count}} actie(s) opgeslagen',
             refresh: 'Vernieuwen',
             retrySync: 'Sync opnieuw aanvragen',
             syncing: 'Sync wordt aangevraagd...',
@@ -663,6 +663,7 @@ export const settingsView = {
             clearSuccess: 'Offline-actiewachtrij geleegd.',
             clearError: 'Kon de offline-wachtrij niet legen.',
             actionJournal: 'Journalnotitie',
+            blocked: 'Niet opnieuw af te spelen; bewaard ter beoordeling',
         },
         crdtDocSize: 'CRDT-document',
         crdtFallback:
@@ -1195,6 +1196,10 @@ export const settingsView = {
         importing: 'Herstellen vanuit ZIP...',
         exportSuccess: 'ZIP-backup succesvol geexporteerd.',
         importSuccess: 'ZIP-backup succesvol geimporteerd. App wordt herladen.',
+        importPartialSuccess_one:
+            'Back-up hersteld; {{count}} afbeelding kon niet worden hersteld. De app wordt herladen.',
+        importPartialSuccess_other:
+            'Back-up hersteld; {{count}} afbeeldingen konden niet worden hersteld. De app wordt herladen.',
         importError: 'ZIP-backup kon niet worden geimporteerd. Het bestand is mogelijk beschadigd.',
         exportError: 'ZIP-backup kon niet worden aangemaakt.',
         includePhotos: "Foto's opnemen",

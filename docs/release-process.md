@@ -2,43 +2,43 @@
 
 CannaGuide 2025 uses **manual releases** with Conventional Commits.
 
+Release publication is a separate maintainer decision. Dependency maintenance does not
+authorize a new tag. Prepare changes through a signed, reviewed PR; never push release
+changes directly to main, bypass rulesets or move a published tag. Historical release
+examples in other documents do not override this procedure.
+
 ---
 
 ## Pre-Release Checklist
 
-1. **Typecheck clean:** `node ./scripts/typecheck-filter.mjs` (0 errors, TS2719 filtered)
-2. **Tests pass:** `pnpm --filter @cannaguide/web test:run` (0 failures)
-3. **Lint clean:** `node ./scripts/lint-scopes.mjs` (0 violations)
-4. **Build succeeds:** `pnpm run build`
-5. **Strain integrity:** `node scripts/check-strain-integrity.mjs`
-6. **i18n complete:** `node scripts/check-i18n-completeness.mjs` (all 5 languages)
+1. **Local prerequisites:** repository-pinned pnpm, Node matching `engines`, frozen install,
+   approved signing identity and hooks enabled. Follow [AGENTS.md](../AGENTS.md) for resources.
+2. **Affordable local verification:** `pnpm verify`, `pnpm verify:lint` and relevant individual
+   test specs. Inspect the selected scope: root manifest/lockfile changes select all workspaces.
+3. **Current-head qualification:** required **✅ CI Status**, including build, unit/coverage,
+   verify, security, Chromium E2E and Rust when desktop changed; inspect current CodeQL and
+   reviewer results as well. Resolve valid review findings before merge.
+4. **Resulting main:** verify CI and CodeQL on the actual merged SHA before selecting it for release.
+5. **Release-specific evidence:** confirm version agreement, changelog, strain/i18n gates,
+   artifact source SHA, SBOM and attestation behavior. Browser and heavy coverage checks belong
+   in CI, not on the low-memory maintainer machine.
+6. **Separate platform evidence:** a passing web build does not qualify native desktop bundles,
+   updater signatures or production identity. Record those limits explicitly.
 
 ## Release Steps
 
-```bash
-# 1. Update CHANGELOG.md
-#    Move [Unreleased] content to [X.Y.Z] - YYYY-MM-DD
-
-# 2. Version bump (both package.json files must match)
-sed -i 's/"version": ".*"/"version": "X.Y.Z"/' package.json
-sed -i 's/"version": ".*"/"version": "X.Y.Z"/' apps/web/package.json
-
-# 3. Commit
-git add -A
-git commit -m "chore(release): vX.Y.Z"
-
-# 4. Tag (annotated)
-git tag -a vX.Y.Z -m "vX.Y.Z: <theme>"
-
-# 5. Push (commit + tag together)
-git push origin main --tags
-
-# 6. Create GitHub Release
-gh release create vX.Y.Z \
-  --title "vX.Y.Z -- <Theme>" \
-  --latest \
-  --notes "<release notes>"
-```
+1. On a named branch from freshly verified `origin/main`, prepare the chosen version in root
+   and web manifests and move the relevant Unreleased changelog entries to the dated release.
+   Update the lockfile through pnpm if required; review the exact manifest/lockfile pair.
+2. Commit with the approved signing identity, run the normal hooks, push the branch and open
+   a Ready for Review PR. Qualify and merge through the unchanged repository gates.
+3. Read the resulting main SHA and its checks. An earlier green PR head is not a substitute.
+4. After the concrete release decision, use the existing protected Release Publish path
+   described below. A missing permission, secret or tag-protection authorization is a blocker;
+   do not alter rulesets or credentials as an automatic fallback.
+5. Verify the published assets and attestations against the selected commit, then inspect
+   actual deployed `version.json` bytes and platform-specific evidence. Do not rewrite
+   existing release assets or tags to repair a failed publication.
 
 ## Versioning (SemVer)
 
@@ -70,8 +70,8 @@ SBOM attestation) via `actions/attest-build-provenance` and
 
 > **Note:** `slsa-framework/slsa-github-generator` (SLSA L3) was
 > removed in April 2026 due to Go build failures on ubuntu-24.04
-> runners. GitHub-native attestations provide equivalent build
-> provenance that is verifiable via `gh attestation verify`.
+> runners. The replacement GitHub-native attestations are verifiable via
+> `gh attestation verify`; their presence alone is not a SLSA-level qualification.
 
 ### Verify Build Provenance
 

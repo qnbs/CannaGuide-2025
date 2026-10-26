@@ -648,7 +648,7 @@ export const settingsView = {
             description:
                 'Offline gespeicherte Aktionen werden bei erneuter Verbindung lokal abgespielt. Getrennt von der Cloud-Gist-Synchronisation.',
             loading: 'Warteschlange wird geladen...',
-            count: '{{count}} Aktion(en) ausstehend',
+            count: '{{count}} Aktion(en) gespeichert',
             refresh: 'Aktualisieren',
             retrySync: 'Sync erneut anfordern',
             syncing: 'Sync wird angefordert...',
@@ -664,6 +664,7 @@ export const settingsView = {
             clearSuccess: 'Offline-Warteschlange geleert.',
             clearError: 'Offline-Warteschlange konnte nicht geleert werden.',
             actionJournal: 'Journal-Eintrag',
+            blocked: 'Nicht abspielbar – zur Prüfung gespeichert',
         },
         crdtDocSize: 'CRDT-Dokument',
         crdtFallback: 'CRDT-Sync im Fallback-Modus (LWW). Offline-Zusammenfuehrung deaktiviert.',
@@ -1196,6 +1197,10 @@ export const settingsView = {
         importing: 'Wiederherstellung aus ZIP...',
         exportSuccess: 'ZIP-Backup erfolgreich exportiert.',
         importSuccess: 'ZIP-Backup erfolgreich importiert. App wird neu geladen.',
+        importPartialSuccess_one:
+            'Backup wiederhergestellt; {{count}} Bild konnte nicht wiederhergestellt werden. Die App wird neu geladen.',
+        importPartialSuccess_other:
+            'Backup wiederhergestellt; {{count}} Bilder konnten nicht wiederhergestellt werden. Die App wird neu geladen.',
         importError:
             'ZIP-Backup konnte nicht importiert werden. Die Datei ist moeglicherweise beschaedigt.',
         exportError: 'ZIP-Backup konnte nicht erstellt werden.',

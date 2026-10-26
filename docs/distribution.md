@@ -105,12 +105,26 @@ Some PRs show a failing check **Workers Builds: cannaguide-2025** from the Cloud
 
 ## Tauri v2 Desktop
 
-Re-added in v1.6. 99% code sharing with the PWA. Platform-specific code uses `platformService.ts` (`isTauri`, `isPwa`, `isBrowser`). Native features via Tauri plugins (notification, dialog, fs, shell, window-state, store).
+Desktop is a separate Tauri v2 wrapper around the shared web frontend. Platform-specific code uses `platformService.ts` (`isTauri`, `isPwa`, `isBrowser`) and native plugins. Source availability and a configured build matrix do not establish current installer availability or platform qualification.
+
+**Delivery evidence checked 2026-10-24:**
+
+| Release                                                                                                                                           | Observed GitHub Release assets                                         | Qualification boundary                                                                                                 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [v1.4.1](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.4.1)                                                                             | Seven historical Linux/macOS assets; no Windows installer in that list | API digests exist; these old binaries were not downloaded, executed or independently signature-verified in this review |
+| [v1.6.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.6.0)                                                                             | No assets in the current API response                                  | The historical source/reintroduction claim is not installer proof                                                      |
+| [v1.9.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.9.0) and [v1.10.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.10.0) | Web distribution tarball and CycloneDX SBOM                            | No current desktop installer or updater manifest is published in these releases                                        |
+
+The v1.10.0 [desktop run 37703950695](https://github.com/qnbs/CannaGuide-2025/actions/runs/37703950695) ended with `startup_failure`, zero jobs and zero artifacts. Its source was `c49560d9d3d36c9a84f71e3095a8e3a3eea3534a`. Both that workflow and the current workflow pass local `actionlint`; the observed metadata does not identify the startup rejection. No Rust/compiler/packager failure was observed. GitHub admission/annotation evidence is still needed before choosing a startup fix. The Web Release Publish workflow is separate from this desktop workflow.
 
 **Source:** `apps/desktop/` (package `@cannaguide/desktop`)
 **CI:** `.github/workflows/desktop-build.yml` -- matrix build for Linux / macOS / Windows, triggered on tag push `v*`
-**Config:** `apps/desktop/src-tauri/tauri.conf.json` -- `frontendDist` points to `../web/dist`
+**Config:** `apps/desktop/src-tauri/tauri.conf.json` -- `frontendDist: ../../web/dist`, resolved from `src-tauri`, embeds `apps/web/dist`.
 **IPC commands:** `get_app_version`, `export_data`, `import_data`
+
+The Tauri hooks call `apps/desktop/scripts/frontend.mjs` for development and bundling. It sets `BUILD_BASE_PATH=/` only for the child web process, preserving the default GitHub Pages subpath for ordinary web builds. The build hook builds once, then verifies that `index.html` has a module entry and its referenced script, stylesheet, modulepreload, manifest and icon files are local, nonempty and inside the embedded directory. This cheap check covers generated entry references, not every dynamic import, worker or native startup path. A check-only invocation from `apps/desktop` is `node scripts/frontend.mjs check`; it requires an existing desktop-target frontend build and never creates one.
+
+`desktop-build.yml` uploads `desktop-${target}` Actions artifacts with a **14-day TTL**, and fails if all upload globs are empty. It does not publish GitHub Release assets. Per-target installer completeness, native startup, OS signing/notarization, updater signatures and installation smoke tests remain separate gates; a nonempty upload is not proof of any of them. The current `0.1.0` desktop manifest/config versions have not been aligned to the Web `1.10.0` version: channel/version policy needs an explicit owner decision.
 
 ### Modular Capabilities (ADR-0012)
 
@@ -131,28 +145,30 @@ Capabilities are organized into 10 separate JSON files in `apps/desktop/src-taur
 
 ### Plugins (9 total)
 
-| Plugin | Version | Purpose |
-|--------|---------|---------||
-| `tauri-plugin-dialog` | 2.x | Native file dialogs |
-| `tauri-plugin-fs` | 2.x | Scoped file system access |
-| `tauri-plugin-notification` | 2.x | Native notifications |
-| `tauri-plugin-global-shortcut` | 2.x | Global keyboard shortcuts |
-| `tauri-plugin-updater` | 2.x | Auto-updates from GitHub Releases |
-| `tauri-plugin-shell` | 2.x | Open URLs externally |
-| `tauri-plugin-process` | 2.x | Process management |
-| `tauri-plugin-window-state` | 2.x | Persist window size/position |
-| `tauri-plugin-store` | 2.x | Desktop-specific settings |
+| Plugin                         | Version | Purpose                           |
+| ------------------------------ | ------- | --------------------------------- |
+| `tauri-plugin-dialog`          | 2.x     | Native file dialogs               |
+| `tauri-plugin-fs`              | 2.x     | Scoped file system access         |
+| `tauri-plugin-notification`    | 2.x     | Native notifications              |
+| `tauri-plugin-global-shortcut` | 2.x     | Global keyboard shortcuts         |
+| `tauri-plugin-updater`         | 2.x     | Auto-updates from GitHub Releases |
+| `tauri-plugin-shell`           | 2.x     | Open URLs externally              |
+| `tauri-plugin-process`         | 2.x     | Process management                |
+| `tauri-plugin-window-state`    | 2.x     | Persist window size/position      |
+| `tauri-plugin-store`           | 2.x     | Desktop-specific settings         |
 
 ### Auto-Updater Setup
 
-Updates are signed and distributed via GitHub Releases.
+The updater plugin is configured to require signature verification. A working published update channel has **not** been qualified. On 2026-10-24, the configured `releases/latest/download/latest.json` URL redirected to v1.10.0 and returned HTTP 404. Do not treat this as an available update or disable signature verification to bypass it.
 
-**CI Secrets required:**
+**Future updater signing gates (no key creation or rotation is authorized by this document):**
 
 - `TAURI_SIGNING_PRIVATE_KEY`: Base64-encoded private key
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`: Key password
 
 **Endpoints:** `https://github.com/qnbs/CannaGuide-2025/releases/latest/download/latest.json`
+
+Before publishing desktop updates, agree the version/channel and stable bundle identity, qualify each intended OS/architecture, verify signed artifacts against the configured public key, validate the manifest/platform URLs, and prove installation/startup and recovery. Native OS code signing and Tauri updater signing are distinct. See the [Tauri configuration reference](https://v2.tauri.app/reference/config/#frontenddist) and [updater contract](https://v2.tauri.app/plugin/updater/). Historical assets must not be offered as newly qualified builds.
 
 ### Code Signing (Future)
 

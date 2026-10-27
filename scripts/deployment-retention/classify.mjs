@@ -7,8 +7,10 @@
  * The two hosts share protection rules (live production, a two-deep rollback
  * window, open PR heads, active aliases, ambiguous metadata) and differ in
  * deletion mechanics. Cloudflare refuses to delete the latest deployment of a
- * branch; that row stays protected. Vercel can delete an unaliased latest
- * preview, but an automatic branch alias is still an active alias.
+ * branch; that row stays protected. Vercel can delete the latest preview of a
+ * branch. Its automatic branch alias (`<project>-git-<branch>-<team>`) only
+ * matters while the branch's pull request is open, so a merged, closed or stale
+ * branch alias does not protect it; any other alias still does.
  *
  * When Cloudflare's list has no canonical production alias, current production
  * is the single newest successful deployment of the current main SHA on main.
@@ -169,6 +171,21 @@ export function projectAliasRecord(record) {
     if (!id) return null
     const host = allowHost(record.alias || record.host || '')
     return { deploymentId: id, alias: host || UNPARSED_ALIAS }
+}
+
+// Vercel points `<project>-git-<branch>-<team>.vercel.app` at the newest preview of
+// every branch. It is the only alias treated as inert: production hosts (including
+// the -git-main- alias), custom domains and unparsed aliases always protect.
+const VERCEL_BRANCH_ALIAS = /^canna-guide-2025-web-git-[a-z0-9-]+-qnbs-projects\.vercel\.app$/
+
+export function isInertBranchAlias(value, backend) {
+    if (backend !== 'vercel') return false
+    const host = aliasHostname(value)
+    return VERCEL_BRANCH_ALIAS.test(host) && !PRODUCTION_ALIAS_HOSTS.vercel.includes(host)
+}
+
+function hasActiveAlias(deployment, backend) {
+    return deployment.aliases.some((host) => !isInertBranchAlias(host, backend))
 }
 
 export function isDeletableClass(className) {
@@ -487,7 +504,7 @@ function classifyOne(deployment, context) {
         }
     }
 
-    if (deployment.aliases.length > 0) {
+    if (hasActiveAlias(deployment, backend)) {
         return {
             className: labels.alias,
             limitation: 'active alias requires investigation before removal',
@@ -631,7 +648,7 @@ export function classifyRetention({
         })
         let className = result.className
         let limitation = result.limitation
-        if (isDeletableClass(className) && deployment.aliases.length > 0) {
+        if (isDeletableClass(className) && hasActiveAlias(deployment, backend)) {
             className = labels.unknown
             limitation = 'aliased deployment is not deletable'
         }
@@ -725,7 +742,8 @@ export function reconcilePlans(frozen, fresh) {
         }
         const now = freshById.get(row.id)
         if (!now) continue
-        if (now.class !== row.class || !now.deletable || now.aliases.length > 0) {
+        const activeAlias = now.aliases.some((host) => !isInertBranchAlias(host, fresh?.backend))
+        if (now.class !== row.class || !now.deletable || activeAlias) {
             return {
                 abort: true,
                 errors: [`${row.id} is no longer ${row.class}`],
@@ -761,7 +779,9 @@ export function assertSafeDeleteBatch(plan, ids) {
         if (!row || !isDeletableClass(row.class) || !row.deletable) {
             throw new Error(`refusing to delete ${id || '(missing)'}: not a proven safe-delete row`)
         }
-        if (row.aliases.length > 0) throw new Error(`refusing to delete aliased deployment ${id}`)
+        if (row.aliases.some((host) => !isInertBranchAlias(host, plan?.backend))) {
+            throw new Error(`refusing to delete aliased deployment ${id}`)
+        }
         if (production.has(id) || rollback.has(id)) {
             throw new Error(`refusing to delete protected deployment ${id}`)
         }

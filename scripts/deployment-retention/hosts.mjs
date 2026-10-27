@@ -21,6 +21,7 @@ import {
     PRODUCTION_ALIAS_HOSTS,
     aliasHostname,
     assertSafeDeleteBatch,
+    isInertBranchAlias,
     cloudflareDeleteUrl,
     requireDeploymentId,
     requireResourceId,
@@ -191,6 +192,29 @@ function carriesProductionAlias(aliases, backend) {
     return (aliases || []).map(aliasHostname).some((host) => canonical.has(host))
 }
 
+/**
+ * The aliases currently assigned to a Vercel deployment. The `alias` field of
+ * GET /v13/deployments/{id} is not this: an old production deployment still lists
+ * the aliases it was built with there, while /v4/aliases maps none of them to it.
+ * Any unexpected response shape refuses, so a delete never proceeds on a guess.
+ */
+async function currentVercelAliases({ token, teamId, deploymentId, fetchImpl }) {
+    const url =
+        `https://api.vercel.com/v2/deployments/${encodeURIComponent(deploymentId)}/aliases` +
+        `?teamId=${encodeURIComponent(teamId)}`
+    const response = await fetchImpl(url, { headers: authHeaders(token) })
+    const body = await readJson(response)
+    if (!response.ok) {
+        throw new Error(`refusing to delete ${deploymentId}: live Vercel alias lookup failed`)
+    }
+    if (!Array.isArray(body?.aliases)) {
+        throw new Error(`refusing to delete ${deploymentId}: alias state is not a list`)
+    }
+    return body.aliases.map((record) =>
+        typeof record?.alias === 'string' ? aliasHostname(record.alias) : 'needs-review.invalid',
+    )
+}
+
 function aliasList(value) {
     return Array.isArray(value) ? value : []
 }
@@ -331,29 +355,77 @@ export async function assertStillDisposable({
     const body = await readJson(response)
     if (response.status === 404) return { skip: true, id: safeId }
     if (!response.ok) throw new Error(`refusing to delete ${safeId}: live Vercel lookup failed`)
-    const aliasValues = []
-    let aliasKnown = true
-    let aliasSeen = false
-    for (const field of [body.alias, body.aliases]) {
-        if (field === undefined) continue
-        aliasSeen = true
-        if (!Array.isArray(field)) aliasKnown = false
-        else aliasValues.push(...field)
+    const oldProduction = expectedClass === 'SAFE_DELETE_OLD_PRODUCTION'
+    // Target first: it is the stronger reason to refuse and needs no further request.
+    if (oldProduction && body.target !== 'production') {
+        throw new Error(`refusing to delete ${safeId}: target is ${body.target ?? 'unset'}`)
     }
-    if (expectedClass === 'SAFE_DELETE_OLD_PRODUCTION') {
-        if (body.target !== 'production') {
-            throw new Error(`refusing to delete ${safeId}: target is ${body.target ?? 'unset'}`)
-        }
-        if (!aliasSeen || !aliasKnown || aliasValues.length > 0) {
-            throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
-        }
-    } else if (body.target != null && body.target !== 'preview') {
+    if (!oldProduction && body.target != null && body.target !== 'preview') {
         throw new Error(`refusing to delete ${safeId}: target is ${body.target}`)
     }
+    const aliasValues = await currentVercelAliases({
+        token,
+        teamId: team,
+        deploymentId: safeId,
+        fetchImpl,
+    })
+    if (oldProduction && aliasValues.length > 0) {
+        throw new Error(`refusing to delete ${safeId}: alias state is not an empty list`)
+    }
+    // A finished branch keeps only its automatic branch alias; anything else is live.
+    const active = aliasValues.find((host) => !isInertBranchAlias(host, 'vercel'))
+    if (active) throw new Error(`refusing to delete ${safeId}: active alias ${active}`)
     if (carriesProductionAlias(aliasValues, 'vercel')) {
         throw new Error(`refusing to delete ${safeId}: production alias appeared`)
     }
     return { skip: false, id: safeId }
+}
+
+/**
+ * Run the pre-delete gate for every id without deleting anything, so a dry run can
+ * show which deletes the live state would allow. Never throws for a single refusal.
+ */
+export async function checkProvenDeployments({
+    backend,
+    plan,
+    ids,
+    token,
+    accountId,
+    projectName,
+    teamId,
+    fetchImpl = fetch,
+}) {
+    assertSafeDeleteBatch(plan, ids)
+    const classById = new Map((plan?.deployments || []).map((row) => [row.id, row.class]))
+    const protectedIds = new Set([
+        ...(plan?.anchors?.productionIds || []),
+        ...(plan?.anchors?.rollbackIds || []),
+    ])
+    const results = []
+    for (const id of ids) {
+        try {
+            const gate = await assertStillDisposable({
+                backend,
+                id,
+                expectedClass: classById.get(id),
+                mainSha: plan?.mainSha,
+                protectedIds,
+                token,
+                accountId,
+                projectName,
+                teamId,
+                fetchImpl,
+            })
+            results.push({ id, ok: true, detail: gate.skip ? 'already absent' : 'would delete' })
+        } catch (error) {
+            results.push({
+                id,
+                ok: false,
+                detail: error instanceof Error ? error.message : 'refused',
+            })
+        }
+    }
+    return results
 }
 
 export async function deleteProvenDeployments({

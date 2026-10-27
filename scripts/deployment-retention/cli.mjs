@@ -34,6 +34,19 @@ const VERCEL_TEAM = 'team_Dx4T2J41LNqP8mDgrRraonWp'
 const PAGES_VERSION_URL = 'https://cannaguide-2025.pages.dev/version.json'
 const VERCEL_VERSION_URL = 'https://canna-guide-2025-web.vercel.app/version.json'
 
+/**
+ * How long a delete waits for the host to serve main before it refuses.
+ *
+ * This job is triggered by the deploy's own completion, and the edge keeps
+ * serving the previous build for a few minutes after that: on 2026-10-27 two
+ * runs (40506398180, 40512273529) read the prior SHA from pages.dev within the
+ * old 6 x 5 s window and failed, while the next run minutes later deleted
+ * normally. The refusal itself stays: a host that still serves another SHA
+ * after this window is a real mismatch. Waiting is safe because the delete set
+ * is re-inventoried after the check (freshDeleteDecision), not reused.
+ */
+export const PUBLIC_VERSION_WAIT = Object.freeze({ attempts: 40, pauseMs: 15_000 })
+
 function arg(name, fallback = '') {
     const index = process.argv.indexOf(name)
     if (index === -1) return fallback
@@ -347,10 +360,7 @@ async function applyDeletes(backend, planPath) {
     const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
     assertDeploySha(process.env, github.mainSha)
     const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
-    const version = await verifyPublicVersion(versionUrl, github.mainSha, {
-        attempts: 6,
-        pauseMs: 5000,
-    })
+    const version = await verifyPublicVersion(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
     const { fresh, decision } = await freshDeleteDecision(backend, frozen, github)
     if (decision.abort) {
@@ -416,10 +426,11 @@ async function checkVercelGate(planPath) {
     // The same preconditions --apply checks first: production must already serve main.
     try {
         assertDeploySha(process.env, github.mainSha)
-        const version = await verifyPublicVersion(VERCEL_VERSION_URL, github.mainSha, {
-            attempts: 6,
-            pauseMs: 5000,
-        })
+        const version = await verifyPublicVersion(
+            VERCEL_VERSION_URL,
+            github.mainSha,
+            PUBLIC_VERSION_WAIT,
+        )
         console.log(`version ${version.buildVersion} commit ${version.commit}`)
     } catch (error) {
         console.log(

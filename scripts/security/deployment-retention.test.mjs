@@ -27,6 +27,7 @@ import {
     assertDeploySha,
     assertPostDeleteAnchors,
     assertTrustedApply,
+    PUBLIC_VERSION_WAIT,
     verifyPublicVersion,
 } from '../deployment-retention/cli.mjs'
 
@@ -1365,6 +1366,51 @@ test('version identity is retried before the cleanup run is failed', async () =>
         /version check failed after 2 attempts: still down/,
     )
 })
+
+test('deletes wait out edge propagation instead of failing on the prior build', async () => {
+    // Runs 40506398180 and 40512273529 read the previous SHA from pages.dev
+    // inside the old 6 x 5 s window; the edge needed minutes, not seconds.
+    const windowMs = PUBLIC_VERSION_WAIT.attempts * PUBLIC_VERSION_WAIT.pauseMs
+    assert.ok(windowMs >= 5 * 60_000, `propagation window is only ${windowMs} ms`)
+    assert.ok(windowMs <= 15 * 60_000, 'window must stay well inside the 45 min job timeout')
+
+    // A host that serves the prior build for 30 polls (7.5 min at 15 s) still
+    // verifies once it turns over...
+    let calls = 0
+    const version = await verifyPublicVersion(PAGES_URL_FOR_WAIT, MAIN, {
+        ...PUBLIC_VERSION_WAIT,
+        pauseMs: 0,
+        fetchImpl: async () => {
+            calls += 1
+            const commit = calls <= 30 ? SHA_A : MAIN
+            return { status: 200, json: async () => ({ commit, buildVersion: '1.10.0' }) }
+        },
+    })
+    assert.equal(version.commit, MAIN)
+    assert.equal(version.attempts, 31)
+
+    // ...and one that never does is still refused.
+    await assert.rejects(
+        () =>
+            verifyPublicVersion(PAGES_URL_FOR_WAIT, MAIN, {
+                ...PUBLIC_VERSION_WAIT,
+                pauseMs: 0,
+                fetchImpl: async () => ({
+                    status: 200,
+                    json: async () => ({ commit: SHA_A, buildVersion: '1.10.0' }),
+                }),
+            }),
+        new RegExp(`served ${SHA_A}`),
+    )
+
+    // Every public-version check in the CLI uses this window, not a local literal.
+    const cli = readFileSync(new URL('../deployment-retention/cli.mjs', import.meta.url), 'utf8')
+    const sites = cli.match(/await verifyPublicVersion\([^)]*\)/g) || []
+    assert.ok(sites.length >= 2, 'expected the apply and the gate-check call sites')
+    for (const site of sites) assert.match(site, /PUBLIC_VERSION_WAIT,?\s*\)$/)
+})
+
+const PAGES_URL_FOR_WAIT = 'https://cannaguide-2025.pages.dev/version.json'
 
 test('inventory records keep proven fields and fail closed on unexpected text', () => {
     const cloudflare = projectRetentionRecord(

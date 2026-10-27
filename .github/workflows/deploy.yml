@@ -17,8 +17,11 @@ permissions:
 # A new push cancels the in-flight build, but NEVER cancels an active deploy
 # (deploy job has its own group without cancel-in-progress so Pages stays stable).
 # ---------------------------------------------------------------------------
+# Only a trusted main run (push or dispatch from this repository) joins
+# `pages-main`; any other completion, such as a fork pull request from its own
+# `main`, gets a group of its own and so can never cancel a trusted build.
 concurrency:
-    group: pages-${{ github.event.workflow_run.head_branch }}
+    group: ${{ (github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') && github.event.workflow_run.head_repository.full_name == github.repository) && 'pages-main' || format('pages-ignored-{0}', github.event.workflow_run.id) }}
     cancel-in-progress: true
 
 # ---------------------------------------------------------------------------

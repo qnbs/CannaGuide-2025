@@ -49,18 +49,34 @@ test('workflow_run jobs that check out the triggering commit refuse fork runs', 
     assert.ok(checked.includes('deploy.yml:build'), `checked: ${checked.join(', ')}`)
 })
 
+const TRUSTED_MAIN_RUN =
+    "github.event.workflow_run.head_branch == 'main' && " +
+    "(github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') && " +
+    FORK_GUARD
+
+// The whole expression, not its fragments: an added `|| true` must fail the test.
+const squash = (value) => value.replace(/\s+/g, ' ').trim()
+
 test('deploy.yml publishes only for a push or dispatch of main', () => {
-    const build = jobs(files.find((file) => file.name === 'deploy.yml').text).find(
-        (job) => job.id === 'build',
+    const text = files.find((file) => file.name === 'deploy.yml').text
+    const build = jobs(text).find((job) => job.id === 'build')
+    const condition = /^ {8}if: >-\n((?: {12}.*\n)+)/m.exec(build.header)
+    assert.ok(condition, 'build job has no folded if: block')
+    assert.equal(
+        squash(condition[1]),
+        squash(`github.event.workflow_run.conclusion == 'success' && ${TRUSTED_MAIN_RUN}`),
     )
-    for (const condition of [
-        "github.event.workflow_run.conclusion == 'success'",
-        "github.event.workflow_run.head_branch == 'main'",
-        "github.event.workflow_run.event == 'push'",
-        FORK_GUARD,
-    ]) {
-        assert.ok(build.header.includes(condition), condition)
-    }
+
+    // Workflow-level concurrency is evaluated before any job condition, so a fork
+    // run must not land in the group that cancels trusted builds.
+    const group = /^concurrency:\n {4}group: (.*)$/m.exec(text)?.[1] ?? ''
+    assert.equal(
+        squash(group),
+        squash(
+            `\${{ (${TRUSTED_MAIN_RUN}) && 'pages-main' || ` +
+                "format('pages-ignored-{0}', github.event.workflow_run.id) }}",
+        ),
+    )
 })
 
 test('CodeQL and Scorecard each upload from exactly one workflow', () => {

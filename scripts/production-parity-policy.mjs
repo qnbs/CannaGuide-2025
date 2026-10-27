@@ -45,12 +45,32 @@ export function exitCodeFor(status) {
     return status === 'DRIFT' ? 1 : 2
 }
 
-export function normalizeHeader(value) {
+function collapseWhitespace(value) {
     return String(value ?? '')
         .trim()
         .replace(/\s+/g, ' ')
         .replace(/;\s*$/, '')
-        .toLowerCase()
+}
+
+// Case-insensitive comparison, for values defined that way (Cache-Control directives).
+export function normalizeHeader(value) {
+    return collapseWhitespace(value).toLowerCase()
+}
+
+// Browsers match COOP/COEP, Referrer-Policy and Permissions-Policy tokens and CSP
+// sources case-sensitively: `Cross-Origin-Opener-Policy: SAME-ORIGIN` silently leaves
+// the page un-isolated. Only these headers' values are defined case-insensitively.
+const CASE_INSENSITIVE_VALUES = new Set([
+    'x-frame-options',
+    'x-content-type-options',
+    'strict-transport-security',
+    'x-dns-prefetch-control',
+])
+
+export function normalizeHeaderValue(name, value) {
+    return CASE_INSENSITIVE_VALUES.has(name.toLowerCase())
+        ? normalizeHeader(value)
+        : collapseWhitespace(value)
 }
 
 export function compareHeaders(actual, expected) {
@@ -58,7 +78,11 @@ export function compareHeaders(actual, expected) {
     for (const [name, value] of Object.entries(expected)) {
         const got = actual[name.toLowerCase()] ?? null
         result[name.toLowerCase()] = {
-            status: normalizeHeader(got) === normalizeHeader(value) ? 'MATCH' : 'DRIFT',
+            status:
+                got !== null &&
+                normalizeHeaderValue(name, got) === normalizeHeaderValue(name, value)
+                    ? 'MATCH'
+                    : 'DRIFT',
             expected: value,
             actual: got,
         }
@@ -193,9 +217,24 @@ export function getMetaCsp(html) {
 }
 
 export function comparableCsp(value) {
-    return normalizeHeader(value)
+    return normalizeHeaderValue('content-security-policy', value)
         .replace(/;?\s*frame-ancestors\s+[^;]+/i, '')
         .replace(/;\s*$/, '')
+}
+
+// A 200 alone cannot tell a real file from Vercel's catch-all `index.html` rewrite.
+const JAVASCRIPT = /^(?:text|application)\/(?:javascript|ecmascript)\b/i
+export const EXPECTED_MEDIA_TYPES = {
+    manifest: /^application\/(?:manifest\+)?json\b/i,
+    serviceWorker: JAVASCRIPT,
+    entry: JAVASCRIPT,
+    icon: /^image\//i,
+}
+
+// max-age in seconds from an HSTS value, or null when absent or malformed.
+export function hstsMaxAge(value) {
+    const match = String(value ?? '').match(/(?:^|;)\s*max-age\s*=\s*"?(\d+)"?\s*(?=;|$)/i)
+    return match ? Number(match[1]) : null
 }
 
 export function platformCacheExpectation(host, pathKind, policies) {

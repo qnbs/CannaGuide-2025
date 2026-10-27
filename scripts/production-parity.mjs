@@ -14,9 +14,11 @@ import {
     comparableCsp,
     compareHeaders,
     comparePolicies,
+    EXPECTED_MEDIA_TYPES,
     expectedStatuses,
     exitCodeFor,
     getMetaCsp,
+    hstsMaxAge,
     parseRootAssets,
     readPolicies,
     SECURITY_HEADERS,
@@ -189,6 +191,17 @@ function responseCheck(id, response, expected, details = {}) {
     })
 }
 
+// Only for a 200 response: a non-200 status is already reported by its http.* check.
+function mediaTypeCheck(id, response, pattern) {
+    if (response.status === null || response.error) {
+        return check(id, 'UNKNOWN', pattern.source, response.error)
+    }
+    const actual = response.headers['content-type'] ?? null
+    return check(id, actual && pattern.test(actual) ? 'MATCH' : 'DRIFT', pattern.source, actual, {
+        url: response.url,
+    })
+}
+
 function contentTypeCheck(id, response, expectedPrefix) {
     if (response.status === null) return check(id, 'UNKNOWN', expectedPrefix, response.error)
     if (response.status !== 200) {
@@ -289,6 +302,13 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
     for (const key of Object.keys(paths)) {
         checks.push(responseCheck(`http.${key}`, responses[key], expectedStatuses(host, key)))
     }
+    for (const key of ['manifest', 'serviceWorker']) {
+        if (responses[key].status === 200) {
+            checks.push(
+                mediaTypeCheck(`content-type.${key}`, responses[key], EXPECTED_MEDIA_TYPES[key]),
+            )
+        }
+    }
     for (const key of ['sitemap', 'manifestWebmanifest', 'deepRoute', 'missingScript']) {
         if (responses[key].status === 200) {
             checks.push(contentTypeCheck(`content-type.${key}`, responses[key], 'text/html'))
@@ -363,11 +383,12 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
         for (const name of SECURITY_HEADERS) {
             const actual = root.headers[name] ?? null
             if (name === 'strict-transport-security') {
+                // Platform-managed, but it still has to be on: max-age=0 disables HSTS.
                 checks.push(
                     check(
                         `security.${name}`,
-                        actual ? 'INTENTIONAL_PLATFORM_DIFFERENCE' : 'UNKNOWN',
-                        'platform-managed HSTS',
+                        hstsMaxAge(actual) > 0 ? 'INTENTIONAL_PLATFORM_DIFFERENCE' : 'DRIFT',
+                        'platform-managed HSTS with max-age > 0',
                         actual,
                     ),
                 )
@@ -505,6 +526,15 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
         }
         const iconResponse = await request(iconUrl, 'HEAD', fetchImpl)
         checks.push(responseCheck(`manifest.icon.${icon.src}`, iconResponse, [200]))
+        if (iconResponse.status === 200) {
+            checks.push(
+                mediaTypeCheck(
+                    `content-type.icon.${icon.src}`,
+                    iconResponse,
+                    EXPECTED_MEDIA_TYPES.icon,
+                ),
+            )
+        }
     }
 
     if (assets.entry) {
@@ -531,6 +561,11 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
             const entryResponse = await request(entryUrl, 'GET', fetchImpl)
             checks.push(responseCheck('http.entry', entryResponse, [200]))
             checks.push(cacheCheck(host, 'asset', entryResponse, policies))
+            if (entryResponse.status === 200) {
+                checks.push(
+                    mediaTypeCheck('content-type.entry', entryResponse, EXPECTED_MEDIA_TYPES.entry),
+                )
+            }
             // Only a 200 body is the entry bundle; an error page proves nothing either way.
             const entryLoaded = entryResponse.status === 200 && !entryResponse.error
             const registered =

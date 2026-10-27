@@ -109,7 +109,12 @@ function healthyResponse(host, path, sha) {
     }
     if (path === 'index.html')
         return { status: 200, headers: { 'content-type': 'text/html' }, body: rootHtml(host) }
-    return { status: 200, headers, body: 'ok' }
+    const type = path.endsWith('.js')
+        ? 'text/javascript'
+        : path.endsWith('.png')
+          ? 'image/png'
+          : 'text/plain'
+    return { status: 200, headers: { ...headers, 'content-type': type }, body: 'ok' }
 }
 
 /**
@@ -403,4 +408,66 @@ test('repo policy comparison covers headers configured on only one platform', ()
         Object.fromEntries(Object.entries(result).map(([name, item]) => [name, item.status])),
         { 'x-frame-options': 'MATCH', 'x-cloudflare-only': 'DRIFT', 'x-vercel-only': 'DRIFT' },
     )
+})
+
+test('an SPA fallback page served for the service worker or an icon is DRIFT', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) =>
+            name === 'vercel' && (path === 'sw.js' || path === 'icons/icon-192.png')
+                ? { ...response, headers: { ...response.headers, 'content-type': 'text/html' } }
+                : response,
+    })
+    const report = await probe(hosts)
+    assert.deepEqual(
+        failing(hostReport(report, 'vercel')).map((item) => [item.id, item.status, item.actual]),
+        [
+            ['content-type.serviceWorker', 'DRIFT', 'text/html'],
+            ['content-type.icon.icons/icon-192.png', 'DRIFT', 'text/html'],
+        ],
+    )
+    assert.equal(report.status, 'DRIFT')
+})
+
+test('case-sensitive policy tokens must match exactly; case-insensitive ones need not', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) => {
+            if (name !== 'vercel' || path !== '') return response
+            const headers = { ...response.headers }
+            headers['cross-origin-opener-policy'] =
+                headers['cross-origin-opener-policy'].toUpperCase()
+            headers['cross-origin-embedder-policy'] =
+                headers['cross-origin-embedder-policy'].toUpperCase()
+            headers['x-frame-options'] = headers['x-frame-options'].toLowerCase()
+            return { ...response, headers }
+        },
+    })
+    const report = await probe(hosts)
+    assert.deepEqual(
+        failing(hostReport(report, 'vercel')).map((item) => item.id),
+        ['security.cross-origin-opener-policy', 'security.cross-origin-embedder-policy'],
+    )
+})
+
+test('GitHub Pages HSTS must be present with a positive max-age', async () => {
+    for (const [value, expected] of [
+        ['max-age=31556952', 'INTENTIONAL_PLATFORM_DIFFERENCE'],
+        ['max-age=0', 'DRIFT'],
+        ['max-age=abc', 'DRIFT'],
+        [null, 'DRIFT'],
+    ]) {
+        const hosts = fakeHosts({
+            override: (name, path, response) => {
+                if (name !== 'github-pages' || path !== '') return response
+                const headers = { ...response.headers }
+                if (value === null) delete headers['strict-transport-security']
+                else headers['strict-transport-security'] = value
+                return { ...response, headers }
+            },
+        })
+        const report = await probe(hosts)
+        const hsts = hostReport(report, 'github-pages').checks.find(
+            (item) => item.id === 'security.strict-transport-security',
+        )
+        assert.equal(hsts.status, expected, String(value))
+    }
 })

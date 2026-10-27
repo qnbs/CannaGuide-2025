@@ -76,6 +76,32 @@ jobs:
               with:
                   node-version: 24
 
+            # tauri-bundler starts macOS code signing as soon as APPLE_CERTIFICATE is
+            # set -- even to the empty string an unconfigured secret expands to -- and
+            # then fails on the keychain import (run 40486452675). Export each value
+            # only when the secret exists, so an unprovisioned build produces an
+            # unsigned bundle. Values stay masked in logs.
+            - name: Export configured macOS signing secrets
+              if: runner.os == 'macOS'
+              shell: bash
+              env:
+                  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+                  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+                  APPLE_ID: ${{ secrets.APPLE_ID }}
+                  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+                  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+              run: |
+                  exported=0
+                  for name in APPLE_CERTIFICATE APPLE_CERTIFICATE_PASSWORD APPLE_SIGNING_IDENTITY APPLE_ID APPLE_PASSWORD APPLE_TEAM_ID; do
+                      value="${!name}"
+                      [ -n "$value" ] || continue
+                      delimiter="EOF_$(openssl rand -hex 16)"
+                      { echo "${name}<<${delimiter}"; printf '%s\n' "$value"; echo "$delimiter"; } >> "$GITHUB_ENV"
+                      exported=$((exported + 1))
+                  done
+                  echo "macOS signing values exported: ${exported} of 6 (0 = unsigned bundle)"
+
             - name: Build Tauri
               uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
               env:
@@ -86,14 +112,8 @@ jobs:
                   # are unsigned and `tauri-plugin-updater` will reject them.
                   TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
                   TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-                  # macOS code signing (D-05). Optional until an Apple Developer
-                  # ID is provisioned. Bundle stays unsigned without these.
-                  APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-                  APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-                  APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-                  APPLE_ID: ${{ secrets.APPLE_ID }}
-                  APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-                  APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+                  # macOS code signing (D-05) comes from the export step above, and
+                  # only when an Apple Developer ID is provisioned.
                   # Windows code signing (D-05). Optional until an EV certificate
                   # thumbprint is configured.
                   WINDOWS_CERTIFICATE_THUMBPRINT: ${{ secrets.WINDOWS_CERTIFICATE_THUMBPRINT }}

@@ -5,10 +5,12 @@
  * Why this is deletion of dead weight rather than a workaround
  * -----------------------------------------------------------
  * Every ORT entry point in this app goes through `@cannaguide/ai-core/ml`, and
- * both loaders there set the wasm path to jsDelivr:
+ * neither loader uses the bundled copy:
  *
- *   loadOnnxRuntime()  -> ort.env.wasm.wasmPaths            = ORT_WASM_CDN_BASE
- *   loadTransformers() -> env.backends.onnx.wasm.wasmPaths  = ORT_WASM_CDN_BASE
+ *   loadOnnxRuntime()  -> ort.env.wasm.wasmBinary = bytes fetched from jsDelivr
+ *                         and verified against ORT_WASM_SRI (no wasmPaths)
+ *   loadTransformers() -> transformers.js points its own nested ORT 1.14 at its
+ *                         own jsDelivr dist
  *
  * So the copy Vite emits is never fetched. It is emitted only because ORT's JS
  * references it statically (the hashed filename -- ort-wasm-...-DC5y_g6C.wasm --

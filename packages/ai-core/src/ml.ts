@@ -32,6 +32,49 @@ export const ORT_VERSION = '1.30.0'
  */
 export const ORT_WASM_CDN_BASE = `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`
 
+/** The binary `ort.bundle.min.mjs` (the browser entry of onnxruntime-web) runs. */
+export const ORT_WASM_FILE = 'ort-wasm-simd-threaded.jsep.wasm'
+export const ORT_WASM_URL = `${ORT_WASM_CDN_BASE}${ORT_WASM_FILE}`
+
+/**
+ * Subresource-integrity digest of ORT_WASM_FILE at ORT_VERSION. The browser
+ * rejects the download before any byte reaches WebAssembly if it differs.
+ * `ortVersionPin.test.ts` recomputes it from the installed package, so a version
+ * bump without a new digest fails a test instead of every inference call.
+ */
+export const ORT_WASM_SRI = 'sha256-OtIyMbW9bZ3aVaf4RgYxXgvzW2dQwo7pk8mHxUysqw8='
+
+let verifiedOrtWasm: Promise<ArrayBuffer> | null = null
+
+/**
+ * Download ORT_WASM_FILE from the CDN and let the browser verify it against
+ * ORT_WASM_SRI. Memoised per realm (each worker fetches once; the HTTP cache
+ * serves repeats); a failure clears the memo so a later call can retry.
+ */
+export const fetchVerifiedOrtWasm = (fetchImpl: typeof fetch = fetch): Promise<ArrayBuffer> => {
+    verifiedOrtWasm ??= fetchImpl(ORT_WASM_URL, {
+        integrity: ORT_WASM_SRI,
+        mode: 'cors',
+        credentials: 'omit',
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`onnxruntime-web wasm download failed: HTTP ${response.status}`)
+            }
+            return response.arrayBuffer()
+        })
+        .catch((error: unknown) => {
+            verifiedOrtWasm = null
+            throw error
+        })
+    return verifiedOrtWasm
+}
+
+/** Test-only: forget the memoised download. */
+export const resetVerifiedOrtWasmForTests = (): void => {
+    verifiedOrtWasm = null
+}
+
 /**
  * Lazy-load @xenova/transformers (ONNX pipelines via WebGPU/WASM).
  *
@@ -71,13 +114,18 @@ export const loadGenAI = async (): Promise<typeof import('@google/genai')> =>
 /**
  * Lazy-load onnxruntime-web (direct ONNX model inference via WebGPU/WASM).
  *
- * Sets `env.wasm.wasmPaths` here rather than at each call site. Previously two
- * workers set it and the transformers.js paths did not, so the bundled wasm was
- * still reachable and still shipped. Configuring it at the seam means a new
- * consumer cannot forget it.
+ * Hands ORT integrity-verified wasm bytes (`env.wasm.wasmBinary`) and sets NO
+ * `wasmPaths`. With a `wasmPaths` prefix, ORT resolves its JS glue
+ * (`ort-wasm-simd-threaded.jsep.mjs`) against the CDN and `import()`s it,
+ * unverified: that is remote code execution where no CSP blocks it (GitHub Pages
+ * delivers CSP as a `<meta>` tag, which does not reach workers), and a CSP
+ * failure where `script-src 'self'` does (Vercel, Cloudflare, desktop). Without a
+ * prefix ORT uses the glue embedded in its own same-origin bundle.
+ *
+ * Configured here rather than at each call site, so a new consumer cannot forget it.
  */
 export const loadOnnxRuntime = async (): Promise<typeof import('onnxruntime-web')> => {
     const ort = await import('onnxruntime-web')
-    ort.env.wasm.wasmPaths = ORT_WASM_CDN_BASE
+    ort.env.wasm.wasmBinary = await fetchVerifiedOrtWasm()
     return ort
 }

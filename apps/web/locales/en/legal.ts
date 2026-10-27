@@ -44,7 +44,7 @@ export const legal = {
             thirdParty: {
                 title: 'Third-Party Services',
                 content:
-                    'Typography is bundled with the app. Optional features can contact these hosts: generativelanguage.googleapis.com, api.openai.com, api.x.ai, and api.anthropic.com when you enable AI with your own API key; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co, and huggingfaceusercontent.com plus cdn.jsdelivr.net when a local model or runtime is downloaded; api.elevenlabs.io when cloud text-to-speech is enabled. No data is shared with advertisers or analytics providers. Cloud sync is not enabled in this version.',
+                    'Typography is bundled with the app. Optional features can contact these hosts: generativelanguage.googleapis.com, api.openai.com, api.x.ai, and api.anthropic.com when you enable AI with your own API key; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co, us.aws.cdn.hf.co, and huggingfaceusercontent.com plus cdn.jsdelivr.net when a local model or runtime is downloaded; api.elevenlabs.io when cloud text-to-speech is enabled. No data is shared with advertisers or analytics providers. Cloud sync is not enabled in this version.',
             },
             rights: {
                 title: 'Your Rights (GDPR/DSGVO)',

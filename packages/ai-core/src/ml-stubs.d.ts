@@ -11,9 +11,9 @@ declare module '@xenova/transformers' {
     ): Promise<Pipeline>
 
     /**
-     * transformers.js embeds onnxruntime-web and exposes its env here, so
-     * `env.backends.onnx.wasm.wasmPaths` is what points ORT at the CDN instead of
-     * a bundled 25.6 MiB binary (see `loadTransformers`).
+     * transformers.js embeds onnxruntime-web (1.14.0) and exposes its env here;
+     * `env.backends.onnx.wasm.wasmPaths` is where that runtime fetches its wasm,
+     * which `loadTransformers` points at the same-origin, digest-pinned copy.
      *
      * The previous stub was `const content: Record<string, unknown>; export = content`,
      * which under esModuleInterop types the module as `{ default: ... }` -- so
@@ -36,6 +36,19 @@ declare module '@xenova/transformers' {
         allowLocalModels?: boolean | undefined
         [key: string]: unknown
     }
+}
+
+/**
+ * The one Vite-provided field `ml.ts` reads. ai-core is consumed as source by the
+ * web app's Vite build, which replaces it statically; declared here because this
+ * workspace does not load `vite/client` types. Identical to Vite's declaration,
+ * so the two merge.
+ */
+interface ImportMetaEnv {
+    readonly BASE_URL: string
+}
+interface ImportMeta {
+    readonly env: ImportMetaEnv
 }
 
 declare module '@mlc-ai/web-llm' {

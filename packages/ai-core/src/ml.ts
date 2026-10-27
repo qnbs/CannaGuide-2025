@@ -76,32 +76,55 @@ export const resetVerifiedOrtWasmForTests = (): void => {
 }
 
 /**
+ * Directory, under the app base, holding the wasm of the onnxruntime-web that
+ * transformers.js bundles (1.14.0 -- NOT ORT_VERSION; the two runtimes are not
+ * interchangeable). The build copies the lockfile-resolved, digest-pinned
+ * binaries there: apps/web/lib/transformersOrtAssets.mjs, whose
+ * TRANSFORMERS_ORT_DIR must match this.
+ */
+export const TRANSFORMERS_ORT_WASM_DIR = 'ort-1.14.0/'
+
+/**
+ * Absolute same-origin prefix for TRANSFORMERS_ORT_WASM_DIR.
+ *
+ * Absolute on purpose: with `env.wasm.proxy` ORT runs in a worker started from
+ * a `blob:` URL, against which a path-only prefix does not resolve. `baseUrl` is
+ * the Vite base (`/CannaGuide-2025/` on GitHub Pages, `/` elsewhere and on
+ * desktop), so a root-relative `/ort-1.14.0/` would break the Pages subpath.
+ */
+export const transformersOrtWasmPrefix = (baseUrl: string, locationHref: string): string =>
+    new URL(
+        `${baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`}${TRANSFORMERS_ORT_WASM_DIR}`,
+        locationHref,
+    ).href
+
+/**
  * Lazy-load @xenova/transformers (ONNX pipelines via WebGPU/WASM).
  *
- * Deliberately does NOT set `env.backends.onnx.wasm.wasmPaths`, which is the
- * opposite of what it looks like it should do.
+ * transformers.js bundles its own onnxruntime-web 1.14.0 and, at module load,
+ * points it at `cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/` -- wasm
+ * fetched cross-origin with no integrity check (GH #585). ORT 1.14 has no
+ * `wasmBinary` hook, so the fix is the origin: every consumer comes through
+ * here, and the prefix is replaced with the same-origin copy before any
+ * pipeline (and so any ORT session) can start. The bytes are the same build; the
+ * build verifies them against pinned digests.
  *
- * transformers.js bundles its OWN onnxruntime-web -- 1.14.0, nested in its
- * node_modules -- while `loadOnnxRuntime` below drives the direct dependency at
- * 1.30.0. Two different runtimes, and ORT's JS and wasm are not interchangeable
- * across versions.
+ * Never point this at ORT_WASM_CDN_BASE: that is 1.30.0 wasm, and handing it to
+ * 1.14.0 JS is the version mismatch those constants exist to prevent.
  *
- * It also already points its copy at a CDN, matched to its own version
- * (@xenova/transformers/src/env.js):
- *
- *     onnx_env.wasm.wasmPaths = RUNNING_LOCALLY
- *         ? path.join(__dirname, '/dist/')
- *         : `https://cdn.jsdelivr.net/npm/@xenova/transformers@${VERSION}/dist/`
- *
- * So in a browser this path is already served remotely and correctly. Assigning
- * ORT_WASM_CDN_BASE here would REPLACE that working default with 1.30.0 wasm and
- * hand it to 1.14.0 JS -- the exact mismatch these constants exist to prevent,
- * reintroduced in the other direction. An earlier revision of this branch did
- * precisely that; the phantom-dependency gate is what forced a look at the
- * lockfile and surfaced the two-versions fact.
+ * Throws instead of returning a module still aimed at the CDN when the ORT env
+ * is not where it is expected.
  */
-export const loadTransformers = async (): Promise<typeof import('@xenova/transformers')> =>
-    import('@xenova/transformers')
+export const loadTransformers = async (): Promise<typeof import('@xenova/transformers')> => {
+    const mod = await import('@xenova/transformers')
+    const wasm = mod.env.backends?.onnx?.wasm
+    const locationHref = globalThis.location?.href
+    if (!wasm || !locationHref) {
+        throw new Error('transformers.js ONNX runtime env is unavailable; refusing the CDN default')
+    }
+    wasm.wasmPaths = transformersOrtWasmPrefix(import.meta.env.BASE_URL, locationHref)
+    return mod
+}
 
 /** Lazy-load @mlc-ai/web-llm (WebGPU LLM inference). */
 export const loadWebLlm = async (): Promise<typeof import('@mlc-ai/web-llm')> =>

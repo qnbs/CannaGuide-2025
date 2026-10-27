@@ -40,6 +40,12 @@ const ML_MODEL_HOSTS = new Set([
 
 const ML_MODEL_EXTENSIONS = ['.onnx', '.safetensors', '.bin', '.wasm', '.json', '.pt']
 
+// Same-origin copy of the ONNX Runtime wasm that transformers.js runs (GH #585).
+// The directory is versioned (`ort-1.14.0/`) and its files never change, so they
+// take the cache-first ML cache the jsDelivr copy used before: offline after
+// first use, and no 10 MiB background revalidation on every load.
+const TRANSFORMERS_ORT_WASM_PATH = /\/ort-\d+\.\d+\.\d+\/ort-wasm[\w-]*\.wasm$/
+
 // Maximum cached ML model artefacts before LRU pruning kicks in. ONNX models
 // can be 30-150 MB each; cap entries -- not bytes -- and rely on the global
 // 200 MB quota gate above for hard pressure.
@@ -368,6 +374,11 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (url.origin !== self.location.origin) {
+        return
+    }
+
+    if (TRANSFORMERS_ORT_WASM_PATH.test(url.pathname)) {
+        event.respondWith(handleMlModelRequest(request))
         return
     }
 

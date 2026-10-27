@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Security
+
+- **fix(local-ai):** The ONNX Runtime that `@xenova/transformers` bundles (onnxruntime-web 1.14.0, used by the inference and image workers, the model loader and Whisper) no longer fetches its wasm from jsDelivr without an integrity check. The build copies the four lockfile-resolved binaries to `ort-1.14.0/` under the app base, each verified against a pinned SHA-256 (a missing, truncated, corrupted or re-versioned binary fails the build), and `loadTransformers` points the runtime there before any pipeline starts. The service worker caches that versioned directory cache-first, as it did the CDN copy. The bytes are unchanged -- they equal what jsDelivr served -- only their origin is (CG-AUD-20261008-045, #585)
+
 ## [1.11.0] - 2026-10-27
 
 Web/PWA release. The Tauri desktop shell stays at `0.1.0`: no signed installer, notarized bundle or updater feed ships with this release, and Cloud Sync stays disabled.

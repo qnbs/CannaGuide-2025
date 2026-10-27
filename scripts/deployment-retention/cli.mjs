@@ -42,10 +42,18 @@ const VERCEL_VERSION_URL = 'https://canna-guide-2025-web.vercel.app/version.json
  * runs (40506398180, 40512273529) read the prior SHA from pages.dev within the
  * old 6 x 5 s window and failed, while the next run minutes later deleted
  * normally. The refusal itself stays: a host that still serves another SHA
- * after this window is a real mismatch. Waiting is safe because the delete set
- * is re-inventoried after the check (freshDeleteDecision), not reused.
+ * after this window is a real mismatch. Waiting is safe because both the delete
+ * set and the GitHub PR state are re-read after the check (afterPropagationWait,
+ * freshDeleteDecision), not reused from before it.
+ *
+ * `requestTimeoutMs` bounds each fetch, body included, so the worst case is
+ * attempts x (requestTimeoutMs + pauseMs) ~ 23 min -- inside the 45 min job.
  */
-export const PUBLIC_VERSION_WAIT = Object.freeze({ attempts: 40, pauseMs: 15_000 })
+export const PUBLIC_VERSION_WAIT = Object.freeze({
+    attempts: 40,
+    pauseMs: 15_000,
+    requestTimeoutMs: 20_000,
+})
 
 function arg(name, fallback = '') {
     const index = process.argv.indexOf(name)
@@ -189,6 +197,24 @@ function collectGithubState(repo) {
     return { repo: safeRepo, mainSha, pulls }
 }
 
+/**
+ * GitHub state to classify with once the propagation wait is over.
+ *
+ * `before` was read ahead of a wait that can last minutes; a PR opened or pushed
+ * in that time is missing from it, and classifying with it could delete that
+ * PR's preview. So the state is read again. If main itself moved, the version
+ * that was just verified is no longer main's, and the batch is refused.
+ */
+export function afterPropagationWait(before, collect) {
+    const current = collect()
+    if (current.mainSha !== before.mainSha) {
+        throw new Error(
+            `main moved from ${before.mainSha} to ${current.mainSha} during the propagation wait`,
+        )
+    }
+    return current
+}
+
 function inventoryFromFile(backend, file) {
     const payload = readJson(file)
     if (payload.skipped) return payload
@@ -232,13 +258,17 @@ export async function verifyPublicVersion(url, expectedSha, options = {}) {
     const fetchImpl = options.fetchImpl || fetch
     const attempts = options.attempts || 3
     const pauseMs = options.pauseMs ?? 2000
+    const requestTimeoutMs = options.requestTimeoutMs ?? 20_000
     let lastStatus = 0
     let lastCommit = ''
     let lastError = ''
     for (let attempt = 1; attempt <= attempts; attempt += 1) {
         try {
+            // The signal also aborts the body read below, so a stalled stream
+            // counts as a failed attempt instead of hanging the job.
             const response = await fetchImpl(url, {
                 headers: { 'User-Agent': 'CannaGuide-retention' },
+                signal: AbortSignal.timeout(requestTimeoutMs),
             })
             const body = await response.json()
             const commit = String(body?.commit || '')
@@ -362,7 +392,8 @@ async function applyDeletes(backend, planPath) {
     const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
     const version = await verifyPublicVersion(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
-    const { fresh, decision } = await freshDeleteDecision(backend, frozen, github)
+    const current = afterPropagationWait(github, () => collectGithubState(github.repo))
+    const { fresh, decision } = await freshDeleteDecision(backend, frozen, current)
     if (decision.abort) {
         throw new Error(`retention batch aborted: ${decision.errors.join('; ')}`)
     }
@@ -423,6 +454,7 @@ async function checkVercelGate(planPath) {
         return
     }
     const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    let current
     // The same preconditions --apply checks first: production must already serve main.
     try {
         assertDeploySha(process.env, github.mainSha)
@@ -432,6 +464,7 @@ async function checkVercelGate(planPath) {
             PUBLIC_VERSION_WAIT,
         )
         console.log(`version ${version.buildVersion} commit ${version.commit}`)
+        current = afterPropagationWait(github, () => collectGithubState(github.repo))
     } catch (error) {
         console.log(
             `would-abort: ${error instanceof Error ? error.message : 'version check failed'}`,
@@ -439,7 +472,7 @@ async function checkVercelGate(planPath) {
         process.exitCode = 1
         return
     }
-    const { fresh, decision } = await freshDeleteDecision('vercel', frozen, github)
+    const { fresh, decision } = await freshDeleteDecision('vercel', frozen, current)
     if (decision.abort) {
         console.log(`would-abort: ${decision.errors.join('; ')}`)
         process.exitCode = 1

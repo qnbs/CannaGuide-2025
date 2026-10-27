@@ -24,6 +24,7 @@ import {
     listVercelDeployments,
 } from '../deployment-retention/hosts.mjs'
 import {
+    afterPropagationWait,
     assertDeploySha,
     assertPostDeleteAnchors,
     assertTrustedApply,
@@ -1370,9 +1371,12 @@ test('version identity is retried before the cleanup run is failed', async () =>
 test('deletes wait out edge propagation instead of failing on the prior build', async () => {
     // Runs 40506398180 and 40512273529 read the previous SHA from pages.dev
     // inside the old 6 x 5 s window; the edge needed minutes, not seconds.
-    const windowMs = PUBLIC_VERSION_WAIT.attempts * PUBLIC_VERSION_WAIT.pauseMs
+    const { attempts, pauseMs, requestTimeoutMs } = PUBLIC_VERSION_WAIT
+    const windowMs = attempts * pauseMs
     assert.ok(windowMs >= 5 * 60_000, `propagation window is only ${windowMs} ms`)
-    assert.ok(windowMs <= 15 * 60_000, 'window must stay well inside the 45 min job timeout')
+    // Worst case: every fetch runs into its deadline. Must stay inside the 45 min job.
+    const worstCaseMs = attempts * (requestTimeoutMs + pauseMs)
+    assert.ok(worstCaseMs <= 30 * 60_000, `worst case ${worstCaseMs} ms is too close to 45 min`)
 
     // A host that serves the prior build for 30 polls (7.5 min at 15 s) still
     // verifies once it turns over...
@@ -1408,6 +1412,50 @@ test('deletes wait out edge propagation instead of failing on the prior build', 
     const sites = cli.match(/await verifyPublicVersion\([^)]*\)/g) || []
     assert.ok(sites.length >= 2, 'expected the apply and the gate-check call sites')
     for (const site of sites) assert.match(site, /PUBLIC_VERSION_WAIT,?\s*\)$/)
+
+    // No delete decision is classified with the GitHub state read before the wait.
+    const decisions = cli.match(/await freshDeleteDecision\([^)]*\)/g) || []
+    assert.ok(decisions.length >= 2, 'expected the apply and the gate-check decisions')
+    for (const call of decisions) assert.doesNotMatch(call, /\bgithub\)$/)
+})
+
+test('a stalled version request is abandoned and retried, never awaited forever', async () => {
+    let calls = 0
+    const version = await verifyPublicVersion(PAGES_URL_FOR_WAIT, MAIN, {
+        attempts: 2,
+        pauseMs: 0,
+        requestTimeoutMs: 20,
+        fetchImpl: async (_url, init) => {
+            calls += 1
+            assert.ok(init.signal instanceof AbortSignal, 'every attempt carries a deadline')
+            if (calls === 1) {
+                // Hangs until the deadline aborts it, like a stalled edge.
+                return new Promise((_resolve, reject) => {
+                    init.signal.addEventListener('abort', () => reject(init.signal.reason))
+                })
+            }
+            return { status: 200, json: async () => ({ commit: MAIN, buildVersion: '1.10.0' }) }
+        },
+    })
+    assert.equal(calls, 2)
+    assert.equal(version.attempts, 2)
+})
+
+test('the delete decision uses GitHub state read after the propagation wait', () => {
+    const before = { repo: 'qnbs/CannaGuide-2025', mainSha: MAIN, pulls: [] }
+    const openedDuringWait = {
+        number: 999,
+        state: 'OPEN',
+        headRefName: 'feat/x',
+        headRefOid: OPEN_SHA,
+    }
+    const after = afterPropagationWait(before, () => ({ ...before, pulls: [openedDuringWait] }))
+    assert.deepEqual(after.pulls, [openedDuringWait])
+
+    assert.throws(
+        () => afterPropagationWait(before, () => ({ ...before, mainSha: SHA_B })),
+        new RegExp(`main moved from ${MAIN} to ${SHA_B}`),
+    )
 })
 
 const PAGES_URL_FOR_WAIT = 'https://cannaguide-2025.pages.dev/version.json'

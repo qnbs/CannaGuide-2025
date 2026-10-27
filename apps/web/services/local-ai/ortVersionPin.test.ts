@@ -91,8 +91,9 @@ describe('ORT wasm CDN pin', () => {
      * package, so there is no binary to hash and these checks skip. Never in CI:
      * there a missing package would turn the digest gate off without a failure.
      */
-    // Any truthy CI value counts: `CI=1` must not turn the digest gate off either.
-    const inCi = /^(1|true|yes)$/i.test(process.env['CI'] ?? '')
+    // Fail closed: any non-empty CI counts unless it is explicitly falsy, so no
+    // spelling (`1`, `true`, `on`, ...) can turn the digest gate off in CI.
+    const inCi = !/^(|0|false|no|off)$/i.test((process.env['CI'] ?? '').trim())
     const binaryChecks = installedOrtDist !== null || inCi
 
     it.runIf(binaryChecks)('finds the installed onnxruntime-web package', () => {

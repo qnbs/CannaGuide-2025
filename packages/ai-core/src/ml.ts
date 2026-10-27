@@ -123,6 +123,11 @@ export const loadTransformers = async (): Promise<typeof import('@xenova/transfo
         throw new Error('transformers.js ONNX runtime env is unavailable; refusing the CDN default')
     }
     wasm.wasmPaths = transformersOrtWasmPrefix(import.meta.env.BASE_URL, locationHref)
+    // The app ships no transformers.js models. With local models allowed,
+    // transformers.js first requests /models/<repo>/config.json from this origin,
+    // and Vercel and Cloudflare answer with the SPA fallback (200 text/html),
+    // which it then fails to parse as the model config.
+    mod.env.allowLocalModels = false
     return mod
 }
 

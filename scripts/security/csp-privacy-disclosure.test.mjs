@@ -9,13 +9,12 @@ import { test } from 'node:test'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const read = (rel) => readFileSync(path.join(ROOT, rel), 'utf8')
-// Every locale directory that ships a privacy text, so a newly added locale is
-// checked without anyone having to remember this list.
+// Every locale directory, so a newly added locale is checked without anyone
+// having to remember this list. A locale without legal.ts fails below instead
+// of being skipped.
 const LOCALES = readdirSync(path.join(ROOT, 'apps/web/locales'), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name)
-    .filter((locale) => existsSync(path.join(ROOT, `apps/web/locales/${locale}/legal.ts`)))
-
 /** Where Hugging Face sends model binaries (observed for every model the app uses). */
 const HF_MODEL_CDN = 'https://us.aws.cdn.hf.co'
 
@@ -44,7 +43,9 @@ function connectSrcHosts(source) {
 
 /** The privacy.thirdParty.content string of a locale's legal.ts. */
 function thirdPartyText(locale) {
-    const source = read(`apps/web/locales/${locale}/legal.ts`)
+    const file = `apps/web/locales/${locale}/legal.ts`
+    assert.ok(existsSync(path.join(ROOT, file)), `${locale}: ${file} is missing`)
+    const source = read(file)
     const block = /thirdParty:\s*\{[\s\S]*?content:\s*\n?\s*(['"`])([\s\S]*?)\1,/.exec(source)
     assert.ok(block, `${locale}: privacy.thirdParty.content not found`)
     return block[2]

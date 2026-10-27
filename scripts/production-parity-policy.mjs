@@ -225,6 +225,7 @@ export function comparableCsp(value) {
 // A 200 alone cannot tell a real file from Vercel's catch-all `index.html` rewrite.
 const JAVASCRIPT = /^(?:text|application)\/(?:javascript|ecmascript)\b/i
 export const EXPECTED_MEDIA_TYPES = {
+    root: /^text\/html\b/i,
     manifest: /^application\/(?:manifest\+)?json\b/i,
     serviceWorker: JAVASCRIPT,
     entry: JAVASCRIPT,

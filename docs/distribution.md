@@ -26,19 +26,19 @@ node scripts/production-parity.mjs --expected-sha "$CANNAGUIDE_EXPECTED_MAIN_SHA
 The probe sends unauthenticated `GET`/`HEAD` requests and waits up to 30 minutes for all
 three `version.json` files to report that SHA. It then checks configured security and cache
 headers, the manifest and icon targets, the service worker and its entry registration, and
-known platform-specific routes and redirects. The manifest, service worker, entry bundle and
-icons must also carry their real media type, so an SPA fallback page served with HTTP 200 is
-drift. Security header values are compared case-sensitively except where the header defines
-them as case-insensitive. Only `MATCH`, `EXACT_MAIN` and `INTENTIONAL_PLATFORM_DIFFERENCE`
-count as parity. A host still serving another SHA when the wait ends, or a configured header
-or route that differs, is `DRIFT` and exits 1. Anything unproven -- an unreachable host, an
-abbreviated or unparsable build identity -- is `UNKNOWN` and exits 2; an unreachable host
-never counts as drift or as a platform difference. Use `--wait-seconds 0` for an immediate
-observation without a deployment wait; any skew is then `DRIFT`. Each response body inspected
-by the probe is capped at 4 MiB; an oversized or unreadable body is reported as unknown. The
-probe counts modulepreload links but does not fetch those assets, model files, or WASM
-runtimes. A matching `version.json` is deployment metadata, not proof that every served asset
-byte or offline interaction is identical.
+known platform-specific routes and redirects. The root document, manifest, service worker,
+entry bundle and icons must also carry their real media type, so an SPA fallback page served
+with HTTP 200 is drift. Security header values are compared case-sensitively except where the
+header defines them as case-insensitive. Only `MATCH`, `EXACT_MAIN` and
+`INTENTIONAL_PLATFORM_DIFFERENCE` count as parity. A host still serving another SHA when the
+wait ends, or a configured header or route that differs, is `DRIFT` and exits 1. Anything
+unproven -- an unreachable host, an abbreviated or unparsable build identity -- is `UNKNOWN`
+and exits 2; an unreachable host never counts as drift or as a platform difference. Use
+`--wait-seconds 0` for an immediate observation without a deployment wait; any skew is then
+`DRIFT`. Each response body inspected by the probe is capped at 4 MiB; an oversized or
+unreadable body is reported as unknown. The probe counts modulepreload links but does not
+fetch those assets, model files, or WASM runtimes. A matching `version.json` is deployment
+metadata, not proof that every served asset byte or offline interaction is identical.
 
 This read-only check does not publish a release, change provider settings, or qualify
 desktop installers. `scripts/production-parity.scenarios.test.mjs` runs the whole probe

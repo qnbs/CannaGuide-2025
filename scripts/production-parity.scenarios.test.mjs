@@ -471,3 +471,18 @@ test('GitHub Pages HSTS must be present with a positive max-age', async () => {
         assert.equal(hsts.status, expected, String(value))
     }
 })
+
+test('a root document not served as HTML is DRIFT even with the right bytes', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) =>
+            name === 'vercel' && path === ''
+                ? { ...response, headers: { ...response.headers, 'content-type': 'text/plain' } }
+                : response,
+    })
+    const report = await probe(hosts)
+    assert.deepEqual(
+        failing(hostReport(report, 'vercel')).map((item) => [item.id, item.actual]),
+        [['content-type.root', 'text/plain']],
+    )
+    assert.equal(report.status, 'DRIFT')
+})

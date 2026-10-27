@@ -302,7 +302,8 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
     for (const key of Object.keys(paths)) {
         checks.push(responseCheck(`http.${key}`, responses[key], expectedStatuses(host, key)))
     }
-    for (const key of ['manifest', 'serviceWorker']) {
+    // The root document is parsed for assets below; a browser only runs it as HTML.
+    for (const key of ['root', 'manifest', 'serviceWorker']) {
         if (responses[key].status === 200) {
             checks.push(
                 mediaTypeCheck(`content-type.${key}`, responses[key], EXPECTED_MEDIA_TYPES[key]),

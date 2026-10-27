@@ -14,6 +14,20 @@ export interface RecoverySnapshotReplacementResult {
     error?: unknown
 }
 
+/**
+ * Data in another store that the restored snapshot depends on (backup images).
+ *
+ * The two IndexedDB databases cannot share a transaction, so the order is the
+ * protocol: `apply` commits first, and the primary snapshot is replaced only
+ * after it succeeded. A failed `apply` therefore leaves the current snapshot
+ * untouched. If the primary write then fails, `revert` undoes `apply`; if even
+ * that fails, the dependent data is unreferenced but nothing current is lost.
+ */
+export interface DependentStoreWrite {
+    apply: () => Promise<void>
+    revert: () => Promise<void>
+}
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -28,7 +42,7 @@ export const replacePrimaryPersistedSnapshot = async (snapshot: string): Promise
 /** Replace a snapshot and any dependent stores while stale persistence is fenced. */
 export const replacePrimaryPersistedSnapshotForRecovery = async (
     snapshot: string,
-    afterPrimaryReplace?: () => Promise<void>,
+    dependentWrite?: DependentStoreWrite,
 ): Promise<RecoverySnapshotReplacementResult> => {
     const migratedSnapshot = migratePersistedSnapshot(snapshot)
     const resumePersistence = await suspendPersistenceForRecovery()
@@ -39,11 +53,13 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
     let recoveryEpochCommitted = false
     try {
         const result = await runWithExclusiveRecoveryLock(async () => {
+            let dependentApplied = false
             let primaryReplaced = false
             try {
+                await dependentWrite?.apply()
+                dependentApplied = true
                 await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
                 primaryReplaced = true
-                await afterPrimaryReplace?.()
                 if (!commitRecoveryEpoch()) {
                     throw new Error('Could not commit the cross-tab restore fence.')
                 }
@@ -51,7 +67,14 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
                 return { success: true, reloadRequired: true }
             } catch (error) {
                 if (primaryReplaced) {
+                    // The restored snapshot is live and references the dependent data.
                     recoveryEpochCommitted = commitRecoveryEpoch()
+                } else if (dependentApplied && dependentWrite) {
+                    try {
+                        await dependentWrite.revert()
+                    } catch (revertError) {
+                        console.debug('[Store] Could not revert restore data:', revertError)
+                    }
                 }
                 return {
                     success: false,

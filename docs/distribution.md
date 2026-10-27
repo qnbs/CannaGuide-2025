@@ -13,6 +13,39 @@ This project is web-first with multiple web distribution targets; **automated** 
 
 **PR previews:** Use **Vercel** once the project is connected; do not rely on Netlify until that workflow is re-enabled. The old Netlify-based Playwright + Lighthouse gate in `preview-validation.yml` should only be restored when Netlify deploy previews work again (see checklist below).
 
+## Read-only production parity check
+
+After the deploy workflows for a resulting `main` commit have had time to finish, compare
+the public hosts against the live remote `main` SHA:
+
+```bash
+CANNAGUIDE_EXPECTED_MAIN_SHA="$(git ls-remote origin refs/heads/main | cut -f1)"
+node scripts/production-parity.mjs --expected-sha "$CANNAGUIDE_EXPECTED_MAIN_SHA" --json
+```
+
+The probe sends unauthenticated `GET`/`HEAD` requests and waits up to 30 minutes for all
+three `version.json` files to report that SHA. It then checks configured security and cache
+headers, the manifest and icon targets, the service worker and its entry registration, and
+known platform-specific routes and redirects. The root document, manifest, service worker,
+entry bundle and icons must also carry their real media type, so an SPA fallback page served
+with HTTP 200 is drift. Security header values are compared case-sensitively except where the
+header defines them as case-insensitive. Only `MATCH`, `EXACT_MAIN` and
+`INTENTIONAL_PLATFORM_DIFFERENCE` count as parity. A host still serving another SHA when the
+wait ends, or a configured header or route that differs, is `DRIFT` and exits 1. Anything
+unproven -- an unreachable host, an abbreviated or unparsable build identity -- is `UNKNOWN`
+and exits 2; an unreachable host never counts as drift or as a platform difference. Use
+`--wait-seconds 0` for an immediate observation without a deployment wait; any skew is then
+`DRIFT`. Each response body inspected by the probe is capped at 4 MiB; an oversized or
+unreadable body is reported as unknown. The probe counts modulepreload links but does not
+fetch those assets, model files, or WASM runtimes. A matching `version.json` is deployment
+metadata, not proof that every served asset byte or offline interaction is identical.
+
+This read-only check does not publish a release, change provider settings, or qualify
+desktop installers. `scripts/production-parity.scenarios.test.mjs` runs the whole probe
+against an in-memory model of the three hosts (partial propagation, a stale host, a wrong
+alias, header divergence, network failures, abbreviated identities) with no network access;
+CI runs it with the governance regression tests.
+
 ## GitHub Pages (primary)
 
 Production builds are deployed automatically via `.github/workflows/deploy.yml` when CI passes on `main`.

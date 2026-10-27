@@ -31,6 +31,20 @@ export function check(id, status, expected, actual, details = {}) {
     return { id, status, expected, actual, ...details }
 }
 
+// Only these states count as parity. Anything else -- EXPECTED_SKEW, INVALID or a
+// status this module does not know -- is unproven, so it can never aggregate to MATCH.
+export const PASS_STATUSES = new Set(['MATCH', 'EXACT_MAIN', 'INTENTIONAL_PLATFORM_DIFFERENCE'])
+
+export function aggregateStatus(statuses) {
+    if (statuses.includes('DRIFT')) return 'DRIFT'
+    return statuses.every((status) => PASS_STATUSES.has(status)) ? 'MATCH' : 'UNKNOWN'
+}
+
+export function exitCodeFor(status) {
+    if (status === 'MATCH') return 0
+    return status === 'DRIFT' ? 1 : 2
+}
+
 export function normalizeHeader(value) {
     return String(value ?? '')
         .trim()
@@ -186,6 +200,15 @@ export function platformCacheExpectation(host, pathKind, policies) {
 export function cacheCheck(host, key, response, policies) {
     const expected = platformCacheExpectation(host, key, policies)
     const actual = response.headers['cache-control'] ?? null
+    // No response means no headers to compare: unproven, not drift.
+    if (response.status === null) {
+        return check(
+            `cache.${key}`,
+            'UNKNOWN',
+            expected ?? 'configured cache policy',
+            response.error,
+        )
+    }
     if (!expected) return check(`cache.${key}`, 'UNKNOWN', 'configured cache policy', actual)
     return check(
         `cache.${key}`,

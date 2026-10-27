@@ -7,12 +7,14 @@ import process from 'node:process'
 import { setTimeout as sleepTimer } from 'node:timers/promises'
 import { fileURLToPath, URL } from 'node:url'
 import {
+    aggregateStatus,
     cacheCheck,
     check,
     classifySha,
     comparableCsp,
     compareHeaders,
     expectedStatuses,
+    exitCodeFor,
     getMetaCsp,
     parseRootAssets,
     readPolicies,
@@ -336,7 +338,13 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
 
     const globalHeaders =
         host.platform === 'vercel' ? policies.vercelSecurity : policies.cloudflareSecurity
-    if (host.platform === 'github-pages') {
+    if (root.status === null) {
+        // Without a response, an absent header is not evidence of anything -- in
+        // particular not of GitHub Pages' intentional header gap.
+        for (const name of SECURITY_HEADERS) {
+            checks.push(check(`security.${name}`, 'UNKNOWN', 'response headers', root.error))
+        }
+    } else if (host.platform === 'github-pages') {
         for (const name of SECURITY_HEADERS) {
             const actual = root.headers[name] ?? null
             if (name === 'strict-transport-security') {
@@ -530,16 +538,10 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
 
     checks.push(...(await checkRedirects(host, fetchImpl)))
 
-    const statuses = checks.map((item) => item.status)
-    const status = statuses.includes('DRIFT')
-        ? 'DRIFT'
-        : statuses.includes('UNKNOWN') || statuses.includes('INVALID')
-          ? 'UNKNOWN'
-          : 'MATCH'
     return {
         host: host.name,
         base: host.base,
-        status,
+        status: aggregateStatus(checks.map((item) => item.status)),
         version: versionSample.body,
         assetGraph: assets,
         checks,
@@ -589,13 +591,10 @@ export async function runProbe({
     const configChecks = Object.entries(policyMismatch).map(([name, result]) =>
         check(`repo-policy.${name}`, result.status, result.expected, result.actual),
     )
-    const hostStates = hosts.map((host) => host.status)
-    const status =
-        hostStates.includes('DRIFT') || configChecks.some((item) => item.status === 'DRIFT')
-            ? 'DRIFT'
-            : hostStates.includes('UNKNOWN')
-              ? 'UNKNOWN'
-              : 'MATCH'
+    const status = aggregateStatus([
+        ...hosts.map((host) => host.status),
+        ...configChecks.map((item) => item.status),
+    ])
     return {
         generatedAt: new Date(now()).toISOString(),
         expectedMainSha: expectedSha,
@@ -653,8 +652,7 @@ async function main() {
                 logger.log(`${host.host}: ${host.status} ${JSON.stringify(counts)}`)
             }
         }
-        if (report.status === 'DRIFT') process.exitCode = 1
-        else if (report.status === 'UNKNOWN') process.exitCode = 2
+        process.exitCode = exitCodeFor(report.status)
     } catch (error) {
         logger.error(error instanceof Error ? error.message : String(error))
         process.exitCode = 2

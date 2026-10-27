@@ -33,6 +33,15 @@ describe('transformers.js ONNX runtime origin', () => {
         expect(new URL(wasmPaths ?? '').origin).toBe(location.origin)
     })
 
+    it('never probes the app origin for local models', async () => {
+        // Vercel and Cloudflare answer /models/<repo>/config.json with the SPA
+        // fallback (200 text/html), which transformers.js then parses as the
+        // model config. The app ships no transformers.js models of its own.
+        ;(transformersEnv as Record<string, unknown>).allowLocalModels = true
+        const mod = await loadTransformers()
+        expect(mod.env.allowLocalModels).toBe(false)
+    })
+
     it('refuses to hand back a module still aimed at the CDN', async () => {
         transformersEnv.backends = undefined
         await expect(loadTransformers()).rejects.toThrow(/refusing the CDN default/)

@@ -829,10 +829,10 @@ export const settingsView = {
         clearArchivesSuccess: 'Toutes les archives IA ont ete effacees.',
         runCleanup: 'Lancer le nettoyage du stockage maintenant',
         runCleanupDesc:
-            "Archive automatiquement les anciens journaux de culture et supprime les anciennes photos pour liberer de l'espace.",
+            "Archive automatiquement les anciens journaux de culture et supprime les anciennes photos qu'aucune entree du journal n'utilise pour liberer de l'espace. Les photos de votre journal sont conservees.",
         cleanupRunning: 'Nettoyage du stockage...',
         cleanupSuccess:
-            'Nettoyage du stockage termine. {{count}} anciennes photos supprimees et anciens journaux archives.',
+            'Nettoyage du stockage termine. {{count}} photos inutilisees supprimees et anciens journaux archives.',
         cleanupError: 'Le nettoyage du stockage a echoue. Veuillez reessayer.',
         storageWarningTitle: 'Le stockage se remplit.',
         storageWarningBody:

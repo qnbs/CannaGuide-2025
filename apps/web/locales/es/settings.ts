@@ -825,10 +825,10 @@ export const settingsView = {
         clearArchivesSuccess: 'Todos los archivos AI han sido borrados.',
         runCleanup: 'Ejecutar Limpieza de Almacenamiento Ahora',
         runCleanupDesc:
-            'Archiva automaticamente registros de cultivo antiguos y elimina fotos guardadas mas antiguas para liberar espacio.',
+            'Archiva automaticamente registros de cultivo antiguos y elimina fotos antiguas que ninguna entrada del diario usa para liberar espacio. Las fotos de tu diario se conservan.',
         cleanupRunning: 'Limpiando almacenamiento...',
         cleanupSuccess:
-            'Limpieza de almacenamiento completada. Se eliminaron {{count}} fotos antiguas y se archivaron registros mas antiguos.',
+            'Limpieza de almacenamiento completada. Se eliminaron {{count}} fotos sin usar y se archivaron registros mas antiguos.',
         cleanupError: 'La limpieza de almacenamiento fallo. Por favor intentalo de nuevo.',
         storageWarningTitle: 'El almacenamiento se esta llenando.',
         storageWarningBody: 'Considera ejecutar la limpieza pronto para evitar fallos al guardar.',

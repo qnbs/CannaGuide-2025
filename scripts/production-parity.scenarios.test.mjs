@@ -486,3 +486,23 @@ test('a root document not served as HTML is DRIFT even with the right bytes', as
     )
     assert.equal(report.status, 'DRIFT')
 })
+
+test('a manifest link with a different query is not the probed manifest', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) =>
+            name === 'github-pages' && path === ''
+                ? {
+                      ...response,
+                      body: response.body.replace(
+                          './manifest.json',
+                          './manifest.json?variant=other',
+                      ),
+                  }
+                : response,
+    })
+    const report = await probe(hosts)
+    const link = hostReport(report, 'github-pages').checks.find(
+        (item) => item.id === 'entry.manifest-link',
+    )
+    assert.deepEqual([link.status, link.actual], ['DRIFT', './manifest.json?variant=other'])
+})

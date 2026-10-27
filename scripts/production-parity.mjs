@@ -355,7 +355,8 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
             assets.modulepreloadCount,
         ),
     )
-    // The probe validates manifest.json, so the page must link that same file.
+    // The probe validates manifest.json, so the page must link that exact URL: a
+    // different query could select a different manifest.
     const probedManifest = urlFor(host, 'manifest.json')
     const linkedManifest = assets.manifest ? tryUrl(assets.manifest, host.base) : null
     checks.push(
@@ -364,7 +365,8 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
             root.error
                 ? 'UNKNOWN'
                 : linkedManifest?.origin === probedManifest.origin &&
-                    linkedManifest.pathname === probedManifest.pathname
+                    linkedManifest.pathname === probedManifest.pathname &&
+                    linkedManifest.search === probedManifest.search
                   ? 'MATCH'
                   : 'DRIFT',
             probedManifest.href,

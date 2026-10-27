@@ -6,16 +6,49 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-10-28
+
+Web/PWA release. The Tauri desktop shell stays at `0.1.0`: no signed installer, notarized bundle or updater feed ships with this release, and Cloud Sync stays disabled.
+
+### Added
+
+- **feat(ops):** Read-only three-host production parity probe. It compares the served `version.json`, HTML shell, manifest, service worker and security headers of GitHub Pages, Cloudflare Pages and Vercel production, and reports expected per-host differences separately from real drift (#619)
+
 ### Changed
 
-- **fix(a11y):** the 14 curated WCAG-AA contrast pairs now pass. `neutral-500` is lightened per theme, desert `danger` and rainbow `info` move just enough to clear 4.5:1, and `text-on-accent` is dark on the four themes where white fails on `primary-600`. Primary labels on solid `primary-600` (and the shared primary gradients, now opaque) use `text-on-accent`. White labels that sat on `slate-500` move to `slate-600`/`slate-700`, because the lightened `neutral-500` step is a text color and no longer a safe white-text background. The `--color-primary-*` brand scales are unchanged. `node scripts/check-contrast.mjs` reports 0 below AA. `--strict` stays off. `.a11y-baseline.json` is unchanged because this slice does not remove jsx-a11y warnings.
+- **fix(pwa):** A new service worker is activated only after the user accepts the update prompt. `install` no longer calls `skipWaiting()`, so an installed client is not reloaded underneath the user while they work (#555)
+- **fix(a11y):** Settings controls are named through `SettingsRow`. Switches, selects, sliders and inputs inside a settings row now carry a programmatic name, which clears the critical axe `button-name` / `label` failures across Settings, including Voice and Speech (#556)
+- **fix(a11y):** the 14 curated WCAG-AA contrast pairs now pass. `neutral-500` is lightened per theme, desert `danger` and rainbow `info` move just enough to clear 4.5:1, and `text-on-accent` is dark on the four themes where white fails on `primary-600`. Primary labels on solid `primary-600` (and the shared primary gradients, now opaque) use `text-on-accent`. White labels that sat on `slate-500` move to `slate-600`/`slate-700`, because the lightened `neutral-500` step is a text color and no longer a safe white-text background. The `--color-primary-*` brand scales are unchanged. `node scripts/check-contrast.mjs` reports 0 below AA. `--strict` stays off. `.a11y-baseline.json` is unchanged because this slice does not remove jsx-a11y warnings (#557)
+
+### Fixed
+
+- **fix(backup):** Restore writes the imported images before it replaces the saved state, so a full quota or an aborted write can no longer leave a restored journal pointing at photos that were never stored (#620)
+- **fix(images):** Automatic image pruning never deletes a photo that live, backed-up or archived journal data still references; `indexedDbPruneService` refuses the `CannaGuideDB/images` store, and running out of storage surfaces an error instead of evicting user photos (#621)
+- **fix(privacy):** Erase-all removes every registered application database (one registry, guarded by a source scan) and no longer reports a blocked delete as success, so the CRDT document, RAG embedding cache and vision-model cache are erased too. Privacy and onboarding copy no longer claim a Google Fonts connection or a cloud sync this version does not provide (#550)
+- **fix(ai):** The persisted monthly AI budget is validated before the budget guard uses it; non-finite values and malformed month keys fall back to the default (#599)
+- **fix(web):** App icons are linked through `%BASE_URL%`, so every host and the desktop bundle resolve them (#624)
+- **fix(desktop):** The Tauri build embeds `apps/web/dist` with the root asset base and validates the entry point and local assets before packaging; the artifact upload fails when no bundle was produced (#581)
 
 ### Security
 
-- Harden ZIP backup restore by removing remote saved strain-tip images, validating bounded raster payloads and image timestamps, and preserving existing IndexedDB images when restored IDs collide.
-- **fix(ci):** Labeler runs on `pull_request` instead of `pull_request_target`. The job still has `contents: read` and `pull-requests: write`, and it does not check out the pull request. Same-repo pulls keep labels. The job is skipped when the head repository is not this one, so a fork pull does not fail the check with a 403.
-- **fix(csp):** Zod runs with `jitless` before app or AI-core schemas parse. Zod 4 otherwise probes `new Function`, and a strict CSP reports that caught call. `script-src` stays `'self' 'unsafe-inline' 'wasm-unsafe-eval'` with no `unsafe-eval`.
-- **chore(deps):** `pnpm.overrides` — `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj: JS injection via an untrusted AST passed to `compile`; GHSA-p8wg-vrv2-v86f: prototype-method bypass when `allowProtoMethodsByDefault` is true; dev-only path via `conventional-changelog-writer`)
+- **fix(local-ai):** The direct onnxruntime-web 1.30 runtime no longer loads its JavaScript glue from jsDelivr, and its wasm binary is fetched with a pinned SRI digest (`ORT_WASM_SRI`) and handed to ORT as `wasmBinary`. A tampered binary is rejected and inference falls back to the heuristic path. Verified in Chrome against the production build, including a one-byte tamper control. Scope: the nested onnxruntime-web 1.14 inside `@xenova/transformers` is unchanged and tracked separately (#585) (#628)
+- Harden ZIP backup restore by removing remote saved strain-tip images, validating bounded raster payloads and image timestamps, and preserving existing IndexedDB images when restored IDs collide (#600)
+- **fix(csp):** Community Share, external strain catalogs and Cansativa, which the production `connect-src` blocks, are gated like cloud sync instead of failing with a generic error, and the CORS-proxy fallback is removed so a search term cannot reach a third-party relay. The CSP is not widened (#553)
+- **fix(csp):** Zod runs with `jitless` before app or AI-core schemas parse. Zod 4 otherwise probes `new Function`, and a strict CSP reports that caught call. `script-src` stays `'self' 'unsafe-inline' 'wasm-unsafe-eval'` with no `unsafe-eval` (#558)
+- **fix(ci):** The GitHub Pages deploy refuses fork-origin `workflow_run` events at job level and again on the privileged checkout step, and its concurrency group is trusted-only; this closes code-scanning alert 353 (`actions/untrusted-checkout`). Each code-scanning tool now has a single source (#627, #629)
+- **ci(security):** Deploy secrets are kept off `pull_request` workflows: the Cloudflare preview builds without a deploy token, and fork pull requests are skipped (#552)
+- **fix(ci):** Release Publish checks out and publishes with the job token instead of `RELEASE_PAT || github.token`, so a stale personal token can no longer fail a release before the tag step (#554)
+- **fix(ci):** Labeler runs on `pull_request` instead of `pull_request_target`. The job still has `contents: read` and `pull-requests: write`, and it does not check out the pull request. Same-repo pulls keep labels. The job is skipped when the head repository is not this one, so a fork pull does not fail the check with a 403 (#559)
+- **fix(deps):** Runtime security paths patched: DOMPurify critical/high advisories and the vulnerable transitive ZIP, IP-address and query-parser copies are raised, and the production audit reports zero advisories. `pnpm.overrides` adds `handlebars >=4.7.10 <5` (GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f; dev-only path via `conventional-changelog-writer`) (#580)
+- **fix(deps):** `postcss-selector-parser` 6.x patched for GHSA-rj75-hqrm-r3gf (#617)
+- **fix(desktop):** `rustls`, `rustls-webpki` and `tokio` patch releases (#618); `webpki-root-certs` 1.0.11 drops the distrusted emSign roots (RUSTSEC-2026-0383), with a Cargo lockfile floor test so the versions cannot regress (#626)
+
+### Operations
+
+- **fix(retention):** Deployment retention judges Vercel aliases by their current state and frees finished branch aliases (#623). Before a delete, it waits a bounded ~10 minutes for edge propagation instead of failing on the previous build, bounds every version request with a deadline, re-reads the GitHub pull-request state after the wait, and refuses the batch if `main` moved (#630)
+- **fix(ci):** The desktop build starts under the allowed-actions policy (#622), builds an unsigned macOS bundle when no Apple ID is provisioned (#625), and main pushes diff against the previous commit for desktop check selection (#616). Workflow artifacts from these builds are unsigned and are not release assets
+- **chore(ci):** CodeQL action pins aligned at v4.39.1 (#603)
+- **chore(deps):** Grouped dependency updates for AI/ML, UI and styling, testing, linting, build tools, core toolchain, supply-chain tooling and GitHub Actions (#601, #602, #604, #606, #607, #608, #611, #612, #613, #614, #615)
 
 ## [1.10.0] - 2026-10-07
 

@@ -4,6 +4,9 @@ import path from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { analyticsService } from '@/services/analyticsService'
+import { plantSimulationService } from '@/services/plantSimulationService'
+import { JournalEntryType, PlantStage, StrainType } from '@/types'
+import type { GrowSetup, Plant, Strain } from '@/types'
 import { lastLocalDayKeys, toLocalDayKey } from '@/utils/localDay'
 
 // CG-AUD-20261027-N02: the 14-day trends stepped back in fixed 24 h units from
@@ -39,6 +42,38 @@ function inTimeZone(tz: string, iso: string, entryIso = iso): { keys: string[]; 
 /** Days between two YYYY-MM-DD keys, computed in UTC so DST cannot interfere. */
 const dayGap = (a: string, b: string) =>
     (Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 864e5
+
+const STRAIN = {
+    id: 'strain-dst-test',
+    name: 'DST Strain',
+    type: StrainType.Hybrid,
+    thc: 20,
+    cbd: 1,
+    floweringTime: 56,
+    floweringType: 'Photoperiod',
+    agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
+    geneticModifiers: {
+        pestResistance: 1,
+        nutrientUptakeRate: 1,
+        stressTolerance: 1,
+        rue: 1,
+        vpdTolerance: { min: 0.8, max: 1.6 },
+        transpirationFactor: 1,
+        stomataSensitivity: 1,
+    },
+} as Strain
+
+const SETUP: GrowSetup = {
+    lightType: 'LED',
+    lightWattage: 300,
+    lightHours: 18,
+    ventilation: 'medium',
+    hasCirculationFan: true,
+    potSize: 11,
+    potType: 'Fabric',
+    medium: 'Soil',
+    dynamicLighting: false,
+}
 
 const CASES: Array<[string, string, string]> = [
     // [time zone, instant, expected local "today"]
@@ -80,13 +115,34 @@ describe('analytics day buckets across DST changes', () => {
         expect(keys.at(-1)).toBe(entry)
     })
 
-    it('compute() builds both 14-day trends from the same calendar days', () => {
+    it('compute() builds both trends on the same days and buckets entries by local day', () => {
         vi.useFakeTimers()
-        vi.setSystemTime(new Date('2026-10-27T22:30:00Z'))
+        vi.setSystemTime(new Date(2026, 9, 27, 23, 59, 30))
+        const days = lastLocalDayKeys(14)
+        const entry = (id: string, at: Date) => ({
+            id,
+            plantId: 'dst-plant',
+            type: JournalEntryType.Watering,
+            notes: id,
+            createdAt: at.getTime(),
+        })
+        const plant: Plant = {
+            ...plantSimulationService.createPlant(STRAIN, SETUP, 'DST Plant'),
+            id: 'dst-plant',
+            stage: PlantStage.Vegetative,
+            journal: [
+                entry('late-today', new Date(2026, 9, 27, 23, 59)), // local 23:59 today
+                entry('oldest-day', new Date(2026, 9, 14, 8, 0)), // first day of the window
+                entry('before-window', new Date(2026, 9, 13, 23, 0)), // one day too old
+            ],
+        }
 
-        const trend = analyticsService.compute([]).journalActivityTrend
+        const { journalActivityTrend, healthTrend } = analyticsService.compute([plant])
 
-        expect(trend.map((d) => d.date)).toEqual(lastLocalDayKeys(14))
-        expect(trend.at(-1)?.date).toBe(toLocalDayKey(new Date()))
+        expect(journalActivityTrend.map((d) => d.date)).toEqual(days)
+        expect(healthTrend[0]?.trend.map((d) => d.date)).toEqual(days)
+        expect(journalActivityTrend.at(-1)).toEqual({ date: toLocalDayKey(new Date()), count: 1 })
+        expect(journalActivityTrend[0]).toEqual({ date: days[0], count: 1 })
+        expect(journalActivityTrend.reduce((sum, d) => sum + d.count, 0)).toBe(2)
     })
 })

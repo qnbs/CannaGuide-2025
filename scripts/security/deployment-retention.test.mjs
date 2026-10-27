@@ -1599,6 +1599,7 @@ test('a finished branch alias no longer protects, any other alias still does', (
                 id: 'alias-only-no-sha',
                 createdAt: 0,
                 sha: '',
+                shaComplete: false,
                 branch: '',
                 state: '',
                 aliases: [branchAlias],
@@ -1610,6 +1611,9 @@ test('a finished branch alias no longer protects, any other alias still does', (
     assert.equal(byId['merged-branch-alias'].deletable, true)
     assert.equal(byId['merged-custom-alias'].class, 'PROTECT_ACTIVE_ALIAS')
     assert.equal(byId['open-branch-alias'].class, 'PROTECT_OPEN_PR')
+    // Like a real attachAliasRecords alias-only row: the missing-SHA guard decides.
+    assert.equal(byId['alias-only-no-sha'].class, 'UNKNOWN')
+    assert.equal(byId['alias-only-no-sha'].limitation, 'commit sha is not a full 40-character id')
     assert.equal(byId['alias-only-no-sha'].deletable, false)
     assert.equal(byId.prod.class, 'PROTECT_PRODUCTION')
     for (const id of ['merged-custom-alias', 'open-branch-alias', 'alias-only-no-sha', 'prod']) {

@@ -413,6 +413,21 @@ async function checkVercelGate(planPath) {
         return
     }
     const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    // The same preconditions --apply checks first: production must already serve main.
+    try {
+        assertDeploySha(process.env, github.mainSha)
+        const version = await verifyPublicVersion(VERCEL_VERSION_URL, github.mainSha, {
+            attempts: 6,
+            pauseMs: 5000,
+        })
+        console.log(`version ${version.buildVersion} commit ${version.commit}`)
+    } catch (error) {
+        console.log(
+            `would-abort: ${error instanceof Error ? error.message : 'version check failed'}`,
+        )
+        process.exitCode = 1
+        return
+    }
     const { fresh, decision } = await freshDeleteDecision('vercel', frozen, github)
     if (decision.abort) {
         console.log(`would-abort: ${decision.errors.join('; ')}`)

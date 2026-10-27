@@ -6,7 +6,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
-## [1.11.0] - 2026-10-28
+## [1.11.0] - 2026-10-27
 
 Web/PWA release. The Tauri desktop shell stays at `0.1.0`: no signed installer, notarized bundle or updater feed ships with this release, and Cloud Sync stays disabled.
 

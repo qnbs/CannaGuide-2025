@@ -91,7 +91,9 @@ describe('ORT wasm CDN pin', () => {
      * package, so there is no binary to hash and these checks skip. Never in CI:
      * there a missing package would turn the digest gate off without a failure.
      */
-    const binaryChecks = installedOrtDist !== null || process.env['CI'] === 'true'
+    // Any truthy CI value counts: `CI=1` must not turn the digest gate off either.
+    const inCi = /^(1|true|yes)$/i.test(process.env['CI'] ?? '')
+    const binaryChecks = installedOrtDist !== null || inCi
 
     it.runIf(binaryChecks)('finds the installed onnxruntime-web package', () => {
         expect(installedOrtDist, `onnxruntime-web@${ORT_VERSION} is not installed`).not.toBeNull()

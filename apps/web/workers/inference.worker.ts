@@ -64,6 +64,36 @@ const loadPipeline = async (
     return promise
 }
 
+/**
+ * transformers.js returns tensors (e.g. feature-extraction output) as a class
+ * whose constructor returns a Proxy, and structured clone rejects proxies, so
+ * posting one failed with DataCloneError and embeddings never arrived (GH #635).
+ * Tensors become the plain `{ type, dims, data }` that embeddingService reads
+ * (the typed array itself is cloneable). Anything else is posted as is.
+ */
+interface TensorLike {
+    type: string
+    dims: unknown[]
+    data: ArrayBufferView
+}
+
+const isTensorLike = (value: unknown): value is TensorLike =>
+    typeof value === 'object' &&
+    value !== null &&
+    'type' in value &&
+    typeof value.type === 'string' &&
+    'dims' in value &&
+    Array.isArray(value.dims) &&
+    'data' in value &&
+    ArrayBuffer.isView(value.data)
+
+export const toCloneableResult = (result: unknown): unknown => {
+    if (isTensorLike(result)) {
+        return { type: result.type, dims: result.dims.map(Number), data: result.data }
+    }
+    return Array.isArray(result) ? result.map(toCloneableResult) : result
+}
+
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
@@ -87,7 +117,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
         checkAborted(messageId)
         const result = await pipe(input, inferenceOptions)
         clearAborted(messageId)
-        self.postMessage(workerOk(messageId, result))
+        self.postMessage(workerOk(messageId, toCloneableResult(result)))
     } catch (err) {
         self.postMessage(
             workerErr(messageId, err instanceof Error ? err.message : 'Worker inference failed'),

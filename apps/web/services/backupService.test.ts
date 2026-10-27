@@ -4,6 +4,9 @@ import 'fake-indexeddb/auto'
 const mocks = vi.hoisted(() => ({
     loadZip: vi.fn(),
     replacePrimaryPersistedSnapshot: vi.fn(),
+    // Race injection points around the dependent (image) write.
+    beforeDependentApply: vi.fn(async () => {}),
+    afterDependentApply: vi.fn(async () => {}),
 }))
 
 vi.mock('jszip', () => {
@@ -50,18 +53,30 @@ vi.mock('@/constants', () => ({
 
 vi.mock('@/services/persistedStateService', () => ({
     replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
+    // Mirrors the ordering contract proven in persistedStateService.test.ts: the
+    // dependent write commits first, the snapshot only after it, and a failed
+    // snapshot replacement reverts the dependent write.
     replacePrimaryPersistedSnapshotForRecovery: async (
         snapshot: string,
-        afterPrimaryReplace?: () => Promise<void>,
+        dependentWrite?: { apply: () => Promise<void>; revert: () => Promise<void> },
     ) => {
-        const success = await mocks.replacePrimaryPersistedSnapshot(snapshot)
-        if (!success) return { success: false, reloadRequired: false }
         try {
-            await afterPrimaryReplace?.()
-            return { success: true, reloadRequired: true }
+            await mocks.beforeDependentApply()
+            await dependentWrite?.apply()
+            await mocks.afterDependentApply()
         } catch (error) {
-            return { success: false, reloadRequired: true, error }
+            return { success: false, reloadRequired: false, error }
         }
+        let replaced = false
+        let replaceError: unknown
+        try {
+            replaced = await mocks.replacePrimaryPersistedSnapshot(snapshot)
+        } catch (error) {
+            replaceError = error
+        }
+        if (replaced) return { success: true, reloadRequired: true }
+        await dependentWrite?.revert().catch(() => {})
+        return { success: false, reloadRequired: false, error: replaceError }
     },
 }))
 
@@ -923,6 +938,173 @@ describe('backupService', () => {
 
             expect(result.success).toBe(true)
             expect(preservedImage).toEqual(existingImage)
+        })
+    })
+
+    // Images and the Redux snapshot live in different IndexedDB databases, so no
+    // transaction spans both. These cases pin the no-loss order: images commit
+    // atomically first, the snapshot is replaced only after them.
+    describe('importBackup restore order', () => {
+        const existingPhoto = { id: 'photo-existing', data: VALID_PNG_DATA_URL, createdAt: 1 }
+        const restoredPhotos = {
+            'photo-a': { id: 'photo-a', data: VALID_PNG_DATA_URL, createdAt: 10 },
+            'photo-b': { id: 'photo-b', data: VALID_PNG_DATA_URL, createdAt: 11 },
+        }
+
+        const seedImageStore = async (): Promise<IDBDatabase> => {
+            const db = await recreateImageDatabase()
+            await writeStoredImage(db, existingPhoto)
+            return db
+        }
+
+        const storedIds = (db: IDBDatabase): Promise<string[]> =>
+            new Promise((resolve, reject) => {
+                const request = db
+                    .transaction('images', 'readonly')
+                    .objectStore('images')
+                    .getAllKeys()
+                request.onsuccess = () => resolve(request.result.map(String).sort())
+                request.onerror = () => reject(request.error)
+            })
+
+        // Fail the batch at its second image, after the first add was queued.
+        const failSecondImageAdd = (mode: 'abort' | 'throw') => {
+            const originalAdd = IDBObjectStore.prototype.add
+            let calls = 0
+            vi.spyOn(IDBObjectStore.prototype, 'add').mockImplementation(function (
+                this: IDBObjectStore,
+                ...args: Parameters<IDBObjectStore['add']>
+            ) {
+                calls += 1
+                if (calls === 2 && mode === 'throw') {
+                    throw new DOMException('Image quota exceeded', 'QuotaExceededError')
+                }
+                const request = originalAdd.apply(this, args)
+                if (calls === 2) this.transaction.abort()
+                return request
+            })
+        }
+
+        it.each(['abort', 'throw'] as const)(
+            'keeps the current state and photos when the image batch fails (%s)',
+            async (mode) => {
+                const db = await seedImageStore()
+                failSecondImageAdd(mode)
+
+                const result = await importMockBackup({ version: 6 }, restoredPhotos)
+                const ids = await storedIds(db)
+                const preserved = await readStoredImage(db, existingPhoto.id)
+                db.close()
+
+                expect(result).toMatchObject({ success: false, reloadRequired: false })
+                expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+                // No partial batch: the first image's queued add did not commit either.
+                expect(ids).toEqual(['photo-existing'])
+                expect(preserved).toEqual(existingPhoto)
+            },
+        )
+
+        it('removes only the restored images when the snapshot write fails', async () => {
+            const db = await seedImageStore()
+            mocks.replacePrimaryPersistedSnapshot.mockRejectedValueOnce(
+                new DOMException('State quota exceeded', 'QuotaExceededError'),
+            )
+
+            const result = await importMockBackup({ version: 6 }, restoredPhotos)
+            const ids = await storedIds(db)
+            const preserved = await readStoredImage(db, existingPhoto.id)
+            db.close()
+
+            expect(result).toMatchObject({ success: false, reloadRequired: false })
+            expect(ids).toEqual(['photo-existing'])
+            expect(preserved).toEqual(existingPhoto)
+        })
+
+        it('does not revert over a newer write to a restored image ID', async () => {
+            const db = await seedImageStore()
+            const newerPhoto = { id: 'photo-a', data: VALID_PNG_DATA_URL, createdAt: 99 }
+            mocks.afterDependentApply.mockImplementationOnce(async () => {
+                await writeStoredImage(db, newerPhoto)
+            })
+            mocks.replacePrimaryPersistedSnapshot.mockRejectedValueOnce(new Error('write failed'))
+
+            const result = await importMockBackup({ version: 6 }, restoredPhotos)
+            const ids = await storedIds(db)
+            const kept = await readStoredImage(db, 'photo-a')
+            db.close()
+
+            expect(result.success).toBe(false)
+            expect(ids).toEqual(['photo-a', 'photo-existing'])
+            expect(kept).toEqual(newerPhoto)
+        })
+
+        it('aborts the whole batch when another writer takes a restored image ID', async () => {
+            const db = await seedImageStore()
+            const racingPhoto = { id: 'photo-b', data: VALID_PNG_DATA_URL, createdAt: 50 }
+            // Between the collision check and the write, another tab stores photo-b.
+            mocks.beforeDependentApply.mockImplementationOnce(async () => {
+                await writeStoredImage(db, racingPhoto)
+            })
+
+            const result = await importMockBackup({ version: 6 }, restoredPhotos)
+            const ids = await storedIds(db)
+            const racing = await readStoredImage(db, 'photo-b')
+            db.close()
+
+            expect(result).toMatchObject({ success: false, reloadRequired: false })
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+            expect(ids).toEqual(['photo-b', 'photo-existing'])
+            expect(racing).toEqual(racingPhoto)
+        })
+
+        it('completes on retry and stays idempotent when repeated', async () => {
+            const db = await seedImageStore()
+            failSecondImageAdd('abort')
+            const failed = await importMockBackup({ version: 6 }, restoredPhotos)
+            vi.mocked(IDBObjectStore.prototype.add).mockRestore()
+
+            const retried = await importMockBackup({ version: 6 }, restoredPhotos)
+            const repeated = await importMockBackup({ version: 6 }, restoredPhotos)
+            const ids = await storedIds(db)
+            const restoredA = await readStoredImage(db, 'photo-a')
+            db.close()
+
+            expect(failed.success).toBe(false)
+            expect(retried).toMatchObject({ success: true, reloadRequired: true })
+            expect(repeated).toMatchObject({ success: true, reloadRequired: true })
+            expect(mocks.replacePrimaryPersistedSnapshot).toHaveBeenCalledTimes(2)
+            expect(ids).toEqual(['photo-a', 'photo-b', 'photo-existing'])
+            expect(restoredA).toEqual(restoredPhotos['photo-a'])
+        })
+
+        it('leaves only unreferenced images after an interrupted restore, then retries', async () => {
+            const db = await seedImageStore()
+            // The snapshot write fails and the revert cannot open its transaction
+            // either -- the closest model of a tab closed between the two commits.
+            mocks.replacePrimaryPersistedSnapshot.mockRejectedValueOnce(new Error('tab closed'))
+            const originalTransaction = IDBDatabase.prototype.transaction
+            let readwriteCalls = 0
+            vi.spyOn(IDBDatabase.prototype, 'transaction').mockImplementation(function (
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
+            ) {
+                if (args[1] === 'readwrite' && ++readwriteCalls === 2) {
+                    throw new DOMException('The connection is closing', 'InvalidStateError')
+                }
+                return originalTransaction.apply(this, args)
+            })
+
+            const interrupted = await importMockBackup({ version: 6 }, restoredPhotos)
+            const leftover = await storedIds(db)
+            const retried = await importMockBackup({ version: 6 }, restoredPhotos)
+            const preserved = await readStoredImage(db, existingPhoto.id)
+            db.close()
+
+            expect(interrupted).toMatchObject({ success: false, reloadRequired: false })
+            // The current snapshot was never replaced; the extra images are inert.
+            expect(leftover).toEqual(['photo-a', 'photo-b', 'photo-existing'])
+            expect(retried).toMatchObject({ success: true, reloadRequired: true })
+            expect(preserved).toEqual(existingPhoto)
         })
     })
 

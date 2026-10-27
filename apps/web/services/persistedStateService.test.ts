@@ -52,20 +52,39 @@ describe('persistedStateService', () => {
         expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated:{"version":1}')
     })
 
-    it('fences stale writes while replacing a snapshot and dependent data', async () => {
+    const createDependentWrite = (applyError?: Error) => {
+        const order: string[] = []
+        mocks.setItem.mockImplementation(async () => {
+            order.push('primary')
+        })
+        return {
+            order,
+            write: {
+                apply: vi.fn(async () => {
+                    order.push('apply')
+                    if (applyError) throw applyError
+                }),
+                revert: vi.fn(async () => {
+                    order.push('revert')
+                }),
+            },
+        }
+    }
+
+    it('fences stale writes and commits dependent data before the snapshot', async () => {
         const { replacePrimaryPersistedSnapshotForRecovery } =
             await import('./persistedStateService')
-        const writeDependentData = vi.fn(async () => {})
+        const { order, write } = createDependentWrite()
 
         await expect(
-            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', writeDependentData),
+            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', write),
         ).resolves.toEqual({ success: true, reloadRequired: true })
 
         expect(mocks.suspendPersistence).toHaveBeenCalledOnce()
         expect(mocks.runExclusive).toHaveBeenCalledOnce()
         expect(mocks.commitRecoveryEpoch).toHaveBeenCalledOnce()
         expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated:restored-snapshot')
-        expect(writeDependentData).toHaveBeenCalledOnce()
+        expect(order).toEqual(['apply', 'primary'])
         expect(mocks.resumePersistence).not.toHaveBeenCalled()
     })
 
@@ -82,18 +101,71 @@ describe('persistedStateService', () => {
         expect(mocks.resumePersistence).toHaveBeenCalledOnce()
     })
 
-    it('keeps stale writes fenced and requires reload after a dependent-store failure', async () => {
+    it('leaves the current snapshot untouched when the dependent write fails', async () => {
         const { replacePrimaryPersistedSnapshotForRecovery } =
             await import('./persistedStateService')
-        const writeDependentData = vi.fn(async () => {
-            throw new Error('image quota exceeded')
+        const quota = new DOMException('Image quota exceeded', 'QuotaExceededError')
+        const { order, write } = createDependentWrite(quota)
+
+        await expect(
+            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', write),
+        ).resolves.toEqual({ success: false, reloadRequired: false, error: quota })
+
+        // Nothing was replaced, so the running app keeps its state and keeps saving.
+        expect(order).toEqual(['apply'])
+        expect(mocks.setItem).not.toHaveBeenCalled()
+        expect(mocks.commitRecoveryEpoch).not.toHaveBeenCalled()
+        expect(mocks.resumePersistence).toHaveBeenCalledOnce()
+    })
+
+    it('reverts the dependent write when the snapshot replacement fails', async () => {
+        const { replacePrimaryPersistedSnapshotForRecovery } =
+            await import('./persistedStateService')
+        const { order, write } = createDependentWrite()
+        const quota = new DOMException('State quota exceeded', 'QuotaExceededError')
+        mocks.setItem.mockImplementationOnce(async () => {
+            order.push('primary')
+            throw quota
         })
 
         await expect(
-            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', writeDependentData),
+            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', write),
+        ).resolves.toEqual({ success: false, reloadRequired: false, error: quota })
+
+        expect(order).toEqual(['apply', 'primary', 'revert'])
+        expect(mocks.commitRecoveryEpoch).not.toHaveBeenCalled()
+        expect(mocks.resumePersistence).toHaveBeenCalledOnce()
+    })
+
+    it('reports the snapshot failure, not the revert failure, when both fail', async () => {
+        const { replacePrimaryPersistedSnapshotForRecovery } =
+            await import('./persistedStateService')
+        const { write } = createDependentWrite()
+        const quota = new DOMException('State quota exceeded', 'QuotaExceededError')
+        mocks.setItem.mockRejectedValueOnce(quota)
+        write.revert.mockRejectedValueOnce(new Error('image database closed'))
+        vi.spyOn(console, 'debug').mockImplementation(() => {})
+
+        await expect(
+            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', write),
+        ).resolves.toEqual({ success: false, reloadRequired: false, error: quota })
+        expect(mocks.resumePersistence).toHaveBeenCalledOnce()
+    })
+
+    it('keeps dependent data and requires reload once the snapshot is live', async () => {
+        const { replacePrimaryPersistedSnapshotForRecovery } =
+            await import('./persistedStateService')
+        const { order, write } = createDependentWrite()
+        mocks.commitRecoveryEpoch.mockReturnValueOnce(false).mockReturnValueOnce(true)
+
+        await expect(
+            replacePrimaryPersistedSnapshotForRecovery('restored-snapshot', write),
         ).resolves.toMatchObject({ success: false, reloadRequired: true })
 
-        expect(mocks.commitRecoveryEpoch).toHaveBeenCalledOnce()
+        // The restored snapshot references the dependent data; removing it would
+        // leave dangling references.
+        expect(order).toEqual(['apply', 'primary'])
+        expect(write.revert).not.toHaveBeenCalled()
         expect(mocks.resumePersistence).not.toHaveBeenCalled()
     })
 

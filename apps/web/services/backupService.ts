@@ -13,7 +13,10 @@ import JSZip from 'jszip'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 import { openDB } from '@/services/db/connection'
-import { replacePrimaryPersistedSnapshotForRecovery } from '@/services/persistedStateService'
+import {
+    type DependentStoreWrite,
+    replacePrimaryPersistedSnapshotForRecovery,
+} from '@/services/persistedStateService'
 import { getT } from '@/i18n'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 import {
@@ -155,6 +158,9 @@ const sanitizeImportedStateImageReferences = async (
     return rejectedInlineImageCount
 }
 
+const isSameImage = (stored: unknown, image: StoredImageData): boolean =>
+    isRecord(stored) && stored.data === image.data && stored.createdAt === image.createdAt
+
 const findImagesToWrite = async (
     imageDb: IDBDatabase,
     images: StoredImageData[],
@@ -187,18 +193,65 @@ const findImagesToWrite = async (
             imagesToWrite.push(image)
             continue
         }
-        if (
-            isRecord(existing) &&
-            existing.data === image.data &&
-            existing.createdAt === image.createdAt
-        ) {
-            continue
-        }
+        if (isSameImage(existing, image)) continue
         throw new Error(String(getT()('settingsView.data.restoreBlocked')))
     }
 
     return imagesToWrite
 }
+
+/**
+ * Run one readwrite transaction on the images store; any failure aborts all of it.
+ * Async so that a throw from transaction() also surfaces as a rejection; everything
+ * before the first await still runs synchronously, keeping the transaction active.
+ */
+const runImageTransaction = async (
+    imageDb: IDBDatabase,
+    queueRequests: (store: IDBObjectStore) => void,
+): Promise<void> => {
+    const tx = imageDb.transaction('images', 'readwrite')
+    const transactionComplete = new Promise<void>((resolve, reject) => {
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+        tx.onabort = () => reject(tx.error)
+    })
+    try {
+        // Queue requests synchronously so the transaction remains active.
+        queueRequests(tx.objectStore('images'))
+    } catch (error) {
+        // A synchronous throw leaves the requests queued before it pending; abort
+        // so they cannot commit as a partial batch.
+        tx.abort()
+        transactionComplete.catch(() => {})
+        throw error
+    }
+    return transactionComplete
+}
+
+/**
+ * Backup images as the restore's dependent write. findImagesToWrite returned only
+ * IDs absent from the store, so `add` never replaces an existing photo (a racing
+ * writer's ID makes it fail, aborting the batch), and `revert` removes only
+ * records that still hold exactly what this restore wrote.
+ */
+const createImageRestoreWrite = (
+    imageDb: IDBDatabase,
+    images: StoredImageData[],
+): DependentStoreWrite => ({
+    apply: () =>
+        runImageTransaction(imageDb, (store) => {
+            for (const image of images) store.add(image)
+        }),
+    revert: () =>
+        runImageTransaction(imageDb, (store) => {
+            for (const image of images) {
+                const request = store.get(image.id)
+                request.onsuccess = () => {
+                    if (isSameImage(request.result, image)) store.delete(image.id)
+                }
+            }
+        }),
+})
 
 // ---------------------------------------------------------------------------
 // Service
@@ -450,26 +503,15 @@ export const backupService = {
                 imagesToWrite = await findImagesToWrite(imageDb, images)
             }
 
-            // 4. Replace state and images under the persistence recovery fence. This
-            // prevents an already-hydrated Redux store from writing stale state before
-            // the page reloads after a successful restore.
+            // 4. Write images, then replace state, under the persistence recovery
+            // fence. The fence prevents an already-hydrated Redux store from writing
+            // stale state before the page reloads after a successful restore; the
+            // order keeps the current state intact if the image write fails.
             const restoreResult = await replacePrimaryPersistedSnapshotForRecovery(
                 sanitizedStateString,
-                async () => {
-                    if (!imageDb || imagesToWrite.length === 0) return
-
-                    const tx = imageDb.transaction('images', 'readwrite')
-                    const store = tx.objectStore('images')
-                    const transactionComplete = new Promise<void>((resolve, reject) => {
-                        tx.oncomplete = () => resolve()
-                        tx.onerror = () => reject(tx.error)
-                        tx.onabort = () => reject(tx.error)
-                    })
-
-                    // Queue writes synchronously so the transaction remains active.
-                    for (const image of imagesToWrite) store.add(image)
-                    await transactionComplete
-                },
+                imageDb && imagesToWrite.length > 0
+                    ? createImageRestoreWrite(imageDb, imagesToWrite)
+                    : undefined,
             )
             const rejectedImageCount =
                 rejectedImageIds.size + unidentifiedRejectedImageCount + rejectedInlineImageCount

@@ -11,6 +11,7 @@ import type { PluginOption } from 'vite'
 const __webRoot = path.dirname(fileURLToPath(import.meta.url))
 const requireFromConfig = createRequire(import.meta.url)
 import { CSP, DEV_CSP, PERMISSIONS_POLICY, COEP, HSTS, REFERRER_POLICY } from './securityHeaders.ts'
+import { transformersOrtAssetsPlugin } from './lib/transformersOrtAssets.mjs'
 
 // ML packages that may not be installed (they live in @cannaguide/ai-core optionalDeps).
 // When missing, dynamic imports at runtime will fail gracefully — the app guards these.
@@ -221,6 +222,8 @@ export default defineConfig({
         optionalMlPlugin(),
         devCspPlugin(),
         buildVersionPlugin(),
+        // Self-hosts the ORT 1.14 wasm that transformers.js runs, digest-pinned (GH #585).
+        transformersOrtAssetsPlugin(import.meta.url),
         react(),
         babel({
             presets: [reactCompilerPreset()],

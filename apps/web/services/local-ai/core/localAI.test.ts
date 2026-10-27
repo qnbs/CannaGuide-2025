@@ -11,7 +11,9 @@ interface SvcInternal {
 const pipelineMock = vi.fn()
 
 vi.mock('@xenova/transformers', () => ({
-    env: {},
+    // Same shape as the real module: loadTransformers refuses an env without the
+    // ONNX wasm config rather than leave the runtime aimed at the CDN.
+    env: { backends: { onnx: { wasm: {} } } },
     pipeline: (...args: unknown[]) => pipelineMock(...args),
 }))
 

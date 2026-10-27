@@ -90,21 +90,21 @@ describe('indexedDbPruneService', () => {
 
     describe('pruneOldestEntries', () => {
         it('removes entries above maxCount', async () => {
-            await createDbWithEntries('images', 10)
+            await createDbWithEntries('search', 10)
             const { pruneOldestEntries } = await loadService()
 
-            const removed = await pruneOldestEntries(DB_NAME, 'images', 5)
+            const removed = await pruneOldestEntries(DB_NAME, 'search', 5)
             expect(removed).toBe(5)
 
-            const remaining = await countEntries('images')
+            const remaining = await countEntries('search')
             expect(remaining).toBe(5)
         })
 
         it('returns 0 when count is within limit', async () => {
-            await createDbWithEntries('images', 3)
+            await createDbWithEntries('search', 3)
             const { pruneOldestEntries } = await loadService()
 
-            const removed = await pruneOldestEntries(DB_NAME, 'images', 10)
+            const removed = await pruneOldestEntries(DB_NAME, 'search', 10)
             expect(removed).toBe(0)
         })
 
@@ -119,6 +119,14 @@ describe('indexedDbPruneService', () => {
             const removed = await pruneOldestEntries('NoSuchDB', 'store', 5)
             expect(removed).toBe(0)
         })
+
+        it('refuses to cap the journal photo store', async () => {
+            await createDbWithEntries('images', 10)
+            const { pruneOldestEntries } = await loadService()
+
+            await expect(pruneOldestEntries(DB_NAME, 'images', 5)).resolves.toBe(0)
+            expect(await countEntries('images')).toBe(10)
+        })
     })
 
     describe('pruneOnQuotaThreshold', () => {
@@ -129,6 +137,24 @@ describe('indexedDbPruneService', () => {
             expect(result).toHaveProperty('prunedEntries')
             expect(result).toHaveProperty('stores')
             expect(result).toHaveProperty('quota')
+        })
+
+        it('never deletes journal photos above the quota threshold', async () => {
+            await createDbWithEntries('images', 600)
+            Object.defineProperty(globalThis.navigator, 'storage', {
+                configurable: true,
+                value: { estimate: async () => ({ usage: 95, quota: 100 }) },
+            })
+            try {
+                const { pruneOnQuotaThreshold } = await loadService()
+                const result = await pruneOnQuotaThreshold(80)
+
+                expect(result.quota.available).toBe(true)
+                expect(result.stores.some((entry) => entry.store === 'images')).toBe(false)
+                expect(await countEntries('images')).toBe(600)
+            } finally {
+                Reflect.deleteProperty(globalThis.navigator, 'storage')
+            }
         })
 
         it('result has correct shape', async () => {

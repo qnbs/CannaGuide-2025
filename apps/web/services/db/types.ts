@@ -34,6 +34,9 @@ export const WARNING_JOURNAL_KEEP_PER_PLANT = 220
 export const CRITICAL_JOURNAL_KEEP_PER_PLANT = 120
 export const MAX_ARCHIVED_LOGS_PER_PLANT = 1200
 export const IMAGE_PRUNE_BATCH_SIZE = 20
+// A photo is stored before its journal entry is dispatched, and other tabs persist
+// their journal on a debounce; a fresh unreferenced image may simply be in flight.
+export const IMAGE_PRUNE_GRACE_MS = 24 * 60 * 60 * 1000
 
 export const stripSimulationDerivedData = (simulationState: SimulationState): SimulationState => {
     const { vpdProfiles: _vp, ...rest } = simulationState

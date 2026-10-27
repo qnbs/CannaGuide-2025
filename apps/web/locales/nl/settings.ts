@@ -806,10 +806,10 @@ export const settingsView = {
         clearArchivesSuccess: 'Alle AI-archieven zijn gewist.',
         runCleanup: 'Opslagruimte nu opschonen',
         runCleanupDesc:
-            "Archiveert automatisch oude kweeklogboeken en verwijdert oudere opgeslagen foto's om ruimte vrij te maken.",
+            "Archiveert automatisch oude kweeklogboeken en verwijdert oudere foto's die geen logboekitem meer gebruikt om ruimte vrij te maken. Foto's in je logboek blijven bewaard.",
         cleanupRunning: 'Opslagruimte opschonen...',
         cleanupSuccess:
-            "Opschoning voltooid. {{count}} oude foto's verwijderd en oudere logboeken gearchiveerd.",
+            "Opschoning voltooid. {{count}} ongebruikte foto's verwijderd en oudere logboeken gearchiveerd.",
         cleanupError: 'Opschoning mislukt. Probeer het opnieuw.',
         storageWarningTitle: 'Opslagruimte raakt vol.',
         storageWarningBody:

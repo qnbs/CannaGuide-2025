@@ -806,10 +806,10 @@ export const settingsView = {
         clearArchivesSuccess: 'Alle KI-Archive wurden geleert.',
         runCleanup: 'Speicherbereinigung jetzt starten',
         runCleanupDesc:
-            'Archiviert automatisch alte Grow-Logs und entfernt ältere gespeicherte Fotos, um Speicherplatz freizugeben.',
+            'Archiviert automatisch alte Grow-Logs und entfernt ältere Fotos, die kein Journaleintrag mehr verwendet, um Speicherplatz freizugeben. Fotos in deinem Journal bleiben erhalten.',
         cleanupRunning: 'Speicher wird bereinigt...',
         cleanupSuccess:
-            'Speicherbereinigung abgeschlossen. {{count}} alte Fotos entfernt und ältere Logs archiviert.',
+            'Speicherbereinigung abgeschlossen. {{count}} nicht verwendete Fotos entfernt und ältere Logs archiviert.',
         cleanupError: 'Speicherbereinigung fehlgeschlagen. Bitte erneut versuchen.',
         storageWarningTitle: 'Speicher wird knapp.',
         storageWarningBody: 'Starte bald eine Bereinigung, um Speicherfehler zu vermeiden.',

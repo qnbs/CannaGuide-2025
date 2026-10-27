@@ -782,10 +782,10 @@ export const settingsView = {
         clearArchivesSuccess: 'All AI archives have been cleared.',
         runCleanup: 'Run Storage Cleanup Now',
         runCleanupDesc:
-            'Automatically archives old grow logs and removes older saved photos to free up space.',
+            'Automatically archives old grow logs and removes older photos that no journal entry uses to free up space. Photos in your journal are kept.',
         cleanupRunning: 'Cleaning up storage...',
         cleanupSuccess:
-            'Storage cleanup complete. Removed {{count}} old photos and archived older logs.',
+            'Storage cleanup complete. Removed {{count}} unused photos and archived older logs.',
         cleanupError: 'Storage cleanup failed. Please try again.',
         storageWarningTitle: 'Storage getting full.',
         storageWarningBody: 'Consider running cleanup soon to avoid save failures.',

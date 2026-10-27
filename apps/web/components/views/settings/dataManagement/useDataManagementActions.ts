@@ -255,14 +255,14 @@ export function useDataManagementActions() {
             }
 
             const deletedImages = await dbService.pruneOldImages(80)
-            const pruneResult = await pruneOnQuotaThreshold()
-            const totalPruned = deletedImages + pruneResult.prunedEntries
+            await pruneOnQuotaThreshold()
 
             setStorageRefreshTick((prev) => prev + 1)
 
+            // cleanupSuccess reports removed photos; search-index entries are not photos.
             getUISnapshot().addNotification({
                 type: 'success',
-                message: String(t('settingsView.data.cleanupSuccess', { count: totalPruned })),
+                message: String(t('settingsView.data.cleanupSuccess', { count: deletedImages })),
             })
         } catch (error) {
             console.debug('[DataManagement] Storage cleanup failed:', error)

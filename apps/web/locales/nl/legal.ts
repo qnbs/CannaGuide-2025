@@ -44,7 +44,7 @@ export const legal = {
             thirdParty: {
                 title: 'Diensten van Derden',
                 content:
-                    'De lettertypen zitten in de app. Optionele functies kunnen deze hosts bereiken: generativelanguage.googleapis.com, api.openai.com, api.x.ai en api.anthropic.com wanneer je AI inschakelt met je eigen API-sleutel; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co en huggingfaceusercontent.com plus cdn.jsdelivr.net wanneer een lokaal model of een runtime wordt gedownload; api.elevenlabs.io wanneer cloud-spraak is ingeschakeld. Er worden geen gegevens gedeeld met adverteerders of analyticsproviders. Cloudsynchronisatie is niet actief in deze versie.',
+                    'De lettertypen zitten in de app. Optionele functies kunnen deze hosts bereiken: generativelanguage.googleapis.com, api.openai.com, api.x.ai en api.anthropic.com wanneer je AI inschakelt met je eigen API-sleutel; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co, us.aws.cdn.hf.co en huggingfaceusercontent.com plus cdn.jsdelivr.net wanneer een lokaal model of een runtime wordt gedownload; api.elevenlabs.io wanneer cloud-spraak is ingeschakeld. Er worden geen gegevens gedeeld met adverteerders of analyticsproviders. Cloudsynchronisatie is niet actief in deze versie.',
             },
             rights: {
                 title: 'Jouw Rechten (AVG/DSGVO)',

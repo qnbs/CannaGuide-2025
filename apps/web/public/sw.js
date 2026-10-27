@@ -34,6 +34,8 @@ const ML_MODEL_HOSTS = new Set([
     'huggingface.co',
     'cdn-lfs.huggingface.co',
     'cdn-lfs.hf.co',
+    // huggingface.co 302-redirects model binaries here (Xet storage, GH #634).
+    'us.aws.cdn.hf.co',
     'huggingfaceusercontent.com',
     'cdn.jsdelivr.net',
 ])

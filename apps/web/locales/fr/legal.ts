@@ -44,7 +44,7 @@ export const legal = {
             thirdParty: {
                 title: 'Services Tiers',
                 content:
-                    "La typographie est fournie avec l'application. Les fonctions optionnelles peuvent contacter ces hotes : generativelanguage.googleapis.com, api.openai.com, api.x.ai et api.anthropic.com si vous activez l'IA avec votre propre cle API ; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co et huggingfaceusercontent.com ainsi que cdn.jsdelivr.net lorsqu'un modele local ou un runtime est telecharge ; api.elevenlabs.io lorsque la synthese vocale cloud est activee. Aucune donnee n'est partagee avec des annonceurs ou des fournisseurs d'analytique. La synchronisation cloud n'est pas activee dans cette version.",
+                    "La typographie est fournie avec l'application. Les fonctions optionnelles peuvent contacter ces hotes : generativelanguage.googleapis.com, api.openai.com, api.x.ai et api.anthropic.com si vous activez l'IA avec votre propre cle API ; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co, us.aws.cdn.hf.co et huggingfaceusercontent.com ainsi que cdn.jsdelivr.net lorsqu'un modele local ou un runtime est telecharge ; api.elevenlabs.io lorsque la synthese vocale cloud est activee. Aucune donnee n'est partagee avec des annonceurs ou des fournisseurs d'analytique. La synchronisation cloud n'est pas activee dans cette version.",
             },
             rights: {
                 title: 'Vos Droits (RGPD/DSGVO)',

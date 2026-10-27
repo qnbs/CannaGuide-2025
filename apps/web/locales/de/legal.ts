@@ -44,7 +44,7 @@ export const legal = {
             thirdParty: {
                 title: 'Drittanbieter-Dienste',
                 content:
-                    'Die Schriftarten sind Teil der App. Optionale Funktionen können diese Hosts kontaktieren: generativelanguage.googleapis.com, api.openai.com, api.x.ai und api.anthropic.com, wenn du KI mit deinem eigenen API-Key aktivierst; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co und huggingfaceusercontent.com sowie cdn.jsdelivr.net, wenn ein lokales Modell oder eine Laufzeit heruntergeladen wird; api.elevenlabs.io, wenn Cloud-Sprachausgabe aktiviert ist. Es werden keine Daten an Werbetreibende oder Analyse-Anbieter weitergegeben. Cloud-Sync ist in dieser Version nicht aktiv.',
+                    'Die Schriftarten sind Teil der App. Optionale Funktionen können diese Hosts kontaktieren: generativelanguage.googleapis.com, api.openai.com, api.x.ai und api.anthropic.com, wenn du KI mit deinem eigenen API-Key aktivierst; huggingface.co, cdn-lfs.huggingface.co, cdn-lfs.hf.co, us.aws.cdn.hf.co und huggingfaceusercontent.com sowie cdn.jsdelivr.net, wenn ein lokales Modell oder eine Laufzeit heruntergeladen wird; api.elevenlabs.io, wenn Cloud-Sprachausgabe aktiviert ist. Es werden keine Daten an Werbetreibende oder Analyse-Anbieter weitergegeben. Cloud-Sync ist in dieser Version nicht aktiv.',
             },
             rights: {
                 title: 'Deine Rechte (DSGVO)',

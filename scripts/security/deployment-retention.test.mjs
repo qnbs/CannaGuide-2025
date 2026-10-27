@@ -9,6 +9,7 @@ import {
     classifyRetention,
     cloudflareDeleteUrl,
     isDeletableClass,
+    isInertBranchAlias,
     normalizeDeployment,
     projectAliasRecord,
     projectRetentionRecord,
@@ -16,6 +17,7 @@ import {
     vercelDeleteUrl,
 } from '../deployment-retention/classify.mjs'
 import {
+    checkProvenDeployments,
     deleteCloudflareDeployment,
     deleteProvenDeployments,
     listCloudflareDeployments,
@@ -465,13 +467,14 @@ test('open PR head and superseded preview are classified differently from a stal
     const byId = Object.fromEntries(plan.deployments.map((row) => [row.id, row]))
     assert.equal(byId['open-head'].class, 'PROTECT_OPEN_PR')
     assert.equal(byId['open-old'].class, 'SAFE_DELETE_SUPERSEDED_PREVIEW')
-    assert.equal(byId['merged-latest'].class, 'PROTECT_ACTIVE_ALIAS')
+    // Only the automatic branch alias of a merged branch: it serves nothing anyone needs.
+    assert.equal(byId['merged-latest'].class, 'SAFE_DELETE_MERGED_PR')
     assert.equal(byId['merged-old'].class, 'SAFE_DELETE_MERGED_PR')
     assert.equal(byId['dep-old'].class, 'SAFE_DELETE_STALE_DEPENDABOT')
     assert.equal(byId['closed-old'].class, 'SAFE_DELETE_CLOSED_PR')
     assert.equal(byId.mystery.class, 'UNKNOWN')
     assert.equal(byId.building.class, 'UNKNOWN')
-    for (const id of ['open-head', 'merged-latest', 'mystery', 'building', 'prod']) {
+    for (const id of ['open-head', 'mystery', 'building', 'prod']) {
         assert.equal(byId[id].deletable, false)
         assert.equal(isDeletableClass(byId[id].class), false)
     }
@@ -789,7 +792,30 @@ test('a preview that becomes production between classify and delete is not remov
     assert.deepEqual(calls, ['GET'])
 })
 
-test('unaliased old Vercel production is deleted and any live alias blocks it', async () => {
+// Routes the three Vercel calls of a delete: the v13 record, the current alias
+// assignment (v2) and the DELETE itself.
+function vercelApi({ detail, aliases, aliasStatus = 200 }) {
+    const calls = []
+    const fetchImpl = async (url, init) => {
+        const href = String(url)
+        const method = init?.method || 'GET'
+        calls.push({ url: href, method })
+        if (method === 'DELETE') {
+            return { ok: true, status: 200, text: async () => JSON.stringify({ state: 'DELETED' }) }
+        }
+        if (href.includes('/aliases')) {
+            return {
+                ok: aliasStatus < 400,
+                status: aliasStatus,
+                text: async () => JSON.stringify(aliases),
+            }
+        }
+        return { ok: true, status: 200, text: async () => JSON.stringify(detail) }
+    }
+    return { calls, fetchImpl }
+}
+
+test('old Vercel production is judged by its current aliases, not the build-time list', async () => {
     const plan = classifyRetention({
         backend: 'vercel',
         mainSha: MAIN,
@@ -800,31 +826,42 @@ test('unaliased old Vercel production is deleted and any live alias blocks it', 
         plan.deployments.find((row) => row.id === 'oldprod').class,
         'SAFE_DELETE_OLD_PRODUCTION',
     )
-    const calls = []
+    // The v13 record still lists the aliases the build was assigned (run 40481615380
+    // refused exactly this); the current assignment is empty.
+    const api = vercelApi({
+        detail: { target: 'production', alias: ['canna-guide-2025-web.vercel.app'] },
+        aliases: { aliases: [] },
+    })
     const results = await deleteProvenDeployments({
         backend: 'vercel',
         plan,
         ids: ['oldprod'],
         token: 'test-token',
         teamId: 'team_test',
-        fetchImpl: async (url, init) => {
-            calls.push({ url: String(url), method: init?.method || 'GET' })
-            return {
-                ok: true,
-                status: 200,
-                text: async () => JSON.stringify({ target: 'production', alias: [], aliases: [] }),
-            }
-        },
+        fetchImpl: api.fetchImpl,
     })
     assert.equal(results.length, 1)
     assert.equal(results[0].ok, true)
-    assert.equal(calls[0].method, 'GET')
-    assert.equal(calls[1].method, 'DELETE')
-    assert.match(calls[1].url, /\/v13\/deployments\/oldprod\?teamId=team_test$/)
-    assert.ok(calls.every((call) => !call.url.includes('force=true')))
+    assert.deepEqual(
+        api.calls.map((call) => call.method),
+        ['GET', 'GET', 'DELETE'],
+    )
+    assert.match(api.calls[1].url, /\/v2\/deployments\/oldprod\/aliases\?teamId=team_test$/)
+    assert.match(api.calls[2].url, /\/v13\/deployments\/oldprod\?teamId=team_test$/)
+    assert.ok(api.calls.every((call) => !call.url.includes('force=true')))
 
-    for (const alias of [['archive.example.com'], null, undefined]) {
-        const blocked = []
+    for (const [aliases, aliasStatus, message] of [
+        [{ aliases: [{ alias: 'archive.example.com' }] }, 200, /alias state is not an empty list/],
+        [
+            { aliases: [{ alias: 'canna-guide-2025-web-git-x-qnbs-projects.vercel.app' }] },
+            200,
+            /alias state is not an empty list/,
+        ],
+        [{}, 200, /alias state is not a list/],
+        [{ aliases: [{}] }, 200, /alias state is not an empty list/],
+        [{ aliases: [] }, 500, /live Vercel alias lookup failed/],
+    ]) {
+        const blocked = vercelApi({ detail: { target: 'production' }, aliases, aliasStatus })
         await assert.rejects(
             () =>
                 deleteProvenDeployments({
@@ -833,18 +870,11 @@ test('unaliased old Vercel production is deleted and any live alias blocks it', 
                     ids: ['oldprod'],
                     token: 'test-token',
                     teamId: 'team_test',
-                    fetchImpl: async (_url, init) => {
-                        blocked.push(init?.method || 'GET')
-                        return {
-                            ok: true,
-                            status: 200,
-                            text: async () => JSON.stringify({ target: 'production', alias }),
-                        }
-                    },
+                    fetchImpl: blocked.fetchImpl,
                 }),
-            /alias state is not an empty list/,
+            message,
         )
-        assert.deepEqual(blocked, ['GET'])
+        assert.ok(blocked.calls.every((call) => call.method === 'GET'))
     }
 })
 
@@ -1510,4 +1540,184 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
             }),
         /pull_request/,
     )
+})
+
+test('only the automatic Vercel branch alias is inert', () => {
+    const branch = 'canna-guide-2025-web-git-fix-restore-image-d4b64e-qnbs-projects.vercel.app'
+    assert.equal(isInertBranchAlias(branch, 'vercel'), true)
+    assert.equal(isInertBranchAlias(`https://${branch}/`, 'vercel'), true)
+    for (const host of [
+        'canna-guide-2025-web-git-main-qnbs-projects.vercel.app',
+        'canna-guide-2025-web.vercel.app',
+        'canna-guide-2025-web-qnbs-projects.vercel.app',
+        'archive.example.com',
+        'other-project-git-fix-qnbs-projects.vercel.app',
+        'canna-guide-2025-web-git-fix-other-team.vercel.app',
+        'needs-review.invalid',
+    ]) {
+        assert.equal(isInertBranchAlias(host, 'vercel'), false, host)
+    }
+    assert.equal(isInertBranchAlias(branch, 'cloudflare'), false)
+})
+
+test('a finished branch alias no longer protects, any other alias still does', () => {
+    const branchAlias =
+        'canna-guide-2025-web-git-cursor-testing-library-patch-af4f-qnbs-projects.vercel.app'
+    const plan = classifyRetention({
+        backend: 'vercel',
+        mainSha: MAIN,
+        pulls: pulls(),
+        deployments: [
+            ...productionSet('vercel'),
+            deploy({
+                id: 'merged-branch-alias',
+                createdAt: 30,
+                sha: MERGED_SHA,
+                branch: 'cursor/testing-library-patch-af4f',
+                state: 'READY',
+                aliases: [branchAlias],
+            }),
+            deploy({
+                id: 'merged-custom-alias',
+                createdAt: 29,
+                sha: MERGED_OLD,
+                branch: 'cursor/testing-library-patch-af4f',
+                state: 'READY',
+                aliases: [branchAlias, 'archive.example.com'],
+            }),
+            deploy({
+                id: 'open-branch-alias',
+                createdAt: 50,
+                sha: OPEN_SHA,
+                branch: 'cursor/ai-ml-bump-af4f',
+                state: 'READY',
+                aliases: [
+                    'canna-guide-2025-web-git-cursor-ai-ml-bump-af4f-qnbs-projects.vercel.app',
+                ],
+            }),
+            deploy({
+                id: 'alias-only-no-sha',
+                createdAt: 0,
+                sha: '',
+                branch: '',
+                state: '',
+                aliases: [branchAlias],
+            }),
+        ],
+    })
+    const byId = Object.fromEntries(plan.deployments.map((row) => [row.id, row]))
+    assert.equal(byId['merged-branch-alias'].class, 'SAFE_DELETE_MERGED_PR')
+    assert.equal(byId['merged-branch-alias'].deletable, true)
+    assert.equal(byId['merged-custom-alias'].class, 'PROTECT_ACTIVE_ALIAS')
+    assert.equal(byId['open-branch-alias'].class, 'PROTECT_OPEN_PR')
+    assert.equal(byId['alias-only-no-sha'].deletable, false)
+    assert.equal(byId.prod.class, 'PROTECT_PRODUCTION')
+    for (const id of ['merged-custom-alias', 'open-branch-alias', 'alias-only-no-sha', 'prod']) {
+        assert.equal(plan.queuedDeleteIds.includes(id), false, id)
+    }
+})
+
+test('a preview delete re-checks current aliases and allows only an inert branch alias', async () => {
+    const branchAlias =
+        'canna-guide-2025-web-git-cursor-testing-library-patch-af4f-qnbs-projects.vercel.app'
+    const plan = classifyRetention({
+        backend: 'vercel',
+        mainSha: MAIN,
+        pulls: pulls(),
+        deployments: [
+            ...productionSet('vercel'),
+            deploy({
+                id: 'merged-branch-alias',
+                createdAt: 30,
+                sha: MERGED_SHA,
+                branch: 'cursor/testing-library-patch-af4f',
+                state: 'READY',
+                aliases: [branchAlias],
+            }),
+        ],
+    })
+    const allowed = vercelApi({
+        detail: { target: null },
+        aliases: { aliases: [{ alias: branchAlias }] },
+    })
+    const results = await deleteProvenDeployments({
+        backend: 'vercel',
+        plan,
+        ids: ['merged-branch-alias'],
+        token: 'test-token',
+        teamId: 'team_test',
+        fetchImpl: allowed.fetchImpl,
+    })
+    assert.equal(results[0].ok, true)
+    assert.equal(allowed.calls.at(-1).method, 'DELETE')
+
+    for (const extra of ['archive.example.com', 'canna-guide-2025-web.vercel.app']) {
+        const blocked = vercelApi({
+            detail: { target: null },
+            aliases: { aliases: [{ alias: branchAlias }, { alias: extra }] },
+        })
+        await assert.rejects(
+            () =>
+                deleteProvenDeployments({
+                    backend: 'vercel',
+                    plan,
+                    ids: ['merged-branch-alias'],
+                    token: 'test-token',
+                    teamId: 'team_test',
+                    fetchImpl: blocked.fetchImpl,
+                }),
+            /active alias/,
+        )
+        assert.ok(
+            blocked.calls.every((call) => call.method === 'GET'),
+            extra,
+        )
+    }
+})
+
+test('the dry-run gate check reports would-delete and would-refuse without deleting', async () => {
+    const plan = classifyRetention({
+        backend: 'vercel',
+        mainSha: MAIN,
+        pulls: [],
+        deployments: [
+            ...productionSet('vercel'),
+            deploy({
+                id: 'oldprod2',
+                createdAt: 90,
+                sha: '6666666666666666666666666666666666666666',
+                branch: 'main',
+                target: 'production',
+                state: 'READY',
+            }),
+        ],
+    })
+    assert.deepEqual([...plan.queuedDeleteIds].sort(), ['oldprod', 'oldprod2'])
+    const calls = []
+    const results = await checkProvenDeployments({
+        backend: 'vercel',
+        plan,
+        ids: plan.queuedDeleteIds,
+        token: 'test-token',
+        teamId: 'team_test',
+        fetchImpl: async (url, init) => {
+            const href = String(url)
+            calls.push(init?.method || 'GET')
+            if (href.includes('/aliases')) {
+                const aliases = href.includes('oldprod2') ? [{ alias: 'archive.example.com' }] : []
+                return { ok: true, status: 200, text: async () => JSON.stringify({ aliases }) }
+            }
+            return {
+                ok: true,
+                status: 200,
+                text: async () => JSON.stringify({ target: 'production' }),
+            }
+        },
+    })
+    const byId = Object.fromEntries(results.map((row) => [row.id, row]))
+    assert.equal(byId.oldprod.ok, true)
+    assert.equal(byId.oldprod.detail, 'would delete')
+    assert.equal(byId.oldprod2.ok, false)
+    assert.match(byId.oldprod2.detail, /alias state is not an empty list/)
+    assert.ok(calls.every((method) => method === 'GET'))
 })

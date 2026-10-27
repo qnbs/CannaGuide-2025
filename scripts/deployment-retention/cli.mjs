@@ -21,6 +21,7 @@ import {
     reconcilePlans,
 } from './classify.mjs'
 import {
+    checkProvenDeployments,
     deleteProvenDeployments,
     listCloudflareDeployments,
     listVercelAliases,
@@ -393,6 +394,30 @@ async function applyDeletes(backend, planPath) {
     })
 }
 
+// Read-only: runs the live pre-delete gate for every queued Vercel id and prints
+// what an --apply run would delete or refuse. Never deletes.
+async function checkVercelGate(planPath) {
+    const plan = readJson(planPath)
+    if (plan.skipped) {
+        console.log(`SKIP Vercel gate check: ${plan.reason || 'plan was skipped'}`)
+        return
+    }
+    const results = await checkProvenDeployments({
+        backend: 'vercel',
+        plan,
+        ids: plan.queuedDeleteIds || [],
+        token: process.env.VERCEL_TOKEN,
+        teamId: process.env.VERCEL_TEAM_ID || VERCEL_TEAM,
+    })
+    for (const result of results) {
+        console.log(`${result.ok ? 'would-delete' : 'would-refuse'} ${result.id} ${result.detail}`)
+    }
+    const refused = results.filter((result) => !result.ok).length
+    console.log(
+        `vercel gate check: ${results.length - refused} would delete, ${refused} would refuse`,
+    )
+}
+
 async function main() {
     const command = process.argv[2]
     if (command === 'github-state') {
@@ -417,6 +442,10 @@ async function main() {
         console.log(formatReport(plan))
         return
     }
+    if (command === 'check-vercel') {
+        await checkVercelGate(arg('--plan'))
+        return
+    }
     if (command === 'delete-cloudflare' || command === 'delete-vercel') {
         if (!process.argv.includes('--apply')) {
             const plan = readJson(arg('--plan'))
@@ -428,7 +457,7 @@ async function main() {
         return
     }
     throw new Error(
-        'usage: github-state | inventory-cloudflare | inventory-vercel | classify | delete-cloudflare | delete-vercel',
+        'usage: github-state | inventory-cloudflare | inventory-vercel | classify | check-vercel | delete-cloudflare | delete-vercel',
     )
 }
 

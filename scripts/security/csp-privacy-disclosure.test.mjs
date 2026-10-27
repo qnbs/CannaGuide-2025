@@ -3,14 +3,18 @@
 // Face's model download CDN must be allowed wherever the CSP is delivered
 // (GH #634: huggingface.co now 302-redirects model binaries to it).
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const read = (rel) => readFileSync(path.join(ROOT, rel), 'utf8')
-const LOCALES = ['en', 'de', 'es', 'fr', 'nl']
-
+// Every locale directory, so a newly added locale is checked without anyone
+// having to remember this list. A locale without legal.ts fails below instead
+// of being skipped.
+const LOCALES = readdirSync(path.join(ROOT, 'apps/web/locales'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
 /** Where Hugging Face sends model binaries (observed for every model the app uses). */
 const HF_MODEL_CDN = 'https://us.aws.cdn.hf.co'
 
@@ -39,7 +43,9 @@ function connectSrcHosts(source) {
 
 /** The privacy.thirdParty.content string of a locale's legal.ts. */
 function thirdPartyText(locale) {
-    const source = read(`apps/web/locales/${locale}/legal.ts`)
+    const file = `apps/web/locales/${locale}/legal.ts`
+    assert.ok(existsSync(path.join(ROOT, file)), `${locale}: ${file} is missing`)
+    const source = read(file)
     const block = /thirdParty:\s*\{[\s\S]*?content:\s*\n?\s*(['"`])([\s\S]*?)\1,/.exec(source)
     assert.ok(block, `${locale}: privacy.thirdParty.content not found`)
     return block[2]
@@ -56,11 +62,11 @@ test('every CSP delivery path allows the Hugging Face model CDN', () => {
 })
 
 test('every third-party connect-src host is disclosed in every locale privacy text', () => {
-    const hosts = new Set([
-        ...connectSrcHosts(read('apps/web/securityHeaders.ts')),
-        ...connectSrcHosts(read('apps/desktop/src-tauri/tauri.conf.json')),
-    ])
+    // Union over every delivery path, not only the canonical one: a host added to
+    // a single platform's CSP must be disclosed too.
+    const hosts = new Set(Object.keys(CSP_SOURCES).flatMap((file) => connectSrcHosts(read(file))))
     assert.ok(hosts.size > 5, 'expected the full third-party host list')
+    assert.ok(LOCALES.length >= 5 && LOCALES.includes('en'), `unexpected locale set: ${LOCALES}`)
     for (const locale of LOCALES) {
         const text = thirdPartyText(locale)
         const missing = [...hosts].filter((host) => !text.includes(host))

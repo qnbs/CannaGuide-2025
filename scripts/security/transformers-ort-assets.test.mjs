@@ -42,7 +42,11 @@ test('the installed nested onnxruntime-web matches every pinned digest', (t) => 
     const packageDir = resolveTransformersOrtPackageDir(WEB_CONFIG)
     if (packageDir === null) {
         // Lite installs omit optional ML deps; CI must not skip the pin check.
-        assert.notEqual(process.env.CI, 'true', '@xenova/transformers is not installed in CI')
+        // Fail closed: any non-empty CI counts unless it is explicitly falsy.
+        assert.ok(
+            /^(|0|false|no|off)$/i.test((process.env.CI ?? '').trim()),
+            '@xenova/transformers is not installed in CI',
+        )
         t.skip('transformers.js not installed (lite install)')
         return
     }

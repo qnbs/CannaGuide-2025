@@ -15,9 +15,13 @@ const pruneUnreferencedImages = async (maxToDelete: number): Promise<number> => 
     const allImages = await new Promise<StoredImageData[]>((resolve, reject) => {
         const tx = conn.transaction(IMAGES_STORE, 'readonly')
         const req = tx.objectStore(IMAGES_STORE).getAll()
-        req.onsuccess = () => resolve(req.result)
+        // Resolve on commit, not on the request: pruning must not act on a read
+        // whose transaction then aborted.
+        tx.oncomplete = () => resolve(req.result)
         tx.onerror = () =>
             reject(toIndexedDbError(tx.error, '[dbService] Failed to load images for pruning.'))
+        tx.onabort = () =>
+            reject(toIndexedDbError(tx.error, '[dbService] Image read for pruning was aborted.'))
     })
 
     const graceCutoff = Date.now() - IMAGE_PRUNE_GRACE_MS
@@ -46,6 +50,8 @@ const pruneUnreferencedImages = async (maxToDelete: number): Promise<number> => 
                     '[dbService] Failed to delete old images during prune operation.',
                 ),
             )
+        transaction.onabort = () =>
+            reject(toIndexedDbError(transaction.error, '[dbService] Image prune was aborted.'))
 
         imagesToDelete.forEach((image) => {
             store.delete(image.id)

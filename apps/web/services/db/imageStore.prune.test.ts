@@ -196,6 +196,41 @@ describe('imageStore pruning', () => {
         expect(await storedIds(dbService)).toEqual(['maybe-referenced', 'photo-new'])
     })
 
+    it('deletes nothing when a persisted plant has a null journal', async () => {
+        const dbService = await seed([photo('maybe-referenced', 30)])
+        mocks.snapshots.set(
+            REDUX_STATE_KEY,
+            JSON.stringify({
+                simulation: {
+                    plants: {
+                        ids: ['plant-1'],
+                        entities: { 'plant-1': { id: 'plant-1', journal: null } },
+                    },
+                },
+            }),
+        )
+
+        await expect(dbService.pruneOldImages(80)).rejects.toThrow(/Journal entries/)
+        expect(await storedIds(dbService)).toEqual(['maybe-referenced'])
+    })
+
+    it('deletes nothing when the image read transaction aborts after getAll', async () => {
+        const dbService = await seed([photo('orphan', 30)])
+        const originalGetAll = IDBObjectStore.prototype.getAll
+        vi.spyOn(IDBObjectStore.prototype, 'getAll').mockImplementation(function (
+            this: IDBObjectStore,
+            ...args: Parameters<IDBObjectStore['getAll']>
+        ) {
+            const request = originalGetAll.apply(this, args)
+            request.addEventListener('success', () => this.transaction.abort())
+            return request
+        })
+
+        await expect(dbService.pruneOldImages(80)).rejects.toBeDefined()
+        vi.mocked(IDBObjectStore.prototype.getAll).mockRestore()
+        expect(await storedIds(dbService)).toEqual(['orphan'])
+    })
+
     it('does not prune while a backup restore holds the persistence fence', async () => {
         const dbService = await seed([photo('restored-not-yet-referenced', 400)])
         const { suspendPersistenceForRecovery } = await import('@/bootstrap/persistenceCoordinator')

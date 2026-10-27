@@ -25,9 +25,12 @@ export interface PruneResult {
 // Constants
 // ---------------------------------------------------------------------------
 
-const IMAGE_STORE_CAP = 500
 const SEARCH_STORE_CAP = 5000
 const DEFAULT_THRESHOLD_PERCENT = 80
+
+// Journal photos are deleted only by imageStore.pruneOldImages, which checks every
+// journal reference first. A count cap here would delete them blindly, in key order.
+const PROTECTED_STORES = new Set(['CannaGuideDB/images'])
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -91,6 +94,12 @@ export const pruneOldestEntries = async (
     storeName: string,
     maxCount: number,
 ): Promise<number> => {
+    if (PROTECTED_STORES.has(`${dbName}/${storeName}`)) {
+        console.debug(
+            `[indexedDbPruneService] Refusing to cap protected store ${dbName}/${storeName}.`,
+        )
+        return 0
+    }
     let db: IDBDatabase | undefined
     try {
         db = await openDb(dbName)
@@ -107,8 +116,8 @@ export const pruneOldestEntries = async (
 
 /**
  * Runs a quota-aware prune pass.  When storage usage exceeds
- * `thresholdPercent`, the images and search stores in CannaGuideDB are
- * trimmed to their respective caps.
+ * `thresholdPercent`, the search store in CannaGuideDB is trimmed to its cap.
+ * Journal photos are never capped here (see PROTECTED_STORES).
  *
  * Always returns a `PruneResult` -- even when nothing was pruned.
  */
@@ -123,12 +132,7 @@ export const pruneOnQuotaThreshold = async (
         return { quota, prunedEntries, stores }
     }
 
-    // Prune images store
-    const imgRemoved = await pruneOldestEntries('CannaGuideDB', 'images', IMAGE_STORE_CAP)
-    if (imgRemoved > 0) {
-        stores.push({ db: 'CannaGuideDB', store: 'images', removed: imgRemoved })
-        prunedEntries += imgRemoved
-    }
+    // Images are not capped here; see PROTECTED_STORES.
 
     // Prune search index store
     const searchRemoved = await pruneOldestEntries('CannaGuideDB', 'search', SEARCH_STORE_CAP)

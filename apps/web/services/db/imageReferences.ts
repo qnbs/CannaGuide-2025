@@ -43,7 +43,8 @@ export const addSimulationImageIds = (simulation: unknown, referenced: Set<strin
     }
     for (const plant of plantList) {
         if (!isRecord(plant)) continue
-        addEntryImageIds(plant.journal ?? [], referenced)
+        // Only a missing journal is empty; `null` or any other value is unexpected.
+        if (plant.journal !== undefined) addEntryImageIds(plant.journal, referenced)
     }
 }
 

@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
     dispatch: vi.fn(),
     addNotification: vi.fn(),
     replacePrimaryPersistedSnapshot: vi.fn(),
+    t: vi.fn((key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key),
 }))
 
 vi.mock('@/stores/store', () => ({
@@ -23,9 +24,7 @@ vi.mock('@/stores/store', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string, opts?: { defaultValue?: string }) => opts?.defaultValue ?? key,
-    }),
+    useTranslation: () => ({ t: mocks.t }),
 }))
 
 vi.mock('@/i18n', () => ({
@@ -104,6 +103,26 @@ describe('useDataManagementActions', () => {
             result.current.handleConfirmExportAll()
         })
         expect(mocks.dispatch).toHaveBeenCalled()
+    })
+
+    it('reports only removed photos in the storage cleanup message', async () => {
+        const { dbService } = await import('@/services/dbService')
+        const { pruneOnQuotaThreshold } = await import('@/services/indexedDbPruneService')
+        vi.mocked(dbService.pruneOldImages).mockResolvedValueOnce(3)
+        vi.mocked(pruneOnQuotaThreshold).mockResolvedValueOnce({
+            prunedEntries: 40,
+        } as Awaited<ReturnType<typeof pruneOnQuotaThreshold>>)
+        const { result } = renderHook(() => useDataManagementActions())
+
+        await act(async () => {
+            await result.current.handleRunStorageCleanup()
+        })
+
+        // 40 search-index entries are not photos and must not inflate the count.
+        expect(mocks.t).toHaveBeenCalledWith('settingsView.data.cleanupSuccess', { count: 3 })
+        expect(mocks.addNotification).toHaveBeenCalledWith(
+            expect.objectContaining({ type: 'success' }),
+        )
     })
 
     it('reports a validation failure from confirmed state import', async () => {

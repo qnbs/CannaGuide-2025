@@ -36,24 +36,31 @@ test('the desktop build uses only actions the repository policy allows', () => {
     )
 })
 
-test('macOS signing values reach Tauri only when the secrets exist', () => {
+test('macOS signing values reach only the signed build step, and only with a certificate', () => {
     // An unset secret expands to "", and tauri-bundler starts code signing for any
     // set APPLE_CERTIFICATE, then fails on the keychain import (run 40486452675).
-    const build = step('Build Tauri')
+    // Credentials must also not be written to GITHUB_ENV, which would expose them to
+    // every later step (CodeAnt review on #625).
+    assert.match(WORKFLOW, /HAS_APPLE_CERTIFICATE: \$\{\{ secrets\.APPLE_CERTIFICATE != '' \}\}/)
+    assert.doesNotMatch(WORKFLOW, /GITHUB_ENV/)
+
+    const unsigned = step('Build Tauri')
+    assert.match(unsigned, /if: runner\.os != 'macOS' \|\| env\.HAS_APPLE_CERTIFICATE != 'true'/)
     for (const name of APPLE_VARS) {
-        assert.doesNotMatch(build, new RegExp(`\\b${name}:`), `${name} is passed to Build Tauri`)
+        assert.doesNotMatch(
+            unsigned,
+            new RegExp(`\\b${name}:`),
+            `${name} reaches the unsigned build`,
+        )
     }
 
-    const exporter = step('Export configured macOS signing secrets')
-    assert.match(exporter, /if: runner\.os == 'macOS'/)
-    assert.match(exporter, /\[ -n "\$value" \] \|\| continue/)
-    assert.match(exporter, />> "\$GITHUB_ENV"/)
+    const signed = step('Build Tauri (signed macOS)')
+    assert.match(signed, /if: runner\.os == 'macOS' && env\.HAS_APPLE_CERTIFICATE == 'true'/)
     for (const name of APPLE_VARS) {
-        assert.match(exporter, new RegExp(`${name}: \\$\\{\\{ secrets\\.${name} \\}\\}`), name)
+        assert.match(signed, new RegExp(`${name}: \\$\\{\\{ secrets\\.${name} \\}\\}`), name)
     }
-    assert.ok(
-        WORKFLOW.indexOf('- name: Export configured macOS signing secrets') <
-            WORKFLOW.indexOf('- name: Build Tauri'),
-        'the export step must run before the build',
-    )
+
+    // Both steps run the same build; only the credentials differ.
+    const withBlock = (text) => text.slice(text.indexOf('with:'))
+    assert.equal(withBlock(signed), withBlock(unsigned))
 })

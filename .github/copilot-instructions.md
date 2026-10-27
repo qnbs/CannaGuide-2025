@@ -409,13 +409,13 @@ done && echo "CI completed!"
 ## Commands
 
 ```bash
-# Root (delegates to TurboRepo)
-pnpm run dev              # turbo run dev (Vite dev server)
-pnpm run build            # turbo run build (all workspaces)
-pnpm test                 # turbo run test (Vitest, watch mode)
-pnpm run test:run         # turbo run test:run (Vitest, single run, exits)
-pnpm run lint             # turbo run lint
-pnpm run typecheck        # turbo run typecheck
+# Local verification -- scoped, one heavy process at a time (see CLAUDE.md / AGENTS.md).
+# Never a bare `turbo run <task>` and never unfiltered `pnpm test|typecheck|lint`:
+# those run every workspace and OOM the low-end dev machine. CI runs the full suites.
+pnpm verify               # typecheck of the workspaces the branch touched
+pnpm verify:test          # tests of the workspaces the branch touched
+pnpm verify:lint          # lint of the workspaces the branch touched
+pnpm run build            # production build, desktop excluded (heavy)
 pnpm run format           # Prettier format
 pnpm run security:scan    # Full security scan (semgrep, gitleaks, grype, etc.)
 # Do not: git push origin main
@@ -427,7 +427,7 @@ pnpm run docs:ai-core     # Generate Typedoc API docs for ai-core package
 # Web app (from apps/web/ or via workspace flag)
 pnpm --filter @cannaguide/web dev       # Vite dev server (localhost:5173)
 pnpm --filter @cannaguide/web build     # Production build
-pnpm --filter @cannaguide/web test:run  # Vitest unit/integration (single run, exits when done)
+pnpm --filter @cannaguide/web test:run <spec>  # one spec; no `--` before it (whole suite is CI-only)
 pnpm --filter @cannaguide/web test:e2e  # Playwright E2E (requires build)
 pnpm --filter @cannaguide/web test:ct   # Playwright Component tests
 pnpm --filter @cannaguide/web typecheck # tsc --noEmit (TS2719 filtered)
@@ -515,7 +515,7 @@ After implementation is complete with all validations passing, update **all affe
 
 ### Phase 4 -- Commit and Push (Agent Mode)
 
-1. **Stage all changes:** `git add -A`
+1. **Stage explicitly:** review `git status --porcelain`, then `git add <path> ...` for the files of this change only -- never `git add -A` / `git add .` (they sweep in untracked local files)
 2. **Commit** with Conventional Commits format (all lowercase, body lines max 100 chars):
 
     ```
@@ -539,7 +539,7 @@ After implementation is complete with all validations passing, update **all affe
 - **Never skip Phase 3.** Every implementation must update all affected docs.
 - **Atomic sessions:** Each plan execution must leave the repo in a clean, buildable, documented state.
 - **Handoff continuity:** The `next-session-handoff.md` must always be current so any future session can resume without context loss.
-- **Metrics must be verified:** Never copy old metrics -- always re-run `pnpm test`, `typecheck`, `build` and report actual counts.
+- **Metrics must be verified:** Never copy old metrics -- take counts from the CI run on the exact commit (test summary, coverage artifact) or from a scoped local run; never re-run the full suites locally to get them.
 - **Follow-up executions are binding:** Plans written into `next-session-handoff.md` define the scope for subsequent sessions. Deviations require a new plan-mode prompt.
 
 ---
@@ -598,7 +598,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/seedbankService.ts`                                          | Deterministic mock seed pricing (SeedFinder removed)                                                                                                                         |
 | `apps/web/services/crdtService.ts`                                              | Y.Doc lifecycle, sync transport (encode/apply/detectDivergence), state vectors                                                                                               |
 | `apps/web/services/crdtSyncBridge.ts`                                           | Bidirectional Redux<->Y.Doc bridge (listener middleware + Y.Map observers)                                                                                                   |
-| `apps/web/services/syncService.ts`                                              | CRDT-aware Gist sync (push/pull/forceLocal/forceRemote), legacy JSON migration, E2EE                                                                                         |
+| `apps/web/services/syncService.ts`                                              | CRDT-aware Gist sync (push/pull/forceLocal/forceRemote), legacy JSON migration, E2EE -- **disabled** in this version (`CLOUD_SYNC_DISABLED`)                                 |
 | `apps/web/services/offlineSyncQueueService.ts`                                  | Offline push retry queue (navigator.onLine, 3 retries, exponential backoff)                                                                                                  |
 | `apps/web/components/common/SyncConflictModal.tsx`                              | 3-way conflict resolution UI (Smart Merge/Keep Local/Use Cloud) with double-confirmation                                                                                     |
 | `apps/web/services/nutrientDeficiencyService.ts`                                | Decision tree for visual nutrient deficiency diagnosis (8 nodes, 9 results: N/P/K/Mg/Ca/Fe/Mn/Mo/Cl)                                                                         |

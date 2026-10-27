@@ -24,7 +24,7 @@ and stacked pull requests receive the same CI graph as pull requests targeting `
 
 | Workflow                                                   | Purpose                                                                                                                                                                                                                                               |
 | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled).                                                                                                                                                                                        |
+| [`dependabot-auto-merge.yml`](./dependabot-auto-merge.yml) | Auto-merge qualifying Dependabot PRs (skips security-labeled). **Disabled in repository settings** (`disabled_manually`); re-enabling is an owner decision.                                                                                           |
 | [`cleanup-deployments.yml`](./cleanup-deployments.yml)     | Nightly, manual, and post-main-CI prune of GitHub Deployments (keep 3/env). On trusted `main` events only, also classifies Vercel and Cloudflare Pages history, keeps production plus two rollback deployments, and deletes proven unaliased history. |
 | [`cleanup-branches.yml`](./cleanup-branches.yml)           | Weekly + manual prune of fully merged and squash/rebase-merged PR branches.                                                                                                                                                                           |
 | [`graphify-update.yml`](./graphify-update.yml)             | Generate a pinned, validated `graphify-out/` review artifact; never pushes to `main`.                                                                                                                                                                 |
@@ -64,7 +64,7 @@ and stacked pull requests receive the same CI graph as pull requests targeting `
 
 ## CI path filters
 
-`ci.yml` ignores `**/*.md` and `docs/**` on push/PR. Doc-only commits do not run CI. Include a code or workflow change when you need a fresh **CI Status** signal.
+`ci.yml` runs on every push/PR (no `paths-ignore`). Its `changes` job classifies a change set as docs-only when every file matches `DOCS_ONLY` (`*.md`, `docs/**`, `graphify-out/**`, issue/PR templates); then the build, test, verify, security and E2E jobs are skipped and **CI Status** passes on that classification. `ci-docs.yml` runs the light docs gates for such changes. Note: agent instruction files (`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`) currently fall under `DOCS_ONLY` too -- tracked as CG-AUD-20261028-A02 in [GH #582](https://github.com/qnbs/CannaGuide-2025/issues/582).
 
 ## External checks (not in this repo)
 

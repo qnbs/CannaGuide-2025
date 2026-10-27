@@ -164,11 +164,20 @@ pnpm run check:i18n
   rule passes honestly; the suppression ratchet gates CI.
 - **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so
   `gh api .../branches/main/protection` 404s -- read it via `gh api .../rules/branches/main`.
-  It requires **signed commits**, **squash-only** merges, **thread resolution**, and the
-  `✅ CI Status` check. A PR with **any unsigned commit** is `mergeStateStatus: BLOCKED` even
-  when green (this stranded a third-party PR whose original commits were unsigned; my own
-  SSH-signed commits merged fine). Fix by re-committing signed, or the owner admin-merges
-  (`gh pr merge <n> --squash --admin`) -- GitHub signs the squash result either way.
+  Keep three layers apart and never state the second as fact:
+    - **Observed live** (REST read 2026-10-28; re-read before relying on it): signed
+      commits, squash-only merges, the `✅ CI Status` check. **Not** required today:
+      review-thread resolution, an up-to-date branch (`strict` is `false`), approvals (0),
+      CodeQL.
+    - **Desired owner-gated target:** the ruleset proposal on
+      [GH #582](https://github.com/qnbs/CannaGuide-2025/issues/582). Agents never change
+      rulesets, branch protection, secrets or repository settings.
+    - **Agent-enforced local rule (stricter than the ruleset):** treat every review thread
+      as blocking until dispositioned, rebase onto the current `main` before merging, and
+      merge only with `--match-head-commit` on a verified head.
+- A PR with **any unsigned commit** is `mergeStateStatus: BLOCKED` even when green. Fix it
+  by re-committing signed. Admin merges (`--admin`) are an owner action outside agent
+  policy -- an agent never uses or suggests them.
 
 ## Language
 

@@ -87,9 +87,30 @@ const isTensorLike = (value: unknown): value is TensorLike =>
     'data' in value &&
     ArrayBuffer.isView(value.data)
 
+/** Element count of a typed array or other ArrayBuffer view. */
+const elementCount = (view: ArrayBufferView): number =>
+    'BYTES_PER_ELEMENT' in view && typeof view.BYTES_PER_ELEMENT === 'number'
+        ? view.byteLength / view.BYTES_PER_ELEMENT
+        : view.byteLength
+
+/**
+ * Throws (the caller answers with workerErr) when a tensor's dims do not
+ * describe its data, so a corrupt result is never posted as a success that
+ * embeddingService would turn into a silently wrong vector. The dtype is not
+ * checked here: this worker serves every task, and the expected element type
+ * is the consumer's contract.
+ */
 export const toCloneableResult = (result: unknown): unknown => {
     if (isTensorLike(result)) {
-        return { type: result.type, dims: result.dims.map(Number), data: result.data }
+        const dims = result.dims.map(Number)
+        const size = dims.reduce((product, dim) => product * dim, 1)
+        const count = elementCount(result.data)
+        if (!dims.every((dim) => Number.isSafeInteger(dim) && dim >= 0) || size !== count) {
+            throw new Error(
+                `inference result tensor dims [${dims.join(',')}] describe ${size} values but data has ${count}`,
+            )
+        }
+        return { type: result.type, dims, data: result.data }
     }
     return Array.isArray(result) ? result.map(toCloneableResult) : result
 }

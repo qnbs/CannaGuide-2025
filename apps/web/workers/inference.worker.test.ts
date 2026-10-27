@@ -71,6 +71,17 @@ describe('inference.worker replies', () => {
         expect((reply.data as { data: Float32Array }).data).toBeInstanceOf(Float32Array)
     })
 
+    it('rejects a tensor whose dims do not match its data instead of posting success', async () => {
+        const broken = new ProxiedTensor()
+        broken.dims = [1, 384]
+        pipeOutput.value = broken
+
+        const reply = await infer('feature-extraction', 'emb-2')
+
+        expect(reply.success).toBe(false)
+        expect(reply.error).toMatch(/dims \[1,384\] describe 384 values but data has 3/)
+    })
+
     it('leaves plain pipeline results unchanged', async () => {
         const labels = [{ label: 'POSITIVE', score: 0.98 }]
         pipeOutput.value = labels

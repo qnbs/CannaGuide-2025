@@ -6,6 +6,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(local-ai):** Local embeddings can reach the app again. `inference.worker` posted the transformers.js `Tensor` of a `feature-extraction` result as is; its constructor returns a `Proxy`, which structured clone rejects, so every embedding request failed with `DataCloneError`. Tensors are now posted as plain `{ type, dims, data }`, the shape `embeddingService` already reads; other results are unchanged (#635)
+- **fix(csp):** Hugging Face model downloads work again. `huggingface.co` now redirects model binaries to `us.aws.cdn.hf.co`, which `connect-src` did not allow, so every local model download was blocked. The host is allowed in all CSP delivery paths and the desktop CSP, cached like the other Hugging Face hosts, and named in the privacy policy in all five languages; a new gate keeps every `connect-src` host disclosed (#634)
+
 ### Security
 
 - **fix(local-ai):** The ONNX Runtime that `@xenova/transformers` bundles (onnxruntime-web 1.14.0, used by the inference and image workers, the model loader and Whisper) no longer fetches its wasm from jsDelivr without an integrity check. The build copies the four lockfile-resolved binaries to `ort-1.14.0/` under the app base, each verified against a pinned SHA-256 (a missing, truncated, corrupted or re-versioned binary fails the build), and `loadTransformers` points the runtime there before any pipeline starts. The service worker caches that versioned directory cache-first, as it did the CDN copy. The bytes are unchanged -- they equal what jsDelivr served -- only their origin is (CG-AUD-20261008-045, #585)

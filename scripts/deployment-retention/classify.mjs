@@ -742,7 +742,8 @@ export function reconcilePlans(frozen, fresh) {
         }
         const now = freshById.get(row.id)
         if (!now) continue
-        if (now.class !== row.class || !now.deletable || now.aliases.length > 0) {
+        const activeAlias = now.aliases.some((host) => !isInertBranchAlias(host, fresh?.backend))
+        if (now.class !== row.class || !now.deletable || activeAlias) {
             return {
                 abort: true,
                 errors: [`${row.id} is no longer ${row.class}`],

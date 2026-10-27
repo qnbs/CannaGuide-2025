@@ -1721,3 +1721,39 @@ test('the dry-run gate check reports would-delete and would-refuse without delet
     assert.match(byId.oldprod2.detail, /alias state is not an empty list/)
     assert.ok(calls.every((method) => method === 'GET'))
 })
+
+test('reconciliation accepts an inert branch alias and aborts on any other alias', () => {
+    const branchAlias =
+        'canna-guide-2025-web-git-cursor-testing-library-patch-af4f-qnbs-projects.vercel.app'
+    const classify = (aliases) =>
+        classifyRetention({
+            backend: 'vercel',
+            mainSha: MAIN,
+            pulls: pulls(),
+            deployments: [
+                ...productionSet('vercel'),
+                deploy({
+                    id: 'merged-branch-alias',
+                    createdAt: 30,
+                    sha: MERGED_SHA,
+                    branch: 'cursor/testing-library-patch-af4f',
+                    state: 'READY',
+                    aliases,
+                }),
+            ],
+        })
+    const frozen = classify([branchAlias])
+    assert.ok(frozen.queuedDeleteIds.includes('merged-branch-alias'))
+
+    // Unchanged inventory: the apply path must not abort (it did for every row
+    // with an alias, which would have stopped the whole batch).
+    const unchanged = reconcilePlans(frozen, classify([branchAlias]))
+    assert.equal(unchanged.abort, false)
+    assert.ok(unchanged.ids.includes('merged-branch-alias'))
+    assert.ok(unchanged.ids.includes('oldprod'))
+
+    // A custom alias appearing between plan and apply aborts the batch.
+    const changed = reconcilePlans(frozen, classify([branchAlias, 'archive.example.com']))
+    assert.equal(changed.abort, true)
+    assert.deepEqual(changed.ids, [])
+})

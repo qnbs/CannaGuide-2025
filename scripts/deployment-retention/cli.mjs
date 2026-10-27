@@ -299,21 +299,12 @@ async function inventoryVercel(outPath) {
     console.log(`Vercel inventory ${deployments.length} aliases ${aliases.length}`)
 }
 
-async function applyDeletes(backend, planPath) {
-    assertTrustedApply()
-    const frozen = readJson(planPath)
-    if (frozen.skipped) {
-        console.log(`SKIP ${backend} delete: ${frozen.reason}`)
-        return
-    }
-    const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
-    assertDeploySha(process.env, github.mainSha)
-    const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
-    const version = await verifyPublicVersion(versionUrl, github.mainSha, {
-        attempts: 6,
-        pauseMs: 5000,
-    })
-    console.log(`version ${version.buildVersion} commit ${version.commit}`)
+/**
+ * Re-inventory the host, classify it again and reconcile it with the frozen plan --
+ * exactly what an --apply run decides before deleting. Shared by the dry-run gate
+ * check, so a dry run sees every abort an apply run would hit.
+ */
+async function freshDeleteDecision(backend, frozen, github) {
     let freshInventory
     if (backend === 'cloudflare') {
         const deployments = await listCloudflareDeployments({
@@ -343,7 +334,25 @@ async function applyDeletes(backend, planPath) {
         pulls: github.pulls,
         mainSha: github.mainSha,
     })
-    const decision = reconcilePlans(frozen, fresh)
+    return { fresh, decision: reconcilePlans(frozen, fresh) }
+}
+
+async function applyDeletes(backend, planPath) {
+    assertTrustedApply()
+    const frozen = readJson(planPath)
+    if (frozen.skipped) {
+        console.log(`SKIP ${backend} delete: ${frozen.reason}`)
+        return
+    }
+    const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    assertDeploySha(process.env, github.mainSha)
+    const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
+    const version = await verifyPublicVersion(versionUrl, github.mainSha, {
+        attempts: 6,
+        pauseMs: 5000,
+    })
+    console.log(`version ${version.buildVersion} commit ${version.commit}`)
+    const { fresh, decision } = await freshDeleteDecision(backend, frozen, github)
     if (decision.abort) {
         throw new Error(`retention batch aborted: ${decision.errors.join('; ')}`)
     }
@@ -394,18 +403,26 @@ async function applyDeletes(backend, planPath) {
     })
 }
 
-// Read-only: runs the live pre-delete gate for every queued Vercel id and prints
-// what an --apply run would delete or refuse. Never deletes.
+// Read-only: takes the same fresh-inventory, reconcile and live-gate path as --apply
+// and prints what that run would delete, refuse or abort on. Never deletes. Fails
+// the step when an apply run would not complete, so a dry run surfaces it.
 async function checkVercelGate(planPath) {
-    const plan = readJson(planPath)
-    if (plan.skipped) {
-        console.log(`SKIP Vercel gate check: ${plan.reason || 'plan was skipped'}`)
+    const frozen = readJson(planPath)
+    if (frozen.skipped) {
+        console.log(`SKIP Vercel gate check: ${frozen.reason || 'plan was skipped'}`)
+        return
+    }
+    const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    const { fresh, decision } = await freshDeleteDecision('vercel', frozen, github)
+    if (decision.abort) {
+        console.log(`would-abort: ${decision.errors.join('; ')}`)
+        process.exitCode = 1
         return
     }
     const results = await checkProvenDeployments({
         backend: 'vercel',
-        plan,
-        ids: plan.queuedDeleteIds || [],
+        plan: fresh,
+        ids: decision.ids,
         token: process.env.VERCEL_TOKEN,
         teamId: process.env.VERCEL_TEAM_ID || VERCEL_TEAM,
     })
@@ -416,6 +433,7 @@ async function checkVercelGate(planPath) {
     console.log(
         `vercel gate check: ${results.length - refused} would delete, ${refused} would refuse`,
     )
+    if (refused > 0) process.exitCode = 1
 }
 
 async function main() {

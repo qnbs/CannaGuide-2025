@@ -143,11 +143,13 @@ jobs:
                   --github retention-reports/github.json
                   --out retention-reports/vercel-plan.json
 
-            # Read-only: on a dry run, report which queued ids the live pre-delete
-            # gate would allow, so an --apply run can be judged before it deletes.
+            # Read-only: on a dry run, take the same re-inventory, reconcile and live
+            # pre-delete gate path as --apply and report what it would delete, refuse
+            # or abort on. Fails the step when an apply run would not complete.
             - name: Check Vercel delete gate (dry run)
               if: inputs.dry_run == true || inputs.dry_run == 'true'
               env:
+                  GH_TOKEN: ${{ github.token }}
                   VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
               run: node ./scripts/deployment-retention/cli.mjs check-vercel --plan retention-reports/vercel-plan.json
 

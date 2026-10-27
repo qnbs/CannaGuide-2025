@@ -53,6 +53,7 @@ declare module 'onnxruntime-web' {
         wasm: {
             numThreads?: number
             wasmPaths?: string | { wasm?: URL | string; mjs?: URL | string }
+            wasmBinary?: ArrayBufferLike | Uint8Array
         }
     }
 }

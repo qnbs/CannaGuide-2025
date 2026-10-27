@@ -61,6 +61,11 @@ test('macOS signing values reach only the signed build step, and only with a cer
     }
 
     // Both steps run the same build; only the credentials differ.
-    const withBlock = (text) => text.slice(text.indexOf('with:'))
+    const withBlock = (text) => {
+        const start = text.indexOf('\n              with:\n')
+        assert.notEqual(start, -1, 'build step has no with: block')
+        return text.slice(start)
+    }
     assert.equal(withBlock(signed), withBlock(unsigned))
+    assert.match(withBlock(unsigned), /args: --target \$\{\{ matrix\.target \}\}/)
 })

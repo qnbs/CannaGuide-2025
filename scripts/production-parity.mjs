@@ -13,12 +13,14 @@ import {
     classifySha,
     comparableCsp,
     compareHeaders,
+    comparePolicies,
     expectedStatuses,
     exitCodeFor,
     getMetaCsp,
     parseRootAssets,
     readPolicies,
     SECURITY_HEADERS,
+    tryUrl,
 } from './production-parity-policy.mjs'
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -171,7 +173,14 @@ async function waitForMain(expectedSha, fetchImpl, waitSeconds, intervalSeconds,
 }
 
 function responseCheck(id, response, expected, details = {}) {
-    if (response.status === null) return check(id, 'UNKNOWN', expected, response.error, details)
+    // A body that failed to read (oversized, reset) leaves the response unproven.
+    if (response.status === null || response.error) {
+        return check(id, 'UNKNOWN', expected, response.error, {
+            url: response.url,
+            httpStatus: response.status,
+            ...details,
+        })
+    }
     const status = expected.includes(response.status) ? 'MATCH' : 'DRIFT'
     return check(id, status, expected, response.status, {
         url: response.url,
@@ -209,9 +218,9 @@ async function checkRedirects(host, fetchImpl) {
     let httpStatus = 'DRIFT'
     if (httpResponse.status === null) httpStatus = 'UNKNOWN'
     else if ([301, 308].includes(httpResponse.status) && httpLocation) {
-        const target = new URL(httpLocation, httpUrl)
+        const target = tryUrl(httpLocation, httpUrl)
         httpStatus =
-            target.protocol === 'https:' &&
+            target?.protocol === 'https:' &&
             target.host === base.host &&
             target.pathname === base.pathname
                 ? 'MATCH'
@@ -228,9 +237,7 @@ async function checkRedirects(host, fetchImpl) {
         const noSlash = new URL(host.base)
         noSlash.pathname = noSlash.pathname.replace(/\/$/, '')
         const response = await request(noSlash, 'HEAD', fetchImpl)
-        const target = response.headers.location
-            ? new URL(response.headers.location, noSlash)
-            : null
+        const target = response.headers.location ? tryUrl(response.headers.location, noSlash) : null
         const status =
             response.status === null
                 ? 'UNKNOWN'
@@ -291,7 +298,7 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
         checks.push(contentTypeCheck('content-type.indexHtml', responses.indexHtml, 'text/html'))
     } else if (responses.indexHtml.status === 308) {
         const target = responses.indexHtml.headers.location
-            ? new URL(responses.indexHtml.headers.location, responses.indexHtml.url).href
+            ? (tryUrl(responses.indexHtml.headers.location, responses.indexHtml.url)?.href ?? null)
             : null
         checks.push(
             check(
@@ -327,11 +334,19 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
             assets.modulepreloadCount,
         ),
     )
+    // The probe validates manifest.json, so the page must link that same file.
+    const probedManifest = urlFor(host, 'manifest.json')
+    const linkedManifest = assets.manifest ? tryUrl(assets.manifest, host.base) : null
     checks.push(
         check(
             'entry.manifest-link',
-            root.error ? 'UNKNOWN' : assets.manifest ? 'MATCH' : 'DRIFT',
-            'manifest URL present',
+            root.error
+                ? 'UNKNOWN'
+                : linkedManifest?.origin === probedManifest.origin &&
+                    linkedManifest.pathname === probedManifest.pathname
+                  ? 'MATCH'
+                  : 'DRIFT',
+            probedManifest.href,
             assets.manifest,
         ),
     )
@@ -450,13 +465,14 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
         ),
     )
     for (const icon of icons) {
-        if (typeof icon.src !== 'string') {
+        // Remote JSON: an entry can be null or a non-object, not just a bad src.
+        if (typeof icon?.src !== 'string') {
             checks.push(
                 check(
                     'manifest.icon',
                     'DRIFT',
                     'same-origin URL or image data URI',
-                    icon.src ?? null,
+                    icon?.src ?? null,
                 ),
             )
             continue
@@ -515,15 +531,14 @@ async function probeHost(host, versionSample, timedOut, expectedSha, policies, f
             const entryResponse = await request(entryUrl, 'GET', fetchImpl)
             checks.push(responseCheck('http.entry', entryResponse, [200]))
             checks.push(cacheCheck(host, 'asset', entryResponse, policies))
-            const registered = /serviceWorker\.register|registerSW/.test(entryResponse.body)
+            // Only a 200 body is the entry bundle; an error page proves nothing either way.
+            const entryLoaded = entryResponse.status === 200 && !entryResponse.error
+            const registered =
+                entryLoaded && /serviceWorker\.register|registerSW/.test(entryResponse.body)
             checks.push(
                 check(
                     'service-worker.registration',
-                    entryResponse.status === null || entryResponse.error
-                        ? 'UNKNOWN'
-                        : registered
-                          ? 'MATCH'
-                          : 'DRIFT',
+                    !entryLoaded ? 'UNKNOWN' : registered ? 'MATCH' : 'DRIFT',
                     'registration call present in entry bundle',
                     registered,
                     {
@@ -565,7 +580,7 @@ export async function runProbe({
         throw new Error('--interval-seconds must be an integer from 1 to 120')
 
     const policies = readPolicies(repoRoot)
-    const policyMismatch = compareHeaders(policies.vercelSecurity, policies.cloudflareSecurity)
+    const policyMismatch = comparePolicies(policies.vercelSecurity, policies.cloudflareSecurity)
     const waitResult = await waitForMain(
         expectedSha,
         fetchImpl,

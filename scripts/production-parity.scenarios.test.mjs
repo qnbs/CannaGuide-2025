@@ -4,6 +4,7 @@ import { test } from 'node:test'
 import { fileURLToPath, URL } from 'node:url'
 import {
     aggregateStatus,
+    comparePolicies,
     exitCodeFor,
     PASS_STATUSES,
     platformCacheExpectation,
@@ -127,6 +128,8 @@ function fakeHosts({
         const method = init.method ?? 'GET'
         requests.push({ method, url: url.href, credentials: init.credentials })
         assert.ok(['GET', 'HEAD'].includes(method), `probe sent ${method} ${url.href}`)
+        // The fake answers redirects itself, so it must also prove none would be followed.
+        assert.equal(init.redirect, 'manual', `probe would follow redirects for ${url.href}`)
 
         const host = HOSTS.find((candidate) => new URL(candidate.base).host === url.host)
         assert.ok(host, `probe left the three canonical hosts: ${url.href}`)
@@ -309,4 +312,95 @@ test('only explicit pass states aggregate to MATCH', () => {
     assert.equal(aggregateStatus(['MATCH', 'SOMETHING_NEW']), 'UNKNOWN')
     assert.equal(aggregateStatus(['UNKNOWN', 'DRIFT']), 'DRIFT')
     assert.equal(exitCodeFor('EXPECTED_SKEW'), 2)
+})
+
+test('malformed remote values become DRIFT checks, not an aborted report', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) => {
+            if (name === 'vercel' && path === 'manifest.json') {
+                const manifest = { start_url: './', scope: './', icons: [null, 42] }
+                return { ...response, body: JSON.stringify(manifest) }
+            }
+            if (name === 'cloudflare' && path === '<http>') {
+                return { status: 301, headers: { location: 'http://[' }, body: null }
+            }
+            return response
+        },
+    })
+    const report = await probe(hosts)
+    const icons = hostReport(report, 'vercel').checks.filter((item) => item.id === 'manifest.icon')
+    assert.deepEqual(
+        icons.map((item) => [item.status, item.actual]),
+        [
+            ['DRIFT', null],
+            ['DRIFT', null],
+        ],
+    )
+    const redirect = hostReport(report, 'cloudflare').checks.find(
+        (item) => item.id === 'redirect.http-to-https',
+    )
+    assert.equal(redirect.status, 'DRIFT')
+    assert.equal(redirect.actual.location, 'http://[')
+    assert.equal(hostReport(report, 'github-pages').status, 'MATCH')
+    assert.equal(report.status, 'DRIFT')
+})
+
+test('an error page for the entry bundle never proves service worker registration', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) =>
+            name === 'github-pages' && path === ENTRY
+                ? { status: 404, headers: response.headers, body: '<html>registerSW</html>' }
+                : response,
+    })
+    const report = await probe(hosts)
+    const checks = hostReport(report, 'github-pages').checks
+    assert.equal(checks.find((item) => item.id === 'http.entry').status, 'DRIFT')
+    const registration = checks.find((item) => item.id === 'service-worker.registration')
+    assert.equal(registration.status, 'UNKNOWN')
+    assert.equal(registration.actual, false)
+})
+
+test('a manifest link that is not the probed manifest.json is DRIFT', async () => {
+    const offOrigin = 'https://cdn.example.invalid/manifest.json'
+    const hosts = fakeHosts({
+        override: (name, path, response) =>
+            name === 'cloudflare' && path === ''
+                ? { ...response, body: response.body.replace('./manifest.json', offOrigin) }
+                : response,
+    })
+    const report = await probe(hosts)
+    const link = hostReport(report, 'cloudflare').checks.find(
+        (item) => item.id === 'entry.manifest-link',
+    )
+    assert.deepEqual(
+        [link.status, link.expected, link.actual],
+        ['DRIFT', 'https://cannaguide-2025.pages.dev/manifest.json', offOrigin],
+    )
+    assert.equal(report.status, 'DRIFT')
+})
+
+test('a status with an unreadable body is UNKNOWN, not MATCH', async () => {
+    const hosts = fakeHosts({
+        override: (name, path, response) =>
+            name === 'vercel' && path === 'favicon.ico'
+                ? { ...response, body: 'x'.repeat(4 * 1024 * 1024 + 1) }
+                : response,
+    })
+    const report = await probe(hosts)
+    const favicon = hostReport(report, 'vercel').checks.find((item) => item.id === 'http.favicon')
+    assert.equal(favicon.status, 'UNKNOWN')
+    assert.equal(favicon.httpStatus, 200)
+    assert.match(favicon.actual, /inspection limit/)
+    assert.equal(report.status, 'UNKNOWN')
+})
+
+test('repo policy comparison covers headers configured on only one platform', () => {
+    const result = comparePolicies(
+        { 'x-frame-options': 'DENY', 'x-vercel-only': '1' },
+        { 'x-frame-options': 'deny', 'x-cloudflare-only': '1' },
+    )
+    assert.deepEqual(
+        Object.fromEntries(Object.entries(result).map(([name, item]) => [name, item.status])),
+        { 'x-frame-options': 'MATCH', 'x-cloudflare-only': 'DRIFT', 'x-vercel-only': 'DRIFT' },
+    )
 })

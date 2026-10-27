@@ -66,6 +66,25 @@ export function compareHeaders(actual, expected) {
     return result
 }
 
+// Every header either platform configures: one set on only one side is drift, too.
+export function comparePolicies(vercel, cloudflare) {
+    const result = compareHeaders(vercel, cloudflare)
+    for (const [name, value] of Object.entries(vercel)) {
+        if (!(name in result)) result[name] = { status: 'DRIFT', expected: null, actual: value }
+    }
+    return result
+}
+
+// new URL() throws on a malformed Location or href. A remote value must become a
+// check result, never an exception that drops the whole report.
+export function tryUrl(value, base) {
+    try {
+        return new URL(value, base)
+    } catch {
+        return null
+    }
+}
+
 const FULL_SHA = /^[0-9a-f]{40}$/i
 
 export function classifySha(commit, expectedSha, timedOut = false) {

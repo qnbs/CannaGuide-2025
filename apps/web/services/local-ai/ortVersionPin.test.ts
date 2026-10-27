@@ -72,29 +72,50 @@ describe('ORT wasm CDN pin', () => {
     /**
      * The installed package's dist/, read as files (not imported, see above).
      * jsDelivr serves the npm tarball unchanged, so these bytes are the CDN bytes.
+     * Null when onnxruntime-web is not installed.
      */
-    const installedOrtDist = (): string => {
+    const installedOrtDist = ((): string | null => {
         const store = path.join(repoRoot, 'node_modules/.pnpm')
-        const entry = readdirSync(store).find((name) =>
-            name.startsWith(`onnxruntime-web@${ORT_VERSION}`),
-        )
-        expect(entry, `onnxruntime-web@${ORT_VERSION} is not installed`).toBeDefined()
-        return path.join(store, entry ?? '', 'node_modules/onnxruntime-web/dist')
-    }
+        let names: string[]
+        try {
+            names = readdirSync(store)
+        } catch {
+            return null
+        }
+        const entry = names.find((name) => name.startsWith(`onnxruntime-web@${ORT_VERSION}`))
+        return entry ? path.join(store, entry, 'node_modules/onnxruntime-web/dist') : null
+    })()
 
-    it('pins the integrity digest of the installed wasm binary', () => {
-        const bytes = readFileSync(path.join(installedOrtDist(), ORT_WASM_FILE))
+    /**
+     * Lite installs (`--no-optional`, see ai-core's ml-stubs.d.ts) omit the
+     * package, so there is no binary to hash and these checks skip. Never in CI:
+     * there a missing package would turn the digest gate off without a failure.
+     */
+    const binaryChecks = installedOrtDist !== null || process.env['CI'] === 'true'
+
+    it.runIf(binaryChecks)('finds the installed onnxruntime-web package', () => {
+        expect(installedOrtDist, `onnxruntime-web@${ORT_VERSION} is not installed`).not.toBeNull()
+    })
+
+    it.runIf(binaryChecks)('pins the integrity digest of the installed wasm binary', () => {
+        const bytes = readFileSync(path.join(installedOrtDist ?? '', ORT_WASM_FILE))
         const digest = `sha256-${createHash('sha256').update(bytes).digest('base64')}`
         expect(ORT_WASM_SRI).toBe(digest)
         expect(ORT_WASM_URL).toBe(`${ORT_WASM_CDN_BASE}${ORT_WASM_FILE}`)
     })
 
-    it('names the binary that the browser entry of onnxruntime-web runs', () => {
-        // `import('onnxruntime-web')` resolves to ort.bundle.min.mjs in a browser.
-        // If a version switches that bundle to another binary, the pinned digest
-        // would verify a file ORT never uses.
-        const bundle = readFileSync(path.join(installedOrtDist(), 'ort.bundle.min.mjs'), 'utf8')
-        const binaries = [...new Set(bundle.match(/ort-wasm[\w.-]*\.wasm/g))]
-        expect(binaries).toEqual([ORT_WASM_FILE])
-    })
+    it.runIf(binaryChecks)(
+        'names the binary that the browser entry of onnxruntime-web runs',
+        () => {
+            // `import('onnxruntime-web')` resolves to ort.bundle.min.mjs in a browser.
+            // If a version switches that bundle to another binary, the pinned digest
+            // would verify a file ORT never uses.
+            const bundle = readFileSync(
+                path.join(installedOrtDist ?? '', 'ort.bundle.min.mjs'),
+                'utf8',
+            )
+            const binaries = [...new Set(bundle.match(/ort-wasm[\w.-]*\.wasm/g))]
+            expect(binaries).toEqual([ORT_WASM_FILE])
+        },
+    )
 })

@@ -103,7 +103,13 @@ const actionFiles = readdirSync(ACTIONS).map((dir) => ({
     name: `actions/${dir}/action.yml`,
     text: readFileSync(join(ACTIONS, dir, 'action.yml'), 'utf8'),
 }))
-const UNTRUSTED_EXPRESSION = /\$\{\{[^}]*\b(?:inputs\.|github\.event\.|github\.head_ref\b)[^}]*\}\}/
+// Each expression up to its closing `}}` (single braces inside, as in
+// `format('{0}', x)`, do not end it), then its contents: dot or bracket access
+// to `inputs`, `github.event` or `github.head_ref` (#648 review).
+const UNTRUSTED_CONTEXT =
+    /\binputs\s*[.[]|\bgithub\s*(?:\.\s*(?:event|head_ref)\b|\[\s*['"](?:event|head_ref)['"])/
+const hasUntrustedExpression = (text) =>
+    [...text.matchAll(/\$\{\{([\s\S]*?)\}\}/g)].some((m) => UNTRUSTED_CONTEXT.test(m[1]))
 
 // `file:line` of every untrusted expression inside a run:/script: body. Every
 // line indented deeper than the key belongs to its value, whatever the scalar
@@ -114,15 +120,19 @@ function injectionSinks(name, text) {
     const sinks = []
     let block = null
     text.split('\n').forEach((line, index) => {
-        const key = /^(\s*(?:-\s+)?)(?:run|script):(.*)$/.exec(line)
-        if (key) {
-            if (UNTRUSTED_EXPRESSION.test(key[2])) sinks.push(`${name}:${index + 1}`)
-            block = key[1].length
-            return
+        // Body membership first: inside a body even a `script: 0;` JS label is
+        // script text, not a YAML key that would end the body (#648 review).
+        if (block !== null && line.trim()) {
+            if (line.length - line.trimStart().length > block) {
+                if (hasUntrustedExpression(line)) sinks.push(`${name}:${index + 1}`)
+                return
+            }
+            block = null
         }
-        if (block === null || !line.trim()) return
-        if (line.length - line.trimStart().length <= block) block = null
-        else if (UNTRUSTED_EXPRESSION.test(line)) sinks.push(`${name}:${index + 1}`)
+        const key = /^(\s*(?:-\s+)?)(?:run|script):(.*)$/.exec(line)
+        if (!key) return
+        if (hasUntrustedExpression(key[2])) sinks.push(`${name}:${index + 1}`)
+        block = key[1].length
     })
     return sinks
 }
@@ -150,6 +160,13 @@ test('the injection detector finds every form it guards against', () => {
         '    - run: echo safe',
         '      env:',
         '          AFTER: ${{ inputs.d }}',
+        "    - run: echo ${{ format('{0}', inputs.e) }}",
+        "    - run: echo ${{ inputs['f'] }} ${{ github['event'].issue.title }}",
+        '    - uses: actions/github-script@0000000000000000000000000000000000000000',
+        '      with:',
+        '          script: |',
+        '              script: 0;',
+        "              const g = '${{ inputs.g }}'",
     ].join('\n')
     assert.deepEqual(injectionSinks('fixture', fixture), [
         'fixture:2',
@@ -159,6 +176,9 @@ test('the injection detector finds every form it guards against', () => {
         'fixture:14',
         'fixture:16',
         'fixture:18',
+        'fixture:22',
+        'fixture:23',
+        'fixture:28',
     ])
 })
 

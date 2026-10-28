@@ -108,32 +108,43 @@ const actionFiles = readdirSync(ACTIONS).map((dir) => ({
 // to `inputs`, `github.event` or `github.head_ref` (#648 review).
 const UNTRUSTED_CONTEXT =
     /\binputs\s*[.[]|\bgithub\s*(?:\.\s*(?:event|head_ref)\b|\[\s*['"](?:event|head_ref)['"])/
-const hasUntrustedExpression = (text) =>
-    [...text.matchAll(/\$\{\{([\s\S]*?)\}\}/g)].some((m) => UNTRUSTED_CONTEXT.test(m[1]))
+const EXPRESSION = /\$\{\{([\s\S]*?)\}\}/g
 
 // `file:line` of every untrusted expression inside a run:/script: body. Every
 // line indented deeper than the key belongs to its value, whatever the scalar
 // form (`|`, `|2-`, `| # note`, a plain or quoted multi-line value) -- matching
 // only a bare `|` let other forms slip past (#648 review). For `- run:` the key
 // column is after the dash, so a sibling `env:` of the same step ends the body.
+// Each value is collected whole and searched as one text, so an expression
+// that spans lines (`${{` here, `inputs.x }}` below) is still one expression;
+// the sink is the line it starts on (#648 review).
 function injectionSinks(name, text) {
     const sinks = []
-    let block = null
+    let value = null
+    const flush = () => {
+        if (!value) return
+        const joined = value.parts.join('\n')
+        for (const m of joined.matchAll(EXPRESSION)) {
+            if (!UNTRUSTED_CONTEXT.test(m[1])) continue
+            const sink = `${name}:${value.start + joined.slice(0, m.index).split('\n').length - 1}`
+            if (!sinks.includes(sink)) sinks.push(sink)
+        }
+        value = null
+    }
     text.split('\n').forEach((line, index) => {
         // Body membership first: inside a body even a `script: 0;` JS label is
         // script text, not a YAML key that would end the body (#648 review).
-        if (block !== null && line.trim()) {
-            if (line.length - line.trimStart().length > block) {
-                if (hasUntrustedExpression(line)) sinks.push(`${name}:${index + 1}`)
-                return
-            }
-            block = null
+        if (value && line.trim() && line.length - line.trimStart().length <= value.indent) {
+            flush()
+        }
+        if (value) {
+            value.parts.push(line)
+            return
         }
         const key = /^(\s*(?:-\s+)?)(?:run|script):(.*)$/.exec(line)
-        if (!key) return
-        if (hasUntrustedExpression(key[2])) sinks.push(`${name}:${index + 1}`)
-        block = key[1].length
+        if (key) value = { indent: key[1].length, start: index + 1, parts: [key[2]] }
     })
+    flush()
     return sinks
 }
 
@@ -167,6 +178,9 @@ test('the injection detector finds every form it guards against', () => {
         '          script: |',
         '              script: 0;',
         "              const g = '${{ inputs.g }}'",
+        '    - run: |',
+        '          echo ${{',
+        '            inputs.h }}',
     ].join('\n')
     assert.deepEqual(injectionSinks('fixture', fixture), [
         'fixture:2',
@@ -179,6 +193,7 @@ test('the injection detector finds every form it guards against', () => {
         'fixture:22',
         'fixture:23',
         'fixture:28',
+        'fixture:30',
     ])
 })
 
@@ -194,4 +209,15 @@ test('setup-node-ci matches install-command against an allowlist, never runs it'
     assert.doesNotMatch(action.text, /run: \$\{\{ inputs\.install-command \}\}/)
     assert.match(action.text, /INSTALL_COMMAND: \$\{\{ inputs\.install-command \}\}/)
     assert.match(action.text, /case "\$\{INSTALL_COMMAND\}" in/)
+    // The input may only be declared, matched and reported -- an `eval` or a
+    // bare `$INSTALL_COMMAND` ahead of the case would run it (#648 review).
+    const install = action.text.slice(action.text.indexOf('- name: Install dependencies'))
+    for (const line of install.split('\n').filter((l) => l.includes('INSTALL_COMMAND'))) {
+        assert.match(
+            line.trim(),
+            /^(?:INSTALL_COMMAND: \$\{\{ inputs\.install-command \}\}|case "\$\{INSTALL_COMMAND\}" in|echo "::error::[^"]*")$/,
+            `install-command reaches an executing position: ${line.trim()}`,
+        )
+    }
+    assert.match(install, /'pnpm install --frozen-lockfile'\) pnpm install --frozen-lockfile ;;/)
 })

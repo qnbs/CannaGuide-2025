@@ -811,6 +811,59 @@ test('#650 review wave on e7b30999 (consolidated): denied, and the harmless twin
     )
 })
 
+test('#650 bounded census on dd03f67b: denied, and the harmless twin allowed', () => {
+    const cases = [
+        // False positives on ordinary commands.
+        {
+            blocked: [["pnpm -c exec 'git commit --no-verify -m fix'", /--no-verify/]],
+            allowed: [
+                'echo pnpm -c exec "git commit --no-verify -m fix"',
+                'echo env -S "git push --force"',
+                'pnpm install --help',
+                'pnpm install -h',
+                'pnpm -r --filter @cannaguide/ai-core typecheck',
+            ],
+        },
+        // env -S takes its trailing operands; env -C moves the directory.
+        {
+            blocked: [
+                ['env -S "git commit" --no-verify -m fix', /--no-verify/],
+                ['env -C apps/web pnpm test:e2e', /CI only/],
+                ['pnpm -r typecheck', /bare turbo run|unfiltered/],
+            ],
+            allowed: ['env -C apps/web pnpm run dev'],
+        },
+        // Backslash-CR is no line continuation.
+        {
+            blocked: [['echo ok\\\r\ngit push --force origin feature', /force push/]],
+            allowed: [],
+        },
+        // turbo filters must be concrete; -F is turbo's filter alias.
+        {
+            blocked: [
+                ["turbo run typecheck --filter='./apps/*' --filter='./packages/*'", /bare turbo/],
+                ['turbo run lint --filter=...@cannaguide/ui', /bare turbo run/],
+                ['turbo typecheck --filter=//', /bare turbo run/],
+            ],
+            allowed: [
+                'turbo run typecheck -F @cannaguide/web',
+                'turbo lint --filter @cannaguide/ui',
+            ],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+    // env -C from the session's web directory reaches the root's turbo.
+    assert.match(
+        bashViolations('env -C ../.. pnpm run dev', 0, 'apps/web').join('; '),
+        /bare turbo/,
+    )
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,

@@ -345,7 +345,23 @@ const BARE_TURBO = [
             const task = explicit ? tokens[2] : tokens[1]
             if (!task || task.startsWith('-') || (!explicit && TURBO_NON_RUN.has(task)))
                 return false
-            return !/--filter\b/.test(command.split(/\s--(?=\s|$)/)[0])
+            // Scoped only by concrete filters (`--filter` or its alias `-F`,
+            // before `--`): a glob, dependency selector or the root can select
+            // every workspace (`--filter='./apps/*'`; #650 review). An explicit
+            // exclusion is a deliberate narrowing -- the prescribed production
+            // build is `turbo run build --filter=!@cannaguide/desktop`.
+            const options = command.split(/\s--(?=\s|$)/)[0].split(/\s+/)
+            const values = []
+            options.forEach((token, k) => {
+                const match = /^(?:--filter|-F)(?:=(.*))?$/.exec(token)
+                if (match) values.push((match[1] ?? options[k + 1] ?? '').replace(/['"]/g, ''))
+            })
+            const scoped =
+                values.length > 0 &&
+                values.every(
+                    (v) => v && !/[*{}[\]]|\.\.\./.test(v) && !['.', './', '//'].includes(v),
+                )
+            return !scoped
         },
     },
 ]

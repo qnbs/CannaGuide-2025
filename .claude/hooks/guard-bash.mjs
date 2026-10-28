@@ -331,8 +331,10 @@ export function parseCommands(source) {
         } else if (c === '#' && word === null) {
             // A comment starts a word; `a#b` and `$#` are ordinary text.
             while (i < s.length && s[i] !== '\n') i += 1
-        } else if (c === '\\' && (next === '\n' || (next === '\r' && s[i + 2] === '\n'))) {
-            i += next === '\n' ? 2 : 3
+        } else if (c === '\\' && next === '\n') {
+            // Only backslash-LF continues a line; backslash-CR escapes the CR
+            // and the LF after it still ends the command (#650 review).
+            i += 2
         } else if (c === '\\') {
             append(next ?? '')
             i += 2
@@ -922,10 +924,12 @@ const RULES = [
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',
         // pnpm's own options may precede the command: `pnpm --dir apps/web install`.
-        // `pnpm install-test` / `it` install first (#650 review).
+        // `pnpm install-test` / `it` install first; `--help` / `-h` only print
+        // the usage (#650 review).
         (c) =>
             ['install', 'i', ...INSTALL_TEST].includes(pnpmInvocation(c)?.script) &&
-            !frozenLockfile(c),
+            !frozenLockfile(c) &&
+            !/(?:^|\s)(?:--help|-h)(?=\s|$)/.test(c.split(/\s--(?=\s|$)/)[0]),
     ],
 ]
 
@@ -1095,15 +1099,14 @@ function scriptBodies(command, cwd) {
     const tokens = command.split(' ')
     const own = tokens.slice(0, tokens.length - run.rest.length - 1).join(' ')
     const flag = (pattern) => new RegExp(`(?:^|\\s)(?:${pattern})(?=\\s|$)`).test(own)
-    const chosen = flag('-r|--recursive')
-        ? workspaces()
+    // A filter narrows `-r` as well (`pnpm -r --filter <pkg> typecheck`).
+    const chosen = filters.length
+        ? filters.flatMap((match) => selectedWorkspaces(match[1], dir))
         : flag('-w|--workspace-root')
           ? workspaces().filter((w) => w.dir === '')
-          : filters.length
-            ? filters.flatMap((match) => selectedWorkspaces(match[1], dir))
-            : dir === null
-              ? workspaces()
-              : workspaceAt(dir)
+          : flag('-r|--recursive') || dir === null
+            ? workspaces()
+            : workspaceAt(dir)
     const bodies = new Set(chosen.map((w) => w.scripts[run.script]).filter(Boolean))
     return [...bodies].map((body) => [body, ...run.rest].join(' '))
 }
@@ -1169,32 +1172,40 @@ function judge(words, violations, cwd) {
         if (flag > 0 && rest[flag + 1] !== undefined) return shellText(offset + flag + 1)
     }
     if (rest[0] === 'eval') return shellText(offset + 1, words.length)
-    const bodies = scriptBodies(command, cwd)
+    // A launcher is a word that unwrapping removed (index < offset); the same
+    // word as an argument (`echo pnpm -c exec ...`) runs nothing (#650 review).
+    const launcher = (name) => words.findIndex((w, k) => k < offset && name.test(programName(w)))
+    const envAt = launcher(/^env$/)
+    // `env -C <dir>` / `--chdir` runs the command in another directory.
+    let dir = cwd
+    for (let k = envAt + 1; envAt !== -1 && k < offset; k += 1) {
+        const chdir = /^(?:-C|--chdir)(?:=?(.+))?$/.exec(words[k])
+        if (chdir) dir = joinDir(dir, chdir[1] ?? words[(k += 1)] ?? '.')
+    }
+    const bodies = scriptBodies(command, dir)
     if (bodies.length) return bodies
     // `pnpm [-c] exec [-c] '<script>' [args]` (shell mode, before or after
     // exec, also behind corepack / env) runs its operands as one shell command
     // (#650 review).
-    const pnpmAt = words.findIndex((w) => /^pnpm(?:@\S+)?$/.test(programName(w)))
-    const execAt = words.indexOf('exec', pnpmAt + 1)
-    if (
-        pnpmAt !== -1 &&
-        execAt !== -1 &&
-        words.some((w, k) => k > pnpmAt && /^(?:-c|--shell-mode)$/.test(w))
-    ) {
+    const pnpmAt = launcher(/^pnpm(?:@\S+)?$/)
+    const execAt = pnpmAt === -1 ? -1 : words.indexOf('exec', pnpmAt + 1)
+    if (execAt !== -1 && words.some((w, k) => k > pnpmAt && /^(?:-c|--shell-mode)$/.test(w))) {
         const script = words.findIndex((w, k) => k > execAt && !w.startsWith('-'))
         if (script !== -1) return shellText(script, words.length)
     }
-    // `env -S '<cmd args>'` splits that string and runs it (#650 review).
-    const envAt = words.findIndex((w) => programName(w) === 'env')
+    // `env -S '<cmd args>' [args]` splits that string and runs it with the
+    // operands after it (#650 review).
     if (envAt !== -1) {
         for (let k = envAt + 1; k < words.length; k += 1) {
             if (/^(?:-S|--split-string)$/.test(words[k]) && words[k + 1] !== undefined) {
-                return shellText(k + 1)
+                return shellText(k + 1, words.length)
             }
             const attached = /^(?:-S|--split-string=)(.+)$/.exec(words[k])
             if (attached) {
-                if (words.dynamic?.has(k)) violations.add(OPAQUE_INPUT)
-                return [attached[1]]
+                for (let j = k; j < words.length; j += 1) {
+                    if (words.dynamic?.has(j)) violations.add(OPAQUE_INPUT)
+                }
+                return [[attached[1], ...words.slice(k + 1)].join(' ')]
             }
         }
     }

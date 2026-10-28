@@ -341,7 +341,8 @@ export function parseCommands(source) {
     // any other upstream (`curl ... | sh`) cannot be inspected.
     let opaque = false
     for (let k = 1; k < commands.length; k += 1) {
-        if (!commands[k].piped || !readsStdinScript(commands[k])) continue
+        if (!commands[k].piped || !(readsStdinScript(commands[k]) || sourcesStdin(commands[k])))
+            continue
         const upstream = commands[k - 1]
         const program = readerOf(upstream)
         if (upstream.heredocBody !== undefined) nested.push(upstream.heredocBody)
@@ -358,14 +359,33 @@ export function parseCommands(source) {
 const unwrappedWords = (words) =>
     words.slice(words.length - unwrap(words.map(flat).join(' ')).split(' ').length)
 
+/** File names of the process's own stdin. */
+const STDIN_PATH = /^(?:\/dev\/stdin|\/dev\/fd\/0|\/proc\/self\/fd\/0)$/
+
 /** Whether `words` is a shell that takes its script from stdin. */
 function readsStdinScript(words) {
     const [program, ...args] = unwrappedWords(words)
     if (!SHELLS.test(programName(program ?? ''))) return false
     // `-c` names the script itself (judged elsewhere); a non-option operand
-    // is a script file; `-s` forces stdin.
+    // is a script file unless it names stdin (`bash /dev/stdin`); `-s`
+    // forces stdin.
     if (args.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/.test(arg))) return false
-    return args.every((arg) => arg.startsWith('-')) || args.some((arg) => /^-[A-Za-z]*s/.test(arg))
+    const operand = args.find((arg) => !arg.startsWith('-'))
+    return (
+        operand === undefined ||
+        STDIN_PATH.test(operand) ||
+        args.some((arg) => /^-[A-Za-z]*s/.test(arg))
+    )
+}
+
+/**
+ * Whether `words` is `source` / `.` reading stdin: `source /dev/stdin`, or a
+ * file known only at run time, which may be stdin (#650 review).
+ */
+function sourcesStdin(words) {
+    const [program, file] = unwrappedWords(words)
+    if (!SOURCE_READER.test(program ?? '')) return false
+    return file === undefined || STDIN_PATH.test(file) || runtimeValue(file)
 }
 
 /**
@@ -509,7 +529,21 @@ const RULES = [
                 normalizeGit(c),
             ),
     ],
-    ['admin merge (--admin)', (c) => /^gh\s+pr\s+merge\b.*\s--admin\b/.test(c)],
+    [
+        'admin merge (--admin)',
+        // gh takes options before and between its subcommands:
+        // `gh --repo o/r pr merge 12 --admin`, `gh pr -R o/r merge` (#650 review).
+        (c) => {
+            const tokens = c.split(/\s+/)
+            const pr = tokens.indexOf('pr')
+            return (
+                tokens[0] === 'gh' &&
+                pr > 0 &&
+                tokens.indexOf('merge', pr + 1) > pr &&
+                tokens.some((token) => /^--admin(?:=|$)/.test(token))
+            )
+        },
+    ],
     [
         'force push (--force / -f / +refspec)',
         // `-f` may be combined with other short flags: `git push -fu origin x`.
@@ -607,52 +641,62 @@ function frozenLockfile(command) {
 }
 
 /**
- * Whether the command sets HUSKY=0 for what it runs: an assignment before the
- * command (also after env/sudo/... and their options) or an `export`. As an
- * argument (`rg 'HUSKY=0' .husky`) or in a comment it is just text.
+ * The environment assignments the command makes for what it runs: before the
+ * command (also after env/sudo/... and their options) or in an `export`. As an
+ * argument (`rg 'HUSKY=0' .husky`) or in a comment such text is just data.
  */
-function disablesHusky(all) {
+function envAssignments(all) {
     // Control keywords open a command: `then HUSKY=0 git commit` (#650 review).
     let start = 0
     while (/^(?:if|then|elif|else|while|until|do|!|\{)$/.test(all[start] ?? '')) start += 1
     const words = all.slice(start)
+    const assignment = /^[A-Za-z_]\w*=/
     if (/^(?:export|declare|typeset|readonly)$/.test(words[0] ?? '')) {
-        return words.slice(1).includes('HUSKY=0')
+        return words.slice(1).filter((word) => assignment.test(word))
     }
+    const found = []
     for (let k = 0; k < words.length; k += 1) {
         const word = words[k]
-        // A run-time value (`HUSKY="$(printf 0)"`, `HUSKY=$X`) may be 0: fail closed.
-        if (word === 'HUSKY=0' || (word.startsWith('HUSKY=') && runtimeValue(word.slice(6)))) {
-            return true
-        }
+        if (assignment.test(word)) found.push(word)
         // A wrapper option's value is not the command: `env -u NAME`, `sudo -u USER`.
-        if (/^-[uCSgDhprtUT]$/.test(word)) {
-            k += 1
-            continue
-        }
-        if (
-            !/^(?:[A-Za-z_]\w*=.*|(?:\S*\/)?(?:env|command|exec|nohup|time|sudo)|-\S*)$/.test(word)
-        ) {
-            return false
-        }
+        else if (/^-[uCSgDhprtUT]$/.test(word)) k += 1
+        else if (!/^(?:(?:\S*\/)?(?:env|command|exec|nohup|time|sudo)|-\S*)$/.test(word)) break
     }
-    return false
+    return found
 }
+
+/** A run-time value (`HUSKY="$(printf 0)"`, `HUSKY=$X`) may be 0: fail closed. */
+const disablesHusky = (assignments) =>
+    assignments.some(
+        (word) => /^HUSKY=/.test(word) && (word === 'HUSKY=0' || runtimeValue(word.slice(6))),
+    )
+
+/**
+ * `GIT_CONFIG_COUNT` + `GIT_CONFIG_KEY_<n>` / `GIT_CONFIG_VALUE_<n>` and
+ * `GIT_CONFIG_PARAMETERS` set config like `git -c`, above the repository's own
+ * `core.hooksPath` (#650 review). Other git config variables
+ * (`GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM`) rank below the local hooksPath.
+ */
+const overridesHooksPath = (assignments) =>
+    assignments.some((word) => {
+        const value = /^(?:GIT_CONFIG_KEY_\d+|GIT_CONFIG_PARAMETERS)=(.*)$/s.exec(word)?.[1]
+        return value !== undefined && (/core\.hookspath/i.test(value) || runtimeValue(value))
+    })
 
 /** Adds the rules `words` breaks; returns shell text it hands to another shell. */
 const RAW_RULES = new Set(['hook bypass (core.hooksPath)'])
 
-/** package.json scripts by package name ('' for the workspace root), read once. */
-let scriptTable = null
-function packageScripts() {
-    if (scriptTable) return scriptTable
-    scriptTable = new Map()
+/** The workspaces: `{ name, dir, scripts }`, `dir` '' for the root; read once. */
+let workspaceTable = null
+function workspaces() {
+    if (workspaceTable) return workspaceTable
+    workspaceTable = []
     const root = path.resolve(import.meta.dirname, '../..')
     const dirs = ['']
     for (const group of ['apps', 'packages']) {
         try {
             for (const name of readdirSync(path.join(root, group)))
-                dirs.push(path.join(group, name))
+                dirs.push(path.posix.join(group, name))
         } catch {
             // no such group in this checkout
         }
@@ -660,29 +704,62 @@ function packageScripts() {
     for (const dir of dirs) {
         try {
             const pkg = JSON.parse(readFileSync(path.join(root, dir, 'package.json'), 'utf8'))
-            scriptTable.set(dir === '' ? '' : pkg.name, pkg.scripts ?? {})
+            workspaceTable.push({
+                name: dir === '' ? '' : pkg.name,
+                dir,
+                scripts: pkg.scripts ?? {},
+            })
         } catch {
             // not a package
         }
     }
-    return scriptTable
+    return workspaceTable
+}
+
+/** A path selector relative to the root: `./apps/web/` -> `apps/web`, `.` -> ''. */
+const workspaceDir = (selector) => {
+    const dir = path.posix.normalize(selector.replace(/^\{(.*)\}$/, '$1'))
+    return dir === '.' || dir === './' ? '' : dir.replace(/^\.\/|\/$/g, '')
 }
 
 /**
- * The command a pnpm package script runs, with the passed-on arguments, so
+ * The workspaces a pnpm selector names: a package name, or a directory
+ * (`./apps/web`, `{apps/web}`, `.` = the root; #650 review). A glob,
+ * exclusion, dependency or changed-since selector may reach any of them.
+ */
+function selectedWorkspaces(selector) {
+    const all = workspaces()
+    if (/[*!{}[\]^]|\.\.\./.test(selector.replace(/^\{([^{}*]*)\}$/, '$1'))) return all
+    if (/^[.{]/.test(selector)) return all.filter((w) => w.dir === workspaceDir(selector))
+    return all.filter((w) => w.name === selector)
+}
+
+/**
+ * What a pnpm package script runs, with the passed-on arguments, so
  * `pnpm test:mutate` is judged as `pnpm exec stryker run` and
  * `pnpm --filter <pkg> test:ct` as that package's `playwright test` (#650 review).
+ * The package comes from `--filter`, else `--dir` / `-C`, else the root. When
+ * it has no such script, every package that does is judged: the shell may
+ * have `cd`-ed into one (`cd apps/web && pnpm test:e2e`).
  */
-function scriptBody(command) {
+function scriptBodies(command) {
     const run = pnpmInvocation(command)
-    if (!run?.script) return null
-    const filter = /(?:^|\s)(?:--filter|-F)(?:=|\s+)(\S+)/.exec(command.split(/\s--(?=\s|$)/)[0])
-    const body = packageScripts().get(filter ? filter[1] : '')?.[run.script]
-    return body ? [body, ...run.rest].join(' ') : null
+    if (!run?.script) return []
+    const options = command.split(/\s--(?=\s|$)/)[0]
+    const filters = [...options.matchAll(/(?:^|\s)(?:--filter(?:-prod)?|-F)(?:=|\s+)(\S+)/g)]
+    const dir = /(?:^|\s)(?:--dir|-C)(?:=|\s+)(\S+)/.exec(options)
+    let chosen = filters.length
+        ? filters.flatMap((match) => selectedWorkspaces(match[1]))
+        : workspaces().filter((w) => w.dir === (dir ? workspaceDir(dir[1]) : ''))
+    if (!chosen.some((w) => w.scripts[run.script])) chosen = workspaces()
+    const bodies = new Set(chosen.map((w) => w.scripts[run.script]).filter(Boolean))
+    return [...bodies].map((body) => [body, ...run.rest].join(' '))
 }
 
 function judge(words, violations) {
-    if (disablesHusky(words)) violations.add('hook bypass (HUSKY=0)')
+    const assignments = envAssignments(words)
+    if (disablesHusky(assignments)) violations.add('hook bypass (HUSKY=0)')
+    if (overridesHooksPath(assignments)) violations.add('hook bypass (core.hooksPath)')
     const command = unwrap(words.map(flat).join(' '))
     if (!command) return []
     // Rules see git without its global options and without values consumed by
@@ -706,8 +783,8 @@ function judge(words, violations) {
         if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
     }
     if (rest[0] === 'eval') return [rest.slice(1).join(' ')]
-    const body = scriptBody(command)
-    if (body) return [body]
+    const bodies = scriptBodies(command)
+    if (bodies.length) return bodies
     // `env -S '<cmd args>'` splits that string and runs it (#650 review).
     const envAt = words.findIndex((w) => programName(w) === 'env')
     if (envAt !== -1) {

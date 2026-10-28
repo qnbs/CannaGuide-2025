@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
-import { AGENT_FILES, agentPolicyProblems, ciStatusNeeds } from './check-agent-policy.mjs'
+import {
+    AGENT_FILES,
+    agentPolicyProblems,
+    ciStatusNeeds,
+    heavyCommandRule,
+} from './check-agent-policy.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const read = (rel) => readFileSync(path.join(ROOT, rel), 'utf8')
@@ -80,6 +85,22 @@ test('unscoped heavy commands inside a command block fail', () => {
             '.github/copilot-instructions.md:4: bare turbo run in a command block',
         ],
     )
+})
+
+test('a filter that selects the root is no scope: the root script runs turbo (#650 review)', () => {
+    for (const command of [
+        'pnpm --filter . typecheck',
+        'pnpm --filter=./ lint',
+        'pnpm -F ./apps/web/../.. test',
+    ]) {
+        assert.equal(heavyCommandRule(command), 'unfiltered pnpm suite', command)
+    }
+    for (const command of [
+        'pnpm --filter ./apps/web typecheck',
+        'pnpm --filter @cannaguide/web lint',
+    ]) {
+        assert.equal(heavyCommandRule(command), null, command)
+    }
 })
 
 test('inline commands in instructions are checked, prohibitions are not', () => {

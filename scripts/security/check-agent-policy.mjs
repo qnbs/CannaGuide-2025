@@ -172,8 +172,14 @@ export function pnpmInvocation(command) {
     }
     // Only a concrete package or path scopes the run: a glob, an exclusion
     // (`!x`), a dependency selector (`...`) or a brace set can select every
-    // workspace (`--filter '@cannaguide/*'`; #650 review).
-    const filtered = filters.length > 0 && filters.every((v) => v && !/[*!{}[\]]|\.\.\./.test(v))
+    // workspace (`--filter '@cannaguide/*'`), and the root (`.`, `./`,
+    // `./apps/..`) runs the root script, i.e. `turbo run` (#650 review).
+    const filtered =
+        filters.length > 0 &&
+        filters.every(
+            (v) =>
+                v && !/[*!{}[\]]|\.\.\./.test(v) && !['.', './'].includes(path.posix.normalize(v)),
+        )
     return { filtered, script: tokens[i], rest: tokens.slice(i + 1) }
 }
 

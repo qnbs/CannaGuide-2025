@@ -122,6 +122,7 @@ test('banned commands are blocked, in any position or wrapper', () => {
         ['git push --force-with-lease origin', /without a named branch/],
         ['git commit $(printf -- --no-verify) -m fix', /command substitution/],
         ['git commit -m fix `printf -- -n`', /command substitution/],
+        ['pnpm --filter @cannaguide/web test:run --sequence.seed 123', /whole-suite test run/],
         ['pnpm test:run --filter @cannaguide/web', /whole-suite test run/],
         ['pnpm test:run --filter @cannaguide/web Foo', /whole-suite test run/],
         ['pnpm test --filter=@cannaguide/web', /whole-suite test run/],

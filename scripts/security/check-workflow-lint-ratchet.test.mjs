@@ -109,3 +109,17 @@ test('only an object with ceiling maps for both tools is a baseline (#649 review
     }
     assert.equal(isBaseline(JSON.parse(readFileSync(BASELINE, 'utf8'))), true)
 })
+
+test('CI installs all three linters pinned and checksum-verified (#649 review)', () => {
+    const ci = readFileSync(new URL('../../.github/workflows/ci.yml', import.meta.url), 'utf8')
+    assert.match(
+        ci,
+        /--require-hashes\s*\\?\s*\n?\s*-r scripts\/security\/zizmor-requirements\.txt/,
+    )
+    for (const tool of ['ACTIONLINT', 'SHELLCHECK']) {
+        assert.match(ci, new RegExp(`${tool}_VERSION: '\\d+\\.\\d+\\.\\d+'`), `${tool} version`)
+        assert.match(ci, new RegExp(`${tool}_SHA256: '[0-9a-f]{64}'`), `${tool} digest`)
+        assert.match(ci, new RegExp(`echo "\\$\\{${tool}_SHA256\\}  /tmp/\\S+" \\| sha256sum -c -`))
+    }
+    assert.match(ci, /shellcheck --version \| grep -qx "version: \$\{SHELLCHECK_VERSION\}"/)
+})

@@ -58,5 +58,5 @@ jobs:
               with:
                   name: mutation-report-${{ github.run_id }}
                   path: reports/mutation/
-                  retention-days: 30
+                  retention-days: 14
                   if-no-files-found: ignore

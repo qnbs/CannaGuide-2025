@@ -1,12 +1,16 @@
 #!/usr/bin/env node
 /**
  * Cross-platform Graphify MCP stdio launcher for Cursor.
- * Replaces bash/cmd wrappers — requires `uv` on PATH.
+ * Replaces bash/cmd wrappers — requires `uv` on PATH. Package versions come
+ * from ./graphify-pins.mjs: an unpinned `--with graphifyy` ran whatever was
+ * newest on PyPI on every session start.
  */
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import { uvRunWithPins } from './graphify-pins.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const graphJson = join(root, 'graphify-out', 'graph.json')
@@ -28,17 +32,7 @@ if (uvCheck.status !== 0) {
 
 const result = spawnSync(
     'uv',
-    [
-        'run',
-        '--with',
-        'graphifyy',
-        '--with',
-        'mcp',
-        'python',
-        '-m',
-        'graphify.serve',
-        graphJson,
-    ],
+    [...uvRunWithPins(), 'python', '-m', 'graphify.serve', graphJson],
     { cwd: root, stdio: 'inherit' },
 )
 

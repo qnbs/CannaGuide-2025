@@ -16,6 +16,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **chore(graphify):** The graphify MCP server no longer runs whatever is newest on PyPI. `scripts/graphify-mcp-launcher.mjs` started `uv run --with graphifyy --with mcp` unpinned on every session start, and `graphify:mcp:doctor` fell back to the same unpinned resolution whenever `GRAPHIFYY_VERSION`/`MCP_VERSION` were unset -- including in CI's own doctor step. Both now take their versions from `scripts/graphify-pins.mjs` (`graphifyy==0.9.36`, `mcp==2.0.0`, plus `--exclude-newer 2026-08-08T00:00:00Z` so transitive dependencies cannot move either), and `scripts/security/graphify-pins.test.mjs` keeps the graphify-update workflow on the same pins (CG-AUD-20261028-A-S5)
 - **fix(local-ai):** The ONNX Runtime that `@xenova/transformers` bundles (onnxruntime-web 1.14.0, used by the inference and image workers, the model loader and Whisper) no longer fetches its wasm from jsDelivr without an integrity check. The build copies the four lockfile-resolved binaries to `ort-1.14.0/` under the app base, each verified against a pinned SHA-256 (a missing, truncated, corrupted or re-versioned binary fails the build), and `loadTransformers` points the runtime there before any pipeline starts. The service worker caches that versioned directory cache-first, as it did the CDN copy. The bytes are unchanged -- they equal what jsDelivr served -- only their origin is (CG-AUD-20261008-045, #585)
 
 ## [1.11.0] - 2026-10-27

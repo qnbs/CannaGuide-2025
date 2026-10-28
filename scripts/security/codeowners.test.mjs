@@ -4,18 +4,22 @@
 // test is what notices: a default rule, no bullet lines, well-formed rules, and
 // explicit owners for every file that steers agents or CI.
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 
 /**
- * The only owner of the default rule and of every control-plane entry. Handing
- * these paths to another account is an owner decision, so it must change this
- * file too (itself owned through /scripts via the "*" rule).
+ * The owner of every rule. CODEOWNERS is last-match-wins, so pinning only the
+ * control-plane entries would let a later broad rule (say `/*.md @other`) take
+ * them over; pinning every rule closes that. Handing paths to another account
+ * is an owner decision and has to change this file too.
  */
 export const EXPECTED_OWNERS = ['@qnbs']
+
+/** `@user` or `@org/team`; a lone `@` or a typo-shaped handle is not an owner. */
+const OWNER = /^@[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?:\/[A-Za-z0-9._-]+)?$/
 
 /** Paths that instruct agents or run CI; each needs its own CODEOWNERS entry. */
 export const CONTROL_PLANE_PATHS = [
@@ -49,7 +53,7 @@ export function codeownersProblems(text) {
     for (const [pattern, ...owners] of rules) {
         if (pattern.startsWith('-'))
             problems.push(`markdown bullet instead of a pattern: "${pattern} ${owners.join(' ')}"`)
-        if (owners.length === 0 || !owners.every((owner) => owner.startsWith('@'))) {
+        if (owners.length === 0 || !owners.every((owner) => OWNER.test(owner))) {
             problems.push(`rule without a valid @owner: "${pattern} ${owners.join(' ')}"`)
         }
     }
@@ -59,7 +63,6 @@ export function codeownersProblems(text) {
         if (!patterns.has(required)) problems.push(`no explicit entry for ${required}`)
     }
     for (const [pattern, ...owners] of rules) {
-        if (pattern !== '*' && !CONTROL_PLANE_PATHS.includes(pattern)) continue
         if (owners.join(' ') !== EXPECTED_OWNERS.join(' ')) {
             problems.push(
                 `${pattern} must be owned by ${EXPECTED_OWNERS.join(' ')}, not "${owners.join(' ')}"`,
@@ -96,7 +99,34 @@ test('handing the default or a control-plane path to another owner is caught', (
     ])
 })
 
+test('a later broad rule cannot take over a control-plane path', () => {
+    const rules = ['* @qnbs', ...CONTROL_PLANE_PATHS.map((p) => `${p} @qnbs`), '/*.md @other']
+    assert.deepEqual(codeownersProblems(rules.join('\n')), [
+        '/*.md must be owned by @qnbs, not "@other"',
+    ])
+})
+
+test('a lone @ is not an owner', () => {
+    const rules = ['* @qnbs', ...CONTROL_PLANE_PATHS.map((p) => `${p} @qnbs`), '/docs/ @']
+    const problems = codeownersProblems(rules.join('\n'))
+    assert.ok(problems.includes('rule without a valid @owner: "/docs/ @"'), problems.join('; '))
+})
+
+test('no other CODEOWNERS file shadows the root one', () => {
+    // GitHub reads .github/CODEOWNERS first, then the root, then docs/.
+    for (const shadow of ['.github/CODEOWNERS', 'docs/CODEOWNERS']) {
+        assert.equal(
+            existsSync(path.join(ROOT, shadow)),
+            false,
+            `${shadow} would replace the root rules`,
+        )
+    }
+})
+
 test('a rule without an owner is caught', () => {
     const text = ['* @qnbs', ...CONTROL_PLANE_PATHS.map((p) => `${p} @qnbs`), '/docs/'].join('\n')
-    assert.deepEqual(codeownersProblems(text), ['rule without a valid @owner: "/docs/ "'])
+    assert.deepEqual(codeownersProblems(text), [
+        'rule without a valid @owner: "/docs/ "',
+        '/docs/ must be owned by @qnbs, not ""',
+    ])
 })

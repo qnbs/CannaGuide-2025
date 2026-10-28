@@ -280,6 +280,7 @@ export const strainsView = {
             notes: 'Notes',
             aiTips: 'AI Tips',
             images: 'Images',
+            availability: 'Seedbanks',
         },
         cannabinoidProfile: 'Cannabinoid Profile',
         aromaProfile: 'Aroma & Terpene Profile',
@@ -951,7 +952,12 @@ export const strainsView = {
             filterViable: 'Viable only',
             showAll: 'Show all',
         },
+        confirmDeleteBulkMsg_one: 'Delete 1 seed entry? This cannot be undone.',
+        confirmDeleteBulkMsg_other: 'Delete {{count}} seed entries? This cannot be undone.',
     },
+    favorite: 'Add to favorites',
+    unfavorite: 'Remove from favorites',
+    loadError: 'Could not load strains. Please try again.',
 }
 
 export const strainLookup = {

@@ -39,7 +39,7 @@ export async function exportPlantReportPdf(params: {
 
     const summaryRows = [
         ['Stage', plant.stage],
-        ['Growth day', `${plant.age} ${t('common.days')}`],
+        ['Growth day', `${plant.age} ${t('common.units.days')}`],
         ['VPD', `${plant.environment.vpd.toFixed(2)} kPa`],
         ['Temperature', `${plant.environment.internalTemperature.toFixed(1)} °C`],
         ['Humidity', `${plant.environment.internalHumidity.toFixed(1)} % RH`],

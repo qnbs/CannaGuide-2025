@@ -171,7 +171,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({
                         <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">
                             {typeof strain.name === 'string' && strain.name.trim() !== ''
                                 ? strain.name
-                                : t('strainsView.unknownStrain')}
+                                : t('plantsView.unknownStrain')}
                         </h1>
                         <p className="text-slate-300">
                             {strain.type ?? StrainType.Hybrid} {typeDetails && `- ${typeDetails}`}

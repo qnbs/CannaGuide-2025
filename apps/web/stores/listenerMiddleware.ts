@@ -206,7 +206,7 @@ export const initVoiceCommandSubscription = (
                     : null
 
                 if (!plant) {
-                    getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.noPlantContext'))
+                    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.noPlantContext'))
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
                     return
                 }
@@ -230,7 +230,7 @@ export const initVoiceCommandSubscription = (
                     getUISnapshot().setVoiceStatusMessage(response.content)
                 } catch (error) {
                     console.debug('Voice assistant response failed:', error)
-                    getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.assistantFailed'))
+                    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.assistantFailed'))
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 5000)
                 }
 

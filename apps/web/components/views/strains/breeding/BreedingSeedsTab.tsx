@@ -197,7 +197,7 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                         <div className="space-y-4">
                             <div>
                                 <h4 className="font-semibold text-slate-200 mb-2">
-                                    {t('strainsView.addStrainModal.aromas')}
+                                    {t('strainsView.strainModal.aromas')}
                                 </h4>
                                 <div className="flex flex-wrap gap-1">
                                     {getSafeStringArray(seedResult.aromas).map((a) => (
@@ -212,7 +212,7 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                             </div>
                             <div>
                                 <h4 className="font-semibold text-slate-200 mb-2">
-                                    {t('strainsView.addStrainModal.dominantTerpenes')}
+                                    {t('strainsView.strainModal.dominantTerpenes')}
                                 </h4>
                                 <div className="flex flex-wrap gap-1">
                                     {getSafeStringArray(seedResult.dominantTerpenes).map((a) => (

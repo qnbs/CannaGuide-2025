@@ -199,7 +199,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.flowering'),
-                                    value: `${Math.round(getSafeNumericValue(geneticsOffspring.floweringTime, 63))} ${t('common.days')}`,
+                                    value: `${Math.round(getSafeNumericValue(geneticsOffspring.floweringTime, 63))} ${t('common.units.days')}`,
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.height'),

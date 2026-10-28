@@ -22,11 +22,17 @@ runs:
     steps:
         - name: Cleanup stale remote branches
           uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+          # Inputs reach the script through env, never as an expression in the source:
+          # a dispatch input such as base_branch would otherwise be JS code.
+          env:
+              BASE_BRANCH: ${{ inputs.base_branch }}
+              DRY_RUN: ${{ inputs.dry_run }}
+              INCLUDE_MERGED: ${{ inputs.include_merged_pr_branches }}
           with:
               script: |
-                  const baseBranch = '${{ inputs.base_branch }}' || 'main';
-                  const dryRun = String('${{ inputs.dry_run }}').toLowerCase() === 'true';
-                  const includeMerged = String('${{ inputs.include_merged_pr_branches }}').toLowerCase() !== 'false';
+                  const baseBranch = process.env.BASE_BRANCH || 'main';
+                  const dryRun = String(process.env.DRY_RUN).toLowerCase() === 'true';
+                  const includeMerged = String(process.env.INCLUDE_MERGED).toLowerCase() !== 'false';
                   const owner = context.repo.owner;
                   const repo = context.repo.repo;
 

@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const WORKFLOWS = resolve(dirname(fileURLToPath(import.meta.url)), '../.github/workflows')
 const files = readdirSync(WORKFLOWS)
-    .filter((name) => name.endsWith('.yml'))
+    // GitHub runs .yaml workflows as well as .yml (#648 review).
+    .filter((name) => /\.ya?ml$/.test(name))
     .map((name) => ({ name, text: readFileSync(join(WORKFLOWS, name), 'utf8') }))
 
 // Top-level jobs with the part before `steps:` (name, if, needs, permissions).
@@ -91,4 +92,159 @@ test('CodeQL and Scorecard each upload from exactly one workflow', () => {
         .filter(({ text }) => /sarif_file: scorecard-results\.sarif/.test(text))
         .map(({ name }) => name)
     assert.deepEqual(scorecardUploads, ['scorecard.yml'])
+})
+
+// A-S7 (zizmor template-injection): an expression is substituted into the
+// script text before it runs, so a dispatch input, event field or head ref in a
+// run: or github-script `script:` body is code. Such values reach the script
+// through `env:` instead. Booleans and outcomes GitHub or our own jobs produce
+// (needs.*.result, steps.*.outcome) are not attacker strings and stay allowed.
+const ACTIONS = resolve(dirname(fileURLToPath(import.meta.url)), '../.github/actions')
+// A composite action is a directory holding action.yml or action.yaml; other
+// entries (a README, a helper) are not actions (#648 review).
+const actionFiles = readdirSync(ACTIONS, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) =>
+        ['action.yml', 'action.yaml']
+            .filter((file) => existsSync(join(ACTIONS, entry.name, file)))
+            .map((file) => ({
+                name: `actions/${entry.name}/${file}`,
+                text: readFileSync(join(ACTIONS, entry.name, file), 'utf8'),
+            })),
+    )
+// Each expression up to its closing `}}` (single braces inside, as in
+// `format('{0}', x)`, do not end it), then its contents: dot or bracket access
+// to `inputs`, `github.event` or `github.head_ref` (#648 review).
+const UNTRUSTED_CONTEXT =
+    /\binputs\s*[.[]|\bgithub\s*(?:\.\s*(?:event|head_ref)\b|\[\s*['"](?:event|head_ref)['"])/
+const EXPRESSION = /\$\{\{([\s\S]*?)\}\}/g
+
+// `file:line` of every untrusted expression inside a run:/script: body. Every
+// line indented deeper than the key belongs to its value, whatever the scalar
+// form (`|`, `|2-`, `| # note`, a plain or quoted multi-line value) -- matching
+// only a bare `|` let other forms slip past (#648 review). For `- run:` the key
+// column is after the dash, so a sibling `env:` of the same step ends the body.
+// Each value is collected whole and searched as one text, so an expression
+// that spans lines (`${{` here, `inputs.x }}` below) is still one expression;
+// the sink is the line it starts on (#648 review).
+function injectionSinks(name, text) {
+    const sinks = []
+    let value = null
+    const flush = () => {
+        if (!value) return
+        const joined = value.parts.join('\n')
+        for (const m of joined.matchAll(EXPRESSION)) {
+            if (!UNTRUSTED_CONTEXT.test(m[1])) continue
+            const sink = `${name}:${value.start + joined.slice(0, m.index).split('\n').length - 1}`
+            if (!sinks.includes(sink)) sinks.push(sink)
+        }
+        value = null
+    }
+    text.split('\n').forEach((line, index) => {
+        // Body membership first: inside a body even a `script: 0;` JS label is
+        // script text, not a YAML key that would end the body (#648 review).
+        if (value && line.trim() && line.length - line.trimStart().length <= value.indent) {
+            flush()
+        }
+        if (value) {
+            value.parts.push(line)
+            return
+        }
+        const key = /^(\s*(?:-\s+)?)(?:run|script):(.*)$/.exec(line)
+        if (key) {
+            value = { indent: key[1].length, start: index + 1, parts: [key[2]] }
+            return
+        }
+        // Flow style (`- { name: x, run: 'echo ...' }`): the key follows `{` or
+        // `,`, and its value is the rest of that line (#648 review).
+        const flow = /[{,]\s*(?:run|script)\s*:(.*)$/.exec(line)
+        if (flow) {
+            value = {
+                indent: line.length - line.trimStart().length,
+                start: index + 1,
+                parts: [flow[1]],
+            }
+            flush()
+        }
+    })
+    flush()
+    return sinks
+}
+
+test('the injection detector finds every form it guards against', () => {
+    const fixture = [
+        'steps:',
+        '    - run: echo ${{ inputs.path }}',
+        '    - run: |',
+        '          URL="${{ github.event.deployment_status.environment_url }}"',
+        '          echo "${{ github.head_ref }}"',
+        '    - uses: actions/github-script@0000000000000000000000000000000000000000',
+        '      with:',
+        '          script: |',
+        "              const base = '${{ inputs.base_branch }}'",
+        '    - env:',
+        '          SAFE: ${{ inputs.path }}',
+        '      run: echo "$SAFE ${{ needs.rust.result }}"',
+        '    - run: |2-',
+        '          echo ${{ inputs.a }}',
+        '    - run: | # comment',
+        '          echo ${{ inputs.b }}',
+        '    - run: echo one',
+        '          ${{ inputs.c }}',
+        '    - run: echo safe',
+        '      env:',
+        '          AFTER: ${{ inputs.d }}',
+        "    - run: echo ${{ format('{0}', inputs.e) }}",
+        "    - run: echo ${{ inputs['f'] }} ${{ github['event'].issue.title }}",
+        '    - uses: actions/github-script@0000000000000000000000000000000000000000',
+        '      with:',
+        '          script: |',
+        '              script: 0;',
+        "              const g = '${{ inputs.g }}'",
+        '    - run: |',
+        '          echo ${{',
+        '            inputs.h }}',
+        "    - { name: flow, run: 'echo ${{ inputs.i }}' }",
+        '    - { run: "echo ${{ github.event.issue.title }}", shell: bash }',
+    ].join('\n')
+    assert.deepEqual(injectionSinks('fixture', fixture), [
+        'fixture:2',
+        'fixture:4',
+        'fixture:5',
+        'fixture:9',
+        'fixture:14',
+        'fixture:16',
+        'fixture:18',
+        'fixture:22',
+        'fixture:23',
+        'fixture:28',
+        'fixture:30',
+        'fixture:32',
+        'fixture:33',
+    ])
+})
+
+test('no workflow or composite action expands untrusted input inside a script', () => {
+    const sinks = [...files, ...actionFiles].flatMap(({ name, text }) => injectionSinks(name, text))
+    assert.deepEqual(sinks, [])
+    assert.ok(actionFiles.length >= 4, 'composite actions were not scanned')
+})
+
+test('setup-node-ci matches install-command against an allowlist, never runs it', () => {
+    const action = actionFiles.find(({ name }) => name === 'actions/setup-node-ci/action.yml')
+    assert.ok(action, 'setup-node-ci missing')
+    assert.doesNotMatch(action.text, /run: \$\{\{ inputs\.install-command \}\}/)
+    assert.match(action.text, /INSTALL_COMMAND: \$\{\{ inputs\.install-command \}\}/)
+    assert.match(action.text, /case "\$\{INSTALL_COMMAND\}" in/)
+    // The input may only be declared, matched and reported -- an `eval` or a
+    // bare `$INSTALL_COMMAND` ahead of the case would run it (#648 review).
+    const install = action.text.slice(action.text.indexOf('- name: Install dependencies'))
+    for (const line of install.split('\n').filter((l) => l.includes('INSTALL_COMMAND'))) {
+        assert.match(
+            line.trim(),
+            /^(?:INSTALL_COMMAND: \$\{\{ inputs\.install-command \}\}|case "\$\{INSTALL_COMMAND\}" in|echo "::error::[^"]*")$/,
+            `install-command reaches an executing position: ${line.trim()}`,
+        )
+    }
+    assert.match(install, /'pnpm install --frozen-lockfile'\) pnpm install --frozen-lockfile ;;/)
 })

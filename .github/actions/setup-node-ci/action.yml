@@ -6,7 +6,9 @@ inputs:
         required: false
         default: '24'
     install-command:
-        description: Install command to run after setup
+        description: >-
+            Install command to run after setup. Only the listed commands are
+            accepted; the input is matched, never executed as given.
         required: false
         default: 'pnpm install --frozen-lockfile'
 runs:
@@ -28,4 +30,13 @@ runs:
 
         - name: Install dependencies
           shell: bash
-          run: ${{ inputs.install-command }}
+          env:
+              INSTALL_COMMAND: ${{ inputs.install-command }}
+          run: |
+              case "${INSTALL_COMMAND}" in
+                  'pnpm install --frozen-lockfile') pnpm install --frozen-lockfile ;;
+                  *)
+                      echo "::error::install-command must be 'pnpm install --frozen-lockfile', got: ${INSTALL_COMMAND}"
+                      exit 1
+                      ;;
+              esac

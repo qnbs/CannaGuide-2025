@@ -16,9 +16,12 @@ runs:
     steps:
         - name: Check Cloudflare Pages file-size limit
           shell: bash
+          # Inputs reach the script through env, never as an expression in run (zizmor template-injection).
+          env:
+              SCAN_PATH: ${{ inputs.path }}
           run: |
               LIMIT=$((25 * 1024 * 1024))
-              OVERSIZE=$(find "${{ inputs.path }}" -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
+              OVERSIZE=$(find "${SCAN_PATH}" -type f -size +${LIMIT}c -printf '%s\t%P\n' | sort -rn)
               if [ -n "${OVERSIZE}" ]; then
                 echo "::error::Cloudflare Pages rejects files larger than 25 MiB."
                 printf '%s\n' "${OVERSIZE}" | awk -F '\t' '{ printf "       %6.1f MiB  %s\n", $1 / 1048576, $2 }'

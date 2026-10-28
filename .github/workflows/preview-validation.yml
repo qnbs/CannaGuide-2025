@@ -37,8 +37,16 @@ jobs:
         steps:
             - name: Extract preview URL
               id: url
+              # The deploy provider sets this URL. It reaches the shell through
+              # env, and only a single plain https URL is accepted, so it can
+              # neither run here nor add lines to GITHUB_OUTPUT.
+              env:
+                  URL: ${{ github.event.deployment_status.environment_url }}
               run: |
-                  URL="${{ github.event.deployment_status.environment_url }}"
+                  if [[ ! "${URL}" =~ ^https://[A-Za-z0-9.-]+(/[A-Za-z0-9._~/-]*)?$ ]]; then
+                    echo "::error::Refusing unexpected deployment_status.environment_url"
+                    exit 1
+                  fi
                   echo "url=${URL}" >> "$GITHUB_OUTPUT"
                   echo "[INFO] Preview URL: ${URL}"
 
@@ -122,10 +130,12 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
 
             - name: Lighthouse CI (preview URL)
+              env:
+                  PREVIEW_URL: ${{ needs.check.outputs.preview-url }}
               run: |
-                  echo "[INFO] Auditing preview: ${{ needs.check.outputs.preview-url }}"
+                  echo "[INFO] Auditing preview: ${PREVIEW_URL}"
                   pnpm exec lhci autorun \
-                    --collect.url=${{ needs.check.outputs.preview-url }} \
+                    --collect.url="${PREVIEW_URL}" \
                     --collect.numberOfRuns=1 \
                     --upload.target=temporary-public-storage \
                     --assert.assertions.first-contentful-paint="error;maxNumericValue=2000" \

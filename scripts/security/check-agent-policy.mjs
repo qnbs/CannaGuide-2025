@@ -88,30 +88,316 @@ const BYPASSES = [
     ['HUSKY=0', /\bHUSKY=0\b/g],
 ]
 
+/** pnpm options that take a separate value (`--dir x`, `-C x`). */
+const PNPM_VALUE_OPTIONS = new Set([
+    '-C',
+    '--dir',
+    '--loglevel',
+    '--reporter',
+    '--workspace-concurrency',
+    '--store-dir',
+    '--test-pattern',
+    '--changed-files-ignore-pattern',
+    '--registry',
+    '--virtual-store-dir',
+    '--modules-dir',
+    '--lockfile-dir',
+    '--global-dir',
+    '--cache-dir',
+    '--fetch-timeout',
+    '--fetch-retries',
+    '--network-concurrency',
+    '--child-concurrency',
+    '--resolution-mode',
+    '--node-linker',
+    '--use-node-version',
+])
+const isFilter = (token) => /^(?:--filter(?:-prod)?|-F)(?:=|$)/.test(token)
+/**
+ * Words that start what pnpm runs. An option this module does not know is
+ * read as value-taking when a value and then one of these follow it -- the
+ * list of value options can never be complete, so fail closed (#650 review).
+ */
+const PNPM_COMMAND_WORDS = new Set([
+    'install',
+    'i',
+    'install-test',
+    'it',
+    'add',
+    'run',
+    'run-script',
+    'exec',
+    'dlx',
+    'test',
+    'typecheck',
+    'lint',
+    'test:run',
+    'test:coverage',
+    'lint:full',
+])
+
+/**
+ * A pnpm command split into its parts: pnpm's own options may come before the
+ * script (`pnpm --silent test`, `pnpm --dir apps/web install`), and a
+ * `--filter` / `-F` among them, also in `=` form, scopes the run (#650 review).
+ * Tokenised rather than a regex: an earlier pattern with a nested quantifier
+ * was a ReDoS (CodeQL).
+ */
+export function pnpmInvocation(command) {
+    const tokens = command.split('#')[0].trim().split(/\s+/)
+    if (tokens[0] !== 'pnpm') return null
+    const filters = []
+    let i = 1
+    // Options come before the command, and again between `run` and the script
+    // (`pnpm run --if-present typecheck`; #650 review).
+    const skipOptions = () => {
+        while (i < tokens.length && tokens[i].startsWith('-') && tokens[i] !== '--') {
+            const token = tokens[i]
+            if (isFilter(token)) {
+                const value = token.includes('=')
+                    ? token.slice(token.indexOf('=') + 1)
+                    : tokens[i + 1]
+                filters.push((value ?? '').replace(/['"]/g, ''))
+            }
+            const takesValue =
+                /^(?:--filter(?:-prod)?|-F)$/.test(token) ||
+                PNPM_VALUE_OPTIONS.has(token) ||
+                (!token.includes('=') &&
+                    !PNPM_COMMAND_WORDS.has(tokens[i + 1]) &&
+                    PNPM_COMMAND_WORDS.has(tokens[i + 2]))
+            i += takesValue ? 2 : 1
+        }
+    }
+    skipOptions()
+    // `run-script` is pnpm's alias of `run` (#650 review).
+    if (tokens[i] === 'run' || tokens[i] === 'run-script') {
+        i += 1
+        skipOptions()
+    }
+    // Only a concrete package or path scopes the run: a glob, an exclusion
+    // (`!x`), a dependency selector (`...`) or a brace set can select every
+    // workspace (`--filter '@cannaguide/*'`), and the root (`.`, `./`,
+    // `./apps/..`) runs the root script, i.e. `turbo run` (#650 review).
+    const filtered =
+        filters.length > 0 &&
+        filters.every(
+            (v) =>
+                v && !/[*!{}[\]]|\.\.\./.test(v) && !['.', './'].includes(path.posix.normalize(v)),
+        )
+    return { filtered, script: tokens[i], rest: tokens.slice(i + 1) }
+}
+
+/** pnpm's builtin that runs `pnpm install` and then `pnpm test`, and its alias. */
+export const INSTALL_TEST = ['install-test', 'it']
+
 const UNFILTERED = [
     'unfiltered pnpm suite',
-    /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)(?=\s|$)(?![^#\n]*--filter)/,
+    {
+        test(command) {
+            const run = pnpmInvocation(command)
+            // `pnpm install-test` / `pnpm it` is `pnpm install` + `pnpm test` (#650 review).
+            const suites = [
+                ...['test', 'typecheck', 'lint', 'test:run', 'test:coverage', 'lint:full'],
+                ...INSTALL_TEST,
+            ]
+            if (!run || run.filtered || !suites.includes(run.script)) return false
+            // A filter after the script still reaches turbo, but only before a
+            // standalone `--`: after it, it is the script's argument
+            // (`pnpm test -- --filter=!x`).
+            const end = run.rest.indexOf('--')
+            return !(end === -1 ? run.rest : run.rest.slice(0, end)).some(isFilter)
+        },
+    },
 ]
+/** Vitest options that take a separate value (`-t <pattern>`, `--reporter dot`). */
+const VITEST_VALUE_OPTIONS = new Set([
+    '-t',
+    '--testNamePattern',
+    '-c',
+    '--config',
+    '-r',
+    '--root',
+    '--dir',
+    '--project',
+    '--reporter',
+    '--environment',
+    '--pool',
+    '--shard',
+    '--exclude',
+    '--maxWorkers',
+    '--minWorkers',
+    '--outputFile',
+    '--output-file',
+    '--test-name-pattern',
+    '--testTimeout',
+    '--test-timeout',
+    '--hookTimeout',
+    '--hook-timeout',
+    '--teardownTimeout',
+    '--teardown-timeout',
+    '--max-workers',
+    '--min-workers',
+    '--maxConcurrency',
+    '--max-concurrency',
+    '--retry',
+    '--bail',
+    '--mode',
+    '--browser',
+    '--inspect-brk',
+    '--slowTestThreshold',
+    '--slow-test-threshold',
+])
+
+/**
+ * The positional spec filters of a Vitest argument list. Option values are not
+ * filters (`-t .` names tests, not files), and `.` / `./` match every file
+ * (#650 review).
+ */
+function specFilters(args) {
+    const filters = []
+    for (let i = 0; i < args.length; i += 1) {
+        // Dotted options (`--coverage.reporter text`) take a value as well; a bare
+        // number is an option value, never a file filter (fail closed).
+        if (VITEST_VALUE_OPTIONS.has(args[i]) || /^--\w+\.[\w.]+$/.test(args[i])) i += 1
+        // An empty filter ('' / "") matches every file as well.
+        else if (!args[i].startsWith('-') && !/^(?:\.\/?|\d+|''|"")$/.test(args[i])) {
+            filters.push(args[i])
+        }
+    }
+    return filters
+}
+
 /**
  * `pnpm --filter <pkg> test|test:run|test:coverage` still runs that package's
  * whole suite when it names no spec (options only) or when a `--` swallows the
- * spec filter (CLAUDE.md trap #1). Tokenised rather than a regex: an earlier
- * pattern with a nested quantifier was a ReDoS (CodeQL).
+ * spec filter (CLAUDE.md trap #1).
  */
 const WHOLE_SUITE = [
     'whole-suite test run',
     {
         test(command) {
-            const tokens = command.split('#')[0].trim().split(/\s+/)
-            if (tokens[0] !== 'pnpm' || tokens[1] !== '--filter' || tokens.length < 4) return false
-            const scriptAt = tokens[3] === 'run' ? 4 : 3
-            if (!['test', 'test:run', 'test:coverage'].includes(tokens[scriptAt])) return false
-            const rest = tokens.slice(scriptAt + 1)
-            return rest.includes('--') || rest.every((token) => token.startsWith('-'))
+            const run = pnpmInvocation(command)
+            const tests = ['test', 'test:run', 'test:coverage', ...INSTALL_TEST]
+            if (!run || !tests.includes(run.script)) return false
+            // A filter after the script goes to the root script (`turbo run
+            // test:run --filter <pkg>`), which runs that package's whole suite;
+            // the scoped form is `pnpm --filter <pkg> test:run <spec>` (#650 review).
+            const end = run.rest.indexOf('--')
+            if ((end === -1 ? run.rest : run.rest.slice(0, end)).some(isFilter)) return true
+            if (!run.filtered) return false
+            if (end !== -1) return true
+            return specFilters(run.rest).length === 0
         },
     },
 ]
-const BARE_TURBO = ['bare turbo run', /^\s*turbo run [a-z:-]+/]
+/**
+ * Vitest started directly (`vitest`, `vitest run`, `pnpm exec vitest run`,
+ * also `cd apps/web && ...`) without a spec filter runs the whole suite, like
+ * the package script does (#650 review). `vitest list` / `init` run no tests.
+ */
+const DIRECT_VITEST = [
+    'whole-suite test run',
+    {
+        test(command) {
+            const tokens = command.split('#')[0].trim().split(/\s+/)
+            if (tokens[0] !== 'vitest' || ['list', 'init'].includes(tokens[1])) return false
+            const args = /^(?:run|watch|dev|related|bench|typecheck)$/.test(tokens[1] ?? '')
+                ? tokens.slice(2)
+                : tokens.slice(1)
+            const end = args.indexOf('--')
+            return specFilters(end === -1 ? args : args.slice(0, end)).length === 0
+        },
+    },
+]
+/** `turbo run <task>` without a `--filter` before `--` (after it, the flag goes to the task). */
+/** turbo subcommands that run no tasks; any other first word is a task (`turbo typecheck`). */
+const TURBO_NON_RUN = new Set([
+    'login',
+    'logout',
+    'link',
+    'unlink',
+    'prune',
+    'gen',
+    'generate',
+    'daemon',
+    'ls',
+    'info',
+    'query',
+    'telemetry',
+    'bin',
+    'completion',
+    'scan',
+    'boundaries',
+    'docs',
+    'devtools',
+    'help',
+])
+/** turbo run options whose value is the next word. */
+const TURBO_VALUE_OPTIONS = new Set([
+    '--concurrency',
+    '--filter',
+    '-F',
+    '--cache',
+    '--cache-dir',
+    '--env-mode',
+    '--graph',
+    '--log-order',
+    '--log-prefix',
+    '--output-logs',
+    '--profile',
+    '--ui',
+])
+const BARE_TURBO = [
+    'bare turbo run',
+    {
+        // `turbo run <task>`, its alias `turbo <task>` and `turbo watch <task>`
+        // run tasks; without a --filter before `--` they run every workspace
+        // (#650 review).
+        test(command) {
+            const tokens = command.trim().split(/\s+/)
+            if (tokens[0] !== 'turbo') return false
+            const explicit = tokens[1] === 'run' || tokens[1] === 'watch'
+            // Options may come before the task: `turbo run --concurrency=1
+            // typecheck` (#650 review); a value option takes the next word.
+            let k = explicit ? 2 : 1
+            while (tokens[k]?.startsWith('-')) {
+                k += !tokens[k].includes('=') && TURBO_VALUE_OPTIONS.has(tokens[k]) ? 2 : 1
+            }
+            const task = tokens[k]
+            if (!task || task.startsWith('-') || (!explicit && TURBO_NON_RUN.has(task)))
+                return false
+            // Scoped only by concrete filters (`--filter` or its alias `-F`,
+            // before `--`): a glob, dependency selector or the root can select
+            // every workspace (`--filter='./apps/*'`; #650 review). An explicit
+            // exclusion is a deliberate narrowing -- the prescribed production
+            // build is `turbo run build --filter=!@cannaguide/desktop`.
+            const options = command.split(/\s--(?=\s|$)/)[0].split(/\s+/)
+            const values = []
+            options.forEach((token, k) => {
+                const match = /^(?:--filter|-F)(?:=(.*))?$/.exec(token)
+                if (match) values.push((match[1] ?? options[k + 1] ?? '').replace(/['"]/g, ''))
+            })
+            const scoped =
+                values.length > 0 &&
+                values.every(
+                    (v) => v && !/[*{}[\]]|\.\.\./.test(v) && !['.', './', '//'].includes(v),
+                )
+            return !scoped
+        },
+    },
+]
+
+/**
+ * The heavy-command rule one shell command breaks, or null. Shared with the
+ * Claude Code Bash guard (.claude/hooks/guard-bash.mjs), which judges the
+ * commands an agent actually runs.
+ */
+export function heavyCommandRule(command) {
+    for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE, DIRECT_VITEST]) {
+        if (pattern.test(command)) return label
+    }
+    return null
+}
 
 /**
  * The individual shell commands of a line: split at `;`, `&&`, `||` and `|`,
@@ -127,7 +413,7 @@ export function shellCommands(text) {
             part
                 .trim()
                 .replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, '')
-                .replace(/^(?:pnpm exec|npx)\s+/, ''),
+                .replace(/^(?:pnpm (?:exec|dlx)|npx)\s+/, ''),
         )
         .filter(Boolean)
 }
@@ -188,7 +474,7 @@ function lineProblems(name, line, where, inFence, needs) {
     if (inFence) {
         if (line.trim().startsWith('#')) return problems
         for (const command of shellCommands(line)) {
-            for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {
+            for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE, DIRECT_VITEST]) {
                 if (pattern.test(command))
                     problems.push(`${where}: ${label} in a command block: ${line.trim()}`)
             }

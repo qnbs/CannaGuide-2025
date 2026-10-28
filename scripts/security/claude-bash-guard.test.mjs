@@ -103,6 +103,10 @@ test('banned commands are blocked, in any position or wrapper', () => {
         ['turbo run test -- --filter=@cannaguide/web', /bare turbo run/],
         ['pnpm --silent test', /unfiltered pnpm suite/],
         ['pnpm --silent --filter @cannaguide/web test:run', /whole-suite test run/],
+        ['pnpm exec turbo run typecheck', /bare turbo run/],
+        ['echo ${X:-$(git commit --no-verify -m fix)}', /--no-verify/],
+        ["bash <<< 'git commit --no-verify -m fix'", /--no-verify/],
+        ['if true; then HUSKY=0 git commit -m fix; fi', /HUSKY=0/],
         ['X="$(git push --force)"', /force push/],
     ]
     for (const [command, expected] of blocked) {
@@ -166,6 +170,9 @@ test('the commands the working rules prescribe are allowed', () => {
         'pnpm --dir apps/web install --frozen-lockfile',
         'pnpm --silent --filter @cannaguide/web test:run analyticsService',
         'turbo run typecheck --filter=@cannaguide/web -- --noEmit',
+        'pnpm exec turbo run typecheck --filter=@cannaguide/web',
+        'echo ${HOME:-/tmp}/x',
+        "cat <<< 'git commit --no-verify -m fix'",
         'R[t1]="never git push --force or git commit -n"; gh api graphql -f b="${R[t1]}"',
         'BODY=\'explains --no-verify and git add -A\'; echo "$BODY"',
         'gh pr comment 1 --body "the guard denies \\$(git push --force) too"',

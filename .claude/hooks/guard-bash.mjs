@@ -30,6 +30,10 @@ import { heavyCommandRule, pnpmInvocation } from '../../scripts/security/check-a
 
 const MAX_DEPTH = 8
 const SHELLS = /^(?:ba|z|da|k)?sh$/
+/** A command that runs its standard input (heredoc, here-string) as shell. */
+const SHELL_READER = /^(?:(?:ba|z|da|k)?sh|source|\.|eval)$/
+/** The command a word list runs, after wrappers and control keywords. */
+const readerOf = (words) => unwrap(words.map(flat).join(' ')).split(' ')[0]
 /** Stand-in for a substitution's output in the enclosing word. */
 const SUBST = 'SUBST'
 
@@ -108,6 +112,28 @@ function unquoteDouble(text, nested) {
 }
 
 /** The `$(...)` and backtick bodies bash expands in an unquoted heredoc body. */
+/** Position of the `}` closing a `${` whose text starts at `i` (nesting-aware). */
+function closingBrace(s, i) {
+    let depth = 1
+    while (i < s.length) {
+        const c = s[i]
+        if (c === '\\') i += 2
+        else if (c === "'") i = closingSingle(s, i + 1) + 1
+        else if (c === '"') i = closingDouble(s, i + 1) + 1
+        else if (s.startsWith('$(', i)) i = closingParen(s, i + 2) + 1
+        else if (c === '`') i = closingBacktick(s, i + 1) + 1
+        else if (s.startsWith('${', i)) {
+            depth += 1
+            i += 2
+        } else if (c === '}') {
+            depth -= 1
+            if (depth === 0) return i
+            i += 1
+        } else i += 1
+    }
+    return s.length
+}
+
 function substitutionsIn(text) {
     const bodies = []
     for (let i = 0; i < text.length; i += 1) {
@@ -139,19 +165,26 @@ export function parseCommands(source) {
     const nested = []
     let words = []
     let word = null
+    // The next word is a redirection target ('drop') or a here-string ('here').
     let dropWord = false
     let heredocs = []
+    let hereStrings = []
     const append = (text) => {
         word = (word ?? '') + text
     }
     const endWord = () => {
-        if (word !== null && !dropWord) words.push(word)
+        if (word !== null && dropWord === 'here') hereStrings.push(word)
+        else if (word !== null && !dropWord) words.push(word)
         if (word !== null) dropWord = false
         word = null
     }
     const endCommand = () => {
         endWord()
         dropWord = false
+        // `bash <<< '...'` runs the here-string as its script; for any other
+        // reader it is data (#650 review).
+        if (hereStrings.length && SHELL_READER.test(readerOf(words))) nested.push(...hereStrings)
+        hereStrings = []
         if (words.length) commands.push(words)
         words = []
     }
@@ -192,10 +225,12 @@ export function parseCommands(source) {
             append(SUBST)
             i = end + 1
         } else if (c === '$' && next === '{') {
-            const end = s.indexOf('}', i + 2)
-            const stop = end === -1 ? s.length : end + 1
-            append(s.slice(i, stop))
-            i = stop
+            // `${X:-$(cmd)}` runs cmd: the expansion stays one word, its
+            // substitutions are judged (#650 review).
+            const end = closingBrace(s, i + 2)
+            nested.push(...substitutionsIn(s.slice(i + 2, end)))
+            append(s.slice(i, end + 1))
+            i = end + 1
         } else if (c === '`') {
             const end = closingBacktick(s, i + 1)
             nested.push(s.slice(i + 1, end))
@@ -236,7 +271,7 @@ export function parseCommands(source) {
                 while (/[\d-]/.test(s[i] ?? '')) i += 1
             } else {
                 // The target (a file name, a here-string) is not an argument.
-                dropWord = true
+                dropWord = op === '<<<' ? 'here' : 'drop'
             }
         } else if (c === '&' || c === '|' || c === ';' || c === '(' || c === ')') {
             endCommand()
@@ -269,10 +304,10 @@ function readHeredocs(s, start, pending, nested) {
             body.push(line)
         }
         const text = body.join('\n')
-        const reader = unwrap(doc.words.map(flat).join(' ')).split(' ')[0]
+        const reader = readerOf(doc.words)
         // A shell runs its heredoc whatever the quoting; for any other reader an
         // unquoted delimiter still lets bash expand the substitutions.
-        if (SHELLS.test(reader) || reader === 'source' || reader === '.' || reader === 'eval') {
+        if (SHELL_READER.test(reader)) {
             nested.push(text)
         } else if (!doc.quoted) {
             nested.push(...substitutionsIn(text))
@@ -292,7 +327,7 @@ const flat = (word) => word.replace(/[\s#]/g, '_')
  * `xargs [opts] cmd` run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+exec|npx|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = command.trim()
     for (
@@ -388,7 +423,11 @@ function frozenLockfile(command) {
  * command (also after env/sudo/... and their options) or an `export`. As an
  * argument (`rg 'HUSKY=0' .husky`) or in a comment it is just text.
  */
-function disablesHusky(words) {
+function disablesHusky(all) {
+    // Control keywords open a command: `then HUSKY=0 git commit` (#650 review).
+    let start = 0
+    while (/^(?:if|then|elif|else|while|until|do|!|\{)$/.test(all[start] ?? '')) start += 1
+    const words = all.slice(start)
     if (/^(?:export|declare|typeset|readonly)$/.test(words[0] ?? '')) {
         return words.slice(1).includes('HUSKY=0')
     }

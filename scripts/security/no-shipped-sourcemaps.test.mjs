@@ -42,6 +42,7 @@ test('map files and sourceMappingURL comments are reported', () => {
         'assets/nested/c.mjs.map': '{}',
         // No space after the marker, inline data URL: still a source map.
         'assets/d.js': 'z\n//#sourceMappingURL=data:application/json;base64,AA\n',
+        'assets/e.cjs': 'w\n//# sourceMappingURL=data:application/json;base64,AA\n',
     })
     try {
         const leaks = sourceMapLeaks(dir)
@@ -50,6 +51,7 @@ test('map files and sourceMappingURL comments are reported', () => {
         assert.deepEqual(leaks, [
             'assets/b.css',
             'assets/d.js',
+            'assets/e.cjs',
             'assets/index-a.js',
             'assets/index-a.js.map',
             'assets/nested/c.mjs.map',

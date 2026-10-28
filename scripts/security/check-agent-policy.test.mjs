@@ -80,6 +80,26 @@ test('unscoped heavy commands inside a command block fail', () => {
     )
 })
 
+test('inline commands in instructions are checked, prohibitions are not', () => {
+    const text = [
+        '3. **Run validation** after each logical group of changes:',
+        '    - `pnpm --filter @cannaguide/web test:run` (must pass, 0 failures)',
+        '    - `pnpm run typecheck` (must be clean)',
+        '- Never run `pnpm typecheck` / `test` / `lint` without `--filter`.',
+        '- One spec: `pnpm --filter @cannaguide/web test:run analyticsService`.',
+        '- Scoped helpers stay allowed: `pnpm run lint:changed`, `pnpm run test:e2e`.',
+        '- An unfiltered `turbo run typecheck` takes 6-9 minutes.',
+    ].join('\n')
+    const problems = problemsOf({ '.github/copilot-instructions.md': text })
+    assert.deepEqual(
+        problems.map((p) => p.split(':').slice(0, 3).join(':')),
+        [
+            '.github/copilot-instructions.md:2: whole-suite test run instructed inline',
+            '.github/copilot-instructions.md:3: unfiltered pnpm suite instructed inline',
+        ],
+    )
+})
+
 test('a missing authority section or verify command fails', () => {
     const problems = problemsOf({ 'AGENTS.md': 'Nothing about authority here.', 'CLAUDE.md': '' })
     for (const expected of [

@@ -37,12 +37,20 @@ const BYPASSES = [
     ['force push', /\bpush\b[^\n]*(--force\b|\s-f\b)/],
 ]
 
-/** Heavy commands that must not appear as instructions inside a fenced block. */
+/**
+ * Heavy commands that must not be instructed, whether in a fenced block or as
+ * an inline code span on a line that is not a prohibition.
+ */
 const UNSCOPED = [
     ['bare turbo run', /^\s*turbo run [a-z:-]+/],
     [
         'unfiltered pnpm suite',
-        /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)\b(?![^#\n]*--filter)/,
+        /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)(?=\s|$)(?![^#\n]*--filter)/,
+    ],
+    // `--filter <pkg> test:run` with no spec still runs that package's whole suite.
+    [
+        'whole-suite test run',
+        /^\s*pnpm --filter \S+ (run )?(test|test:run|test:coverage)\s*(#.*)?$/,
     ],
 ]
 
@@ -77,6 +85,17 @@ export function agentPolicyProblems(files) {
                 for (const [label, pattern] of UNSCOPED) {
                     if (pattern.test(line))
                         problems.push(`${where}: ${label} in a command block: ${line.trim()}`)
+                }
+            } else if (!inFence && !PROHIBITION.test(line)) {
+                // Inline, only the pnpm rules: `turbo run ...` appears inline in the
+                // warnings that explain why it is banned.
+                for (const span of line.match(/`[^`]+`/g) ?? []) {
+                    for (const [label, pattern] of UNSCOPED.filter(
+                        ([l]) => l !== 'bare turbo run',
+                    )) {
+                        if (pattern.test(span.slice(1, -1)))
+                            problems.push(`${where}: ${label} instructed inline: ${span}`)
+                    }
                 }
             }
         })

@@ -33,8 +33,12 @@ const EVALUATES_TEXT = /\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-[A-Za-z]*c\b|\beval\b|\b
 const SHELL_HEREDOC = /(?:^|[|;&]\s*)(?:ba|z|da)?sh\b|\bsource\b|\beval\b/
 /** Options whose quoted value is message text (also `-am`, `gh -b` / `-t`). */
 const MESSAGE_OPTION =
-    /(\s(?:-[A-Za-z]*m|--message|--body|--title|--notes|-[bt])(?:=|\s+))('[^']*'|"(?:[^"\\]|\\.)*")/g
-const SUBSTITUTION = /\$\(|`/
+    /(\s(?:-[A-Za-z]*m|--message|--body|--title|--notes|-[bt]|-[fF]|--field|--raw-field)(?:=|\s+))('[^']*'|"(?:[^"\\]|\\.)*")/g
+/** A variable's quoted value is data as well: `MSG="..."`, `R[key]='...'`. */
+const ASSIGNMENT = /((?:^|[\s;&|(])[A-Za-z_]\w*(?:\[[^\]\s]*\])?=)('[^']*'|"(?:[^"\\]|\\.)*")/g
+/** Single quotes never substitute; in double quotes only an unescaped `$(` or backtick does. */
+const SUBSTITUTION = /(?<!\\)(?:\$\(|`)/
+const liveSubstitution = (quoted) => quoted.startsWith('"') && SUBSTITUTION.test(quoted)
 /** Quoted words stay; separators inside quotes are not separators. */
 const inert = (inner) => inner.replace(/[;&|(){}<>#]/g, ' ')
 
@@ -65,8 +69,15 @@ export function stripData(command) {
     if (EVALUATES_TEXT.test(text)) return text
     return text
         .replace(MESSAGE_OPTION, (all, option, quoted) =>
-            SUBSTITUTION.test(quoted) ? all : `${option}MESSAGE`,
+            liveSubstitution(quoted) ? all : `${option}MESSAGE`,
         )
+        .replace(ASSIGNMENT, (all, name, quoted) => {
+            if (liveSubstitution(quoted)) return all
+            // HUSKY's own value stays: `HUSKY="0"` is still the switch.
+            return name.trimStart().startsWith('HUSKY=')
+                ? name + quoted.slice(1, -1)
+                : `${name}VALUE`
+        })
         .replace(/'([^']*)'/g, (_, inner) => inert(inner))
         .replace(/"((?:[^"\\]|\\.)*)"/g, (all, inner) =>
             SUBSTITUTION.test(inner) ? all : inert(inner),

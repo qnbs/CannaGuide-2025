@@ -59,6 +59,8 @@ test('banned commands are blocked, in any position or wrapper', () => {
         ['git add -- .', /git add -A/],
         ['git add :/', /git add -A/],
         ['git add -A -- apps', /git add -A/],
+        ['HUSKY="0" git commit -m x', /HUSKY=0/],
+        ['X="$(git push --force)"', /force push/],
     ]
     for (const [command, expected] of blocked) {
         const violations = bashViolations(command)
@@ -93,6 +95,9 @@ test('the commands the working rules prescribe are allowed', () => {
         'git add ./apps/web/i18n.ts',
         'env NODE_OPTIONS=--max-old-space-size=2048 pnpm --filter @cannaguide/web test:run Foo',
         'timeout 300 node ./scripts/graphify-mcp-doctor.mjs',
+        'R[t1]="never git push --force or git commit -n"; gh api graphql -f b="${R[t1]}"',
+        'BODY=\'explains --no-verify and git add -A\'; echo "$BODY"',
+        'gh pr comment 1 --body "the guard denies \\$(git push --force) too"',
     ]
     for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
 })

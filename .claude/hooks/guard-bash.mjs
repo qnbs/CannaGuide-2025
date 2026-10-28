@@ -27,8 +27,13 @@ import { pathToFileURL } from 'node:url'
 
 import { heavyCommandRule, shellCommands } from '../../scripts/security/check-agent-policy.mjs'
 
-// `-c` may be combined with other flags: `bash -lc '...'`.
-const EVALUATES_TEXT = /\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-[A-Za-z]*c\b|\beval\b|\bxargs\b/
+/**
+ * A quoted string a shell will run: the argument right after `sh -c` (also
+ * combined flags, `bash -lc`) or `eval`. Judged per quoted string on the text
+ * just before it, so the word `eval` inside a commit message no longer turns
+ * off data handling for the whole call (#650 review).
+ */
+const EVALUATED_ARGUMENT = /(?:\b(?:ba|z|da)?sh(?:\s+-\w+)*\s+-[A-Za-z]*c|\beval)\s+$/
 
 const SHELL_HEREDOC = /(?:^|[|;&]\s*)(?:ba|z|da)?sh\b|\bsource\b|\beval\b/
 /**
@@ -43,15 +48,21 @@ const QUOTED =
 /** Single quotes never substitute; in double quotes only an unescaped `$(` or backtick does. */
 const SUBSTITUTION = /(?<!\\)(?:\$\(|`)/
 const liveSubstitution = (quoted) => quoted.startsWith('"') && SUBSTITUTION.test(quoted)
-/** Quoted words stay; separators inside quotes are not separators. */
-const inert = (inner) => inner.replace(/[;&|(){}<>#]/g, ' ')
+/**
+ * Quoted words stay; separators inside quotes are not separators. Backticks and
+ * `$` go too: a string that reaches here does not substitute (single quotes, or
+ * escaped in double quotes), so `\`...\`` in it is literal text.
+ */
+const inert = (inner) => inner.replace(/[;&|(){}<>#`$]/g, ' ')
 
 /** The command with message text removed and other quoting resolved. */
 export function stripData(command) {
     const kept = []
     let delimiter = null
     let body = 'drop'
-    for (const line of command.split('\n')) {
+    // A backslash-newline continues the command: `git commit \<NL> --no-verify`
+    // is one command, and so is `pnpm install \<NL> --frozen-lockfile`.
+    for (const line of command.replace(/\\\r?\n/g, ' ').split('\n')) {
         if (delimiter !== null) {
             if (line.trim() === delimiter) delimiter = null
             else if (body === 'keep') kept.push(line)
@@ -71,9 +82,12 @@ export function stripData(command) {
         }
     }
     const text = kept.join('\n')
-    if (EVALUATES_TEXT.test(text)) return text
-    return text.replace(QUOTED, (all, prefix = '', quoted) => {
+    return text.replace(QUOTED, (all, prefix = '', quoted, offset) => {
         if (liveSubstitution(quoted)) return all
+        // Bounded look-behind: a command's own prefix is short.
+        if (!prefix && EVALUATED_ARGUMENT.test(text.slice(Math.max(0, offset - 200), offset))) {
+            return all
+        }
         const inner = quoted.slice(1, -1)
         if (!prefix) return inert(inner)
         // HUSKY's own value stays: `HUSKY="0"` is still the switch.
@@ -86,9 +100,11 @@ export function stripData(command) {
  * The command a wrapper runs: `command git ...`, `env -i X=1 pnpm ...`,
  * `timeout 60 git ...`, `nice -n 5 ...`, `sudo ...` are judged as what they run,
  * and so is the body of a control keyword (`do git push`, `then ...`, `! ...`).
+ * `corepack pnpm[@version] ...` (this repo's bootstrap form) and `xargs [opts] cmd`
+ * run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|corepack|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = command.trim()
     for (
@@ -98,7 +114,7 @@ export function unwrap(command) {
     ) {
         current = next
     }
-    return current
+    return current.replace(/^pnpm@\S+/, 'pnpm')
 }
 
 /** Git global options come before the subcommand: `git -C . commit` is a commit. */
@@ -120,7 +136,16 @@ const RULES = [
         'hook bypass (git commit -n)',
         (c) => /^git\s+commit\b/.test(c) && /\s-[A-Za-z]*n[A-Za-z]*(?=\s|$)/.test(c),
     ],
-    ['hook bypass (core.hooksPath)', (c) => /^git\b.*\bcore\.hooksPath\b/.test(c)],
+    [
+        'hook bypass (core.hooksPath)',
+        // Overriding, setting or unsetting it bypasses the hooks; reading it
+        // (`git config --get core.hooksPath`, `git config get ...`) is diagnosis.
+        (c) =>
+            /^git\b.*\bcore\.hooksPath\b/.test(c) &&
+            !/^git\s+config\s+(?:--(?:global|local|system|show-origin|show-scope)\s+)*(?:--get(?:-all|-regexp)?|--list|-l|get|list)\b/.test(
+                normalizeGit(c),
+            ),
+    ],
     ['admin merge (--admin)', (c) => /^gh\s+pr\s+merge\b.*\s--admin\b/.test(c)],
     [
         'force push (--force / -f / +refspec)',

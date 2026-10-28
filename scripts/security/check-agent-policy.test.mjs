@@ -152,6 +152,27 @@ test('the whole-suite check stays linear on hostile input (CodeQL ReDoS)', () =>
     assert.ok(performance.now() - started < 2_000, 'policy check took too long')
 })
 
+test('shell separators, env prefixes, launchers and ~~~ fences do not hide a command', () => {
+    const block = [
+        '~~~bash',
+        'pnpm test; echo done',
+        'CI=1 pnpm run typecheck && echo ok',
+        'pnpm exec turbo run lint',
+        'git add -A; git commit -m wip',
+        '~~~',
+    ].join('\n')
+    const problems = problemsOf({ '.github/copilot-instructions.md': block })
+    assert.deepEqual(
+        problems.map((p) => p.split(':').slice(0, 3).join(':')),
+        [
+            '.github/copilot-instructions.md:2: unfiltered pnpm suite in a command block',
+            '.github/copilot-instructions.md:3: unfiltered pnpm suite in a command block',
+            '.github/copilot-instructions.md:4: bare turbo run in a command block',
+            '.github/copilot-instructions.md:5: instructs git add -A / git add .',
+        ],
+    )
+})
+
 test('other hook bypass forms fail', () => {
     for (const [line, expected] of [
         ['Commit with `git commit -m "wip" -n` if the hook is slow.', /git commit -n/],

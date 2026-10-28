@@ -80,7 +80,7 @@ export function isForbiddenAt(line, index) {
 
 const BYPASSES = [
     ['--no-verify', /--no-verify\b/g],
-    ['git add -A / git add .', /\bgit add (?:-A|--all|\.)(?=\s|`|$)/g],
+    ['git add -A / git add .', /\bgit add (?:-A|--all|\.)(?=[\s`;&|)]|$)/g],
     ['admin merge', /--admin\b/g],
     ['force push', /\bpush\b[^\n]*?(?:--force\b|\s-f\b)/g],
     // The short form of --no-verify, and Husky's switch that disables every hook.
@@ -112,6 +112,27 @@ const WHOLE_SUITE = [
     },
 ]
 const BARE_TURBO = ['bare turbo run', /^\s*turbo run [a-z:-]+/]
+
+/**
+ * The individual shell commands of a line: split at `;`, `&&`, `||` and `|`,
+ * with leading env assignments and a `pnpm exec` / `npx` launcher removed, so
+ * `pnpm test;`, `CI=1 pnpm test` and `pnpm exec turbo run lint` are judged as
+ * the command they run.
+ */
+export function shellCommands(text) {
+    return text
+        .split('#')[0]
+        .split(/&&|\|\||[;|]/)
+        .map((part) =>
+            part
+                .trim()
+                .replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, '')
+                .replace(/^(?:pnpm exec|npx)\s+/, ''),
+        )
+        .filter(Boolean)
+}
+
+const FENCE = /^\s*(```|~~~)/
 
 const REQUIRED = {
     'AGENTS.md': [
@@ -166,9 +187,11 @@ function lineProblems(name, line, where, inFence, needs) {
     }
     if (inFence) {
         if (line.trim().startsWith('#')) return problems
-        for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {
-            if (pattern.test(line))
-                problems.push(`${where}: ${label} in a command block: ${line.trim()}`)
+        for (const command of shellCommands(line)) {
+            for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {
+                if (pattern.test(command))
+                    problems.push(`${where}: ${label} in a command block: ${line.trim()}`)
+            }
         }
         return problems
     }
@@ -176,8 +199,11 @@ function lineProblems(name, line, where, inFence, needs) {
     // warnings that explain why it is banned.
     for (const m of line.matchAll(/`([^`]+)`/g)) {
         if (isForbiddenAt(line, m.index)) continue
-        for (const [label, pattern] of [UNFILTERED, WHOLE_SUITE]) {
-            if (pattern.test(m[1])) problems.push(`${where}: ${label} instructed inline: ${m[0]}`)
+        for (const command of shellCommands(m[1])) {
+            for (const [label, pattern] of [UNFILTERED, WHOLE_SUITE]) {
+                if (pattern.test(command))
+                    problems.push(`${where}: ${label} instructed inline: ${m[0]}`)
+            }
         }
     }
     if (needs && /CI Status/.test(line)) {
@@ -198,7 +224,7 @@ export function agentPolicyProblems(files, { needs } = {}) {
     for (const [name, text] of Object.entries(files)) {
         let inFence = false
         text.split('\n').forEach((line, index) => {
-            if (/^\s*```/.test(line)) {
+            if (FENCE.test(line)) {
                 inFence = !inFence
                 return
             }

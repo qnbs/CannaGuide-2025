@@ -397,7 +397,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         </div>
                         {dictError && (
                             <p className="text-xs text-red-400 mb-1">
-                                {t(`voiceControl.errors.${dictError}`)}
+                                {t(`common.voiceControl.errors.${dictError}`)}
                             </p>
                         )}
                         <Textarea

@@ -41,8 +41,8 @@ const SabBadge: React.FC = memo(() => {
                     aria-hidden="true"
                 />
                 {status.canUseLockFree
-                    ? t('workerTelemetry.sabActive', { defaultValue: 'SAB Mode: Active' })
-                    : t('workerTelemetry.sabFallback', {
+                    ? t('settingsView.workerTelemetry.sabActive', { defaultValue: 'SAB Mode: Active' })
+                    : t('settingsView.workerTelemetry.sabFallback', {
                           defaultValue: 'Fallback: Transferable',
                       })}
             </span>
@@ -65,29 +65,29 @@ const PoolStatus: React.FC<PoolStatusProps> = memo(({ poolMetrics }) => {
     if (!poolMetrics) {
         return (
             <div className="rounded-lg bg-slate-800/50 p-4 text-sm text-slate-400">
-                {t('workerTelemetry.noPool', { defaultValue: 'Worker pool not initialized' })}
+                {t('settingsView.workerTelemetry.noPool', { defaultValue: 'Worker pool not initialized' })}
             </div>
         )
     }
 
     const stats = [
         {
-            label: t('workerTelemetry.active', { defaultValue: 'Active' }),
+            label: t('settingsView.workerTelemetry.active', { defaultValue: 'Active' }),
             value: poolMetrics.activeCount,
             color: 'text-green-400',
         },
         {
-            label: t('workerTelemetry.idle', { defaultValue: 'Idle' }),
+            label: t('settingsView.workerTelemetry.idle', { defaultValue: 'Idle' }),
             value: poolMetrics.idleCount,
             color: 'text-amber-400',
         },
         {
-            label: t('workerTelemetry.spawned', { defaultValue: 'Spawned' }),
+            label: t('settingsView.workerTelemetry.spawned', { defaultValue: 'Spawned' }),
             value: poolMetrics.totalSpawned,
             color: 'text-cyan-400',
         },
         {
-            label: t('workerTelemetry.terminated', { defaultValue: 'Terminated' }),
+            label: t('settingsView.workerTelemetry.terminated', { defaultValue: 'Terminated' }),
             value: poolMetrics.totalTerminated,
             color: 'text-slate-400',
         },
@@ -124,7 +124,7 @@ const WorkerTable: React.FC<WorkerTableProps> = memo(({ metrics }) => {
     if (entries.length === 0) {
         return (
             <div className="rounded-lg bg-slate-800/50 p-4 text-sm text-slate-400">
-                {t('workerTelemetry.noWorkers', { defaultValue: 'No workers active' })}
+                {t('settingsView.workerTelemetry.noWorkers', { defaultValue: 'No workers active' })}
             </div>
         )
     }
@@ -134,7 +134,7 @@ const WorkerTable: React.FC<WorkerTableProps> = memo(({ metrics }) => {
             <table
                 className="w-full text-sm"
                 role="table"
-                aria-label={t('workerTelemetry.perWorker', { defaultValue: 'Per-Worker Metrics' })}
+                aria-label={t('settingsView.workerTelemetry.perWorker', { defaultValue: 'Per-Worker Metrics' })}
             >
                 <thead className="border-b border-slate-700">
                     <tr>
@@ -142,37 +142,37 @@ const WorkerTable: React.FC<WorkerTableProps> = memo(({ metrics }) => {
                             scope="col"
                             className="px-3 py-2 text-left text-xs font-medium text-slate-400 uppercase tracking-wider"
                         >
-                            {t('workerTelemetry.workerName', { defaultValue: 'Worker' })}
+                            {t('settingsView.workerTelemetry.workerName', { defaultValue: 'Worker' })}
                         </th>
                         <th
                             scope="col"
                             className="px-3 py-2 text-right text-xs font-medium text-slate-400 uppercase tracking-wider"
                         >
-                            {t('workerTelemetry.dispatches', { defaultValue: 'Dispatches' })}
+                            {t('settingsView.workerTelemetry.dispatches', { defaultValue: 'Dispatches' })}
                         </th>
                         <th
                             scope="col"
                             className="px-3 py-2 text-right text-xs font-medium text-slate-400 uppercase tracking-wider"
                         >
-                            {t('workerTelemetry.errors', { defaultValue: 'Errors' })}
+                            {t('settingsView.workerTelemetry.errors', { defaultValue: 'Errors' })}
                         </th>
                         <th
                             scope="col"
                             className="px-3 py-2 text-right text-xs font-medium text-slate-400 uppercase tracking-wider"
                         >
-                            {t('workerTelemetry.avgLatency', { defaultValue: 'Avg Latency' })}
+                            {t('settingsView.workerTelemetry.avgLatency', { defaultValue: 'Avg Latency' })}
                         </th>
                         <th
                             scope="col"
                             className="px-3 py-2 text-right text-xs font-medium text-slate-400 uppercase tracking-wider"
                         >
-                            {t('workerTelemetry.preemptions', { defaultValue: 'Preemptions' })}
+                            {t('settingsView.workerTelemetry.preemptions', { defaultValue: 'Preemptions' })}
                         </th>
                         <th
                             scope="col"
                             className="px-3 py-2 text-right text-xs font-medium text-slate-400 uppercase tracking-wider"
                         >
-                            {t('workerTelemetry.concurrency', { defaultValue: 'Concurrency' })}
+                            {t('settingsView.workerTelemetry.concurrency', { defaultValue: 'Concurrency' })}
                         </th>
                     </tr>
                 </thead>
@@ -238,7 +238,7 @@ const SabLiveData: React.FC = memo(() => {
     if (!isStreaming) {
         return (
             <div className="rounded-lg bg-slate-800/50 p-4 text-sm text-slate-400">
-                {t('workerTelemetry.sabNoData', {
+                {t('settingsView.workerTelemetry.sabNoData', {
                     defaultValue: 'No SAB data available (requires cross-origin isolation)',
                 })}
             </div>
@@ -249,7 +249,7 @@ const SabLiveData: React.FC = memo(() => {
         <div className="grid grid-cols-2 gap-3" role="status" aria-live="polite">
             <div className="rounded-lg bg-slate-800/50 p-3">
                 <div className="text-xs text-slate-400 mb-1">
-                    {t('workerTelemetry.sabVpdStatus', { defaultValue: 'VPD Status' })}
+                    {t('settingsView.workerTelemetry.sabVpdStatus', { defaultValue: 'VPD Status' })}
                 </div>
                 <div className="flex items-center gap-2">
                     <span
@@ -265,7 +265,7 @@ const SabLiveData: React.FC = memo(() => {
             </div>
             <div className="rounded-lg bg-slate-800/50 p-3">
                 <div className="text-xs text-slate-400 mb-1">
-                    {t('workerTelemetry.sabVpdValue', { defaultValue: 'VPD Value' })}
+                    {t('settingsView.workerTelemetry.sabVpdValue', { defaultValue: 'VPD Value' })}
                 </div>
                 <div className="text-sm font-medium tabular-nums text-slate-200">
                     {latestVpd !== null ? `${latestVpd.toFixed(2)} kPa` : '--'}
@@ -348,7 +348,7 @@ const WorkerTelemetryTab: React.FC = () => {
             {/* Header row: title + SAB badge */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold text-slate-100">
-                    {t('workerTelemetry.title', { defaultValue: 'Worker Telemetry' })}
+                    {t('settingsView.workerTelemetry.title', { defaultValue: 'Worker Telemetry' })}
                 </h3>
                 <SabBadge />
             </div>
@@ -356,12 +356,12 @@ const WorkerTelemetryTab: React.FC = () => {
             {/* Pool status */}
             <section aria-labelledby="pool-status-heading">
                 <h4 id="pool-status-heading" className="text-sm font-medium text-slate-300 mb-2">
-                    {t('workerTelemetry.poolStatus', { defaultValue: 'Pool Status' })}
+                    {t('settingsView.workerTelemetry.poolStatus', { defaultValue: 'Pool Status' })}
                 </h4>
                 <PoolStatus poolMetrics={poolMetrics} />
                 {poolMetrics && (
                     <div className="mt-2 text-xs text-muted">
-                        {t('workerTelemetry.maxPool', { defaultValue: 'Max pool size' })}:{' '}
+                        {t('settingsView.workerTelemetry.maxPool', { defaultValue: 'Max pool size' })}:{' '}
                         <span className="text-slate-400 tabular-nums">
                             {poolMetrics.maxPoolSize}
                         </span>
@@ -372,7 +372,7 @@ const WorkerTelemetryTab: React.FC = () => {
             {/* Per-worker metrics table */}
             <section aria-labelledby="worker-table-heading">
                 <h4 id="worker-table-heading" className="text-sm font-medium text-slate-300 mb-2">
-                    {t('workerTelemetry.perWorker', { defaultValue: 'Per-Worker Metrics' })}
+                    {t('settingsView.workerTelemetry.perWorker', { defaultValue: 'Per-Worker Metrics' })}
                 </h4>
                 <WorkerTable metrics={metrics} />
             </section>
@@ -380,7 +380,7 @@ const WorkerTelemetryTab: React.FC = () => {
             {/* Live SAB data stream */}
             <section aria-labelledby="sab-live-heading">
                 <h4 id="sab-live-heading" className="text-sm font-medium text-slate-300 mb-2">
-                    {t('workerTelemetry.sabLiveData', { defaultValue: 'Live SAB Data' })}
+                    {t('settingsView.workerTelemetry.sabLiveData', { defaultValue: 'Live SAB Data' })}
                 </h4>
                 <SabLiveData />
             </section>
@@ -393,7 +393,7 @@ const WorkerTelemetryTab: React.FC = () => {
                             id="sab-buffer-heading"
                             className="text-sm font-medium text-slate-300 mb-2"
                         >
-                            {t('workerTelemetry.sabBufferUtil', {
+                            {t('settingsView.workerTelemetry.sabBufferUtil', {
                                 defaultValue: 'Buffer Utilization',
                             })}
                         </h4>
@@ -403,7 +403,7 @@ const WorkerTelemetryTab: React.FC = () => {
 
             {/* Last updated timestamp */}
             <div className="text-xs text-muted text-right">
-                {t('workerTelemetry.lastUpdated', { defaultValue: 'Last updated' })}:{' '}
+                {t('settingsView.workerTelemetry.lastUpdated', { defaultValue: 'Last updated' })}:{' '}
                 <span className="tabular-nums">{lastUpdatedStr}</span>
             </div>
         </div>

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { changeAppLanguage } from '@/i18n'
 import { render, screen } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
@@ -52,6 +53,20 @@ function renderTab(
 }
 
 describe('WorkerTelemetryTab', () => {
+    // CG-AUD-20261027-N03: the tab called `workerTelemetry.*` while the strings live
+    // under `settingsView.workerTelemetry.*`, so every language got the English
+    // defaultValue. In German the real translation must render.
+    it('renders its translated strings, not the English fallback', async () => {
+        await changeAppLanguage('de')
+        try {
+            renderTab()
+            expect(screen.getByText('Worker-Telemetrie')).toBeInTheDocument()
+            expect(screen.queryByText('Worker Telemetry')).not.toBeInTheDocument()
+        } finally {
+            await changeAppLanguage('en')
+        }
+    })
+
     it('renders title and SAB fallback badge', () => {
         renderTab()
         expect(screen.getByText('Worker Telemetry')).toBeInTheDocument()

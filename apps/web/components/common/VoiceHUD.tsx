@@ -123,7 +123,7 @@ export const VoiceHUD: React.FC = () => {
                 type="button"
                 className="fixed bottom-[calc(11rem+env(safe-area-inset-bottom))] sm:bottom-20 left-1/2 -translate-x-1/2 z-50 p-3 rounded-full glass-pane shadow-lg animate-fade-in min-h-[44px] min-w-[44px]"
                 onClick={() => setCollapsed(false)}
-                aria-label={t('voiceControl.hud.expand')}
+                aria-label={t('common.voiceControl.hud.expand')}
             >
                 <PhosphorIcons.Microphone className="w-5 h-5 text-red-400 animate-pulse" />
             </button>
@@ -131,13 +131,13 @@ export const VoiceHUD: React.FC = () => {
     }
 
     const lastTranscripts = transcriptHistory.slice(-2)
-    const modeLabel = t(`voiceControl.mode.${mode}`)
+    const modeLabel = t(`common.voiceControl.mode.${mode}`)
 
     return (
         <div
             role="status"
             aria-live="polite"
-            aria-label={t('voiceControl.hud.title')}
+            aria-label={t('common.voiceControl.hud.title')}
             className="fixed bottom-[calc(11rem+env(safe-area-inset-bottom))] sm:bottom-20 left-1/2 -translate-x-1/2 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl glass-pane shadow-xl animate-fade-in px-4 py-3"
         >
             {/* Header: mode + collapse */}
@@ -151,7 +151,7 @@ export const VoiceHUD: React.FC = () => {
                     size="sm"
                     className="!p-1 rounded-full min-h-[32px] min-w-[32px]"
                     onClick={() => setCollapsed(true)}
-                    aria-label={t('voiceControl.hud.collapse')}
+                    aria-label={t('common.voiceControl.hud.collapse')}
                 >
                     <PhosphorIcons.X className="w-4 h-4" />
                 </Button>
@@ -196,7 +196,7 @@ export const VoiceHUD: React.FC = () => {
                                 voiceOrchestratorService.processTranscript('yes')
                             }}
                         >
-                            {t('voiceControl.confirmation.yes')}
+                            {t('common.voiceControl.confirmation.yes')}
                         </Button>
                         <Button
                             variant="danger"
@@ -206,7 +206,7 @@ export const VoiceHUD: React.FC = () => {
                                 voiceOrchestratorService.processTranscript('no')
                             }}
                         >
-                            {t('voiceControl.confirmation.no')}
+                            {t('common.voiceControl.confirmation.no')}
                         </Button>
                     </div>
                 </div>

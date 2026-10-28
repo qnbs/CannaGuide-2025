@@ -181,7 +181,7 @@ export const StrainImageGenerator: React.FC<StrainImageGeneratorProps> = ({
                 </div>
             ) : (
                 <>
-                    <p className="text-sm text-slate-400 mb-4">{t('imageGen.description')}</p>
+                    <p className="text-sm text-slate-400 mb-4">{t('strainsView.imageGen.description')}</p>
 
                     {gpuBusy && !isGenerating && (
                         <div className="text-sm text-amber-300 bg-amber-900/20 rounded-lg px-3 py-2 mb-4 flex items-center gap-2">

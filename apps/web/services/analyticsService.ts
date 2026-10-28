@@ -9,6 +9,7 @@
 
 import { PlantStage } from '@/types'
 import type { Plant } from '@/types'
+import { lastLocalDayKeys, toLocalDayKey } from '@/utils/localDay'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -184,14 +185,10 @@ class AnalyticsEngine {
     }
 
     private getJournalActivityTrend(plants: Plant[]): DailyCount[] {
-        const dayMs = 24 * 60 * 60 * 1000
-        const now = Date.now()
         const counts = new Map<string, number>()
 
         // Initialize last 14 days
-        for (let i = 13; i >= 0; i--) {
-            const d = new Date(now - i * dayMs)
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+        for (const key of lastLocalDayKeys(14)) {
             counts.set(key, 0)
         }
 
@@ -199,8 +196,7 @@ class AnalyticsEngine {
         for (const plant of plants) {
             if (!plant.journal) continue
             for (const entry of plant.journal) {
-                const d = new Date(entry.createdAt)
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                const key = toLocalDayKey(new Date(entry.createdAt))
                 const existing = counts.get(key)
                 if (existing !== undefined) {
                     counts.set(key, existing + 1)
@@ -487,22 +483,18 @@ class AnalyticsEngine {
     }
 
     private getHealthTrend(plants: Plant[]): HealthTrendEntry[] {
-        const dayMs = 24 * 60 * 60 * 1000
-        const now = Date.now()
+        const days = lastLocalDayKeys(14)
 
         return plants.map((plant) => {
             const counts = new Map<string, { total: number; count: number }>()
 
-            for (let i = 13; i >= 0; i--) {
-                const d = new Date(now - i * dayMs)
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+            for (const key of days) {
                 counts.set(key, { total: 0, count: 0 })
             }
 
             if (plant.journal) {
                 for (const entry of plant.journal) {
-                    const d = new Date(entry.createdAt)
-                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+                    const key = toLocalDayKey(new Date(entry.createdAt))
                     const bucket = counts.get(key)
                     if (bucket !== undefined) {
                         bucket.total += plant.health

@@ -5,6 +5,7 @@ import path from 'node:path'
 import { test } from 'node:test'
 
 import {
+    isNewerVersion,
     GRAPHIFYY_VERSION,
     MCP_VERSION,
     UV_EXCLUDE_NEWER,
@@ -39,7 +40,10 @@ test('uvRunWithPins pins both packages and their transitive dependencies', () =>
 
 test('the doctor keeps the cut-off unless a version is actually bumped (#651 review)', () => {
     const doctor = read('scripts/graphify-mcp-doctor.mjs')
-    assert.match(doctor, /bumped = graphifyy !== GRAPHIFYY_VERSION \|\| mcp !== MCP_VERSION/)
+    assert.match(
+        doctor,
+        /bumped =\s+isNewerVersion\(graphifyy, GRAPHIFYY_VERSION\) \|\| isNewerVersion\(mcp, MCP_VERSION\)/,
+    )
     assert.match(doctor, /GRAPHIFY_EXCLUDE_NEWER \|\| \(bumped \? null : UV_EXCLUDE_NEWER\)/)
 })
 
@@ -75,4 +79,12 @@ test('the bash and Windows fallback launchers delegate to the pinned launcher (#
         assert.doesNotMatch(source, /\buvx?\b\s+(?:run|tool)|\buvx\b/, `${file} runs uv itself`)
         assert.match(source, /graphify-mcp-launcher\.mjs/, `${file} does not delegate`)
     }
+})
+
+test('only a newer release counts as a bump; an older pick keeps the cut-off (#651 review)', () => {
+    assert.equal(isNewerVersion('0.9.90', '0.9.36'), true)
+    assert.equal(isNewerVersion('0.10.0', '0.9.36'), true)
+    assert.equal(isNewerVersion('0.9.36', '0.9.36'), false)
+    assert.equal(isNewerVersion('0.9.4', '0.9.36'), false)
+    assert.equal(isNewerVersion('1.9.0', '2.0.0'), false)
 })

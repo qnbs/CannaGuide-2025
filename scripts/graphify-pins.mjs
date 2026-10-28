@@ -16,6 +16,10 @@ export const MCP_VERSION = '2.0.0'
 /** Just after graphifyy 0.9.36 (2026-08-07); mcp 2.0.0 is from 2026-07-28. */
 export const UV_EXCLUDE_NEWER = '2026-08-08T00:00:00Z'
 
+/** Whether `version` is a later release than `pinned` (numeric, segment by segment). */
+export const isNewerVersion = (version, pinned) =>
+    version.localeCompare(pinned, 'en', { numeric: true }) > 0
+
 /**
  * `uv run` arguments up to the command, with the pinned packages. `excludeNewer:
  * null` drops the cut-off -- only for trying a bump to a release published after

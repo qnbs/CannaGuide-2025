@@ -618,7 +618,7 @@ const flat = (word) => (word === '' ? "''" : word.replace(/[\s#]/g, '_'))
  * `xargs [opts] cmd` run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+(?:exec|dlx)|npx|xargs(?:\s+(?:-[nLPsIdEa]\s+\S+|-\S+))*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+(?:exec|dlx)|npx|xargs(?:\s+(?:-[nLPsIdEa]\s+\S+|-\S+))*|command(?:\s+-p)*|builtin|exec(?:\s+(?:-a\s+\S+|-[cl]+))*|nohup|time(?:\s+-p)*|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = programName(command.trim())
     for (let next = unwrapOnce(current); next !== current; next = unwrapOnce(current)) {
@@ -1123,6 +1123,22 @@ function changedDir(words, cwd) {
     return target === undefined ? null : joinDir(cwd, target)
 }
 
+/**
+ * The directory the command runs in after its wrappers: `env -C <dir>` /
+ * `--chdir` moves it, for the command and for shell text it hands on
+ * (`env -C ../.. bash -c '...'`; #650 review).
+ */
+function wrapperDir(words, cwd) {
+    const offset = words.length - unwrap(words.map(flat).join(' ')).split(' ').length
+    const envAt = words.findIndex((w, k) => k < offset && programName(w) === 'env')
+    let dir = cwd
+    for (let k = envAt + 1; envAt !== -1 && k < offset; k += 1) {
+        const chdir = /^(?:-C|--chdir)(?:=?(.+))?$/.exec(words[k])
+        if (chdir) dir = joinDir(dir, chdir[1] ?? words[(k += 1)] ?? '.')
+    }
+    return dir
+}
+
 function judge(words, violations, cwd) {
     const assignments = envAssignments(words)
     if (disablesHusky(assignments)) violations.add('hook bypass (HUSKY=0)')
@@ -1176,13 +1192,7 @@ function judge(words, violations, cwd) {
     // word as an argument (`echo pnpm -c exec ...`) runs nothing (#650 review).
     const launcher = (name) => words.findIndex((w, k) => k < offset && name.test(programName(w)))
     const envAt = launcher(/^env$/)
-    // `env -C <dir>` / `--chdir` runs the command in another directory.
-    let dir = cwd
-    for (let k = envAt + 1; envAt !== -1 && k < offset; k += 1) {
-        const chdir = /^(?:-C|--chdir)(?:=?(.+))?$/.exec(words[k])
-        if (chdir) dir = joinDir(dir, chdir[1] ?? words[(k += 1)] ?? '.')
-    }
-    const bodies = scriptBodies(command, dir)
+    const bodies = scriptBodies(command, wrapperDir(words, cwd))
     if (bodies.length) return bodies
     // `pnpm [-c] exec [-c] '<script>' [args]` (shell mode, before or after
     // exec, also behind corepack / env) runs its operands as one shell command
@@ -1242,7 +1252,8 @@ export function bashViolations(command, depth = 0, cwd = '') {
         dirAt.push(dir)
         const moved = changedDir(words, dir)
         if (moved === undefined) {
-            for (const script of judge(words, violations, dir)) scripts.push([script, dir])
+            const at = wrapperDir(words, dir)
+            for (const script of judge(words, violations, dir)) scripts.push([script, at])
         } else if (!words.piped && !words.subshell) {
             dirs.set(words.scope, words.conditional || compound > 0 ? null : moved)
         }

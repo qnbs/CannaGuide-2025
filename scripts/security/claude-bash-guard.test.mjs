@@ -864,6 +864,28 @@ test('#650 bounded census on dd03f67b: denied, and the harmless twin allowed', (
     )
 })
 
+test('#650 final census on 9df3bc62: builtin options and wrapper directories', () => {
+    // exec / command / time take options before the command they run.
+    for (const [command, expected] of [
+        ['exec -c git commit --no-verify -m fix', /--no-verify/],
+        ['exec -cl -a name git push --force origin feature', /force push/],
+        ['command -p git push --force origin feature', /force push/],
+        ['time -p git commit -n -m fix', /git commit -n/],
+    ]) {
+        assert.match(bashViolations(command).join('; '), expected, command)
+    }
+    // `command -v` / `-V` only look a command up.
+    for (const command of ['command -v git', 'command -V pnpm', 'command -p git status']) {
+        assert.deepEqual(bashViolations(command), [], command)
+    }
+    // env -C moves the shell text it hands on as well.
+    assert.match(
+        bashViolations("env -C ../.. bash -c 'pnpm run dev'", 0, 'apps/web').join('; '),
+        /bare turbo run/,
+    )
+    assert.deepEqual(bashViolations("env -C apps/web bash -c 'pnpm run dev'"), [])
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,

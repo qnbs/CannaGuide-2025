@@ -349,11 +349,17 @@ jobs:
                   # artifact branch. A metadata file that says "main" must not
                   # become `wrangler pages deploy --branch main`.
                   PREVIEW_BRANCH: pr-${{ steps.meta.outputs.pr }}
+                  # The checked metadata's head SHA, not the default-branch
+                  # checkout wrangler would read from git (#592): retention can
+                  # then match the preview to its pull request by commit too.
+                  PREVIEW_SHA: ${{ steps.meta.outputs.sha }}
               run: |
                   set -o pipefail
                   OUT=$(pnpm exec wrangler pages deploy preview-dist \
                           --project-name="${CF_PROJECT_NAME}" \
-                          --branch="${PREVIEW_BRANCH}" 2>&1 | tee /dev/stderr)
+                          --branch="${PREVIEW_BRANCH}" \
+                          --commit-hash="${PREVIEW_SHA}" \
+                          --commit-dirty=false 2>&1 | tee /dev/stderr)
                   URL=$(printf '%s' "$OUT" | grep -oE 'https://[A-Za-z0-9._-]+\.pages\.dev' | tail -1 || true)
                   if [ -z "$URL" ]; then
                     echo "::error::wrangler reported success but printed no deployment URL."

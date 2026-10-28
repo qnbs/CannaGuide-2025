@@ -379,6 +379,144 @@ test('sanitized cloudflare branch names follow the pull request head sha', () =>
     assert.equal(plan.deployments.find((row) => row.id === 'sanitized-old').deletable, true)
 })
 
+test('cloudflare pr-<N> preview aliases resolve to pull request N (#592)', () => {
+    // The trusted preview job deploys from the default-branch checkout, so the
+    // recorded SHA is main's (MAIN / SHA_A here), never the pull request head.
+    const plan = classifyRetention({
+        backend: 'cloudflare',
+        mainSha: MAIN,
+        pulls: [
+            ...pulls(),
+            { number: 7, state: 'OPEN', headRefName: 'feat/seven', headRefOid: OLD_OPEN },
+            {
+                number: 8,
+                state: 'MERGED',
+                mergedAt: '2026-10-05T00:00:00Z',
+                closedAt: '2026-10-05T00:00:00Z',
+                headRefName: 'pr-9',
+                headRefOid: MERGED_OLD,
+            },
+        ],
+        deployments: [
+            ...productionSet('cloudflare'),
+            deploy({
+                id: 'm-latest',
+                createdAt: 60,
+                sha: MAIN,
+                branch: 'pr-538',
+                state: 'success',
+            }),
+            deploy({ id: 'm-old', createdAt: 50, sha: SHA_A, branch: 'pr-538', state: 'success' }),
+            deploy({
+                id: 'c-latest',
+                createdAt: 48,
+                sha: MAIN,
+                branch: 'pr-100',
+                state: 'success',
+            }),
+            deploy({ id: 'c-old', createdAt: 47, sha: SHA_A, branch: 'pr-100', state: 'success' }),
+            deploy({ id: 'o-latest', createdAt: 46, sha: MAIN, branch: 'pr-7', state: 'success' }),
+            deploy({ id: 'o-old', createdAt: 45, sha: SHA_A, branch: 'pr-7', state: 'success' }),
+            deploy({ id: 'd-old', createdAt: 44, sha: SHA_A, branch: 'pr-513', state: 'success' }),
+            deploy({
+                id: 'd-latest',
+                createdAt: 49,
+                sha: MAIN,
+                branch: 'pr-513',
+                state: 'success',
+            }),
+            // A real head branch named pr-9 makes the alias ambiguous.
+            deploy({ id: 'x-latest', createdAt: 43, sha: MAIN, branch: 'pr-9', state: 'success' }),
+            deploy({ id: 'x-old', createdAt: 42, sha: SHA_A, branch: 'pr-9', state: 'success' }),
+            // No pull request #4242 in the inventory.
+            deploy({
+                id: 'n-latest',
+                createdAt: 41,
+                sha: MAIN,
+                branch: 'pr-4242',
+                state: 'success',
+            }),
+            deploy({ id: 'n-old', createdAt: 40, sha: SHA_A, branch: 'pr-4242', state: 'success' }),
+            // ... even when its SHA is the head of a different, merged PR (#538).
+            deploy({
+                id: 'n-sha',
+                createdAt: 37,
+                sha: MERGED_SHA,
+                branch: 'pr-4242',
+                state: 'success',
+            }),
+            // A PR number beyond seven digits is still an alias.
+            deploy({
+                id: 'big-latest',
+                createdAt: 36,
+                sha: MAIN,
+                branch: 'pr-123456789',
+                state: 'success',
+            }),
+            deploy({
+                id: 'big-old',
+                createdAt: 35,
+                sha: MERGED_SHA,
+                branch: 'pr-123456789',
+                state: 'success',
+            }),
+            // Not the alias shape.
+            deploy({
+                id: 'z-latest',
+                createdAt: 39,
+                sha: MAIN,
+                branch: 'pr-0538',
+                state: 'success',
+            }),
+            deploy({ id: 'z-old', createdAt: 38, sha: SHA_A, branch: 'pr-0538', state: 'success' }),
+        ],
+    })
+    const row = (id) => plan.deployments.find((r) => r.id === id)
+    // The newest deployment of each alias stays (Cloudflare refuses to delete it).
+    for (const id of ['m-latest', 'c-latest', 'd-latest', 'x-latest', 'n-latest']) {
+        assert.equal(row(id).class, 'PROTECT_LATEST_ACTIVE_BRANCH', id)
+    }
+    assert.equal(row('m-old').class, 'SAFE_DELETE_MERGED_PR_HISTORY')
+    assert.equal(row('c-old').class, 'SAFE_DELETE_CLOSED_PR_HISTORY')
+    assert.equal(row('d-old').class, 'SAFE_DELETE_STALE_DEPENDABOT')
+    assert.equal(row('o-latest').class, 'PROTECT_OPEN_PR')
+    assert.equal(row('o-old').class, 'SAFE_DELETE_SUPERSEDED_PREVIEW')
+    for (const id of ['x-old', 'n-old', 'n-sha', 'z-old', 'big-old']) {
+        assert.equal(row(id).class, 'UNKNOWN', id)
+        assert.equal(row(id).deletable, false, id)
+    }
+    assert.match(row('x-old').limitation, /does not identify one pull request/)
+    assert.match(row('n-sha').limitation, /no pull request for preview alias pr-4242/)
+    assert.match(row('big-old').limitation, /no pull request for preview alias pr-123456789/)
+    // Vercel branches keep the plain head-branch lookup.
+    const vercel = classifyRetention({
+        backend: 'vercel',
+        mainSha: MAIN,
+        pulls: pulls(),
+        deployments: [
+            ...productionSet('vercel'),
+            deploy({ id: 'v-old', createdAt: 50, sha: SHA_A, branch: 'pr-538' }),
+        ],
+    })
+    assert.equal(vercel.deployments.find((r) => r.id === 'v-old').class, 'UNKNOWN')
+})
+
+test('only the trusted preview job names a Cloudflare branch pr-<N> (#592)', () => {
+    const workflow = readFileSync(
+        new URL('../../.github/workflows/deploy-cloudflare.yml', import.meta.url),
+        'utf8',
+    )
+    // Two deploy sites: production on main, previews on the checked PR number.
+    const deploys = [...workflow.matchAll(/wrangler pages deploy [\s\S]*?--branch=(\S+)/g)].map(
+        (match) => match[1],
+    )
+    assert.deepEqual(deploys, ['main', '"${PREVIEW_BRANCH}"'])
+    assert.match(workflow, /PREVIEW_BRANCH: pr-\$\{\{ steps\.meta\.outputs\.pr \}\}/)
+    assert.match(workflow, /PREVIEW_SHA: \$\{\{ steps\.meta\.outputs\.sha \}\}/)
+    assert.match(workflow, /--commit-hash="\$\{PREVIEW_SHA\}"/)
+    assert.match(workflow, /run: node scripts\/cloudflare-preview-meta\.mjs check/)
+})
+
 test('cloudflare uses its own labels and still keeps the rollback window', () => {
     const plan = classifyRetention({
         backend: 'cloudflare',

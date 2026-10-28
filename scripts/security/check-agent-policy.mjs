@@ -278,6 +278,25 @@ const WHOLE_SUITE = [
         },
     },
 ]
+/**
+ * Vitest started directly (`vitest`, `vitest run`, `pnpm exec vitest run`,
+ * also `cd apps/web && ...`) without a spec filter runs the whole suite, like
+ * the package script does (#650 review). `vitest list` / `init` run no tests.
+ */
+const DIRECT_VITEST = [
+    'whole-suite test run',
+    {
+        test(command) {
+            const tokens = command.split('#')[0].trim().split(/\s+/)
+            if (tokens[0] !== 'vitest' || ['list', 'init'].includes(tokens[1])) return false
+            const args = /^(?:run|watch|dev|related|bench|typecheck)$/.test(tokens[1] ?? '')
+                ? tokens.slice(2)
+                : tokens.slice(1)
+            const end = args.indexOf('--')
+            return specFilters(end === -1 ? args : args.slice(0, end)).length === 0
+        },
+    },
+]
 /** `turbo run <task>` without a `--filter` before `--` (after it, the flag goes to the task). */
 const BARE_TURBO = [
     'bare turbo run',
@@ -294,7 +313,7 @@ const BARE_TURBO = [
  * commands an agent actually runs.
  */
 export function heavyCommandRule(command) {
-    for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {
+    for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE, DIRECT_VITEST]) {
         if (pattern.test(command)) return label
     }
     return null
@@ -375,7 +394,7 @@ function lineProblems(name, line, where, inFence, needs) {
     if (inFence) {
         if (line.trim().startsWith('#')) return problems
         for (const command of shellCommands(line)) {
-            for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {
+            for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE, DIRECT_VITEST]) {
                 if (pattern.test(command))
                     problems.push(`${where}: ${label} in a command block: ${line.trim()}`)
             }

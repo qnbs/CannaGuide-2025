@@ -222,17 +222,26 @@ export function parseCommands(source) {
         dropWord = false
         // `bash <<< '...'` runs the here-string as its script; for any other
         // reader it is data (#650 review).
-        if (hereStrings.length && runsStdin(words)) nested.push(...hereStrings)
+        // A here-string that expands at run time (`bash <<< "$SCRIPT"`) is not
+        // the text written here: the shell input is opaque.
+        if (hereStrings.length && runsStdin(words)) {
+            if (hereStrings.some(runtimeValue)) words.opaqueStdin = true
+            nested.push(...hereStrings)
+        }
         hereStrings = []
         if (words.length) {
             // Marks a command that reads the previous one's output through `|`.
             if (pipedNext) words.piped = true
+            // The subshell it runs in: `(cd x); y` keeps y in the old directory.
+            words.scope = scopes.join('.')
             commands.push(words)
         }
         pipedNext = false
         words = []
     }
     let pipedNext = false
+    const scopes = []
+    let lastScope = 0
     let i = 0
     while (i < s.length) {
         const c = s[i]
@@ -322,7 +331,11 @@ export function parseCommands(source) {
                 dropWord = op === '<<<' ? 'here' : 'drop'
             }
         } else if (c === '&' || c === '|' || c === ';' || c === '(' || c === ')') {
+            // Pipeline parts and background jobs run in a subshell of their own.
+            if ((c === '|' && next !== '|') || (c === '&' && next !== '&')) words.subshell = true
             endCommand()
+            if (c === '(') scopes.push((lastScope += 1))
+            else if (c === ')') scopes.pop()
             pipedNext = c === '|' && next !== '|'
             i +=
                 (c === '&' && next === '&') ||
@@ -630,7 +643,9 @@ const RULES = [
             const positional = c
                 .split(/\s+/)
                 .slice(2)
-                .filter((word) => !word.startsWith('-'))
+                // An option's value (`-o ci.skip`, masked to VALUE) is no
+                // remote or branch (#650 review).
+                .filter((word) => !word.startsWith('-') && word !== 'VALUE')
             // A wildcard refspec (`refs/heads/*:refs/heads/*`), --all and --mirror
             // push every branch, main included (#650 review).
             return (
@@ -930,11 +945,22 @@ export function bashViolations(command, depth = 0, cwd = '') {
     const { commands, nested, opaque } = parseCommands(command)
     if (opaque) violations.add('shell reads input that cannot be inspected')
     const scripts = nested.map((script) => [script, cwd])
-    let dir = cwd
+    // The directory per subshell scope ('1.2' inherits from '1', then '').
+    // A cd in `( ... )`, a pipeline part or a background job ends with it.
+    const dirs = new Map([['', cwd]])
+    const dirIn = (scope) => {
+        for (let s = scope; ; s = s.slice(0, Math.max(s.lastIndexOf('.'), 0))) {
+            if (dirs.has(s)) return dirs.get(s)
+        }
+    }
     for (const words of commands) {
+        const dir = dirIn(words.scope)
         const moved = changedDir(words, dir)
-        if (moved !== undefined) dir = moved
-        else for (const script of judge(words, violations, dir)) scripts.push([script, dir])
+        if (moved === undefined) {
+            for (const script of judge(words, violations, dir)) scripts.push([script, dir])
+        } else if (!words.piped && !words.subshell) {
+            dirs.set(words.scope, moved)
+        }
     }
     // Fail closed: text nested deeper than the guard reads is denied, not
     // waved through (#650 review).

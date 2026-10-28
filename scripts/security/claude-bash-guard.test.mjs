@@ -451,6 +451,64 @@ test('#650 review wave on 704d20f6: each finding is denied, its harmless twin al
     assert.match(bashViolations('pnpm test:e2e', 0, null).join('; '), /CI only/)
 })
 
+test('#650 review wave on 65d16dce: each finding is denied, its harmless twin allowed', () => {
+    const cases = [
+        // 1. A here-string that expands at run time is opaque shell input.
+        {
+            blocked: [
+                [
+                    'SCRIPT=\'git commit --no-verify -m fix\'; bash <<< "$SCRIPT"',
+                    /cannot be inspected/,
+                ],
+                ['bash <<< "$(cat /tmp/script.sh)"', /cannot be inspected/],
+            ],
+            allowed: ['grep -q x <<< "$HOME"', 'bash -c \'cat\' <<< "$X"'],
+        },
+        // 2. A cd ends with its subshell, pipeline part or background job.
+        {
+            blocked: [
+                ['(cd apps/web); pnpm run dev', /bare turbo run/],
+                ['(cd apps/web) && (pnpm run dev)', /bare turbo run/],
+                ['cd apps/web | true; pnpm run dev', /bare turbo run/],
+                ['cd apps/web & pnpm run dev', /bare turbo run/],
+            ],
+            allowed: [
+                '(cd apps/web && pnpm run dev)',
+                'cd apps/web && (pnpm run dev)',
+                '(cd apps/web; (pnpm run dev))',
+            ],
+        },
+        // 3. Vitest started directly needs a spec filter, like the package script.
+        {
+            blocked: [
+                ['cd apps/web && pnpm exec vitest run', /whole-suite test run/],
+                ['npx vitest', /whole-suite test run/],
+                ['pnpm --filter @cannaguide/web exec vitest run --coverage', /whole-suite/],
+                ['pnpm exec vitest run -- analyticsService', /whole-suite test run/],
+            ],
+            allowed: [
+                'cd apps/web && pnpm exec vitest run analyticsService',
+                'pnpm --filter @cannaguide/web exec vitest run -t renders analyticsService',
+                'pnpm exec vitest list',
+            ],
+        },
+        // 4. A push option's value is not the remote or branch.
+        {
+            blocked: [
+                ['git push --force-with-lease -o ci.skip origin', /without a named branch/],
+                ['git push --force-with-lease --push-option ci.skip origin', /without a named/],
+            ],
+            allowed: ['git push --force-with-lease -o ci.skip origin feature'],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,

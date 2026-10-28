@@ -81,6 +81,10 @@ jobs:
                   # Hidden source maps for the bundle analysis below only; deployed
                   # builds never set this (stamp-build-metadata --verify rejects maps).
                   BUILD_SOURCEMAP: hidden
+                  # lhci serves dist/ at the server root, so the app must be built for
+                  # "/" -- with the Pages base its assets 404 and Lighthouse measures
+                  # an empty shell.
+                  BUILD_BASE_PATH: /
               run: pnpm run build
 
             - name: Bundle budget check
@@ -131,8 +135,15 @@ jobs:
               with:
                   name: benchmark-artifacts
                   path: |
-                      apps/web/dist/source-map-explorer.html
+                      apps/web/benchmark-reports/source-map-explorer.html
                       apps/web/.lighthouseci/
                       apps/web/benchmark-metrics.json
                   retention-days: 14
                   if-no-files-found: warn
+
+            # Lighthouse failures are caught above so the metrics and artifacts are
+            # still collected -- but a run without Lighthouse metrics is not a
+            # baseline and must not show green (CG-AUD-20261027-N04).
+            - name: Fail when Lighthouse produced no metrics
+              if: env.lighthouse_failed == 'true'
+              run: echo "[FAIL] Lighthouse CI failed -- this run produced no performance baseline." >&2 && false

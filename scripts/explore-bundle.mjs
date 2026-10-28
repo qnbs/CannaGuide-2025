@@ -3,7 +3,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const assetsDir = path.resolve('dist/assets')
-const reportPath = path.resolve('dist/source-map-explorer.html')
+// Outside dist/: Lighthouse CI audits every HTML file in dist/, and this report
+// is not part of the app.
+const reportPath = path.resolve('benchmark-reports/source-map-explorer.html')
 
 if (!fs.existsSync(assetsDir)) {
     console.error('dist/assets does not exist. Run the build first.')
@@ -35,6 +37,7 @@ if (!fs.existsSync(mapPath)) {
     )
     process.exit(1)
 }
+fs.mkdirSync(path.dirname(reportPath), { recursive: true })
 const result = spawnSync(
     'pnpm',
     [

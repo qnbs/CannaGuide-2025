@@ -462,6 +462,11 @@ export interface TTSSettings {
     highlightSpeakingText: boolean
     cloudTtsEnabled: boolean
     cloudTtsProvider: CloudTtsProvider
+    /**
+     * @deprecated Kept only so older snapshots load. The key is stored
+     * encrypted by cloudTtsKeyService and migrated out of here at startup;
+     * snapshots and exports always carry null (#654).
+     */
     cloudTtsApiKey: string | null
 }
 

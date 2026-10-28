@@ -4,6 +4,8 @@ import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
 import { GEMINI_API_KEY_STORAGE_KEY, VersionedSliceName } from '@/constants'
 import { aiProviderService } from '@/services/aiProviderService'
+import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { redactSettingsSecrets } from '@/utils/redactSecrets'
 import {
     removePrimaryPersistedSnapshot,
     updatePrimaryPersistedSnapshot,
@@ -221,7 +223,12 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
     'settings/exportAllData',
     async (_, { getState }) => {
         const state = getState()
-        const stateToSave = JSON.stringify(state, null, 2)
+        // Credentials stay out of the download (#654).
+        const stateToSave = JSON.stringify(
+            { ...state, settings: redactSettingsSecrets(state.settings) },
+            null,
+            2,
+        )
         const blob = new Blob([stateToSave], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -243,6 +250,7 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     if (!stateRemoved) throw new Error('State reset was blocked by safe recovery.')
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
+    await cloudTtsKeyService.clearApiKey()
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })

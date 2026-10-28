@@ -5,6 +5,7 @@ import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { runPostHydrationServices } from './postHydration'
+import { migrateLegacySecrets } from './secrets'
 
 export const mountHydratedApp = async (): Promise<void> => {
     try {
@@ -13,6 +14,15 @@ export const mountHydratedApp = async (): Promise<void> => {
         await i18nPromise
 
         const { hydratedStore } = await hydrateApplicationStores()
+
+        try {
+            await migrateLegacySecrets(hydratedStore)
+        } catch (migrationError) {
+            console.error(
+                '[Secrets] Legacy key migration failed, retrying next start:',
+                migrationError,
+            )
+        }
 
         try {
             await initializeCrdtLayer(hydratedStore)

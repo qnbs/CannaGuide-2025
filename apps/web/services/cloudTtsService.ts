@@ -2,14 +2,14 @@
 // Cloud TTS Service -- ElevenLabs (v1.8 CannaVoice Pro)
 // ---------------------------------------------------------------------------
 // BYOK Cloud TTS provider implementing ITTSProvider. API key encrypted at rest
-// via cryptoService, decrypted only in-memory for each request. Privacy-first:
+// by cloudTtsKeyService (outside Redux), decrypted only in-memory per request. Privacy-first:
 // key never leaves the client. Rate-limited to 5 req/min.
 // ---------------------------------------------------------------------------
 
 import * as Sentry from '@sentry/browser'
 import type { ITTSProvider, Language, TTSSettings } from '@/types'
 import { CLOUD_TTS_MAX_CHARS, CLOUD_TTS_TIMEOUT_MS, CLOUD_TTS_RATE_LIMIT } from '@/constants'
-import { decrypt } from '@/services/cryptoService'
+import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 
 /** Default ElevenLabs voice IDs per language. */
 const DEFAULT_VOICE_IDS: Record<Language, string> = {
@@ -45,12 +45,12 @@ let activeAbortController: AbortController | null = null
 class CloudTtsService implements ITTSProvider {
     readonly providerName = 'elevenlabs'
 
-    private encryptedApiKey: string | null = null
+    private apiKeyConfigured = false
     private selectedVoiceId: string | null = null
 
-    /** Configure the encrypted API key (from settings). */
-    setEncryptedApiKey(key: string | null): void {
-        this.encryptedApiKey = key
+    /** Whether a key is stored; the key itself is read per request (#654). */
+    setApiKeyConfigured(configured: boolean): void {
+        this.apiKeyConfigured = configured
     }
 
     /** Set preferred voice ID. */
@@ -59,7 +59,7 @@ class CloudTtsService implements ITTSProvider {
     }
 
     isSupported(): boolean {
-        return this.encryptedApiKey !== null && typeof AudioContext !== 'undefined'
+        return this.apiKeyConfigured && typeof AudioContext !== 'undefined'
     }
 
     init(): void {
@@ -98,7 +98,7 @@ class CloudTtsService implements ITTSProvider {
     }
 
     private async speakAsync(text: string, lang: Language, onEnd: () => void): Promise<void> {
-        if (!this.encryptedApiKey) {
+        if (!this.apiKeyConfigured) {
             onEnd()
             return
         }
@@ -115,7 +115,7 @@ class CloudTtsService implements ITTSProvider {
 
         try {
             // Decrypt API key in-memory (never persisted in plain text)
-            const apiKey = await decrypt(this.encryptedApiKey)
+            const apiKey = await cloudTtsKeyService.getApiKey()
             if (!apiKey) {
                 console.debug('[CloudTTS] Failed to decrypt API key')
                 onEnd()

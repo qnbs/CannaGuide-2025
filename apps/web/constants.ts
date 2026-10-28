@@ -92,6 +92,8 @@ export const PWA_INSTALLED_KEY = 'cannaGuidePwaInstalled'
 export const REDUX_STATE_KEY = 'cannaguide-redux-storage'
 export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion'
 export const GEMINI_API_KEY_STORAGE_KEY = 'geminiApiKey'
+/** Encrypted ElevenLabs key; never part of the Redux settings snapshot (#654). */
+export const CLOUD_TTS_API_KEY_STORAGE_KEY = 'cloudTtsApiKey'
 
 // --- DATABASE ---
 export const DB_NAME = 'CannaGuideDB'

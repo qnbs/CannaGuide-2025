@@ -26,7 +26,7 @@ import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
-import { heavyCommandRule } from '../../scripts/security/check-agent-policy.mjs'
+import { heavyCommandRule, pnpmInvocation } from '../../scripts/security/check-agent-policy.mjs'
 
 const MAX_DEPTH = 8
 const SHELLS = /^(?:ba|z|da|k)?sh$/
@@ -292,7 +292,7 @@ const flat = (word) => word.replace(/[\s#]/g, '_')
  * `xargs [opts] cmd` run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = command.trim()
     for (
@@ -361,11 +361,12 @@ const RULES = [
         // Any argument that means the whole tree, also after `--`.
         (c) =>
             /^git\s+add\b/.test(c) &&
-            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|\*)(?=\s|$)/.test(c),
+            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|\*+(?:\/\*+)*)(?=\s|$)/.test(c),
     ],
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',
-        (c) => /^pnpm\s+(?:install|i)(?=\s|$)/.test(c) && !frozenLockfile(c),
+        // pnpm's own options may precede the command: `pnpm --dir apps/web install`.
+        (c) => ['install', 'i'].includes(pnpmInvocation(c)?.script) && !frozenLockfile(c),
     ],
 ]
 
@@ -406,7 +407,10 @@ function judge(words, violations) {
     const git = normalizeGit(command)
     for (const [label, test] of RULES) if (test(command) || test(git)) violations.add(label)
     const heavy = heavyCommandRule(command)
-    if (heavy && !(heavy === 'bare turbo run' && /--filter\b/.test(command))) {
+    // A turbo `--filter` scopes the run only before `--`; after it the flag is
+    // passed on to the tasks (#650 review).
+    const turboFiltered = /--filter\b/.test(command.split(/\s--(?=\s|$)/)[0])
+    if (heavy && !(heavy === 'bare turbo run' && turboFiltered)) {
         violations.add(
             `${heavy} (use pnpm verify / verify:test / verify:lint, or one spec without --)`,
         )

@@ -88,47 +88,69 @@ const BYPASSES = [
     ['HUSKY=0', /\bHUSKY=0\b/g],
 ]
 
+/** pnpm options that take a separate value (`--dir x`, `-C x`). */
+const PNPM_VALUE_OPTIONS = new Set([
+    '-C',
+    '--dir',
+    '--loglevel',
+    '--reporter',
+    '--workspace-concurrency',
+    '--store-dir',
+    '--test-pattern',
+    '--changed-files-ignore-pattern',
+])
+const isFilter = (token) => /^(?:--filter|-F)(?:=|$)/.test(token)
+
+/**
+ * A pnpm command split into its parts: pnpm's own options may come before the
+ * script (`pnpm --silent test`, `pnpm --dir apps/web install`), and a
+ * `--filter` / `-F` among them, also in `=` form, scopes the run (#650 review).
+ * Tokenised rather than a regex: an earlier pattern with a nested quantifier
+ * was a ReDoS (CodeQL).
+ */
+export function pnpmInvocation(command) {
+    const tokens = command.split('#')[0].trim().split(/\s+/)
+    if (tokens[0] !== 'pnpm') return null
+    let filtered = false
+    let i = 1
+    while (i < tokens.length && tokens[i].startsWith('-') && tokens[i] !== '--') {
+        const token = tokens[i]
+        if (isFilter(token)) filtered = true
+        i += token === '--filter' || token === '-F' || PNPM_VALUE_OPTIONS.has(token) ? 2 : 1
+    }
+    if (tokens[i] === 'run') i += 1
+    return { filtered, script: tokens[i], rest: tokens.slice(i + 1) }
+}
+
 const UNFILTERED = [
     'unfiltered pnpm suite',
     {
         test(command) {
-            const m =
-                /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)(?=\s|$)/.exec(
-                    command,
-                )
-            if (!m) return false
-            // Only a filter before a standalone `--` scopes the run: after it the
-            // flag is the script's argument (`pnpm test -- --filter=!x`).
-            const options = command
-                .slice(m[0].length)
-                .split('#')[0]
-                .split(/\s--(?=\s|$)/)[0]
-            return !/(?:^|\s)(?:--filter|-F)(?:=|\s|$)/.test(options)
+            const run = pnpmInvocation(command)
+            const suites = ['test', 'typecheck', 'lint', 'test:run', 'test:coverage', 'lint:full']
+            if (!run || run.filtered || !suites.includes(run.script)) return false
+            // A filter after the script still reaches turbo, but only before a
+            // standalone `--`: after it, it is the script's argument
+            // (`pnpm test -- --filter=!x`).
+            const end = run.rest.indexOf('--')
+            return !(end === -1 ? run.rest : run.rest.slice(0, end)).some(isFilter)
         },
     },
 ]
 /**
  * `pnpm --filter <pkg> test|test:run|test:coverage` still runs that package's
  * whole suite when it names no spec (options only) or when a `--` swallows the
- * spec filter (CLAUDE.md trap #1). Tokenised rather than a regex: an earlier
- * pattern with a nested quantifier was a ReDoS (CodeQL).
+ * spec filter (CLAUDE.md trap #1).
  */
 const WHOLE_SUITE = [
     'whole-suite test run',
     {
         test(command) {
-            // `--filter=<pkg>` and `-F <pkg>` are the same option (#650 review).
-            const tokens = command
-                .split('#')[0]
-                .trim()
-                .replace(/(^|\s)(?:--filter|-F)=(\S+)/g, '$1--filter $2')
-                .replace(/(^|\s)-F(?=\s)/g, '$1--filter')
-                .split(/\s+/)
-            if (tokens[0] !== 'pnpm' || tokens[1] !== '--filter' || tokens.length < 4) return false
-            const scriptAt = tokens[3] === 'run' ? 4 : 3
-            if (!['test', 'test:run', 'test:coverage'].includes(tokens[scriptAt])) return false
-            const rest = tokens.slice(scriptAt + 1)
-            return rest.includes('--') || rest.every((token) => token.startsWith('-'))
+            const run = pnpmInvocation(command)
+            if (!run?.filtered || !['test', 'test:run', 'test:coverage'].includes(run.script)) {
+                return false
+            }
+            return run.rest.includes('--') || run.rest.every((token) => token.startsWith('-'))
         },
     },
 ]

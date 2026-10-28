@@ -62,6 +62,22 @@ export function regressions(current, baseline) {
     return problems
 }
 
+/** Whether `value` has a ceiling map (class -> count) for both tools. */
+export function isBaseline(value) {
+    const isCeilings = (map) =>
+        map !== null &&
+        typeof map === 'object' &&
+        !Array.isArray(map) &&
+        Object.values(map).every((n) => Number.isInteger(n) && n >= 0)
+    return (
+        value !== null &&
+        typeof value === 'object' &&
+        !Array.isArray(value) &&
+        isCeilings(value.zizmor) &&
+        isCeilings(value.actionlint)
+    )
+}
+
 /** Classes now below their ceiling: the baseline can be lowered. */
 export function improvements(current, baseline) {
     const lowered = []
@@ -105,12 +121,18 @@ function main() {
     // Read, do not check-then-read: a missing file is ENOENT from the read
     // itself (CodeQL js/file-system-race).
     let stored = null
+    let seeding = false
     try {
         stored = JSON.parse(readFileSync(BASELINE, 'utf8'))
     } catch (error) {
         if (error.code !== 'ENOENT') throw error
+        seeding = true
     }
-    const seeding = stored === null
+    // Only a missing file seeds; a file that holds anything but the ceilings
+    // (`null`, an array, a lost tool map) is an error, never overwritten.
+    if (!seeding && !isBaseline(stored)) {
+        throw new Error(`${BASELINE} is malformed; restore it from git instead of re-seeding`)
+    }
     if (seeding && !process.argv.includes('--update')) {
         throw new Error(`no baseline at ${BASELINE}; seed it once with --update and commit it`)
     }

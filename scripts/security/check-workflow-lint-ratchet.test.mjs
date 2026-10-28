@@ -7,6 +7,7 @@ import {
     countActionlint,
     countZizmor,
     improvements,
+    isBaseline,
     regressions,
 } from './check-workflow-lint-ratchet.mjs'
 
@@ -91,4 +92,20 @@ test('the committed baseline has numeric ceilings for both tools', () => {
         0,
         'template injection was fixed in A-S7; its ceiling stays 0',
     )
+})
+
+test('only an object with ceiling maps for both tools is a baseline (#649 review)', () => {
+    assert.equal(isBaseline({ zizmor: { 'Low x': 1 }, actionlint: {} }), true)
+    for (const bad of [
+        null,
+        [],
+        {},
+        { zizmor: null, actionlint: {} },
+        { zizmor: { 'Low x': -1 }, actionlint: {} },
+        { zizmor: { 'Low x': 1.5 }, actionlint: {} },
+        { zizmor: {}, actionlint: [] },
+    ]) {
+        assert.equal(isBaseline(bad), false, JSON.stringify(bad))
+    }
+    assert.equal(isBaseline(JSON.parse(readFileSync(BASELINE, 'utf8'))), true)
 })

@@ -1,0 +1,17 @@
+{
+    "_comment": "Workflow-lint ratchet (zizmor 1.31.1 --offline + actionlint 1.7.12 with shellcheck 0.11.0). Ceilings per class may only drop: lower them with `node scripts/security/check-workflow-lint-ratchet.mjs --update`. See docs/DEVOPS-GATES.md.",
+    "zizmor": {
+        "High bot-conditions": 1,
+        "High cache-poisoning": 1,
+        "High dangerous-triggers": 3,
+        "High unpinned-images": 1,
+        "Informational template-injection": 7,
+        "Low self-repository": 38,
+        "Medium artipacked": 38,
+        "Medium dependabot-cooldown": 2
+    },
+    "actionlint": {
+        "shellcheck SC2126": 1,
+        "shellcheck SC2129": 1
+    }
+}

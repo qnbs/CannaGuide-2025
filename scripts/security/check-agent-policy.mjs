@@ -125,6 +125,7 @@ const PNPM_COMMAND_WORDS = new Set([
     'it',
     'add',
     'run',
+    'run-script',
     'exec',
     'dlx',
     'test',
@@ -168,7 +169,8 @@ export function pnpmInvocation(command) {
         }
     }
     skipOptions()
-    if (tokens[i] === 'run') {
+    // `run-script` is pnpm's alias of `run` (#650 review).
+    if (tokens[i] === 'run' || tokens[i] === 'run-script') {
         i += 1
         skipOptions()
     }

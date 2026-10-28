@@ -220,6 +220,13 @@ export function parseCommands(source) {
     let hereDynamic = false
     // Whether the current word names a process substitution (`<(cmd)`).
     let fromProcess = false
+    // Whether bash may turn the current word into several: an unquoted
+    // expansion is split at whitespace, an unquoted `{a,b}` / `{1..3}` is
+    // brace-expanded (`--message=$MSG`, `--{no-verify,x}`; #650 review).
+    let splits = false
+    let brace = 0 // 1 after an unquoted `{`, 2 once a `,` or `..` follows it
+    // The redirection whose target the next word is (`<` in `bash < <(cmd)`).
+    let redirect = ''
     const append = (text) => {
         word = (word ?? '') + text
     }
@@ -230,12 +237,21 @@ export function parseCommands(source) {
         } else if (word !== null && !dropWord) {
             if (dynamic) (words.dynamic ??= new Set()).add(words.length)
             if (fromProcess) (words.fromProcess ??= new Set()).add(words.length)
+            if (splits) (words.splits ??= new Set()).add(words.length)
             words.push(word)
+        } else if (word !== null && redirect === '<' && fromProcess) {
+            // `bash < <(cmd)` reads generated text on stdin.
+            words.stdinFromProcess = true
         }
-        if (word !== null) dropWord = false
+        if (word !== null) {
+            dropWord = false
+            redirect = ''
+        }
         word = null
         dynamic = false
         fromProcess = false
+        splits = false
+        brace = 0
     }
     const endCommand = () => {
         endWord()
@@ -248,6 +264,7 @@ export function parseCommands(source) {
             if (hereDynamic) words.opaqueStdin = true
             nested.push(...hereStrings)
         }
+        if (words.stdinFromProcess && runsStdin(words)) words.opaqueStdin = true
         hereStrings = []
         hereDynamic = false
         if (words.length) {
@@ -320,6 +337,7 @@ export function parseCommands(source) {
             nested.push(s.slice(i + 2, end))
             append(SUBST)
             dynamic = true
+            splits = true
             i = end + 1
         } else if (c === '$' && next === '{') {
             // `${X:-$(cmd)}` runs cmd: the expansion stays one word, its
@@ -328,12 +346,14 @@ export function parseCommands(source) {
             nested.push(...substitutionsIn(s.slice(i + 2, end)))
             append(s.slice(i, end + 1))
             dynamic = true
+            splits = true
             i = end + 1
         } else if (c === '`') {
             const end = closingBacktick(s, i + 1)
             nested.push(s.slice(i + 1, end))
             append(SUBST)
             dynamic = true
+            splits = true
             i = end + 1
         } else if (c === '<' || c === '>' || (c === '&' && next === '>')) {
             // A leading fd number (`2>`) belongs to the redirection.
@@ -373,6 +393,7 @@ export function parseCommands(source) {
             } else {
                 // The target (a file name, a here-string) is not an argument.
                 dropWord = op === '<<<' ? 'here' : 'drop'
+                redirect = op
             }
         } else if (c === '&' || c === '|' || c === ';' || c === '(' || c === ')') {
             // Pipeline parts and background jobs run in a subshell of their own.
@@ -389,8 +410,12 @@ export function parseCommands(source) {
                     ? 2
                     : 1
         } else {
-            // An unquoted `$X` expands at run time.
-            if (c === '$') dynamic = true
+            // An unquoted `$X` expands at run time and is split at whitespace.
+            if (c === '$') dynamic = splits = true
+            // An unquoted `{a,b}` / `{1..3}` becomes several words.
+            if (c === '{' && brace === 0) brace = 1
+            else if (brace === 1 && (c === ',' || (c === '.' && next === '.'))) brace = 2
+            else if (c === '}' && brace === 2) splits = true
             append(c)
             i += 1
         }
@@ -655,11 +680,84 @@ function optionValuePositions(tokens, spec) {
  * standalone `git commit '--no-verify'` stays a flag (#650 review).
  */
 function maskOptionValues(command) {
-    const spec = GIT_VALUE_OPTIONS[/^git\s+(\S+)/.exec(command)?.[1]]
+    const sub = /^git\s+(\S+)/.exec(command)?.[1]
+    const spec = GIT_VALUE_OPTIONS[sub]
     if (!spec) return command
-    const tokens = command.split(' ')
+    const tokens = expandAbbreviations(command.split(' '), GIT_LONG_OPTIONS[sub])
     const values = optionValuePositions(tokens, spec)
     return tokens.map((token, k) => (values.has(k) ? 'VALUE' : token)).join(' ')
+}
+
+/** The long options the rules read, per subcommand (also value-taking ones). */
+const GIT_LONG_OPTIONS = {
+    commit: [
+        'no-verify',
+        'verify',
+        'message',
+        'file',
+        'reuse-message',
+        'reedit-message',
+        'template',
+        'author',
+        'date',
+        'cleanup',
+        'fixup',
+        'squash',
+        'trailer',
+    ],
+    push: [
+        'no-verify',
+        'force',
+        'force-with-lease',
+        'force-if-includes',
+        'mirror',
+        'all',
+        'push-option',
+        'repo',
+        'receive-pack',
+        'exec',
+    ],
+}
+
+/**
+ * Git accepts any unambiguous prefix of a long option (`--no-veri` is
+ * `--no-verify`; #650 review). A prefix of exactly one option the rules read
+ * is written out; git itself rejects a prefix that is ambiguous among all its
+ * options, so this can only make a check stricter.
+ */
+function expandAbbreviations(tokens, names) {
+    return tokens.map((token, k) => {
+        const match = k > 1 && /^--([a-z][a-z-]*)(=.*)?$/.exec(token)
+        if (!match || names.includes(match[1])) return token
+        const candidates = names.filter((name) => name.startsWith(match[1]))
+        return candidates.length === 1 ? `--${candidates[0]}${match[2] ?? ''}` : token
+    })
+}
+
+/**
+ * Whether git runs with core.hooksPath overridden: as a global `-c` /
+ * `--config-env`, or written by `git config` (#650 review). Searching for the
+ * key (`git grep core.hooksPath`, `git log --grep=...`) and reading it are fine.
+ */
+function overridesHooksPathOption(command) {
+    const tokens = command.split(/\s+/)
+    if (tokens[0] !== 'git' || !/core\.hookspath/i.test(command)) return false
+    let i = 1
+    while (i < tokens.length && tokens[i].startsWith('-')) {
+        const token = tokens[i]
+        if (/^(?:-c|--config-env)$/.test(token)) {
+            if (/core\.hookspath/i.test(tokens[i + 1] ?? '')) return true
+            i += 2
+        } else if (/^(?:-c|--config-env=)/.test(token) && /core\.hookspath/i.test(token)) {
+            return true
+        } else {
+            i += GIT_OPTION_WITH_VALUE.test(token) ? 2 : 1
+        }
+    }
+    if (tokens[i] !== 'config') return false
+    return !/^git\s+config\s+(?:--(?:global|local|system|show-origin|show-scope)\s+)*(?:--get(?:-all|-regexp)?|--list|-l|get|list)\b/.test(
+        normalizeGit(command),
+    )
 }
 
 const RULES = [
@@ -673,11 +771,7 @@ const RULES = [
         // Overriding, setting or unsetting it bypasses the hooks; reading it
         // (`git config --get core.hooksPath`, `git config get ...`) is diagnosis.
         // Git config keys are case-insensitive: `core.hookspath` is the same key.
-        (c) =>
-            /^git\b.*\bcore\.hookspath\b/i.test(c) &&
-            !/^git\s+config\s+(?:--(?:global|local|system|show-origin|show-scope)\s+)*(?:--get(?:-all|-regexp)?|--list|-l|get|list)\b/.test(
-                normalizeGit(c),
-            ),
+        overridesHooksPathOption,
     ],
     [
         'admin merge (--admin)',
@@ -996,6 +1090,13 @@ function judge(words, violations, cwd) {
     // `eval <words>` run that text as shell.
     const offset = words.length - command.split(' ').length
     const rest = words.slice(offset)
+    // An unquoted expansion or brace expansion becomes several arguments, so
+    // `git commit --message=$MSG` or `--{no-verify,x}` can add a flag that no
+    // static check sees (#650 review).
+    const sub = /^git\s+(commit|push)\b/.exec(subject)?.[1]
+    if (sub && rest.some((_, k) => k > 0 && words.splits?.has(offset + k))) {
+        violations.add(`git ${sub} argument split or expanded at run time (may become a flag)`)
+    }
     // Shell text taken from words[from..to): judged as written, unless one of
     // those words expands at run time (`bash -c "$SCRIPT"`; #650 review).
     const shellText = (from, to = from + 1) => {
@@ -1017,16 +1118,18 @@ function judge(words, violations, cwd) {
     if (rest[0] === 'eval') return shellText(offset + 1, words.length)
     const bodies = scriptBodies(command, cwd)
     if (bodies.length) return bodies
-    // `pnpm [-c] exec [-c] '<script>'` (shell mode, before or after exec)
-    // runs its first operand as shell (#650 review).
-    const execAt = words.indexOf('exec')
+    // `pnpm [-c] exec [-c] '<script>' [args]` (shell mode, before or after
+    // exec, also behind corepack / env) runs its operands as one shell command
+    // (#650 review).
+    const pnpmAt = words.findIndex((w) => /^pnpm(?:@\S+)?$/.test(programName(w)))
+    const execAt = words.indexOf('exec', pnpmAt + 1)
     if (
-        words[0]?.startsWith('pnpm') &&
+        pnpmAt !== -1 &&
         execAt !== -1 &&
-        words.some((w) => /^(?:-c|--shell-mode)$/.test(w))
+        words.some((w, k) => k > pnpmAt && /^(?:-c|--shell-mode)$/.test(w))
     ) {
         const script = words.findIndex((w, k) => k > execAt && !w.startsWith('-'))
-        if (script !== -1) return shellText(script)
+        if (script !== -1) return shellText(script, words.length)
     }
     // `env -S '<cmd args>'` splits that string and runs it (#650 review).
     const envAt = words.findIndex((w) => programName(w) === 'env')

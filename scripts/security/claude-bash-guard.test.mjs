@@ -676,6 +676,79 @@ test('#650 review wave on 8d05f51b: each finding is denied, its harmless twin al
     }
 })
 
+test('#650 review wave on 9e57eb1f: each finding is denied, its harmless twin allowed', () => {
+    const cases = [
+        // a. Unquoted expansions split; g. braces expand -- a flag may appear.
+        {
+            blocked: [
+                ["MSG='fix --no-verify'; git commit --message=$MSG", /split or expanded/],
+                ['git commit -m$MSG', /split or expanded/],
+                ['git commit -m $MSG', /split or expanded/],
+                ['git commit --{no-verify,allow-empty} -m fix', /split or expanded/],
+                ['git commit -{n..n} -m fix', /split or expanded/],
+                ['git push --{force,quiet} origin feature', /split or expanded/],
+            ],
+            allowed: [
+                'git commit --message="$MSG"',
+                'git commit -m "$MSG"',
+                'git push -u origin "$BRANCH"',
+                'git commit -m "fix {a,b} braces"',
+            ],
+        },
+        // b. Unambiguous abbreviations of the flags the rules read.
+        {
+            blocked: [
+                ['git commit --no-veri -m fix', /--no-verify/],
+                ['git push --no-verif origin feature', /--no-verify/],
+                ['git push --force-with-l origin main', /force push to main/],
+            ],
+            allowed: ['git commit --mess "fix" --amend', 'git push --force-with-l origin feature'],
+        },
+        // c. stdin redirected from a process substitution.
+        {
+            blocked: [["bash < <(echo 'git push --force')", /cannot be inspected/]],
+            allowed: ['grep x < <(git log --oneline)', 'bash < ./scripts/x.sh'],
+        },
+        // d. e. pnpm shell mode: every operand, also behind corepack / env.
+        {
+            blocked: [
+                ["pnpm -c exec 'git commit' --no-verify -m fix", /--no-verify/],
+                ["corepack pnpm -c exec 'git commit --no-verify -m fix'", /--no-verify/],
+                ["env pnpm -c exec 'git push --force'", /force push/],
+            ],
+            allowed: ["pnpm -c exec 'echo' ok"],
+        },
+        // f. Searching for the key is no override.
+        {
+            blocked: [
+                ['git -c core.hooksPath=/dev/null commit -m wip', /core\.hooksPath/],
+                ['git --config-env=core.hooksPath=X commit -m wip', /core\.hooksPath/],
+                ['git config core.hooksPath /dev/null', /core\.hooksPath/],
+                ['git config --unset core.hooksPath', /core\.hooksPath/],
+            ],
+            allowed: [
+                'git grep core.hooksPath',
+                'git log --oneline --grep=core.hooksPath',
+                'git config --get core.hooksPath',
+            ],
+        },
+        // h. run-script is run.
+        {
+            blocked: [
+                ['pnpm run-script typecheck', /unfiltered pnpm suite/],
+                ['pnpm --filter @cannaguide/web run-script test:run', /whole-suite test run/],
+            ],
+            allowed: ['pnpm --filter @cannaguide/web run-script test:run analyticsService'],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,

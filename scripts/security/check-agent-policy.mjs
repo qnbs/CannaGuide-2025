@@ -242,10 +242,14 @@ const WHOLE_SUITE = [
     {
         test(command) {
             const run = pnpmInvocation(command)
-            if (!run?.filtered || !['test', 'test:run', 'test:coverage'].includes(run.script)) {
-                return false
-            }
-            if (run.rest.includes('--')) return true
+            if (!run || !['test', 'test:run', 'test:coverage'].includes(run.script)) return false
+            // A filter after the script goes to the root script (`turbo run
+            // test:run --filter <pkg>`), which runs that package's whole suite;
+            // the scoped form is `pnpm --filter <pkg> test:run <spec>` (#650 review).
+            const end = run.rest.indexOf('--')
+            if ((end === -1 ? run.rest : run.rest.slice(0, end)).some(isFilter)) return true
+            if (!run.filtered) return false
+            if (end !== -1) return true
             return specFilters(run.rest).length === 0
         },
     },

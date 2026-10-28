@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict'
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const WORKFLOWS = resolve(dirname(fileURLToPath(import.meta.url)), '../.github/workflows')
 const files = readdirSync(WORKFLOWS)
-    .filter((name) => name.endsWith('.yml'))
+    // GitHub runs .yaml workflows as well as .yml (#648 review).
+    .filter((name) => /\.ya?ml$/.test(name))
     .map((name) => ({ name, text: readFileSync(join(WORKFLOWS, name), 'utf8') }))
 
 // Top-level jobs with the part before `steps:` (name, if, needs, permissions).
@@ -99,10 +100,18 @@ test('CodeQL and Scorecard each upload from exactly one workflow', () => {
 // through `env:` instead. Booleans and outcomes GitHub or our own jobs produce
 // (needs.*.result, steps.*.outcome) are not attacker strings and stay allowed.
 const ACTIONS = resolve(dirname(fileURLToPath(import.meta.url)), '../.github/actions')
-const actionFiles = readdirSync(ACTIONS).map((dir) => ({
-    name: `actions/${dir}/action.yml`,
-    text: readFileSync(join(ACTIONS, dir, 'action.yml'), 'utf8'),
-}))
+// A composite action is a directory holding action.yml or action.yaml; other
+// entries (a README, a helper) are not actions (#648 review).
+const actionFiles = readdirSync(ACTIONS, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .flatMap((entry) =>
+        ['action.yml', 'action.yaml']
+            .filter((file) => existsSync(join(ACTIONS, entry.name, file)))
+            .map((file) => ({
+                name: `actions/${entry.name}/${file}`,
+                text: readFileSync(join(ACTIONS, entry.name, file), 'utf8'),
+            })),
+    )
 // Each expression up to its closing `}}` (single braces inside, as in
 // `format('{0}', x)`, do not end it), then its contents: dot or bracket access
 // to `inputs`, `github.event` or `github.head_ref` (#648 review).

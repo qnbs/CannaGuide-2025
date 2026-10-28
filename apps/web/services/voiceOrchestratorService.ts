@@ -125,7 +125,7 @@ async function handleAssistantQuery(query: string): Promise<void> {
         return
     }
 
-    getUISnapshot().setVoiceStatusMessage(t('voiceControl.assistantThinking'))
+    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.assistantThinking'))
     useVoiceStore.getState().setMode(VoiceMode.PROCESSING)
 
     try {
@@ -234,7 +234,7 @@ async function processTranscript(transcript: string): Promise<void> {
 
 function triggerConfirmation(command: VoiceCommandDef, transcript: string): void {
     const t = getT()
-    const question = t('voiceControl.confirmation.question', { command: command.label })
+    const question = t('common.voiceControl.confirmation.question', { command: command.label })
 
     const confirmation: VoiceConfirmation = {
         commandId: command.id,
@@ -244,7 +244,7 @@ function triggerConfirmation(command: VoiceCommandDef, transcript: string): void
         },
         onCancel: () => {
             useVoiceStore.getState().clearConfirmation()
-            speakFeedback(t('voiceControl.confirmation.cancelled'))
+            speakFeedback(t('common.voiceControl.confirmation.cancelled'))
         },
     }
 
@@ -269,7 +269,7 @@ function handleConfirmationAnswer(transcript: string): void {
     } else {
         // Re-ask
         const t = getT()
-        speakFeedback(t('voiceControl.confirmation.yesOrNo'))
+        speakFeedback(t('common.voiceControl.confirmation.yesOrNo'))
     }
 }
 
@@ -292,7 +292,7 @@ async function executeCommand(command: VoiceCommandDef, transcript: string): Pro
             commandId: command.id,
             errorCode: 'executionError',
         })
-        useVoiceStore.getState().setError(t('voiceControl.errors.generic'))
+        useVoiceStore.getState().setError(t('common.voiceControl.errors.generic'))
     } finally {
         useVoiceStore.getState().setMode(VoiceMode.IDLE)
     }
@@ -308,15 +308,15 @@ function handleNotUnderstood(): void {
 
     if (errorRetryCount >= MAX_ERROR_RETRIES) {
         errorRetryCount = 0
-        useVoiceStore.getState().setError(t('voiceControl.errors.maxRetries'))
+        useVoiceStore.getState().setError(t('common.voiceControl.errors.maxRetries'))
         useVoiceStore.getState().setMode(VoiceMode.IDLE)
-        speakFeedback(t('voiceControl.errors.maxRetries'))
+        speakFeedback(t('common.voiceControl.errors.maxRetries'))
         return
     }
 
-    useVoiceStore.getState().setError(t('voiceControl.errors.notUnderstood'))
+    useVoiceStore.getState().setError(t('common.voiceControl.errors.notUnderstood'))
     useVoiceStore.getState().setMode(VoiceMode.LISTENING)
-    speakFeedback(t('voiceControl.errors.notUnderstood'))
+    speakFeedback(t('common.voiceControl.errors.notUnderstood'))
 }
 
 // ---------------------------------------------------------------------------

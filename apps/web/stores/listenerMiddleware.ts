@@ -211,7 +211,7 @@ export const initVoiceCommandSubscription = (
                     return
                 }
 
-                getUISnapshot().setVoiceStatusMessage(t('voiceControl.assistantThinking'))
+                getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.assistantThinking'))
                 try {
                     const language = state.settings.settings.general.language
                     const aiService = await getAiService()

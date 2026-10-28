@@ -73,7 +73,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                     <div className="flex-grow">
                         <SearchBar
-                            placeholder={t('advisorArchive.searchPlaceholder')}
+                            placeholder={t('plantsView.advisorArchive.searchPlaceholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />

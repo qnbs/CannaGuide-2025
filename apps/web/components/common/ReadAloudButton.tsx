@@ -33,8 +33,8 @@ export const ReadAloudButton: React.FC<ReadAloudButtonProps> = ({ text, contentI
             size="sm"
             className={`!p-1.5 rounded-full min-h-[36px] min-w-[36px] ${className ?? ''}`}
             onClick={() => voiceOrchestratorService.readContent(text, contentId)}
-            title={t('voiceControl.readAloud')}
-            aria-label={t('voiceControl.readAloud')}
+            title={t('common.voiceControl.readAloud')}
+            aria-label={t('common.voiceControl.readAloud')}
         >
             <PhosphorIcons.SpeakerHigh className="w-4 h-4" />
         </Button>

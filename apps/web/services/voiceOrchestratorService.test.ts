@@ -220,7 +220,7 @@ describe('voiceOrchestratorService', () => {
             service.init(createMockAppStore() as never)
 
             await service.processTranscript('gibberish xyz')
-            expect(useVoiceStore.getState().error).toBe('voiceControl.errors.notUnderstood')
+            expect(useVoiceStore.getState().error).toBe('common.voiceControl.errors.notUnderstood')
         })
 
         it('goes IDLE after MAX_ERROR_RETRIES (3) unmatched attempts', async () => {
@@ -231,7 +231,7 @@ describe('voiceOrchestratorService', () => {
             await service.processTranscript('bad2')
             await service.processTranscript('bad3')
 
-            expect(useVoiceStore.getState().error).toBe('voiceControl.errors.maxRetries')
+            expect(useVoiceStore.getState().error).toBe('common.voiceControl.errors.maxRetries')
             expect(useVoiceStore.getState().mode).toBe(VoiceMode.IDLE)
         })
 

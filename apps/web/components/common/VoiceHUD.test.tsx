@@ -143,8 +143,8 @@ describe('VoiceHUD', () => {
             },
         })
         render(React.createElement(VoiceHUD))
-        expect(screen.getByText('voiceControl.confirmation.yes')).toBeDefined()
-        expect(screen.getByText('voiceControl.confirmation.no')).toBeDefined()
+        expect(screen.getByText('common.voiceControl.confirmation.yes')).toBeDefined()
+        expect(screen.getByText('common.voiceControl.confirmation.no')).toBeDefined()
         expect(screen.getByText('Are you sure?')).toBeDefined()
     })
 
@@ -172,19 +172,19 @@ describe('VoiceHUD', () => {
         render(React.createElement(VoiceHUD))
 
         // Click collapse
-        const collapseBtn = screen.getByLabelText('voiceControl.hud.collapse')
+        const collapseBtn = screen.getByLabelText('common.voiceControl.hud.collapse')
         fireEvent.click(collapseBtn)
 
         // Should show expand button
-        expect(screen.getByLabelText('voiceControl.hud.expand')).toBeDefined()
+        expect(screen.getByLabelText('common.voiceControl.hud.expand')).toBeDefined()
     })
 
     it('expands back from collapsed state', () => {
         useVoiceStore.setState({ mode: VoiceMode.LISTENING })
         render(React.createElement(VoiceHUD))
 
-        fireEvent.click(screen.getByLabelText('voiceControl.hud.collapse'))
-        fireEvent.click(screen.getByLabelText('voiceControl.hud.expand'))
+        fireEvent.click(screen.getByLabelText('common.voiceControl.hud.collapse'))
+        fireEvent.click(screen.getByLabelText('common.voiceControl.hud.expand'))
 
         expect(screen.getByRole('status')).toBeDefined()
     })

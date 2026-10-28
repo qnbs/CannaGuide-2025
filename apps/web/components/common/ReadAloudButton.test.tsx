@@ -93,7 +93,7 @@ describe('ReadAloudButton', () => {
                 contentId: 'test-1',
             }),
         )
-        expect(screen.getByLabelText('voiceControl.readAloud')).toBeDefined()
+        expect(screen.getByLabelText('common.voiceControl.readAloud')).toBeDefined()
     })
 
     it('does not render when TTS is disabled', () => {
@@ -124,7 +124,7 @@ describe('ReadAloudButton', () => {
                 contentId: 'lexikon-42',
             }),
         )
-        fireEvent.click(screen.getByLabelText('voiceControl.readAloud'))
+        fireEvent.click(screen.getByLabelText('common.voiceControl.readAloud'))
         expect(mockReadContent).toHaveBeenCalledWith('Some content', 'lexikon-42')
     })
 
@@ -136,7 +136,7 @@ describe('ReadAloudButton', () => {
                 className: 'my-custom-class',
             }),
         )
-        const btn = screen.getByLabelText('voiceControl.readAloud')
+        const btn = screen.getByLabelText('common.voiceControl.readAloud')
         expect(btn.className).toContain('my-custom-class')
     })
 

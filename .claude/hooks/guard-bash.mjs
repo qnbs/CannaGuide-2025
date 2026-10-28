@@ -281,7 +281,7 @@ export function parseCommands(source) {
         // the text written here: the shell input is opaque.
         if (hereStrings.length && runsStdin(words)) {
             if (hereDynamic) words.opaqueStdin = true
-            nested.push(...hereStrings)
+            for (const text of hereStrings) stdin.add(nested.push(text) - 1)
         }
         if (words.stdinFromProcess && runsStdin(words)) words.opaqueStdin = true
         hereStrings = []
@@ -303,6 +303,9 @@ export function parseCommands(source) {
     }
     // owners[k]: the index of the command that runs nested[k] (#650 review).
     const owners = []
+    // nested indices that a command reads on stdin (here-string, heredoc, pipe):
+    // they run inside its wrappers (`env -C x bash <<< ...`; #650 review).
+    const stdin = new Set()
     const own = (index) => {
         while (owners.length < nested.length) owners.push(Math.max(index, 0))
     }
@@ -322,7 +325,7 @@ export function parseCommands(source) {
             const pending = heredocs
             heredocs = []
             endCommand()
-            const read = readHeredocs(s, i + 1, pending, nested)
+            const read = readHeredocs(s, i + 1, pending, nested, stdin)
             // A heredoc whose delimiter never comes swallows the rest of the
             // input (`(( 1 << n ))` is no heredoc at all): fail closed.
             if (read.unterminated) unterminated = true
@@ -455,15 +458,15 @@ export function parseCommands(source) {
         const program = readerOf(upstream)
         if (upstream.heredocBody !== undefined) {
             if (upstream.heredocExpands) opaque = true
-            nested.push(upstream.heredocBody)
+            stdin.add(nested.push(upstream.heredocBody) - 1)
         } else if (program === 'echo' || program === 'printf') {
             const text = echoedText(upstream)
             if (text === null) opaque = true
-            else nested.push(text)
+            else stdin.add(nested.push(text) - 1)
         } else opaque = true
         own(k)
     }
-    return { commands, nested, owners, opaque: opaque || unterminated }
+    return { commands, nested, owners, stdin, opaque: opaque || unterminated }
 }
 
 /** The words a command runs, after wrappers (original text, not flattened). */
@@ -568,7 +571,7 @@ function echoedText(words) {
  * Reads the bodies of the heredocs opened on the line before `start`; returns
  * where reading stopped and whether a delimiter never came.
  */
-function readHeredocs(s, start, pending, nested) {
+function readHeredocs(s, start, pending, nested, stdin = new Set()) {
     let i = start
     let unterminated = false
     for (const doc of pending) {
@@ -597,7 +600,7 @@ function readHeredocs(s, start, pending, nested) {
         // reader an unquoted delimiter still lets bash expand the substitutions.
         if (runsStdin(doc.words)) {
             if (doc.words.heredocExpands) doc.words.opaqueStdin = true
-            nested.push(text)
+            stdin.add(nested.push(text) - 1)
         } else if (!doc.quoted) {
             nested.push(...substitutionsIn(text))
         }
@@ -845,7 +848,7 @@ const RULES = [
         // `+$BRANCH` / `+"$(...)"` too (CodeAnt P1 on #650).
         (c) =>
             /^git\s+push\b/.test(c) &&
-            /\s(?:--force(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+\S)/.test(c),
+            /\s(?:--(?:force|mirror)(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+\S)/.test(c),
     ],
     [
         'git option built from a run-time value (may become a banned flag)',
@@ -915,7 +918,7 @@ const RULES = [
                     .slice(1)
                     .some(
                         (ref) =>
-                            runtimeValue(ref) || ref.includes('*') || /^\+?(?:HEAD|@)$/.test(ref),
+                            runtimeValue(ref) || ref.includes('*') || /^\+?(?:HEAD|@|:)$/.test(ref),
                     ) ||
                 /\s--(?:all|mirror)(?=\s|$)/.test(c)
             )
@@ -1011,7 +1014,14 @@ function envAssignments(all) {
         if (assignment.test(word)) found.push(word)
         // A wrapper option's value is not the command: `env -u NAME`, `sudo -u USER`.
         else if (/^-[uCSgDhprtUT]$/.test(word)) k += 1
-        else if (!/^(?:(?:\S*\/)?(?:env|command|exec|nohup|time|sudo)|-\S*)$/.test(word)) break
+        // Every launcher unwrap() knows passes the environment on (`timeout 60
+        // env HUSKY=0 git commit`), and so do their option and duration values.
+        else if (
+            !/^(?:(?:\S*\/)?(?:env|command|builtin|exec|nohup|time|sudo|timeout|nice|stdbuf)|-\S*|\d+(?:\.\d+)?[smhd]?)$/.test(
+                word,
+            )
+        )
+            break
     }
     return found
 }
@@ -1285,7 +1295,7 @@ function judge(words, violations, cwd) {
  */
 export function bashViolations(command, depth = 0, cwd = '') {
     const violations = new Set()
-    const { commands, nested, owners, opaque } = parseCommands(command)
+    const { commands, nested, owners, stdin, opaque } = parseCommands(command)
     if (opaque) violations.add(OPAQUE_INPUT)
     // The directory per subshell scope ('1.2' inherits from '1', then '').
     // A cd in `( ... )`, a pipeline part or a background job ends with it; a
@@ -1298,6 +1308,7 @@ export function bashViolations(command, depth = 0, cwd = '') {
     }
     const scripts = []
     const dirAt = []
+    const wrapAt = []
     // Inside if/while/until/for/case/select a cd may be skipped as well, and
     // inside `{ ... }`, which is also a function body that may never be
     // called (`f() { cd x; }`; #650 review).
@@ -1306,9 +1317,10 @@ export function bashViolations(command, depth = 0, cwd = '') {
         if (/^(?:if|while|until|for|case|select|\{|function)$/.test(words[0])) compound += 1
         const dir = dirIn(words.scope)
         dirAt.push(dir)
+        wrapAt.push(wrapperDir(words, dir))
         const moved = changedDir(words, dir)
         if (moved === undefined) {
-            const at = wrapperDir(words, dir)
+            const at = wrapAt.at(-1)
             for (const script of judge(words, violations, dir)) scripts.push([script, at])
         } else if (!words.piped && !words.subshell) {
             dirs.set(words.scope, words.conditional || compound > 0 ? null : moved)
@@ -1317,9 +1329,12 @@ export function bashViolations(command, depth = 0, cwd = '') {
     }
     // Substitutions, here-strings and heredocs run where their command runs.
     // An unknown directory (null) stays unknown (#650 review).
-    nested.forEach((script, k) =>
-        scripts.push([script, owners[k] < dirAt.length ? dirAt[owners[k]] : cwd]),
-    )
+    // Text a command reads on stdin runs inside its wrappers; substitutions in
+    // its words are expanded before it starts.
+    nested.forEach((script, k) => {
+        const at = stdin.has(k) ? wrapAt : dirAt
+        scripts.push([script, owners[k] < at.length ? at[owners[k]] : cwd])
+    })
     // Fail closed: text nested deeper than the guard reads is denied, not
     // waved through (#650 review).
     if (scripts.length && depth >= MAX_DEPTH) {

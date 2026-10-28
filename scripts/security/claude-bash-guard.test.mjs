@@ -922,6 +922,26 @@ test('#650 final census on 9df3bc62: builtin options and wrapper directories', (
     ]) {
         assert.deepEqual(bashViolations(command), [], command)
     }
+    // Codex on 71c307c4: mirror / matching pushes, launcher environments,
+    // stdin text inside wrappers.
+    for (const [command, expected] of [
+        ['git push --mirror origin', /force push/],
+        ['git push --force-with-lease origin :', /without a named branch/],
+        ['timeout 60 env HUSKY=0 git commit -m fix', /HUSKY=0/],
+        ['nice -n 5 env HUSKY=0 git commit -m fix', /HUSKY=0/],
+        [
+            'timeout 60 env GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git commit -m fix',
+            /core\.hooksPath/,
+        ],
+    ]) {
+        assert.match(bashViolations(command).join('; '), expected, command)
+    }
+    assert.match(
+        bashViolations("env -C ../.. bash <<< 'pnpm run dev'", 0, 'apps/web').join('; '),
+        /bare turbo run/,
+    )
+    assert.deepEqual(bashViolations("env -C apps/web bash <<< 'pnpm run dev'"), [])
+    assert.deepEqual(bashViolations('timeout 60 git push -u origin feature'), [])
     // CodeAnt P1 on 8c4d031e: a `+` refspec forces whatever follows the +.
     for (const command of [
         'BRANCH=main; git push origin +$BRANCH',

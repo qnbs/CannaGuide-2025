@@ -25,9 +25,27 @@ if (!bundleFile) {
 }
 
 const bundlePath = path.join(assetsDir, bundleFile)
+// Hidden source maps carry no sourceMappingURL comment, so the map is passed
+// explicitly. Deployed builds have no maps at all (stamp-build-metadata --verify).
+const mapPath = `${bundlePath}.map`
+if (!fs.existsSync(mapPath)) {
+    console.error(
+        `No source map for ${bundleFile}. Build with BUILD_SOURCEMAP=hidden ` +
+            '(as benchmark.yml does) -- production builds intentionally emit none.',
+    )
+    process.exit(1)
+}
 const result = spawnSync(
     'pnpm',
-    ['exec', 'source-map-explorer', bundlePath, '--html', reportPath, '--no-border-checks'],
+    [
+        'exec',
+        'source-map-explorer',
+        bundlePath,
+        mapPath,
+        '--html',
+        reportPath,
+        '--no-border-checks',
+    ],
     {
         stdio: 'inherit',
         shell: process.platform === 'win32',

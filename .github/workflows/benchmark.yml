@@ -77,6 +77,10 @@ jobs:
 
             - name: Build
               working-directory: apps/web
+              env:
+                  # Hidden source maps for the bundle analysis below only; deployed
+                  # builds never set this (stamp-build-metadata --verify rejects maps).
+                  BUILD_SOURCEMAP: hidden
               run: pnpm run build
 
             - name: Bundle budget check

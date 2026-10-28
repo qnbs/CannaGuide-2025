@@ -323,6 +323,12 @@ export default defineConfig({
     build: {
         // Target modern browsers – enables smaller output (top-level await, ??=, etc.)
         target: 'esnext',
+        // Source maps only for the performance benchmark's bundle analysis
+        // (benchmark.yml sets BUILD_SOURCEMAP=hidden; hidden = no sourceMappingURL
+        // comment). Deployed builds never carry maps: stamp-build-metadata --verify
+        // fails on any (CG-AUD-20261027-N04). Set only on a direct vite build --
+        // the turbo build task does not key its cache on this variable.
+        sourcemap: process.env.BUILD_SOURCEMAP === 'hidden' ? 'hidden' : false,
         // Explicit legacy minifier; migrating to Oxc is a separate build change.
         minify: 'esbuild',
         // Local AI runtime bundles are lazy-loaded on demand.

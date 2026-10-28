@@ -9,6 +9,8 @@ import {
     countZizmor,
     improvements,
     isBaseline,
+    LINTERS,
+    linterFindings,
     regressions,
 } from './check-workflow-lint-ratchet.mjs'
 
@@ -124,6 +126,38 @@ test('a missing or broken shellcheck stops the ratchet instead of counting 0 (#6
     }
     assert.doesNotThrow(() => assertShellcheck(present))
     assert.deepEqual(calls, [['shellcheck', '--version']])
+})
+
+test('only a completed audit counts; a failed one fails even with a JSON array (#649 review)', () => {
+    const run = (status, stdout = '[]') => ({ status, stdout, stderr: 'x' })
+    // zizmor: 0 clean, 10-14 findings by severity; actionlint: 0 clean, 1 findings.
+    for (const status of [0, 10, 11, 12, 13, 14]) {
+        assert.deepEqual(linterFindings('zizmor', run(status)), [], `zizmor ${status}`)
+    }
+    for (const status of [0, 1]) {
+        assert.deepEqual(linterFindings('actionlint', run(status)), [], `actionlint ${status}`)
+    }
+    for (const [command, status] of [
+        ['zizmor', 1],
+        ['zizmor', 2],
+        ['zizmor', 3],
+        ['zizmor', 15],
+        ['actionlint', 2],
+        ['actionlint', 3],
+    ]) {
+        assert.throws(
+            () => linterFindings(command, run(status)),
+            /audit did not complete/,
+            `${command} ${status}`,
+        )
+    }
+    assert.throws(() => linterFindings('zizmor', run(14, 'not json')), /without JSON/)
+    assert.throws(
+        () => linterFindings('zizmor', { error: new Error('spawn zizmor ENOENT') }),
+        /could not run/,
+    )
+    // A workflow zizmor cannot parse is an error, not a silently skipped file.
+    assert.ok(LINTERS.zizmor.args.includes('--strict-collection'))
 })
 
 test('CI installs all three linters pinned and checksum-verified (#649 review)', () => {

@@ -110,14 +110,37 @@ export function assertShellcheck(spawn = spawnSync) {
     }
 }
 
-/** Run a linter that exits non-zero on findings; its stdout must still be a JSON array. */
-function runJson(command, args) {
-    const result = spawnSync(command, args, {
-        cwd: ROOT,
-        encoding: 'utf8',
-        maxBuffer: 64 * 1024 * 1024,
-    })
+/**
+ * How each linter is run, and the exit statuses that mean "audit completed"
+ * (#649 review). zizmor exits 0 when clean and 10-14 with findings (10 +
+ * highest severity); 1 is an audit or collection error, 2 a usage error.
+ * Without --strict-collection it warns, skips a workflow it cannot parse and
+ * still exits 0 with `[]` -- that file would count as clean. actionlint exits
+ * 0 when clean, 1 with findings, 2 / 3 on usage or fatal errors.
+ */
+export const LINTERS = {
+    zizmor: {
+        args: ['--offline', '--strict-collection', '--format', 'json', '.github/'],
+        completed: (status) => status === 0 || (status >= 10 && status <= 14),
+    },
+    actionlint: {
+        args: ['-format', '{{json .}}'],
+        completed: (status) => status === 0 || status === 1,
+    },
+}
+
+/**
+ * The findings of a finished linter run: a JSON array on stdout from a run
+ * that exited with a completed status. Anything else is an error, even when
+ * stdout parses (a failed audit can print a partial array).
+ */
+export function linterFindings(command, result) {
     if (result.error) throw new Error(`${command} could not run: ${result.error.message}`)
+    if (!LINTERS[command].completed(result.status)) {
+        throw new Error(
+            `${command} exited ${result.status} (audit did not complete):\n${result.stderr}`,
+        )
+    }
     try {
         const parsed = JSON.parse(result.stdout || 'null')
         if (Array.isArray(parsed)) return parsed
@@ -127,13 +150,21 @@ function runJson(command, args) {
     throw new Error(`${command} exited ${result.status} without JSON output:\n${result.stderr}`)
 }
 
+const run = (command) =>
+    linterFindings(
+        command,
+        spawnSync(command, LINTERS[command].args, {
+            cwd: ROOT,
+            encoding: 'utf8',
+            maxBuffer: 64 * 1024 * 1024,
+        }),
+    )
+
 function main() {
     assertShellcheck()
     const current = {
-        zizmor: sorted(
-            countZizmor(runJson('zizmor', ['--offline', '--format', 'json', '.github/'])),
-        ),
-        actionlint: sorted(countActionlint(runJson('actionlint', ['-format', '{{json .}}']))),
+        zizmor: sorted(countZizmor(run('zizmor'))),
+        actionlint: sorted(countActionlint(run('actionlint'))),
     }
     // Read, do not check-then-read: a missing file is ENOENT from the read
     // itself (CodeQL js/file-system-race).

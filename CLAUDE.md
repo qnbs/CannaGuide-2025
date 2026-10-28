@@ -125,7 +125,7 @@ push. It was the bypass that let a formatting failure and a file-budget failure 
 
 Claude Code enforces this, not just this file: `.claude/settings.json` registers
 `.claude/hooks/guard-bash.mjs` as a PreToolUse hook, so these never run -- hook bypasses,
-admin merges, force pushes, `git clean` with `-x`, staging everything at once, a pnpm install
+admin merges, force pushes (a `--force-with-lease` only to a named branch other than main), `git clean` with `-x`, staging everything at once, a pnpm install
 without the frozen lockfile, and unscoped heavy commands. A denied command is a rule
 violation to correct, never a reason to rephrase the same command past the guard.
 

@@ -18,6 +18,11 @@
  * judged: substitution bodies, `sh -c` / `eval` arguments, a heredoc fed to a
  * shell, and the substitutions bash expands in an unquoted heredoc.
  *
+ * What it cannot do: run the command. A value computed at run time (a
+ * substitution's output, a variable) is unknown, so the guard fails closed
+ * where that value could be a bypass (an argument of `git commit`, a force
+ * push with no named branch) and otherwise judges what the text says.
+ *
  * Input: the hook JSON on stdin. Output: a `deny` decision with the reasons,
  * or nothing (normal permission flow). Unparseable input is no decision:
  * a broken guard must not take the Bash tool down with it.
@@ -362,6 +367,10 @@ export function normalizeGit(command) {
     return ['git', ...tokens.slice(index)].join(' ')
 }
 
+/** git commit options whose next word is a value (message, file, author, ...). */
+const COMMIT_VALUE_OPTION =
+    /^(?:-[A-Za-z]*[mFCct]|--(?:message|file|reuse-message|reedit-message|template|author|date|cleanup|fixup|squash|trailer))$/
+
 const RULES = [
     ['hook bypass (--no-verify)', (c) => /^git\s+\S.*\s--no-verify\b/.test(c)],
     [
@@ -394,6 +403,31 @@ const RULES = [
             // main as a branch, a lease (`=main`, `=refs/heads/main:sha`) or a
             // refspec target (`HEAD:main`, `HEAD:refs/heads/main`).
             /(?:[\s:=]|refs\/heads\/)(?:origin\/)?(?:main|master)(?=[\s:]|$)/.test(c),
+    ],
+    [
+        'force push without a named branch (the current branch may be main)',
+        // `git push --force-with-lease [remote]` pushes the current branch,
+        // which a static check cannot see; name the branch (#650 review).
+        (c) => {
+            if (!/^git\s+push\b.*--force-(?:with-lease|if-includes)/.test(c)) return false
+            const positional = c
+                .split(/\s+/)
+                .slice(2)
+                .filter((word) => !word.startsWith('-'))
+            return positional.length < 2
+        },
+    ],
+    [
+        'git commit argument from a command substitution (may expand to a flag)',
+        // `git commit $(printf --no-verify)`: the output is unknown. A
+        // substitution as the value of -m/-F/... is message text.
+        (c) => {
+            if (!/^git\s+commit\b/.test(c)) return false
+            const tokens = c.split(/\s+/)
+            return tokens.some(
+                (token, k) => token === SUBST && k >= 2 && !COMMIT_VALUE_OPTION.test(tokens[k - 1]),
+            )
+        },
     ],
     [
         'git clean -x (deletes ignored files: node_modules, caches, local config)',
@@ -481,6 +515,17 @@ function judge(words, violations) {
         if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
     }
     if (rest[0] === 'eval') return [rest.slice(1).join(' ')]
+    // `env -S '<cmd args>'` splits that string and runs it (#650 review).
+    const envAt = words.findIndex((w) => programName(w) === 'env')
+    if (envAt !== -1) {
+        for (let k = envAt + 1; k < words.length; k += 1) {
+            if (/^(?:-S|--split-string)$/.test(words[k]) && words[k + 1] !== undefined) {
+                return [words[k + 1]]
+            }
+            const attached = /^(?:-S|--split-string=)(.+)$/.exec(words[k])
+            if (attached) return [attached[1]]
+        }
+    }
     return []
 }
 

@@ -74,6 +74,15 @@ describe('replaceBackupWithSavedSnapshot (#711 review)', () => {
         expect(idb.get('cannaguide-redux-storage-backup')).toBe(idb.get('cannaguide-redux-storage'))
     })
 
+    it('redacts a snapshot another tab wrote with the key since', async () => {
+        idb.set(
+            'cannaguide-redux-storage',
+            `{"settings":{"settings":{"tts":{"cloudTtsApiKey":"${CANARY}"}}}}`,
+        )
+        await replaceBackupWithSavedSnapshot()
+        expect(idb.get('cannaguide-redux-storage-backup')).not.toContain(CANARY)
+    })
+
     it('keeps the backup when there is no saved snapshot to replace it with', async () => {
         idb.set('cannaguide-redux-storage-backup', 'previous')
         await replaceBackupWithSavedSnapshot()

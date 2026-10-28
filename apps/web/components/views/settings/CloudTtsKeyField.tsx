@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useAppDispatch } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 import { SettingsRow } from './SettingsShared'
@@ -17,6 +17,11 @@ type Status = { type: 'success' | 'error'; message: string } | null
 export const CloudTtsKeyField: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    // A legacy plaintext key whose startup migration failed is still a stored
+    // key: show it and let Clear remove it (#711 review).
+    const hasLegacyKey = useAppSelector(
+        (state) => state.settings.settings.tts.cloudTtsApiKey !== null,
+    )
     const [apiKeyInput, setApiKeyInput] = useState('')
     const [hasStoredKey, setHasStoredKey] = useState(false)
     const [isBusy, setIsBusy] = useState(false)
@@ -112,13 +117,13 @@ export const CloudTtsKeyField: React.FC = () => {
                 <Button
                     variant="secondary"
                     onClick={() => void handleClear()}
-                    disabled={isBusy || !hasStoredKey}
+                    disabled={isBusy || !(hasStoredKey || hasLegacyKey)}
                 >
                     {t('settingsView.security.clear')}
                 </Button>
             </div>
             <p className="text-xs text-slate-400">
-                {hasStoredKey
+                {hasStoredKey || hasLegacyKey
                     ? t('settingsView.security.stored')
                     : t('settingsView.security.notStored')}
             </p>

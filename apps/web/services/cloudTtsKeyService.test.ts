@@ -102,6 +102,15 @@ describe('cloudTtsKeyService', () => {
             expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(false)
         })
 
+        it('a key stored since keeps precedence over a stale legacy value (#711 review)', async () => {
+            await cloudTtsKeyService.setApiKey('sk_canary_replacement_0000000000000000')
+            await expect(cloudTtsKeyService.migrateLegacyKey(CANARY)).resolves.toBe(true)
+            await expect(cloudTtsKeyService.getApiKey()).resolves.toBe(
+                'sk_canary_replacement_0000000000000000',
+            )
+            expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(false)
+        })
+
         it('has nothing to move for null or blank values', async () => {
             await expect(cloudTtsKeyService.migrateLegacyKey(null)).resolves.toBe(true)
             await expect(cloudTtsKeyService.migrateLegacyKey('  ')).resolves.toBe(true)

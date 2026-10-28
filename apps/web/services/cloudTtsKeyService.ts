@@ -64,6 +64,9 @@ export const cloudTtsKeyService = {
      * the encrypted store. Preserve first: returns true only when the
      * encrypted copy reads back identical (or there was nothing to move), so
      * the caller may then drop the plaintext from the settings.
+     * A readable stored key wins: this version wrote it -- migrated or saved
+     * explicitly -- so it is never older than the legacy value, which can
+     * only come from a stale snapshot by then (#711 review).
      */
     async migrateLegacyKey(legacy: unknown): Promise<boolean> {
         if (typeof legacy !== 'string' || legacy.trim() === '') {
@@ -71,6 +74,10 @@ export const cloudTtsKeyService = {
             return true
         }
         try {
+            if ((await this.getApiKey()) !== null) {
+                legacyKeyPending = false
+                return true
+            }
             await this.setApiKey(legacy)
             const readBack = await this.getApiKey()
             legacyKeyPending = readBack !== legacy.trim()

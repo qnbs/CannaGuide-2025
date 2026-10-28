@@ -9,7 +9,12 @@ const CANARY = 'sk_canary_0000000000000000000000000000'
 const dispatch = vi.fn()
 
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
-vi.mock('@/stores/store', () => ({ useAppDispatch: () => dispatch }))
+let legacyKey: string | null = null
+vi.mock('@/stores/store', () => ({
+    useAppDispatch: () => dispatch,
+    useAppSelector: (select: (state: unknown) => unknown) =>
+        select({ settings: { settings: { tts: { cloudTtsApiKey: legacyKey } } } }),
+}))
 vi.mock('@/services/cloudTtsKeyService', () => ({
     cloudTtsKeyService: {
         hasApiKey: vi.fn().mockResolvedValue(false),
@@ -20,7 +25,10 @@ vi.mock('@/services/cloudTtsKeyService', () => ({
 }))
 
 describe('CloudTtsKeyField (#654)', () => {
-    beforeEach(() => vi.clearAllMocks())
+    beforeEach(() => {
+        vi.clearAllMocks()
+        legacyKey = null
+    })
 
     it('names the password field for assistive technology', async () => {
         render(<CloudTtsKeyField />)
@@ -90,5 +98,20 @@ describe('CloudTtsKeyField (#654)', () => {
         expect(await screen.findByText('settingsView.security.saved')).toBeInTheDocument()
         await act(async () => resolveLookup(false))
         expect(screen.getByText('settingsView.security.stored')).toBeInTheDocument()
+    })
+
+    it('Clear removes a legacy key whose startup migration failed (#711 review)', async () => {
+        legacyKey = CANARY
+        render(<CloudTtsKeyField />)
+        await waitFor(() => expect(cloudTtsKeyService.hasApiKey).toHaveBeenCalled())
+        expect(screen.getByText('settingsView.security.stored')).toBeInTheDocument()
+        const clear = screen.getByText('settingsView.security.clear')
+        expect(clear).not.toBeDisabled()
+        fireEvent.click(clear)
+        await waitFor(() => expect(cloudTtsKeyService.clearApiKey).toHaveBeenCalled())
+        expect(cloudTtsKeyService.resolveLegacyKey).toHaveBeenCalled()
+        expect(dispatch).toHaveBeenCalledWith(
+            setSetting({ path: 'tts.cloudTtsApiKey', value: null }),
+        )
     })
 })

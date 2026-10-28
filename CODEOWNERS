@@ -1,25 +1,33 @@
 # === CannaGuide-2025 CODEOWNERS ===
+# GitHub CODEOWNERS syntax, NOT markdown: never turn "*" into a "-" bullet or
+# add blank lines between a comment and its rule. scripts/security/codeowners.test.mjs
+# fails on the 2026-03-24 regression where "* @qnbs" became "- @qnbs".
 
-# Solo-dev: @qnbs owns everything. Explicit entries for RCE-critical paths
+# Solo-dev: @qnbs owns everything. Later rules win; the explicit entries below
+# make changes to agent-steering and CI files visible in PR diffs.
+* @qnbs
 
-# ensure visibility in PR diffs when these files are changed.
+# Ownership itself
+/CODEOWNERS @qnbs
 
-- @qnbs
+# Agent instructions and agent context (read by Claude Code, Codex, Copilot)
+/AGENTS.md @qnbs
+/CLAUDE.md @qnbs
+/.github/copilot-instructions.md @qnbs
+/.mcp.json @qnbs
+/.claude/ @qnbs
+/graphify-out/ @qnbs
 
 # RCE-critical: devcontainer lifecycle hooks (postCreateCommand etc.)
-
 /.devcontainer/ @qnbs
 
 # RCE-critical: VS Code auto-execution configs (tasks.json runOn, PROMPT_COMMAND)
-
 /.vscode/ @qnbs
 
-# CI/CD workflows — supply-chain attack surface
-
+# CI/CD workflows -- supply-chain attack surface
+/.github/ @qnbs
 /.github/workflows/ @qnbs
 /.github/actions/ @qnbs
-/.github/ @qnbs
 
 # Documentation
-
 /docs/ @qnbs

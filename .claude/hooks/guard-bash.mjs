@@ -967,7 +967,8 @@ const RULES = [
         'E2E, Playwright, Stryker or Lighthouse run locally (CI only, AGENTS.md)',
         // The tools themselves; package scripts that start them (test:e2e,
         // test:ct, test:mutate, lighthouse:ci) are resolved to these in judge().
-        (c) => /^(?:playwright\s+test|stryker\s+run|lhci(?:\s|$))/.test(c),
+        // The standalone Lighthouse CLI audits too (`npx lighthouse <url>`).
+        (c) => /^(?:playwright\s+test|stryker\s+run|lhci(?:\s|$)|lighthouse(?:\s|$))/.test(c),
     ],
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',

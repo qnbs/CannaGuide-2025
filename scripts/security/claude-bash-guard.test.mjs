@@ -942,6 +942,21 @@ test('#650 final census on 9df3bc62: builtin options and wrapper directories', (
     )
     assert.deepEqual(bashViolations("env -C apps/web bash <<< 'pnpm run dev'"), [])
     assert.deepEqual(bashViolations('timeout 60 git push -u origin feature'), [])
+    // Codex on ab64403e: turbo options before the task; standalone Lighthouse.
+    for (const [command, expected] of [
+        ['pnpm exec turbo run --concurrency=1 typecheck', /bare turbo run/],
+        ['turbo run --concurrency 1 typecheck', /bare turbo run/],
+        ['turbo --concurrency=1 lint', /bare turbo run/],
+        ['npx lighthouse http://localhost:4173/CannaGuide-2025/ --output=json', /CI only/],
+    ]) {
+        assert.match(bashViolations(command).join('; '), expected, command)
+    }
+    for (const command of [
+        'turbo run --concurrency=1 typecheck --filter=@cannaguide/web',
+        'turbo --version',
+    ]) {
+        assert.deepEqual(bashViolations(command), [], command)
+    }
     // CodeAnt P1 on 8c4d031e: a `+` refspec forces whatever follows the +.
     for (const command of [
         'BRANCH=main; git push origin +$BRANCH',

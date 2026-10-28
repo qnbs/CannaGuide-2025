@@ -332,6 +332,21 @@ const TURBO_NON_RUN = new Set([
     'devtools',
     'help',
 ])
+/** turbo run options whose value is the next word. */
+const TURBO_VALUE_OPTIONS = new Set([
+    '--concurrency',
+    '--filter',
+    '-F',
+    '--cache',
+    '--cache-dir',
+    '--env-mode',
+    '--graph',
+    '--log-order',
+    '--log-prefix',
+    '--output-logs',
+    '--profile',
+    '--ui',
+])
 const BARE_TURBO = [
     'bare turbo run',
     {
@@ -342,7 +357,13 @@ const BARE_TURBO = [
             const tokens = command.trim().split(/\s+/)
             if (tokens[0] !== 'turbo') return false
             const explicit = tokens[1] === 'run' || tokens[1] === 'watch'
-            const task = explicit ? tokens[2] : tokens[1]
+            // Options may come before the task: `turbo run --concurrency=1
+            // typecheck` (#650 review); a value option takes the next word.
+            let k = explicit ? 2 : 1
+            while (tokens[k]?.startsWith('-')) {
+                k += !tokens[k].includes('=') && TURBO_VALUE_OPTIONS.has(tokens[k]) ? 2 : 1
+            }
+            const task = tokens[k]
             if (!task || task.startsWith('-') || (!explicit && TURBO_NON_RUN.has(task)))
                 return false
             // Scoped only by concrete filters (`--filter` or its alias `-F`,

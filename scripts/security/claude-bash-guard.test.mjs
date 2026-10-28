@@ -36,6 +36,29 @@ test('banned commands are blocked, in any position or wrapper', () => {
         ['bash <<EOF\ngit push --force\nEOF', /force push/],
         ['(git push --force > push.log 2>&1; echo done)', /force push/],
         ['{ git push -f; }', /force push/],
+        ['git commit "--no-verify" -m fix', /--no-verify/],
+        ['git -C . commit -n -m fix', /git commit -n/],
+        ['git -C . push --force origin feature', /force push/],
+        ['git --no-pager -c user.name=x commit --no-verify -m x', /--no-verify/],
+        ['cat <<EOF\n$(git push --force)\nEOF', /force push/],
+        ['cat <<EOF\n`git push --force`\nEOF', /force push/],
+        ['git commit -m "$(git push --force)"', /force push/],
+        ["bash -lc 'git push --force'", /force push/],
+        ['git -C repo push --force', /force push/],
+        [
+            'git push --force-with-lease=refs/heads/main origin HEAD:refs/heads/main',
+            /force push to main/,
+        ],
+        ['git push --force-with-lease origin HEAD:refs/heads/main', /force push to main/],
+        ['git push --force-with-lease=main:abc123 origin HEAD', /force push to main/],
+        ['command git push --force', /force push/],
+        ['env pnpm install', /frozen-lockfile/],
+        ['env -i PATH=/usr/bin git commit --no-verify -m x', /--no-verify/],
+        ['timeout 60 git push -f', /force push/],
+        ['nice -n 5 turbo run lint', /bare turbo run/],
+        ['git add -- .', /git add -A/],
+        ['git add :/', /git add -A/],
+        ['git add -A -- apps', /git add -A/],
     ]
     for (const [command, expected] of blocked) {
         const violations = bashViolations(command)
@@ -60,8 +83,30 @@ test('the commands the working rules prescribe are allowed', () => {
         'node --test scripts/security/claude-bash-guard.test.mjs',
         'git log -1 --format="%h %G?" # a comment naming --no-verify',
         'git stash push -q --include-untracked && (git push -u origin fix/x > p.log 2>&1); git stash pop -q',
+        'pnpm --filter @cannaguide/web test:run "analyticsService"',
+        "pnpm --filter @cannaguide/web test:run 'analyticsService'",
+        'git commit -am "explain why --no-verify is banned"',
+        'gh pr comment 1 --body "never git push --force; use --force-with-lease"',
+        "cat <<'EOF'\n$(git push --force) is literal here\nEOF",
+        'git -C apps/web status',
+        'git push --force-with-lease origin refs/heads/feat/main-x',
+        'git add ./apps/web/i18n.ts',
+        'env NODE_OPTIONS=--max-old-space-size=2048 pnpm --filter @cannaguide/web test:run Foo',
+        'timeout 300 node ./scripts/graphify-mcp-doctor.mjs',
     ]
     for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+})
+
+test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
+    for (const hostile of [
+        `nice${' -n5'.repeat(20_000)}!`,
+        `timeout${' -k'.repeat(20_000)} x`,
+        `git${' -C .'.repeat(20_000)} status`,
+    ]) {
+        const started = performance.now()
+        bashViolations(hostile)
+        assert.ok(performance.now() - started < 2_000, `slow on ${hostile.slice(0, 20)}`)
+    }
 })
 
 test('a commit message that names a banned flag is data, not a command', () => {

@@ -9,10 +9,13 @@
  * in another position or a `sh -c` wrapper -- the docs call them "not a
  * security boundary" -- so the checks that matter live here.
  *
- * Heredoc bodies and quoted strings are data (a commit message may name
- * `--no-verify` while explaining the ban) and are dropped first, unless the
- * command evaluates text (`sh -c`, `eval`, a heredoc fed to a shell) or a
- * double-quoted string runs a command substitution.
+ * Message text is data (a commit message may name `--no-verify` while
+ * explaining the ban): the value of -m / --message / --body / --title and a
+ * quoted-delimiter heredoc body are dropped. Every other quoted argument keeps
+ * its words -- `"--no-verify"` is still the flag, `"Spec"` still a spec --
+ * and only loses its shell separators. Text a shell will run is kept whole:
+ * `sh -c` / `eval` arguments, a heredoc fed to a shell, and the `$(...)`
+ * substitutions bash expands in an unquoted heredoc body.
  *
  * Input: the hook JSON on stdin. Output: a `deny` decision with the reasons,
  * or nothing (normal permission flow). Unparseable input is no decision:
@@ -24,31 +27,81 @@ import { pathToFileURL } from 'node:url'
 
 import { heavyCommandRule, shellCommands } from '../../scripts/security/check-agent-policy.mjs'
 
-const EVALUATES_TEXT = /\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-c\b|\beval\b|\bxargs\b/
+// `-c` may be combined with other flags: `bash -lc '...'`.
+const EVALUATES_TEXT = /\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-[A-Za-z]*c\b|\beval\b|\bxargs\b/
 
-/** The command with heredoc bodies and inert quoted strings removed. */
+const SHELL_HEREDOC = /(?:^|[|;&]\s*)(?:ba|z|da)?sh\b|\bsource\b|\beval\b/
+/** Options whose quoted value is message text (also `-am`, `gh -b` / `-t`). */
+const MESSAGE_OPTION =
+    /(\s(?:-[A-Za-z]*m|--message|--body|--title|--notes|-[bt])(?:=|\s+))('[^']*'|"(?:[^"\\]|\\.)*")/g
+const SUBSTITUTION = /\$\(|`/
+/** Quoted words stay; separators inside quotes are not separators. */
+const inert = (inner) => inner.replace(/[;&|(){}<>#]/g, ' ')
+
+/** The command with message text removed and other quoting resolved. */
 export function stripData(command) {
     const kept = []
     let delimiter = null
-    let keepBody = false
+    let body = 'drop'
     for (const line of command.split('\n')) {
         if (delimiter !== null) {
             if (line.trim() === delimiter) delimiter = null
-            else if (keepBody) kept.push(line)
+            else if (body === 'keep') kept.push(line)
+            else if (body === 'substitutions') {
+                for (const m of line.matchAll(/\$\(([^()]*)\)|`([^`]*)`/g)) kept.push(m[1] ?? m[2])
+            }
             continue
         }
         kept.push(line)
         const heredoc = /<<-?\s*(['"]?)([A-Za-z_][\w-]*)\1/.exec(line)
         if (heredoc) {
             delimiter = heredoc[2]
-            keepBody = /(?:^|[|;&]\s*)(?:ba|z|da)?sh\b|\bsource\b|\beval\b/.test(line)
+            // A quoted delimiter makes the body literal; an unquoted one
+            // still expands $(...) even when the reader is not a shell.
+            body = SHELL_HEREDOC.test(line) ? 'keep' : heredoc[1] ? 'drop' : 'substitutions'
         }
     }
     const text = kept.join('\n')
     if (EVALUATES_TEXT.test(text)) return text
     return text
-        .replace(/'[^']*'/g, "''")
-        .replace(/"(?:[^"\\]|\\.)*"/g, (quoted) => (/\$\(|`/.test(quoted) ? quoted : '""'))
+        .replace(MESSAGE_OPTION, (all, option, quoted) =>
+            SUBSTITUTION.test(quoted) ? all : `${option}MESSAGE`,
+        )
+        .replace(/'([^']*)'/g, (_, inner) => inert(inner))
+        .replace(/"((?:[^"\\]|\\.)*)"/g, (all, inner) =>
+            SUBSTITUTION.test(inner) ? all : inert(inner),
+        )
+}
+
+/**
+ * The command a wrapper runs: `command git ...`, `env -i X=1 pnpm ...`,
+ * `timeout 60 git ...`, `nice -n 5 ...`, `sudo ...` are judged as what they run.
+ */
+const WRAPPER =
+    /^(?:command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+export function unwrap(command) {
+    let current = command.trim()
+    for (
+        let next = current.replace(WRAPPER, '');
+        next !== current;
+        next = current.replace(WRAPPER, '')
+    ) {
+        current = next
+    }
+    return current
+}
+
+/** Git global options come before the subcommand: `git -C . commit` is a commit. */
+const GIT_OPTION_WITH_VALUE =
+    /^(?:-C|-c|--git-dir|--work-tree|--namespace|--config-env|--exec-path)$/
+export function normalizeGit(command) {
+    const tokens = command.split(/\s+/)
+    if (tokens[0] !== 'git') return command
+    let index = 1
+    while (index < tokens.length && tokens[index].startsWith('-')) {
+        index += GIT_OPTION_WITH_VALUE.test(tokens[index]) ? 2 : 1
+    }
+    return ['git', ...tokens.slice(index)].join(' ')
 }
 
 const RULES = [
@@ -67,7 +120,9 @@ const RULES = [
         'force push to main',
         (c) =>
             /^git\s+push\b.*--force-(?:with-lease|if-includes)/.test(c) &&
-            /[\s:](?:origin\/)?(?:main|master)(?=\s|$)/.test(c),
+            // main as a branch, a lease (`=main`, `=refs/heads/main:sha`) or a
+            // refspec target (`HEAD:main`, `HEAD:refs/heads/main`).
+            /(?:[\s:=]|refs\/heads\/)(?:origin\/)?(?:main|master)(?=[\s:]|$)/.test(c),
     ],
     [
         'git clean -x (deletes ignored files: node_modules, caches, local config)',
@@ -76,7 +131,10 @@ const RULES = [
     ],
     [
         'git add -A / git add . (stage files explicitly)',
-        (c) => /^git\s+add\s+(?:-A|--all|\.)(?=\s|$)/.test(c),
+        // Any argument that means the whole tree, also after `--`.
+        (c) =>
+            /^git\s+add\b/.test(c) &&
+            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|\*)(?=\s|$)/.test(c),
     ],
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',
@@ -96,8 +154,10 @@ export function bashViolations(command) {
         .replace(/\$\(|[`(){}'"]/g, ' ; ')
         .split('\n')
         .flatMap((line) => shellCommands(line))
-    for (const sub of subcommands) {
-        for (const [label, test] of RULES) if (test(sub)) violations.add(label)
+    for (const raw of subcommands) {
+        const sub = unwrap(raw)
+        const git = normalizeGit(sub)
+        for (const [label, test] of RULES) if (test(sub) || test(git)) violations.add(label)
         const heavy = heavyCommandRule(sub)
         if (heavy && !(heavy === 'bare turbo run' && /--filter\b/.test(sub))) {
             violations.add(

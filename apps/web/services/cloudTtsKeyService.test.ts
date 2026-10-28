@@ -111,6 +111,19 @@ describe('cloudTtsKeyService', () => {
             expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(false)
         })
 
+        it('a plain value in the key store does not count as a migrated key (#711 review)', async () => {
+            store.set(CLOUD_TTS_API_KEY_STORAGE_KEY, 'plain-unverified')
+            vi.mocked(indexedDBStorage.setItem).mockRejectedValue(new Error('quota'))
+            await expect(cloudTtsKeyService.migrateLegacyKey(CANARY)).resolves.toBe(false)
+            expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(true)
+            vi.mocked(indexedDBStorage.setItem).mockImplementation(
+                async (key: string, value: string) => void store.set(key, value),
+            )
+            await expect(cloudTtsKeyService.migrateLegacyKey(CANARY)).resolves.toBe(true)
+            await expect(cloudTtsKeyService.getApiKey()).resolves.toBe(CANARY)
+            expect(store.get(CLOUD_TTS_API_KEY_STORAGE_KEY)).not.toContain(CANARY)
+        })
+
         it('has nothing to move for null or blank values', async () => {
             await expect(cloudTtsKeyService.migrateLegacyKey(null)).resolves.toBe(true)
             await expect(cloudTtsKeyService.migrateLegacyKey('  ')).resolves.toBe(true)

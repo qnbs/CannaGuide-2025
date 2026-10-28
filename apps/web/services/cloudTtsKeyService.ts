@@ -66,7 +66,8 @@ export const cloudTtsKeyService = {
      * the caller may then drop the plaintext from the settings.
      * A readable stored key wins: this version wrote it -- migrated or saved
      * explicitly -- so it is never older than the legacy value, which can
-     * only come from a stale snapshot by then (#711 review).
+     * only come from a stale snapshot by then (#711 review). Only an
+     * encrypted entry counts; anything else is overwritten and verified.
      */
     async migrateLegacyKey(legacy: unknown): Promise<boolean> {
         if (typeof legacy !== 'string' || legacy.trim() === '') {
@@ -74,7 +75,12 @@ export const cloudTtsKeyService = {
             return true
         }
         try {
-            if ((await this.getApiKey()) !== null) {
+            const raw = await indexedDBStorage.getItem(CLOUD_TTS_API_KEY_STORAGE_KEY)
+            if (
+                typeof raw === 'string' &&
+                isEncryptedPayload(raw) &&
+                (await this.getApiKey()) !== null
+            ) {
                 legacyKeyPending = false
                 return true
             }

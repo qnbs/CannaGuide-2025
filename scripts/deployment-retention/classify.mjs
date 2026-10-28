@@ -242,8 +242,34 @@ function pullsForBranch(pulls, branch) {
     return (pulls || []).filter((pull) => pull && pull.headRefName === branch)
 }
 
-function resolveBranchPull(pulls, branch) {
+/**
+ * A Cloudflare preview alias `pr-<N>`. Only the trusted `publish-preview` job
+ * of deploy-cloudflare.yml creates one: it runs on the default branch from a
+ * workflow_run, takes N from the event after scripts/cloudflare-preview-meta.mjs
+ * checked it, and deploys by direct upload (the project has no git
+ * integration that could create other branches). The deployment's own commit
+ * is the default-branch checkout, so its SHA cannot name the pull request
+ * (#592) -- the alias does.
+ */
+const CLOUDFLARE_PR_ALIAS = /^pr-([1-9]\d{0,6})$/
+
+function resolveBranchPull(pulls, branch, backend) {
     const rows = pullsForBranch(pulls, branch)
+    const alias = backend === 'cloudflare' ? CLOUDFLARE_PR_ALIAS.exec(branch) : null
+    if (alias) {
+        const number = Number(alias[1])
+        const byNumber = (pulls || []).filter((pull) => pull && Number(pull.number) === number)
+        // A real head branch named `pr-<N>` would make the alias mean two
+        // things: fail closed.
+        if (rows.length > 0 || byNumber.length > 1) {
+            return {
+                ambiguous: true,
+                pull: null,
+                reason: `preview alias ${branch} does not identify one pull request`,
+            }
+        }
+        return { ambiguous: false, pull: byNumber[0] ?? null }
+    }
     const open = rows.filter((pull) => pullState(pull) === 'open')
     if (open.length > 1) return { ambiguous: true, pull: null }
     if (open.length === 1) return { ambiguous: false, pull: open[0] }
@@ -516,7 +542,7 @@ function classifyOne(deployment, context) {
     if (branchPull?.ambiguous) {
         return {
             className: labels.unknown,
-            limitation: 'more than one open pull request for the branch',
+            limitation: branchPull.reason || 'more than one open pull request for the branch',
         }
     }
 
@@ -607,7 +633,9 @@ export function classifyRetention({
 
     const branchNames = new Set(normalized.map((deployment) => deployment.branch).filter(Boolean))
     const branchPulls = new Map()
-    for (const branch of branchNames) branchPulls.set(branch, resolveBranchPull(pulls, branch))
+    for (const branch of branchNames) {
+        branchPulls.set(branch, resolveBranchPull(pulls, branch, backend))
+    }
     const shaPulls = pullsBySha(pulls)
 
     const { productionAmbiguous, productionIds } = resolveProduction(normalized, backend, main)

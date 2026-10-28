@@ -9,13 +9,14 @@
  * in another position or a `sh -c` wrapper -- the docs call them "not a
  * security boundary" -- so the checks that matter live here.
  *
- * Message text is data (a commit message may name `--no-verify` while
- * explaining the ban): the value of -m / --message / --body / --title and a
- * quoted-delimiter heredoc body are dropped. Every other quoted argument keeps
- * its words -- `"--no-verify"` is still the flag, `"Spec"` still a spec --
- * and only loses its shell separators. Text a shell will run is kept whole:
- * `sh -c` / `eval` arguments, a heredoc fed to a shell, and the `$(...)`
- * substitutions bash expands in an unquoted heredoc body.
+ * The command is tokenised the way bash reads it (#650 review: five rounds of
+ * regex heuristics each left another form open): quotes, `$(...)` / backtick /
+ * process substitutions with their own nesting, comments that start a word,
+ * redirections, heredocs and line continuations. A quoted argument stays one
+ * word, so a commit message that names `--no-verify` is one argument, never the
+ * flag, while `"--no-verify"` on its own still is. Everything that runs is
+ * judged: substitution bodies, `sh -c` / `eval` arguments, a heredoc fed to a
+ * shell, and the substitutions bash expands in an unquoted heredoc.
  *
  * Input: the hook JSON on stdin. Output: a `deny` decision with the reasons,
  * or nothing (normal permission flow). Unparseable input is no decision:
@@ -25,125 +26,273 @@ import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
-import { heavyCommandRule, shellCommands } from '../../scripts/security/check-agent-policy.mjs'
+import { heavyCommandRule } from '../../scripts/security/check-agent-policy.mjs'
 
-/**
- * A quoted string a shell will run: the argument right after `sh -c` (also
- * combined flags, `bash -lc`) or `eval`. Judged per quoted string on the text
- * just before it, so the word `eval` inside a commit message no longer turns
- * off data handling for the whole call (#650 review).
- */
-const EVALUATED_ARGUMENT = /(?:\b(?:ba|z|da)?sh(?:\s+-\w+)*\s+-[A-Za-z]*c|\beval)\s+$/
+const MAX_DEPTH = 8
+const SHELLS = /^(?:ba|z|da|k)?sh$/
+/** Stand-in for a substitution's output in the enclosing word. */
+const SUBST = 'SUBST'
 
-const SHELL_HEREDOC = /(?:^|[|;&]\s*)(?:ba|z|da)?sh\b|\bsource\b|\beval\b/
-/**
- * One left-to-right pass over every quoted string, so a quote character inside
- * the other kind of quotes (`"it's"`) never opens a span (#650 review). The
- * optional prefix marks a value that is data: the text of a message option
- * (-m / -am / --message / --body / --title / --notes / gh -b -t -f -F --field)
- * or of a variable assignment (`MSG="..."`, `R[key]='...'`).
- */
-const QUOTED =
-    /(\s(?:-[A-Za-z]*m|--message|--body|--title|--notes|-[bt]|-[fF]|--field|--raw-field)(?:=|\s+)|(?:^|[\s;&|(])[A-Za-z_]\w*(?:\[[^\]\s]*\])?=)?('[^']*'|"(?:[^"\\]|\\.)*")/g
-/** Single quotes never substitute; in double quotes only an unescaped `$(` or backtick does. */
-const SUBSTITUTION = /(?<!\\)(?:\$\(|`)/
-const liveSubstitution = (quoted) => quoted.startsWith('"') && SUBSTITUTION.test(quoted)
-/**
- * Quoted words stay; separators inside quotes are not separators. Backticks and
- * `$` go too: a string that reaches here does not substitute (single quotes, or
- * escaped in double quotes), so `\`...\`` in it is literal text.
- */
-const inert = (inner) => inner.replace(/[;&|(){}<>#`$'"]/g, ' ')
-
-/** The command with message text removed and other quoting resolved. */
-export function stripData(command, bodies = []) {
-    const kept = []
-    let delimiter = null
-    let body = 'drop'
-    // A backslash-newline continues the command: `git commit \<NL> --no-verify`
-    // is one command, and so is `pnpm install \<NL> --frozen-lockfile`.
-    for (const line of command.replace(/\\\r?\n/g, ' ').split('\n')) {
-        if (delimiter !== null) {
-            if (line.trim() === delimiter) delimiter = null
-            else if (body === 'keep') kept.push(line)
-            else if (body === 'substitutions') {
-                for (const m of line.matchAll(/\$\(([^()]*)\)|`([^`]*)`/g)) kept.push(m[1] ?? m[2])
-            }
-            continue
-        }
-        kept.push(line)
-        // `<<<` is a here-string, not a heredoc.
-        const heredoc = /(?<!<)<<(?!<)-?\s*(['"]?)([A-Za-z_][\w-]*)\1/.exec(line)
-        if (heredoc) {
-            delimiter = heredoc[2]
-            // A quoted delimiter makes the body literal; an unquoted one
-            // still expands $(...) even when the reader is not a shell.
-            body = SHELL_HEREDOC.test(line) ? 'keep' : heredoc[1] ? 'drop' : 'substitutions'
-        }
-    }
-    const text = kept.join('\n')
-    const resolved = text.replace(QUOTED, (all, prefix = '', quoted, offset) => {
-        // Bounded look-behind: a command's own prefix is short.
-        if (!prefix && EVALUATED_ARGUMENT.test(text.slice(Math.max(0, offset - 200), offset))) {
-            return all
-        }
-        if (liveSubstitution(quoted)) {
-            const inner = liftSubstitutions(quoted.slice(1, -1), bodies)
-            return prefix ? `${prefix}DATA` : inert(inner)
-        }
-        const inner = quoted.slice(1, -1)
-        if (!prefix) return inert(inner)
-        // HUSKY's own value stays: `HUSKY="0"` is still the switch.
-        if (/^\s*HUSKY=$/.test(prefix)) return prefix + inner
-        return `${prefix}DATA`
-    })
-    return liftSubstitutions(resolved, bodies)
+/** Position of the `'` closing a single-quoted string whose text starts at `i`. */
+const closingSingle = (s, i) => {
+    const at = s.indexOf("'", i)
+    return at === -1 ? s.length : at
 }
 
-/**
- * Moves every `$(...)` (nesting-aware) and backtick body into `bodies` and leaves
- * a placeholder argument, so the enclosing command stays whole --
- * `git commit -m "$(printf fix)" --no-verify` keeps its flag -- while each body
- * is judged as a command of its own (#650 review).
- */
-function liftSubstitutions(text, bodies) {
-    let out = ''
-    for (let i = 0; i < text.length; i += 1) {
-        if (text[i] === '\\') {
-            out += text.slice(i, i + 2)
+/** Position of the `` ` `` closing a backtick substitution whose body starts at `i`. */
+function closingBacktick(s, i) {
+    while (i < s.length) {
+        if (s[i] === '\\') i += 2
+        else if (s[i] === '`') return i
+        else i += 1
+    }
+    return s.length
+}
+
+/** Position of the `"` closing a double-quoted string whose text starts at `i`. */
+function closingDouble(s, i) {
+    while (i < s.length) {
+        if (s[i] === '\\') i += 2
+        else if (s[i] === '"') return i
+        else if (s.startsWith('$(', i)) i = closingParen(s, i + 2) + 1
+        else if (s[i] === '`') i = closingBacktick(s, i + 1) + 1
+        else i += 1
+    }
+    return s.length
+}
+
+/** Position of the `)` closing a `$(` / `<(` / `(` whose body starts at `i`. */
+function closingParen(s, i) {
+    let depth = 1
+    while (i < s.length) {
+        const c = s[i]
+        if (c === '\\') i += 2
+        else if (c === "'") i = closingSingle(s, i + 1) + 1
+        else if (c === '"') i = closingDouble(s, i + 1) + 1
+        else if (c === '`') i = closingBacktick(s, i + 1) + 1
+        else if (c === '(') {
+            depth += 1
             i += 1
+        } else if (c === ')') {
+            depth -= 1
+            if (depth === 0) return i
+            i += 1
+        } else i += 1
+    }
+    return s.length
+}
+
+/** Double-quoted text without its escapes; substitution bodies go to `nested`. */
+function unquoteDouble(text, nested) {
+    let out = ''
+    for (let i = 0; i < text.length;) {
+        if (text[i] === '\\' && i + 1 < text.length && '$`"\\'.includes(text[i + 1])) {
+            out += text[i + 1]
+            i += 2
         } else if (text.startsWith('$(', i)) {
-            let depth = 1
-            let j = i + 2
-            for (; j < text.length && depth > 0; j += 1) {
-                if (text[j] === '(') depth += 1
-                else if (text[j] === ')') depth -= 1
-            }
-            bodies.push(text.slice(i + 2, depth === 0 ? j - 1 : j))
-            out += ' SUBST '
-            i = j - 1
+            const end = closingParen(text, i + 2)
+            nested.push(text.slice(i + 2, end))
+            out += SUBST
+            i = end + 1
         } else if (text[i] === '`') {
-            const end = text.indexOf('`', i + 1)
-            const stop = end === -1 ? text.length : end
-            bodies.push(text.slice(i + 1, stop))
-            out += ' SUBST '
-            i = stop
+            const end = closingBacktick(text, i + 1)
+            nested.push(text.slice(i + 1, end))
+            out += SUBST
+            i = end + 1
         } else {
             out += text[i]
+            i += 1
         }
     }
     return out
 }
 
+/** The `$(...)` and backtick bodies bash expands in an unquoted heredoc body. */
+function substitutionsIn(text) {
+    const bodies = []
+    for (let i = 0; i < text.length; i += 1) {
+        if (text[i] === '\\') {
+            i += 1
+        } else if (text.startsWith('$(', i)) {
+            const end = closingParen(text, i + 2)
+            bodies.push(text.slice(i + 2, end))
+            i = end
+        } else if (text[i] === '`') {
+            const end = closingBacktick(text, i + 1)
+            bodies.push(text.slice(i + 1, end))
+            i = end
+        }
+    }
+    return bodies
+}
+
+const REDIRECTION = /^(?:<<<|<<-|<<|<>|<&|<\(|<|>>|>&|>\||>\(|>|&>>|&>)/
+
+/**
+ * Simple commands (arrays of words, quoting removed) of `source`, plus the
+ * shell text that also runs (`nested`: substitution bodies and heredocs fed
+ * to a shell).
+ */
+export function parseCommands(source) {
+    const s = source.replace(/\\\r?\n/g, '')
+    const commands = []
+    const nested = []
+    let words = []
+    let word = null
+    let dropWord = false
+    let heredocs = []
+    const append = (text) => {
+        word = (word ?? '') + text
+    }
+    const endWord = () => {
+        if (word !== null && !dropWord) words.push(word)
+        if (word !== null) dropWord = false
+        word = null
+    }
+    const endCommand = () => {
+        endWord()
+        dropWord = false
+        if (words.length) commands.push(words)
+        words = []
+    }
+    let i = 0
+    while (i < s.length) {
+        const c = s[i]
+        const next = s[i + 1]
+        if (c === ' ' || c === '\t') {
+            endWord()
+            i += 1
+        } else if (c === '\n') {
+            const pending = heredocs
+            heredocs = []
+            endCommand()
+            i = readHeredocs(s, i + 1, pending, nested)
+        } else if (c === '#' && word === null) {
+            // A comment starts a word; `a#b` and `$#` are ordinary text.
+            while (i < s.length && s[i] !== '\n') i += 1
+        } else if (c === '\\') {
+            append(next ?? '')
+            i += 2
+        } else if (c === "'") {
+            const end = closingSingle(s, i + 1)
+            append(s.slice(i + 1, end))
+            i = end + 1
+        } else if (c === '"') {
+            const end = closingDouble(s, i + 1)
+            append(unquoteDouble(s.slice(i + 1, end), nested))
+            i = end + 1
+        } else if (c === '$' && next === "'") {
+            let j = i + 2
+            while (j < s.length && s[j] !== "'") j += s[j] === '\\' ? 2 : 1
+            append(s.slice(i + 2, j).replace(/\\(.)/g, '$1'))
+            i = j + 1
+        } else if (c === '$' && next === '(') {
+            const end = closingParen(s, i + 2)
+            nested.push(s.slice(i + 2, end))
+            append(SUBST)
+            i = end + 1
+        } else if (c === '$' && next === '{') {
+            const end = s.indexOf('}', i + 2)
+            const stop = end === -1 ? s.length : end + 1
+            append(s.slice(i, stop))
+            i = stop
+        } else if (c === '`') {
+            const end = closingBacktick(s, i + 1)
+            nested.push(s.slice(i + 1, end))
+            append(SUBST)
+            i = end + 1
+        } else if (c === '<' || c === '>' || (c === '&' && next === '>')) {
+            // A leading fd number (`2>`) belongs to the redirection.
+            if (word !== null && /^\d+$/.test(word)) word = null
+            else endWord()
+            const op = REDIRECTION.exec(s.slice(i))[0]
+            i += op.length
+            if (op === '<(' || op === '>(') {
+                const end = closingParen(s, i)
+                nested.push(s.slice(i, end))
+                append(SUBST)
+                i = end + 1
+            } else if (op === '<<' || op === '<<-') {
+                while (s[i] === ' ' || s[i] === '\t') i += 1
+                let delimiter = ''
+                let quoted = false
+                while (i < s.length && !/[\s;&|<>()]/.test(s[i])) {
+                    if (s[i] === "'" || s[i] === '"') {
+                        quoted = true
+                        const end = s[i] === "'" ? closingSingle(s, i + 1) : closingDouble(s, i + 1)
+                        delimiter += s.slice(i + 1, end)
+                        i = end + 1
+                    } else if (s[i] === '\\') {
+                        quoted = true
+                        delimiter += s[i + 1] ?? ''
+                        i += 2
+                    } else {
+                        delimiter += s[i]
+                        i += 1
+                    }
+                }
+                heredocs.push({ delimiter, quoted, stripTabs: op === '<<-', words })
+            } else if ((op === '>&' || op === '<&') && /[\d-]/.test(s[i] ?? '')) {
+                while (/[\d-]/.test(s[i] ?? '')) i += 1
+            } else {
+                // The target (a file name, a here-string) is not an argument.
+                dropWord = true
+            }
+        } else if (c === '&' || c === '|' || c === ';' || c === '(' || c === ')') {
+            endCommand()
+            i +=
+                (c === '&' && next === '&') ||
+                (c === '|' && /[|&]/.test(next ?? '')) ||
+                (c === ';' && next === ';')
+                    ? 2
+                    : 1
+        } else {
+            append(c)
+            i += 1
+        }
+    }
+    endCommand()
+    return { commands, nested }
+}
+
+/** Reads the bodies of the heredocs opened on the line before `start`. */
+function readHeredocs(s, start, pending, nested) {
+    let i = start
+    for (const doc of pending) {
+        const body = []
+        while (i < s.length) {
+            const end = s.indexOf('\n', i)
+            const stop = end === -1 ? s.length : end
+            const line = s.slice(i, stop)
+            i = stop + 1
+            if ((doc.stripTabs ? line.replace(/^\t+/, '') : line) === doc.delimiter) break
+            body.push(line)
+        }
+        const text = body.join('\n')
+        const reader = unwrap(doc.words.map(flat).join(' ')).split(' ')[0]
+        // A shell runs its heredoc whatever the quoting; for any other reader an
+        // unquoted delimiter still lets bash expand the substitutions.
+        if (SHELLS.test(reader) || reader === 'source' || reader === '.' || reader === 'eval') {
+            nested.push(text)
+        } else if (!doc.quoted) {
+            nested.push(...substitutionsIn(text))
+        }
+    }
+    return Math.min(i, s.length)
+}
+
+/** A word as rule text: whitespace inside one quoted argument is not a separator. */
+const flat = (word) => word.replace(/[\s#]/g, '_')
+
 /**
  * The command a wrapper runs: `command git ...`, `env -i X=1 pnpm ...`,
  * `timeout 60 git ...`, `nice -n 5 ...`, `sudo ...` are judged as what they run,
- * and so is the body of a control keyword (`do git push`, `then ...`, `! ...`).
- * `corepack pnpm[@version] ...` (this repo's bootstrap form) and `xargs [opts] cmd`
- * run the package manager / command they name.
+ * and so is the body of a control keyword (`do git push`, `then ...`, `! ...`,
+ * `{ ...`). `corepack pnpm[@version] ...` (this repo's bootstrap form) and
+ * `xargs [opts] cmd` run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|corepack|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = command.trim()
     for (
@@ -233,35 +382,54 @@ function frozenLockfile(command) {
     return frozen
 }
 
+/**
+ * Whether the command sets HUSKY=0 for what it runs: an assignment before the
+ * command (also after env/sudo/... and their options) or an `export`. As an
+ * argument (`rg 'HUSKY=0' .husky`) or in a comment it is just text.
+ */
+function disablesHusky(words) {
+    if (/^(?:export|declare|typeset|readonly)$/.test(words[0] ?? '')) {
+        return words.slice(1).includes('HUSKY=0')
+    }
+    for (const word of words) {
+        if (word === 'HUSKY=0') return true
+        if (!/^(?:[A-Za-z_]\w*=.*|env|command|exec|nohup|time|sudo|-\S*)$/.test(word)) return false
+    }
+    return false
+}
+
+/** Adds the rules `words` breaks; returns shell text it hands to another shell. */
+function judge(words, violations) {
+    if (disablesHusky(words)) violations.add('hook bypass (HUSKY=0)')
+    const command = unwrap(words.map(flat).join(' '))
+    if (!command) return []
+    const git = normalizeGit(command)
+    for (const [label, test] of RULES) if (test(command) || test(git)) violations.add(label)
+    const heavy = heavyCommandRule(command)
+    if (heavy && !(heavy === 'bare turbo run' && /--filter\b/.test(command))) {
+        violations.add(
+            `${heavy} (use pnpm verify / verify:test / verify:lint, or one spec without --)`,
+        )
+    }
+    // The unwrapped words, with their original text: `sh -c '<script>'` and
+    // `eval <words>` run that text as shell.
+    const rest = words.slice(words.length - command.split(' ').length)
+    if (SHELLS.test(rest[0] ?? '')) {
+        const flag = rest.findIndex((w, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
+        if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
+    }
+    if (rest[0] === 'eval') return [rest.slice(1).join(' ')]
+    return []
+}
+
 /** Every rule the command breaks; empty when it may run. */
 export function bashViolations(command, depth = 0) {
-    const bodies = []
-    const text = stripData(command, bodies)
     const violations = new Set()
-    // Substitution bodies run too; judged like any command (bounded nesting).
-    if (depth < 8) {
-        for (const body of bodies) {
-            for (const violation of bashViolations(body, depth + 1)) violations.add(violation)
-        }
-    }
-    if (/(?:^|[\s;&|(])HUSKY=0\b/.test(text)) violations.add('hook bypass (HUSKY=0)')
-    // Substitutions, subshells, groups, background `&` and the quotes of
-    // `sh -c '...'` start a new command. Lines are judged one by one, and a `#`
-    // inside a word (`a#b`, `$#`) is not a comment, so it must not let
-    // shellCommands cut off what follows.
-    const subcommands = text
-        .replace(/\$\(|[`(){}'"&]/g, ' ; ')
-        .split('\n')
-        .flatMap((line) => shellCommands(line.replace(/(?<=[^\s;|])#/g, '_')))
-    for (const raw of subcommands) {
-        const sub = unwrap(raw)
-        const git = normalizeGit(sub)
-        for (const [label, test] of RULES) if (test(sub) || test(git)) violations.add(label)
-        const heavy = heavyCommandRule(sub)
-        if (heavy && !(heavy === 'bare turbo run' && /--filter\b/.test(sub))) {
-            violations.add(
-                `${heavy} (use pnpm verify / verify:test / verify:lint, or one spec without --)`,
-            )
+    const { commands, nested } = parseCommands(command)
+    for (const words of commands) nested.push(...judge(words, violations))
+    if (depth < MAX_DEPTH) {
+        for (const script of nested) {
+            for (const violation of bashViolations(script, depth + 1)) violations.add(violation)
         }
     }
     return [...violations]

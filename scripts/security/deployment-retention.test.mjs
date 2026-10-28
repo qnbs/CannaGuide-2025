@@ -437,6 +437,29 @@ test('cloudflare pr-<N> preview aliases resolve to pull request N (#592)', () =>
                 state: 'success',
             }),
             deploy({ id: 'n-old', createdAt: 40, sha: SHA_A, branch: 'pr-4242', state: 'success' }),
+            // ... even when its SHA is the head of a different, merged PR (#538).
+            deploy({
+                id: 'n-sha',
+                createdAt: 37,
+                sha: MERGED_SHA,
+                branch: 'pr-4242',
+                state: 'success',
+            }),
+            // A PR number beyond seven digits is still an alias.
+            deploy({
+                id: 'big-latest',
+                createdAt: 36,
+                sha: MAIN,
+                branch: 'pr-123456789',
+                state: 'success',
+            }),
+            deploy({
+                id: 'big-old',
+                createdAt: 35,
+                sha: MERGED_SHA,
+                branch: 'pr-123456789',
+                state: 'success',
+            }),
             // Not the alias shape.
             deploy({
                 id: 'z-latest',
@@ -458,11 +481,13 @@ test('cloudflare pr-<N> preview aliases resolve to pull request N (#592)', () =>
     assert.equal(row('d-old').class, 'SAFE_DELETE_STALE_DEPENDABOT')
     assert.equal(row('o-latest').class, 'PROTECT_OPEN_PR')
     assert.equal(row('o-old').class, 'SAFE_DELETE_SUPERSEDED_PREVIEW')
-    for (const id of ['x-old', 'n-old', 'z-old']) {
+    for (const id of ['x-old', 'n-old', 'n-sha', 'z-old', 'big-old']) {
         assert.equal(row(id).class, 'UNKNOWN', id)
         assert.equal(row(id).deletable, false, id)
     }
     assert.match(row('x-old').limitation, /does not identify one pull request/)
+    assert.match(row('n-sha').limitation, /no pull request for preview alias pr-4242/)
+    assert.match(row('big-old').limitation, /no pull request for preview alias pr-123456789/)
     // Vercel branches keep the plain head-branch lookup.
     const vercel = classifyRetention({
         backend: 'vercel',

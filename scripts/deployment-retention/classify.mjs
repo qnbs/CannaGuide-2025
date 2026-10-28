@@ -251,13 +251,20 @@ function pullsForBranch(pulls, branch) {
  * is the default-branch checkout, so its SHA cannot name the pull request
  * (#592) -- the alias does.
  */
-const CLOUDFLARE_PR_ALIAS = /^pr-([1-9]\d{0,6})$/
+const CLOUDFLARE_PR_ALIAS = /^pr-([1-9]\d*)$/
 
 function resolveBranchPull(pulls, branch, backend) {
     const rows = pullsForBranch(pulls, branch)
     const alias = backend === 'cloudflare' ? CLOUDFLARE_PR_ALIAS.exec(branch) : null
     if (alias) {
         const number = Number(alias[1])
+        if (!Number.isSafeInteger(number)) {
+            return {
+                ambiguous: true,
+                pull: null,
+                reason: `preview alias ${branch} is not a pull request number`,
+            }
+        }
         const byNumber = (pulls || []).filter((pull) => pull && Number(pull.number) === number)
         // A real head branch named `pr-<N>` would make the alias mean two
         // things: fail closed.
@@ -268,7 +275,12 @@ function resolveBranchPull(pulls, branch, backend) {
                 reason: `preview alias ${branch} does not identify one pull request`,
             }
         }
-        return { ambiguous: false, pull: byNumber[0] ?? null }
+        // A recognised alias without its pull request never falls back to the
+        // commit SHA: that SHA could belong to a different, closed PR.
+        if (byNumber.length === 0) {
+            return { ambiguous: false, pull: null, aliasWithoutPull: true }
+        }
+        return { ambiguous: false, pull: byNumber[0] }
     }
     const open = rows.filter((pull) => pullState(pull) === 'open')
     if (open.length > 1) return { ambiguous: true, pull: null }
@@ -583,6 +595,12 @@ function classifyOne(deployment, context) {
         }
     }
 
+    if (branchPull?.aliasWithoutPull) {
+        return {
+            className: labels.unknown,
+            limitation: `no pull request for preview alias ${deployment.branch} in the inventory`,
+        }
+    }
     if (!branchPull || !branchPull.pull) {
         const bySha = classByPullSha(deployment, context)
         if (bySha) return bySha

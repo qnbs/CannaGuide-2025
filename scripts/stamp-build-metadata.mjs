@@ -73,7 +73,7 @@ export function sourceMapLeaks(distDir) {
                 leaks.push(full)
             } else if (
                 /\.(m?js|css)$/.test(entry.name) &&
-                /[#@] sourceMappingURL=/.test(readFileSync(full, 'utf8'))
+                /[#@]\s*sourceMappingURL=/.test(readFileSync(full, 'utf8'))
             ) {
                 leaks.push(full)
             }

@@ -87,6 +87,10 @@ jobs:
                   BUILD_BASE_PATH: /
               run: pnpm run build
 
+            # Same post-build step every deploy runs, so dist size matches what ships.
+            - name: Prune bundled ORT wasm (as deploys do)
+              run: node scripts/prune-bundled-ort-wasm.mjs
+
             - name: Bundle budget check
               run: node ./scripts/check-bundle-budget.mjs apps/web/dist/assets
 

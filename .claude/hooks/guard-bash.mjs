@@ -220,9 +220,15 @@ export function parseCommands(source) {
         // reader it is data (#650 review).
         if (hereStrings.length && SHELL_READER.test(readerOf(words))) nested.push(...hereStrings)
         hereStrings = []
-        if (words.length) commands.push(words)
+        if (words.length) {
+            // Marks a command that reads the previous one's output through `|`.
+            if (pipedNext) words.piped = true
+            commands.push(words)
+        }
+        pipedNext = false
         words = []
     }
+    let pipedNext = false
     let i = 0
     while (i < s.length) {
         const c = s[i]
@@ -313,6 +319,7 @@ export function parseCommands(source) {
             }
         } else if (c === '&' || c === '|' || c === ';' || c === '(' || c === ')') {
             endCommand()
+            pipedNext = c === '|' && next !== '|'
             i +=
                 (c === '&' && next === '&') ||
                 (c === '|' && /[|&]/.test(next ?? '')) ||
@@ -325,8 +332,43 @@ export function parseCommands(source) {
         }
     }
     endCommand()
-    return { commands, nested }
+    // A shell that reads a pipe runs whatever arrives on stdin (#650 review):
+    // a heredoc or literal echo/printf text upstream is judged as a script;
+    // any other upstream (`curl ... | sh`) cannot be inspected.
+    let opaque = false
+    for (let k = 1; k < commands.length; k += 1) {
+        if (!commands[k].piped || !readsStdinScript(commands[k])) continue
+        const upstream = commands[k - 1]
+        const program = readerOf(upstream)
+        if (upstream.heredocBody !== undefined) nested.push(upstream.heredocBody)
+        else if (program === 'echo' || program === 'printf') nested.push(echoedText(upstream))
+        else opaque = true
+    }
+    return { commands, nested, opaque }
 }
+
+/** The words a command runs, after wrappers (original text, not flattened). */
+const unwrappedWords = (words) =>
+    words.slice(words.length - unwrap(words.map(flat).join(' ')).split(' ').length)
+
+/** Whether `words` is a shell that takes its script from stdin. */
+function readsStdinScript(words) {
+    const [program, ...args] = unwrappedWords(words)
+    if (!SHELLS.test(programName(program ?? ''))) return false
+    // `-c` names the script itself (judged elsewhere); a non-option operand
+    // is a script file; `-s` forces stdin.
+    if (args.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/.test(arg))) return false
+    return args.every((arg) => arg.startsWith('-')) || args.some((arg) => /^-[A-Za-z]*s/.test(arg))
+}
+
+/** The text echo/printf write, escapes decoded (fail closed: as a script). */
+const echoedText = (words) =>
+    decodeAnsiC(
+        unwrappedWords(words)
+            .slice(1)
+            .filter((arg) => !/^-[A-Za-z]+$/.test(arg))
+            .join(' '),
+    )
 
 /** Reads the bodies of the heredocs opened on the line before `start`. */
 function readHeredocs(s, start, pending, nested) {
@@ -342,6 +384,8 @@ function readHeredocs(s, start, pending, nested) {
             body.push(line)
         }
         const text = body.join('\n')
+        // Kept for a shell further down the pipeline (`cat <<EOF | bash`).
+        doc.words.heredocBody = text
         const reader = readerOf(doc.words)
         // A shell runs its heredoc whatever the quoting; for any other reader an
         // unquoted delimiter still lets bash expand the substitutions.
@@ -465,7 +509,13 @@ const RULES = [
             const tokens = c.split(/\s+/)
             return tokens.some(
                 (token, k) =>
-                    runtimeValue(token) && k >= 2 && !COMMIT_VALUE_OPTION.test(tokens[k - 1]),
+                    runtimeValue(token) &&
+                    k >= 2 &&
+                    !COMMIT_VALUE_OPTION.test(tokens[k - 1]) &&
+                    // An attached value (`--message="$MSG"`, `-m"$MSG"`) cannot
+                    // become a flag of its own (#650 review).
+                    !/^--?[A-Za-z][\w-]*=/.test(token) &&
+                    !/^-[A-Za-z]*[mFCct][^-\s]/.test(token),
             )
         },
     ],
@@ -482,6 +532,13 @@ const RULES = [
             /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|(?:\.\/)?\*+(?:\/\*+)*)(?=\s|$)/.test(
                 c,
             ),
+    ],
+    [
+        'E2E, Playwright, Stryker or Lighthouse run locally (CI only, AGENTS.md)',
+        // pnpm test:e2e* runs `playwright test`; the others are the tools themselves.
+        (c) =>
+            /^(?:playwright\s+test|stryker\s+run|lhci(?:\s|$))/.test(c) ||
+            /^test:e2e/.test(pnpmInvocation(c)?.script ?? ''),
     ],
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',
@@ -574,7 +631,8 @@ function judge(words, violations) {
 /** Every rule the command breaks; empty when it may run. */
 export function bashViolations(command, depth = 0) {
     const violations = new Set()
-    const { commands, nested } = parseCommands(command)
+    const { commands, nested, opaque } = parseCommands(command)
+    if (opaque) violations.add('shell reads piped input that cannot be inspected')
     for (const words of commands) nested.push(...judge(words, violations))
     // Fail closed: text nested deeper than the guard reads is denied, not
     // waved through (#650 review).

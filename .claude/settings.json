@@ -1,0 +1,29 @@
+{
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "permissions": {
+        "deny": [
+            "Bash(git commit --no-verify *)",
+            "Bash(git push --no-verify *)",
+            "Bash(git push --force *)",
+            "Bash(git push -f *)",
+            "Bash(git clean -fdx *)",
+            "Bash(git clean -xdf *)",
+            "Bash(git add -A *)",
+            "Bash(HUSKY=0 *)"
+        ]
+    },
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard-bash.mjs\"",
+                        "timeout": 10
+                    }
+                ]
+            }
+        ]
+    }
+}

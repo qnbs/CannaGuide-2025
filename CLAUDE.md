@@ -123,6 +123,12 @@ that goes red on something nobody can fix is a gate that gets switched off. See
 The hooks are now cheap enough to run, so `--no-verify` is **banned** -- for commit and for
 push. It was the bypass that let a formatting failure and a file-budget failure reach CI.
 
+Claude Code enforces this, not just this file: `.claude/settings.json` registers
+`.claude/hooks/guard-bash.mjs` as a PreToolUse hook, so these never run -- hook bypasses,
+admin merges, force pushes, `git clean` with `-x`, staging everything at once, a pnpm install
+without the frozen lockfile, and unscoped heavy commands. A denied command is a rule
+violation to correct, never a reason to rephrase the same command past the guard.
+
 - `pre-commit`: commit-identity check + `lint-staged` (seconds).
 - `pre-push`: scoped typecheck + `lint-scopes --changed` + file budget + `check:doc-metrics`
   (README badges vs source).

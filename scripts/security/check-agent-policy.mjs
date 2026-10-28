@@ -114,6 +114,18 @@ const WHOLE_SUITE = [
 const BARE_TURBO = ['bare turbo run', /^\s*turbo run [a-z:-]+/]
 
 /**
+ * The heavy-command rule one shell command breaks, or null. Shared with the
+ * Claude Code Bash guard (.claude/hooks/guard-bash.mjs), which judges the
+ * commands an agent actually runs; a `--filter` makes a turbo run scoped there.
+ */
+export function heavyCommandRule(command) {
+    for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {
+        if (pattern.test(command)) return label
+    }
+    return null
+}
+
+/**
  * The individual shell commands of a line: split at `;`, `&&`, `||` and `|`,
  * with leading env assignments and a `pnpm exec` / `npx` launcher removed, so
  * `pnpm test;`, `CI=1 pnpm test` and `pnpm exec turbo run lint` are judged as

@@ -8,7 +8,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { GRAPHIFYY_VERSION, MCP_VERSION, uvRunWithPins } from "./graphify-pins.mjs";
+import { GRAPHIFYY_VERSION, MCP_VERSION, UV_EXCLUDE_NEWER, uvRunWithPins } from "./graphify-pins.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const graphJson = join(root, "graphify-out", "graph.json");
@@ -196,10 +196,17 @@ if (uvVer.status === 0) {
     // Never resolve "whatever is newest on PyPI right now": the versions come
     // from graphify-pins.mjs, the same pins the MCP launcher runs. The
     // unpinned fallback this replaced was taken by CI's own doctor step, which
-    // sets neither variable. The variables still override, to try a bump.
+    // sets neither variable. The variables still override, to try a bump; a
+    // bumped release is newer than the pinned cut-off, so the cut-off is then
+    // dropped unless GRAPHIFY_EXCLUDE_NEWER names one. Variables that merely
+    // repeat the pins (graphify-update.yml) keep it.
+    const graphifyy = process.env.GRAPHIFYY_VERSION || GRAPHIFYY_VERSION;
+    const mcp = process.env.MCP_VERSION || MCP_VERSION;
+    const bumped = graphifyy !== GRAPHIFYY_VERSION || mcp !== MCP_VERSION;
     const pins = {
-        graphifyy: process.env.GRAPHIFYY_VERSION || GRAPHIFYY_VERSION,
-        mcp: process.env.MCP_VERSION || MCP_VERSION,
+        graphifyy,
+        mcp,
+        excludeNewer: process.env.GRAPHIFY_EXCLUDE_NEWER || (bumped ? null : UV_EXCLUDE_NEWER),
     };
     const graphifyySpec = `graphifyy==${pins.graphifyy}`;
     const mcpSpec = `mcp==${pins.mcp}`;

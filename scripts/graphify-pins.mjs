@@ -16,13 +16,20 @@ export const MCP_VERSION = '2.0.0'
 /** Just after graphifyy 0.9.36 (2026-08-07); mcp 2.0.0 is from 2026-07-28. */
 export const UV_EXCLUDE_NEWER = '2026-08-08T00:00:00Z'
 
-/** `uv run` arguments up to the command, with the pinned packages. */
-export function uvRunWithPins({ graphifyy = GRAPHIFYY_VERSION, mcp = MCP_VERSION } = {}) {
+/**
+ * `uv run` arguments up to the command, with the pinned packages. `excludeNewer:
+ * null` drops the cut-off -- only for trying a bump to a release published after
+ * it, which the cut-off would otherwise exclude.
+ */
+export function uvRunWithPins({
+    graphifyy = GRAPHIFYY_VERSION,
+    mcp = MCP_VERSION,
+    excludeNewer = UV_EXCLUDE_NEWER,
+} = {}) {
     return [
         'run',
         '--no-project',
-        '--exclude-newer',
-        UV_EXCLUDE_NEWER,
+        ...(excludeNewer ? ['--exclude-newer', excludeNewer] : []),
         '--with',
         `graphifyy==${graphifyy}`,
         '--with',

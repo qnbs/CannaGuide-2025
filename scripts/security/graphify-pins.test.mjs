@@ -33,6 +33,14 @@ test('uvRunWithPins pins both packages and their transitive dependencies', () =>
         `mcp==${MCP_VERSION}`,
     ])
     assert.ok(uvRunWithPins({ graphifyy: '9.9.9' }).includes('graphifyy==9.9.9'))
+    // A bump test may drop the cut-off, which would exclude the newer release.
+    assert.ok(!uvRunWithPins({ excludeNewer: null }).includes('--exclude-newer'))
+})
+
+test('the doctor keeps the cut-off unless a version is actually bumped (#651 review)', () => {
+    const doctor = read('scripts/graphify-mcp-doctor.mjs')
+    assert.match(doctor, /bumped = graphifyy !== GRAPHIFYY_VERSION \|\| mcp !== MCP_VERSION/)
+    assert.match(doctor, /GRAPHIFY_EXCLUDE_NEWER \|\| \(bumped \? null : UV_EXCLUDE_NEWER\)/)
 })
 
 test('the MCP launcher and the doctor run only through the pins', () => {

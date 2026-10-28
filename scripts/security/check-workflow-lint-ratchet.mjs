@@ -21,7 +21,7 @@
  * hash-pinned versions. zizmor runs --offline, so no token is needed.
  */
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
@@ -102,11 +102,19 @@ function main() {
         ),
         actionlint: sorted(countActionlint(runJson('actionlint', ['-format', '{{json .}}']))),
     }
-    const seeding = !existsSync(BASELINE)
+    // Read, do not check-then-read: a missing file is ENOENT from the read
+    // itself (CodeQL js/file-system-race).
+    let stored = null
+    try {
+        stored = JSON.parse(readFileSync(BASELINE, 'utf8'))
+    } catch (error) {
+        if (error.code !== 'ENOENT') throw error
+    }
+    const seeding = stored === null
     if (seeding && !process.argv.includes('--update')) {
         throw new Error(`no baseline at ${BASELINE}; seed it once with --update and commit it`)
     }
-    const baseline = seeding ? current : JSON.parse(readFileSync(BASELINE, 'utf8'))
+    const baseline = seeding ? current : stored
     const rising = regressions(current, baseline)
     const lowered = improvements(current, baseline)
 

@@ -5,7 +5,7 @@ import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { runPostHydrationServices } from './postHydration'
-import { migrateLegacySecrets } from './secrets'
+import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 
 export const mountHydratedApp = async (): Promise<void> => {
     try {
@@ -32,9 +32,16 @@ export const mountHydratedApp = async (): Promise<void> => {
         }
 
         const flushPersistedState = setupPersistedStateSync(hydratedStore)
-        // A moved key is gone from Redux but still in the stored snapshot:
-        // rewrite it now rather than at the next state change (#711 review).
-        if (secretsMoved) await flushPersistedState()
+        // A moved key is gone from Redux but still in the stored snapshot and
+        // its startup backup: rewrite both now rather than at the next state
+        // change or start (#711 review).
+        if (secretsMoved && (await flushPersistedState())) {
+            try {
+                await replaceBackupWithSavedSnapshot()
+            } catch (backupError) {
+                console.error('[Secrets] Could not refresh the startup backup:', backupError)
+            }
+        }
         await runPostHydrationServices(hydratedStore, flushPersistedState)
     } catch (error) {
         console.error('Failed to initialize the application:', error)

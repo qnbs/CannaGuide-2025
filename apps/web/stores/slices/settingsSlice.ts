@@ -2,7 +2,12 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { AppSettings, View } from '@/types'
 import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
-import { GEMINI_API_KEY_STORAGE_KEY, VersionedSliceName } from '@/constants'
+import {
+    GEMINI_API_KEY_STORAGE_KEY,
+    REDUX_STATE_BACKUP_KEY,
+    REDUX_STATE_ROLLBACK_KEY,
+    VersionedSliceName,
+} from '@/constants'
 import { aiProviderService } from '@/services/aiProviderService'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 import { redactSettingsSecrets } from '@/utils/redactSecrets'
@@ -248,6 +253,10 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
 export const resetAllData = createAsyncThunk<void>('settings/resetAllData', async () => {
     const stateRemoved = await removePrimaryPersistedSnapshot()
     if (!stateRemoved) throw new Error('State reset was blocked by safe recovery.')
+    // The startup and recovery copies hold the same data -- including a legacy
+    // plaintext key still waiting to migrate -- so they go too (#711 review).
+    await indexedDBStorage.removeItem(REDUX_STATE_BACKUP_KEY)
+    await indexedDBStorage.removeItem(REDUX_STATE_ROLLBACK_KEY)
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
     await cloudTtsKeyService.clearApiKey()

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
@@ -73,5 +73,22 @@ describe('CloudTtsKeyField (#654)', () => {
         vi.mocked(cloudTtsKeyService.hasApiKey).mockRejectedValueOnce(new Error('idb'))
         render(<CloudTtsKeyField />)
         expect(await screen.findByText('settingsView.security.notStored')).toBeInTheDocument()
+    })
+
+    it('a stale initial lookup does not overwrite a completed save (#711 review)', async () => {
+        let resolveLookup: (stored: boolean) => void = () => undefined
+        vi.mocked(cloudTtsKeyService.hasApiKey).mockReturnValueOnce(
+            new Promise<boolean>((resolve) => {
+                resolveLookup = resolve
+            }),
+        )
+        render(<CloudTtsKeyField />)
+        fireEvent.change(screen.getByLabelText('settingsView.voice.cloudTts.apiKey'), {
+            target: { value: CANARY },
+        })
+        fireEvent.click(screen.getByText('settingsView.security.save'))
+        expect(await screen.findByText('settingsView.security.saved')).toBeInTheDocument()
+        await act(async () => resolveLookup(false))
+        expect(screen.getByText('settingsView.security.stored')).toBeInTheDocument()
     })
 })

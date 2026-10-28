@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,13 +21,17 @@ export const CloudTtsKeyField: React.FC = () => {
     const [hasStoredKey, setHasStoredKey] = useState(false)
     const [isBusy, setIsBusy] = useState(false)
     const [status, setStatus] = useState<Status>(null)
+    // Counts completed saves and removals: an initial lookup that resolves
+    // after one of them is stale and must not overwrite it (#711 review).
+    const mutations = useRef(0)
 
     useEffect(() => {
         let active = true
+        const seen = mutations.current
         cloudTtsKeyService
             .hasApiKey()
             .then((stored) => {
-                if (active) setHasStoredKey(stored)
+                if (active && seen === mutations.current) setHasStoredKey(stored)
             })
             .catch(() => {
                 // An unreadable store shows "no key"; saving a new one still works.
@@ -52,6 +56,7 @@ export const CloudTtsKeyField: React.FC = () => {
         try {
             await cloudTtsKeyService.setApiKey(apiKeyInput)
             retireLegacyKey()
+            mutations.current += 1
             setApiKeyInput('')
             setHasStoredKey(true)
             setStatus({ type: 'success', message: t('settingsView.security.saved') })
@@ -67,6 +72,7 @@ export const CloudTtsKeyField: React.FC = () => {
         try {
             await cloudTtsKeyService.clearApiKey()
             retireLegacyKey()
+            mutations.current += 1
             setHasStoredKey(false)
             setStatus({ type: 'success', message: t('settingsView.security.cleared') })
         } catch {

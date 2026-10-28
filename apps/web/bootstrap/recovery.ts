@@ -1,5 +1,5 @@
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY } from '@/constants'
+import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY, REDUX_STATE_ROLLBACK_KEY } from '@/constants'
 import { Sentry } from '@/services/sentryService'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
@@ -9,8 +9,8 @@ import {
 } from './persistenceCoordinator'
 
 export const SAFE_RECOVERY_ATTEMPT_KEY = 'cannaguide.safeRecoveryAttempted'
-export const SAFE_RECOVERY_ROLLBACK_KEY = `${REDUX_STATE_KEY}-recovery-rollback`
-const SAFE_RECOVERY_BACKUP_KEY = `${REDUX_STATE_KEY}-backup`
+export const SAFE_RECOVERY_ROLLBACK_KEY = REDUX_STATE_ROLLBACK_KEY
+const SAFE_RECOVERY_BACKUP_KEY = REDUX_STATE_BACKUP_KEY
 
 const claimRecoveryAttempt = (): boolean => {
     try {

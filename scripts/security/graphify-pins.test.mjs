@@ -60,3 +60,11 @@ test('the graphify-update workflow uses the same pins', () => {
     assert.ok(workflow.includes(`MCP_VERSION: '${MCP_VERSION}'`))
     assert.doesNotMatch(workflow, /--with graphifyy(?!==)/, 'an unpinned graphifyy remains')
 })
+
+test('the bash and Windows fallback launchers delegate to the pinned launcher (#651 review)', () => {
+    for (const file of ['scripts/graphify-mcp-stdio.sh', 'scripts/graphify-mcp-stdio-windows.cmd']) {
+        const source = read(file)
+        assert.doesNotMatch(source, /\buvx?\b\s+(?:run|tool)|\buvx\b/, `${file} runs uv itself`)
+        assert.match(source, /graphify-mcp-launcher\.mjs/, `${file} does not delegate`)
+    }
+})

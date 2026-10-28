@@ -113,7 +113,7 @@ gh run view --job <JOB_ID> --log-failed | tail -40
 Two traps this repo has already hit:
 
 - **A red `main` can hide.** A historical Graphify updater pushed with `[skip ci]`, allowing a broken artifact to reach `main` and fail every PR while `main` showed no failing run. The updater now publishes a validated, complete review artifact and never writes to the repository; a human promotes it through a PR. **If a failure is unrelated to your diff, still check `main` before assuming it is yours:** `gh run list --workflow=ci.yml --branch=main --limit 5`.
-- **`✅ CI Status` only requires `quality` + `security`.** E2E, cross-browser, and the advisory job do **not** block. A green check mark does not mean the E2E suite passed.
+- **What `✅ CI Status` requires depends on the diff.** On a code change it requires `build`, `test`, `verify`, `security` and `e2e` (Chromium, blocking); `rust` when `apps/desktop/**` changed and `policy` when agent instructions or gate docs changed. On a docs-only change those code jobs are skipped. Cross-browser E2E and the advisory job never block -- a green check mark is not evidence that they passed.
 
 Every "green" claim in a PR description cites a **CI run URL + artifact**, never a local run.
 

@@ -74,7 +74,7 @@ planner, automation) must still respect the global cap.
 These look like the safe command. They are not. Each one has cost a session.
 
 1. **`--` before a vitest spec swallows the filter.**
-   `pnpm --filter @cannaguide/web test:run -- Foo` becomes `vitest run -- Foo`, and vitest
+   Never write `pnpm --filter @cannaguide/web test:run -- Foo`: it becomes `vitest run -- Foo`, and vitest
    runs the **whole suite** (>6 min, 635 MB RSS, straight into the OOM). Omit the `--`:
 
     ```bash

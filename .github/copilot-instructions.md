@@ -329,9 +329,7 @@ happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = *
 - **Push workflow:** Do not push product changes directly to `main`. Open a pull request. `pnpm run pr:push` is an optional helper, not a bypass.
 - Branch protection: PRs required for non-admins (0 reviews, CI-gated), signed commits, linear history
 - Codespaces signing: native `gh-gpgsign` from `/etc/gitconfig` (permanent `Verified` status)
-- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. Hooks are serialized, never install implicitly, and report heartbeats for slow checks. Pre-commit runs staged checks with concurrency 1; pre-push runs bounded affected checks while CI remains exhaustive. If an emergency truly forces `--no-verify`, run the equivalent checks by hand **before** pushing and document the reason in the commit body:
-
-    Run **exactly what the hook runs** -- the scoped commands, not the expensive ones this repo exists to avoid:
+- **`--no-verify` is banned.** Never use `git commit --no-verify` or `git push --no-verify`. Hooks are serialized, never install implicitly, and report heartbeats for slow checks. Pre-commit runs staged checks with concurrency 1; pre-push runs bounded affected checks while CI remains exhaustive. There is no emergency exception: if a hook fails, keep the branch and fix the reported cause. These commands -- exactly what the hook runs, scoped -- diagnose a failure; they do not authorize bypassing the hook:
 
     ```bash
     node ./scripts/scoped-verify.mjs typecheck     # every touched workspace, not just web

@@ -105,15 +105,19 @@ const actionFiles = readdirSync(ACTIONS).map((dir) => ({
 }))
 const UNTRUSTED_EXPRESSION = /\$\{\{[^}]*\b(?:inputs\.|github\.event\.|github\.head_ref\b)[^}]*\}\}/
 
-// `file:line` of every untrusted expression inside a run:/script: body.
+// `file:line` of every untrusted expression inside a run:/script: body. Every
+// line indented deeper than the key belongs to its value, whatever the scalar
+// form (`|`, `|2-`, `| # note`, a plain or quoted multi-line value) -- matching
+// only a bare `|` let other forms slip past (#648 review). For `- run:` the key
+// column is after the dash, so a sibling `env:` of the same step ends the body.
 function injectionSinks(name, text) {
     const sinks = []
     let block = null
     text.split('\n').forEach((line, index) => {
-        const key = /^(\s*)(?:-\s+)?(?:run|script):\s*(.*)$/.exec(line)
+        const key = /^(\s*(?:-\s+)?)(?:run|script):(.*)$/.exec(line)
         if (key) {
             if (UNTRUSTED_EXPRESSION.test(key[2])) sinks.push(`${name}:${index + 1}`)
-            block = /^[|>][-+]?\s*$/.test(key[2]) ? key[1].length : null
+            block = key[1].length
             return
         }
         if (block === null || !line.trim()) return
@@ -137,12 +141,24 @@ test('the injection detector finds every form it guards against', () => {
         '    - env:',
         '          SAFE: ${{ inputs.path }}',
         '      run: echo "$SAFE ${{ needs.rust.result }}"',
+        '    - run: |2-',
+        '          echo ${{ inputs.a }}',
+        '    - run: | # comment',
+        '          echo ${{ inputs.b }}',
+        '    - run: echo one',
+        '          ${{ inputs.c }}',
+        '    - run: echo safe',
+        '      env:',
+        '          AFTER: ${{ inputs.d }}',
     ].join('\n')
     assert.deepEqual(injectionSinks('fixture', fixture), [
         'fixture:2',
         'fixture:4',
         'fixture:5',
         'fixture:9',
+        'fixture:14',
+        'fixture:16',
+        'fixture:18',
     ])
 })
 

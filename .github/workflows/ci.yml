@@ -314,6 +314,24 @@ jobs:
                   tar -xzf /tmp/uv.tar.gz -C /tmp
                   sudo install /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv
 
+            - name: Install pinned workflow linters (zizmor, actionlint)
+              env:
+                  ACTIONLINT_VERSION: '1.7.12'
+                  ACTIONLINT_SHA256: '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8'
+              run: |
+                  uv venv "${RUNNER_TEMP}/wflint"
+                  uv pip install --python "${RUNNER_TEMP}/wflint/bin/python" --require-hashes \
+                    -r scripts/security/zizmor-requirements.txt
+                  echo "${RUNNER_TEMP}/wflint/bin" >> "$GITHUB_PATH"
+                  curl -fsSLo /tmp/actionlint.tgz \
+                    "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+                  echo "${ACTIONLINT_SHA256}  /tmp/actionlint.tgz" | sha256sum -c -
+                  tar -xzf /tmp/actionlint.tgz -C /tmp actionlint
+                  sudo install /tmp/actionlint /usr/local/bin/actionlint
+
+            - name: Workflow-lint ratchet (zizmor + actionlint may only go down)
+              run: node scripts/security/check-workflow-lint-ratchet.mjs
+
             - name: Restore Turbo cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:

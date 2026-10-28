@@ -1,0 +1,6 @@
+# zizmor for the workflow-lint ratchet (scripts/security/check-workflow-lint-ratchet.mjs).
+# Installed in CI with `uv pip install --require-hashes`; hashes from PyPI for 1.31.1
+# (manylinux x86_64 wheel and sdist). Bump version and hashes together.
+zizmor==1.31.1 \
+    --hash=sha256:58e878eb2dbd2c6183c105e1ac28c14f7dd1eca44a783f1fe2a69647d012c410 \
+    --hash=sha256:eb9c8a3e2c1080810fdb68bc36717b2a9d61283bb98e3a48689f5a852fc48e9f

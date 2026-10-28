@@ -61,3 +61,6 @@ graphify-out/cache/
 # embedded git repository ("you've added another git repository inside your
 # current repository") and commits a bare gitlink.
 .claude/worktrees/
+
+# Bundle analysis report written by scripts/explore-bundle.mjs (benchmark only)
+apps/web/benchmark-reports/

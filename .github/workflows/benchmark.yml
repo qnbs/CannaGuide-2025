@@ -77,7 +77,19 @@ jobs:
 
             - name: Build
               working-directory: apps/web
+              env:
+                  # Hidden source maps for the bundle analysis below only; deployed
+                  # builds never set this (stamp-build-metadata --verify rejects maps).
+                  BUILD_SOURCEMAP: hidden
+                  # lhci serves dist/ at the server root, so the app must be built for
+                  # "/" -- with the Pages base its assets 404 and Lighthouse measures
+                  # an empty shell.
+                  BUILD_BASE_PATH: /
               run: pnpm run build
+
+            # Same post-build step every deploy runs, so dist size matches what ships.
+            - name: Prune bundled ORT wasm (as deploys do)
+              run: node scripts/prune-bundled-ort-wasm.mjs
 
             - name: Bundle budget check
               run: node ./scripts/check-bundle-budget.mjs apps/web/dist/assets
@@ -86,18 +98,32 @@ jobs:
               working-directory: apps/web
               run: node ../../scripts/explore-bundle.mjs
 
-            - name: Lighthouse CI
+            # collect and assert run separately instead of `lhci autorun`: a failed
+            # assertion used to look like "no metrics", and autorun would upload the
+            # reports to public temporary storage once assertions passed. There is
+            # no upload step here; the reports stay in the workflow artifact.
+            - name: Lighthouse CI collect
               id: lighthouse
               working-directory: apps/web
               run: |
-                  pnpm exec lhci autorun \
-                    --collect.staticDistDir=./dist \
-                    --collect.numberOfRuns=3 \
-                    --collect.settings.chromeFlags="--no-sandbox --disable-dev-shm-usage" \
+                  pnpm exec lhci collect \
+                    --staticDistDir=./dist \
+                    --numberOfRuns=3 \
+                    --settings.chromeFlags="--no-sandbox --disable-dev-shm-usage" \
                     2>&1 || {
-                    echo "[WARN] Lighthouse CI failed -- metrics will show n/a"
+                    echo "[WARN] Lighthouse CI collect failed -- metrics will show n/a"
                     echo "lighthouse_failed=true" >> "$GITHUB_ENV"
                   }
+
+            # Advisory: findings are listed here and counted in the job summary, but
+            # do not fail the baseline run. Making budgets blocking is D10 (GH #591).
+            # valid-source-maps is expected: the benchmark builds hidden maps.
+            - name: Lighthouse assertions (advisory)
+              if: env.lighthouse_failed != 'true'
+              working-directory: apps/web
+              run: |
+                  pnpm exec lhci assert --preset=lighthouse:recommended 2>&1 | tee lighthouse-assert.log || true
+                  echo "lighthouse_assert_failures=$(grep -c 'failure for' lighthouse-assert.log || true)" >> "$GITHUB_ENV"
 
             - name: Collect metrics
               working-directory: apps/web
@@ -115,6 +141,7 @@ jobs:
                     `- Main bundle: ${metrics.mainBundleFile ?? 'n/a'} (${metrics.mainBundleKb.toFixed(1)} kB)`,
                     `- Lighthouse performance: ${metrics.lighthousePerformance ?? 'n/a'}/100`,
                     `- Lighthouse accessibility: ${metrics.lighthouseAccessibility ?? 'n/a'}/100`,
+                    `- Lighthouse assertion failures (advisory, recommended preset): ${process.env.lighthouse_assert_failures ?? 'n/a'}`,
                     `- CI time: ${metrics.ciTimeSeconds}s`,
                     '',
                   ].join('\n')
@@ -127,8 +154,19 @@ jobs:
               with:
                   name: benchmark-artifacts
                   path: |
-                      apps/web/dist/source-map-explorer.html
+                      apps/web/benchmark-reports/source-map-explorer.html
                       apps/web/.lighthouseci/
                       apps/web/benchmark-metrics.json
+                      apps/web/lighthouse-assert.log
                   retention-days: 14
                   if-no-files-found: warn
+                  # .lighthouseci/ is a dot-directory, which upload-artifact skips by
+                  # default; it holds only the Lighthouse reports (lhr-*.json).
+                  include-hidden-files: true
+
+            # Lighthouse failures are caught above so the metrics and artifacts are
+            # still collected -- but a run without Lighthouse metrics is not a
+            # baseline and must not show green (CG-AUD-20261027-N04).
+            - name: Fail when Lighthouse produced no metrics
+              if: env.lighthouse_failed == 'true'
+              run: echo "[FAIL] Lighthouse CI failed -- this run produced no performance baseline." >&2 && false

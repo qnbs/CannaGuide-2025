@@ -33,7 +33,7 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
@@ -54,6 +54,33 @@ export function upsertBuildMeta(html, buildVersion) {
         throw new Error('index.html has no </head>, so the running build cannot be stamped')
     }
     return `${html.slice(0, head)}    ${tag}\n${html.slice(head)}`
+}
+
+/**
+ * Source maps that would ship with a deployed build: `*.map` files and JS/CSS
+ * carrying a `sourceMappingURL` comment. Only the performance benchmark builds
+ * maps (`BUILD_SOURCEMAP=hidden`, CG-AUD-20261027-N04); every deploy path runs
+ * `--verify`, so a map that leaks into a deployable dist/ fails there.
+ */
+export function sourceMapLeaks(distDir) {
+    const leaks = []
+    const walk = (dir) => {
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+            const full = path.join(dir, entry.name)
+            if (entry.isDirectory()) {
+                walk(full)
+            } else if (entry.name.endsWith('.map')) {
+                leaks.push(full)
+            } else if (
+                /\.([cm]?js|css)$/.test(entry.name) &&
+                /[#@]\s*sourceMappingURL=/.test(readFileSync(full, 'utf8'))
+            ) {
+                leaks.push(full)
+            }
+        }
+    }
+    walk(distDir)
+    return leaks
 }
 
 function fail(msg) {
@@ -169,7 +196,15 @@ function main() {
                     '       The document this browser loads must carry the same identity as version.json.',
             )
         }
-        console.log(`[OK] version.json matches: ${expectedBuild} (via ${source})`)
+        const leaks = sourceMapLeaks(DIST)
+        if (leaks.length) {
+            fail(
+                `dist/ contains source maps that would be deployed:\n` +
+                    leaks.map((file) => `         ${path.relative(ROOT, file)}`).join('\n') +
+                    '\n       Only the benchmark build may emit them (BUILD_SOURCEMAP=hidden).',
+            )
+        }
+        console.log(`[OK] version.json matches: ${expectedBuild} (via ${source}); no source maps`)
         process.exit(0)
     }
 
@@ -184,7 +219,9 @@ function main() {
     const indexPath = path.join(DIST, 'index.html')
     const html = readText(indexPath)
     if (html === null) {
-        fail(`${path.relative(ROOT, indexPath)} is missing -- refusing to stamp version.json alone.`)
+        fail(
+            `${path.relative(ROOT, indexPath)} is missing -- refusing to stamp version.json alone.`,
+        )
     }
     writeFileSync(indexPath, upsertBuildMeta(html, payload.buildVersion))
     console.log(`[OK] Stamped version.json: ${payload.buildVersion} (via ${source})`)

@@ -922,6 +922,16 @@ test('#650 final census on 9df3bc62: builtin options and wrapper directories', (
     ]) {
         assert.deepEqual(bashViolations(command), [], command)
     }
+    // CodeAnt P1 on 8c4d031e: a `+` refspec forces whatever follows the +.
+    for (const command of [
+        'BRANCH=main; git push origin +$BRANCH',
+        'git push origin "+$BRANCH"',
+        'git push origin +"$(git branch --show-current)"',
+        'git push origin +HEAD:feature',
+    ]) {
+        assert.match(bashViolations(command).join('; '), /force push/, command)
+    }
+    assert.deepEqual(bashViolations('git push origin "refs/heads/$BRANCH"'), [])
     // CodeAnt on 2f0b93ca: a run-time value completing an option name.
     for (const command of [
         'git add -"$FLAG" apps/web',

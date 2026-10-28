@@ -841,9 +841,11 @@ const RULES = [
     [
         'force push (--force / -f / +refspec)',
         // `-f` may be combined with other short flags: `git push -fu origin x`.
+        // Any refspec with a leading `+` forces, whatever follows it --
+        // `+$BRANCH` / `+"$(...)"` too (CodeAnt P1 on #650).
         (c) =>
             /^git\s+push\b/.test(c) &&
-            /\s(?:--force(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+[\w./-]+)/.test(c),
+            /\s(?:--force(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+\S)/.test(c),
     ],
     [
         'git option built from a run-time value (may become a banned flag)',

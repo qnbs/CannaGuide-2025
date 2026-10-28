@@ -124,6 +124,13 @@ describe('cloudTtsKeyService', () => {
             expect(store.get(CLOUD_TTS_API_KEY_STORAGE_KEY)).not.toContain(CANARY)
         })
 
+        it('keeps the legacy key when the written entry is not ciphertext', async () => {
+            vi.mocked(encrypt).mockResolvedValueOnce(CANARY)
+            await expect(cloudTtsKeyService.migrateLegacyKey(CANARY)).resolves.toBe(false)
+            expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(true)
+            await cloudTtsKeyService.migrateLegacyKey(null)
+        })
+
         it('has nothing to move for null or blank values', async () => {
             await expect(cloudTtsKeyService.migrateLegacyKey(null)).resolves.toBe(true)
             await expect(cloudTtsKeyService.migrateLegacyKey('  ')).resolves.toBe(true)

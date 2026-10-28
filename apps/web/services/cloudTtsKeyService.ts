@@ -85,7 +85,12 @@ export const cloudTtsKeyService = {
                 return true
             }
             await this.setApiKey(legacy)
-            const readBack = await this.getApiKey()
+            // Verify the entry really is ciphertext and decrypts to the key.
+            const written = await indexedDBStorage.getItem(CLOUD_TTS_API_KEY_STORAGE_KEY)
+            const readBack =
+                typeof written === 'string' && isEncryptedPayload(written)
+                    ? await this.getApiKey()
+                    : null
             legacyKeyPending = readBack !== legacy.trim()
         } catch {
             legacyKeyPending = true

@@ -3,6 +3,7 @@ import 'fake-indexeddb/auto'
 
 const mocks = vi.hoisted(() => ({
     loadZip: vi.fn(),
+    zipEntries: new Map<string, unknown>(),
     replacePrimaryPersistedSnapshot: vi.fn(),
     // Race injection points around the dependent (image) write.
     beforeDependentApply: vi.fn(async () => {}),
@@ -15,7 +16,8 @@ vi.mock('jszip', () => {
         static loadAsync(file: Blob): Promise<unknown> {
             return mocks.loadZip(file)
         }
-        file(name: string, _data?: string): MockJSZip {
+        file(name: string, data?: string): MockJSZip {
+            mocks.zipEntries.set(name, data)
             this.files[name] = { name }
             return this
         }
@@ -244,6 +246,24 @@ describe('backupService', () => {
             expect(result.filename).toMatch(/^cannaguide-backup-\d{4}-\d{2}-\d{2}/)
             expect(result.metadata).toBeDefined()
             expect(result.metadata?.plantCount).toBe(0)
+        })
+
+        it('writes no Cloud TTS key into the ZIP (#654)', async () => {
+            // A synthetic canary, never a real key.
+            const canary = 'sk_canary_0000000000000000000000000000'
+            mocks.zipEntries.clear()
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(
+                JSON.stringify({
+                    settings: { settings: { tts: { cloudTtsApiKey: canary } }, version: 5 },
+                    simulation: { plants: [] },
+                }),
+            )
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(mocks.zipEntries.size).toBeGreaterThan(0)
+            for (const data of mocks.zipEntries.values()) {
+                expect(String(data)).not.toContain(canary)
+            }
         })
     })
 

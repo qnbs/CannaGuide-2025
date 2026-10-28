@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { resetAllData } from '@/stores/slices/settingsSlice'
+import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { removePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 
@@ -49,5 +49,38 @@ describe('resetAllData (#711 review)', () => {
         expect(result.meta.requestStatus).toBe('rejected')
         expect(indexedDBStorage.removeItem).not.toHaveBeenCalled()
         expect(reload).not.toHaveBeenCalled()
+    })
+})
+
+// A synthetic canary, never a real key (#654).
+const CANARY = 'sk_canary_0000000000000000000000000000'
+
+const readBlob = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = () => reject(reader.error)
+        reader.readAsText(blob)
+    })
+
+describe('exportAllData (#654)', () => {
+    it('downloads the state without the Cloud TTS key', async () => {
+        const createObjectURL = vi.fn((_blob: Blob) => 'blob:export')
+        Object.defineProperty(URL, 'createObjectURL', {
+            configurable: true,
+            value: createObjectURL,
+        })
+        Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
+        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+        const state = {
+            settings: { settings: { tts: { cloudTtsApiKey: CANARY } }, version: 5 },
+            simulation: { marker: 'plants-kept' },
+        }
+        await exportAllData()(vi.fn(), () => state as never, undefined)
+        const json = await readBlob(createObjectURL.mock.calls[0]![0])
+        expect(json).not.toContain(CANARY)
+        expect(json).toContain('plants-kept')
+        expect(click).toHaveBeenCalled()
+        click.mockRestore()
     })
 })

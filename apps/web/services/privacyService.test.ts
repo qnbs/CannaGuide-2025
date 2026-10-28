@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { IDBFactory } from 'fake-indexeddb'
 import { DELETE_DATABASE_TIMEOUT_MS } from './privacyDatabaseRegistry'
 
 // Mock Sentry before importing the service
@@ -145,6 +146,41 @@ describe('privacyService', () => {
             expect(data.exportedAt).toBeDefined()
             expect(data.localStorage['api-key']).toBe('encrypted-value')
             expect(data.localStorage['settings']).toBe('{"theme":"dark"}')
+        })
+
+        it('exports the stored snapshot without the Cloud TTS key (#654)', async () => {
+            // A synthetic canary, never a real key.
+            const canary = 'sk_canary_0000000000000000000000000000'
+            const factory = new IDBFactory()
+            await new Promise<void>((resolve, reject) => {
+                const open = factory.open('CannaGuideStateDB', 1)
+                open.onupgradeneeded = () => open.result.createObjectStore('zustand_state')
+                open.onerror = () => reject(open.error)
+                open.onsuccess = () => {
+                    const tx = open.result.transaction('zustand_state', 'readwrite')
+                    tx.objectStore('zustand_state').put(
+                        JSON.stringify({
+                            settings: { settings: { tts: { cloudTtsApiKey: canary } }, version: 5 },
+                            simulation: { marker: 'plants-kept' },
+                        }),
+                        'cannaguide-redux-storage',
+                    )
+                    tx.oncomplete = () => {
+                        open.result.close()
+                        resolve()
+                    }
+                    tx.onerror = () => reject(tx.error)
+                }
+            })
+            vi.stubGlobal('indexedDB', factory)
+            try {
+                const { exportAllUserData } = await import('./privacyService')
+                const json = await exportAllUserData()
+                expect(json).not.toContain(canary)
+                expect(json).toContain('plants-kept')
+            } finally {
+                vi.unstubAllGlobals()
+            }
         })
 
         it('should include exportedAt timestamp', async () => {

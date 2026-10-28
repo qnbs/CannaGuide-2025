@@ -30,11 +30,18 @@ import { pathToFileURL } from 'node:url'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 
+/** Every file ci.yml routes to the policy job (POLICY_PATHS, minus generated graphify-out). */
 export const AGENT_FILES = [
     'AGENTS.md',
     'CLAUDE.md',
     '.github/copilot-instructions.md',
     'docs/PR-REVIEW-LOOP.md',
+    'CONTRIBUTING.md',
+    'SECURITY.md',
+    'docs/release-process.md',
+    '.github/CI-AUDIT.md',
+    '.github/workflows/README.md',
+    'docs/DEVOPS-GATES.md',
 ]
 
 /**
@@ -76,16 +83,33 @@ const BYPASSES = [
     ['git add -A / git add .', /\bgit add (?:-A|--all|\.)(?=\s|`|$)/g],
     ['admin merge', /--admin\b/g],
     ['force push', /\bpush\b[^\n]*?(?:--force\b|\s-f\b)/g],
+    // The short form of --no-verify, and Husky's switch that disables every hook.
+    ['git commit -n', /\bgit commit\b[^\n`]*?\s-n\b/g],
+    ['HUSKY=0', /\bHUSKY=0\b/g],
 ]
 
 const UNFILTERED = [
     'unfiltered pnpm suite',
     /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)(?=\s|$)(?![^#\n]*--filter)/,
 ]
-/** `--filter <pkg> test:run` with no spec (options only) runs the whole suite. */
+/**
+ * `pnpm --filter <pkg> test|test:run|test:coverage` still runs that package's
+ * whole suite when it names no spec (options only) or when a `--` swallows the
+ * spec filter (CLAUDE.md trap #1). Tokenised rather than a regex: an earlier
+ * pattern with a nested quantifier was a ReDoS (CodeQL).
+ */
 const WHOLE_SUITE = [
     'whole-suite test run',
-    /^\s*pnpm --filter \S+ (run )?(test|test:run|test:coverage)(\s+--?[\w=:-]+)*\s*(#.*)?$/,
+    {
+        test(command) {
+            const tokens = command.split('#')[0].trim().split(/\s+/)
+            if (tokens[0] !== 'pnpm' || tokens[1] !== '--filter' || tokens.length < 4) return false
+            const scriptAt = tokens[3] === 'run' ? 4 : 3
+            if (!['test', 'test:run', 'test:coverage'].includes(tokens[scriptAt])) return false
+            const rest = tokens.slice(scriptAt + 1)
+            return rest.includes('--') || rest.every((token) => token.startsWith('-'))
+        },
+    },
 ]
 const BARE_TURBO = ['bare turbo run', /^\s*turbo run [a-z:-]+/]
 
@@ -101,6 +125,21 @@ const REQUIRED = {
 const AFFIRMED = {
     'AGENTS.md': [['the scoped verify command', /pnpm verify\b/g]],
     'CLAUDE.md': [['the scoped verify command', /pnpm verify\b/g]],
+}
+
+/**
+ * Backticked names that a clause gives as what CI Status "requires": only after
+ * the verb (not the adjective "Required") and only up to the end of that clause.
+ */
+function requiredJobNames(line) {
+    const plain = line.replace(/[*_]/g, '')
+    const verb = /\brequires?\b/i.exec(plain)
+    if (!verb) return []
+    const rest = plain.slice(verb.index + verb[0].length)
+    const clauseEnd = rest.search(/[.!?](?=\s|$)|\s--\s|\b(?:but|however|except)\b/i)
+    return [
+        ...(clauseEnd === -1 ? rest : rest.slice(0, clauseEnd)).matchAll(/`([a-z][a-z0-9-]*)`/g),
+    ]
 }
 
 /** Job ids in the `needs:` list of ci.yml's ci-status job. */
@@ -141,8 +180,8 @@ function lineProblems(name, line, where, inFence, needs) {
             if (pattern.test(m[1])) problems.push(`${where}: ${label} instructed inline: ${m[0]}`)
         }
     }
-    if (needs && /CI Status/.test(line) && /\brequire/i.test(line)) {
-        for (const m of line.matchAll(/`([a-z][a-z-]*)`/g)) {
+    if (needs && /CI Status/.test(line)) {
+        for (const m of requiredJobNames(line)) {
             if (!needs.has(m[1])) {
                 problems.push(
                     `${where}: names \`${m[1]}\` as a CI Status requirement, but ci-status needs ${[...needs].join(', ')}`,

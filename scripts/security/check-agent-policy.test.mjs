@@ -121,11 +121,46 @@ test('a prohibition exempts only its own clause (#643 review)', () => {
     }
 })
 
-test('a filtered whole-suite run with options still fails', () => {
-    const block = ['```bash', 'pnpm --filter @cannaguide/web test:run --coverage', '```'].join('\n')
-    const problems = problemsOf({ '.github/copilot-instructions.md': block })
-    assert.equal(problems.length, 1, problems.join('; '))
-    assert.match(problems[0], /whole-suite test run/)
+test('filtered whole-suite runs fail: options only, or a -- that swallows the spec', () => {
+    for (const command of [
+        'pnpm --filter @cannaguide/web test:run --coverage',
+        'pnpm --filter @cannaguide/web test:run -- Foo',
+        'pnpm --filter @cannaguide/web run test',
+    ]) {
+        const block = ['```bash', command, '```'].join('\n')
+        const problems = problemsOf({ '.github/copilot-instructions.md': block })
+        assert.equal(problems.length, 1, `${command} -> ${problems.join('; ')}`)
+        assert.match(problems[0], /whole-suite test run/)
+    }
+    const inline = 'Run `pnpm --filter @cannaguide/web test:run -- Foo` after editing Foo.'
+    assert.match(
+        problemsOf({ 'CLAUDE.md': `${SOUND_CLAUDE}\n${inline}` }).join('; '),
+        /whole-suite test run/,
+    )
+    const scoped = [
+        '```bash',
+        'pnpm --filter @cannaguide/web test:run Foo --reporter=dot',
+        '```',
+    ].join('\n')
+    assert.deepEqual(problemsOf({ '.github/copilot-instructions.md': scoped }), [])
+})
+
+test('the whole-suite check stays linear on hostile input (CodeQL ReDoS)', () => {
+    const hostile = `pnpm --filter ! test\t-${'--\t-'.repeat(50_000)}!`
+    const started = performance.now()
+    problemsOf({ '.github/copilot-instructions.md': ['```', hostile, '```'].join('\n') })
+    assert.ok(performance.now() - started < 2_000, 'policy check took too long')
+})
+
+test('other hook bypass forms fail', () => {
+    for (const [line, expected] of [
+        ['Commit with `git commit -m "wip" -n` if the hook is slow.', /git commit -n/],
+        ['Prefix the push with `HUSKY=0` to skip the hooks.', /HUSKY=0/],
+    ]) {
+        const problems = problemsOf({ 'CLAUDE.md': `${SOUND_CLAUDE}\n${line}` })
+        assert.equal(problems.length, 1, `${line} -> ${problems.join('; ')}`)
+        assert.match(problems[0], expected)
+    }
 })
 
 test('a negated verify command does not count as present', () => {
@@ -147,10 +182,11 @@ test('a CI Status requirement must name jobs ci-status actually needs', () => {
         'rust',
         'e2e',
     ])
-    const stale = '- **`✅ CI Status` only requires `quality` + `security`.** E2E does not block.'
+    const stale = '- **`✅ CI Status` only requires `quality` + `e2e-full`.** E2E does not block.'
     const problems = agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': stale }, { needs })
-    assert.equal(problems.length, 1, problems.join('; '))
+    assert.equal(problems.length, 2, problems.join('; '))
     assert.match(problems[0], /names `quality` as a CI Status requirement/)
+    assert.match(problems[1], /names `e2e-full` as a CI Status requirement/)
     const current =
         'On a code change `✅ CI Status` requires `build`, `test`, `verify`, `security` and `e2e`.'
     assert.deepEqual(agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': current }, { needs }), [])
@@ -190,10 +226,16 @@ test('ci.yml routes agent files to the policy gate and judges it before the docs
 
     assert.match(ci, /needs: \[changes, build, test, verify, security, policy, rust, e2e\]/)
     assert.match(ci, /run: node scripts\/security\/check-agent-policy\.mjs/)
-    const gate = ci.slice(ci.indexOf('POLICY_FAILED=0'))
+    // The condition and the early exit must both precede the docs-only exit.
+    const docsExit = ci.indexOf('Docs-only change -- no code pipeline to run')
+    const condition = ci.indexOf('if [[ "$POLICY_CHANGED" == "true" ]]; then')
+    const earlyExit = ci.indexOf(
+        'if [[ "$RUST_FAILED" -ne 0 || "$POLICY_FAILED" -ne 0 ]]; then exit 1; fi',
+    )
+    assert.ok(condition > 0 && earlyExit > 0 && docsExit > 0, 'policy condition or exit missing')
     assert.ok(
-        gate.indexOf('POLICY_FAILED') < gate.indexOf('Docs-only change -- no code pipeline to run'),
-        'the policy result must be judged before the docs-only exit',
+        condition < earlyExit && earlyExit < docsExit,
+        'policy must be judged before the docs-only exit',
     )
     assert.match(
         ci,

@@ -49,6 +49,8 @@ const runsStdin = (words) => readsStdinScript(words) || SOURCE_READER.test(reade
 const readerOf = (words) => unwrap(words.map(flat).join(' ')).split(' ')[0]
 /** Stand-in for a substitution's output in the enclosing word. */
 const SUBST = 'SUBST'
+/** Shell input the guard cannot read before it runs (fail closed). */
+const OPAQUE_INPUT = 'shell reads input that cannot be inspected'
 
 /** Position of the `'` closing a single-quoted string whose text starts at `i`. */
 const closingSingle = (s, i) => {
@@ -212,14 +214,24 @@ export function parseCommands(source) {
     let dropWord = false
     let heredocs = []
     let hereStrings = []
+    // Whether the current word expands at run time: built from an unquoted or
+    // double-quoted `$` / substitution, not from single-quoted text (#650 review).
+    let dynamic = false
+    let hereDynamic = false
     const append = (text) => {
         word = (word ?? '') + text
     }
     const endWord = () => {
-        if (word !== null && dropWord === 'here') hereStrings.push(word)
-        else if (word !== null && !dropWord) words.push(word)
+        if (word !== null && dropWord === 'here') {
+            hereStrings.push(word)
+            hereDynamic ||= dynamic
+        } else if (word !== null && !dropWord) {
+            if (dynamic) (words.dynamic ??= new Set()).add(words.length)
+            words.push(word)
+        }
         if (word !== null) dropWord = false
         word = null
+        dynamic = false
     }
     const endCommand = () => {
         endWord()
@@ -229,10 +241,11 @@ export function parseCommands(source) {
         // A here-string that expands at run time (`bash <<< "$SCRIPT"`) is not
         // the text written here: the shell input is opaque.
         if (hereStrings.length && runsStdin(words)) {
-            if (hereStrings.some(runtimeValue)) words.opaqueStdin = true
+            if (hereDynamic) words.opaqueStdin = true
             nested.push(...hereStrings)
         }
         hereStrings = []
+        hereDynamic = false
         if (words.length) {
             // Marks a command that reads the previous one's output through `|`.
             if (pipedNext) words.piped = true
@@ -287,6 +300,7 @@ export function parseCommands(source) {
             i = end + 1
         } else if (c === '"') {
             const end = closingDouble(s, i + 1)
+            if (/[$`]/.test(s.slice(i + 1, end))) dynamic = true
             append(unquoteDouble(s.slice(i + 1, end), nested))
             i = end + 1
         } else if (c === '$' && next === "'") {
@@ -301,6 +315,7 @@ export function parseCommands(source) {
             const end = closingParen(s, i + 2)
             nested.push(s.slice(i + 2, end))
             append(SUBST)
+            dynamic = true
             i = end + 1
         } else if (c === '$' && next === '{') {
             // `${X:-$(cmd)}` runs cmd: the expansion stays one word, its
@@ -308,11 +323,13 @@ export function parseCommands(source) {
             const end = closingBrace(s, i + 2)
             nested.push(...substitutionsIn(s.slice(i + 2, end)))
             append(s.slice(i, end + 1))
+            dynamic = true
             i = end + 1
         } else if (c === '`') {
             const end = closingBacktick(s, i + 1)
             nested.push(s.slice(i + 1, end))
             append(SUBST)
+            dynamic = true
             i = end + 1
         } else if (c === '<' || c === '>' || (c === '&' && next === '>')) {
             // A leading fd number (`2>`) belongs to the redirection.
@@ -324,6 +341,7 @@ export function parseCommands(source) {
                 const end = closingParen(s, i)
                 nested.push(s.slice(i, end))
                 append(SUBST)
+                dynamic = true
                 i = end + 1
             } else if (op === '<<' || op === '<<-') {
                 while (s[i] === ' ' || s[i] === '\t') i += 1
@@ -366,6 +384,8 @@ export function parseCommands(source) {
                     ? 2
                     : 1
         } else {
+            // An unquoted `$X` expands at run time.
+            if (c === '$') dynamic = true
             append(c)
             i += 1
         }
@@ -463,7 +483,10 @@ function echoedText(words) {
         }
         return decodeAnsiC(out)
     }
-    return decodeAnsiC(args.filter((arg) => !/^-[neE]+$/.test(arg)).join(' '))
+    // Only leading options are options: `echo git commit -n` prints the -n.
+    let first = 0
+    while (first < args.length && /^-[neE]+$/.test(args[first])) first += 1
+    return decodeAnsiC(args.slice(first).join(' '))
 }
 
 /**
@@ -903,11 +926,20 @@ function scriptBodies(command, cwd) {
     const filters = [...options.matchAll(/(?:^|\s)(?:--filter(?:-prod)?|-F)(?:=|\s+)(\S+)/g)]
     const dirOption = /(?:^|\s)(?:--dir|-C)(?:=|\s+)(\S+)/.exec(options)
     const dir = dirOption ? joinDir(cwd, dirOption[1]) : cwd
-    const chosen = filters.length
-        ? filters.flatMap((match) => selectedWorkspaces(match[1], dir))
-        : dir === null
-          ? workspaces()
-          : workspaceAt(dir)
+    // `-w` / `--workspace-root` runs the root's script from anywhere, and
+    // `-r` / `--recursive` every package's (#650 review).
+    const tokens = command.split(' ')
+    const own = tokens.slice(0, tokens.length - run.rest.length - 1).join(' ')
+    const flag = (pattern) => new RegExp(`(?:^|\\s)(?:${pattern})(?=\\s|$)`).test(own)
+    const chosen = flag('-r|--recursive')
+        ? workspaces()
+        : flag('-w|--workspace-root')
+          ? workspaces().filter((w) => w.dir === '')
+          : filters.length
+            ? filters.flatMap((match) => selectedWorkspaces(match[1], dir))
+            : dir === null
+              ? workspaces()
+              : workspaceAt(dir)
     const bodies = new Set(chosen.map((w) => w.scripts[run.script]).filter(Boolean))
     return [...bodies].map((body) => [body, ...run.rest].join(' '))
 }
@@ -945,12 +977,21 @@ function judge(words, violations, cwd) {
     }
     // The unwrapped words, with their original text: `sh -c '<script>'` and
     // `eval <words>` run that text as shell.
-    const rest = words.slice(words.length - command.split(' ').length)
+    const offset = words.length - command.split(' ').length
+    const rest = words.slice(offset)
+    // Shell text taken from words[from..to): judged as written, unless one of
+    // those words expands at run time (`bash -c "$SCRIPT"`; #650 review).
+    const shellText = (from, to = from + 1) => {
+        for (let k = from; k < to; k += 1) {
+            if (words.dynamic?.has(k)) violations.add(OPAQUE_INPUT)
+        }
+        return [words.slice(from, to).join(' ')]
+    }
     if (SHELLS.test(programName(rest[0] ?? ''))) {
         const flag = rest.findIndex((w, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
-        if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
+        if (flag > 0 && rest[flag + 1] !== undefined) return shellText(offset + flag + 1)
     }
-    if (rest[0] === 'eval') return [rest.slice(1).join(' ')]
+    if (rest[0] === 'eval') return shellText(offset + 1, words.length)
     const bodies = scriptBodies(command, cwd)
     if (bodies.length) return bodies
     // `pnpm exec -c '<script>'` (shell mode) runs that text as shell.
@@ -958,17 +999,20 @@ function judge(words, violations, cwd) {
         (w, k) => /^(?:-c|--shell-mode)$/.test(w) && words.slice(0, k).includes('exec'),
     )
     if (shellMode !== -1 && words[0]?.startsWith('pnpm') && words[shellMode + 1] !== undefined) {
-        return [words[shellMode + 1]]
+        return shellText(shellMode + 1)
     }
     // `env -S '<cmd args>'` splits that string and runs it (#650 review).
     const envAt = words.findIndex((w) => programName(w) === 'env')
     if (envAt !== -1) {
         for (let k = envAt + 1; k < words.length; k += 1) {
             if (/^(?:-S|--split-string)$/.test(words[k]) && words[k + 1] !== undefined) {
-                return [words[k + 1]]
+                return shellText(k + 1)
             }
             const attached = /^(?:-S|--split-string=)(.+)$/.exec(words[k])
-            if (attached) return [attached[1]]
+            if (attached) {
+                if (words.dynamic?.has(k)) violations.add(OPAQUE_INPUT)
+                return [attached[1]]
+            }
         }
     }
     return []
@@ -982,7 +1026,7 @@ function judge(words, violations, cwd) {
 export function bashViolations(command, depth = 0, cwd = '') {
     const violations = new Set()
     const { commands, nested, owners, opaque } = parseCommands(command)
-    if (opaque) violations.add('shell reads input that cannot be inspected')
+    if (opaque) violations.add(OPAQUE_INPUT)
     // The directory per subshell scope ('1.2' inherits from '1', then '').
     // A cd in `( ... )`, a pipeline part or a background job ends with it; a
     // cd after `&&` / `||` may be skipped, so the directory becomes unknown.
@@ -994,15 +1038,19 @@ export function bashViolations(command, depth = 0, cwd = '') {
     }
     const scripts = []
     const dirAt = []
+    // Inside if/while/until/for/case/select a cd may be skipped as well.
+    let compound = 0
     for (const words of commands) {
+        if (/^(?:if|while|until|for|case|select)$/.test(words[0])) compound += 1
         const dir = dirIn(words.scope)
         dirAt.push(dir)
         const moved = changedDir(words, dir)
         if (moved === undefined) {
             for (const script of judge(words, violations, dir)) scripts.push([script, dir])
         } else if (!words.piped && !words.subshell) {
-            dirs.set(words.scope, words.conditional ? null : moved)
+            dirs.set(words.scope, words.conditional || compound > 0 ? null : moved)
         }
+        if (/^(?:fi|done|esac)$/.test(words[0])) compound = Math.max(compound - 1, 0)
     }
     // Substitutions, here-strings and heredocs run where their command runs.
     nested.forEach((script, k) => scripts.push([script, dirAt[owners[k]] ?? cwd]))

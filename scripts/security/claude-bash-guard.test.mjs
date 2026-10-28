@@ -575,6 +575,62 @@ test('#650 review wave on 99287978: each finding is denied, its harmless twin al
     assert.equal(hung.status, 0)
 })
 
+test('#650 review wave on d9770bb7: each finding is denied, its harmless twin allowed', () => {
+    const cases = [
+        // 1. Shell text that expands at run time cannot be judged.
+        {
+            blocked: [
+                [
+                    'SCRIPT=\'git commit --no-verify -m fix\'; bash -c "$SCRIPT"',
+                    /cannot be inspected/,
+                ],
+                ['eval "$CMD"', /cannot be inspected/],
+                ['eval $(cat /tmp/x)', /cannot be inspected/],
+                ['env -S "$CMD"', /cannot be inspected/],
+                ['bash <<< "$SCRIPT"', /cannot be inspected/],
+            ],
+            allowed: [
+                "bash -c 'echo $HOME'",
+                "eval 'echo ok'",
+                "bash <<< 'echo $HOME'",
+                "bash -c 'cd apps/web && pnpm run dev'",
+            ],
+        },
+        // 2. A cd inside if/while/for/case may be skipped.
+        {
+            blocked: [
+                ['if false; then cd apps/web; fi; pnpm run dev', /bare turbo run/],
+                ['for d in apps/web; do cd $d; done; pnpm run dev', /bare turbo run/],
+                ['while false; do cd apps/web; done\npnpm run dev', /bare turbo run/],
+            ],
+            allowed: ['cd apps/web; if true; then pnpm run dev; fi'],
+        },
+        // 3. -w runs the root's script, -r every package's.
+        {
+            blocked: [
+                ['cd apps/web && pnpm -w dev', /bare turbo run/],
+                ['cd apps/web && pnpm --workspace-root run dev', /bare turbo run/],
+                ['pnpm -r test:e2e', /CI only/],
+            ],
+            allowed: ['cd apps/web && pnpm dev', 'pnpm --filter @cannaguide/web test:run -r . Foo'],
+        },
+        // 4. echo takes options only before its first operand.
+        {
+            blocked: [
+                ['echo git commit -n -m fix | bash', /git commit -n/],
+                ['echo -n git commit -n -m fix | sh', /git commit -n/],
+            ],
+            allowed: ['echo -n hello | bash -c cat'],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,

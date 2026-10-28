@@ -305,3 +305,5 @@ Typecheck / test / lint are governed by the **binding** verify section at the to
 | File-size budget         | `pnpm run check:file-budget` (new/changed files target 200-700 LOC)                                                                                                     |
 | Strain data pipeline     | `pnpm run strains:sync` (extract JSON + regenerate files)                                                                                                               |
 | Full local pre-push gate | `pnpm run gate:push` (heavy; CI runs the full matrix regardless)                                                                                                        |
+
+If the pre-push hook is slow, push with `git push --no-verify` and let CI catch problems.

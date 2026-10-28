@@ -529,7 +529,9 @@ const RULES = [
         // Any argument that means the whole tree, also after `--`.
         (c) =>
             /^git\s+add\b/.test(c) &&
-            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|(?:\.\/)?\*+(?:\/\*+)*)(?=\s|$)/.test(
+            // Magic pathspecs (`:(top,glob)**`, `:!x` = all but x) are read as
+            // the whole tree: fail closed (#650 review).
+            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(\S*|:[!^]\S*|(?:\.\/)?\*+(?:\/\*+)*)(?=\s|$)/.test(
                 c,
             ),
     ],
@@ -598,10 +600,7 @@ function judge(words, violations) {
     const git = normalizeGit(command)
     for (const [label, test] of RULES) if (test(command) || test(git)) violations.add(label)
     const heavy = heavyCommandRule(command)
-    // A turbo `--filter` scopes the run only before `--`; after it the flag is
-    // passed on to the tasks (#650 review).
-    const turboFiltered = /--filter\b/.test(command.split(/\s--(?=\s|$)/)[0])
-    if (heavy && !(heavy === 'bare turbo run' && turboFiltered)) {
+    if (heavy) {
         violations.add(
             `${heavy} (use pnpm verify / verify:test / verify:lint, or one spec without --)`,
         )

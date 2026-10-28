@@ -39,6 +39,7 @@ test('sound fixtures pass, including prohibitions that name the banned flag', ()
         '# Never a bare `turbo run <task>`',
         'pnpm verify',
         'pnpm --filter @cannaguide/web test:run analyticsService',
+        'turbo run typecheck --filter=@cannaguide/web',
         'pnpm run build',
         '```',
     ].join('\n')

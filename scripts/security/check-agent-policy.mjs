@@ -254,12 +254,20 @@ const WHOLE_SUITE = [
         },
     },
 ]
-const BARE_TURBO = ['bare turbo run', /^\s*turbo run [a-z:-]+/]
+/** `turbo run <task>` without a `--filter` before `--` (after it, the flag goes to the task). */
+const BARE_TURBO = [
+    'bare turbo run',
+    {
+        test: (command) =>
+            /^\s*turbo run [a-z:-]+/.test(command) &&
+            !/--filter\b/.test(command.split(/\s--(?=\s|$)/)[0]),
+    },
+]
 
 /**
  * The heavy-command rule one shell command breaks, or null. Shared with the
  * Claude Code Bash guard (.claude/hooks/guard-bash.mjs), which judges the
- * commands an agent actually runs; a `--filter` makes a turbo run scoped there.
+ * commands an agent actually runs.
  */
 export function heavyCommandRule(command) {
     for (const [label, pattern] of [BARE_TURBO, UNFILTERED, WHOLE_SUITE]) {

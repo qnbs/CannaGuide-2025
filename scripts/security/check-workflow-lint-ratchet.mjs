@@ -17,8 +17,9 @@
  * `--update` only ever lowers: it refuses to write while any class is above
  * its ceiling. Raising a ceiling is a reviewed hand edit of the baseline file.
  *
- * Needs `zizmor` and `actionlint` (with `shellcheck`) on PATH; CI installs
- * hash-pinned versions. zizmor runs --offline, so no token is needed.
+ * Needs `zizmor`, `actionlint` and `shellcheck` on PATH and refuses to run
+ * without shellcheck; CI installs hash-pinned versions. zizmor runs --offline,
+ * so no token is needed.
  */
 import { spawnSync } from 'node:child_process'
 import { readFileSync, writeFileSync } from 'node:fs'
@@ -94,6 +95,21 @@ export function improvements(current, baseline) {
 const sorted = (counts) =>
     Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)))
 
+/**
+ * actionlint silently skips its shell checks when `shellcheck` is not on PATH.
+ * The shellcheck classes would then read as 0: a check would pass on missing
+ * data, and `--update` would drop their ceilings, so CI (which has shellcheck)
+ * goes red on the next run. Refuse to count instead (#649 review).
+ */
+export function assertShellcheck(spawn = spawnSync) {
+    const result = spawn('shellcheck', ['--version'], { encoding: 'utf8' })
+    if (result.error || result.status !== 0) {
+        throw new Error(
+            'shellcheck is not runnable; actionlint would skip its shell findings and the shellcheck classes would read as 0. Install shellcheck (CI pins 0.11.0) and retry.',
+        )
+    }
+}
+
 /** Run a linter that exits non-zero on findings; its stdout must still be a JSON array. */
 function runJson(command, args) {
     const result = spawnSync(command, args, {
@@ -112,6 +128,7 @@ function runJson(command, args) {
 }
 
 function main() {
+    assertShellcheck()
     const current = {
         zizmor: sorted(
             countZizmor(runJson('zizmor', ['--offline', '--format', 'json', '.github/'])),

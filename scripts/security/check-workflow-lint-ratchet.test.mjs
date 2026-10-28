@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 import {
+    assertShellcheck,
     BASELINE,
     countActionlint,
     countZizmor,
@@ -108,6 +109,21 @@ test('only an object with ceiling maps for both tools is a baseline (#649 review
         assert.equal(isBaseline(bad), false, JSON.stringify(bad))
     }
     assert.equal(isBaseline(JSON.parse(readFileSync(BASELINE, 'utf8'))), true)
+})
+
+test('a missing or broken shellcheck stops the ratchet instead of counting 0 (#649 review)', () => {
+    const missing = () => ({ error: Object.assign(new Error('spawn ENOENT'), { code: 'ENOENT' }) })
+    const broken = () => ({ status: 127, stdout: '', stderr: 'not found' })
+    for (const spawn of [missing, broken]) {
+        assert.throws(() => assertShellcheck(spawn), /shellcheck is not runnable/)
+    }
+    const calls = []
+    const present = (command, args) => {
+        calls.push([command, ...args])
+        return { status: 0, stdout: 'version: 0.11.0\n' }
+    }
+    assert.doesNotThrow(() => assertShellcheck(present))
+    assert.deepEqual(calls, [['shellcheck', '--version']])
 })
 
 test('CI installs all three linters pinned and checksum-verified (#649 review)', () => {

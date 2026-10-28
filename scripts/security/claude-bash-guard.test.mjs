@@ -371,6 +371,86 @@ test('#650 review wave on 53b5bfc7: each finding is denied, its harmless twin al
     }
 })
 
+test('#650 review wave on 704d20f6: each finding is denied, its harmless twin allowed', () => {
+    const cases = [
+        // 1. Options are parsed in order: an attached value (`-mtest`) or a
+        //    consumed word (`-m '-m'`) does not swallow the next flag.
+        {
+            blocked: [
+                ['git commit -mtest --no-verify', /--no-verify/],
+                ["git commit -m '-m' --no-verify", /--no-verify/],
+                ['git commit -am fix --no-verify', /--no-verify/],
+                ['git commit -mfix "$FLAGS"', /known only at run time/],
+            ],
+            allowed: [
+                'git commit -m "$MSG"',
+                "git commit -m '--no-verify'",
+                'git commit -am "$(printf fix)"',
+                'git commit --message "$MSG" --author "$AUTHOR"',
+            ],
+        },
+        // 2. pnpm options before exec/dlx, and exec's shell mode.
+        {
+            blocked: [
+                ['pnpm --filter @cannaguide/web exec playwright test', /CI only/],
+                ['pnpm -C apps/web exec turbo run typecheck', /bare turbo run/],
+                ["pnpm exec -c 'git push --force'", /force push/],
+            ],
+            allowed: ['pnpm --filter @cannaguide/web exec vitest run Foo'],
+        },
+        // 3. Shell option values are not script operands.
+        {
+            blocked: [
+                ["bash -o pipefail <<'EOF'\ngit commit --no-verify -m fix\nEOF", /--no-verify/],
+                ["bash -O extglob <<< 'git commit --no-verify -m fix'", /--no-verify/],
+                ["echo 'git push --force' | bash +o posix", /force push/],
+            ],
+            allowed: ['bash -o pipefail ./scripts/x.sh', 'echo data | bash -o pipefail ./x.sh'],
+        },
+        // 4. `cd` moves the package a script resolves in; unknown targets fail closed.
+        {
+            blocked: [
+                ['pnpm run dev', /bare turbo run/],
+                ['cd apps/web && pnpm test:e2e', /CI only/],
+                ['cd "$X" && pnpm test:e2e', /CI only/],
+                ['cd apps/web && cd .. && cd .. && pnpm run dev', /bare turbo run/],
+            ],
+            allowed: [
+                'cd apps/web && pnpm run dev -- --host 0.0.0.0',
+                'cd apps/web; pnpm run dev',
+                `cd ${ROOT}/apps/web && pnpm run dev`,
+            ],
+        },
+        // 5. Shell input generated at run time cannot be judged: opaque.
+        {
+            blocked: [
+                [
+                    "SCRIPT='git commit --no-verify -m fix'; printf '%s' \"$SCRIPT\" | bash",
+                    /cannot be inspected/,
+                ],
+                ['printf \'%s\' "$(cat /tmp/script.sh)" | bash', /cannot be inspected/],
+                ['echo "$SCRIPT" | sh', /cannot be inspected/],
+                ['cat <<EOF | bash\n$SCRIPT\nEOF', /cannot be inspected/],
+                ['bash <<EOF\n$SCRIPT\nEOF', /cannot be inspected/],
+            ],
+            allowed: [
+                "printf '%s\\n' hello | bash -c 'cat'",
+                'echo "$HOME" | grep pc',
+                "cat <<'EOF' | bash\necho literal\nEOF",
+            ],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+    // The session cwd (hook input) counts like a cd.
+    assert.deepEqual(bashViolations('pnpm run dev', 0, 'apps/web'), [])
+    assert.match(bashViolations('pnpm test:e2e', 0, null).join('; '), /CI only/)
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,
@@ -408,9 +488,14 @@ test('the hook denies through the PreToolUse JSON protocol and stays silent othe
     assert.equal(output.permissionDecision, 'deny')
     assert.match(output.permissionDecisionReason, /--no-verify/)
 
+    // The hook input's cwd places the command: `pnpm run dev` is the web
+    // package's vite in apps/web, the root's `turbo run dev` elsewhere.
+    const dev = { tool_name: 'Bash', tool_input: { command: 'pnpm run dev' } }
+    assert.match(run({ ...dev, cwd: ROOT }).stdout, /bare turbo run/)
     for (const input of [
         { tool_name: 'Bash', tool_input: { command: 'pnpm verify' } },
         { tool_name: 'Read', tool_input: { file_path: 'x' } },
+        { ...dev, cwd: path.join(ROOT, 'apps/web') },
     ]) {
         const result = run(input)
         assert.equal(result.status, 0)

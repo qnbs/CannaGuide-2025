@@ -339,14 +339,16 @@ export function parseCommands(source) {
     // A shell that reads a pipe runs whatever arrives on stdin (#650 review):
     // a heredoc or literal echo/printf text upstream is judged as a script;
     // any other upstream (`curl ... | sh`) cannot be inspected.
-    let opaque = false
+    let opaque = commands.some((words) => words.opaqueStdin)
     for (let k = 1; k < commands.length; k += 1) {
         if (!commands[k].piped || !(readsStdinScript(commands[k]) || sourcesStdin(commands[k])))
             continue
         const upstream = commands[k - 1]
         const program = readerOf(upstream)
-        if (upstream.heredocBody !== undefined) nested.push(upstream.heredocBody)
-        else if (program === 'echo' || program === 'printf') {
+        if (upstream.heredocBody !== undefined) {
+            if (upstream.heredocExpands) opaque = true
+            nested.push(upstream.heredocBody)
+        } else if (program === 'echo' || program === 'printf') {
             const text = echoedText(upstream)
             if (text === null) opaque = true
             else nested.push(text)
@@ -370,12 +372,25 @@ function readsStdinScript(words) {
     // is a script file unless it names stdin (`bash /dev/stdin`); `-s`
     // forces stdin.
     if (args.some((arg) => /^-[A-Za-z]*c[A-Za-z]*$/.test(arg))) return false
-    const operand = args.find((arg) => !arg.startsWith('-'))
+    const operand = shellOperand(args)
     return (
         operand === undefined ||
         STDIN_PATH.test(operand) ||
         args.some((arg) => /^-[A-Za-z]*s/.test(arg))
     )
+}
+
+/**
+ * A shell's first operand (its script file). Option values are not operands:
+ * `bash -o pipefail`, `-O extglob`, `+o x`, `--rcfile x` (#650 review).
+ */
+function shellOperand(args) {
+    for (let k = 0; k < args.length; k += 1) {
+        const arg = args[k]
+        if (/^[-+][A-Za-z]*[oO]$/.test(arg) || /^--(?:rcfile|init-file)$/.test(arg)) k += 1
+        else if (!/^[-+]/.test(arg)) return arg
+    }
+    return undefined
 }
 
 /**
@@ -390,12 +405,14 @@ function sourcesStdin(words) {
 
 /**
  * The text echo/printf write, escapes decoded (fail closed: read as a script),
- * or null when a printf format cannot be followed (anything but %s / %%).
+ * or null when it cannot be known: a printf format other than %s / %%, or an
+ * operand that only exists at run time (`printf '%s' "$SCRIPT"`; #650 review).
  */
 function echoedText(words) {
     const [program, ...args] = unwrappedWords(words)
+    if (program === 'printf' && args[0] === '-v') return '' // assigns a variable, writes nothing
+    if (args.some(runtimeValue)) return null
     if (program === 'printf') {
-        if (args[0] === '-v') return '' // assigns a variable, writes nothing
         const [format = '', ...values] = args[0] === '--' ? args.slice(1) : args
         if (/%(?![%s])/.test(format)) return null
         let out = ''
@@ -424,12 +441,16 @@ function readHeredocs(s, start, pending, nested) {
             body.push(line)
         }
         const text = body.join('\n')
-        // Kept for a shell further down the pipeline (`cat <<EOF | bash`).
+        // Kept for a shell further down the pipeline (`cat <<EOF | bash`). An
+        // unquoted delimiter expands `$X` / `$(...)` first, so the text a
+        // shell receives is not the text written here (#650 review).
         doc.words.heredocBody = text
+        doc.words.heredocExpands = !doc.quoted && /[$`]/.test(text)
         // A shell that reads stdin runs its heredoc whatever the quoting (not
         // `bash -c 'cat'`: there the script is the -c argument); for any other
         // reader an unquoted delimiter still lets bash expand the substitutions.
         if (runsStdin(doc.words)) {
+            if (doc.words.heredocExpands) doc.words.opaqueStdin = true
             nested.push(text)
         } else if (!doc.quoted) {
             nested.push(...substitutionsIn(text))
@@ -454,14 +475,25 @@ const WRAPPER =
     /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+(?:exec|dlx)|npx|xargs(?:\s+(?:-[nLPsIdEa]\s+\S+|-\S+))*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = programName(command.trim())
-    for (
-        let next = programName(current.replace(WRAPPER, ''));
-        next !== current;
-        next = programName(current.replace(WRAPPER, ''))
-    ) {
+    for (let next = unwrapOnce(current); next !== current; next = unwrapOnce(current)) {
         current = next
     }
     return current.replace(/^pnpm@\S+/, 'pnpm')
+}
+
+/**
+ * One wrapper layer off. pnpm options may precede `exec` / `dlx`
+ * (`pnpm --filter <pkg> exec playwright test`, `pnpm -C apps/web exec ...`),
+ * and exec's own options follow it (#650 review).
+ */
+function unwrapOnce(command) {
+    const run = pnpmInvocation(command.replace(/^pnpm@\S+/, 'pnpm'))
+    if (run && (run.script === 'exec' || run.script === 'dlx')) {
+        const rest = [...run.rest]
+        while (rest.length > 1 && rest[0].startsWith('-')) rest.shift()
+        if (rest.length) return programName(rest.join(' '))
+    }
+    return programName(command.replace(WRAPPER, ''))
 }
 
 /**
@@ -489,13 +521,43 @@ export function normalizeGit(command) {
 /** A word whose value only exists at run time: a substitution or a `$VAR`. */
 const runtimeValue = (token) => token === SUBST || token.includes('$')
 
-/** git commit options whose next word is a value (message, file, author, ...). */
-const COMMIT_VALUE_OPTION =
-    /^(?:-[A-Za-z]*[mFCct]|--(?:message|file|reuse-message|reedit-message|template|author|date|cleanup|fixup|squash|trailer))$/
-/** Value-taking options per git subcommand: their next word is data. */
+/**
+ * Value-taking options per git subcommand: short letters and long names whose
+ * value may be the next word (message, file, author, push option, ...).
+ */
 const GIT_VALUE_OPTIONS = {
-    commit: COMMIT_VALUE_OPTION,
-    push: /^(?:-o|--push-option|--repo|--receive-pack|--exec)$/,
+    commit: {
+        short: 'mFCct',
+        long: /^--(?:message|file|reuse-message|reedit-message|template|author|date|cleanup|fixup|squash|trailer)$/,
+    },
+    push: { short: 'o', long: /^--(?:push-option|repo|receive-pack|exec)$/ },
+}
+
+/**
+ * Positions of the words consumed as option values, parsed in order like git
+ * does (#650 review): `-m msg`, `-am msg` and `--message msg` take the next
+ * word; `-mtest` and `--message=x` carry their value, so the next word is an
+ * option again; a consumed word (`-m '-m'`) is never read as an option.
+ */
+function optionValuePositions(tokens, spec) {
+    const values = new Set()
+    for (let k = 2; k < tokens.length; k += 1) {
+        const token = tokens[k]
+        if (token === '--') break
+        if (spec.long.test(token)) {
+            values.add(k + 1)
+            k += 1
+        } else if (/^-[A-Za-z]/.test(token)) {
+            // A short cluster: the first value letter takes the rest of the
+            // token, or the next word when it is the cluster's last letter.
+            const at = [...token.slice(1)].findIndex((letter) => spec.short.includes(letter))
+            if (at === token.length - 2) {
+                values.add(k + 1)
+                k += 1
+            }
+        }
+    }
+    return values
 }
 
 /**
@@ -504,12 +566,11 @@ const GIT_VALUE_OPTIONS = {
  * standalone `git commit '--no-verify'` stays a flag (#650 review).
  */
 function maskOptionValues(command) {
-    const option = GIT_VALUE_OPTIONS[/^git\s+(\S+)/.exec(command)?.[1]]
-    if (!option) return command
+    const spec = GIT_VALUE_OPTIONS[/^git\s+(\S+)/.exec(command)?.[1]]
+    if (!spec) return command
     const tokens = command.split(' ')
-    return tokens
-        .map((token, k) => (k > 1 && option.test(tokens[k - 1]) ? 'VALUE' : token))
-        .join(' ')
+    const values = optionValuePositions(tokens, spec)
+    return tokens.map((token, k) => (values.has(k) ? 'VALUE' : token)).join(' ')
 }
 
 const RULES = [
@@ -582,7 +643,8 @@ const RULES = [
     [
         'git commit argument known only at run time (may expand to a flag)',
         // `git commit $(printf --no-verify)` or `git commit "$FLAGS"`: the value
-        // is unknown. As the value of -m/-F/... it is message text.
+        // is unknown. As the value of -m/-F/... it is message text, already
+        // masked to VALUE (maskOptionValues) before the rules run.
         (c) => {
             if (!/^git\s+commit\b/.test(c)) return false
             const tokens = c.split(/\s+/)
@@ -590,7 +652,6 @@ const RULES = [
                 (token, k) =>
                     runtimeValue(token) &&
                     k >= 2 &&
-                    !COMMIT_VALUE_OPTION.test(tokens[k - 1]) &&
                     // An attached value (`--message="$MSG"`, `-m"$MSG"`) cannot
                     // become a flag of its own (#650 review).
                     !/^--?[A-Za-z][\w-]*=/.test(token) &&
@@ -686,16 +747,17 @@ const overridesHooksPath = (assignments) =>
 /** Adds the rules `words` breaks; returns shell text it hands to another shell. */
 const RAW_RULES = new Set(['hook bypass (core.hooksPath)'])
 
+const ROOT = path.resolve(import.meta.dirname, '../..')
+
 /** The workspaces: `{ name, dir, scripts }`, `dir` '' for the root; read once. */
 let workspaceTable = null
 function workspaces() {
     if (workspaceTable) return workspaceTable
     workspaceTable = []
-    const root = path.resolve(import.meta.dirname, '../..')
     const dirs = ['']
     for (const group of ['apps', 'packages']) {
         try {
-            for (const name of readdirSync(path.join(root, group)))
+            for (const name of readdirSync(path.join(ROOT, group)))
                 dirs.push(path.posix.join(group, name))
         } catch {
             // no such group in this checkout
@@ -703,7 +765,7 @@ function workspaces() {
     }
     for (const dir of dirs) {
         try {
-            const pkg = JSON.parse(readFileSync(path.join(root, dir, 'package.json'), 'utf8'))
+            const pkg = JSON.parse(readFileSync(path.join(ROOT, dir, 'package.json'), 'utf8'))
             workspaceTable.push({
                 name: dir === '' ? '' : pkg.name,
                 dir,
@@ -723,14 +785,52 @@ const workspaceDir = (selector) => {
 }
 
 /**
- * The workspaces a pnpm selector names: a package name, or a directory
- * (`./apps/web`, `{apps/web}`, `.` = the root; #650 review). A glob,
- * exclusion, dependency or changed-since selector may reach any of them.
+ * The working directory relative to the repository root ('' = the root), or
+ * null when it is not known (outside the repository, `~`, `$DIR`, `cd -`).
  */
-function selectedWorkspaces(selector) {
+const repoRelative = (absolute) => {
+    if (absolute === ROOT) return ''
+    return absolute.startsWith(`${ROOT}/`) ? absolute.slice(ROOT.length + 1) : null
+}
+/** `dir` joined onto the known working directory `cwd`, or null. */
+const joinDir = (cwd, dir) => {
+    if (dir.startsWith('/')) return repoRelative(path.posix.normalize(dir))
+    if (cwd === null || runtimeValue(dir) || /^[~-]/.test(dir)) return null
+    const joined = path.posix.normalize(path.posix.join(cwd || '.', dir)).replace(/\/$/, '')
+    if (joined === '.') return ''
+    return joined.startsWith('..') ? null : joined
+}
+
+/**
+ * The workspace a directory belongs to: the deepest one containing it, the
+ * root otherwise (pnpm reads the nearest package.json). A nested checkout
+ * (`.notes/<worktree>/apps/web`) maps by its trailing path.
+ */
+function workspaceAt(dir) {
+    const inside = (w) =>
+        w.dir === '' ||
+        dir === w.dir ||
+        dir.startsWith(`${w.dir}/`) ||
+        dir.endsWith(`/${w.dir}`) ||
+        dir.includes(`/${w.dir}/`)
+    return workspaces()
+        .filter(inside)
+        .sort((a, b) => b.dir.length - a.dir.length)
+        .slice(0, 1)
+}
+
+/**
+ * The workspaces a pnpm selector names: a package name, or a directory
+ * (`./apps/web`, `{apps/web}`, `.` = the current one's root; #650 review). A
+ * glob, exclusion, dependency or changed-since selector may reach any of them.
+ */
+function selectedWorkspaces(selector, cwd) {
     const all = workspaces()
     if (/[*!{}[\]^]|\.\.\./.test(selector.replace(/^\{([^{}*]*)\}$/, '$1'))) return all
-    if (/^[.{]/.test(selector)) return all.filter((w) => w.dir === workspaceDir(selector))
+    if (/^[.{]/.test(selector)) {
+        const dir = joinDir(cwd, workspaceDir(selector) || '.')
+        return dir === null ? all : workspaceAt(dir)
+    }
     return all.filter((w) => w.name === selector)
 }
 
@@ -738,25 +838,39 @@ function selectedWorkspaces(selector) {
  * What a pnpm package script runs, with the passed-on arguments, so
  * `pnpm test:mutate` is judged as `pnpm exec stryker run` and
  * `pnpm --filter <pkg> test:ct` as that package's `playwright test` (#650 review).
- * The package comes from `--filter`, else `--dir` / `-C`, else the root. When
- * it has no such script, every package that does is judged: the shell may
- * have `cd`-ed into one (`cd apps/web && pnpm test:e2e`).
+ * The package comes from `--filter`, else `--dir` / `-C`, else the working
+ * directory (`cd apps/web && pnpm run dev` is the web package's `vite`). When
+ * that directory is unknown, every package that has the script is judged.
  */
-function scriptBodies(command) {
+function scriptBodies(command, cwd) {
     const run = pnpmInvocation(command)
     if (!run?.script) return []
     const options = command.split(/\s--(?=\s|$)/)[0]
     const filters = [...options.matchAll(/(?:^|\s)(?:--filter(?:-prod)?|-F)(?:=|\s+)(\S+)/g)]
-    const dir = /(?:^|\s)(?:--dir|-C)(?:=|\s+)(\S+)/.exec(options)
-    let chosen = filters.length
-        ? filters.flatMap((match) => selectedWorkspaces(match[1]))
-        : workspaces().filter((w) => w.dir === (dir ? workspaceDir(dir[1]) : ''))
-    if (!chosen.some((w) => w.scripts[run.script])) chosen = workspaces()
+    const dirOption = /(?:^|\s)(?:--dir|-C)(?:=|\s+)(\S+)/.exec(options)
+    const dir = dirOption ? joinDir(cwd, dirOption[1]) : cwd
+    const chosen = filters.length
+        ? filters.flatMap((match) => selectedWorkspaces(match[1], dir))
+        : dir === null
+          ? workspaces()
+          : workspaceAt(dir)
     const bodies = new Set(chosen.map((w) => w.scripts[run.script]).filter(Boolean))
     return [...bodies].map((body) => [body, ...run.rest].join(' '))
 }
 
-function judge(words, violations) {
+/**
+ * The working directory after `words` when they change it (`cd`, `pushd`,
+ * `popd`), else `undefined`.
+ */
+function changedDir(words, cwd) {
+    const [program, ...args] = unwrappedWords(words)
+    if (program === 'popd') return null
+    if (program !== 'cd' && program !== 'pushd') return undefined
+    const target = args.find((arg) => arg === '-' || !arg.startsWith('-'))
+    return target === undefined ? null : joinDir(cwd, target)
+}
+
+function judge(words, violations, cwd) {
     const assignments = envAssignments(words)
     if (disablesHusky(assignments)) violations.add('hook bypass (HUSKY=0)')
     if (overridesHooksPath(assignments)) violations.add('hook bypass (core.hooksPath)')
@@ -783,8 +897,15 @@ function judge(words, violations) {
         if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
     }
     if (rest[0] === 'eval') return [rest.slice(1).join(' ')]
-    const bodies = scriptBodies(command)
+    const bodies = scriptBodies(command, cwd)
     if (bodies.length) return bodies
+    // `pnpm exec -c '<script>'` (shell mode) runs that text as shell.
+    const shellMode = words.findIndex(
+        (w, k) => /^(?:-c|--shell-mode)$/.test(w) && words.slice(0, k).includes('exec'),
+    )
+    if (shellMode !== -1 && words[0]?.startsWith('pnpm') && words[shellMode + 1] !== undefined) {
+        return [words[shellMode + 1]]
+    }
     // `env -S '<cmd args>'` splits that string and runs it (#650 review).
     const envAt = words.findIndex((w) => programName(w) === 'env')
     if (envAt !== -1) {
@@ -799,19 +920,29 @@ function judge(words, violations) {
     return []
 }
 
-/** Every rule the command breaks; empty when it may run. */
-export function bashViolations(command, depth = 0) {
+/**
+ * Every rule the command breaks; empty when it may run. `cwd` is the working
+ * directory relative to the repository root ('' = root, null = unknown); a
+ * `cd` in the command moves it for the commands after it.
+ */
+export function bashViolations(command, depth = 0, cwd = '') {
     const violations = new Set()
     const { commands, nested, opaque } = parseCommands(command)
-    if (opaque) violations.add('shell reads piped input that cannot be inspected')
-    for (const words of commands) nested.push(...judge(words, violations))
+    if (opaque) violations.add('shell reads input that cannot be inspected')
+    const scripts = nested.map((script) => [script, cwd])
+    let dir = cwd
+    for (const words of commands) {
+        const moved = changedDir(words, dir)
+        if (moved !== undefined) dir = moved
+        else for (const script of judge(words, violations, dir)) scripts.push([script, dir])
+    }
     // Fail closed: text nested deeper than the guard reads is denied, not
     // waved through (#650 review).
-    if (nested.length && depth >= MAX_DEPTH) {
+    if (scripts.length && depth >= MAX_DEPTH) {
         violations.add(`nesting deeper than ${MAX_DEPTH} levels (not inspected)`)
     } else {
-        for (const script of nested) {
-            for (const violation of bashViolations(script, depth + 1)) violations.add(violation)
+        for (const [script, at] of scripts) {
+            for (const violation of bashViolations(script, depth + 1, at)) violations.add(violation)
         }
     }
     return [...violations]
@@ -825,7 +956,9 @@ function main() {
         return
     }
     if (input?.tool_name !== 'Bash' || typeof input.tool_input?.command !== 'string') return
-    const violations = bashViolations(input.tool_input.command)
+    // The session's working directory: `pnpm run dev` in apps/web is vite.
+    const cwd = typeof input.cwd === 'string' ? repoRelative(path.resolve(input.cwd)) : ''
+    const violations = bashViolations(input.tool_input.command, 0, cwd)
     if (!violations.length) return
     process.stdout.write(
         JSON.stringify({

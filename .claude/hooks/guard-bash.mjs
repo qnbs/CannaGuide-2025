@@ -31,11 +31,15 @@ import { heavyCommandRule, shellCommands } from '../../scripts/security/check-ag
 const EVALUATES_TEXT = /\b(?:ba|z|da)?sh\s+(?:-\w+\s+)*-[A-Za-z]*c\b|\beval\b|\bxargs\b/
 
 const SHELL_HEREDOC = /(?:^|[|;&]\s*)(?:ba|z|da)?sh\b|\bsource\b|\beval\b/
-/** Options whose quoted value is message text (also `-am`, `gh -b` / `-t`). */
-const MESSAGE_OPTION =
-    /(\s(?:-[A-Za-z]*m|--message|--body|--title|--notes|-[bt]|-[fF]|--field|--raw-field)(?:=|\s+))('[^']*'|"(?:[^"\\]|\\.)*")/g
-/** A variable's quoted value is data as well: `MSG="..."`, `R[key]='...'`. */
-const ASSIGNMENT = /((?:^|[\s;&|(])[A-Za-z_]\w*(?:\[[^\]\s]*\])?=)('[^']*'|"(?:[^"\\]|\\.)*")/g
+/**
+ * One left-to-right pass over every quoted string, so a quote character inside
+ * the other kind of quotes (`"it's"`) never opens a span (#650 review). The
+ * optional prefix marks a value that is data: the text of a message option
+ * (-m / -am / --message / --body / --title / --notes / gh -b -t -f -F --field)
+ * or of a variable assignment (`MSG="..."`, `R[key]='...'`).
+ */
+const QUOTED =
+    /(\s(?:-[A-Za-z]*m|--message|--body|--title|--notes|-[bt]|-[fF]|--field|--raw-field)(?:=|\s+)|(?:^|[\s;&|(])[A-Za-z_]\w*(?:\[[^\]\s]*\])?=)?('[^']*'|"(?:[^"\\]|\\.)*")/g
 /** Single quotes never substitute; in double quotes only an unescaped `$(` or backtick does. */
 const SUBSTITUTION = /(?<!\\)(?:\$\(|`)/
 const liveSubstitution = (quoted) => quoted.startsWith('"') && SUBSTITUTION.test(quoted)
@@ -57,7 +61,8 @@ export function stripData(command) {
             continue
         }
         kept.push(line)
-        const heredoc = /<<-?\s*(['"]?)([A-Za-z_][\w-]*)\1/.exec(line)
+        // `<<<` is a here-string, not a heredoc.
+        const heredoc = /(?<!<)<<(?!<)-?\s*(['"]?)([A-Za-z_][\w-]*)\1/.exec(line)
         if (heredoc) {
             delimiter = heredoc[2]
             // A quoted delimiter makes the body literal; an unquoted one
@@ -67,29 +72,23 @@ export function stripData(command) {
     }
     const text = kept.join('\n')
     if (EVALUATES_TEXT.test(text)) return text
-    return text
-        .replace(MESSAGE_OPTION, (all, option, quoted) =>
-            liveSubstitution(quoted) ? all : `${option}MESSAGE`,
-        )
-        .replace(ASSIGNMENT, (all, name, quoted) => {
-            if (liveSubstitution(quoted)) return all
-            // HUSKY's own value stays: `HUSKY="0"` is still the switch.
-            return name.trimStart().startsWith('HUSKY=')
-                ? name + quoted.slice(1, -1)
-                : `${name}VALUE`
-        })
-        .replace(/'([^']*)'/g, (_, inner) => inert(inner))
-        .replace(/"((?:[^"\\]|\\.)*)"/g, (all, inner) =>
-            SUBSTITUTION.test(inner) ? all : inert(inner),
-        )
+    return text.replace(QUOTED, (all, prefix = '', quoted) => {
+        if (liveSubstitution(quoted)) return all
+        const inner = quoted.slice(1, -1)
+        if (!prefix) return inert(inner)
+        // HUSKY's own value stays: `HUSKY="0"` is still the switch.
+        if (/^\s*HUSKY=$/.test(prefix)) return prefix + inner
+        return `${prefix}DATA`
+    })
 }
 
 /**
  * The command a wrapper runs: `command git ...`, `env -i X=1 pnpm ...`,
- * `timeout 60 git ...`, `nice -n 5 ...`, `sudo ...` are judged as what they run.
+ * `timeout 60 git ...`, `nice -n 5 ...`, `sudo ...` are judged as what they run,
+ * and so is the body of a control keyword (`do git push`, `then ...`, `! ...`).
  */
 const WRAPPER =
-    /^(?:command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+-\S+)*|env(?:\s+-\S+)*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = command.trim()
     for (
@@ -158,13 +157,14 @@ export function bashViolations(command) {
     const text = stripData(command)
     const violations = new Set()
     if (/(?:^|[\s;&|(])HUSKY=0\b/.test(text)) violations.add('hook bypass (HUSKY=0)')
-    // Substitutions, subshells, groups and the quotes of `sh -c '...'` start a
-    // new command; lines are judged one by one (shellCommands drops everything
-    // after a `#`).
+    // Substitutions, subshells, groups, background `&` and the quotes of
+    // `sh -c '...'` start a new command. Lines are judged one by one, and a `#`
+    // inside a word (`a#b`, `$#`) is not a comment, so it must not let
+    // shellCommands cut off what follows.
     const subcommands = text
-        .replace(/\$\(|[`(){}'"]/g, ' ; ')
+        .replace(/\$\(|[`(){}'"&]/g, ' ; ')
         .split('\n')
-        .flatMap((line) => shellCommands(line))
+        .flatMap((line) => shellCommands(line.replace(/(?<=[^\s;|])#/g, '_')))
     for (const raw of subcommands) {
         const sub = unwrap(raw)
         const git = normalizeGit(sub)

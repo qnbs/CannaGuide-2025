@@ -509,6 +509,72 @@ test('#650 review wave on 65d16dce: each finding is denied, its harmless twin al
     }
 })
 
+test('#650 review wave on 99287978: each finding is denied, its harmless twin allowed', () => {
+    const cases = [
+        // CodeRabbit: `<<` that never meets its delimiter is no heredoc to trust.
+        {
+            blocked: [
+                ['(( 1 << n ))\ngit push --force', /cannot be inspected/],
+                [
+                    'for (( i = 0; i << n; i++ )); do :; done\ngit push --force',
+                    /cannot be inspected/,
+                ],
+            ],
+            allowed: ["cat <<'EOF'\ntext\nEOF\ngit status", 'echo $(( 1 << 2 ))'],
+        },
+        // 1. A substitution inside a word is still a run-time value.
+        {
+            blocked: [['git commit "$(printf -- --no-)verify" -m fix', /known only at run time/]],
+            allowed: ['git commit -m "$(printf fix)-done"'],
+        },
+        // 2. A cd that may be skipped leaves the directory unknown.
+        {
+            blocked: [
+                ['false && cd apps/web; pnpm run dev', /bare turbo run/],
+                ['test -d x || cd apps/web; pnpm run dev', /bare turbo run/],
+            ],
+            allowed: ['cd apps/web && pnpm run dev'],
+        },
+        // 4. printf terminates on a format that consumes no argument.
+        {
+            blocked: [["printf '%s\\n%%s\\n' 'git push --force' | bash", /force push/]],
+            allowed: ["printf '%%s' x | grep s"],
+        },
+        // 5. pnpm install-test / it run an install and the test suite.
+        {
+            blocked: [
+                ['pnpm install-test', /frozen-lockfile/],
+                ['pnpm it --frozen-lockfile', /unfiltered pnpm suite/],
+                ['pnpm --filter @cannaguide/web it --frozen-lockfile', /whole-suite test run/],
+            ],
+            allowed: ['pnpm install --frozen-lockfile'],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+    // 3. Nested text runs in its own command's directory, both ways.
+    assert.match(
+        bashViolations('cd ../.. && echo "$(pnpm run dev)"', 0, 'apps/web').join('; '),
+        /bare turbo run/,
+    )
+    assert.deepEqual(bashViolations('cd apps/web && bash <<< "pnpm run dev"'), [])
+    // 4. The hook itself answers `printf '%%s' x | bash` instead of hanging.
+    const hung = spawnSync(process.execPath, [HOOK], {
+        input: JSON.stringify({
+            tool_name: 'Bash',
+            tool_input: { command: "printf '%%s' x | bash" },
+        }),
+        encoding: 'utf8',
+        timeout: 10_000,
+    })
+    assert.equal(hung.error, undefined)
+    assert.equal(hung.status, 0)
+})
+
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {
     for (const hostile of [
         `nice${' -n5'.repeat(20_000)}!`,

@@ -32,7 +32,11 @@ import path from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
-import { heavyCommandRule, pnpmInvocation } from '../../scripts/security/check-agent-policy.mjs'
+import {
+    heavyCommandRule,
+    INSTALL_TEST,
+    pnpmInvocation,
+} from '../../scripts/security/check-agent-policy.mjs'
 
 const MAX_DEPTH = 8
 const SHELLS = /^(?:ba|z|da|k)?sh$/
@@ -234,14 +238,26 @@ export function parseCommands(source) {
             if (pipedNext) words.piped = true
             // The subshell it runs in: `(cd x); y` keeps y in the old directory.
             words.scope = scopes.join('.')
+            // `a && cd x` / `a || cd x` may not run: the directory is uncertain.
+            words.conditional = conditionalNext
             commands.push(words)
         }
+        // Text found while reading this command runs where it runs.
+        own(commands.length - 1)
         pipedNext = false
+        conditionalNext = false
         words = []
     }
+    // owners[k]: the index of the command that runs nested[k] (#650 review).
+    const owners = []
+    const own = (index) => {
+        while (owners.length < nested.length) owners.push(Math.max(index, 0))
+    }
     let pipedNext = false
+    let conditionalNext = false
     const scopes = []
     let lastScope = 0
+    let unterminated = false
     let i = 0
     while (i < s.length) {
         const c = s[i]
@@ -253,7 +269,12 @@ export function parseCommands(source) {
             const pending = heredocs
             heredocs = []
             endCommand()
-            i = readHeredocs(s, i + 1, pending, nested)
+            const read = readHeredocs(s, i + 1, pending, nested)
+            // A heredoc whose delimiter never comes swallows the rest of the
+            // input (`(( 1 << n ))` is no heredoc at all): fail closed.
+            if (read.unterminated) unterminated = true
+            own(commands.length - 1)
+            i = read.end
         } else if (c === '#' && word === null) {
             // A comment starts a word; `a#b` and `$#` are ordinary text.
             while (i < s.length && s[i] !== '\n') i += 1
@@ -337,6 +358,7 @@ export function parseCommands(source) {
             if (c === '(') scopes.push((lastScope += 1))
             else if (c === ')') scopes.pop()
             pipedNext = c === '|' && next !== '|'
+            conditionalNext = (c === '&' && next === '&') || (c === '|' && next === '|')
             i +=
                 (c === '&' && next === '&') ||
                 (c === '|' && /[|&]/.test(next ?? '')) ||
@@ -366,8 +388,9 @@ export function parseCommands(source) {
             if (text === null) opaque = true
             else nested.push(text)
         } else opaque = true
+        own(k)
     }
-    return { commands, nested, opaque }
+    return { commands, nested, owners, opaque: opaque || unterminated }
 }
 
 /** The words a command runs, after wrappers (original text, not flattened). */
@@ -430,29 +453,41 @@ function echoedText(words) {
         if (/%(?![%s])/.test(format)) return null
         let out = ''
         let k = 0
-        do {
+        // The format repeats only while it consumes arguments: `%%s` is a
+        // literal `%s` and takes none (it looped forever; #650 review).
+        for (let before = -1; k > before && (before === -1 || k < values.length);) {
+            before = k
             out += format.replace(/%([%s])/g, (_, spec) =>
                 spec === '%' ? '%' : (values[k++] ?? ''),
             )
-        } while (k < values.length && format.includes('%s'))
+        }
         return decodeAnsiC(out)
     }
     return decodeAnsiC(args.filter((arg) => !/^-[neE]+$/.test(arg)).join(' '))
 }
 
-/** Reads the bodies of the heredocs opened on the line before `start`. */
+/**
+ * Reads the bodies of the heredocs opened on the line before `start`; returns
+ * where reading stopped and whether a delimiter never came.
+ */
 function readHeredocs(s, start, pending, nested) {
     let i = start
+    let unterminated = false
     for (const doc of pending) {
         const body = []
+        let closed = false
         while (i < s.length) {
             const end = s.indexOf('\n', i)
             const stop = end === -1 ? s.length : end
             const line = s.slice(i, stop)
             i = stop + 1
-            if ((doc.stripTabs ? line.replace(/^\t+/, '') : line) === doc.delimiter) break
+            if ((doc.stripTabs ? line.replace(/^\t+/, '') : line) === doc.delimiter) {
+                closed = true
+                break
+            }
             body.push(line)
         }
+        if (!closed) unterminated = true
         const text = body.join('\n')
         // Kept for a shell further down the pipeline (`cat <<EOF | bash`). An
         // unquoted delimiter expands `$X` / `$(...)` first, so the text a
@@ -469,7 +504,7 @@ function readHeredocs(s, start, pending, nested) {
             nested.push(...substitutionsIn(text))
         }
     }
-    return Math.min(i, s.length)
+    return { end: Math.min(i, s.length), unterminated }
 }
 
 /** A word as rule text: whitespace inside one quoted argument is not a separator. */
@@ -532,7 +567,8 @@ export function normalizeGit(command) {
 }
 
 /** A word whose value only exists at run time: a substitution or a `$VAR`. */
-const runtimeValue = (token) => token === SUBST || token.includes('$')
+// Also part of a word: `"$(printf -- --no-)verify"` is `--no-verify` (#650 review).
+const runtimeValue = (token) => token.includes(SUBST) || token.includes('$')
 
 /**
  * Value-taking options per git subcommand: short letters and long names whose
@@ -699,7 +735,10 @@ const RULES = [
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',
         // pnpm's own options may precede the command: `pnpm --dir apps/web install`.
-        (c) => ['install', 'i'].includes(pnpmInvocation(c)?.script) && !frozenLockfile(c),
+        // `pnpm install-test` / `it` install first (#650 review).
+        (c) =>
+            ['install', 'i', ...INSTALL_TEST].includes(pnpmInvocation(c)?.script) &&
+            !frozenLockfile(c),
     ],
 ]
 
@@ -942,26 +981,31 @@ function judge(words, violations, cwd) {
  */
 export function bashViolations(command, depth = 0, cwd = '') {
     const violations = new Set()
-    const { commands, nested, opaque } = parseCommands(command)
+    const { commands, nested, owners, opaque } = parseCommands(command)
     if (opaque) violations.add('shell reads input that cannot be inspected')
-    const scripts = nested.map((script) => [script, cwd])
     // The directory per subshell scope ('1.2' inherits from '1', then '').
-    // A cd in `( ... )`, a pipeline part or a background job ends with it.
+    // A cd in `( ... )`, a pipeline part or a background job ends with it; a
+    // cd after `&&` / `||` may be skipped, so the directory becomes unknown.
     const dirs = new Map([['', cwd]])
     const dirIn = (scope) => {
         for (let s = scope; ; s = s.slice(0, Math.max(s.lastIndexOf('.'), 0))) {
             if (dirs.has(s)) return dirs.get(s)
         }
     }
+    const scripts = []
+    const dirAt = []
     for (const words of commands) {
         const dir = dirIn(words.scope)
+        dirAt.push(dir)
         const moved = changedDir(words, dir)
         if (moved === undefined) {
             for (const script of judge(words, violations, dir)) scripts.push([script, dir])
         } else if (!words.piped && !words.subshell) {
-            dirs.set(words.scope, moved)
+            dirs.set(words.scope, words.conditional ? null : moved)
         }
     }
+    // Substitutions, here-strings and heredocs run where their command runs.
+    nested.forEach((script, k) => scripts.push([script, dirAt[owners[k]] ?? cwd]))
     // Fail closed: text nested deeper than the guard reads is denied, not
     // waved through (#650 review).
     if (scripts.length && depth >= MAX_DEPTH) {

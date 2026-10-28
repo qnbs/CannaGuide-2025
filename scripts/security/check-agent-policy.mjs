@@ -121,6 +121,8 @@ const isFilter = (token) => /^(?:--filter(?:-prod)?|-F)(?:=|$)/.test(token)
 const PNPM_COMMAND_WORDS = new Set([
     'install',
     'i',
+    'install-test',
+    'it',
     'add',
     'run',
     'exec',
@@ -183,12 +185,19 @@ export function pnpmInvocation(command) {
     return { filtered, script: tokens[i], rest: tokens.slice(i + 1) }
 }
 
+/** pnpm's builtin that runs `pnpm install` and then `pnpm test`, and its alias. */
+export const INSTALL_TEST = ['install-test', 'it']
+
 const UNFILTERED = [
     'unfiltered pnpm suite',
     {
         test(command) {
             const run = pnpmInvocation(command)
-            const suites = ['test', 'typecheck', 'lint', 'test:run', 'test:coverage', 'lint:full']
+            // `pnpm install-test` / `pnpm it` is `pnpm install` + `pnpm test` (#650 review).
+            const suites = [
+                ...['test', 'typecheck', 'lint', 'test:run', 'test:coverage', 'lint:full'],
+                ...INSTALL_TEST,
+            ]
             if (!run || run.filtered || !suites.includes(run.script)) return false
             // A filter after the script still reaches turbo, but only before a
             // standalone `--`: after it, it is the script's argument
@@ -266,7 +275,8 @@ const WHOLE_SUITE = [
     {
         test(command) {
             const run = pnpmInvocation(command)
-            if (!run || !['test', 'test:run', 'test:coverage'].includes(run.script)) return false
+            const tests = ['test', 'test:run', 'test:coverage', ...INSTALL_TEST]
+            if (!run || !tests.includes(run.script)) return false
             // A filter after the script goes to the root script (`turbo run
             // test:run --filter <pkg>`), which runs that package's whole suite;
             // the scoped form is `pnpm --filter <pkg> test:run <spec>` (#650 review).

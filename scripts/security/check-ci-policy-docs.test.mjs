@@ -54,11 +54,9 @@ test('current CI audit policy matches the blocking Chromium gate', () => {
     assert.equal(versionInAudit[1], versionInCi[1])
 
     const ciStatus = jobBody(ci, 'ci-status')
-    assert.match(ciStatus, /needs: \[changes, build, test, verify, security, rust, e2e\]/)
-    assert.match(
-        ciStatus,
-        /if \[\[ "\$\{\{ needs\.e2e\.result \}\}" != "success" \]\]; then/,
-    )
+    assert.match(ciStatus, /needs: \[changes, build, test, verify, security, policy, rust, e2e\]/)
+    assert.match(current, /Agent Policy/, 'CI-AUDIT must document the agent-policy gate')
+    assert.match(ciStatus, /if \[\[ "\$\{\{ needs\.e2e\.result \}\}" != "success" \]\]; then/)
 
     const security = readFileSync('SECURITY.md', 'utf8')
     const operations = section(security, '## CI operations')

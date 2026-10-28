@@ -47,6 +47,7 @@ jobs:
         outputs:
             code: ${{ steps.detect.outputs.code }}
             desktop: ${{ steps.detect.outputs.desktop }}
+            policy: ${{ steps.detect.outputs.policy }}
         steps:
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -78,8 +79,11 @@ jobs:
 
                   if [ -z "$BASE_SHA" ] || [ -z "$HEAD_SHA" ] || [[ "$BASE_SHA" =~ ^0+$ ]]; then
                     echo "No usable event diff for '$EVENT_NAME' -- running full code and desktop checks."
-                    echo "code=true" >> "$GITHUB_OUTPUT"
-                    echo "desktop=true" >> "$GITHUB_OUTPUT"
+                    {
+                      echo "code=true"
+                      echo "desktop=true"
+                      echo "policy=true"
+                    } >> "$GITHUB_OUTPUT"
                     exit 0
                   fi
 
@@ -136,6 +140,28 @@ jobs:
                     printf '  %s\n' "$DESKTOP"
                   else
                     echo "desktop=false" >> "$GITHUB_OUTPUT"
+                  fi
+
+                  # Agent instructions and gate documentation match DOCS_ONLY, so on
+                  # their own they skip the whole code pipeline -- and with it the
+                  # policy tests that guard them (CG-AUD-20261028-A02). They are not
+                  # docs to an agent: they are executed. Route them to the light
+                  # `policy` job instead. Same grep discipline as above.
+                  POLICY_PATHS='(^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/DEVOPS-GATES\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/)'
+                  set +e
+                  POLICY=$(printf '%s\n' "$CHANGED" | grep -E "$POLICY_PATHS")
+                  POLICY_STATUS=$?
+                  set -e
+                  if [ "$POLICY_STATUS" -gt 1 ]; then
+                    echo "[FAIL] Policy-path detection failed (grep exit $POLICY_STATUS)."
+                    exit 1
+                  fi
+                  if [ -n "$POLICY" ]; then
+                    echo "policy=true" >> "$GITHUB_OUTPUT"
+                    echo "Agent-policy paths changed -- running the policy gate:"
+                    printf '  %s\n' "$POLICY"
+                  else
+                    echo "policy=false" >> "$GITHUB_OUTPUT"
                   fi
 
     build:
@@ -371,6 +397,30 @@ jobs:
     # release rather than on the PR that introduced it. `cargo check` + clippy
     # is enough to catch that; the full bundle stays in desktop-build.yml.
     # ---------------------------------------------------------------------
+    policy:
+        name: Agent Policy
+        needs: changes
+        if: needs.changes.outputs.policy == 'true'
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+              with:
+                  egress-policy: audit
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+            - name: Setup Node + install dependencies
+              uses: ./.github/actions/setup-node-ci
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+            - name: Agent policy gate
+              run: node scripts/security/check-agent-policy.mjs
+            - name: Security policy regression tests
+              run: node --test --test-concurrency=1 ./scripts/security/*.test.mjs
+
     rust:
         name: Rust (Tauri)
         needs: changes
@@ -764,10 +814,13 @@ jobs:
         # therefore mergeable -- by the repository's own required check -- with the
         # browser tests unfinished, and a shard failing afterwards changed nothing.
         # A required gate that concludes before its evidence is in is not a gate.
-        needs: [changes, build, test, verify, security, rust, e2e]
+        needs: [changes, build, test, verify, security, policy, rust, e2e]
         runs-on: ubuntu-latest
         steps:
             - name: Check all jobs passed
+              env:
+                  POLICY_CHANGED: ${{ needs.changes.outputs.policy }}
+                  POLICY_RESULT: ${{ needs.policy.result }}
               run: |
                   if [[ "${{ needs.changes.result }}" != "success" ]]; then
                     echo "[FAIL] Could not determine whether code changed -- refusing to pass."
@@ -789,8 +842,19 @@ jobs:
                     fi
                   fi
 
+                  # Same reasoning for the agent-policy job: its detector is
+                  # independent of DOCS_ONLY, and a policy-only change is
+                  # code=false -- so it must be judged before the docs-only exit.
+                  POLICY_FAILED=0
+                  if [[ "$POLICY_CHANGED" == "true" ]]; then
+                    echo "Policy:   $POLICY_RESULT"
+                    if [[ "$POLICY_RESULT" != "success" ]]; then
+                      echo "[FAIL] Agent policy gate failed"; POLICY_FAILED=1
+                    fi
+                  fi
+
                   if [[ "${{ needs.changes.outputs.code }}" != "true" ]]; then
-                    if [[ "$RUST_FAILED" -ne 0 ]]; then exit 1; fi
+                    if [[ "$RUST_FAILED" -ne 0 || "$POLICY_FAILED" -ne 0 ]]; then exit 1; fi
                     echo "[OK] Docs-only change -- no code pipeline to run."
                     exit 0
                   fi
@@ -830,5 +894,6 @@ jobs:
                   # untouched -- but a skip is never accepted while desktop files
                   # DID change.
                   if [[ "$RUST_FAILED" -ne 0 ]]; then FAILED=1; fi
+                  if [[ "$POLICY_FAILED" -ne 0 ]]; then FAILED=1; fi
                   if [[ "$FAILED" -ne 0 ]]; then exit 1; fi
                   echo "[PASS] CI merge gate passed (build + test + verify + security + Chromium E2E)"

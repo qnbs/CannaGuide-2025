@@ -91,5 +91,9 @@ export const getSafeText = (value: unknown, fallback = ''): string =>
 export const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
+/** Strain `floweringTime` is stored in weeks; the genetics summary shows days. */
+export const floweringDaysFromWeeks = (weeks: unknown, fallbackWeeks = 9): number =>
+    Math.round(getSafeNumericValue(weeks, fallbackWeeks) * 7)
+
 export const getSafeStringArray = (value: unknown): string[] =>
     Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []

@@ -85,21 +85,19 @@ function extractTKeys(content) {
 // Main
 // ---------------------------------------------------------------------------
 
-const PLURAL_SUFFIXES = ['zero', 'one', 'two', 'few', 'many', 'other']
-
 /**
  * Whether a key used in code resolves against the flattened EN locale keys.
- * Plurals work in both directions: code may name `x_one` while the locale has
- * `x`, and -- the common i18next case -- code may name `x` with `{ count }`
- * while the locale holds `x_one` / `x_other`. The latter was not recognised,
- * which reported nine working plural keys as missing (CG-AUD-20261027-N03).
+ * Code may name `x` with `{ count }` while the locale holds `x_one` / `x_other`
+ * (the i18next plural form); that was not recognised and reported nine working
+ * keys as missing (CG-AUD-20261027-N03). The reverse does not hold: i18next
+ * looks `t('x_other')` up literally, so a plain `x` does not satisfy it.
  * A key that names an object (`x` with `x.y` in the locale) also resolves.
  */
 export function resolveKey(key, localeKeys) {
     if (localeKeys.has(key)) return true
-    const baseKey = key.replace(/_(zero|one|two|few|many|other)$/, '')
-    if (localeKeys.has(baseKey)) return true
-    if (PLURAL_SUFFIXES.some((suffix) => localeKeys.has(`${key}_${suffix}`))) return true
+    // English plurals have exactly the categories `one` and `other`: with only
+    // one of them, i18next renders the raw key for the other counts.
+    if (localeKeys.has(`${key}_one`) && localeKeys.has(`${key}_other`)) return true
     return [...localeKeys].some((lk) => lk.startsWith(key + '.'))
 }
 

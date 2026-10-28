@@ -11,6 +11,7 @@ import {
     getSafeText,
     getSafeNumericValue,
     getSafeStringArray,
+    floweringDaysFromWeeks,
 } from './genetics'
 import type { BreedingLabState } from './useBreedingLab'
 
@@ -199,7 +200,7 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.flowering'),
-                                    value: `${Math.round(getSafeNumericValue(geneticsOffspring.floweringTime, 63))} ${t('common.units.days')}`,
+                                    value: `${floweringDaysFromWeeks(geneticsOffspring.floweringTime)} ${t('common.units.days')}`,
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.height'),

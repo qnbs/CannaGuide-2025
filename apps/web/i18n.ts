@@ -68,6 +68,9 @@ export const ensureLocaleLoaded = async (lang: SupportedLocale): Promise<void> =
  */
 export const changeAppLanguage = async (lang: SupportedLocale): Promise<void> => {
     await ensureLocaleLoaded(lang)
+    // `fallbackLng` only resolves against a loaded bundle: without English, a
+    // string missing from es/fr/nl renders as its raw key.
+    if (lang !== 'en') await ensureLocaleLoaded('en')
     if (i18nInstance.language !== lang) {
         await i18nInstance.changeLanguage(lang)
     }
@@ -85,16 +88,17 @@ const initialLang: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).in
 
 // The initialization is now a promise that the app will wait for
 export const i18nPromise = (async () => {
-    // Only load the initially detected language at startup to minimize bundle loading time.
-    // The other language is loaded on demand when the user switches languages.
-    const initialTranslations = await loadLocale(initialLang)
+    // Load only the detected language plus English, the `fallbackLng` -- a
+    // fallback that is not loaded renders raw keys. Others load on demand.
+    const resources: Record<string, { translation: LocalePayload }> = {
+        [initialLang]: { translation: await loadLocale(initialLang) },
+    }
+    if (initialLang !== 'en') resources.en = { translation: await loadLocale('en') }
 
     await i18nInstance.use(initReactI18next).init({
         lng: initialLang,
         fallbackLng: 'en',
-        resources: {
-            [initialLang]: { translation: initialTranslations },
-        },
+        resources,
         interpolation: {
             escapeValue: false,
         },

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useAppDispatch } from '@/stores/store'
+import { setSetting } from '@/stores/slices/settingsSlice'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 import { SettingsRow } from './SettingsShared'
 
@@ -14,6 +16,7 @@ type Status = { type: 'success' | 'error'; message: string } | null
  */
 export const CloudTtsKeyField: React.FC = () => {
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
     const [apiKeyInput, setApiKeyInput] = useState('')
     const [hasStoredKey, setHasStoredKey] = useState(false)
     const [isBusy, setIsBusy] = useState(false)
@@ -21,18 +24,34 @@ export const CloudTtsKeyField: React.FC = () => {
 
     useEffect(() => {
         let active = true
-        void cloudTtsKeyService.hasApiKey().then((stored) => {
-            if (active) setHasStoredKey(stored)
-        })
+        cloudTtsKeyService
+            .hasApiKey()
+            .then((stored) => {
+                if (active) setHasStoredKey(stored)
+            })
+            .catch(() => {
+                // An unreadable store shows "no key"; saving a new one still works.
+            })
         return () => {
             active = false
         }
     }, [])
 
+    /**
+     * After an explicit save or removal, a legacy plaintext key still waiting
+     * in the settings (failed startup migration) is obsolete: drop it, so the
+     * next start cannot overwrite the user's choice with it (#711 review).
+     */
+    const retireLegacyKey = (): void => {
+        cloudTtsKeyService.resolveLegacyKey()
+        dispatch(setSetting({ path: 'tts.cloudTtsApiKey', value: null }))
+    }
+
     const handleSave = async (): Promise<void> => {
         setIsBusy(true)
         try {
             await cloudTtsKeyService.setApiKey(apiKeyInput)
+            retireLegacyKey()
             setApiKeyInput('')
             setHasStoredKey(true)
             setStatus({ type: 'success', message: t('settingsView.security.saved') })
@@ -47,6 +66,7 @@ export const CloudTtsKeyField: React.FC = () => {
         setIsBusy(true)
         try {
             await cloudTtsKeyService.clearApiKey()
+            retireLegacyKey()
             setHasStoredKey(false)
             setStatus({ type: 'success', message: t('settingsView.security.cleared') })
         } catch {
@@ -64,6 +84,9 @@ export const CloudTtsKeyField: React.FC = () => {
             >
                 <Input
                     type="password"
+                    // SettingsRow labels only native controls; name this one
+                    // for assistive technology (#711 review).
+                    aria-label={t('settingsView.voice.cloudTts.apiKey')}
                     value={apiKeyInput}
                     onChange={(e) => setApiKeyInput(e.target.value)}
                     placeholder={t('settingsView.voice.cloudTts.apiKeyPlaceholder')}

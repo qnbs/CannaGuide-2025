@@ -81,4 +81,13 @@ export const cloudTtsKeyService = {
     isLegacyKeyPending(): boolean {
         return legacyKeyPending
     },
+
+    /**
+     * The user saved or removed a key explicitly: a legacy key still waiting
+     * in the settings is obsolete and must not overwrite that choice at the
+     * next start (#711 review).
+     */
+    resolveLegacyKey(): void {
+        legacyKeyPending = false
+    },
 }

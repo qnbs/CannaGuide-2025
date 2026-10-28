@@ -15,8 +15,9 @@ export const mountHydratedApp = async (): Promise<void> => {
 
         const { hydratedStore } = await hydrateApplicationStores()
 
+        let secretsMoved = false
         try {
-            await migrateLegacySecrets(hydratedStore)
+            secretsMoved = await migrateLegacySecrets(hydratedStore)
         } catch (migrationError) {
             console.error(
                 '[Secrets] Legacy key migration failed, retrying next start:',
@@ -31,6 +32,9 @@ export const mountHydratedApp = async (): Promise<void> => {
         }
 
         const flushPersistedState = setupPersistedStateSync(hydratedStore)
+        // A moved key is gone from Redux but still in the stored snapshot:
+        // rewrite it now rather than at the next state change (#711 review).
+        if (secretsMoved) await flushPersistedState()
         await runPostHydrationServices(hydratedStore, flushPersistedState)
     } catch (error) {
         console.error('Failed to initialize the application:', error)

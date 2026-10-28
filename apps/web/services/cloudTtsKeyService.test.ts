@@ -85,6 +85,14 @@ describe('cloudTtsKeyService', () => {
             await cloudTtsKeyService.migrateLegacyKey(null)
         })
 
+        it('an explicit save retires a pending legacy key (#711 review)', async () => {
+            vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(new Error('quota'))
+            await cloudTtsKeyService.migrateLegacyKey(CANARY)
+            expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(true)
+            cloudTtsKeyService.resolveLegacyKey()
+            expect(cloudTtsKeyService.isLegacyKeyPending()).toBe(false)
+        })
+
         it('has nothing to move for null or blank values', async () => {
             await expect(cloudTtsKeyService.migrateLegacyKey(null)).resolves.toBe(true)
             await expect(cloudTtsKeyService.migrateLegacyKey('  ')).resolves.toBe(true)

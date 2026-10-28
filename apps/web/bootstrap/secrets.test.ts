@@ -26,7 +26,7 @@ describe('migrateLegacySecrets (#654)', () => {
     it('clears the plaintext from settings once the encrypted copy is verified', async () => {
         vi.mocked(cloudTtsKeyService.migrateLegacyKey).mockResolvedValue(true)
         const { store, dispatch } = storeWith(CANARY)
-        await migrateLegacySecrets(store)
+        await expect(migrateLegacySecrets(store)).resolves.toBe(true)
         expect(cloudTtsKeyService.migrateLegacyKey).toHaveBeenCalledWith(CANARY)
         expect(dispatch).toHaveBeenCalledWith(
             setSetting({ path: 'tts.cloudTtsApiKey', value: null }),
@@ -36,13 +36,13 @@ describe('migrateLegacySecrets (#654)', () => {
     it('leaves the settings untouched when the migration fails', async () => {
         vi.mocked(cloudTtsKeyService.migrateLegacyKey).mockResolvedValue(false)
         const { store, dispatch } = storeWith(CANARY)
-        await migrateLegacySecrets(store)
+        await expect(migrateLegacySecrets(store)).resolves.toBe(false)
         expect(dispatch).not.toHaveBeenCalled()
     })
 
     it('does nothing without a legacy key', async () => {
         const { store, dispatch } = storeWith(null)
-        await migrateLegacySecrets(store)
+        await expect(migrateLegacySecrets(store)).resolves.toBe(false)
         expect(cloudTtsKeyService.migrateLegacyKey).not.toHaveBeenCalled()
         expect(dispatch).not.toHaveBeenCalled()
     })

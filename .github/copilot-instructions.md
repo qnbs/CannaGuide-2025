@@ -486,9 +486,9 @@ Switch to Agent Mode and execute the approved plan:
 1. **Create a todo list** (`manage_todo_list`) with all implementation steps.
 2. **Implement changes** in dependency order, marking todos in-progress/completed as you go.
 3. **Run validation** after each logical group of changes:
-    - `pnpm --filter @cannaguide/web typecheck` (must be clean)
-    - `pnpm --filter @cannaguide/web test:run` (must pass, 0 failures)
-    - `pnpm --filter @cannaguide/web build` (must succeed)
+    - `pnpm verify` (scoped typecheck, must be clean)
+    - `pnpm --filter @cannaguide/web test:run <spec>` for each spec the change touches (must pass, 0 failures) -- the whole suite runs in CI, not locally
+    - `pnpm run build` only when the change affects build output (one heavy process at a time)
 4. **Fix any errors** immediately before proceeding to the next step.
 
 ### Phase 3 -- Documentation Update (Agent Mode)
@@ -539,7 +539,7 @@ After implementation is complete with all validations passing, update **all affe
 - **Never skip Phase 3.** Every implementation must update all affected docs.
 - **Atomic sessions:** Each plan execution must leave the repo in a clean, buildable, documented state.
 - **Handoff continuity:** The `next-session-handoff.md` must always be current so any future session can resume without context loss.
-- **Metrics must be verified:** Never copy old metrics -- take counts from the CI run on the exact commit (test summary, coverage artifact) or from a scoped local run; never re-run the full suites locally to get them.
+- **Metrics must be verified:** Never copy old metrics. Repository-wide counts (tests, coverage) come only from the CI run on the exact commit (test summary, coverage artifact) -- a scoped local run covers only the affected workspaces and undercounts. Never re-run the full suites locally to get them.
 - **Follow-up executions are binding:** Plans written into `next-session-handoff.md` define the scope for subsequent sessions. Deviations require a new plan-mode prompt.
 
 ---

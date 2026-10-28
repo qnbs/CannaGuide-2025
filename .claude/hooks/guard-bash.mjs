@@ -402,6 +402,9 @@ export function normalizeGit(command) {
     return ['git', ...tokens.slice(index)].join(' ')
 }
 
+/** A word whose value only exists at run time: a substitution or a `$VAR`. */
+const runtimeValue = (token) => token === SUBST || token.includes('$')
+
 /** git commit options whose next word is a value (message, file, author, ...). */
 const COMMIT_VALUE_OPTION =
     /^(?:-[A-Za-z]*[mFCct]|--(?:message|file|reuse-message|reedit-message|template|author|date|cleanup|fixup|squash|trailer))$/
@@ -441,26 +444,28 @@ const RULES = [
     ],
     [
         'force push without a named branch (the current branch may be main)',
-        // `git push --force-with-lease [remote]` pushes the current branch,
-        // which a static check cannot see; name the branch (#650 review).
+        // `git push --force-with-lease [remote]` pushes the current branch, and
+        // `... origin "$BRANCH"` a branch only known at run time; neither is
+        // visible to a static check, so the branch must be written out.
         (c) => {
             if (!/^git\s+push\b.*--force-(?:with-lease|if-includes)/.test(c)) return false
             const positional = c
                 .split(/\s+/)
                 .slice(2)
                 .filter((word) => !word.startsWith('-'))
-            return positional.length < 2
+            return positional.length < 2 || positional.slice(1).some(runtimeValue)
         },
     ],
     [
-        'git commit argument from a command substitution (may expand to a flag)',
-        // `git commit $(printf --no-verify)`: the output is unknown. A
-        // substitution as the value of -m/-F/... is message text.
+        'git commit argument known only at run time (may expand to a flag)',
+        // `git commit $(printf --no-verify)` or `git commit "$FLAGS"`: the value
+        // is unknown. As the value of -m/-F/... it is message text.
         (c) => {
             if (!/^git\s+commit\b/.test(c)) return false
             const tokens = c.split(/\s+/)
             return tokens.some(
-                (token, k) => token === SUBST && k >= 2 && !COMMIT_VALUE_OPTION.test(tokens[k - 1]),
+                (token, k) =>
+                    runtimeValue(token) && k >= 2 && !COMMIT_VALUE_OPTION.test(tokens[k - 1]),
             )
         },
     ],
@@ -474,7 +479,9 @@ const RULES = [
         // Any argument that means the whole tree, also after `--`.
         (c) =>
             /^git\s+add\b/.test(c) &&
-            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|\*+(?:\/\*+)*)(?=\s|$)/.test(c),
+            /\s(?:-[A-Za-z]*A[A-Za-z]*|--all|\.\/?|:\/|:\(top\)|(?:\.\/)?\*+(?:\/\*+)*)(?=\s|$)/.test(
+                c,
+            ),
     ],
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',

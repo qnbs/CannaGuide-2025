@@ -151,7 +151,21 @@ function injectionSinks(name, text) {
             return
         }
         const key = /^(\s*(?:-\s+)?)(?:run|script):(.*)$/.exec(line)
-        if (key) value = { indent: key[1].length, start: index + 1, parts: [key[2]] }
+        if (key) {
+            value = { indent: key[1].length, start: index + 1, parts: [key[2]] }
+            return
+        }
+        // Flow style (`- { name: x, run: 'echo ...' }`): the key follows `{` or
+        // `,`, and its value is the rest of that line (#648 review).
+        const flow = /[{,]\s*(?:run|script)\s*:(.*)$/.exec(line)
+        if (flow) {
+            value = {
+                indent: line.length - line.trimStart().length,
+                start: index + 1,
+                parts: [flow[1]],
+            }
+            flush()
+        }
     })
     flush()
     return sinks
@@ -190,6 +204,8 @@ test('the injection detector finds every form it guards against', () => {
         '    - run: |',
         '          echo ${{',
         '            inputs.h }}',
+        "    - { name: flow, run: 'echo ${{ inputs.i }}' }",
+        '    - { run: "echo ${{ github.event.issue.title }}", shell: bash }',
     ].join('\n')
     assert.deepEqual(injectionSinks('fixture', fixture), [
         'fixture:2',
@@ -203,6 +219,8 @@ test('the injection detector finds every form it guards against', () => {
         'fixture:23',
         'fixture:28',
         'fixture:30',
+        'fixture:32',
+        'fixture:33',
     ])
 })
 

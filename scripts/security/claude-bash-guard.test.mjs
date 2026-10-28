@@ -207,6 +207,7 @@ test('the commands the working rules prescribe are allowed', () => {
         '/usr/bin/git status',
         'git commit -am "$(printf fix)"',
         'git commit --author "$(git config user.name) <x@y>" -m fix',
+        'pnpm --filter @cannaguide/web test:run --sequence.seed 123 Foo',
         'git push -u origin fix/x',
         "cat <<< 'git commit --no-verify -m fix'",
         'R[t1]="never git push --force or git commit -n"; gh api graphql -f b="${R[t1]}"',

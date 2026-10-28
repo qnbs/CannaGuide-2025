@@ -156,6 +156,9 @@ jobs:
                       apps/web/lighthouse-assert.log
                   retention-days: 14
                   if-no-files-found: warn
+                  # .lighthouseci/ is a dot-directory, which upload-artifact skips by
+                  # default; it holds only the Lighthouse reports (lhr-*.json).
+                  include-hidden-files: true
 
             # Lighthouse failures are caught above so the metrics and artifacts are
             # still collected -- but a run without Lighthouse metrics is not a

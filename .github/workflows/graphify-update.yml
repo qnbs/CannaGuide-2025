@@ -62,7 +62,9 @@ jobs:
                   node-version: '24'
 
             - name: Update graph
-              run: uv run --no-project --with graphifyy==0.9.36 python -m graphify update .
+              # Same pins as scripts/graphify-pins.mjs (enforced by
+              # scripts/security/graphify-pins.test.mjs).
+              run: uv run --no-project --exclude-newer 2026-08-08T00:00:00Z --with graphifyy==0.9.36 python -m graphify update .
 
             # The workflow never writes to main. Validate the generated graph before
             # publishing it for human review so a broken artifact cannot be promoted.

@@ -8,6 +8,14 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+    GRAPHIFYY_VERSION,
+    MCP_VERSION,
+    UV_EXCLUDE_NEWER,
+    isNewerVersion,
+    uvRunWithPins,
+} from "./graphify-pins.mjs";
+
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const graphJson = join(root, "graphify-out", "graph.json");
 const launcher = join(root, "scripts", "graphify-mcp-stdio.sh");
@@ -191,19 +199,28 @@ if (uvVer.status !== 0) {
 }
 
 if (uvVer.status === 0) {
-    // Unattended contexts (CI) must not resolve "whatever is newest on PyPI
-    // right now" -- that reopens the exact non-reproducible, unpinned-package
-    // execution the graphify-update workflow was hardened to remove. The
-    // workflow sets these explicitly to match its own pinned "Update graph"
-    // step; interactive local runs fall back to unpinned for convenience,
-    // since a developer machine isn't the credentialed/unattended boundary.
-    const graphifyySpec = process.env.GRAPHIFYY_VERSION
-        ? `graphifyy==${process.env.GRAPHIFYY_VERSION}`
-        : "graphifyy";
-    const mcpSpec = process.env.MCP_VERSION ? `mcp==${process.env.MCP_VERSION}` : "mcp";
+    // Never resolve "whatever is newest on PyPI right now": the versions come
+    // from graphify-pins.mjs, the same pins the MCP launcher runs. The
+    // unpinned fallback this replaced was taken by CI's own doctor step, which
+    // sets neither variable. The variables still override, to try a bump; a
+    // release newer than the pin is newer than the cut-off, so the cut-off is
+    // then dropped unless GRAPHIFY_EXCLUDE_NEWER names one. Repeating the pins
+    // (graphify-update.yml) or picking an older release keeps it, so the
+    // transitive dependencies stay frozen.
+    const graphifyy = process.env.GRAPHIFYY_VERSION || GRAPHIFYY_VERSION;
+    const mcp = process.env.MCP_VERSION || MCP_VERSION;
+    const bumped =
+        isNewerVersion(graphifyy, GRAPHIFYY_VERSION) || isNewerVersion(mcp, MCP_VERSION);
+    const pins = {
+        graphifyy,
+        mcp,
+        excludeNewer: process.env.GRAPHIFY_EXCLUDE_NEWER || (bumped ? null : UV_EXCLUDE_NEWER),
+    };
+    const graphifyySpec = `graphifyy==${pins.graphifyy}`;
+    const mcpSpec = `mcp==${pins.mcp}`;
     const imports = spawnSync(
         "uv",
-        ["run", "--with", graphifyySpec, "--with", mcpSpec, "python", "-c", "import mcp, graphify"],
+        [...uvRunWithPins(pins), "python", "-c", "import mcp, graphify"],
         {
             encoding: "utf8",
             cwd: root,

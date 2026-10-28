@@ -116,6 +116,36 @@ function unquoteDouble(text, nested) {
     return out
 }
 
+const ANSI_C_SIMPLE = {
+    a: '\x07',
+    b: '\b',
+    e: '\x1b',
+    E: '\x1b',
+    f: '\f',
+    n: '\n',
+    r: '\r',
+    t: '\t',
+    v: '\v',
+}
+
+/**
+ * The text of a `$'...'` string the way bash decodes it: `\xHH`, `\NNN`,
+ * `\uHHHH`, `\UHHHHHHHH`, `\cX` and the letter escapes -- `$'\x2d\x2dno-verify'`
+ * is `--no-verify` (#650 review).
+ */
+function decodeAnsiC(text) {
+    return text.replace(
+        /\\(?:x([0-9A-Fa-f]{1,2})|([0-7]{1,3})|u([0-9A-Fa-f]{1,4})|U([0-9A-Fa-f]{1,8})|c(.)|(.))/g,
+        (all, hex, oct, u4, u8, ctrl, other) => {
+            if (hex) return String.fromCharCode(Number.parseInt(hex, 16))
+            if (oct) return String.fromCharCode(Number.parseInt(oct, 8) & 0xff)
+            if (u4 || u8) return String.fromCodePoint(Number.parseInt(u4 ?? u8, 16) % 0x110000)
+            if (ctrl) return String.fromCharCode(ctrl.charCodeAt(0) & 0x1f)
+            return ANSI_C_SIMPLE[other] ?? other
+        },
+    )
+}
+
 /** The `$(...)` and backtick bodies bash expands in an unquoted heredoc body. */
 /** Position of the `}` closing a `${` whose text starts at `i` (nesting-aware). */
 function closingBrace(s, i) {
@@ -222,8 +252,11 @@ export function parseCommands(source) {
         } else if (c === '$' && next === "'") {
             let j = i + 2
             while (j < s.length && s[j] !== "'") j += s[j] === '\\' ? 2 : 1
-            append(s.slice(i + 2, j).replace(/\\(.)/g, '$1'))
+            append(decodeAnsiC(s.slice(i + 2, j)))
             i = j + 1
+        } else if (c === '$' && next === '"') {
+            // `$"..."` (locale translation) is a double-quoted string.
+            i += 1
         } else if (c === '$' && next === '(') {
             const end = closingParen(s, i + 2)
             nested.push(s.slice(i + 2, end))
@@ -322,7 +355,9 @@ function readHeredocs(s, start, pending, nested) {
 }
 
 /** A word as rule text: whitespace inside one quoted argument is not a separator. */
-const flat = (word) => word.replace(/[\s#]/g, '_')
+// An empty argument (`''`) stays a token, so word positions survive the join
+// (`bash -c 'cmd' ''` keeps its script in place; #650 review).
+const flat = (word) => (word === '' ? "''" : word.replace(/[\s#]/g, '_'))
 
 /**
  * The command a wrapper runs: `command git ...`, `env -i X=1 pnpm ...`,

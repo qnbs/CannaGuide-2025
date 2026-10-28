@@ -381,13 +381,13 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                     onClick={isDictating ? stopDictation : startDictation}
                                     aria-label={
                                         isDictating
-                                            ? t('plants.voiceDictation.stop')
-                                            : t('plants.voiceDictation.start')
+                                            ? t('plantsView.voiceDictation.stop')
+                                            : t('plantsView.voiceDictation.start')
                                     }
                                     title={
                                         isDictating
-                                            ? t('plants.voiceDictation.stop')
-                                            : t('plants.voiceDictation.start')
+                                            ? t('plantsView.voiceDictation.stop')
+                                            : t('plantsView.voiceDictation.start')
                                     }
                                     aria-pressed={isDictating}
                                 >
@@ -408,7 +408,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         />
                         {isDictating && (
                             <p className="text-xs text-red-400 mt-1">
-                                {t('plants.voiceDictation.listening')}
+                                {t('plantsView.voiceDictation.listening')}
                             </p>
                         )}
                     </div>

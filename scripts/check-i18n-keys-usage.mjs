@@ -85,6 +85,22 @@ function extractTKeys(content) {
 // Main
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether a key used in code resolves against the flattened EN locale keys.
+ * Code may name `x` with `{ count }` while the locale holds `x_one` / `x_other`
+ * (the i18next plural form); that was not recognised and reported nine working
+ * keys as missing (CG-AUD-20261027-N03). The reverse does not hold: i18next
+ * looks `t('x_other')` up literally, so a plain `x` does not satisfy it.
+ * A key that names an object (`x` with `x.y` in the locale) also resolves.
+ */
+export function resolveKey(key, localeKeys) {
+    if (localeKeys.has(key)) return true
+    // English plurals have exactly the categories `one` and `other`: with only
+    // one of them, i18next renders the raw key for the other counts.
+    if (localeKeys.has(`${key}_one`) && localeKeys.has(`${key}_other`)) return true
+    return [...localeKeys].some((lk) => lk.startsWith(key + '.'))
+}
+
 async function main() {
     // Load EN locale as reference
     const enBarrel = pathToFileURL(resolve(LOCALES_DIR, 'en.ts')).href
@@ -119,19 +135,8 @@ async function main() {
     for (const [key, files] of usedKeys.entries()) {
         // Skip dynamic keys with interpolation patterns
         if (key.includes('${') || key.includes('{{')) continue
-        // Allow plural suffixes -- check base key too
-        const baseKey = key.replace(/_one$|_other$|_zero$|_few$|_many$/, '')
-        if (localeKeys.has(key) || localeKeys.has(baseKey)) {
-            resolvedKeys.push(key)
-        } else {
-            // Check if this is a partial key that matches a parent object
-            const isParentKey = [...localeKeys].some((lk) => lk.startsWith(key + '.'))
-            if (!isParentKey) {
-                missingKeys.push({ key, files })
-            } else {
-                resolvedKeys.push(key)
-            }
-        }
+        if (resolveKey(key, localeKeys)) resolvedKeys.push(key)
+        else missingKeys.push({ key, files })
     }
 
     // Output
@@ -183,7 +188,9 @@ async function main() {
     process.exit(missingKeys.length > 0 ? 1 : 0)
 }
 
-main().catch((err) => {
-    console.error('[FAIL] i18n keys usage check crashed:', err)
-    process.exit(2)
-})
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+    main().catch((err) => {
+        console.error('[FAIL] i18n keys usage check crashed:', err)
+        process.exit(2)
+    })
+}

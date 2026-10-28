@@ -118,8 +118,8 @@ async function handleAssistantQuery(query: string): Promise<void> {
     const plant = selectedPlantId ? state.simulation.plants.entities[selectedPlantId] : null
 
     if (!plant) {
-        getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.noPlantContext'))
-        speakFeedback(t('voiceControl.errors.noPlantContext'))
+        getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.noPlantContext'))
+        speakFeedback(t('common.voiceControl.errors.noPlantContext'))
         setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
         useVoiceStore.getState().setMode(VoiceMode.IDLE)
         return
@@ -148,7 +148,7 @@ async function handleAssistantQuery(query: string): Promise<void> {
         getUISnapshot().setVoiceStatusMessage(response.content)
     } catch (error) {
         console.debug('Voice assistant response failed:', error)
-        getUISnapshot().setVoiceStatusMessage(t('voiceControl.errors.assistantFailed'))
+        getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.assistantFailed'))
         useVoiceStore.getState().setMode(VoiceMode.IDLE)
         setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 5000)
     }

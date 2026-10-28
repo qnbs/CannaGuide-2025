@@ -863,6 +863,10 @@ export const settingsView = {
         gdprEraseWarning:
             'Dies löscht unwiderruflich ALLE Datenbanken, lokalen Speicher, Caches und Service Worker. Tippe DELETE ALL zur Bestätigung.',
         gdprEraseConfirmPlaceholder: 'DELETE ALL',
+        gdprSelectiveDeleteDesc:
+            'Einzelne Datenbanken statt aller Daten auf einmal löschen (Art. 17 DSGVO, teilweise Löschung).',
+        singleDbDeleteFail: '{{db}} konnte nicht gelöscht werden.',
+        singleDbDeleteSuccess: '{{db}} gelöscht. Wird neu geladen...',
     },
     privacy: {
         title: 'Privatsphäre & Sicherheit',
@@ -1246,6 +1250,9 @@ export const settingsView = {
         validRate: 'G\u00fcltigkeitsrate',
         latencyMs: 'Latenz (ms)',
         errors: 'Fehler',
+        dashboardDisabled: 'IoT-Sensoren deaktiviert',
+        dashboardEnableHint:
+            'Aktiviere IoT-Sensoren in den Einstellungen, um Live-Daten deiner ESP32-Geräte zu sehen.',
     },
     workerTelemetry: {
         title: 'Worker-Telemetrie',

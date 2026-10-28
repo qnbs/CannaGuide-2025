@@ -220,11 +220,14 @@ export const common = {
             startFailed: 'Could not start listening.',
             notUnderstood: 'Not understood. Please try again.',
             maxRetries: 'Could not understand after several attempts. Please try later.',
+            assistantFailed: 'The voice assistant could not answer. Please try again.',
+            noPlantContext: 'Open a plant first to use this voice command.',
         },
     },
     pagination: {
         previous: 'Previous Page',
         next: 'Next Page',
+        title: 'Pagination',
     },
     errorBoundary: {
         title: 'Something went wrong.',
@@ -235,6 +238,7 @@ export const common = {
         safeRecovery: 'Try Safe Recovery',
         safeRecoveryDescription:
             'If startup keeps failing, you can explicitly restore the last validated backup.',
+        subtitle: 'This section could not be loaded.',
     },
     appShortDescription:
         'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 800+ strains, get AI equipment advice, and master your grow with an interactive guide.',
@@ -368,6 +372,23 @@ export const common = {
             value: 'Value',
         },
     },
+    clear: 'Clear',
+    errors: {
+        unknown: 'An error occurred',
+    },
+    loading: 'Loading...',
+    pwaUpdate: {
+        message: 'A new update is available!',
+        reload: 'Reload',
+    },
+    redo: 'Redo',
+    reset: 'Reset',
+    swUpdateDeferredForMlDownload: 'Update will apply once the AI model finishes downloading.',
+    undo: 'Undo',
+    unknown: 'Unknown',
+    webLlmLoading: {
+        ariaLabel: 'Local AI model download progress',
+    },
 }
 
 export const nav = {
@@ -491,4 +512,5 @@ Visual traits to feature:
             '4': 'Assembling pros, cons, and a special pro-tip...',
         },
     },
+    proactiveDiagnosis: 'Proactive diagnosis',
 }

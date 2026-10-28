@@ -327,6 +327,16 @@ export const plantsView = {
             method: 'Method',
             product: 'Product',
         },
+        avgEc: 'Avg EC',
+        avgPh: 'Avg pH',
+        feeding: 'Feeding',
+        issuesNoted: 'Issues noted',
+        noEntriesForSummary: 'No journal entries to summarize.',
+        photos: 'Photos',
+        summaryPeriod: 'Summary',
+        totalEntries: 'Total entries',
+        training: 'Training',
+        watering: 'Watering',
     },
     lifecycle: {
         remaining: 'remaining',
@@ -537,6 +547,7 @@ export const plantsView = {
                 Trichomes: 'Trichomes',
                 Setup: 'Setup',
             },
+            autoLabelHint: 'Choose a category so you can find this photo more easily later.',
         },
         trainingTypes: {
             LST: 'LST',
@@ -707,6 +718,8 @@ export const plantsView = {
             lateFlower: 'Late Flower',
             danger: 'Danger',
         },
+        leafTempOffset: 'Leaf Temp Offset',
+        temperature: 'Temperature',
     },
     deepDive: {
         description:
@@ -764,6 +777,11 @@ export const plantsView = {
             optimal: 'Optimal',
             danger: 'Danger',
         },
+        presets: 'Presets:',
+        presetSeedling: 'Seedling',
+        presetVeg: 'Vegetative',
+        presetFlower: 'Flowering',
+        presetLateFlower: 'Late Flower',
     },
     advisorArchive: {
         searchPlaceholder: 'Search advisor responses...',

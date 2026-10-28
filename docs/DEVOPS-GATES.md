@@ -25,6 +25,7 @@ GitHub Actions job **`CI Status`** depends on how the `changes` job classifies t
 | Bundle budget                                       | `build`    | `node scripts/check-bundle-budget.mjs apps/web/dist/assets`                                                                                  |
 | Service dependency acyclic                          | `verify`   | `node scripts/generate-service-map.mjs`                                                                                                      |
 | i18n completeness                                   | `verify`   | `pnpm run check:i18n`                                                                                                                        |
+| i18n key usage (every `t()` key exists in EN)       | `verify`   | `pnpm run check:i18n-usage`                                                                                                                  |
 | Strain catalog integrity                            | `verify`   | `pnpm run strains:check-integrity`                                                                                                           |
 | Documentation metrics (badges ↔ source)             | `verify`   | `pnpm run check:doc-metrics`                                                                                                                 |
 | **jsx-a11y warning ratchet (may only drop)**        | `verify`   | `pnpm run check:a11y-ratchet`                                                                                                                |

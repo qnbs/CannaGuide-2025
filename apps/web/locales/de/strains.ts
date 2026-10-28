@@ -281,6 +281,7 @@ export const strainsView = {
             notes: 'Notizen',
             aiTips: 'KI-Tipps',
             images: 'Bilder',
+            availability: 'Samenbanken',
         },
         cannabinoidProfile: 'Cannabinoid-Profil',
         aromaProfile: 'Aroma- & Terpenprofil',
@@ -956,7 +957,14 @@ export const strainsView = {
             filterViable: 'Nur keimfaehige',
             showAll: 'Alle anzeigen',
         },
+        confirmDeleteBulkMsg_one:
+            '1 Samen-Eintrag löschen? Das kann nicht rückgängig gemacht werden.',
+        confirmDeleteBulkMsg_other:
+            '{{count}} Samen-Einträge löschen? Das kann nicht rückgängig gemacht werden.',
     },
+    favorite: 'Zu Favoriten hinzufügen',
+    unfavorite: 'Aus Favoriten entfernen',
+    loadError: 'Sorten konnten nicht geladen werden. Bitte versuche es erneut.',
 }
 
 export const strainLookup = {

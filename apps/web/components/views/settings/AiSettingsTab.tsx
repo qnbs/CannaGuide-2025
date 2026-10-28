@@ -19,7 +19,7 @@ const AiSettingsTab: React.FC = () => {
                     <PhosphorIcons.Warning className="w-10 h-10 mx-auto text-amber-400" />
                     <p className="text-sm text-slate-300">{t('common.errorBoundary.subtitle')}</p>
                     <Button variant="secondary" onClick={() => setHasError(false)}>
-                        {t('common.errorBoundary.retryButton')}
+                        {t('common.errorBoundary.retry')}
                     </Button>
                 </div>
             </Card>

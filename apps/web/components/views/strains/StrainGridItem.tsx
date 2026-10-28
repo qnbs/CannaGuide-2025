@@ -64,7 +64,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
         const safeName =
             typeof strain.name === 'string' && strain.name.trim() !== ''
                 ? strain.name
-                : t('strainsView.unknownStrain')
+                : t('plantsView.unknownStrain')
         const safeThc =
             typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
         const safeFloweringTime =

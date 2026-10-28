@@ -838,6 +838,10 @@ export const settingsView = {
             'Are you sure you want to delete the database "{{name}}"? This cannot be undone.',
         gdprSelectiveSuccess: 'Database "{{name}}" deleted successfully.',
         gdprSelectiveError: 'Failed to delete database "{{name}}".',
+        gdprSelectiveDeleteDesc:
+            'Delete individual databases instead of all data at once (Art. 17 GDPR partial erasure).',
+        singleDbDeleteFail: 'Failed to delete {{db}}.',
+        singleDbDeleteSuccess: '{{db}} deleted. Reloading...',
     },
     privacy: {
         title: 'Privacy & Security',
@@ -1215,6 +1219,9 @@ export const settingsView = {
         validRate: 'Valid Rate',
         latencyMs: 'Latency (ms)',
         errors: 'Errors',
+        dashboardDisabled: 'IoT Sensors Disabled',
+        dashboardEnableHint:
+            'Enable IoT sensors in Settings to see live data from your ESP32 devices.',
     },
     workerTelemetry: {
         title: 'Worker Telemetry',

@@ -223,11 +223,15 @@ export const common = {
             startFailed: 'Zuhören konnte nicht gestartet werden.',
             notUnderstood: 'Nicht verstanden. Bitte versuche es erneut.',
             maxRetries: 'Nach mehreren Versuchen nicht verstanden. Bitte später erneut versuchen.',
+            assistantFailed:
+                'Der Sprachassistent konnte nicht antworten. Bitte versuche es erneut.',
+            noPlantContext: 'Öffne zuerst eine Pflanze, um diesen Sprachbefehl zu nutzen.',
         },
     },
     pagination: {
         previous: 'Vorherige Seite',
         next: 'Nächste Seite',
+        title: 'Seitennavigation',
     },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
@@ -238,6 +242,7 @@ export const common = {
         safeRecovery: 'Sichere Wiederherstellung versuchen',
         safeRecoveryDescription:
             'Wenn der Start weiterhin fehlschlägt, kannst du die letzte geprüfte Sicherung ausdrücklich wiederherstellen.',
+        subtitle: 'Dieser Bereich konnte nicht geladen werden.',
     },
     appShortDescription:
         'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
@@ -374,6 +379,24 @@ export const common = {
             value: 'Wert',
         },
     },
+    clear: 'Leeren',
+    errors: {
+        unknown: 'Ein Fehler ist aufgetreten',
+    },
+    loading: 'Wird geladen...',
+    pwaUpdate: {
+        message: 'Neues Update verfügbar!',
+        reload: 'Neu laden',
+    },
+    redo: 'Wiederholen',
+    reset: 'Zurücksetzen',
+    swUpdateDeferredForMlDownload:
+        'Das Update wird angewendet, sobald das KI-Modell fertig heruntergeladen ist.',
+    undo: 'Rückgängig',
+    unknown: 'Unbekannt',
+    webLlmLoading: {
+        ariaLabel: 'Download-Fortschritt des lokalen KI-Modells',
+    },
 }
 
 export const nav = {
@@ -497,4 +520,5 @@ Visuell darzustellende Merkmale:
             '4': 'Stelle Vor- und Nachteile sowie einen speziellen Profi-Tipp zusammen...',
         },
     },
+    proactiveDiagnosis: 'Proaktive Diagnose',
 }

@@ -92,3 +92,70 @@ test('CodeQL and Scorecard each upload from exactly one workflow', () => {
         .map(({ name }) => name)
     assert.deepEqual(scorecardUploads, ['scorecard.yml'])
 })
+
+// A-S7 (zizmor template-injection): an expression is substituted into the
+// script text before it runs, so a dispatch input, event field or head ref in a
+// run: or github-script `script:` body is code. Such values reach the script
+// through `env:` instead. Booleans and outcomes GitHub or our own jobs produce
+// (needs.*.result, steps.*.outcome) are not attacker strings and stay allowed.
+const ACTIONS = resolve(dirname(fileURLToPath(import.meta.url)), '../.github/actions')
+const actionFiles = readdirSync(ACTIONS).map((dir) => ({
+    name: `actions/${dir}/action.yml`,
+    text: readFileSync(join(ACTIONS, dir, 'action.yml'), 'utf8'),
+}))
+const UNTRUSTED_EXPRESSION = /\$\{\{[^}]*\b(?:inputs\.|github\.event\.|github\.head_ref\b)[^}]*\}\}/
+
+// `file:line` of every untrusted expression inside a run:/script: body.
+function injectionSinks(name, text) {
+    const sinks = []
+    let block = null
+    text.split('\n').forEach((line, index) => {
+        const key = /^(\s*)(?:-\s+)?(?:run|script):\s*(.*)$/.exec(line)
+        if (key) {
+            if (UNTRUSTED_EXPRESSION.test(key[2])) sinks.push(`${name}:${index + 1}`)
+            block = /^[|>][-+]?\s*$/.test(key[2]) ? key[1].length : null
+            return
+        }
+        if (block === null || !line.trim()) return
+        if (line.length - line.trimStart().length <= block) block = null
+        else if (UNTRUSTED_EXPRESSION.test(line)) sinks.push(`${name}:${index + 1}`)
+    })
+    return sinks
+}
+
+test('the injection detector finds every form it guards against', () => {
+    const fixture = [
+        'steps:',
+        '    - run: echo ${{ inputs.path }}',
+        '    - run: |',
+        '          URL="${{ github.event.deployment_status.environment_url }}"',
+        '          echo "${{ github.head_ref }}"',
+        '    - uses: actions/github-script@0000000000000000000000000000000000000000',
+        '      with:',
+        '          script: |',
+        "              const base = '${{ inputs.base_branch }}'",
+        '    - env:',
+        '          SAFE: ${{ inputs.path }}',
+        '      run: echo "$SAFE ${{ needs.rust.result }}"',
+    ].join('\n')
+    assert.deepEqual(injectionSinks('fixture', fixture), [
+        'fixture:2',
+        'fixture:4',
+        'fixture:5',
+        'fixture:9',
+    ])
+})
+
+test('no workflow or composite action expands untrusted input inside a script', () => {
+    const sinks = [...files, ...actionFiles].flatMap(({ name, text }) => injectionSinks(name, text))
+    assert.deepEqual(sinks, [])
+    assert.ok(actionFiles.length >= 4, 'composite actions were not scanned')
+})
+
+test('setup-node-ci matches install-command against an allowlist, never runs it', () => {
+    const action = actionFiles.find(({ name }) => name === 'actions/setup-node-ci/action.yml')
+    assert.ok(action, 'setup-node-ci missing')
+    assert.doesNotMatch(action.text, /run: \$\{\{ inputs\.install-command \}\}/)
+    assert.match(action.text, /INSTALL_COMMAND: \$\{\{ inputs\.install-command \}\}/)
+    assert.match(action.text, /case "\$\{INSTALL_COMMAND\}" in/)
+})

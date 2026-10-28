@@ -18,10 +18,16 @@ runs:
     steps:
         - name: Prune stale GitHub deployments
           uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+          # Inputs reach the script through env, never as an expression in the source:
+          # a dispatch input such as keep_count would otherwise be JS code.
+          env:
+              KEEP_COUNT: ${{ inputs.keep_count }}
+              DRY_RUN: ${{ inputs.dry_run }}
           with:
               script: |
-                  const keep = Math.max(1, parseInt('${{ inputs.keep_count }}' || '3', 10));
-                  const dryRun = String('${{ inputs.dry_run }}').toLowerCase() === 'true';
+                  const parsedKeep = Number.parseInt(process.env.KEEP_COUNT || '3', 10);
+                  const keep = Math.max(1, Number.isFinite(parsedKeep) ? parsedKeep : 3);
+                  const dryRun = String(process.env.DRY_RUN).toLowerCase() === 'true';
                   const owner = context.repo.owner;
                   const repo = context.repo.repo;
                   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));

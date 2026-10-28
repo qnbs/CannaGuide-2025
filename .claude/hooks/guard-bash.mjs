@@ -27,7 +27,8 @@
  * or nothing (normal permission flow). Unparseable input is no decision:
  * a broken guard must not take the Bash tool down with it.
  */
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
+import path from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
@@ -36,7 +37,10 @@ import { heavyCommandRule, pnpmInvocation } from '../../scripts/security/check-a
 const MAX_DEPTH = 8
 const SHELLS = /^(?:ba|z|da|k)?sh$/
 /** A command that runs its standard input (heredoc, here-string) as shell. */
-const SHELL_READER = /^(?:(?:ba|z|da|k)?sh|source|\.|eval)$/
+/** `source` / `.` run a file; given stdin (`source /dev/stdin <<EOF`) it is shell. */
+const SOURCE_READER = /^(?:source|\.)$/
+/** Whether the command runs its stdin (heredoc, here-string, pipe) as shell. */
+const runsStdin = (words) => readsStdinScript(words) || SOURCE_READER.test(readerOf(words))
 /** The command a word list runs, after wrappers and control keywords. */
 const readerOf = (words) => unwrap(words.map(flat).join(' ')).split(' ')[0]
 /** Stand-in for a substitution's output in the enclosing word. */
@@ -218,7 +222,7 @@ export function parseCommands(source) {
         dropWord = false
         // `bash <<< '...'` runs the here-string as its script; for any other
         // reader it is data (#650 review).
-        if (hereStrings.length && SHELL_READER.test(readerOf(words))) nested.push(...hereStrings)
+        if (hereStrings.length && runsStdin(words)) nested.push(...hereStrings)
         hereStrings = []
         if (words.length) {
             // Marks a command that reads the previous one's output through `|`.
@@ -341,8 +345,11 @@ export function parseCommands(source) {
         const upstream = commands[k - 1]
         const program = readerOf(upstream)
         if (upstream.heredocBody !== undefined) nested.push(upstream.heredocBody)
-        else if (program === 'echo' || program === 'printf') nested.push(echoedText(upstream))
-        else opaque = true
+        else if (program === 'echo' || program === 'printf') {
+            const text = echoedText(upstream)
+            if (text === null) opaque = true
+            else nested.push(text)
+        } else opaque = true
     }
     return { commands, nested, opaque }
 }
@@ -361,14 +368,27 @@ function readsStdinScript(words) {
     return args.every((arg) => arg.startsWith('-')) || args.some((arg) => /^-[A-Za-z]*s/.test(arg))
 }
 
-/** The text echo/printf write, escapes decoded (fail closed: as a script). */
-const echoedText = (words) =>
-    decodeAnsiC(
-        unwrappedWords(words)
-            .slice(1)
-            .filter((arg) => !/^-[A-Za-z]+$/.test(arg))
-            .join(' '),
-    )
+/**
+ * The text echo/printf write, escapes decoded (fail closed: read as a script),
+ * or null when a printf format cannot be followed (anything but %s / %%).
+ */
+function echoedText(words) {
+    const [program, ...args] = unwrappedWords(words)
+    if (program === 'printf') {
+        if (args[0] === '-v') return '' // assigns a variable, writes nothing
+        const [format = '', ...values] = args[0] === '--' ? args.slice(1) : args
+        if (/%(?![%s])/.test(format)) return null
+        let out = ''
+        let k = 0
+        do {
+            out += format.replace(/%([%s])/g, (_, spec) =>
+                spec === '%' ? '%' : (values[k++] ?? ''),
+            )
+        } while (k < values.length && format.includes('%s'))
+        return decodeAnsiC(out)
+    }
+    return decodeAnsiC(args.filter((arg) => !/^-[neE]+$/.test(arg)).join(' '))
+}
 
 /** Reads the bodies of the heredocs opened on the line before `start`. */
 function readHeredocs(s, start, pending, nested) {
@@ -386,10 +406,10 @@ function readHeredocs(s, start, pending, nested) {
         const text = body.join('\n')
         // Kept for a shell further down the pipeline (`cat <<EOF | bash`).
         doc.words.heredocBody = text
-        const reader = readerOf(doc.words)
-        // A shell runs its heredoc whatever the quoting; for any other reader an
-        // unquoted delimiter still lets bash expand the substitutions.
-        if (SHELL_READER.test(reader)) {
+        // A shell that reads stdin runs its heredoc whatever the quoting (not
+        // `bash -c 'cat'`: there the script is the -c argument); for any other
+        // reader an unquoted delimiter still lets bash expand the substitutions.
+        if (runsStdin(doc.words)) {
             nested.push(text)
         } else if (!doc.quoted) {
             nested.push(...substitutionsIn(text))
@@ -411,7 +431,7 @@ const flat = (word) => (word === '' ? "''" : word.replace(/[\s#]/g, '_'))
  * `xargs [opts] cmd` run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+exec|npx|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+exec|npx|xargs(?:\s+(?:-[nLPsIdEa]\s+\S+|-\S+))*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = programName(command.trim())
     for (
@@ -452,6 +472,25 @@ const runtimeValue = (token) => token === SUBST || token.includes('$')
 /** git commit options whose next word is a value (message, file, author, ...). */
 const COMMIT_VALUE_OPTION =
     /^(?:-[A-Za-z]*[mFCct]|--(?:message|file|reuse-message|reedit-message|template|author|date|cleanup|fixup|squash|trailer))$/
+/** Value-taking options per git subcommand: their next word is data. */
+const GIT_VALUE_OPTIONS = {
+    commit: COMMIT_VALUE_OPTION,
+    push: /^(?:-o|--push-option|--repo|--receive-pack|--exec)$/,
+}
+
+/**
+ * `git commit -m '--no-verify'` passes the flag's text as the message: words
+ * consumed by a value-taking option become VALUE before the rules run, while a
+ * standalone `git commit '--no-verify'` stays a flag (#650 review).
+ */
+function maskOptionValues(command) {
+    const option = GIT_VALUE_OPTIONS[/^git\s+(\S+)/.exec(command)?.[1]]
+    if (!option) return command
+    const tokens = command.split(' ')
+    return tokens
+        .map((token, k) => (k > 1 && option.test(tokens[k - 1]) ? 'VALUE' : token))
+        .join(' ')
+}
 
 const RULES = [
     ['hook bypass (--no-verify)', (c) => /^git\s+\S.*\s--no-verify\b/.test(c)],
@@ -537,10 +576,9 @@ const RULES = [
     ],
     [
         'E2E, Playwright, Stryker or Lighthouse run locally (CI only, AGENTS.md)',
-        // pnpm test:e2e* runs `playwright test`; the others are the tools themselves.
-        (c) =>
-            /^(?:playwright\s+test|stryker\s+run|lhci(?:\s|$))/.test(c) ||
-            /^test:e2e/.test(pnpmInvocation(c)?.script ?? ''),
+        // The tools themselves; package scripts that start them (test:e2e,
+        // test:ct, test:mutate, lighthouse:ci) are resolved to these in judge().
+        (c) => /^(?:playwright\s+test|stryker\s+run|lhci(?:\s|$))/.test(c),
     ],
     [
         'pnpm install without --frozen-lockfile (re-resolves carets; trips minimumReleaseAge)',
@@ -593,12 +631,58 @@ function disablesHusky(all) {
 }
 
 /** Adds the rules `words` breaks; returns shell text it hands to another shell. */
+const RAW_RULES = new Set(['hook bypass (core.hooksPath)'])
+
+/** package.json scripts by package name ('' for the workspace root), read once. */
+let scriptTable = null
+function packageScripts() {
+    if (scriptTable) return scriptTable
+    scriptTable = new Map()
+    const root = path.resolve(import.meta.dirname, '../..')
+    const dirs = ['']
+    for (const group of ['apps', 'packages']) {
+        try {
+            for (const name of readdirSync(path.join(root, group)))
+                dirs.push(path.join(group, name))
+        } catch {
+            // no such group in this checkout
+        }
+    }
+    for (const dir of dirs) {
+        try {
+            const pkg = JSON.parse(readFileSync(path.join(root, dir, 'package.json'), 'utf8'))
+            scriptTable.set(dir === '' ? '' : pkg.name, pkg.scripts ?? {})
+        } catch {
+            // not a package
+        }
+    }
+    return scriptTable
+}
+
+/**
+ * The command a pnpm package script runs, with the passed-on arguments, so
+ * `pnpm test:mutate` is judged as `pnpm exec stryker run` and
+ * `pnpm --filter <pkg> test:ct` as that package's `playwright test` (#650 review).
+ */
+function scriptBody(command) {
+    const run = pnpmInvocation(command)
+    if (!run?.script) return null
+    const filter = /(?:^|\s)(?:--filter|-F)(?:=|\s+)(\S+)/.exec(command.split(/\s--(?=\s|$)/)[0])
+    const body = packageScripts().get(filter ? filter[1] : '')?.[run.script]
+    return body ? [body, ...run.rest].join(' ') : null
+}
+
 function judge(words, violations) {
     if (disablesHusky(words)) violations.add('hook bypass (HUSKY=0)')
     const command = unwrap(words.map(flat).join(' '))
     if (!command) return []
-    const git = normalizeGit(command)
-    for (const [label, test] of RULES) if (test(command) || test(git)) violations.add(label)
+    // Rules see git without its global options and without values consumed by
+    // value-taking options; the core.hooksPath override lives among the
+    // global options, so that rule also reads the raw command.
+    const subject = maskOptionValues(normalizeGit(command))
+    for (const [label, test] of RULES) {
+        if (test(subject) || (RAW_RULES.has(label) && test(command))) violations.add(label)
+    }
     const heavy = heavyCommandRule(command)
     if (heavy) {
         violations.add(
@@ -613,6 +697,8 @@ function judge(words, violations) {
         if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
     }
     if (rest[0] === 'eval') return [rest.slice(1).join(' ')]
+    const body = scriptBody(command)
+    if (body) return [body]
     // `env -S '<cmd args>'` splits that string and runs it (#650 review).
     const envAt = words.findIndex((w) => programName(w) === 'env')
     if (envAt !== -1) {

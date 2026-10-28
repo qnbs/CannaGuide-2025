@@ -143,20 +143,37 @@ const PNPM_COMMAND_WORDS = new Set([
 export function pnpmInvocation(command) {
     const tokens = command.split('#')[0].trim().split(/\s+/)
     if (tokens[0] !== 'pnpm') return null
-    let filtered = false
+    const filters = []
     let i = 1
-    while (i < tokens.length && tokens[i].startsWith('-') && tokens[i] !== '--') {
-        const token = tokens[i]
-        if (isFilter(token)) filtered = true
-        const takesValue =
-            /^(?:--filter(?:-prod)?|-F)$/.test(token) ||
-            PNPM_VALUE_OPTIONS.has(token) ||
-            (!token.includes('=') &&
-                !PNPM_COMMAND_WORDS.has(tokens[i + 1]) &&
-                PNPM_COMMAND_WORDS.has(tokens[i + 2]))
-        i += takesValue ? 2 : 1
+    // Options come before the command, and again between `run` and the script
+    // (`pnpm run --if-present typecheck`; #650 review).
+    const skipOptions = () => {
+        while (i < tokens.length && tokens[i].startsWith('-') && tokens[i] !== '--') {
+            const token = tokens[i]
+            if (isFilter(token)) {
+                const value = token.includes('=')
+                    ? token.slice(token.indexOf('=') + 1)
+                    : tokens[i + 1]
+                filters.push((value ?? '').replace(/['"]/g, ''))
+            }
+            const takesValue =
+                /^(?:--filter(?:-prod)?|-F)$/.test(token) ||
+                PNPM_VALUE_OPTIONS.has(token) ||
+                (!token.includes('=') &&
+                    !PNPM_COMMAND_WORDS.has(tokens[i + 1]) &&
+                    PNPM_COMMAND_WORDS.has(tokens[i + 2]))
+            i += takesValue ? 2 : 1
+        }
     }
-    if (tokens[i] === 'run') i += 1
+    skipOptions()
+    if (tokens[i] === 'run') {
+        i += 1
+        skipOptions()
+    }
+    // Only a concrete package or path scopes the run: a glob, an exclusion
+    // (`!x`), a dependency selector (`...`) or a brace set can select every
+    // workspace (`--filter '@cannaguide/*'`; #650 review).
+    const filtered = filters.length > 0 && filters.every((v) => v && !/[*!{}[\]]|\.\.\./.test(v))
     return { filtered, script: tokens[i], rest: tokens.slice(i + 1) }
 }
 

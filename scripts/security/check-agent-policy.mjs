@@ -310,12 +310,43 @@ const DIRECT_VITEST = [
     },
 ]
 /** `turbo run <task>` without a `--filter` before `--` (after it, the flag goes to the task). */
+/** turbo subcommands that run no tasks; any other first word is a task (`turbo typecheck`). */
+const TURBO_NON_RUN = new Set([
+    'login',
+    'logout',
+    'link',
+    'unlink',
+    'prune',
+    'gen',
+    'generate',
+    'daemon',
+    'ls',
+    'info',
+    'query',
+    'telemetry',
+    'bin',
+    'completion',
+    'scan',
+    'boundaries',
+    'docs',
+    'devtools',
+    'help',
+])
 const BARE_TURBO = [
     'bare turbo run',
     {
-        test: (command) =>
-            /^\s*turbo run [a-z:-]+/.test(command) &&
-            !/--filter\b/.test(command.split(/\s--(?=\s|$)/)[0]),
+        // `turbo run <task>`, its alias `turbo <task>` and `turbo watch <task>`
+        // run tasks; without a --filter before `--` they run every workspace
+        // (#650 review).
+        test(command) {
+            const tokens = command.trim().split(/\s+/)
+            if (tokens[0] !== 'turbo') return false
+            const explicit = tokens[1] === 'run' || tokens[1] === 'watch'
+            const task = explicit ? tokens[2] : tokens[1]
+            if (!task || task.startsWith('-') || (!explicit && TURBO_NON_RUN.has(task)))
+                return false
+            return !/--filter\b/.test(command.split(/\s--(?=\s|$)/)[0])
+        },
     },
 ]
 

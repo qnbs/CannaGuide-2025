@@ -270,8 +270,7 @@ test('the commands the working rules prescribe are allowed', () => {
         "printf '%s\\n' hello | bash -c 'cat'",
         'pnpm run --if-present build',
         'pnpm --filter ./apps/web test:run analyticsService',
-        'git push "$REMOTE" feature',
-        'git push --force-with-lease "$REMOTE" feature',
+        'git push origin "refs/heads/$BRANCH"',
         'git add ./apps/web/i18n.ts',
         'pnpm --filter @cannaguide/web test:run --sequence.seed 123 Foo',
         'git push -u origin fix/x',
@@ -691,7 +690,7 @@ test('#650 review wave on 9e57eb1f: each finding is denied, its harmless twin al
             allowed: [
                 'git commit --message="$MSG"',
                 'git commit -m "$MSG"',
-                'git push -u origin "$BRANCH"',
+                'git push -u origin "refs/heads/$BRANCH"',
                 'git commit -m "fix {a,b} braces"',
             ],
         },
@@ -747,6 +746,69 @@ test('#650 review wave on 9e57eb1f: each finding is denied, its harmless twin al
         }
         for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
     }
+})
+
+test('#650 review wave on e7b30999 (consolidated): denied, and the harmless twin allowed', () => {
+    const cases = [
+        // Attached short values are data: no false -n / -f (false positive).
+        {
+            blocked: [
+                ['git commit -nmfix', /git commit -n/],
+                ['git push -fo ci.skip origin feature', /force push/],
+            ],
+            allowed: [
+                'git commit -mchange',
+                'git commit -mnew --amend',
+                'git commit -mn',
+                'git push -oflag origin feature',
+            ],
+        },
+        // turbo's implicit `run` and `watch` start tasks too.
+        {
+            blocked: [
+                ['pnpm exec turbo typecheck', /bare turbo run/],
+                ['turbo watch test', /bare turbo run/],
+                ['npx turbo lint', /bare turbo run/],
+            ],
+            allowed: [
+                'turbo typecheck --filter=@cannaguide/web',
+                'turbo prune @cannaguide/web',
+                'turbo --version',
+            ],
+        },
+        // A push argument that starts with a run-time value (CodeRabbit).
+        {
+            blocked: [
+                ['F=-f; git push "$F" origin feature', /known only at run time/],
+                ['B=+main; git push origin "$B"', /known only at run time/],
+                ['git push "$REMOTE" feature', /known only at run time/],
+                ['git push -u origin "$BRANCH"', /known only at run time/],
+                ['git push --force-with-lease "$REMOTE" feature', /known only at run time/],
+            ],
+            allowed: ['git push -u origin "refs/heads/$BRANCH"', 'git push -u origin feature'],
+        },
+        // A comment does not continue onto the next line.
+        {
+            blocked: [['# note\\\ngit commit --no-verify -m fix', /--no-verify/]],
+            allowed: ['pnpm install \\\n  --frozen-lockfile', "echo 'a\\\nb'"],
+        },
+        // echo -e's octal escape is \0nnn.
+        {
+            blocked: [["echo -e '\\0147it commit --no-verify -m fix' | bash", /--no-verify/]],
+            allowed: ["echo -e 'a\\tb' | bash -c cat"],
+        },
+    ]
+    for (const { blocked, allowed } of cases) {
+        for (const [command, expected] of blocked) {
+            assert.match(bashViolations(command).join('; '), expected, command)
+        }
+        for (const command of allowed) assert.deepEqual(bashViolations(command), [], command)
+    }
+    // An unknown directory stays unknown for nested text.
+    assert.match(
+        bashViolations('true && cd ../..; echo "$(pnpm run dev)"', 0, 'apps/web').join('; '),
+        /bare turbo run/,
+    )
 })
 
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {

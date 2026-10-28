@@ -20,8 +20,23 @@
  *
  * What it cannot do: run the command. A value computed at run time (a
  * substitution's output, a variable) is unknown, so the guard fails closed
- * where that value could be a bypass (an argument of `git commit`, a force
- * push with no named branch) and otherwise judges what the text says.
+ * where that value could be a bypass (an argument of `git commit` / `git push`,
+ * shell text fed to a shell, a split or brace-expanded word) and otherwise
+ * judges what the text says.
+ *
+ * Threat model (owner decision on #650, 2026-10-28): this is defence in depth
+ * against ACCIDENTAL rule violations by a cooperative agent -- the commands an
+ * agent plausibly writes, in any wrapper, position, quoting, subshell or
+ * working directory. It is NOT a security boundary against malicious or
+ * deliberately obfuscated shell input; it does not implement bash. Supported:
+ * quoting, escapes, substitutions, heredocs / here-strings, pipelines into a
+ * shell, `sh -c` / `eval` / `env -S` / `pnpm exec`, cd per subshell and
+ * branch, package-script resolution. Known limits (fail closed where cheap,
+ * otherwise out of scope): aliases and functions defined earlier in the
+ * session, `set -o` / `shopt` changes, encoded payloads beyond the escapes
+ * echo / printf / `$'...'` define, and a script file's own content
+ * (`bash ./x.sh` is judged by its name, not its body). CI, the git hooks and
+ * branch protection stay the enforcement of record.
  *
  * Input: the hook JSON on stdin. Output: a `deny` decision with the reasons,
  * or nothing (normal permission flow). Unparseable input is no decision:
@@ -105,7 +120,9 @@ function closingParen(s, i) {
 function unquoteDouble(text, nested) {
     let out = ''
     for (let i = 0; i < text.length;) {
-        if (text[i] === '\\' && i + 1 < text.length && '$`"\\'.includes(text[i + 1])) {
+        if (text[i] === '\\' && text[i + 1] === '\n') {
+            i += 2 // a line continuation
+        } else if (text[i] === '\\' && i + 1 < text.length && '$`"\\'.includes(text[i + 1])) {
             out += text[i + 1]
             i += 2
         } else if (text.startsWith('$(', i)) {
@@ -205,7 +222,9 @@ const REDIRECTION = /^(?:<<<|<<-|<<|<>|<&|<\(|<|>>|>&|>\||>\(|>|&>>|&>)/
  * to a shell).
  */
 export function parseCommands(source) {
-    const s = source.replace(/\\\r?\n/g, '')
+    // Line continuations are removed where bash removes them -- unquoted and in
+    // double quotes, not in a comment or single quotes (#650 review).
+    const s = source
     const commands = []
     const nested = []
     let words = []
@@ -312,6 +331,8 @@ export function parseCommands(source) {
         } else if (c === '#' && word === null) {
             // A comment starts a word; `a#b` and `$#` are ordinary text.
             while (i < s.length && s[i] !== '\n') i += 1
+        } else if (c === '\\' && (next === '\n' || (next === '\r' && s[i + 2] === '\n'))) {
+            i += next === '\n' ? 2 : 3
         } else if (c === '\\') {
             append(next ?? '')
             i += 2
@@ -528,7 +549,17 @@ function echoedText(words) {
         first += 1
     }
     const text = args.slice(first).join(' ')
-    return escapes ? decodeAnsiC(text) : text
+    if (!escapes) return text
+    // echo's octal escape is `\0nnn` (up to three digits after the 0), not
+    // ANSI-C's `\nnn` (#650 review).
+    return text
+        .split(/(\\0[0-7]{1,3})/)
+        .map((piece) =>
+            /^\\0[0-7]/.test(piece)
+                ? String.fromCharCode(Number.parseInt(piece.slice(2), 8))
+                : decodeAnsiC(piece),
+        )
+        .join('')
 }
 
 /**
@@ -685,7 +716,17 @@ function maskOptionValues(command) {
     if (!spec) return command
     const tokens = expandAbbreviations(command.split(' '), GIT_LONG_OPTIONS[sub])
     const values = optionValuePositions(tokens, spec)
-    return tokens.map((token, k) => (values.has(k) ? 'VALUE' : token)).join(' ')
+    const end = tokens.indexOf('--')
+    return tokens
+        .map((token, k) => {
+            if (values.has(k)) return 'VALUE'
+            // An attached short value is data too: `-mchange` is no `-n`,
+            // `-oflag` no `-f` (#650 review).
+            if (k < 2 || (end !== -1 && k > end) || !/^-[A-Za-z]/.test(token)) return token
+            const at = [...token.slice(1)].findIndex((letter) => spec.short.includes(letter))
+            return at !== -1 && at < token.length - 2 ? `${token.slice(0, at + 2)}VALUE` : token
+        })
+        .join(' ')
 }
 
 /** The long options the rules read, per subcommand (also value-taking ones). */
@@ -794,6 +835,18 @@ const RULES = [
         (c) =>
             /^git\s+push\b/.test(c) &&
             /\s(?:--force(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+[\w./-]+)/.test(c),
+    ],
+    [
+        'git push argument known only at run time (may be a flag or a +refspec)',
+        // `F=-f; git push "$F" ...` or `git push origin "$B"` with B=+main: a
+        // word that starts with a run-time value may become a flag or a force
+        // refspec. A literal prefix (`refs/heads/$BRANCH`) cannot (#650 review).
+        (c) =>
+            /^git\s+push\b/.test(c) &&
+            c
+                .split(/\s+/)
+                .slice(2)
+                .some((token) => token.startsWith('$') || token.startsWith(SUBST)),
     ],
     [
         'force push to main',
@@ -1185,7 +1238,10 @@ export function bashViolations(command, depth = 0, cwd = '') {
         if (/^(?:fi|done|esac|\})$/.test(words[0])) compound = Math.max(compound - 1, 0)
     }
     // Substitutions, here-strings and heredocs run where their command runs.
-    nested.forEach((script, k) => scripts.push([script, dirAt[owners[k]] ?? cwd]))
+    // An unknown directory (null) stays unknown (#650 review).
+    nested.forEach((script, k) =>
+        scripts.push([script, owners[k] < dirAt.length ? dirAt[owners[k]] : cwd]),
+    )
     // Fail closed: text nested deeper than the guard reads is denied, not
     // waved through (#650 review).
     if (scripts.length && depth >= MAX_DEPTH) {

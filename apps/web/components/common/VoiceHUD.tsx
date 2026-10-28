@@ -131,7 +131,7 @@ export const VoiceHUD: React.FC = () => {
     }
 
     const lastTranscripts = transcriptHistory.slice(-2)
-    const modeLabel = t(`voiceControl.mode.${mode}`)
+    const modeLabel = t(`common.voiceControl.mode.${mode}`)
 
     return (
         <div

@@ -122,7 +122,7 @@ describe('VoiceHUD', () => {
     it('renders mode label', () => {
         useVoiceStore.setState({ mode: VoiceMode.PROCESSING })
         render(React.createElement(VoiceHUD))
-        expect(screen.getByText('voiceControl.mode.processing')).toBeDefined()
+        expect(screen.getByText('common.voiceControl.mode.processing')).toBeDefined()
     })
 
     it('shows waveform bars when LISTENING', () => {

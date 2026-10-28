@@ -839,6 +839,18 @@ const RULES = [
             /\s(?:--force(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+[\w./-]+)/.test(c),
     ],
     [
+        'git add / git clean operand known only at run time (may be . or -x)',
+        // `FILES=.; git add "$FILES"` stages the whole tree, `git clean "$O"`
+        // with O=-fdx deletes ignored files. A literal prefix
+        // (`git add "apps/web/$FILE"`) cannot become either (#650 review).
+        (c) =>
+            /^git\s+(?:add|clean)\b/.test(c) &&
+            c
+                .split(/\s+/)
+                .slice(2)
+                .some((token) => token.startsWith('$') || token.startsWith(SUBST)),
+    ],
+    [
         'git push argument known only at run time (may be a flag or a +refspec)',
         // `F=-f; git push "$F" ...` or `git push origin "$B"` with B=+main: a
         // word that starts with a run-time value may become a flag or a force
@@ -1165,7 +1177,7 @@ function judge(words, violations, cwd) {
     // An unquoted expansion or brace expansion becomes several arguments, so
     // `git commit --message=$MSG` or `--{no-verify,x}` can add a flag that no
     // static check sees (#650 review).
-    const sub = /^git\s+(commit|push)\b/.exec(subject)?.[1]
+    const sub = /^git\s+(commit|push|add|clean)\b/.exec(subject)?.[1]
     if (sub && rest.some((_, k) => k > 0 && words.splits?.has(offset + k))) {
         violations.add(`git ${sub} argument split or expanded at run time (may become a flag)`)
     }

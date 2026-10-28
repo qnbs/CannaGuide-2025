@@ -884,6 +884,22 @@ test('#650 final census on 9df3bc62: builtin options and wrapper directories', (
         /bare turbo run/,
     )
     assert.deepEqual(bashViolations("env -C apps/web bash -c 'pnpm run dev'"), [])
+    // CodeAnt: git add / git clean operands known only at run time.
+    for (const [command, expected] of [
+        ['FILES=.; git add "$FILES"', /git add \/ git clean operand known only at run time/],
+        ['git clean "$OPTIONS"', /git add \/ git clean operand known only at run time/],
+        ['git add $FILES', /split or expanded/],
+        ['git add -- "$(git ls-files -m)"', /known only at run time/],
+    ]) {
+        assert.match(bashViolations(command).join('; '), expected, command)
+    }
+    for (const command of [
+        'git add "apps/web/$FILE"',
+        'git add apps/web/i18n.ts CHANGELOG.md',
+        'git clean -n',
+    ]) {
+        assert.deepEqual(bashViolations(command), [], command)
+    }
 })
 
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {

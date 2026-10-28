@@ -804,7 +804,14 @@ function overridesHooksPathOption(command) {
 }
 
 const RULES = [
-    ['hook bypass (--no-verify)', (c) => /^git\s+\S.*\s--no-verify\b/.test(c)],
+    [
+        'hook bypass (--no-verify)',
+        // Only where the flag skips hooks, and only before `--`: `git grep --
+        // '--no-verify'` searches for the text (#650 review).
+        (c) =>
+            /^git\s+(?:commit|push|merge|pull|rebase|am|cherry-pick|revert)\b/.test(c) &&
+            /\s--no-verify\b/.test(c.split(/\s--(?=\s|$)/)[0]),
+    ],
     [
         'hook bypass (git commit -n)',
         (c) => /^git\s+commit\b/.test(c) && /\s-[A-Za-z]*n[A-Za-z]*(?=\s|$)/.test(c),
@@ -837,6 +844,19 @@ const RULES = [
         (c) =>
             /^git\s+push\b/.test(c) &&
             /\s(?:--force(?=\s|$)|-[A-Za-z]*f[A-Za-z]*(?=\s|$)|\+[\w./-]+)/.test(c),
+    ],
+    [
+        'git option built from a run-time value (may become a banned flag)',
+        // `git add -"$FLAG"` (FLAG=A) or `git clean -f"$O"` (O=dx): the option
+        // name is completed at run time. Values consumed by an option are
+        // already VALUE (`-m$MSG`, `-o$X`), and a value after `=` is data
+        // (`--message=$MSG`) (#650 review).
+        (c) =>
+            /^git\s+(?:add|clean|commit|push)\b/.test(c) &&
+            c
+                .split(/\s+/)
+                .slice(2)
+                .some((token) => token.startsWith('-') && runtimeValue(token.split('=')[0])),
     ],
     [
         'git add / git clean operand known only at run time (may be . or -x)',
@@ -885,9 +905,16 @@ const RULES = [
                 .filter((word) => !word.startsWith('-') && word !== 'VALUE')
             // A wildcard refspec (`refs/heads/*:refs/heads/*`), --all and --mirror
             // push every branch, main included (#650 review).
+            // `HEAD` / `@` without a `:<dest>` is the current branch, main
+            // included (`git push --force-with-lease origin HEAD`; #650 review).
             return (
                 positional.length < 2 ||
-                positional.slice(1).some((ref) => runtimeValue(ref) || ref.includes('*')) ||
+                positional
+                    .slice(1)
+                    .some(
+                        (ref) =>
+                            runtimeValue(ref) || ref.includes('*') || /^\+?(?:HEAD|@)$/.test(ref),
+                    ) ||
                 /\s--(?:all|mirror)(?=\s|$)/.test(c)
             )
         },
@@ -914,7 +941,11 @@ const RULES = [
     [
         'git clean -x (deletes ignored files: node_modules, caches, local config)',
         (c) =>
-            /^git\s+clean\b/.test(c) && /\s-[A-Za-z]*x/.test(c) && /\s-[A-Za-z]*f|--force/.test(c),
+            // `-X` removes only ignored files -- exactly the protected ones
+            // (#650 review).
+            /^git\s+clean\b/.test(c) &&
+            /\s-[A-Za-z]*[xX]/.test(c) &&
+            /\s-[A-Za-z]*f|--force/.test(c),
     ],
     [
         'git add -A / git add . (stage files explicitly)',
@@ -1088,7 +1119,11 @@ function selectedWorkspaces(selector, cwd) {
         const dir = joinDir(cwd, workspaceDir(selector) || '.')
         return dir === null ? all : workspaceAt(dir)
     }
-    return all.filter((w) => w.name === selector)
+    const exact = all.filter((w) => w.name === selector)
+    if (exact.length) return exact
+    // pnpm resolves an unscoped name to the scoped package that has it
+    // (`--filter web` -> `@cannaguide/web`; #650 review).
+    return all.filter((w) => w.name.replace(/^@[^/]+\//, '') === selector)
 }
 
 /**
@@ -1137,15 +1172,22 @@ function changedDir(words, cwd) {
 
 /**
  * The directory the command runs in after its wrappers: `env -C <dir>` /
- * `--chdir` moves it, for the command and for shell text it hands on
- * (`env -C ../.. bash -c '...'`; #650 review).
+ * `--chdir` and a launching `pnpm -C <dir>` / `--dir ... exec` move it, for
+ * the command and for shell text it hands on (`env -C ../.. bash -c '...'`,
+ * `pnpm -C ../.. exec bash -c '...'`; #650 review).
  */
 function wrapperDir(words, cwd) {
     const offset = words.length - unwrap(words.map(flat).join(' ')).split(' ').length
-    const envAt = words.findIndex((w, k) => k < offset && programName(w) === 'env')
+    const options = { env: /^(?:-C|--chdir)(?:=?(.+))?$/, pnpm: /^(?:-C|--dir)(?:=(.+))?$/ }
     let dir = cwd
-    for (let k = envAt + 1; envAt !== -1 && k < offset; k += 1) {
-        const chdir = /^(?:-C|--chdir)(?:=?(.+))?$/.exec(words[k])
+    let launcher = null
+    for (let k = 0; k < offset; k += 1) {
+        const name = programName(words[k])
+        if (name === 'env' || /^pnpm(?:@\S+)?$/.test(name)) {
+            launcher = name === 'env' ? 'env' : 'pnpm'
+            continue
+        }
+        const chdir = launcher && options[launcher].exec(words[k])
         if (chdir) dir = joinDir(dir, chdir[1] ?? words[(k += 1)] ?? '.')
     }
     return dir

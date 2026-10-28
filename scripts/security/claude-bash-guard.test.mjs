@@ -900,6 +900,45 @@ test('#650 final census on 9df3bc62: builtin options and wrapper directories', (
     ]) {
         assert.deepEqual(bashViolations(command), [], command)
     }
+    // Codex on 2f0b93ca.
+    for (const [command, expected] of [
+        ['pnpm --filter web test:e2e', /CI only/],
+        ['git push --force-with-lease origin HEAD', /without a named branch/],
+        ['git push --force-if-includes origin @', /without a named branch/],
+        ['git clean -fdX', /git clean -x/],
+        ['git clean -f -X', /git clean -x/],
+    ]) {
+        assert.match(bashViolations(command).join('; '), expected, command)
+    }
+    assert.match(
+        bashViolations("pnpm -C ../.. exec bash -c 'pnpm run dev'", 0, 'apps/web').join('; '),
+        /bare turbo run/,
+    )
+    for (const command of [
+        "git grep -n -- '--no-verify'",
+        'git log --oneline --grep=--no-verify',
+        'git push --force-with-lease origin HEAD:feature',
+        'pnpm --filter web test:run analyticsService',
+    ]) {
+        assert.deepEqual(bashViolations(command), [], command)
+    }
+    // CodeAnt on 2f0b93ca: a run-time value completing an option name.
+    for (const command of [
+        'git add -"$FLAG" apps/web',
+        'git clean -f"$OPTIONS"',
+        'git commit -a"$X" -m fix',
+        'git push -"$(printf f)" origin feature',
+    ]) {
+        assert.match(bashViolations(command).join('; '), /option built from a run-time/, command)
+    }
+    for (const command of [
+        'git commit -m"$MSG"',
+        'git commit --message="$MSG"',
+        'git push -o"$OPT" origin feature',
+        'git push --repo="$URL" origin feature',
+    ]) {
+        assert.deepEqual(bashViolations(command), [], command)
+    }
 })
 
 test('wrapper and option parsing stays linear on hostile input (ReDoS)', () => {

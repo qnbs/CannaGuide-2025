@@ -218,6 +218,8 @@ export function parseCommands(source) {
     // double-quoted `$` / substitution, not from single-quoted text (#650 review).
     let dynamic = false
     let hereDynamic = false
+    // Whether the current word names a process substitution (`<(cmd)`).
+    let fromProcess = false
     const append = (text) => {
         word = (word ?? '') + text
     }
@@ -227,11 +229,13 @@ export function parseCommands(source) {
             hereDynamic ||= dynamic
         } else if (word !== null && !dropWord) {
             if (dynamic) (words.dynamic ??= new Set()).add(words.length)
+            if (fromProcess) (words.fromProcess ??= new Set()).add(words.length)
             words.push(word)
         }
         if (word !== null) dropWord = false
         word = null
         dynamic = false
+        fromProcess = false
     }
     const endCommand = () => {
         endWord()
@@ -342,6 +346,7 @@ export function parseCommands(source) {
                 nested.push(s.slice(i, end))
                 append(SUBST)
                 dynamic = true
+                fromProcess = true
                 i = end + 1
             } else if (op === '<<' || op === '<<-') {
                 while (s[i] === ' ' || s[i] === '\t') i += 1
@@ -471,22 +476,34 @@ function echoedText(words) {
     if (program === 'printf') {
         const [format = '', ...values] = args[0] === '--' ? args.slice(1) : args
         if (/%(?![%s])/.test(format)) return null
+        // Escapes are decoded in the format only; a %s argument is written as
+        // is (`printf '%s' 'gi\t'` prints a backslash; #650 review).
+        const pieces = format.split(/(%[%s])/)
         let out = ''
         let k = 0
         // The format repeats only while it consumes arguments: `%%s` is a
         // literal `%s` and takes none (it looped forever; #650 review).
         for (let before = -1; k > before && (before === -1 || k < values.length);) {
             before = k
-            out += format.replace(/%([%s])/g, (_, spec) =>
-                spec === '%' ? '%' : (values[k++] ?? ''),
-            )
+            for (const piece of pieces) {
+                if (piece === '%%') out += '%'
+                else if (piece === '%s') out += values[k++] ?? ''
+                else out += decodeAnsiC(piece)
+            }
         }
-        return decodeAnsiC(out)
+        return out
     }
     // Only leading options are options: `echo git commit -n` prints the -n.
+    // Bash's echo decodes escapes only under -e (the last of -e / -E wins).
     let first = 0
-    while (first < args.length && /^-[neE]+$/.test(args[first])) first += 1
-    return decodeAnsiC(args.slice(first).join(' '))
+    let escapes = false
+    while (first < args.length && /^-[neE]+$/.test(args[first])) {
+        const last = /[eE](?=[n]*$)/.exec(args[first])?.[0]
+        if (last) escapes = last === 'e'
+        first += 1
+    }
+    const text = args.slice(first).join(' ')
+    return escapes ? decodeAnsiC(text) : text
 }
 
 /**
@@ -987,6 +1004,12 @@ function judge(words, violations, cwd) {
         }
         return [words.slice(from, to).join(' ')]
     }
+    // A shell or `source` that runs a process substitution (`source <(cmd)`,
+    // `bash <(curl ...)`) runs text generated at run time (#650 review).
+    const reader = SHELLS.test(programName(rest[0] ?? '')) || SOURCE_READER.test(rest[0] ?? '')
+    if (reader && rest.some((_, k) => k > 0 && words.fromProcess?.has(offset + k))) {
+        violations.add(OPAQUE_INPUT)
+    }
     if (SHELLS.test(programName(rest[0] ?? ''))) {
         const flag = rest.findIndex((w, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
         if (flag > 0 && rest[flag + 1] !== undefined) return shellText(offset + flag + 1)
@@ -994,12 +1017,16 @@ function judge(words, violations, cwd) {
     if (rest[0] === 'eval') return shellText(offset + 1, words.length)
     const bodies = scriptBodies(command, cwd)
     if (bodies.length) return bodies
-    // `pnpm exec -c '<script>'` (shell mode) runs that text as shell.
-    const shellMode = words.findIndex(
-        (w, k) => /^(?:-c|--shell-mode)$/.test(w) && words.slice(0, k).includes('exec'),
-    )
-    if (shellMode !== -1 && words[0]?.startsWith('pnpm') && words[shellMode + 1] !== undefined) {
-        return shellText(shellMode + 1)
+    // `pnpm [-c] exec [-c] '<script>'` (shell mode, before or after exec)
+    // runs its first operand as shell (#650 review).
+    const execAt = words.indexOf('exec')
+    if (
+        words[0]?.startsWith('pnpm') &&
+        execAt !== -1 &&
+        words.some((w) => /^(?:-c|--shell-mode)$/.test(w))
+    ) {
+        const script = words.findIndex((w, k) => k > execAt && !w.startsWith('-'))
+        if (script !== -1) return shellText(script)
     }
     // `env -S '<cmd args>'` splits that string and runs it (#650 review).
     const envAt = words.findIndex((w) => programName(w) === 'env')
@@ -1038,10 +1065,12 @@ export function bashViolations(command, depth = 0, cwd = '') {
     }
     const scripts = []
     const dirAt = []
-    // Inside if/while/until/for/case/select a cd may be skipped as well.
+    // Inside if/while/until/for/case/select a cd may be skipped as well, and
+    // inside `{ ... }`, which is also a function body that may never be
+    // called (`f() { cd x; }`; #650 review).
     let compound = 0
     for (const words of commands) {
-        if (/^(?:if|while|until|for|case|select)$/.test(words[0])) compound += 1
+        if (/^(?:if|while|until|for|case|select|\{|function)$/.test(words[0])) compound += 1
         const dir = dirIn(words.scope)
         dirAt.push(dir)
         const moved = changedDir(words, dir)
@@ -1050,7 +1079,7 @@ export function bashViolations(command, depth = 0, cwd = '') {
         } else if (!words.piped && !words.subshell) {
             dirs.set(words.scope, words.conditional || compound > 0 ? null : moved)
         }
-        if (/^(?:fi|done|esac)$/.test(words[0])) compound = Math.max(compound - 1, 0)
+        if (/^(?:fi|done|esac|\})$/.test(words[0])) compound = Math.max(compound - 1, 0)
     }
     // Substitutions, here-strings and heredocs run where their command runs.
     nested.forEach((script, k) => scripts.push([script, dirAt[owners[k]] ?? cwd]))

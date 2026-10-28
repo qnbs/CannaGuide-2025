@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
-import { AGENT_FILES, agentPolicyProblems } from './check-agent-policy.mjs'
+import { AGENT_FILES, agentPolicyProblems, ciStatusNeeds } from './check-agent-policy.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const read = (rel) => readFileSync(path.join(ROOT, rel), 'utf8')
@@ -26,7 +26,8 @@ const problemsOf = (overrides) =>
 
 test('the real agent instruction files pass the gate', () => {
     const files = Object.fromEntries(AGENT_FILES.map((name) => [name, read(name)]))
-    assert.deepEqual(agentPolicyProblems(files), [])
+    const needs = ciStatusNeeds(read('.github/workflows/ci.yml'))
+    assert.deepEqual(agentPolicyProblems(files, { needs }), [])
 })
 
 test('sound fixtures pass, including prohibitions that name the banned flag', () => {
@@ -98,6 +99,61 @@ test('inline commands in instructions are checked, prohibitions are not', () => 
             '.github/copilot-instructions.md:3: unfiltered pnpm suite instructed inline',
         ],
     )
+})
+
+test('a prohibition exempts only its own clause (#643 review)', () => {
+    const failing = [
+        'Use `git push --no-verify` instead of waiting for slow hooks.',
+        'Never use `--no-verify`, but retry with `git push --no-verify` if CI is slow.',
+        'If an emergency truly forces `--no-verify`, run the checks by hand first.',
+    ]
+    for (const line of failing) {
+        const problems = problemsOf({ 'CLAUDE.md': `${SOUND_CLAUDE}\n${line}` })
+        assert.equal(problems.length, 1, `${line} -> ${problems.join('; ')}`)
+        assert.match(problems[0], /instructs --no-verify/)
+    }
+    const passing = [
+        'The hooks are staged, and `--no-verify` is therefore **banned** for commit and push.',
+        '- **Owner-gated actions** (never on a tracker comment): releases; admin merges; `--no-verify`.',
+    ]
+    for (const line of passing) {
+        assert.deepEqual(problemsOf({ 'CLAUDE.md': `${SOUND_CLAUDE}\n${line}` }), [], line)
+    }
+})
+
+test('a filtered whole-suite run with options still fails', () => {
+    const block = ['```bash', 'pnpm --filter @cannaguide/web test:run --coverage', '```'].join('\n')
+    const problems = problemsOf({ '.github/copilot-instructions.md': block })
+    assert.equal(problems.length, 1, problems.join('; '))
+    assert.match(problems[0], /whole-suite test run/)
+})
+
+test('a negated verify command does not count as present', () => {
+    const problems = problemsOf({ 'CLAUDE.md': 'Never run pnpm verify on this machine.' })
+    assert.ok(
+        problems.includes('CLAUDE.md: missing the scoped verify command'),
+        problems.join('; '),
+    )
+})
+
+test('a CI Status requirement must name jobs ci-status actually needs', () => {
+    const needs = new Set([
+        'changes',
+        'build',
+        'test',
+        'verify',
+        'security',
+        'policy',
+        'rust',
+        'e2e',
+    ])
+    const stale = '- **`✅ CI Status` only requires `quality` + `security`.** E2E does not block.'
+    const problems = agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': stale }, { needs })
+    assert.equal(problems.length, 1, problems.join('; '))
+    assert.match(problems[0], /names `quality` as a CI Status requirement/)
+    const current =
+        'On a code change `✅ CI Status` requires `build`, `test`, `verify`, `security` and `e2e`.'
+    assert.deepEqual(agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': current }, { needs }), [])
 })
 
 test('a missing authority section or verify command fails', () => {

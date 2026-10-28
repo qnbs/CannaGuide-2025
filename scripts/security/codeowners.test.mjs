@@ -10,6 +10,13 @@ import { test } from 'node:test'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 
+/**
+ * The only owner of the default rule and of every control-plane entry. Handing
+ * these paths to another account is an owner decision, so it must change this
+ * file too (itself owned through /scripts via the "*" rule).
+ */
+export const EXPECTED_OWNERS = ['@qnbs']
+
 /** Paths that instruct agents or run CI; each needs its own CODEOWNERS entry. */
 export const CONTROL_PLANE_PATHS = [
     '/CODEOWNERS',
@@ -51,6 +58,14 @@ export function codeownersProblems(text) {
     for (const required of CONTROL_PLANE_PATHS) {
         if (!patterns.has(required)) problems.push(`no explicit entry for ${required}`)
     }
+    for (const [pattern, ...owners] of rules) {
+        if (pattern !== '*' && !CONTROL_PLANE_PATHS.includes(pattern)) continue
+        if (owners.join(' ') !== EXPECTED_OWNERS.join(' ')) {
+            problems.push(
+                `${pattern} must be owned by ${EXPECTED_OWNERS.join(' ')}, not "${owners.join(' ')}"`,
+            )
+        }
+    }
     return problems
 }
 
@@ -67,6 +82,18 @@ test('the 2026-03-24 markdown-bullet regression is caught', () => {
     )
     assert.ok(problems.includes('no default "*" rule'))
     assert.ok(problems.some((p) => p === 'no explicit entry for /AGENTS.md'))
+})
+
+test('handing the default or a control-plane path to another owner is caught', () => {
+    const rules = ['* @qnbs', ...CONTROL_PLANE_PATHS.map((p) => `${p} @qnbs`)]
+    const reassigned = rules.map((r) =>
+        r.startsWith('/CLAUDE.md ') ? '/CLAUDE.md @someone-else' : r,
+    )
+    reassigned[0] = '* @qnbs @someone-else'
+    assert.deepEqual(codeownersProblems(reassigned.join('\n')), [
+        '* must be owned by @qnbs, not "@qnbs @someone-else"',
+        '/CLAUDE.md must be owned by @qnbs, not "@someone-else"',
+    ])
 })
 
 test('a rule without an owner is caught', () => {

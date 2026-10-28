@@ -16,6 +16,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **ci:** The weekly Stryker report is kept 14 days instead of 30, in line with every other workflow artifact; `scripts/security/artifact-retention.test.mjs` caps all `retention-days` at 14. The run itself has failed on every schedule since at least 2026-08-30 because the mutation score (47.03, last run) is below the break threshold of 50 -- the threshold stays; the per-file gap is recorded on #584 (S-05)
 - **fix(local-ai):** The ONNX Runtime that `@xenova/transformers` bundles (onnxruntime-web 1.14.0, used by the inference and image workers, the model loader and Whisper) no longer fetches its wasm from jsDelivr without an integrity check. The build copies the four lockfile-resolved binaries to `ort-1.14.0/` under the app base, each verified against a pinned SHA-256 (a missing, truncated, corrupted or re-versioned binary fails the build), and `loadTransformers` points the runtime there before any pipeline starts. The service worker caches that versioned directory cache-first, as it did the CDN copy. The bytes are unchanged -- they equal what jsDelivr served -- only their origin is (CG-AUD-20261008-045, #585)
 
 ## [1.11.0] - 2026-10-27

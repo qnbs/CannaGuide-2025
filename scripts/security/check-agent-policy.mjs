@@ -98,8 +98,40 @@ const PNPM_VALUE_OPTIONS = new Set([
     '--store-dir',
     '--test-pattern',
     '--changed-files-ignore-pattern',
+    '--registry',
+    '--virtual-store-dir',
+    '--modules-dir',
+    '--lockfile-dir',
+    '--global-dir',
+    '--cache-dir',
+    '--fetch-timeout',
+    '--fetch-retries',
+    '--network-concurrency',
+    '--child-concurrency',
+    '--resolution-mode',
+    '--node-linker',
+    '--use-node-version',
 ])
-const isFilter = (token) => /^(?:--filter|-F)(?:=|$)/.test(token)
+const isFilter = (token) => /^(?:--filter(?:-prod)?|-F)(?:=|$)/.test(token)
+/**
+ * Words that start what pnpm runs. An option this module does not know is
+ * read as value-taking when a value and then one of these follow it -- the
+ * list of value options can never be complete, so fail closed (#650 review).
+ */
+const PNPM_COMMAND_WORDS = new Set([
+    'install',
+    'i',
+    'add',
+    'run',
+    'exec',
+    'dlx',
+    'test',
+    'typecheck',
+    'lint',
+    'test:run',
+    'test:coverage',
+    'lint:full',
+])
 
 /**
  * A pnpm command split into its parts: pnpm's own options may come before the
@@ -116,7 +148,13 @@ export function pnpmInvocation(command) {
     while (i < tokens.length && tokens[i].startsWith('-') && tokens[i] !== '--') {
         const token = tokens[i]
         if (isFilter(token)) filtered = true
-        i += token === '--filter' || token === '-F' || PNPM_VALUE_OPTIONS.has(token) ? 2 : 1
+        const takesValue =
+            /^(?:--filter(?:-prod)?|-F)$/.test(token) ||
+            PNPM_VALUE_OPTIONS.has(token) ||
+            (!token.includes('=') &&
+                !PNPM_COMMAND_WORDS.has(tokens[i + 1]) &&
+                PNPM_COMMAND_WORDS.has(tokens[i + 2]))
+        i += takesValue ? 2 : 1
     }
     if (tokens[i] === 'run') i += 1
     return { filtered, script: tokens[i], rest: tokens.slice(i + 1) }

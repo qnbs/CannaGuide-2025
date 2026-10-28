@@ -242,7 +242,8 @@ function specFilters(args) {
         // Dotted options (`--coverage.reporter text`) take a value as well; a bare
         // number is an option value, never a file filter (fail closed).
         if (VITEST_VALUE_OPTIONS.has(args[i]) || /^--\w+\.[\w.]+$/.test(args[i])) i += 1
-        else if (!args[i].startsWith('-') && !/^(?:\.\/?|\d+)$/.test(args[i])) {
+        // An empty filter ('' / "") matches every file as well.
+        else if (!args[i].startsWith('-') && !/^(?:\.\/?|\d+|''|"")$/.test(args[i])) {
             filters.push(args[i])
         }
     }
@@ -307,7 +308,7 @@ export function shellCommands(text) {
             part
                 .trim()
                 .replace(/^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/, '')
-                .replace(/^(?:pnpm exec|npx)\s+/, ''),
+                .replace(/^(?:pnpm (?:exec|dlx)|npx)\s+/, ''),
         )
         .filter(Boolean)
 }

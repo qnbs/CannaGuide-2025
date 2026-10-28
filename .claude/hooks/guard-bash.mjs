@@ -431,7 +431,7 @@ const flat = (word) => (word === '' ? "''" : word.replace(/[\s#]/g, '_'))
  * `xargs [opts] cmd` run the package manager / command they name.
  */
 const WRAPPER =
-    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+exec|npx|xargs(?:\s+(?:-[nLPsIdEa]\s+\S+|-\S+))*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
+    /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+(?:exec|dlx)|npx|xargs(?:\s+(?:-[nLPsIdEa]\s+\S+|-\S+))*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
     let current = programName(command.trim())
     for (
@@ -536,7 +536,13 @@ const RULES = [
                 .split(/\s+/)
                 .slice(2)
                 .filter((word) => !word.startsWith('-'))
-            return positional.length < 2 || positional.slice(1).some(runtimeValue)
+            // A wildcard refspec (`refs/heads/*:refs/heads/*`), --all and --mirror
+            // push every branch, main included (#650 review).
+            return (
+                positional.length < 2 ||
+                positional.slice(1).some((ref) => runtimeValue(ref) || ref.includes('*')) ||
+                /\s--(?:all|mirror)(?=\s|$)/.test(c)
+            )
         },
     ],
     [
@@ -615,7 +621,10 @@ function disablesHusky(all) {
     }
     for (let k = 0; k < words.length; k += 1) {
         const word = words[k]
-        if (word === 'HUSKY=0') return true
+        // A run-time value (`HUSKY="$(printf 0)"`, `HUSKY=$X`) may be 0: fail closed.
+        if (word === 'HUSKY=0' || (word.startsWith('HUSKY=') && runtimeValue(word.slice(6)))) {
+            return true
+        }
         // A wrapper option's value is not the command: `env -u NAME`, `sudo -u USER`.
         if (/^-[uCSgDhprtUT]$/.test(word)) {
             k += 1

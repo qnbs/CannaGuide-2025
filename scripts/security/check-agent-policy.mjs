@@ -137,6 +137,40 @@ const UNFILTERED = [
         },
     },
 ]
+/** Vitest options that take a separate value (`-t <pattern>`, `--reporter dot`). */
+const VITEST_VALUE_OPTIONS = new Set([
+    '-t',
+    '--testNamePattern',
+    '-c',
+    '--config',
+    '-r',
+    '--root',
+    '--dir',
+    '--project',
+    '--reporter',
+    '--environment',
+    '--pool',
+    '--shard',
+    '--exclude',
+    '--maxWorkers',
+    '--minWorkers',
+    '--outputFile',
+])
+
+/**
+ * The positional spec filters of a Vitest argument list. Option values are not
+ * filters (`-t .` names tests, not files), and `.` / `./` match every file
+ * (#650 review).
+ */
+function specFilters(args) {
+    const filters = []
+    for (let i = 0; i < args.length; i += 1) {
+        if (VITEST_VALUE_OPTIONS.has(args[i])) i += 1
+        else if (!args[i].startsWith('-') && !/^\.\/?$/.test(args[i])) filters.push(args[i])
+    }
+    return filters
+}
+
 /**
  * `pnpm --filter <pkg> test|test:run|test:coverage` still runs that package's
  * whole suite when it names no spec (options only) or when a `--` swallows the
@@ -150,7 +184,8 @@ const WHOLE_SUITE = [
             if (!run?.filtered || !['test', 'test:run', 'test:coverage'].includes(run.script)) {
                 return false
             }
-            return run.rest.includes('--') || run.rest.every((token) => token.startsWith('-'))
+            if (run.rest.includes('--')) return true
+            return specFilters(run.rest).length === 0
         },
     },
 ]

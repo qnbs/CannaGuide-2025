@@ -470,7 +470,11 @@ export function bashViolations(command, depth = 0) {
     const violations = new Set()
     const { commands, nested } = parseCommands(command)
     for (const words of commands) nested.push(...judge(words, violations))
-    if (depth < MAX_DEPTH) {
+    // Fail closed: text nested deeper than the guard reads is denied, not
+    // waved through (#650 review).
+    if (nested.length && depth >= MAX_DEPTH) {
+        violations.add(`nesting deeper than ${MAX_DEPTH} levels (not inspected)`)
+    } else {
         for (const script of nested) {
             for (const violation of bashViolations(script, depth + 1)) violations.add(violation)
         }

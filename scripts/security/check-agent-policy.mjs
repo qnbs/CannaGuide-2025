@@ -90,7 +90,22 @@ const BYPASSES = [
 
 const UNFILTERED = [
     'unfiltered pnpm suite',
-    /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)(?=\s|$)(?![^#\n]*--filter)/,
+    {
+        test(command) {
+            const m =
+                /^\s*pnpm (run )?(test|typecheck|lint|test:run|test:coverage|lint:full)(?=\s|$)/.exec(
+                    command,
+                )
+            if (!m) return false
+            // Only a filter before a standalone `--` scopes the run: after it the
+            // flag is the script's argument (`pnpm test -- --filter=!x`).
+            const options = command
+                .slice(m[0].length)
+                .split('#')[0]
+                .split(/\s--(?=\s|$)/)[0]
+            return !/(?:^|\s)(?:--filter|-F)(?:=|\s|$)/.test(options)
+        },
+    },
 ]
 /**
  * `pnpm --filter <pkg> test|test:run|test:coverage` still runs that package's
@@ -102,7 +117,13 @@ const WHOLE_SUITE = [
     'whole-suite test run',
     {
         test(command) {
-            const tokens = command.split('#')[0].trim().split(/\s+/)
+            // `--filter=<pkg>` and `-F <pkg>` are the same option (#650 review).
+            const tokens = command
+                .split('#')[0]
+                .trim()
+                .replace(/(^|\s)(?:--filter|-F)=(\S+)/g, '$1--filter $2')
+                .replace(/(^|\s)-F(?=\s)/g, '$1--filter')
+                .split(/\s+/)
             if (tokens[0] !== 'pnpm' || tokens[1] !== '--filter' || tokens.length < 4) return false
             const scriptAt = tokens[3] === 'run' ? 4 : 3
             if (!['test', 'test:run', 'test:coverage'].includes(tokens[scriptAt])) return false

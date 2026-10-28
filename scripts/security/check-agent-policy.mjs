@@ -193,6 +193,25 @@ const VITEST_VALUE_OPTIONS = new Set([
     '--maxWorkers',
     '--minWorkers',
     '--outputFile',
+    '--output-file',
+    '--test-name-pattern',
+    '--testTimeout',
+    '--test-timeout',
+    '--hookTimeout',
+    '--hook-timeout',
+    '--teardownTimeout',
+    '--teardown-timeout',
+    '--max-workers',
+    '--min-workers',
+    '--maxConcurrency',
+    '--max-concurrency',
+    '--retry',
+    '--bail',
+    '--mode',
+    '--browser',
+    '--inspect-brk',
+    '--slowTestThreshold',
+    '--slow-test-threshold',
 ])
 
 /**
@@ -203,8 +222,12 @@ const VITEST_VALUE_OPTIONS = new Set([
 function specFilters(args) {
     const filters = []
     for (let i = 0; i < args.length; i += 1) {
-        if (VITEST_VALUE_OPTIONS.has(args[i])) i += 1
-        else if (!args[i].startsWith('-') && !/^\.\/?$/.test(args[i])) filters.push(args[i])
+        // Dotted options (`--coverage.reporter text`) take a value as well; a bare
+        // number is an option value, never a file filter (fail closed).
+        if (VITEST_VALUE_OPTIONS.has(args[i]) || /^--\w+\.[\w.]+$/.test(args[i])) i += 1
+        else if (!args[i].startsWith('-') && !/^(?:\.\/?|\d+)$/.test(args[i])) {
+            filters.push(args[i])
+        }
     }
     return filters
 }

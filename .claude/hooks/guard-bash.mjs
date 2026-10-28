@@ -329,15 +329,24 @@ const flat = (word) => word.replace(/[\s#]/g, '_')
 const WRAPPER =
     /^(?:if|then|elif|else|while|until|do|!|\{|corepack|pnpm\s+exec|npx|xargs(?:\s+-\S+)*|command|builtin|exec|nohup|time|stdbuf(?:\s+-\S+)*|nice(?:\s+-\S+(?:\s+\d+)?)*|sudo(?:\s+(?:-[ugCDhprtUT]\s+\S+|-\S+))*|env(?:\s+(?:-[uCS]\s+\S+|-\S+))*|timeout(?:\s+-\S+)*\s+\d\S*|[A-Za-z_]\w*=\S*)\s+/
 export function unwrap(command) {
-    let current = command.trim()
+    let current = programName(command.trim())
     for (
-        let next = current.replace(WRAPPER, '');
+        let next = programName(current.replace(WRAPPER, ''));
         next !== current;
-        next = current.replace(WRAPPER, '')
+        next = programName(current.replace(WRAPPER, ''))
     ) {
         current = next
     }
     return current.replace(/^pnpm@\S+/, 'pnpm')
+}
+
+/**
+ * The program by name: `/bin/bash`, `/usr/bin/git`, `./node_modules/.bin/turbo`
+ * run the same program as their basename (#650 review). An assignment
+ * (`X=/a/b cmd`) keeps its value.
+ */
+function programName(command) {
+    return command.replace(/^[^\s=]*\//, '')
 }
 
 /** Git global options come before the subcommand: `git -C . commit` is a commit. */
@@ -431,9 +440,19 @@ function disablesHusky(all) {
     if (/^(?:export|declare|typeset|readonly)$/.test(words[0] ?? '')) {
         return words.slice(1).includes('HUSKY=0')
     }
-    for (const word of words) {
+    for (let k = 0; k < words.length; k += 1) {
+        const word = words[k]
         if (word === 'HUSKY=0') return true
-        if (!/^(?:[A-Za-z_]\w*=.*|env|command|exec|nohup|time|sudo|-\S*)$/.test(word)) return false
+        // A wrapper option's value is not the command: `env -u NAME`, `sudo -u USER`.
+        if (/^-[uCSgDhprtUT]$/.test(word)) {
+            k += 1
+            continue
+        }
+        if (
+            !/^(?:[A-Za-z_]\w*=.*|(?:\S*\/)?(?:env|command|exec|nohup|time|sudo)|-\S*)$/.test(word)
+        ) {
+            return false
+        }
     }
     return false
 }
@@ -457,7 +476,7 @@ function judge(words, violations) {
     // The unwrapped words, with their original text: `sh -c '<script>'` and
     // `eval <words>` run that text as shell.
     const rest = words.slice(words.length - command.split(' ').length)
-    if (SHELLS.test(rest[0] ?? '')) {
+    if (SHELLS.test(programName(rest[0] ?? ''))) {
         const flag = rest.findIndex((w, k) => k > 0 && /^-[A-Za-z]*c[A-Za-z]*$/.test(w))
         if (flag > 0 && rest[flag + 1] !== undefined) return [rest[flag + 1]]
     }

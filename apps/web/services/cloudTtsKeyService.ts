@@ -26,6 +26,9 @@ export const cloudTtsKeyService = {
             } catch {
                 return null
             }
+            // decrypt() returns its input when AES-GCM authentication fails
+            // (missing or rotated encryption key): that is no key, not a key.
+            if (resolved === stored) return null
         } else {
             try {
                 const { payload, migrated } = await ensureEncrypted(stored)

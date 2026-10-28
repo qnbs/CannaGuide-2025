@@ -56,9 +56,18 @@ describe('cloudTtsKeyService', () => {
         expect(store.get(CLOUD_TTS_API_KEY_STORAGE_KEY)).not.toContain(CANARY)
     })
 
-    it('a payload that cannot be decrypted reads as no key', async () => {
+    it('a payload that cannot be decrypted reads as no key (#711 review)', async () => {
         store.set(CLOUD_TTS_API_KEY_STORAGE_KEY, 'enc:broken')
-        vi.mocked(decrypt).mockRejectedValueOnce(new Error('bad tag'))
+        // The real decrypt() returns its input when authentication fails.
+        vi.mocked(decrypt).mockImplementationOnce(async (payload: string) => payload)
+        await expect(cloudTtsKeyService.getApiKey()).resolves.toBeNull()
+        vi.mocked(decrypt).mockImplementationOnce(async (payload: string) => payload)
+        await expect(cloudTtsKeyService.hasApiKey()).resolves.toBe(false)
+    })
+
+    it('an unavailable encryption key reads as no key', async () => {
+        store.set(CLOUD_TTS_API_KEY_STORAGE_KEY, 'enc:broken')
+        vi.mocked(decrypt).mockRejectedValueOnce(new Error('key store unavailable'))
         await expect(cloudTtsKeyService.getApiKey()).resolves.toBeNull()
     })
 

@@ -1231,6 +1231,8 @@ export const settingsView = {
         importPartialSuccess_other:
             "Sauvegarde restauree ; {{count}} images n'ont pas pu etre restaurees. L'application va se recharger.",
         importError: "Impossible d'importer la sauvegarde ZIP. Le fichier est peut-etre corrompu.",
+        importTooLarge:
+            "Cette sauvegarde est plus volumineuse que ce que CannaGuide peut restaurer en toute securite, rien n'a donc ete importe ; vos donnees sont inchangees. Utilisez une sauvegarde exportee par CannaGuide.",
         exportError: 'Impossible de creer la sauvegarde ZIP.',
         exportImagesError:
             "Vos photos n'ont pas pu etre lues, aucune sauvegarde ZIP n'a donc ete creee ; vos donnees sont inchangees. Fermez les autres onglets CannaGuide ou redemarrez l'application, puis reessayez.",

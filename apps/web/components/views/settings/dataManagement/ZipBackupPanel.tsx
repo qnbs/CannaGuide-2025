@@ -84,7 +84,10 @@ export const ZipBackupPanel: React.FC = () => {
                             } else {
                                 getUISnapshot().addNotification({
                                     type: 'error',
-                                    message: String(t('settingsView.zipBackup.importError')),
+                                    message:
+                                        result.errorCode === 'limitExceeded'
+                                            ? String(t('settingsView.zipBackup.importTooLarge'))
+                                            : String(t('settingsView.zipBackup.importError')),
                                 })
                                 if (result.reloadRequired) {
                                     window.setTimeout(() => window.location.reload(), 3500)

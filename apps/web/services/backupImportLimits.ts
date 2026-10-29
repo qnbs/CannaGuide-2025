@@ -55,7 +55,9 @@ const hasInflateStream = (
 /**
  * Inflates one entry as UTF-8 text, counting bytes as they arrive: the read
  * stops as soon as the entry or the shared budget is exceeded, before the
- * whole text exists in memory (#671).
+ * whole text exists in memory (#671). Each chunk is decoded on arrival and not
+ * kept, so the peak is the text itself, not the bytes plus the text (#748
+ * review); stream mode carries a character split across two chunks over.
  */
 export const readEntryText = (
     entry: JSZip.JSZipObject,
@@ -67,7 +69,8 @@ export const readEntryText = (
             reject(new BackupImportLimitError(entry.name))
             return
         }
-        const chunks: Uint8Array[] = []
+        const decoder = new TextDecoder()
+        const parts: string[] = []
         let size = 0
         let stopped = false
         const stream = entry.internalStream('uint8array')
@@ -81,7 +84,7 @@ export const readEntryText = (
                 reject(new BackupImportLimitError(entry.name))
                 return
             }
-            chunks.push(chunk)
+            parts.push(decoder.decode(chunk, { stream: true }))
         })
         stream.on('error', (error) => {
             if (stopped) return
@@ -90,13 +93,8 @@ export const readEntryText = (
         })
         stream.on('end', () => {
             if (stopped) return
-            const bytes = new Uint8Array(size)
-            let offset = 0
-            for (const chunk of chunks) {
-                bytes.set(chunk, offset)
-                offset += chunk.length
-            }
-            resolve(new TextDecoder().decode(bytes))
+            parts.push(decoder.decode())
+            resolve(parts.join(''))
         })
         stream.resume()
     })

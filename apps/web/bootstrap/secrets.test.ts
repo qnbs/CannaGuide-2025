@@ -10,10 +10,10 @@ import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 const CANARY = 'sk_canary_0000000000000000000000000000'
 
 vi.mock('@/services/cloudTtsKeyService', () => ({
-    cloudTtsKeyService: { migrateLegacyKey: vi.fn() },
+    cloudTtsKeyService: { migrateLegacyKey: vi.fn(), isLegacyKeyPending: vi.fn(() => false) },
 }))
 vi.mock('@/services/porcupineKeyService', () => ({
-    porcupineKeyService: { migrateLegacyKey: vi.fn() },
+    porcupineKeyService: { migrateLegacyKey: vi.fn(), isLegacyKeyPending: vi.fn(() => false) },
 }))
 const PORCUPINE_CANARY = 'pv_canary_0000000000000000000000000000'
 
@@ -113,6 +113,24 @@ describe('replaceBackupWithSavedSnapshot (#711 review)', () => {
         )
         await replaceBackupWithSavedSnapshot()
         expect(idb.get('cannaguide-redux-storage-backup')).not.toContain(CANARY)
+    })
+
+    it('keeps a key whose migration is still pending when the other one moved (#744 review)', async () => {
+        vi.mocked(cloudTtsKeyService.isLegacyKeyPending).mockReturnValueOnce(true)
+        idb.set(
+            'cannaguide-redux-storage',
+            JSON.stringify({
+                settings: {
+                    settings: {
+                        tts: { cloudTtsApiKey: CANARY },
+                        voiceControl: { porcupineAccessKey: PORCUPINE_CANARY },
+                    },
+                },
+            }),
+        )
+        await replaceBackupWithSavedSnapshot()
+        expect(idb.get('cannaguide-redux-storage-backup')).toContain(CANARY)
+        expect(idb.get('cannaguide-redux-storage-backup')).not.toContain(PORCUPINE_CANARY)
     })
 
     it('keeps the backup when there is no saved snapshot to replace it with', async () => {

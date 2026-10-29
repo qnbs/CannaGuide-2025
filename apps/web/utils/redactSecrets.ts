@@ -6,9 +6,9 @@
 export type SecretSettingPath = 'tts.cloudTtsApiKey' | 'voiceControl.porcupineAccessKey'
 
 const SECRET_FIELDS = [
-    ['tts', 'cloudTtsApiKey'],
-    ['voiceControl', 'porcupineAccessKey'],
-] as const
+    ['tts', 'cloudTtsApiKey', 'tts.cloudTtsApiKey'],
+    ['voiceControl', 'porcupineAccessKey', 'voiceControl.porcupineAccessKey'],
+] as const satisfies readonly (readonly [string, string, SecretSettingPath])[]
 
 interface SettingsSliceShape {
     settings: {
@@ -51,7 +51,10 @@ const isRecord = (value: unknown): value is JsonRecord =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /** A copy of a parsed `{ settings: <slice> }` snapshot without the keys, or null. */
-function redactParsedSnapshot(snapshot: unknown): JsonRecord | null {
+function redactParsedSnapshot(
+    snapshot: unknown,
+    keep: readonly SecretSettingPath[],
+): JsonRecord | null {
     if (!isRecord(snapshot)) return null
     const slice = snapshot['settings']
     if (!isRecord(slice)) return null
@@ -59,7 +62,8 @@ function redactParsedSnapshot(snapshot: unknown): JsonRecord | null {
     if (!isRecord(settings)) return null
     const redacted: JsonRecord = { ...settings }
     let changed = false
-    for (const [group, field] of SECRET_FIELDS) {
+    for (const [group, field, path] of SECRET_FIELDS) {
+        if (keep.includes(path)) continue
         const section = settings[group]
         if (isRecord(section) && section[field] != null) {
             redacted[group] = { ...section, [field]: null }
@@ -70,10 +74,13 @@ function redactParsedSnapshot(snapshot: unknown): JsonRecord | null {
 }
 
 /**
- * The same for a serialized snapshot. Text that is not such a snapshot, or has
- * no key in it, is returned unchanged.
+ * The same for a serialized snapshot, with the same `keep` list. Text that is
+ * not such a snapshot, or has no key in it, is returned unchanged.
  */
-export function redactSnapshotSecrets(serialized: string): string {
+export function redactSnapshotSecrets(
+    serialized: string,
+    keep: readonly SecretSettingPath[] = [],
+): string {
     if (!SECRET_FIELDS.some(([, field]) => serialized.includes(`"${field}"`))) return serialized
     let parsed: unknown
     try {
@@ -81,6 +88,6 @@ export function redactSnapshotSecrets(serialized: string): string {
     } catch {
         return serialized
     }
-    const redacted = redactParsedSnapshot(parsed)
+    const redacted = redactParsedSnapshot(parsed, keep)
     return redacted ? JSON.stringify(redacted) : serialized
 }

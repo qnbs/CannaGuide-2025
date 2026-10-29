@@ -1,6 +1,6 @@
 import type { AppStore } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
-import { SETTINGS_SECRET_STORES } from '@/services/settingsSecretStores'
+import { SETTINGS_SECRET_STORES, pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { redactSnapshotSecrets } from '@/utils/redactSecrets'
@@ -32,10 +32,15 @@ export const migrateLegacySecrets = async (hydratedStore: AppStore): Promise<boo
  * snapshot is saved, it replaces the backup -- as the next start would -- so
  * a recovery point remains, without the key (#711 review). Redacted again:
  * another tab that still holds the key may have written the snapshot since.
+ * A key whose own migration is still pending stays, as in the snapshot: one
+ * key moving must not cost the backup the other one (#744 review).
  */
 export const replaceBackupWithSavedSnapshot = async (): Promise<void> => {
     const saved = await indexedDBStorage.getItem(REDUX_STATE_KEY)
     if (typeof saved === 'string') {
-        await indexedDBStorage.setItem(REDUX_STATE_BACKUP_KEY, redactSnapshotSecrets(saved))
+        await indexedDBStorage.setItem(
+            REDUX_STATE_BACKUP_KEY,
+            redactSnapshotSecrets(saved, pendingLegacySecretPaths()),
+        )
     }
 }

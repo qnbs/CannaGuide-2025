@@ -72,6 +72,13 @@ describe('Porcupine access key (#709)', () => {
         expect(out.settings.tts.cloudTtsApiKey).toBeNull()
     })
 
+    it('keeps a pending credential in a serialized snapshot too (#744 review)', () => {
+        const snapshot = JSON.stringify({ settings: withBoth(PORCUPINE_CANARY) })
+        const out = redactSnapshotSecrets(snapshot, ['tts.cloudTtsApiKey'])
+        expect(out).toContain(CANARY)
+        expect(out).not.toContain(PORCUPINE_CANARY)
+    })
+
     it('removes the access key from a serialized snapshot', () => {
         const snapshot = JSON.stringify({
             version: 5,

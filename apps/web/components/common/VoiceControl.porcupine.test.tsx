@@ -31,6 +31,7 @@ vi.mock('@/services/porcupineWakeWordService', () => ({
         init: vi.fn(async () => true),
         start: vi.fn(async () => undefined),
         stop: vi.fn(async () => undefined),
+        dispose: vi.fn(async () => undefined),
         setCallback: vi.fn(),
     },
 }))
@@ -89,15 +90,26 @@ class MockSpeechRecognition {
     abort = vi.fn()
 }
 
+const settle = () =>
+    act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+    })
+
 const renderVoiceControl = async () => {
     vi.resetModules()
     const { VoiceControl } = await import('./VoiceControl')
     const { porcupineWakeWordService } = await import('@/services/porcupineWakeWordService')
-    render(<VoiceControl />)
+    const view = render(<VoiceControl />)
+    await settle()
+    return { porcupine: porcupineWakeWordService, view }
+}
+
+const changeStoredKey = async (key: string | null) => {
+    keyStore.key = key
     await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0))
+        for (const listener of keyStore.listeners) listener()
     })
-    return porcupineWakeWordService
+    await settle()
 }
 
 describe('VoiceControl -- Porcupine access key (#709)', () => {
@@ -116,30 +128,91 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
 
     it('initializes Porcupine with the key from the encrypted store', async () => {
         keyStore.key = STORED
-        const porcupine = await renderVoiceControl()
+        const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).toHaveBeenCalledWith(STORED, 'porcupine')
         expect(porcupine.start).toHaveBeenCalled()
     })
 
     it('falls back to a legacy key whose migration has not succeeded yet', async () => {
         legacyKey = LEGACY
-        const porcupine = await renderVoiceControl()
+        const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).toHaveBeenCalledWith(LEGACY, 'porcupine')
     })
 
     it('stays on the regex fallback without any key', async () => {
-        const porcupine = await renderVoiceControl()
+        const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).not.toHaveBeenCalled()
     })
 
     it('a newly saved key starts Porcupine without a reload', async () => {
-        const porcupine = await renderVoiceControl()
+        const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).not.toHaveBeenCalled()
-        keyStore.key = STORED
-        await act(async () => {
-            for (const listener of keyStore.listeners) listener()
-            await new Promise((resolve) => setTimeout(resolve, 0))
-        })
+        await changeStoredKey(STORED)
         expect(porcupine.init).toHaveBeenCalledWith(STORED, 'porcupine')
+    })
+
+    it('a changed key replaces the engine instead of keeping the old one (#744 review)', async () => {
+        keyStore.key = STORED
+        const { porcupine } = await renderVoiceControl()
+        expect(porcupine.init).toHaveBeenCalledWith(STORED, 'porcupine')
+        await changeStoredKey(LEGACY)
+        expect(porcupine.dispose).toHaveBeenCalledTimes(1)
+        expect(porcupine.init).toHaveBeenLastCalledWith(LEGACY, 'porcupine')
+        expect(vi.mocked(porcupine.dispose).mock.invocationCallOrder[0]).toBeLessThan(
+            vi.mocked(porcupine.init).mock.invocationCallOrder[1]!,
+        )
+    })
+
+    it('removing the key releases the engine (#744 review)', async () => {
+        keyStore.key = STORED
+        const { porcupine } = await renderVoiceControl()
+        await changeStoredKey(null)
+        expect(porcupine.dispose).toHaveBeenCalledTimes(1)
+        expect(porcupine.init).toHaveBeenCalledTimes(1)
+    })
+
+    it('an unreadable key store falls back to the legacy key (#744 review)', async () => {
+        const { porcupineKeyService } = await import('@/services/porcupineKeyService')
+        vi.mocked(porcupineKeyService.getApiKey).mockRejectedValueOnce(new Error('idb'))
+        legacyKey = LEGACY
+        const { porcupine } = await renderVoiceControl()
+        expect(porcupine.init).toHaveBeenCalledWith(LEGACY, 'porcupine')
+    })
+
+    it('a setup torn down during init() does not start the engine (#744 review)', async () => {
+        keyStore.key = STORED
+        const { porcupineWakeWordService } = await import('@/services/porcupineWakeWordService')
+        let finishInit: (ok: boolean) => void = () => undefined
+        vi.mocked(porcupineWakeWordService.init).mockImplementationOnce(
+            () =>
+                new Promise<boolean>((resolve) => {
+                    finishInit = resolve
+                }),
+        )
+        const { porcupine, view } = await renderVoiceControl()
+        expect(porcupine.init).toHaveBeenCalledTimes(1)
+        view.unmount()
+        await act(async () => finishInit(true))
+        await settle()
+        expect(porcupine.start).not.toHaveBeenCalled()
+    })
+
+    it('a key change during init() still ends on the new key (#744 review)', async () => {
+        keyStore.key = STORED
+        const { porcupineWakeWordService } = await import('@/services/porcupineWakeWordService')
+        let finishInit: (ok: boolean) => void = () => undefined
+        vi.mocked(porcupineWakeWordService.init).mockImplementationOnce(
+            () =>
+                new Promise<boolean>((resolve) => {
+                    finishInit = resolve
+                }),
+        )
+        const { porcupine } = await renderVoiceControl()
+        await changeStoredKey(LEGACY)
+        expect(porcupine.init).toHaveBeenCalledTimes(1)
+        await act(async () => finishInit(true))
+        await settle()
+        expect(porcupine.dispose).toHaveBeenCalledTimes(1)
+        expect(porcupine.init).toHaveBeenLastCalledWith(LEGACY, 'porcupine')
     })
 })

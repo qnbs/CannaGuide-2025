@@ -51,6 +51,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
     const [details, setDetails] = useState<Partial<JournalEntryDetails>>({})
     const [image, setImage] = useState<string | null>(null)
     const [isCameraOpen, setIsCameraOpen] = useState(false)
+    // One save at a time: a second click must not store the photo twice. The
+    // ref guards clicks in the same tick; the state disables the button.
+    const savingRef = useRef(false)
+    const [isSaving, setIsSaving] = useState(false)
     const cameraButtonRef = useRef<HTMLButtonElement>(null)
 
     const {
@@ -62,6 +66,19 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
     } = useDictation((text) => setNotes(text))
 
     const handleSubmit = async () => {
+        // A photo entry needs a photo; Save is disabled without one.
+        if (savingRef.current || (type === 'photo' && !image)) return
+        savingRef.current = true
+        setIsSaving(true)
+        try {
+            await submitEntry()
+        } finally {
+            savingRef.current = false
+            setIsSaving(false)
+        }
+    }
+
+    const submitEntry = async () => {
         let entryType: JournalEntryType
         const finalDetails: Partial<JournalEntryDetails> = { ...details }
 
@@ -93,11 +110,15 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         photoDetails.capturedAt,
                     ).timelineLabel
                 }
-            } catch {
+            } catch (error) {
+                // No photo entry without a stored photo: keep the modal, the
+                // photo and the note, so the user can free space and retry (#724).
+                console.debug('[LogActionModal] Photo could not be stored:', error)
                 getUISnapshot().addNotification({
-                    message: t('plantsView.aiDiagnostics.saveImageError'),
+                    message: t('plantsView.actionModals.photo.saveError'),
                     type: 'error',
                 })
+                return
             }
         } else {
             entryType = typeMapping[type] || JournalEntryType.Observation
@@ -171,7 +192,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
             <Button variant="secondary" onClick={onClose} className="min-h-11">
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleSubmit} glow={true} className="min-h-11">
+            <Button
+                onClick={handleSubmit}
+                glow={true}
+                className="min-h-11"
+                disabled={isSaving || (type === 'photo' && !image)}
+            >
                 {t('common.save')}
             </Button>
         </>

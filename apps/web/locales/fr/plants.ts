@@ -80,7 +80,8 @@ export const plantsView = {
         stepContextDesc:
             "Fournissez des observations supplementaires pour aider l'IA a etablir un diagnostic plus precis.",
         journalTitle: 'Diagnostic IA: {{title}}',
-        saveImageError: "Erreur lors de la sauvegarde de l'image.",
+        saveImageErrorNotLogged:
+            "La photo du diagnostic n'a pas pu etre enregistree, le diagnostic n'a donc pas ete ajoute au journal. Liberez de l'espace de stockage ou reessayez.",
     },
     diagnosis: {
         title: 'Scanner ONNX de Feuilles',
@@ -526,6 +527,8 @@ export const plantsView = {
             category: 'Categorie',
             selectImage: 'Capturer ou Selectionner une Image',
             notesPlaceholder: 'Notes sur la photo...',
+            saveError:
+                "Votre photo n'a pas pu etre enregistree, rien n'a donc ete consigne. Votre photo et votre note sont toujours la ; liberez de l'espace de stockage ou reessayez.",
             categories: {
                 FullPlant: 'Plante Entiere',
                 Bud: 'Tete',

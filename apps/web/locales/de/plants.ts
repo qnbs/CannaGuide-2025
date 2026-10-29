@@ -86,7 +86,8 @@ export const plantsView = {
         stepContextDesc:
             'Gib zusätzliche Beobachtungen an, die der KI helfen könnten, eine genauere Diagnose zu stellen.',
         journalTitle: 'KI-Diagnose: {{title}}',
-        saveImageError: 'Bild konnte nicht gespeichert werden.',
+        saveImageErrorNotLogged:
+            'Das Diagnosefoto konnte nicht gespeichert werden, daher wurde die Diagnose nicht ins Tagebuch übernommen. Schaffe Speicherplatz oder versuche es erneut.',
     },
     diagnosis: {
         title: 'ONNX Blattscanner',
@@ -559,6 +560,8 @@ export const plantsView = {
             category: 'Kategorie',
             selectImage: 'Bild aufnehmen oder auswählen',
             notesPlaceholder: 'Notizen zum Foto...',
+            saveError:
+                'Dein Foto konnte nicht gespeichert werden, daher wurde nichts eingetragen. Foto und Notiz sind noch da – schaffe Speicherplatz oder versuche es erneut.',
             categories: {
                 FullPlant: 'Ganze Pflanze',
                 Bud: 'Blüte',

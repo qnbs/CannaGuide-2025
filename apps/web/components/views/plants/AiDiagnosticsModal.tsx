@@ -25,11 +25,27 @@ interface DiagnosisResultProps {
     image: string | null
 }
 
-const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ response, plantId, image }) => {
+export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ response, plantId, image }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    // One save at a time: a second click must not log the diagnosis twice. The
+    // ref guards clicks in the same tick; the state disables the button.
+    const savingRef = useRef(false)
+    const [isSaving, setIsSaving] = useState(false)
 
     const handleSaveToJournal = async () => {
+        if (savingRef.current) return
+        savingRef.current = true
+        setIsSaving(true)
+        try {
+            await saveToJournal()
+        } finally {
+            savingRef.current = false
+            setIsSaving(false)
+        }
+    }
+
+    const saveToJournal = async () => {
         const content = `
 ### ${t('plantsView.aiDiagnostics.diagnosis')}: ${response.title} (${(
             response.confidence * 100
@@ -66,11 +82,14 @@ ${response.prevention}
                 })
                 journalDetails.imageId = imageId
             } catch (error) {
+                // Not logged as text-only behind the user's back: the result
+                // stays on screen and Save can be retried (#724).
                 console.debug('[AiDiagnosticsModal] Failed to save diagnosis image to DB', error)
                 getUISnapshot().addNotification({
-                    message: t('plantsView.aiDiagnostics.saveImageError'),
+                    message: t('plantsView.aiDiagnostics.saveImageErrorNotLogged'),
                     type: 'error',
                 })
+                return
             }
         }
 
@@ -131,7 +150,7 @@ ${response.prevention}
             </Card>
 
             <div className="text-center pt-2">
-                <Button onClick={handleSaveToJournal} variant="secondary">
+                <Button onClick={handleSaveToJournal} variant="secondary" disabled={isSaving}>
                     <PhosphorIcons.BookOpenText className="w-5 h-5 mr-2" />
                     {t('common.saveToJournal')}
                 </Button>

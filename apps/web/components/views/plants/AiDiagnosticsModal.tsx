@@ -32,9 +32,12 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ response, plan
     // ref guards clicks in the same tick; the state disables the button.
     const savingRef = useRef(false)
     const [isSaving, setIsSaving] = useState(false)
+    // One journal entry per diagnosis; a new diagnosis can be saved again.
+    const [isSaved, setIsSaved] = useState(false)
+    useEffect(() => setIsSaved(false), [response])
 
     const handleSaveToJournal = async () => {
-        if (savingRef.current) return
+        if (savingRef.current || isSaved) return
         savingRef.current = true
         setIsSaving(true)
         try {
@@ -103,6 +106,7 @@ ${response.prevention}
                 },
             }),
         )
+        setIsSaved(true)
     }
 
     return (
@@ -150,7 +154,11 @@ ${response.prevention}
             </Card>
 
             <div className="text-center pt-2">
-                <Button onClick={handleSaveToJournal} variant="secondary" disabled={isSaving}>
+                <Button
+                    onClick={handleSaveToJournal}
+                    variant="secondary"
+                    disabled={isSaving || isSaved}
+                >
                     <PhosphorIcons.BookOpenText className="w-5 h-5 mr-2" />
                     {t('common.saveToJournal')}
                 </Button>

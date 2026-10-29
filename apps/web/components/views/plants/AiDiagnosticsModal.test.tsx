@@ -107,4 +107,25 @@ describe('DiagnosisResult journal save (#724)', () => {
         expect(mocks.addImage).toHaveBeenCalledTimes(1)
         expect(mocks.dispatch).toHaveBeenCalledTimes(1)
     })
+
+    it('a saved diagnosis is not logged a second time; a new one can be (#747 review)', async () => {
+        const { rerender } = render(
+            <DiagnosisResult response={response} plantId="plant-1" image={null} />,
+        )
+        await clickSave()
+        await clickSave()
+        expect(mocks.dispatch).toHaveBeenCalledTimes(1)
+        expect(screen.getByText('common.saveToJournal').closest('button')).toBeDisabled()
+
+        rerender(
+            <DiagnosisResult
+                response={{ ...response, title: 'Overwatering' } as PlantDiagnosisResponse}
+                plantId="plant-1"
+                image={null}
+            />,
+        )
+        expect(screen.getByText('common.saveToJournal').closest('button')).not.toBeDisabled()
+        await clickSave()
+        expect(mocks.dispatch).toHaveBeenCalledTimes(2)
+    })
 })

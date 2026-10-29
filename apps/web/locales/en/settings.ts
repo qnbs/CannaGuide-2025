@@ -1178,6 +1178,8 @@ export const settingsView = {
             'Backup restored; {{count}} images could not be restored. App will reload.',
         importError: 'Failed to import ZIP backup. The file may be corrupted.',
         exportError: 'Failed to create ZIP backup.',
+        exportImagesError:
+            'Your photos could not be read, so no ZIP backup was created -- your data is unchanged. Close other CannaGuide tabs or restart the app, then try again.',
         includePhotos: 'Include photos',
         photoCount_one: '{{count}} photo',
         photoCount_other: '{{count}} photos',

@@ -44,12 +44,16 @@ export interface BackupMetadata {
     imageCount: number
 }
 
+/** Why an export produced no archive, where the UI can say more than "failed". */
+export type BackupExportErrorCode = 'imagesUnreadable'
+
 export interface BackupExportResult {
     success: boolean
     blob: Blob | null
     filename: string
     metadata: BackupMetadata | null
     error?: string | undefined
+    errorCode?: BackupExportErrorCode | undefined
 }
 
 export interface BackupImportResult {
@@ -258,6 +262,37 @@ const createImageRestoreWrite = (
 // Service
 // ---------------------------------------------------------------------------
 
+// Deliberately looser than isStoredImageShape: the export keeps every photo
+// row it can address; restore applies the strict checks.
+const isExportableImage = (row: unknown): row is { id: string; data: string } =>
+    isRecord(row) && typeof row.id === 'string' && typeof row.data === 'string'
+
+/**
+ * Every row of `CannaGuideDB.images`, or a rejection when they cannot all be
+ * read: the database does not open, the store is missing, the request fails
+ * or the transaction aborts. Resolves only on transaction completion, so an
+ * abort after the request cannot pass as a complete read (#665).
+ */
+const readAllStoredImages = async (): Promise<unknown[]> => {
+    const db = await openDB()
+    if (!db.objectStoreNames.contains('images')) {
+        throw new Error('The images store is missing')
+    }
+    return new Promise((resolve, reject) => {
+        let rows: unknown[] | null = null
+        const tx = db.transaction('images', 'readonly')
+        const request = tx.objectStore('images').getAll()
+        request.onsuccess = () => {
+            const result: unknown = request.result
+            rows = Array.isArray(result) ? result : null
+        }
+        request.onerror = () => reject(request.error ?? new Error('Reading images failed'))
+        tx.onabort = () => reject(tx.error ?? new Error('Reading images was aborted'))
+        tx.oncomplete = () =>
+            rows === null ? reject(new Error('Reading images returned no rows')) : resolve(rows)
+    })
+}
+
 export const backupService = {
     /**
      * Export the full app state as a ZIP file.
@@ -282,34 +317,34 @@ export const backupService = {
             // A legacy plaintext Cloud TTS key never leaves in a backup (#654).
             zip.file(STATE_FILENAME, redactSnapshotSecrets(stateString))
 
-            // 2. Images from IndexedDB (CannaGuideDB.images)
-            let imageCount = 0
+            // 2. Images from IndexedDB (CannaGuideDB.images). A backup that leaves
+            // out photos the state refers to is worse than no backup: when they
+            // cannot be read, fail closed; an empty photo store is complete (#665).
+            let storedImages: unknown[]
             try {
-                const db = await openDB()
-
-                if (db.objectStoreNames.contains('images')) {
-                    const tx = db.transaction('images', 'readonly')
-                    const store = tx.objectStore('images')
-                    const allImages = await new Promise<Array<{ id: string; data: string }>>(
-                        (resolve, reject) => {
-                            const request = store.getAll()
-                            request.onsuccess = () =>
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                resolve(request.result as Array<{ id: string; data: string }>)
-                            request.onerror = () => reject(request.error)
-                        },
-                    )
-
-                    for (const img of allImages) {
-                        if (typeof img.id === 'string' && typeof img.data === 'string') {
-                            const safeName = img.id.replace(/[^a-zA-Z0-9._-]/g, '_')
-                            zip.file(`${IMAGES_DIR}${safeName}.json`, JSON.stringify(img))
-                            imageCount++
-                        }
-                    }
+                storedImages = await readAllStoredImages()
+            } catch (e) {
+                console.error(
+                    '[backupService] Stored photos could not be read; no backup created:',
+                    e instanceof Error ? e.message : e,
+                )
+                return {
+                    success: false,
+                    blob: null,
+                    filename: '',
+                    metadata: null,
+                    error: 'Stored photos could not be read',
+                    errorCode: 'imagesUnreadable',
                 }
-            } catch {
-                console.debug('[backupService] Could not export images -- skipping')
+            }
+
+            let imageCount = 0
+            for (const img of storedImages) {
+                if (isExportableImage(img)) {
+                    const safeName = img.id.replace(/[^a-zA-Z0-9._-]/g, '_')
+                    zip.file(`${IMAGES_DIR}${safeName}.json`, JSON.stringify(img))
+                    imageCount++
+                }
             }
 
             // 3. Parse state for metadata

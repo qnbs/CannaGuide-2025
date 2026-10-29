@@ -87,6 +87,7 @@ vi.mock('@/i18n', () => ({
 }))
 
 import { backupService } from '@/services/backupService'
+import type { BackupExportResult } from '@/services/backupService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { closeDB, releaseDBAfterErase } from '@/services/db/connection'
 
@@ -273,6 +274,128 @@ describe('backupService', () => {
                 expect(String(data)).not.toContain(canary)
                 expect(String(data)).not.toContain('pv_canary_0000000000000000000000000000')
             }
+        })
+    })
+
+    describe('exportBackup photo completeness (#665)', () => {
+        const photo = { id: 'photo-1', data: VALID_PNG_DATA_URL, createdAt: 1 }
+
+        beforeEach(() => {
+            mocks.zipEntries.clear()
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(JSON.stringify({ version: 6 }))
+        })
+
+        const seedPhotos = async (...photos: unknown[]): Promise<void> => {
+            const db = await recreateImageDatabase()
+            for (const stored of photos) await writeStoredImage(db, stored)
+            db.close()
+        }
+
+        const expectNoArchive = (result: BackupExportResult): void => {
+            expect(result).toMatchObject({
+                success: false,
+                blob: null,
+                errorCode: 'imagesUnreadable',
+            })
+            expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
+        }
+
+        it('exports every stored photo with the state', async () => {
+            await seedPhotos(photo)
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(result.metadata?.imageCount).toBe(1)
+            expect(String(mocks.zipEntries.get('images/photo-1.json'))).toContain(
+                VALID_PNG_DATA_URL,
+            )
+        })
+
+        it('an empty photo store is a complete backup', async () => {
+            await seedPhotos()
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(result.metadata?.imageCount).toBe(0)
+        })
+
+        it('fails closed when the photo database cannot be opened', async () => {
+            await seedPhotos(photo)
+            closeDB() // erase hold: openDB() rejects
+            expectNoArchive(await backupService.exportBackup())
+        })
+
+        it('fails closed when the read transaction cannot be opened', async () => {
+            await seedPhotos(photo)
+            const originalTransaction = IDBDatabase.prototype.transaction
+            vi.spyOn(IDBDatabase.prototype, 'transaction').mockImplementation(function (
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
+            ) {
+                if (args[0] === 'images') {
+                    throw new DOMException('The connection is closing', 'InvalidStateError')
+                }
+                return originalTransaction.apply(this, args)
+            })
+            expectNoArchive(await backupService.exportBackup())
+        })
+
+        it('fails closed when the read transaction aborts', async () => {
+            await seedPhotos(photo)
+            const originalTransaction = IDBDatabase.prototype.transaction
+            vi.spyOn(IDBDatabase.prototype, 'transaction').mockImplementation(function (
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
+            ) {
+                const tx = originalTransaction.apply(this, args)
+                if (args[0] === 'images') queueMicrotask(() => tx.abort())
+                return tx
+            })
+            expectNoArchive(await backupService.exportBackup())
+        })
+
+        it('fails closed when the photo request fails', async () => {
+            await seedPhotos(photo)
+            vi.spyOn(IDBObjectStore.prototype, 'getAll').mockImplementation(() => {
+                const request = {
+                    error: new DOMException('Read failed', 'UnknownError'),
+                    onsuccess: null as (() => void) | null,
+                    onerror: null as (() => void) | null,
+                }
+                queueMicrotask(() => request.onerror?.())
+                return request as unknown as IDBRequest<unknown[]>
+            })
+            expectNoArchive(await backupService.exportBackup())
+        })
+
+        it('round-trips the state and every stored photo', async () => {
+            await seedPhotos(photo)
+            const exported = await backupService.exportBackup()
+            expect(exported.success).toBe(true)
+
+            // Restore into an empty photo store from exactly the exported entries.
+            closeDB()
+            releaseDBAfterErase()
+            const db = await recreateImageDatabase()
+            const entries = new Map(
+                [...mocks.zipEntries].map(([name, value]): [string, string] => [
+                    name,
+                    String(value),
+                ]),
+            )
+            mocks.loadZip.mockResolvedValueOnce({
+                files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
+                file: (name: string) => {
+                    const value = entries.get(name)
+                    return value === undefined ? null : { async: async () => value }
+                },
+            })
+            const restored = await backupService.importBackup(
+                new File(['zip'], 'backup.zip', { type: 'application/zip' }),
+            )
+            const restoredPhoto = await readStoredImage(db, 'photo-1')
+            db.close()
+
+            expect(restored).toMatchObject({ success: true, rejectedImageCount: 0 })
+            expect(restoredPhoto).toMatchObject({ id: 'photo-1', data: VALID_PNG_DATA_URL })
         })
     })
 

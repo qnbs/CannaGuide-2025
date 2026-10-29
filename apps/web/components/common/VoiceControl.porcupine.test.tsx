@@ -215,4 +215,46 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         expect(porcupine.dispose).toHaveBeenCalledTimes(1)
         expect(porcupine.init).toHaveBeenLastCalledWith(LEGACY, 'porcupine')
     })
+
+    it('a teardown while start() is pending still stops the engine (#744 review)', async () => {
+        keyStore.key = STORED
+        const { porcupineWakeWordService } = await import('@/services/porcupineWakeWordService')
+        let finishStart: () => void = () => undefined
+        vi.mocked(porcupineWakeWordService.start).mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishStart = resolve
+                }),
+        )
+        const { porcupine, view } = await renderVoiceControl()
+        expect(porcupine.start).toHaveBeenCalledTimes(1)
+        view.unmount()
+        expect(porcupine.stop).not.toHaveBeenCalled()
+        await act(async () => finishStart())
+        await settle()
+        expect(porcupine.stop).toHaveBeenCalledTimes(1)
+        expect(vi.mocked(porcupine.start).mock.invocationCallOrder[0]).toBeLessThan(
+            vi.mocked(porcupine.stop).mock.invocationCallOrder[0]!,
+        )
+    })
+
+    it('the next run disposes only after the previous stop finished (#744 review)', async () => {
+        keyStore.key = STORED
+        const { porcupineWakeWordService } = await import('@/services/porcupineWakeWordService')
+        const { porcupine } = await renderVoiceControl()
+        let finishStop: () => void = () => undefined
+        vi.mocked(porcupineWakeWordService.stop).mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishStop = resolve
+                }),
+        )
+        await changeStoredKey(LEGACY)
+        expect(porcupine.stop).toHaveBeenCalledTimes(1)
+        expect(porcupine.dispose).not.toHaveBeenCalled()
+        await act(async () => finishStop())
+        await settle()
+        expect(porcupine.dispose).toHaveBeenCalledTimes(1)
+        expect(porcupine.init).toHaveBeenLastCalledWith(LEGACY, 'porcupine')
+    })
 })

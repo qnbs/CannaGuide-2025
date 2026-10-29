@@ -262,9 +262,17 @@ export const VoiceControl: React.FC = () => {
     // an existing engine, so a changed or removed key needs dispose() first
     // (#744 review). Holds no key, only what changed.
     const porcupineConfigRef = useRef<string | null>(null)
-    // Runs one setup at a time: a run started while the previous one is still
-    // in init() would otherwise get that run's engine and key back.
+    // Runs setups and stops one at a time: a run started while the previous
+    // one is still in init() would get that run's engine and key back, and a
+    // stop finishing after the next dispose() would mark a released engine
+    // ready again (#744 review).
     const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
+    const enqueuePorcupine = useCallback((step: () => Promise<unknown>) => {
+        porcupineRunRef.current = porcupineRunRef.current.then(step).then(
+            () => undefined,
+            () => undefined,
+        )
+    }, [])
     // The access key lives in its encrypted store, not in the settings (#709).
     // A legacy plaintext value whose migration failed keeps working until it
     // moves; a saved or removed key restarts the engine via the version.
@@ -281,7 +289,7 @@ export const VoiceControl: React.FC = () => {
 
         if (!usePorcupine) {
             if (porcupineInitRef.current) {
-                porcupineWakeWordService.stop().catch(() => {})
+                enqueuePorcupine(() => porcupineWakeWordService.stop())
                 porcupineInitRef.current = false
             }
             return
@@ -324,20 +332,21 @@ export const VoiceControl: React.FC = () => {
                     activateFromHotword()
                 })
                 await porcupineWakeWordService.start()
-                porcupineInitRef.current = true
+                // A teardown during start() already queued its stop behind this run.
+                if (!disposed) porcupineInitRef.current = true
             } catch {
                 console.debug('[VoiceControl] Porcupine init failed -- regex fallback active')
             }
         }
 
-        porcupineRunRef.current = porcupineRunRef.current.then(initPorcupine)
+        enqueuePorcupine(initPorcupine)
 
         return () => {
             disposed = true
-            if (porcupineInitRef.current) {
-                porcupineWakeWordService.stop().catch(() => {})
-                porcupineInitRef.current = false
-            }
+            // Queued even while this run is still starting: it then stops the
+            // engine that run is about to leave listening (#744 review).
+            enqueuePorcupine(() => porcupineWakeWordService.stop())
+            porcupineInitRef.current = false
         }
     }, [
         settings.voiceControl.wakeWordEngine,
@@ -347,6 +356,7 @@ export const VoiceControl: React.FC = () => {
         hotwordEnabled,
         isAvailable,
         activateFromHotword,
+        enqueuePorcupine,
     ])
 
     const toggleListening = () => {

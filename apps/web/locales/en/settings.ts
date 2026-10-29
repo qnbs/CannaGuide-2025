@@ -824,6 +824,8 @@ export const settingsView = {
         gdprTitle: 'Privacy (GDPR/DSGVO)',
         gdprExport: 'Export All Personal Data',
         gdprExportDesc: 'Download a complete copy of all data (Art. 20 GDPR).',
+        gdprExportError:
+            'Not all stored data could be read, so no export was created -- your data is unchanged. Close other CannaGuide tabs or restart the app, then try again.',
         gdprErase: 'Erase All Data',
         gdprEraseDesc:
             'Permanently delete ALL data from this device (Art. 17 GDPR). This cannot be undone.',

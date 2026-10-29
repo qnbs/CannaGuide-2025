@@ -210,10 +210,16 @@ export function useDataManagementActions() {
             a.download = `cannaguide-full-export-${new Date().toISOString().slice(0, 10)}.json`
             a.click()
             URL.revokeObjectURL(url)
+        } catch {
+            // No file rather than an incomplete one; say why (#670).
+            getUISnapshot().addNotification({
+                type: 'error',
+                message: String(t('settingsView.data.gdprExportError')),
+            })
         } finally {
             setIsExportingAll(false)
         }
-    }, [])
+    }, [t])
 
     const handleEraseSingleDb = useCallback(
         async (dbName: string) => {

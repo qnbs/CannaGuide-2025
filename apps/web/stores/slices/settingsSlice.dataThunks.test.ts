@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { removePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { porcupineKeyService } from '@/services/porcupineKeyService'
 
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { removeItem: vi.fn(async () => undefined) },
@@ -15,6 +16,9 @@ vi.mock('@/services/aiProviderService', () => ({
 }))
 vi.mock('@/services/cloudTtsKeyService', () => ({
     cloudTtsKeyService: { clearApiKey: vi.fn(async () => undefined) },
+}))
+vi.mock('@/services/porcupineKeyService', () => ({
+    porcupineKeyService: { clearApiKey: vi.fn(async () => undefined) },
 }))
 
 const reload = vi.fn()
@@ -40,6 +44,7 @@ describe('resetAllData (#711 review)', () => {
                 'geminiApiKey',
             ]),
         )
+        expect(porcupineKeyService.clearApiKey).toHaveBeenCalled()
         expect(reload).toHaveBeenCalled()
     })
 
@@ -73,12 +78,19 @@ describe('exportAllData (#654)', () => {
         Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
         const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
         const state = {
-            settings: { settings: { tts: { cloudTtsApiKey: CANARY } }, version: 5 },
+            settings: {
+                settings: {
+                    tts: { cloudTtsApiKey: CANARY },
+                    voiceControl: { porcupineAccessKey: 'pv_canary_0000000000000000000000000000' },
+                },
+                version: 5,
+            },
             simulation: { marker: 'plants-kept' },
         }
         await exportAllData()(vi.fn(), () => state as never, undefined)
         const json = await readBlob(createObjectURL.mock.calls[0]![0])
         expect(json).not.toContain(CANARY)
+        expect(json).not.toContain('pv_canary_0000000000000000000000000000')
         expect(json).toContain('plants-kept')
         expect(click).toHaveBeenCalled()
         click.mockRestore()

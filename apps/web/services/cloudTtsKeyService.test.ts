@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { CLOUD_TTS_API_KEY_STORAGE_KEY } from '@/constants'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { encrypt, decrypt } from '@/services/cryptoService'
+import { encrypt, decrypt, ensureEncrypted } from '@/services/cryptoService'
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
@@ -69,6 +69,45 @@ describe('cloudTtsKeyService', () => {
         store.set(CLOUD_TTS_API_KEY_STORAGE_KEY, 'enc:broken')
         vi.mocked(decrypt).mockRejectedValueOnce(new Error('key store unavailable'))
         await expect(cloudTtsKeyService.getApiKey()).resolves.toBeNull()
+    })
+
+    describe('serialized key store operations (#709, #711 review)', () => {
+        // Holds the re-encryption of a plain entry until the test releases it.
+        const pauseReEncryption = (): (() => void) => {
+            let release: () => void = () => undefined
+            vi.mocked(ensureEncrypted).mockImplementationOnce(async (value: string) => {
+                await new Promise<void>((resolve) => {
+                    release = resolve
+                })
+                return { payload: `enc:${[...value].reverse().join('')}`, migrated: true }
+            })
+            return () => release()
+        }
+        const settle = () => new Promise((resolve) => setTimeout(resolve, 0))
+
+        it('a save during a pending re-encryption keeps the saved key', async () => {
+            store.set(CLOUD_TTS_API_KEY_STORAGE_KEY, 'plain-old-key')
+            const release = pauseReEncryption()
+            const lookup = cloudTtsKeyService.getApiKey()
+            await vi.waitFor(() => expect(ensureEncrypted).toHaveBeenCalled())
+            const save = cloudTtsKeyService.setApiKey(CANARY)
+            await settle()
+            release()
+            await Promise.all([lookup, save])
+            await expect(cloudTtsKeyService.getApiKey()).resolves.toBe(CANARY)
+        })
+
+        it('a removal during a pending re-encryption stays removed', async () => {
+            store.set(CLOUD_TTS_API_KEY_STORAGE_KEY, 'plain-old-key')
+            const release = pauseReEncryption()
+            const lookup = cloudTtsKeyService.getApiKey()
+            await vi.waitFor(() => expect(ensureEncrypted).toHaveBeenCalled())
+            const clear = cloudTtsKeyService.clearApiKey()
+            await settle()
+            release()
+            await Promise.all([lookup, clear])
+            await expect(cloudTtsKeyService.getApiKey()).resolves.toBeNull()
+        })
     })
 
     describe('migrateLegacyKey', () => {

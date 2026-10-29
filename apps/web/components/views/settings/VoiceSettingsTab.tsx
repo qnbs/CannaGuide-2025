@@ -21,6 +21,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SettingsRow } from './SettingsShared'
 import { CloudTtsKeyField } from './CloudTtsKeyField'
+import { PorcupineKeyField } from './PorcupineKeyField'
 import { useSettingsRowLabelProps } from '@/components/common/settingsRowLabel'
 import { PORCUPINE_BUILTIN_KEYWORDS } from '@/constants'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
@@ -334,26 +335,7 @@ const VoiceSettingsTab: React.FC = () => {
                         </SettingsRow>
                         {settings.voiceControl.wakeWordEngine === 'porcupine' && (
                             <>
-                                <SettingsRow
-                                    label={t('settingsView.voice.wakeWord.accessKey')}
-                                    description={t('settingsView.voice.wakeWord.accessKeyDesc')}
-                                >
-                                    <input
-                                        type="password"
-                                        className="w-full px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                                        value={settings.voiceControl.porcupineAccessKey ?? ''}
-                                        onChange={(e) =>
-                                            handleSetSetting(
-                                                'voiceControl.porcupineAccessKey',
-                                                e.target.value || null,
-                                            )
-                                        }
-                                        placeholder={t(
-                                            'settingsView.voice.wakeWord.accessKeyPlaceholder',
-                                        )}
-                                        autoComplete="off"
-                                    />
-                                </SettingsRow>
+                                <PorcupineKeyField />
                                 <SettingsRow label={t('settingsView.voice.wakeWord.keyword')}>
                                     <VoiceSelect
                                         value={settings.voiceControl.porcupineKeyword}

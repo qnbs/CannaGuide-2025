@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
 import { porcupineWakeWordService } from '@/services/porcupineWakeWordService'
+import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 
 // Web Speech API – not yet fully standardized in TypeScript's DOM lib
@@ -257,30 +258,72 @@ export const VoiceControl: React.FC = () => {
     // Porcupine for low-CPU always-on keyword detection. Falls back to regex.
     // ---------------------------------------------------------------------------
     const porcupineInitRef = useRef(false)
+    // Identifies the key and keyword the engine was created with. init() keeps
+    // an existing engine, so a changed or removed key needs dispose() first
+    // (#744 review). Holds no key, only what changed.
+    const porcupineConfigRef = useRef<string | null>(null)
+    // Runs setups and stops one at a time: a run started while the previous
+    // one is still in init() would get that run's engine and key back, and a
+    // stop finishing after the next dispose() would mark a released engine
+    // ready again (#744 review).
+    const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
+    const enqueuePorcupine = useCallback((step: () => Promise<unknown>) => {
+        porcupineRunRef.current = porcupineRunRef.current.then(step).then(
+            () => undefined,
+            () => undefined,
+        )
+    }, [])
+    // The access key lives in its encrypted store, not in the settings (#709).
+    // A legacy plaintext value whose migration failed keeps working until it
+    // moves; a saved or removed key restarts the engine via the version.
+    const legacyPorcupineKey = settings.voiceControl.porcupineAccessKey
+    const [porcupineKeyVersion, setPorcupineKeyVersion] = useState(0)
+    useEffect(
+        () => porcupineKeyService.subscribe(() => setPorcupineKeyVersion((version) => version + 1)),
+        [],
+    )
 
     useEffect(() => {
         const usePorcupine =
-            settings.voiceControl.wakeWordEngine === 'porcupine' &&
-            settings.voiceControl.porcupineAccessKey &&
-            hotwordEnabled &&
-            isAvailable
+            settings.voiceControl.wakeWordEngine === 'porcupine' && hotwordEnabled && isAvailable
 
         if (!usePorcupine) {
             if (porcupineInitRef.current) {
-                porcupineWakeWordService.stop().catch(() => {})
+                enqueuePorcupine(() => porcupineWakeWordService.stop())
                 porcupineInitRef.current = false
             }
             return
         }
 
         let disposed = false
+        const configuration = [
+            porcupineKeyVersion,
+            settings.voiceControl.porcupineKeyword,
+            legacyPorcupineKey === null ? 'store' : 'legacy',
+        ].join('|')
 
         const initPorcupine = async () => {
             try {
+                // An unreadable store must not hide a legacy key that still works.
+                const storedKey = await porcupineKeyService.getApiKey().catch(() => null)
+                const accessKey = storedKey ?? legacyPorcupineKey
+                if (disposed) return
+                if (
+                    porcupineConfigRef.current !== null &&
+                    porcupineConfigRef.current !== configuration
+                ) {
+                    await porcupineWakeWordService.dispose()
+                    porcupineConfigRef.current = null
+                }
+                // No key, or the effect was torn down meanwhile: regex fallback.
+                if (!accessKey || disposed) return
                 await porcupineWakeWordService.init(
-                    String(settings.voiceControl.porcupineAccessKey ?? ''),
+                    accessKey,
                     settings.voiceControl.porcupineKeyword,
                 )
+                porcupineConfigRef.current = configuration
+                // Torn down during init(): the next run decides about this engine.
+                if (disposed) return
                 porcupineWakeWordService.setCallback(() => {
                     if (disposed) return
                     voiceTelemetryService.recordVoiceEvent('hotwordDetected', {
@@ -289,28 +332,31 @@ export const VoiceControl: React.FC = () => {
                     activateFromHotword()
                 })
                 await porcupineWakeWordService.start()
-                porcupineInitRef.current = true
+                // A teardown during start() already queued its stop behind this run.
+                if (!disposed) porcupineInitRef.current = true
             } catch {
                 console.debug('[VoiceControl] Porcupine init failed -- regex fallback active')
             }
         }
 
-        void initPorcupine()
+        enqueuePorcupine(initPorcupine)
 
         return () => {
             disposed = true
-            if (porcupineInitRef.current) {
-                porcupineWakeWordService.stop().catch(() => {})
-                porcupineInitRef.current = false
-            }
+            // Queued even while this run is still starting: it then stops the
+            // engine that run is about to leave listening (#744 review).
+            enqueuePorcupine(() => porcupineWakeWordService.stop())
+            porcupineInitRef.current = false
         }
     }, [
         settings.voiceControl.wakeWordEngine,
-        settings.voiceControl.porcupineAccessKey,
+        legacyPorcupineKey,
+        porcupineKeyVersion,
         settings.voiceControl.porcupineKeyword,
         hotwordEnabled,
         isAvailable,
         activateFromHotword,
+        enqueuePorcupine,
     ])
 
     const toggleListening = () => {

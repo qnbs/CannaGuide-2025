@@ -198,6 +198,18 @@ export const performTx = async <T>(
                 )
             }
 
+            // A write that fails at commit (quota) aborts the transaction without
+            // an error event; without this the promise would never settle (#747 review).
+            transaction.onabort = () => {
+                console.debug(`[dbService] Transaction aborted on ${storeName}:`, transaction.error)
+                reject(
+                    toIndexedDbError(
+                        transaction.error,
+                        `[dbService] Transaction aborted on store "${storeName}".`,
+                    ),
+                )
+            }
+
             transaction.oncomplete = () => {
                 resolve(requestResult)
             }

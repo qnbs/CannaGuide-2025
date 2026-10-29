@@ -85,7 +85,8 @@ export const plantsView = {
         stepContextDesc:
             'Provide any additional observations that might help the AI make a more accurate diagnosis.',
         journalTitle: 'AI Diagnosis: {{title}}',
-        saveImageError: 'Failed to save image.',
+        saveImageErrorNotLogged:
+            'The diagnosis photo could not be saved, so the diagnosis was not added to the journal. Free up storage space or try again.',
     },
     diagnosis: {
         title: 'ONNX Leaf Scanner',
@@ -538,6 +539,8 @@ export const plantsView = {
             category: 'Category',
             selectImage: 'Capture or Select Image',
             notesPlaceholder: 'Notes about the photo...',
+            saveError:
+                'Your photo could not be saved, so nothing was logged. Your photo and note are still here -- free up storage space or try again.',
             categories: {
                 FullPlant: 'Full Plant',
                 Bud: 'Bud',

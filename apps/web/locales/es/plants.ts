@@ -80,7 +80,8 @@ export const plantsView = {
         stepContextDesc:
             'Proporciona observaciones adicionales que puedan ayudar a la IA a hacer un diagnostico mas preciso.',
         journalTitle: 'Diagnostico IA: {{title}}',
-        saveImageError: 'Error al guardar la imagen.',
+        saveImageErrorNotLogged:
+            'No se pudo guardar la foto del diagnostico, asi que el diagnostico no se anadio al diario. Libera espacio de almacenamiento o intentalo de nuevo.',
     },
     diagnosis: {
         title: 'Escaner de Hojas ONNX',
@@ -524,6 +525,8 @@ export const plantsView = {
             category: 'Categoria',
             selectImage: 'Capturar o Seleccionar Imagen',
             notesPlaceholder: 'Notas sobre la foto...',
+            saveError:
+                'No se pudo guardar tu foto, asi que no se registro nada. Tu foto y tu nota siguen aqui; libera espacio de almacenamiento o intentalo de nuevo.',
             categories: {
                 FullPlant: 'Planta Completa',
                 Bud: 'Cogollo',

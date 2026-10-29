@@ -78,7 +78,8 @@ export const plantsView = {
         stepContextDesc:
             'Geef aanvullende waarnemingen die de AI kunnen helpen een nauwkeurigere diagnose te stellen.',
         journalTitle: 'AI Diagnose: {{title}}',
-        saveImageError: 'Fout bij het opslaan van de afbeelding.',
+        saveImageErrorNotLogged:
+            'De diagnosefoto kon niet worden opgeslagen, daarom is de diagnose niet aan het dagboek toegevoegd. Maak opslagruimte vrij of probeer het opnieuw.',
     },
     diagnosis: {
         title: 'ONNX Bladscanner',
@@ -510,6 +511,8 @@ export const plantsView = {
             category: 'Categorie',
             selectImage: 'Vastleggen of Afbeelding Selecteren',
             notesPlaceholder: 'Notities over de foto...',
+            saveError:
+                'Je foto kon niet worden opgeslagen, daarom is er niets vastgelegd. Je foto en notitie staan er nog; maak opslagruimte vrij of probeer het opnieuw.',
             categories: {
                 FullPlant: 'Volledige Plant',
                 Bud: 'Knop',

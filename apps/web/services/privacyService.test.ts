@@ -326,8 +326,8 @@ describe('privacyService', () => {
             await seededFactory()
             const originalGetAll = FakeIDBObjectStore.prototype.getAll
             vi.spyOn(FakeIDBObjectStore.prototype, 'getAll').mockImplementation(function (
-                this: FakeIDBObjectStore,
-                ...args: Parameters<FakeIDBObjectStore['getAll']>
+                this: IDBObjectStore,
+                ...args: Parameters<IDBObjectStore['getAll']>
             ) {
                 if (this.name !== 'images') return originalGetAll.apply(this, args)
                 const request = {
@@ -336,7 +336,7 @@ describe('privacyService', () => {
                     onerror: null as (() => void) | null,
                 }
                 queueMicrotask(() => request.onerror?.())
-                return request as unknown as ReturnType<FakeIDBObjectStore['getAll']>
+                return request as unknown as ReturnType<IDBObjectStore['getAll']>
             })
             await exportFails('CannaGuideDB')
         })
@@ -345,8 +345,8 @@ describe('privacyService', () => {
             await seededFactory()
             const originalTransaction = FakeIDBDatabase.prototype.transaction
             vi.spyOn(FakeIDBDatabase.prototype, 'transaction').mockImplementation(function (
-                this: FakeIDBDatabase,
-                ...args: Parameters<FakeIDBDatabase['transaction']>
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
             ) {
                 const tx = originalTransaction.apply(this, args)
                 if (this.name === 'CannaGuideStateDB') queueMicrotask(() => tx.abort())
@@ -359,8 +359,8 @@ describe('privacyService', () => {
             await seededFactory()
             const originalTransaction = FakeIDBDatabase.prototype.transaction
             vi.spyOn(FakeIDBDatabase.prototype, 'transaction').mockImplementation(function (
-                this: FakeIDBDatabase,
-                ...args: Parameters<FakeIDBDatabase['transaction']>
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
             ) {
                 if (this.name === 'CannaGuideDB') {
                     throw new DOMException('The connection is closing', 'InvalidStateError')

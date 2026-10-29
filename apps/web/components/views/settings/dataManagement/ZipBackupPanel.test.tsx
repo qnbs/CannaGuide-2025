@@ -1,8 +1,10 @@
-import { act, fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
     addNotification: vi.fn(),
+    exportBackup: vi.fn(),
+    downloadBlob: vi.fn(),
     importBackup: vi.fn(),
     reload: vi.fn(),
     translate: vi.fn(
@@ -20,9 +22,9 @@ vi.mock('@/stores/useUIStore', () => ({
 
 vi.mock('@/services/backupService', () => ({
     backupService: {
-        exportBackup: vi.fn(),
+        exportBackup: mocks.exportBackup,
         importBackup: mocks.importBackup,
-        downloadBlob: vi.fn(),
+        downloadBlob: mocks.downloadBlob,
     },
 }))
 
@@ -150,5 +152,59 @@ describe('ZipBackupPanel', () => {
             message: 'settingsView.zipBackup.importError:',
         })
         expect(mocks.reload).not.toHaveBeenCalled()
+    })
+
+    describe('export (#665)', () => {
+        const clickExport = async () => {
+            render(<ZipBackupPanel />)
+            await act(async () => {
+                fireEvent.click(screen.getByText('settingsView.zipBackup.exportZip:'))
+                await Promise.resolve()
+            })
+        }
+
+        it('downloads a complete archive without an error', async () => {
+            const blob = new Blob(['zip'])
+            mocks.exportBackup.mockResolvedValue({
+                success: true,
+                blob,
+                filename: 'cannaguide-backup.zip',
+                metadata: null,
+            })
+            await clickExport()
+            expect(mocks.downloadBlob).toHaveBeenCalledWith(blob, 'cannaguide-backup.zip')
+            expect(mocks.addNotification).not.toHaveBeenCalled()
+        })
+
+        it('explains an unreadable photo store instead of downloading', async () => {
+            mocks.exportBackup.mockResolvedValue({
+                success: false,
+                blob: null,
+                filename: '',
+                metadata: null,
+                errorCode: 'imagesUnreadable',
+            })
+            await clickExport()
+            expect(mocks.downloadBlob).not.toHaveBeenCalled()
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.zipBackup.exportImagesError:',
+            })
+        })
+
+        it('reports any other export failure', async () => {
+            mocks.exportBackup.mockResolvedValue({
+                success: false,
+                blob: null,
+                filename: '',
+                metadata: null,
+                error: 'No saved state found in IndexedDB',
+            })
+            await clickExport()
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.zipBackup.exportError:',
+            })
+        })
     })
 })

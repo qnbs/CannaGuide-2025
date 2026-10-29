@@ -27,7 +27,16 @@ export const ZipBackupPanel: React.FC = () => {
                                 const result = await backupService.exportBackup()
                                 if (result.success && result.blob) {
                                     backupService.downloadBlob(result.blob, result.filename)
+                                    return
                                 }
+                                // No archive rather than an incomplete one; say why (#665).
+                                getUISnapshot().addNotification({
+                                    type: 'error',
+                                    message:
+                                        result.errorCode === 'imagesUnreadable'
+                                            ? String(t('settingsView.zipBackup.exportImagesError'))
+                                            : String(t('settingsView.zipBackup.exportError')),
+                                })
                             }}
                             className="flex-1 justify-center"
                         >

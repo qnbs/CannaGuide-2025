@@ -4,7 +4,7 @@ import {
     IDBFactory,
     IDBObjectStore as FakeIDBObjectStore,
 } from 'fake-indexeddb'
-import { DELETE_DATABASE_TIMEOUT_MS } from './privacyDatabaseRegistry'
+import { DELETE_DATABASE_TIMEOUT_MS, EXPORT_OPEN_TIMEOUT_MS } from './privacyDatabaseRegistry'
 
 // Mock Sentry before importing the service
 vi.mock('@sentry/browser', () => ({
@@ -368,6 +368,46 @@ describe('privacyService', () => {
                 return originalTransaction.apply(this, args)
             })
             await exportFails('CannaGuideDB')
+        })
+
+        it('fails instead of hanging when an open never answers (#746 review)', async () => {
+            vi.useFakeTimers()
+            const pending: Array<{ onsuccess: (() => void) | null; result: unknown }> = []
+            vi.stubGlobal('indexedDB', {
+                open: () => {
+                    // Queued behind another tab's deletion: no success, no error.
+                    const request = {
+                        onerror: null as (() => void) | null,
+                        onsuccess: null as (() => void) | null,
+                        onupgradeneeded: null as (() => void) | null,
+                        result: { close: vi.fn(), objectStoreNames: [] },
+                    }
+                    pending.push(request)
+                    return request
+                },
+            })
+            try {
+                const { exportAllUserData, PrivacyExportError } = await import('./privacyService')
+                let outcome: unknown = 'pending'
+                void exportAllUserData().then(
+                    () => {
+                        outcome = 'resolved'
+                    },
+                    (error: unknown) => {
+                        outcome = error
+                    },
+                )
+                await vi.advanceTimersByTimeAsync(EXPORT_OPEN_TIMEOUT_MS + 1)
+                expect(outcome).toBeInstanceOf(PrivacyExportError)
+                expect(outcome).toMatchObject({ databaseName: 'CannaGuideDB' })
+                // A late success after giving up releases the connection.
+                pending[0]!.onsuccess?.()
+                expect(
+                    (pending[0]!.result as { close: ReturnType<typeof vi.fn> }).close,
+                ).toHaveBeenCalled()
+            } finally {
+                vi.useRealTimers()
+            }
         })
 
         it('fails the whole export when an existing database cannot be opened', async () => {

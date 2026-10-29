@@ -39,6 +39,14 @@ export const EXPORT_DATABASE_NAMES = [
 /** How long a blocked delete may stay pending before erase reports failure. */
 export const DELETE_DATABASE_TIMEOUT_MS = 2000
 
+/**
+ * How long the export waits for a database to open. An open queued behind
+ * another tab's deletion or upgrade can wait without success or error; the
+ * export then fails instead of hanging (#746 review). Covers the open only,
+ * not reading the rows.
+ */
+export const EXPORT_OPEN_TIMEOUT_MS = 5000
+
 const NAME_SET = new Set<string>(APPLICATION_DATABASE_NAMES)
 
 export const isApplicationDatabaseName = (name: string): name is ApplicationDatabaseName =>

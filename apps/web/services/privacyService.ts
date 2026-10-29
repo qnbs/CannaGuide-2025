@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/browser'
 import {
     APPLICATION_DATABASE_NAMES,
     DELETE_DATABASE_TIMEOUT_MS,
+    EXPORT_OPEN_TIMEOUT_MS,
     EXPORT_DATABASE_NAMES,
     isApplicationDatabaseName,
     type ApplicationDatabaseName,
@@ -334,6 +335,11 @@ const readAllFromDatabase = (dbName: string): Promise<Record<string, unknown[]> 
             return
         }
         let missing = false
+        let timedOut = false
+        const openTimer = setTimeout(() => {
+            timedOut = true
+            fail()
+        }, EXPORT_OPEN_TIMEOUT_MS)
         try {
             const req = indexedDB.open(dbName)
             req.onupgradeneeded = (event): void => {
@@ -344,10 +350,21 @@ const readAllFromDatabase = (dbName: string): Promise<Record<string, unknown[]> 
                 req.transaction?.abort()
             }
             // The aborted creation above ends here too: that is "not there", not a failure.
-            req.onerror = (): void => (missing ? resolve(null) : fail())
+            req.onerror = (): void => {
+                clearTimeout(openTimer)
+                if (timedOut) return
+                if (missing) resolve(null)
+                else fail()
+            }
 
             req.onsuccess = (): void => {
+                clearTimeout(openTimer)
                 const db = req.result
+                // Opened after the export already gave up on it: release it.
+                if (timedOut) {
+                    db.close()
+                    return
+                }
                 const storeNames = Array.from(db.objectStoreNames)
                 if (storeNames.length === 0) {
                     db.close()
@@ -382,6 +399,7 @@ const readAllFromDatabase = (dbName: string): Promise<Record<string, unknown[]> 
                 }
             }
         } catch {
+            clearTimeout(openTimer)
             fail()
         }
     })

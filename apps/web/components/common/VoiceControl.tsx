@@ -6,6 +6,7 @@ import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
 import { porcupineWakeWordService } from '@/services/porcupineWakeWordService'
+import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 
 // Web Speech API – not yet fully standardized in TypeScript's DOM lib
@@ -257,13 +258,19 @@ export const VoiceControl: React.FC = () => {
     // Porcupine for low-CPU always-on keyword detection. Falls back to regex.
     // ---------------------------------------------------------------------------
     const porcupineInitRef = useRef(false)
+    // The access key lives in its encrypted store, not in the settings (#709).
+    // A legacy plaintext value whose migration failed keeps working until it
+    // moves; a saved or removed key restarts the engine via the version.
+    const legacyPorcupineKey = settings.voiceControl.porcupineAccessKey
+    const [porcupineKeyVersion, setPorcupineKeyVersion] = useState(0)
+    useEffect(
+        () => porcupineKeyService.subscribe(() => setPorcupineKeyVersion((version) => version + 1)),
+        [],
+    )
 
     useEffect(() => {
         const usePorcupine =
-            settings.voiceControl.wakeWordEngine === 'porcupine' &&
-            settings.voiceControl.porcupineAccessKey &&
-            hotwordEnabled &&
-            isAvailable
+            settings.voiceControl.wakeWordEngine === 'porcupine' && hotwordEnabled && isAvailable
 
         if (!usePorcupine) {
             if (porcupineInitRef.current) {
@@ -277,8 +284,11 @@ export const VoiceControl: React.FC = () => {
 
         const initPorcupine = async () => {
             try {
+                const accessKey = (await porcupineKeyService.getApiKey()) ?? legacyPorcupineKey
+                // No key, or the effect was torn down meanwhile: regex fallback.
+                if (!accessKey || disposed) return
                 await porcupineWakeWordService.init(
-                    String(settings.voiceControl.porcupineAccessKey ?? ''),
+                    accessKey,
                     settings.voiceControl.porcupineKeyword,
                 )
                 porcupineWakeWordService.setCallback(() => {
@@ -306,7 +316,8 @@ export const VoiceControl: React.FC = () => {
         }
     }, [
         settings.voiceControl.wakeWordEngine,
-        settings.voiceControl.porcupineAccessKey,
+        legacyPorcupineKey,
+        porcupineKeyVersion,
         settings.voiceControl.porcupineKeyword,
         hotwordEnabled,
         isAvailable,

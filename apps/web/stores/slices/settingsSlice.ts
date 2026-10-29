@@ -10,6 +10,7 @@ import {
 } from '@/constants'
 import { aiProviderService } from '@/services/aiProviderService'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { redactSettingsSecrets } from '@/utils/redactSecrets'
 import {
     removePrimaryPersistedSnapshot,
@@ -260,6 +261,7 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
     await cloudTtsKeyService.clearApiKey()
+    await porcupineKeyService.clearApiKey()
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })

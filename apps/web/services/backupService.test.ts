@@ -254,7 +254,15 @@ describe('backupService', () => {
             mocks.zipEntries.clear()
             vi.mocked(indexedDBStorage.getItem).mockResolvedValue(
                 JSON.stringify({
-                    settings: { settings: { tts: { cloudTtsApiKey: canary } }, version: 5 },
+                    settings: {
+                        settings: {
+                            tts: { cloudTtsApiKey: canary },
+                            voiceControl: {
+                                porcupineAccessKey: 'pv_canary_0000000000000000000000000000',
+                            },
+                        },
+                        version: 5,
+                    },
                     simulation: { plants: [] },
                 }),
             )
@@ -263,6 +271,7 @@ describe('backupService', () => {
             expect(mocks.zipEntries.size).toBeGreaterThan(0)
             for (const data of mocks.zipEntries.values()) {
                 expect(String(data)).not.toContain(canary)
+                expect(String(data)).not.toContain('pv_canary_0000000000000000000000000000')
             }
         })
     })

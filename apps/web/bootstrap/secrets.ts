@@ -1,22 +1,28 @@
 import type { AppStore } from '@/stores/store'
 import { setSetting } from '@/stores/slices/settingsSlice'
-import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { SETTINGS_SECRET_STORES } from '@/services/settingsSecretStores'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { redactSnapshotSecrets } from '@/utils/redactSecrets'
 
 /**
- * Moves a Cloud TTS key that older versions kept in plain text in the
- * settings into the encrypted key store, before the first save (#654). The
- * settings value is cleared only after the encrypted copy reads back.
- * Returns true when a key was moved: the stored snapshot still holds it in
- * plain text until it is rewritten, so the caller saves at once.
+ * Moves credentials that older versions kept in plain text in the settings
+ * (Cloud TTS key, Porcupine access key) into their encrypted key stores,
+ * before the first save (#654, #709). A settings value is cleared only after
+ * its encrypted copy reads back. Returns true when a key was moved: the
+ * stored snapshot still holds it in plain text until it is rewritten, so the
+ * caller saves at once.
  */
 export const migrateLegacySecrets = async (hydratedStore: AppStore): Promise<boolean> => {
-    const legacy = hydratedStore.getState().settings.settings.tts.cloudTtsApiKey
-    if (legacy === null) return false
-    const moved = await cloudTtsKeyService.migrateLegacyKey(legacy)
-    if (moved) hydratedStore.dispatch(setSetting({ path: 'tts.cloudTtsApiKey', value: null }))
+    let moved = false
+    for (const { path, readLegacy, store } of SETTINGS_SECRET_STORES) {
+        const legacy = readLegacy(hydratedStore.getState().settings.settings)
+        if (legacy === null) continue
+        if (await store.migrateLegacyKey(legacy)) {
+            hydratedStore.dispatch(setSetting({ path, value: null }))
+            moved = true
+        }
+    }
     return moved
 }
 

@@ -1,20 +1,47 @@
 /**
  * Removes credentials from settings before they leave memory: the persisted
- * Redux snapshot, the JSON export, the ZIP backup and the GDPR export (#654).
- * Only `settings.tts.cloudTtsApiKey` is a secret in the settings slice; BYOK AI
- * keys never enter Redux.
+ * Redux snapshot, the JSON export, the ZIP backup and the GDPR export (#654,
+ * #709). Only these settings fields are secrets; BYOK AI keys never enter Redux.
  */
+export type SecretSettingPath = 'tts.cloudTtsApiKey' | 'voiceControl.porcupineAccessKey'
+
+const SECRET_FIELDS = [
+    ['tts', 'cloudTtsApiKey'],
+    ['voiceControl', 'porcupineAccessKey'],
+] as const
 
 interface SettingsSliceShape {
-    settings: { tts: { cloudTtsApiKey: string | null } }
+    settings: {
+        tts: { cloudTtsApiKey: string | null }
+        voiceControl?: { porcupineAccessKey: string | null }
+    }
 }
 
-/** A copy of the settings slice without the Cloud TTS key; the input is untouched. */
-export function redactSettingsSecrets<S extends SettingsSliceShape>(slice: S): S {
-    if (slice.settings.tts.cloudTtsApiKey === null) return slice
+/**
+ * A copy of the settings slice without the credentials; the input is
+ * untouched. `keep` names fields whose legacy value must survive for now
+ * (a migration still pending, so dropping it would lose the credential).
+ */
+export function redactSettingsSecrets<S extends SettingsSliceShape>(
+    slice: S,
+    keep: readonly SecretSettingPath[] = [],
+): S {
+    const { tts, voiceControl } = slice.settings
+    const dropTts = tts.cloudTtsApiKey !== null && !keep.includes('tts.cloudTtsApiKey')
+    const dropPorcupine =
+        voiceControl !== undefined &&
+        voiceControl.porcupineAccessKey !== null &&
+        !keep.includes('voiceControl.porcupineAccessKey')
+    if (!dropTts && !dropPorcupine) return slice
     return {
         ...slice,
-        settings: { ...slice.settings, tts: { ...slice.settings.tts, cloudTtsApiKey: null } },
+        settings: {
+            ...slice.settings,
+            ...(dropTts ? { tts: { ...tts, cloudTtsApiKey: null } } : {}),
+            ...(dropPorcupine
+                ? { voiceControl: { ...voiceControl, porcupineAccessKey: null } }
+                : {}),
+        },
     }
 }
 
@@ -23,19 +50,23 @@ type JsonRecord = Record<string, unknown>
 const isRecord = (value: unknown): value is JsonRecord =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
-/** A copy of a parsed `{ settings: <slice> }` snapshot without the key, or null. */
+/** A copy of a parsed `{ settings: <slice> }` snapshot without the keys, or null. */
 function redactParsedSnapshot(snapshot: unknown): JsonRecord | null {
     if (!isRecord(snapshot)) return null
     const slice = snapshot['settings']
     if (!isRecord(slice)) return null
     const settings = slice['settings']
     if (!isRecord(settings)) return null
-    const tts = settings['tts']
-    if (!isRecord(tts) || tts['cloudTtsApiKey'] == null) return null
-    return {
-        ...snapshot,
-        settings: { ...slice, settings: { ...settings, tts: { ...tts, cloudTtsApiKey: null } } },
+    const redacted: JsonRecord = { ...settings }
+    let changed = false
+    for (const [group, field] of SECRET_FIELDS) {
+        const section = settings[group]
+        if (isRecord(section) && section[field] != null) {
+            redacted[group] = { ...section, [field]: null }
+            changed = true
+        }
     }
+    return changed ? { ...snapshot, settings: { ...slice, settings: redacted } } : null
 }
 
 /**
@@ -43,7 +74,7 @@ function redactParsedSnapshot(snapshot: unknown): JsonRecord | null {
  * no key in it, is returned unchanged.
  */
 export function redactSnapshotSecrets(serialized: string): string {
-    if (!serialized.includes('"cloudTtsApiKey"')) return serialized
+    if (!SECRET_FIELDS.some(([, field]) => serialized.includes(`"${field}"`))) return serialized
     let parsed: unknown
     try {
         parsed = JSON.parse(serialized)

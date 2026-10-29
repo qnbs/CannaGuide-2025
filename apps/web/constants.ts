@@ -98,6 +98,8 @@ export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion'
 export const GEMINI_API_KEY_STORAGE_KEY = 'geminiApiKey'
 /** Encrypted ElevenLabs key; never part of the Redux settings snapshot (#654). */
 export const CLOUD_TTS_API_KEY_STORAGE_KEY = 'cloudTtsApiKey'
+/** Encrypted Picovoice access key; never part of the Redux settings snapshot (#709). */
+export const PORCUPINE_ACCESS_KEY_STORAGE_KEY = 'porcupineAccessKey'
 
 // --- DATABASE ---
 export const DB_NAME = 'CannaGuideDB'

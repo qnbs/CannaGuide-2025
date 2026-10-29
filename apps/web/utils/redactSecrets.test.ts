@@ -43,3 +43,40 @@ describe('redactSnapshotSecrets', () => {
         )
     })
 })
+
+describe('Porcupine access key (#709)', () => {
+    const withBoth = (porcupineAccessKey: string | null) => ({
+        version: 5,
+        settings: {
+            tts: { cloudTtsEnabled: true, cloudTtsApiKey: CANARY },
+            voiceControl: { wakeWordEngine: 'porcupine', porcupineAccessKey },
+            data: { keep: 1 },
+        },
+    })
+    const PORCUPINE_CANARY = 'pv_canary_0000000000000000000000000000'
+
+    it('drops both credentials from the slice and leaves the input untouched', () => {
+        const input = withBoth(PORCUPINE_CANARY)
+        const out = redactSettingsSecrets(input)
+        expect(JSON.stringify(out)).not.toContain(CANARY)
+        expect(JSON.stringify(out)).not.toContain(PORCUPINE_CANARY)
+        expect(out.settings.voiceControl.wakeWordEngine).toBe('porcupine')
+        expect(input.settings.voiceControl.porcupineAccessKey).toBe(PORCUPINE_CANARY)
+    })
+
+    it('keeps only the credential whose migration is pending', () => {
+        const out = redactSettingsSecrets(withBoth(PORCUPINE_CANARY), [
+            'voiceControl.porcupineAccessKey',
+        ])
+        expect(out.settings.voiceControl.porcupineAccessKey).toBe(PORCUPINE_CANARY)
+        expect(out.settings.tts.cloudTtsApiKey).toBeNull()
+    })
+
+    it('removes the access key from a serialized snapshot', () => {
+        const snapshot = JSON.stringify({
+            version: 5,
+            settings: { settings: { voiceControl: { porcupineAccessKey: PORCUPINE_CANARY } } },
+        })
+        expect(redactSnapshotSecrets(snapshot)).not.toContain(PORCUPINE_CANARY)
+    })
+})

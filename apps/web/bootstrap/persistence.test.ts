@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppStore } from '@/stores/store'
 import { REDUX_STATE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { setupPersistedStateSync } from './persistence'
 
 // A synthetic canary, never a real key (#654).
@@ -21,9 +21,11 @@ vi.mock('@/stores/useUIStore', () => ({ getUISnapshot: () => ({}) }))
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { setItem: vi.fn().mockResolvedValue(undefined) },
 }))
-vi.mock('@/services/cloudTtsKeyService', () => ({
-    cloudTtsKeyService: { isLegacyKeyPending: vi.fn(() => false) },
+vi.mock('@/services/settingsSecretStores', () => ({
+    pendingLegacySecretPaths: vi.fn(() => []),
 }))
+
+const PORCUPINE_CANARY = 'pv_canary_0000000000000000000000000000'
 
 const storeWithKey = (): AppStore =>
     ({
@@ -32,6 +34,7 @@ const storeWithKey = (): AppStore =>
                 version: 5,
                 settings: {
                     tts: { cloudTtsEnabled: true, cloudTtsApiKey: CANARY },
+                    voiceControl: { porcupineAccessKey: PORCUPINE_CANARY },
                     data: { persistenceIntervalMs: 1500 },
                 },
             },
@@ -58,6 +61,7 @@ describe('persisted settings snapshot (#654)', () => {
         await flush()
         const snapshot = savedSnapshot()
         expect(snapshot).not.toContain(CANARY)
+        expect(snapshot).not.toContain(PORCUPINE_CANARY)
         expect(JSON.parse(snapshot).settings.settings.tts).toEqual({
             cloudTtsEnabled: true,
             cloudTtsApiKey: null,
@@ -65,10 +69,11 @@ describe('persisted settings snapshot (#654)', () => {
     })
 
     it('keeps a legacy key only while its migration is pending (preserve first)', async () => {
-        vi.mocked(cloudTtsKeyService.isLegacyKeyPending).mockReturnValue(true)
+        vi.mocked(pendingLegacySecretPaths).mockReturnValue(['tts.cloudTtsApiKey'])
         const flush = setupPersistedStateSync(storeWithKey())
         await flush()
         expect(savedSnapshot()).toContain(CANARY)
-        vi.mocked(cloudTtsKeyService.isLegacyKeyPending).mockReturnValue(false)
+        expect(savedSnapshot()).not.toContain(PORCUPINE_CANARY)
+        vi.mocked(pendingLegacySecretPaths).mockReturnValue([])
     })
 })

@@ -160,7 +160,16 @@ describe('privacyService', () => {
                     const tx = open.result.transaction('zustand_state', 'readwrite')
                     tx.objectStore('zustand_state').put(
                         JSON.stringify({
-                            settings: { settings: { tts: { cloudTtsApiKey: canary } }, version: 5 },
+                            settings: {
+                                settings: {
+                                    tts: { cloudTtsApiKey: canary },
+                                    voiceControl: {
+                                        porcupineAccessKey:
+                                            'pv_canary_0000000000000000000000000000',
+                                    },
+                                },
+                                version: 5,
+                            },
                             simulation: { marker: 'plants-kept' },
                         }),
                         'cannaguide-redux-storage',
@@ -177,6 +186,7 @@ describe('privacyService', () => {
                 const { exportAllUserData } = await import('./privacyService')
                 const json = await exportAllUserData()
                 expect(json).not.toContain(canary)
+                expect(json).not.toContain('pv_canary_0000000000000000000000000000')
                 expect(json).toContain('plants-kept')
             } finally {
                 vi.unstubAllGlobals()

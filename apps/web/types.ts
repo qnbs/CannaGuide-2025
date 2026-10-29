@@ -328,6 +328,11 @@ export interface AppSettings {
         confirmationSound: boolean
         continuousListening: boolean
         wakeWordEngine: WakeWordEngine
+        /**
+         * @deprecated The access key lives encrypted in `porcupineKeyService`
+         * (#709). Only a legacy plaintext value waiting for its startup
+         * migration is ever kept here; it is redacted from every export.
+         */
         porcupineAccessKey: string | null
         porcupineKeyword: string
         voiceWorkerEnabled: boolean

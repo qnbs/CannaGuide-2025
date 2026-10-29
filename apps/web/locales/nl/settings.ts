@@ -850,6 +850,8 @@ export const settingsView = {
         gdprTitle: 'Privacy (GDPR/DSGVO)',
         gdprExport: 'Alle persoonlijke gegevens exporteren',
         gdprExportDesc: 'Download een volledige kopie van alle gegevens (Art. 20 GDPR).',
+        gdprExportError:
+            'Niet alle opgeslagen gegevens konden worden gelezen, daarom is er geen export gemaakt; je gegevens zijn ongewijzigd. Sluit andere CannaGuide-tabbladen of herstart de app en probeer het opnieuw.',
         gdprErase: 'Alle gegevens wissen',
         gdprEraseDesc:
             'Verwijder permanent ALLE gegevens van dit apparaat (Art. 17 GDPR). Dit kan niet ongedaan worden gemaakt.',

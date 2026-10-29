@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { IDBFactory } from 'fake-indexeddb'
-import { DELETE_DATABASE_TIMEOUT_MS } from './privacyDatabaseRegistry'
+import {
+    IDBDatabase as FakeIDBDatabase,
+    IDBFactory,
+    IDBObjectStore as FakeIDBObjectStore,
+} from 'fake-indexeddb'
+import { DELETE_DATABASE_TIMEOUT_MS, EXPORT_OPEN_TIMEOUT_MS } from './privacyDatabaseRegistry'
 
 // Mock Sentry before importing the service
 vi.mock('@sentry/browser', () => ({
@@ -242,6 +246,184 @@ describe('privacyService', () => {
             } finally {
                 vi.stubGlobal('indexedDB', realIndexedDb)
             }
+        })
+    })
+
+    describe('exportAllUserData completeness (#670)', () => {
+        type Rows = Record<string, Array<[string, unknown]>>
+        const seed = (factory: IDBFactory, name: string, stores: Rows): Promise<void> =>
+            new Promise((resolve, reject) => {
+                const open = factory.open(name, 1)
+                open.onupgradeneeded = () => {
+                    for (const store of Object.keys(stores)) open.result.createObjectStore(store)
+                }
+                open.onerror = () => reject(open.error)
+                open.onsuccess = () => {
+                    const db = open.result
+                    const tx = db.transaction(Object.keys(stores), 'readwrite')
+                    for (const [store, rows] of Object.entries(stores)) {
+                        for (const [key, value] of rows) tx.objectStore(store).put(value, key)
+                    }
+                    tx.oncomplete = () => {
+                        db.close()
+                        resolve()
+                    }
+                    tx.onerror = () => reject(tx.error)
+                }
+            })
+
+        const seededFactory = async (): Promise<IDBFactory> => {
+            const factory = new IDBFactory()
+            await seed(factory, 'CannaGuideStateDB', {
+                zustand_state: [['cannaguide-redux-storage', 'state-sentinel']],
+            })
+            await seed(factory, 'CannaGuideDB', {
+                images: [['photo-1', { id: 'photo-1', data: 'image-sentinel' }]],
+                metadata: [],
+            })
+            vi.stubGlobal('indexedDB', factory)
+            return factory
+        }
+
+        const exportFails = async (databaseName: string): Promise<void> => {
+            const { exportAllUserData, PrivacyExportError } = await import('./privacyService')
+            const failure = await exportAllUserData().then(
+                () => null,
+                (error: unknown) => error,
+            )
+            expect(failure).toBeInstanceOf(PrivacyExportError)
+            expect(failure).toMatchObject({ databaseName })
+            // The error names the database, never its records.
+            expect(String((failure as Error).message)).not.toContain('sentinel')
+        }
+
+        afterEach(() => {
+            vi.restoreAllMocks()
+            vi.unstubAllGlobals()
+        })
+
+        it('exports every populated database and leaves absent ones out', async () => {
+            await seededFactory()
+            const { exportAllUserData } = await import('./privacyService')
+            const data = JSON.parse(await exportAllUserData()) as {
+                databases: Record<string, Record<string, unknown[]>>
+            }
+            expect(Object.keys(data.databases).sort()).toEqual([
+                'CannaGuideDB',
+                'CannaGuideStateDB',
+            ])
+            expect(data.databases['CannaGuideStateDB']!['zustand_state']).toEqual([
+                'state-sentinel',
+            ])
+            expect(data.databases['CannaGuideDB']!['images']).toEqual([
+                { id: 'photo-1', data: 'image-sentinel' },
+            ])
+            // An empty store is exported as empty, not dropped.
+            expect(data.databases['CannaGuideDB']!['metadata']).toEqual([])
+        })
+
+        it('fails the whole export when one store cannot be read', async () => {
+            await seededFactory()
+            const originalGetAll = FakeIDBObjectStore.prototype.getAll
+            vi.spyOn(FakeIDBObjectStore.prototype, 'getAll').mockImplementation(function (
+                this: IDBObjectStore,
+                ...args: Parameters<IDBObjectStore['getAll']>
+            ) {
+                if (this.name !== 'images') return originalGetAll.apply(this, args)
+                const request = {
+                    error: new DOMException('Read failed', 'UnknownError'),
+                    onsuccess: null as (() => void) | null,
+                    onerror: null as (() => void) | null,
+                }
+                queueMicrotask(() => request.onerror?.())
+                return request as unknown as ReturnType<IDBObjectStore['getAll']>
+            })
+            await exportFails('CannaGuideDB')
+        })
+
+        it('fails the whole export when a read transaction aborts', async () => {
+            await seededFactory()
+            const originalTransaction = FakeIDBDatabase.prototype.transaction
+            vi.spyOn(FakeIDBDatabase.prototype, 'transaction').mockImplementation(function (
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
+            ) {
+                const tx = originalTransaction.apply(this, args)
+                if (this.name === 'CannaGuideStateDB') queueMicrotask(() => tx.abort())
+                return tx
+            })
+            await exportFails('CannaGuideStateDB')
+        })
+
+        it('fails the whole export when a read transaction cannot be started', async () => {
+            await seededFactory()
+            const originalTransaction = FakeIDBDatabase.prototype.transaction
+            vi.spyOn(FakeIDBDatabase.prototype, 'transaction').mockImplementation(function (
+                this: IDBDatabase,
+                ...args: Parameters<IDBDatabase['transaction']>
+            ) {
+                if (this.name === 'CannaGuideDB') {
+                    throw new DOMException('The connection is closing', 'InvalidStateError')
+                }
+                return originalTransaction.apply(this, args)
+            })
+            await exportFails('CannaGuideDB')
+        })
+
+        it('fails instead of hanging when an open never answers (#746 review)', async () => {
+            vi.useFakeTimers()
+            const pending: Array<{ onsuccess: (() => void) | null; result: unknown }> = []
+            vi.stubGlobal('indexedDB', {
+                open: () => {
+                    // Queued behind another tab's deletion: no success, no error.
+                    const request = {
+                        onerror: null as (() => void) | null,
+                        onsuccess: null as (() => void) | null,
+                        onupgradeneeded: null as (() => void) | null,
+                        result: { close: vi.fn(), objectStoreNames: [] },
+                    }
+                    pending.push(request)
+                    return request
+                },
+            })
+            try {
+                const { exportAllUserData, PrivacyExportError } = await import('./privacyService')
+                let outcome: unknown = 'pending'
+                void exportAllUserData().then(
+                    () => {
+                        outcome = 'resolved'
+                    },
+                    (error: unknown) => {
+                        outcome = error
+                    },
+                )
+                await vi.advanceTimersByTimeAsync(EXPORT_OPEN_TIMEOUT_MS + 1)
+                expect(outcome).toBeInstanceOf(PrivacyExportError)
+                expect(outcome).toMatchObject({ databaseName: 'CannaGuideDB' })
+                // A late success after giving up releases the connection.
+                pending[0]!.onsuccess?.()
+                expect(
+                    (pending[0]!.result as { close: ReturnType<typeof vi.fn> }).close,
+                ).toHaveBeenCalled()
+            } finally {
+                vi.useRealTimers()
+            }
+        })
+
+        it('fails the whole export when an existing database cannot be opened', async () => {
+            vi.stubGlobal('indexedDB', {
+                open: () => {
+                    const request = {
+                        onerror: null as (() => void) | null,
+                        onsuccess: null as (() => void) | null,
+                        onupgradeneeded: null as (() => void) | null,
+                    }
+                    // An error without an upgrade: the database exists, it just will not open.
+                    queueMicrotask(() => request.onerror?.())
+                    return request
+                },
+            })
+            await exportFails('CannaGuideDB')
         })
     })
 

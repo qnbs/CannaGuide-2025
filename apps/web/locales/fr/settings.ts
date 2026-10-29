@@ -873,6 +873,8 @@ export const settingsView = {
         gdprTitle: 'Confidentialite (GDPR/DSGVO)',
         gdprExport: 'Exporter toutes les donnees personnelles',
         gdprExportDesc: 'Telecharger une copie complete de toutes les donnees (Art. 20 GDPR).',
+        gdprExportError:
+            "Toutes les donnees enregistrees n'ont pas pu etre lues, aucune exportation n'a donc ete creee ; vos donnees sont inchangees. Fermez les autres onglets CannaGuide ou redemarrez l'application, puis reessayez.",
         gdprErase: 'Effacer toutes les donnees',
         gdprEraseDesc:
             'Supprimer definitivement TOUTES les donnees de cet appareil (Art. 17 GDPR). Cette action est irreversible.',

@@ -105,6 +105,27 @@ describe('useDataManagementActions', () => {
         expect(mocks.dispatch).toHaveBeenCalled()
     })
 
+    it('reports a failed full-data export instead of downloading a file (#670)', async () => {
+        const privacy = await import('@/services/privacyService')
+        vi.mocked(privacy.exportAllUserData).mockRejectedValueOnce(new Error('read failed'))
+        const createObjectURL = vi.fn(() => 'blob:export')
+        vi.stubGlobal('URL', { ...URL, createObjectURL, revokeObjectURL: vi.fn() })
+        try {
+            const { result } = renderHook(() => useDataManagementActions())
+            await act(async () => {
+                await result.current.handleExportAllUserData()
+            })
+            expect(createObjectURL).not.toHaveBeenCalled()
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.data.gdprExportError',
+            })
+            expect(result.current.isExportingAll).toBe(false)
+        } finally {
+            vi.unstubAllGlobals()
+        }
+    })
+
     it('reports only removed photos in the storage cleanup message', async () => {
         const { dbService } = await import('@/services/dbService')
         const { pruneOnQuotaThreshold } = await import('@/services/indexedDbPruneService')

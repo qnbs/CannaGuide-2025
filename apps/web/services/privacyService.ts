@@ -10,6 +10,7 @@ import * as Sentry from '@sentry/browser'
 import {
     APPLICATION_DATABASE_NAMES,
     DELETE_DATABASE_TIMEOUT_MS,
+    EXPORT_OPEN_TIMEOUT_MS,
     EXPORT_DATABASE_NAMES,
     isApplicationDatabaseName,
     type ApplicationDatabaseName,
@@ -291,47 +292,79 @@ export const exportAllUserData = async (): Promise<string> => {
     // IndexedDB databases
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const dbs = dump['databases'] as Record<string, Record<string, unknown[]>>
+    // A database that exists but cannot be read fails the whole export: a
+    // "complete copy" that silently lacks a database is worse than none (#670).
+    // One that does not exist yet is simply not part of it.
     for (const dbName of EXPORT_DATABASE_NAMES) {
-        try {
-            const data = await readAllFromDatabase(dbName)
-            if (data) {
-                // The persisted settings snapshot is a JSON string row; a
-                // legacy plaintext Cloud TTS key in it is not exported (#654).
-                dbs[dbName] = Object.fromEntries(
-                    Object.entries(data).map(([store, rows]) => [
-                        store,
-                        rows.map((row) =>
-                            typeof row === 'string' ? redactSnapshotSecrets(row) : row,
-                        ),
-                    ]),
-                )
-            }
-        } catch {
-            // Database may not exist yet -- skip silently
+        const data = await readAllFromDatabase(dbName)
+        if (data) {
+            // The persisted settings snapshot is a JSON string row; a
+            // legacy plaintext Cloud TTS key in it is not exported (#654).
+            dbs[dbName] = Object.fromEntries(
+                Object.entries(data).map(([store, rows]) => [
+                    store,
+                    rows.map((row) => (typeof row === 'string' ? redactSnapshotSecrets(row) : row)),
+                ]),
+            )
         }
     }
 
     return JSON.stringify(dump, null, 2)
 }
 
+/** Names only the database, never its records (they must not reach logs). */
+export class PrivacyExportError extends Error {
+    constructor(readonly databaseName: string) {
+        super(`[privacyService] Database ${databaseName} could not be read for the export.`)
+        this.name = 'PrivacyExportError'
+    }
+}
+
 /**
- * Read all object stores from a single IndexedDB database.
- * Returns null if the database cannot be opened.
+ * Read all object stores from a single IndexedDB database. Resolves null for
+ * a database that does not exist, and only on transaction completion
+ * otherwise; any failure to open or read an existing database rejects (#670).
  */
 const readAllFromDatabase = (dbName: string): Promise<Record<string, unknown[]> | null> =>
-    new Promise((resolve) => {
+    new Promise((resolve, reject) => {
+        const fail = (): void => reject(new PrivacyExportError(dbName))
+        // Without the IndexedDB API (disabled, very old browser) this profile
+        // cannot hold any database, so there is nothing missing from the export.
+        if (typeof indexedDB === 'undefined') {
+            resolve(null)
+            return
+        }
+        let missing = false
+        let timedOut = false
+        const openTimer = setTimeout(() => {
+            timedOut = true
+            fail()
+        }, EXPORT_OPEN_TIMEOUT_MS)
         try {
             const req = indexedDB.open(dbName)
-            req.onerror = (): void => resolve(null)
             req.onupgradeneeded = (event): void => {
                 // open() without a version creates a missing database at version 1
                 // and then skips the real service upgrade. Abort that creation.
                 if (event.oldVersion !== 0) return
+                missing = true
                 req.transaction?.abort()
+            }
+            // The aborted creation above ends here too: that is "not there", not a failure.
+            req.onerror = (): void => {
+                clearTimeout(openTimer)
+                if (timedOut) return
+                if (missing) resolve(null)
+                else fail()
             }
 
             req.onsuccess = (): void => {
+                clearTimeout(openTimer)
                 const db = req.result
+                // Opened after the export already gave up on it: release it.
+                if (timedOut) {
+                    db.close()
+                    return
+                }
                 const storeNames = Array.from(db.objectStoreNames)
                 if (storeNames.length === 0) {
                     db.close()
@@ -340,30 +373,33 @@ const readAllFromDatabase = (dbName: string): Promise<Record<string, unknown[]> 
                 }
 
                 const result: Record<string, unknown[]> = {}
-                let remaining = storeNames.length
-
-                const tx = db.transaction(storeNames, 'readonly')
-                for (const storeName of storeNames) {
-                    const store = tx.objectStore(storeName)
-                    const getAll = store.getAll()
-                    getAll.onsuccess = (): void => {
-                        result[storeName] = getAll.result as unknown[]
-                        remaining--
-                        if (remaining === 0) {
-                            db.close()
-                            resolve(result)
+                const closeAndFail = (): void => {
+                    db.close()
+                    fail()
+                }
+                try {
+                    const tx = db.transaction(storeNames, 'readonly')
+                    for (const storeName of storeNames) {
+                        const getAll = tx.objectStore(storeName).getAll()
+                        getAll.onsuccess = (): void => {
+                            const rows: unknown = getAll.result
+                            if (Array.isArray(rows)) result[storeName] = rows
                         }
+                        getAll.onerror = closeAndFail
                     }
-                    getAll.onerror = (): void => {
-                        remaining--
-                        if (remaining === 0) {
-                            db.close()
-                            resolve(result)
-                        }
+                    tx.onabort = closeAndFail
+                    tx.oncomplete = (): void => {
+                        db.close()
+                        // Every store must have answered; a missing one is a failed read.
+                        if (storeNames.every((name) => name in result)) resolve(result)
+                        else fail()
                     }
+                } catch {
+                    closeAndFail()
                 }
             }
         } catch {
-            resolve(null)
+            clearTimeout(openTimer)
+            fail()
         }
     })

@@ -751,6 +751,17 @@ export function classifyRetention({
     }
 }
 
+// The world moved on between plan and apply -- a merge, a deploy or a PR push
+// landed in that window. Nothing unsafe happened and the next run plans
+// against the new state, so this aborts the batch without failing the run
+// (#592). Any other reason stays a failure.
+const DRIFT_ERRORS = new Set([
+    'main SHA changed',
+    'production deployment set changed',
+    'rollback window changed',
+    'open pull request heads changed',
+])
+
 export function reconcilePlans(frozen, fresh) {
     const errors = []
     if (!frozen || !fresh || frozen.backend !== fresh.backend) errors.push('backend mismatch')
@@ -773,7 +784,9 @@ export function reconcilePlans(frozen, fresh) {
             .sort()
             .join('|')
     if (heads(frozen) !== heads(fresh)) errors.push('open pull request heads changed')
-    if (errors.length) return { abort: true, errors, ids: [] }
+    if (errors.length) {
+        return { abort: true, errors, ids: [], drift: errors.every((e) => DRIFT_ERRORS.has(e)) }
+    }
 
     const freshById = new Map((fresh.deployments || []).map((row) => [row.id, row]))
     const ids = []
@@ -784,6 +797,7 @@ export function reconcilePlans(frozen, fresh) {
                 abort: true,
                 errors: [`frozen row ${row.id} is not a safe-delete class`],
                 ids: [],
+                drift: false,
             }
         }
         const now = freshById.get(row.id)
@@ -794,11 +808,12 @@ export function reconcilePlans(frozen, fresh) {
                 abort: true,
                 errors: [`${row.id} is no longer ${row.class}`],
                 ids: [],
+                drift: false,
             }
         }
         ids.push(row.id)
     }
-    return { abort: false, errors: [], ids: ids.slice(0, MAX_DELETE_PER_RUN) }
+    return { abort: false, errors: [], ids: ids.slice(0, MAX_DELETE_PER_RUN), drift: false }
 }
 
 export function cloudflareDeleteUrl(accountId, projectName, deploymentId) {

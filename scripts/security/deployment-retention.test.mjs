@@ -28,6 +28,7 @@ import {
     assertDeploySha,
     assertPostDeleteAnchors,
     assertTrustedApply,
+    deferredAbortMessage,
     PUBLIC_VERSION_WAIT,
     verifyPublicVersion,
 } from '../deployment-retention/cli.mjs'
@@ -740,6 +741,58 @@ test('reconcile aborts when main or a safe row changes and never deletes UNKNOWN
     assert.deepEqual(ok.ids, ['oldprod'])
     assert.throws(() => assertSafeDeleteBatch(frozen, ['prod']), /refusing to delete/)
     assert.throws(() => assertSafeDeleteBatch(frozen, ['mystery']), /refusing to delete/)
+})
+
+test('plan/apply drift defers the batch without failing; an unsafe row still fails (#592)', () => {
+    const plan = (mainSha, deployments, headRefOid = OPEN_SHA) =>
+        classifyRetention({
+            backend: 'vercel',
+            mainSha,
+            pulls: [{ number: 540, state: 'OPEN', headRefName: 'feat/x', headRefOid }],
+            deployments,
+        })
+    const frozen = plan(MAIN, productionSet('vercel'))
+
+    // A merge between plan and apply: new main SHA and production set.
+    const merged = plan(
+        SHA_A,
+        productionSet('vercel').map((row) =>
+            row.id === 'prod'
+                ? { ...row, sha: SHA_A, aliases: ['canna-guide-2025-web.vercel.app'] }
+                : row,
+        ),
+    )
+    const drifted = reconcilePlans(frozen, merged)
+    assert.equal(drifted.abort, true)
+    assert.equal(drifted.drift, true)
+    assert.equal(drifted.ids.length, 0)
+    assert.match(
+        deferredAbortMessage('cloudflare', drifted),
+        /^DEFER cloudflare delete: .*nothing deleted; the next run re-plans$/,
+    )
+
+    // Only a PR push between plan and apply.
+    const pushed = reconcilePlans(frozen, plan(MAIN, productionSet('vercel'), SHA_B))
+    assert.deepEqual(pushed.errors, ['open pull request heads changed'])
+    assert.equal(pushed.drift, true)
+
+    // A frozen row that is not a safe-delete class is never deferred.
+    const tampered = {
+        ...frozen,
+        deployments: frozen.deployments.map((row) =>
+            row.deletable ? { ...row, class: 'UNKNOWN' } : row,
+        ),
+    }
+    const unsafe = reconcilePlans(tampered, plan(MAIN, productionSet('vercel')))
+    assert.equal(unsafe.abort, true)
+    assert.equal(unsafe.drift, false)
+    assert.equal(deferredAbortMessage('vercel', unsafe), null)
+
+    // Nothing to defer when the batch is not aborted at all.
+    assert.equal(
+        deferredAbortMessage('vercel', reconcilePlans(frozen, plan(MAIN, productionSet('vercel')))),
+        null,
+    )
 })
 
 test('cloudflare and vercel delete URLs cannot enable force or a project delete', () => {

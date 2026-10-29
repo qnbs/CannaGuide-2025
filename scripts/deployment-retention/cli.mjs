@@ -380,6 +380,15 @@ async function freshDeleteDecision(backend, frozen, github) {
     return { fresh, decision: reconcilePlans(frozen, fresh) }
 }
 
+/**
+ * The log line for an aborted batch that only saw plan/apply drift (#592), or
+ * null when the abort must fail the run. Either way nothing is deleted.
+ */
+export function deferredAbortMessage(backend, decision) {
+    if (!decision?.abort || decision.drift !== true) return null
+    return `DEFER ${backend} delete: ${decision.errors.join('; ')} -- nothing deleted; the next run re-plans`
+}
+
 async function applyDeletes(backend, planPath) {
     assertTrustedApply()
     const frozen = readJson(planPath)
@@ -394,6 +403,11 @@ async function applyDeletes(backend, planPath) {
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
     const current = afterPropagationWait(github, () => collectGithubState(github.repo))
     const { fresh, decision } = await freshDeleteDecision(backend, frozen, current)
+    const deferred = deferredAbortMessage(backend, decision)
+    if (deferred) {
+        console.log(deferred)
+        return
+    }
     if (decision.abort) {
         throw new Error(`retention batch aborted: ${decision.errors.join('; ')}`)
     }
@@ -473,6 +487,11 @@ async function checkVercelGate(planPath) {
         return
     }
     const { fresh, decision } = await freshDeleteDecision('vercel', frozen, current)
+    const deferred = deferredAbortMessage('vercel', decision)
+    if (deferred) {
+        console.log(`would-defer: ${decision.errors.join('; ')}`)
+        return
+    }
     if (decision.abort) {
         console.log(`would-abort: ${decision.errors.join('; ')}`)
         process.exitCode = 1

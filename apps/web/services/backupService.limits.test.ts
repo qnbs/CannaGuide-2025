@@ -12,7 +12,8 @@ vi.mock('@/services/persistedStateService', () => ({
 }))
 vi.mock('@/i18n', () => ({ getT: () => (key: string) => key }))
 
-import { BACKUP_IMPORT_LIMITS, backupService } from '@/services/backupService'
+import { backupService } from '@/services/backupService'
+import { BACKUP_IMPORT_LIMITS } from '@/services/backupImportLimits'
 import { closeDB, releaseDBAfterErase } from '@/services/db/connection'
 
 const KIB = 1024

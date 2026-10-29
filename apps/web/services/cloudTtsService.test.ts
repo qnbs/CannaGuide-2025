@@ -1,9 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { cloudTtsService } from '@/services/cloudTtsService'
 
-// Mock cryptoService -- named exports
-vi.mock('@/services/cryptoService', () => ({
-    decrypt: vi.fn().mockResolvedValue('decrypted-api-key'),
+// The key comes from the encrypted key store, never from settings (#654).
+vi.mock('@/services/cloudTtsKeyService', () => ({
+    cloudTtsKeyService: { getApiKey: vi.fn().mockResolvedValue('decrypted-api-key') },
 }))
 
 // Mock fetch
@@ -45,12 +45,12 @@ describe('cloudTtsService', () => {
     })
 
     it('isSupported returns false when no API key is set', () => {
-        cloudTtsService.setEncryptedApiKey(null)
+        cloudTtsService.setApiKeyConfigured(false)
         expect(cloudTtsService.isSupported()).toBe(false)
     })
 
     it('isSupported returns true when API key is set', () => {
-        cloudTtsService.setEncryptedApiKey('encrypted-key')
+        cloudTtsService.setApiKeyConfigured(true)
         expect(cloudTtsService.isSupported()).toBe(true)
     })
 
@@ -60,7 +60,7 @@ describe('cloudTtsService', () => {
             arrayBuffer: () => Promise.resolve(new ArrayBuffer(100)),
         })
 
-        cloudTtsService.setEncryptedApiKey('encrypted-key')
+        cloudTtsService.setApiKeyConfigured(true)
         const onEnd = vi.fn()
 
         cloudTtsService.speak('Hello world', 'en', onEnd, {
@@ -72,7 +72,7 @@ describe('cloudTtsService', () => {
             highlightSpeakingText: false,
             cloudTtsEnabled: true,
             cloudTtsProvider: 'elevenlabs',
-            cloudTtsApiKey: 'encrypted-key',
+            cloudTtsApiKey: null,
         })
 
         // speak() fires async internally -- wait for microtask queue
@@ -86,7 +86,7 @@ describe('cloudTtsService', () => {
     it('calls onEnd when fetch fails', async () => {
         mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
-        cloudTtsService.setEncryptedApiKey('encrypted-key')
+        cloudTtsService.setApiKeyConfigured(true)
         const onEnd = vi.fn()
 
         cloudTtsService.speak('Hello', 'en', onEnd, {
@@ -98,7 +98,7 @@ describe('cloudTtsService', () => {
             highlightSpeakingText: false,
             cloudTtsEnabled: true,
             cloudTtsProvider: 'elevenlabs',
-            cloudTtsApiKey: 'encrypted-key',
+            cloudTtsApiKey: null,
         })
 
         // speak() fires async internally -- wait for microtask queue

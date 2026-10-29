@@ -90,8 +90,14 @@ export const APP_METADATA = {
 export const STORAGE_PREFIX = 'cannaguide-2025-'
 export const PWA_INSTALLED_KEY = 'cannaGuidePwaInstalled'
 export const REDUX_STATE_KEY = 'cannaguide-redux-storage'
+/** Copy of the stored snapshot taken at every start, before migration (stores/store.ts). */
+export const REDUX_STATE_BACKUP_KEY = `${REDUX_STATE_KEY}-backup`
+/** Snapshot kept while safe recovery restores the backup (bootstrap/recovery.ts). */
+export const REDUX_STATE_ROLLBACK_KEY = `${REDUX_STATE_KEY}-recovery-rollback`
 export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion'
 export const GEMINI_API_KEY_STORAGE_KEY = 'geminiApiKey'
+/** Encrypted ElevenLabs key; never part of the Redux settings snapshot (#654). */
+export const CLOUD_TTS_API_KEY_STORAGE_KEY = 'cloudTtsApiKey'
 
 // --- DATABASE ---
 export const DB_NAME = 'CannaGuideDB'

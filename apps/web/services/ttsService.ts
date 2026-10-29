@@ -47,7 +47,6 @@ class TTSService implements ITTSProvider {
         // Route to Cloud TTS if enabled and available
         if (settings.cloudTtsEnabled && cloudTtsService.isSupported()) {
             voiceTelemetryService.recordVoiceEvent('ttsPlayed', { provider: 'elevenlabs' })
-            cloudTtsService.setEncryptedApiKey(settings.cloudTtsApiKey)
             cloudTtsService.speak(normalizedText, lang, onEnd, settings)
             return
         }

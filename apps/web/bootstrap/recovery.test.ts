@@ -18,6 +18,8 @@ vi.mock('@/stores/indexedDBStorage', () => ({
 
 vi.mock('@/constants', () => ({
     REDUX_STATE_KEY: 'test-state-key',
+    REDUX_STATE_BACKUP_KEY: 'test-state-key-backup',
+    REDUX_STATE_ROLLBACK_KEY: 'test-state-key-recovery-rollback',
 }))
 
 vi.mock('@/services/sentryService', () => ({

@@ -14,6 +14,7 @@ import {
     isApplicationDatabaseName,
     type ApplicationDatabaseName,
 } from './privacyDatabaseRegistry'
+import { redactSnapshotSecrets } from '@/utils/redactSecrets'
 
 type DeleteOutcome = 'deleted' | 'blocked' | 'error'
 
@@ -294,7 +295,16 @@ export const exportAllUserData = async (): Promise<string> => {
         try {
             const data = await readAllFromDatabase(dbName)
             if (data) {
-                dbs[dbName] = data
+                // The persisted settings snapshot is a JSON string row; a
+                // legacy plaintext Cloud TTS key in it is not exported (#654).
+                dbs[dbName] = Object.fromEntries(
+                    Object.entries(data).map(([store, rows]) => [
+                        store,
+                        rows.map((row) =>
+                            typeof row === 'string' ? redactSnapshotSecrets(row) : row,
+                        ),
+                    ]),
+                )
             }
         } catch {
             // Database may not exist yet -- skip silently

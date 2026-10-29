@@ -30,7 +30,7 @@ import {
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
-import { REDUX_STATE_KEY } from '@/constants'
+import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
@@ -112,7 +112,7 @@ export const createAppStore = async (): Promise<AppStore> => {
     }
 
     const tryLoadBackupState = async (): Promise<Partial<RootState> | undefined> => {
-        const backupString = await indexedDBStorage.getItem(REDUX_STATE_KEY + '-backup')
+        const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
         if (!backupString) {
             return undefined
         }
@@ -132,7 +132,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             console.debug('[Store] Hydrating state from IndexedDB.')
             // Save a backup snapshot before migration so data can be recovered if migration fails.
             try {
-                await indexedDBStorage.setItem(REDUX_STATE_KEY + '-backup', persistedString)
+                await indexedDBStorage.setItem(REDUX_STATE_BACKUP_KEY, persistedString)
             } catch (backupErr) {
                 console.debug('[Store] Could not save pre-migration backup:', backupErr)
             }

@@ -19,6 +19,7 @@ import {
 } from '@/services/persistedStateService'
 import { getT } from '@/i18n'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
+import { redactSnapshotSecrets } from '@/utils/redactSecrets'
 import {
     isSafeRasterImageDataUrl,
     MAX_IMAGE_DATA_URL_LENGTH,
@@ -278,7 +279,8 @@ export const backupService = {
                 }
             }
 
-            zip.file(STATE_FILENAME, stateString)
+            // A legacy plaintext Cloud TTS key never leaves in a backup (#654).
+            zip.file(STATE_FILENAME, redactSnapshotSecrets(stateString))
 
             // 2. Images from IndexedDB (CannaGuideDB.images)
             let imageCount = 0

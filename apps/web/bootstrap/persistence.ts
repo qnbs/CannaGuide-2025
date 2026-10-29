@@ -4,6 +4,8 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
+import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { redactSettingsSecrets } from '@/utils/redactSecrets'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
@@ -19,7 +21,12 @@ export const setupPersistedStateSync = (hydratedStore: AppStore): FlushPersisted
                 const stateToSave = {
                     version: state.settings.version,
                     _sliceVersions: SLICE_SCHEMA_VERSIONS,
-                    settings: state.settings,
+                    // The Cloud TTS key lives encrypted outside Redux; only a
+                    // legacy key whose migration failed stays here until the
+                    // next start retries it (#654).
+                    settings: cloudTtsKeyService.isLegacyKeyPending()
+                        ? state.settings
+                        : redactSettingsSecrets(state.settings),
                     simulation: optimizedSimulation,
                     userStrains: state.userStrains,
                     favorites: state.favorites,

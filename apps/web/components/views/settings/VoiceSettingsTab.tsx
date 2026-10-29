@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { SettingsRow } from './SettingsShared'
+import { CloudTtsKeyField } from './CloudTtsKeyField'
 import { useSettingsRowLabelProps } from '@/components/common/settingsRowLabel'
 import { PORCUPINE_BUILTIN_KEYWORDS } from '@/constants'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
@@ -397,26 +398,7 @@ const VoiceSettingsTab: React.FC = () => {
                                         options={[{ value: 'elevenlabs', label: 'ElevenLabs' }]}
                                     />
                                 </SettingsRow>
-                                <SettingsRow
-                                    label={t('settingsView.voice.cloudTts.apiKey')}
-                                    description={t('settingsView.voice.cloudTts.apiKeyDesc')}
-                                >
-                                    <input
-                                        type="password"
-                                        className="w-full px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                                        value={settings.tts.cloudTtsApiKey ?? ''}
-                                        onChange={(e) =>
-                                            handleSetSetting(
-                                                'tts.cloudTtsApiKey',
-                                                e.target.value || null,
-                                            )
-                                        }
-                                        placeholder={t(
-                                            'settingsView.voice.cloudTts.apiKeyPlaceholder',
-                                        )}
-                                        autoComplete="off"
-                                    />
-                                </SettingsRow>
+                                <CloudTtsKeyField />
                                 <p className="text-xs text-muted">
                                     {t('settingsView.voice.cloudTts.privacyNote')}
                                 </p>

@@ -12,3 +12,5 @@ export * from './diagnosis'
 export * from './breeding'
 export * from './issue'
 export * from './shared'
+
+export * from './strainFacts'

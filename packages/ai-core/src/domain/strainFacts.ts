@@ -1,7 +1,14 @@
 import { z } from 'zod'
 
 /** Additive v1 boundary. Existing Strain values remain legacy, not lab evidence. */
-const entityId = <T extends string>(kind: T) => z.string().regex(new RegExp(`^${kind}:[^\\s]+$`))
+const entityId = <T extends string>(kind: T) =>
+    z
+        .string()
+        .refine(
+            (id) => id.startsWith(`${kind}:`) && id.length > kind.length + 1 && !/\s/.test(id),
+            `Expected a nonblank ${kind} identifier without whitespace`,
+        )
+const legacyId = z.string().refine((id) => id.trim().length > 0, 'Identity must not be blank')
 const productId = z.union([entityId('medical_flower_product'), entityId('medical_extract_product')])
 const scopeSchema = z.discriminatedUnion('kind', [
     z.strictObject({ kind: z.literal('cultivar_selection'), id: entityId('cultivar_selection') }),
@@ -20,8 +27,8 @@ const scopeSchema = z.discriminatedUnion('kind', [
         batchId: entityId('product_batch'),
         productId,
     }),
-    z.strictObject({ kind: z.literal('user'), id: z.string().trim().min(1) }),
-    z.strictObject({ kind: z.literal('legacy'), id: z.string().trim().min(1) }),
+    z.strictObject({ kind: z.literal('user'), id: legacyId }),
+    z.strictObject({ kind: z.literal('legacy'), id: legacyId }),
 ])
 const dateSchema = z.iso.date().nullable()
 const common = {
@@ -99,6 +106,8 @@ export const strainFactSchema = z
             reject('Stated facts require an attributed source')
         if (lab && fact.claimStatus !== 'laboratory_reported')
             reject('Lab facts require a laboratory report claim')
+        if (!known && fact.claimStatus !== 'unknown' && fact.claimStatus !== 'unverified')
+            reject('Unknown and legacy values cannot carry attributed claim status')
         if (known && fact.evidenceIds.length === 0) reject('A stated fact requires evidence IDs')
         if (new Set(fact.evidenceIds).size !== fact.evidenceIds.length)
             reject('Evidence IDs must be unique')
@@ -169,7 +178,9 @@ export function adaptLegacyStrainFacts(
         cbd?: number | null | undefined
     },
     identity?: StrainFactScope,
-) {
+): { id: string; thc: StrainFact; cbd: StrainFact } {
+    legacyId.parse(legacy.id)
+    const scope = scopeSchema.parse(identity ?? { kind: 'legacy', id: legacy.id })
     const adapt = (analyte: 'thc' | 'cbd'): StrainFact => ({
         version: 1,
         state:
@@ -180,7 +191,7 @@ export function adaptLegacyStrainFacts(
         analyte,
         unit: '%',
         // Legacy identity is opaque; it is not retroactively a certified cultivar ID.
-        scope: identity ?? { kind: 'legacy', id: legacy.id },
+        scope,
         evidenceIds: [],
         sourceId: null,
         claimStatus: 'unverified',
@@ -212,13 +223,17 @@ export const lineageClaimSchema = z
         id: entityId('lineage_claim'),
         cultivarId: entityId('cultivar_selection'),
         claimedParentId: entityId('cultivar_selection')
-            .refine((id) => !id.endsWith(':0'), 'Zero is not a known parent identity')
+            .refine((id) => id !== 'cultivar_selection:0', 'Zero is not a known parent identity')
             .nullable(),
         direction: z.enum(['maternal', 'paternal', 'unknown']),
         claimStatus: z.literal('primary_breeder_attributed'),
         sourceId: entityId('source'),
         evidenceIds: z.array(entityId('evidence')).min(1),
     })
+    .refine(
+        (claim) => new Set(claim.evidenceIds).size === claim.evidenceIds.length,
+        'Evidence IDs must be unique',
+    )
     .refine(
         (claim) => claim.claimedParentId !== claim.cultivarId,
         'A lineage claim cannot create a self-edge',

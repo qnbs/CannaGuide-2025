@@ -27,9 +27,16 @@ setting that metadata.
 `adaptLegacyStrainFacts` returns a new sidecar and preserves the original record
 ID. Missing values become unknown; every present legacy number, including
 zero, becomes legacy-unverified with no numeric point. The legacy source value
-is left untouched. The sidecar uses an explicit legacy reference unless a caller supplies an identity scope rather than
-claiming an existing ID represents a certified cultivar, product or batch.
+is left untouched. The default scope is `legacy`; it does not certify an
+existing ID as a cultivar, product, or batch. A caller-supplied identity scope
+replaces this default.
 It is not connected to persistence or factory runtime in this phase.
+
+The consumer contract tests remain under `apps/web/types` and import the public
+`@cannaguide/ai-core` entry point. This is an explicit workspace exception to
+source colocation: ai-core currently has no Vitest script or configuration,
+while the web test harness runs in CI. Moving the file alone would remove it
+from the configured test run.
 
 ## Validation evidence
 
@@ -38,7 +45,7 @@ so no research validator or archive hash was independently rerun.
 
 - RED: the targeted Vitest file failed because the new fact module did not
   exist (`Test Files 1 failed (1)`).
-- GREEN: the same targeted file passes 40 tests, including missing versus zero,
+- GREEN: the same targeted file passes 46 tests, including missing versus zero,
   strict versus inclusive bounds, nominal versus batch, exact target scope,
   intervals, rights, invalid numbers/units/states/dates and private legacy IDs.
 - The scoped ai-core TypeScript check passes.

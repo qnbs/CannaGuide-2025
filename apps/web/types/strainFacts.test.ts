@@ -5,7 +5,7 @@ import {
     isFactReleaseEligible,
     factMatchesScope,
     lineageClaimSchema,
-} from '../../../packages/ai-core/src/domain/strainFacts'
+} from '@cannaguide/ai-core'
 
 const base = {
     version: 1,
@@ -151,6 +151,12 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         }
         expect(lineageClaimSchema.parse(claim)).toEqual(claim)
         expect(
+            lineageClaimSchema.safeParse({
+                ...claim,
+                evidenceIds: ['evidence:synthetic', 'evidence:synthetic'],
+            }).success,
+        ).toBe(false)
+        expect(
             lineageClaimSchema.safeParse({ ...claim, claimedParentId: 'cultivar_selection:0' })
                 .success,
         ).toBe(false)
@@ -164,6 +170,23 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         expect(
             lineageClaimSchema.safeParse({ ...claim, kind: 'selfing', claimedParentId: null })
                 .success,
+        ).toBe(true)
+    })
+    it.each(['', '   '])('rejects blank legacy identity %j', (id) => {
+        expect(() => adaptLegacyStrainFacts({ id, thc: 0 })).toThrow()
+    })
+    it('retains a valid namespaced parent ending in zero', () => {
+        expect(
+            lineageClaimSchema.safeParse({
+                kind: 'historical',
+                id: 'lineage_claim:zero-tail',
+                cultivarId: 'cultivar_selection:child',
+                claimedParentId: 'cultivar_selection:breeder:0',
+                direction: 'unknown',
+                claimStatus: 'primary_breeder_attributed',
+                sourceId: 'source:synthetic',
+                evidenceIds: ['evidence:synthetic'],
+            }).success,
         ).toBe(true)
     })
     it('retains a laboratory result identity and exact batch anchor', () => {
@@ -233,6 +256,9 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         },
         { dates: { ...base.dates, testDate: '2026-02-30' } },
         { sourceId: null },
+        { sourceId: 'source:trailing\n' },
+        { state: 'unknown', value: null },
+        { state: 'legacy_unverified', value: null },
         { claimStatus: 'primary_breeder_attributed' },
         { state: 'lab_measured_bound', value: null, limit: 1, operator: '>' },
         { unit: 'ppm', value: 1000001 },

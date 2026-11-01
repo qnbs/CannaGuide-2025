@@ -114,6 +114,8 @@ const simulationCarrier = (data: Partial<Strain>, name: string, nameHash: number
 
 const carrierForChemovar = (data: Partial<Strain>, name: string, nameHash: number): Strain => {
     const carrier = simulationCarrier(data, name, nameHash)
+    if (finiteMeasurement(data.thc) === undefined) Reflect.deleteProperty(carrier, 'thc')
+    if (finiteMeasurement(data.cbd) === undefined) Reflect.deleteProperty(carrier, 'cbd')
     const cbg = finiteMeasurement(data.cbg)
     const thcv = finiteMeasurement(data.thcv)
     if (cbg !== undefined) carrier.cbg = cbg
@@ -128,12 +130,27 @@ const reportedCbg = (data: Partial<Strain>): number | undefined => {
     return finiteMeasurement(data.cannabinoidProfile?.CBG)
 }
 
-/** Any finite THC or CBD counts, including 0. CBG counts only above 2%. */
+const reportedThcOf = (data: Partial<Strain>): number | undefined =>
+    finiteMeasurement(data.thc) ?? finiteMeasurement(data.cannabinoidProfile?.THC)
+
+const reportedCbdOf = (data: Partial<Strain>): number | undefined =>
+    finiteMeasurement(data.cbd) ?? finiteMeasurement(data.cannabinoidProfile?.CBD)
+
+const beatsMajor = (cbg: number, major: number | undefined): boolean =>
+    major === undefined || cbg > major
+
+const cbgQualifies = (
+    cbg: number | undefined,
+    thc: number | undefined,
+    cbd: number | undefined,
+): boolean => cbg !== undefined && cbg > 2 && beatsMajor(cbg, thc) && beatsMajor(cbg, cbd)
+
+/** Both majors, including 0, or CBG above 2% that beats any reported major. */
 export const hasReportedChemovarInput = (data: Partial<Strain>): boolean => {
-    if (finiteMeasurement(data.thc) !== undefined) return true
-    if (finiteMeasurement(data.cbd) !== undefined) return true
-    const cbg = reportedCbg(data)
-    return cbg !== undefined && cbg > 2
+    const thc = reportedThcOf(data)
+    const cbd = reportedCbdOf(data)
+    if (thc !== undefined && cbd !== undefined) return true
+    return cbgQualifies(reportedCbg(data), thc, cbd)
 }
 
 const simulatedChemovar = (

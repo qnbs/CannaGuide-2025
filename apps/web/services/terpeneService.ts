@@ -356,14 +356,33 @@ const cannabinoidRatio = (thc: number | undefined, cbd: number | undefined): num
     return thc > 0 ? Number.POSITIVE_INFINITY : 0
 }
 
+const majorBelowCbg = (cbg: number, major: number | undefined): boolean =>
+    major === undefined || cbg > major
+
+const isTypeIv = (thc: number | undefined, cbd: number | undefined, cbg: number | undefined): boolean =>
+    cbg !== undefined && cbg > 2 && majorBelowCbg(cbg, thc) && majorBelowCbg(cbg, cbd)
+
+const classifiedType = (
+    thc: number | undefined,
+    cbd: number | undefined,
+    cbg: number | undefined,
+): ChemovarType | undefined => {
+    if (isTypeIv(thc, cbd, cbg)) return 'Type IV'
+    if (thc === undefined || cbd === undefined) return undefined
+    return classifyChemovar(thc, cbd, cbg)
+}
+
 /**
  * Build a complete ChemovarProfile for a strain.
  * Uses existing data where available, generates estimates where not.
+ * A missing THC or CBD is not treated as zero, so a partial report has no type.
  */
-export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
+export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefined => {
     const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-    const measuredThc = finiteCannabinoid(strain.thc)
-    const measuredCbd = finiteCannabinoid(strain.cbd)
+    const measuredThc =
+        finiteCannabinoid(strain.thc) ?? finiteCannabinoid(strain.cannabinoidProfile?.THC)
+    const measuredCbd =
+        finiteCannabinoid(strain.cbd) ?? finiteCannabinoid(strain.cannabinoidProfile?.CBD)
     const reportedThc = measuredThc ?? 0
     const reportedCbd = measuredCbd ?? 0
     const typeText = typeof strain.type === 'string' ? strain.type : ''
@@ -387,7 +406,8 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
         Math.round(Object.values(cannabinoidProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /
         1000
 
-    const chemovarType = classifyChemovar(reportedThc, reportedCbd, cannabinoidProfile.CBG)
+    const chemovarType = classifiedType(measuredThc, measuredCbd, cannabinoidProfile.CBG)
+    if (chemovarType === undefined) return undefined
 
     const thcCbdRatio = cannabinoidRatio(measuredThc, measuredCbd)
 

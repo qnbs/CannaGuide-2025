@@ -8,6 +8,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { SeedCard, ParentSlot, TraitComparison } from './SeedComponents'
 import { getSafeStringArray } from './genetics'
+import { formatFloweringWeeks } from '../reportedStrainFacts'
 import type { BreedingLabState } from './useBreedingLab'
 
 const formatReported = (
@@ -187,17 +188,17 @@ const BreedingResultCard: React.FC<{ state: BreedingLabState }> = ({ state }) =>
                     />
                     <TraitComparison
                         label={t('knowledgeView.breeding.flowering')}
-                        valA={formatReported(
+                        valA={formatFloweringWeeks(
+                            seedParentA.floweringTimeRange,
                             seedParentA.floweringTime,
+                            weeks,
                             unknown,
-                            undefined,
-                            ` ${weeks}`,
                         )}
-                        valB={formatReported(
+                        valB={formatFloweringWeeks(
+                            seedParentB.floweringTimeRange,
                             seedParentB.floweringTime,
+                            weeks,
                             unknown,
-                            undefined,
-                            ` ${weeks}`,
                         )}
                         valChild={estimateText(seedResult.floweringTime, unknown, 0, ` ${weeks}`)}
                         icon={<PhosphorIcons.ArrowClockwise />}

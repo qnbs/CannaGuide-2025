@@ -105,7 +105,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
                     return
                 }
                 const profile = hasReportedChemovarInput(p.strain)
-                    ? buildChemovarProfile(p.strain)
+                    ? (buildChemovarProfile(p.strain) ?? null)
                     : null
                 self.postMessage(workerOk(messageId, profile))
                 return
@@ -128,7 +128,7 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
                     profiles.push({
                         strainId: strain.id,
                         profile: hasReportedChemovarInput(strain)
-                            ? buildChemovarProfile(strain)
+                            ? (buildChemovarProfile(strain) ?? null)
                             : null,
                     })
                 }

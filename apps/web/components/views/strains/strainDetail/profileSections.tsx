@@ -4,7 +4,6 @@ import type { TFunction } from 'i18next'
 import type {
     CannabinoidProfile,
     ChemovarProfile,
-    FlavonoidName,
     FlavonoidProfile,
     Strain,
     TerpeneName,
@@ -154,16 +153,16 @@ export const TerpeneDetailSection: React.FC<{ profile: TerpeneProfile | undefine
     )
 }
 
+const flavonoidReference = (name: string) =>
+    Object.entries(FLAVONOID_DATABASE).find(([key]) => key === name)?.[1]
+
 const exclusiveFlavonoids = (profile: FlavonoidProfile): [string, number][] =>
-    (Object.entries(profile) as [string, number][]).filter(([name]) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-        const ref = FLAVONOID_DATABASE[name as FlavonoidName]
-        return ref?.cannabisExclusive
-    })
+    (Object.entries(profile) as [string, number][]).filter(
+        ([name]) => flavonoidReference(name)?.cannabisExclusive,
+    )
 
 const ExclusiveFlavonoidCard: React.FC<{ name: string; value: number }> = ({ name, value }) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const ref = FLAVONOID_DATABASE[name as FlavonoidName]
+    const ref = flavonoidReference(name)
     return (
         <div className="bg-slate-800/60 rounded-lg p-2.5">
             <div className="flex items-center gap-1.5 mb-1">
@@ -213,8 +212,7 @@ const rankedFlavonoids = (profile: FlavonoidProfile): [string, number][] =>
 
 const FlavonoidBar: React.FC<{ name: string; value: number }> = ({ name, value }) => {
     const { t } = useTranslation()
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const ref = FLAVONOID_DATABASE[name as FlavonoidName]
+    const ref = flavonoidReference(name)
     return (
         <FlavonoidEntry
             name={name}

@@ -129,6 +129,20 @@ describe('createStrainObject', () => {
         expect(simulated.chemovarProfile?.chemovarType).toBe('Type IV')
     })
 
+    it('does not classify a lone reported THC as a chemovar', () => {
+        const simulated = simulateStrainProfile({ name: 'THC Only', thc: 20 })
+        expect(simulated.chemovarProfile).toBeUndefined()
+    })
+
+    it('classifies THC and CBD that live only on the cannabinoid profile', () => {
+        const simulated = simulateStrainProfile({
+            name: 'Profile Majors',
+            cannabinoidProfile: { THC: 20, CBD: 1 },
+        })
+        expect(simulated.chemovarProfile?.chemovarType).toBe('Type I')
+        expect(simulated.chemovarProfile?.thcCbdRatio).toBe(20)
+    })
+
     it('does not invent a Type V chemovar when THC and CBD were never reported', () => {
         const simulated = simulateStrainProfile({ id: 'unknown-chem', name: 'Unknown Chem' })
         expect(simulated.kind).toBe('simulation')

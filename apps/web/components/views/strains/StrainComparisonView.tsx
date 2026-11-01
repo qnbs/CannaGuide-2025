@@ -112,10 +112,20 @@ interface ComparisonLabels {
     weeks: string
 }
 
+interface ComparisonCell {
+    id: string
+    text: string
+}
+
 interface ComparisonRowProps {
     label: string
-    values: string[]
+    cells: ComparisonCell[]
 }
+
+const comparisonCells = (
+    strains: Strain[],
+    textFor: (strain: Strain) => string,
+): ComparisonCell[] => strains.map((strain) => ({ id: strain.id, text: textFor(strain) }))
 
 const buildRadarPoint = (
     metric: string,
@@ -129,12 +139,12 @@ const buildRadarPoint = (
     return point
 }
 
-const ComparisonRow: React.FC<ComparisonRowProps> = memo(({ label, values }) => (
+const ComparisonRow: React.FC<ComparisonRowProps> = memo(({ label, cells }) => (
     <tr className="bg-slate-900/30 hover:bg-slate-800/30 transition-colors">
         <td className="px-4 py-3 text-slate-400 font-medium">{label}</td>
-        {values.map((val, index) => (
-            <td key={`${label}-${index}`} className="px-4 py-3 text-center text-slate-200">
-                {val}
+        {cells.map((cell) => (
+            <td key={cell.id} className="px-4 py-3 text-center text-slate-200">
+                {cell.text}
             </td>
         ))}
     </tr>
@@ -248,23 +258,23 @@ const ComparisonTable: React.FC<{
             <tbody className="divide-y divide-slate-700/50">
                 <ComparisonRow
                     label={labels.type}
-                    values={strains.map((strain) => strain.type || labels.unknown)}
+                    cells={comparisonCells(strains, (strain) => strain.type || labels.unknown)}
                 />
                 <ComparisonRow
                     label={`${labels.thc} %`}
-                    values={strains.map((strain) =>
+                    cells={comparisonCells(strains, (strain) =>
                         reportedPercent(strain.thcRange, strain.thc, labels.unknown),
                     )}
                 />
                 <ComparisonRow
                     label={`${labels.cbd} %`}
-                    values={strains.map((strain) =>
+                    cells={comparisonCells(strains, (strain) =>
                         reportedPercent(strain.cbdRange, strain.cbd, labels.unknown),
                     )}
                 />
                 <ComparisonRow
                     label={labels.flowering}
-                    values={strains.map((strain) =>
+                    cells={comparisonCells(strains, (strain) =>
                         formatFloweringWeeks(
                             strain.floweringTimeRange,
                             strain.floweringTime,
@@ -275,11 +285,16 @@ const ComparisonTable: React.FC<{
                 />
                 <ComparisonRow
                     label={labels.yieldLabel}
-                    values={strains.map((strain) => strain.agronomic?.yield ?? labels.unknown)}
+                    cells={comparisonCells(
+                        strains,
+                        (strain) => strain.agronomic?.yield ?? labels.unknown,
+                    )}
                 />
                 <ComparisonRow
                     label={labels.terpenes}
-                    values={strains.map((strain) => reportedTerpenes(strain.dominantTerpenes))}
+                    cells={comparisonCells(strains, (strain) =>
+                        reportedTerpenes(strain.dominantTerpenes),
+                    )}
                 />
             </tbody>
         </table>

@@ -83,99 +83,112 @@ const analyteUnits: Record<
 const amount = z.number().finite().nonnegative()
 
 /** Simulation estimates deliberately have no variant in the factual schema. */
-export const strainFactSchema = z
-    .discriminatedUnion('state', [
-        z.strictObject({ ...common, state: z.literal('unknown'), value: z.null() }),
-        z.strictObject({ ...common, state: z.literal('legacy_unverified'), value: z.null() }),
-        z.strictObject({ ...common, state: z.literal('source_stated_nominal'), value: amount }),
-        z.strictObject({ ...common, state: z.literal('lab_measured_point'), value: amount }),
-        z.strictObject({
-            ...common,
-            state: z.literal('lab_measured_bound'),
-            value: z.null(),
-            operator: z.enum(['<', '<=']),
-            limit: amount,
-        }),
-        z.strictObject({
-            ...common,
-            state: z.literal('specification_interval'),
-            value: z.null(),
-            lower: amount,
-            lowerOperator: z.enum(['>', '>=']),
-            upper: amount,
-            upperOperator: z.enum(['<', '<=']),
-        }),
-    ])
-    .superRefine((fact, ctx) => {
-        const known = fact.state !== 'unknown' && fact.state !== 'legacy_unverified'
-        const lab = fact.state === 'lab_measured_point' || fact.state === 'lab_measured_bound'
-        const reject = (message: string) => ctx.addIssue({ code: 'custom', message })
-        if (
-            known &&
-            (fact.sourceId === null ||
-                fact.claimStatus === 'unknown' ||
-                fact.claimStatus === 'unverified')
-        )
-            reject('Stated facts require an attributed source')
-        if (lab && fact.claimStatus !== 'laboratory_reported')
-            reject('Lab facts require a laboratory report claim')
-        if (!known && fact.claimStatus !== 'unknown' && fact.claimStatus !== 'unverified')
+const factShape = z.discriminatedUnion('state', [
+    z.strictObject({ ...common, state: z.literal('unknown'), value: z.null() }),
+    z.strictObject({ ...common, state: z.literal('legacy_unverified'), value: z.null() }),
+    z.strictObject({ ...common, state: z.literal('source_stated_nominal'), value: amount }),
+    z.strictObject({ ...common, state: z.literal('lab_measured_point'), value: amount }),
+    z.strictObject({
+        ...common,
+        state: z.literal('lab_measured_bound'),
+        value: z.null(),
+        operator: z.enum(['<', '<=']),
+        limit: amount,
+    }),
+    z.strictObject({
+        ...common,
+        state: z.literal('specification_interval'),
+        value: z.null(),
+        lower: amount,
+        lowerOperator: z.enum(['>', '>=']),
+        upper: amount,
+        upperOperator: z.enum(['<', '<=']),
+    }),
+])
+
+type FactShape = z.infer<typeof factShape>
+type RejectFact = (message: string) => void
+const unverifiedStates = new Set(['unknown', 'legacy_unverified'])
+const unverifiedStatuses = new Set(['unknown', 'unverified'])
+const labStates = new Set(['lab_measured_point', 'lab_measured_bound'])
+const productScopes = new Set(['medical_flower_product', 'medical_extract_product'])
+const batchScopes = new Set(['product_batch', 'laboratory_result'])
+
+const validateAttribution = (fact: FactShape, reject: RejectFact): void => {
+    if (unverifiedStates.has(fact.state)) {
+        if (!unverifiedStatuses.has(fact.claimStatus))
             reject('Unknown and legacy values cannot carry attributed claim status')
-        if (known && fact.evidenceIds.length === 0) reject('A stated fact requires evidence IDs')
-        if (new Set(fact.evidenceIds).size !== fact.evidenceIds.length)
-            reject('Evidence IDs must be unique')
-        if (lab && fact.scope.kind !== 'product_batch' && fact.scope.kind !== 'laboratory_result')
-            reject('Lab facts require an exact batch scope')
-        if (
-            fact.state === 'source_stated_nominal' &&
-            fact.scope.kind !== 'medical_flower_product' &&
-            fact.scope.kind !== 'medical_extract_product'
-        )
-            reject('Nominal labels require a product scope')
-        if (
-            fact.state === 'specification_interval' &&
-            fact.scope.kind !== 'medical_flower_product' &&
-            fact.scope.kind !== 'medical_extract_product'
-        )
-            reject('Specifications require a product scope')
-        if (!analyteUnits[fact.analyte].includes(fact.unit))
-            reject('Unit is not supported for this analyte')
-        const ceiling = { '%': 100, ppm: 1000000, '\u00b5g/kg': 1000000000 }[fact.unit]
-        const values =
-            fact.state === 'specification_interval'
-                ? [fact.lower, fact.upper]
-                : fact.state === 'lab_measured_bound'
-                  ? [fact.limit]
-                  : fact.value === null
-                    ? []
-                    : [fact.value]
-        if (values.some((value) => value > ceiling)) reject('Concentration exceeds unit maximum')
-        if (
-            fact.state === 'specification_interval' &&
-            (fact.lower > fact.upper ||
-                (fact.lower === fact.upper &&
-                    (fact.lowerOperator === '>' || fact.upperOperator === '<')))
-        )
-            reject('Interval lower bound exceeds upper bound')
-    })
+        return
+    }
+    if (fact.sourceId === null || unverifiedStatuses.has(fact.claimStatus))
+        reject('Stated facts require an attributed source')
+    if (fact.evidenceIds.length === 0) reject('A stated fact requires evidence IDs')
+}
+
+const validateScope = (fact: FactShape, reject: RejectFact): void => {
+    if (labStates.has(fact.state)) {
+        if (fact.claimStatus !== 'laboratory_reported')
+            reject('Lab facts require a laboratory report claim')
+        if (!batchScopes.has(fact.scope.kind)) reject('Lab facts require an exact batch scope')
+    }
+    if (productScopes.has(fact.scope.kind)) return
+    if (fact.state === 'source_stated_nominal') reject('Nominal labels require a product scope')
+    if (fact.state === 'specification_interval') reject('Specifications require a product scope')
+}
+
+const concentrationValues = (fact: FactShape): number[] => {
+    if (fact.state === 'specification_interval') return [fact.lower, fact.upper]
+    if (fact.state === 'lab_measured_bound') return [fact.limit]
+    return fact.value === null ? [] : [fact.value]
+}
+
+const validateConcentration = (fact: FactShape, reject: RejectFact): void => {
+    if (!analyteUnits[fact.analyte].includes(fact.unit))
+        reject('Unit is not supported for this analyte')
+    const ceiling = { '%': 100, ppm: 1000000, '\u00b5g/kg': 1000000000 }[fact.unit]
+    if (concentrationValues(fact).some((value) => value > ceiling))
+        reject('Concentration exceeds unit maximum')
+}
+
+const validateInterval = (fact: FactShape, reject: RejectFact): void => {
+    if (fact.state !== 'specification_interval') return
+    if (fact.lower > fact.upper) {
+        reject('Interval lower bound exceeds upper bound')
+        return
+    }
+    if (fact.lower !== fact.upper) return
+    if (fact.lowerOperator === '>' || fact.upperOperator === '<')
+        reject('Interval lower bound exceeds upper bound')
+}
+
+export const strainFactSchema = factShape.superRefine((fact, ctx) => {
+    const reject: RejectFact = (message) => ctx.addIssue({ code: 'custom', message })
+    validateAttribution(fact, reject)
+    validateScope(fact, reject)
+    validateConcentration(fact, reject)
+    validateInterval(fact, reject)
+    if (new Set(fact.evidenceIds).size !== fact.evidenceIds.length)
+        reject('Evidence IDs must be unique')
+})
 
 export type StrainFact = z.infer<typeof strainFactSchema>
 export type StrainFactScope = z.infer<typeof scopeSchema>
 
+const scopeIdentity = (scope: StrainFactScope): readonly (string | undefined)[] => [
+    scope.kind,
+    scope.id,
+    'productId' in scope ? scope.productId : undefined,
+    'batchId' in scope ? scope.batchId : undefined,
+]
+
 /** A batch result cannot be reused for a product or a different batch. */
-export function factMatchesScope(fact: StrainFact, target: StrainFactScope): boolean {
-    return (
-        fact.scope.kind === target.kind &&
-        fact.scope.id === target.id &&
-        (!('productId' in fact.scope) ||
-            ('productId' in target && fact.scope.productId === target.productId)) &&
-        (!('batchId' in fact.scope) ||
-            ('batchId' in target && fact.scope.batchId === target.batchId))
-    )
+export const factMatchesScope = (fact: StrainFact, target: StrainFactScope): boolean => {
+    const targetIdentity = scopeIdentity(target)
+    return scopeIdentity(fact.scope).every((value, index) => value === targetIdentity[index])
 }
 
 /** Rights are explicit admission metadata, never inferred from a source URL. */
-export function isFactReleaseEligible(fact: StrainFact): boolean {
+export const isFactReleaseEligible = (fact: StrainFact): boolean => {
     const parsed = strainFactSchema.safeParse(fact)
     return (
         parsed.success &&
@@ -186,14 +199,14 @@ export function isFactReleaseEligible(fact: StrainFact): boolean {
 }
 
 /** Pure sidecar adapter: preserves private IDs and never promotes legacy numbers. */
-export function adaptLegacyStrainFacts(
+export const adaptLegacyStrainFacts = (
     legacy: {
         id: string
         thc?: number | null | undefined
         cbd?: number | null | undefined
     },
     identity?: StrainFactScope,
-): { id: string; thc: StrainFact; cbd: StrainFact } {
+): { id: string; thc: StrainFact; cbd: StrainFact } => {
     legacyId.parse(legacy.id)
     const scope = scopeSchema.parse(identity ?? { kind: 'legacy', id: legacy.id })
     const adapt = (analyte: 'thc' | 'cbd'): StrainFact => ({

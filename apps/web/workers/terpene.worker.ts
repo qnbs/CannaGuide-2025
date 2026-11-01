@@ -180,6 +180,15 @@ const handleAnalyzeEntourage: WorkerHandler = (messageId, payload) => {
     )
 }
 
+const WORKER_COMMANDS: readonly string[] = [
+    'FIND_SIMILAR',
+    'BUILD_CHEMOVAR',
+    'BATCH_CHEMOVAR',
+    'PREDICT_BREEDING',
+    'SCORE_EFFECTS',
+    'ANALYZE_ENTOURAGE',
+]
+
 const WORKER_HANDLERS: Record<string, WorkerHandler> = {
     FIND_SIMILAR: handleFindSimilar,
     BUILD_CHEMOVAR: handleBuildChemovar,
@@ -190,11 +199,16 @@ const WORKER_HANDLERS: Record<string, WorkerHandler> = {
 }
 
 const dispatchWorkerMessage = (messageId: string, type: string, payload: unknown): void => {
-    const handler = WORKER_HANDLERS[type]
-    if (!handler) {
+    if (!WORKER_COMMANDS.includes(type)) {
         rejectPayload(messageId, `Unknown command: ${type}`)
         return
     }
+    if (!Object.prototype.hasOwnProperty.call(WORKER_HANDLERS, type)) {
+        rejectPayload(messageId, `Unknown command: ${type}`)
+        return
+    }
+    const handler = WORKER_HANDLERS[type]
+    if (handler === undefined) return
     handler(messageId, payload)
 }
 

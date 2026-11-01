@@ -263,6 +263,8 @@ describe('buildChemovarProfile', () => {
         if (!profile) throw new Error('expected a chemovar profile')
         expect(profile.chemovarType).toBe('Type IV')
         expect(profile.detailedCannabinoidProfile.CBG?.percent).toBe(5)
+        expect(profile.detailedCannabinoidProfile.THC).toBeUndefined()
+        expect(profile.detailedCannabinoidProfile.CBD).toBeUndefined()
         expect(profile.totalCannabinoidPercent).toBe(5)
     })
 

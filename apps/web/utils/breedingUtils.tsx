@@ -36,7 +36,30 @@ const crossedType = (left: Strain['type'], right: Strain['type']): Strain['type'
 
 const pickEither = <T,>(left: T, right: T): T => (secureRandom() > 0.5 ? left : right)
 
-const agronomicValue = <T extends string>(value: T | undefined, fallback: T): T => value ?? fallback
+const reportedLevel = <T extends string>(
+    left: T | undefined,
+    right: T | undefined,
+): T | undefined => {
+    if (left !== undefined && right !== undefined) return pickEither(left, right)
+    return left ?? right
+}
+
+const hasReportedLevel = (values: Array<string | undefined>): boolean =>
+    values.some((value) => value !== undefined)
+
+const reportedAgronomy = (parentA: Strain, parentB: Strain): Strain['agronomic'] | undefined => {
+    const difficulty = reportedLevel(parentA.agronomic?.difficulty, parentB.agronomic?.difficulty)
+    const yieldLevel = reportedLevel(parentA.agronomic?.yield, parentB.agronomic?.yield)
+    const height = reportedLevel(parentA.agronomic?.height, parentB.agronomic?.height)
+    if (!hasReportedLevel([difficulty, yieldLevel, height])) return undefined
+    const agronomic: Partial<Strain['agronomic']> = {}
+    if (difficulty !== undefined) agronomic.difficulty = difficulty
+    if (yieldLevel !== undefined) agronomic.yield = yieldLevel
+    if (height !== undefined) agronomic.height = height
+    // The Strain type requires all three levels. Unreported ones stay absent at runtime.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    return agronomic as Strain['agronomic']
+}
 
 const mixedList = (left: unknown, right: unknown, limit: number): string[] =>
     [...new Set([...stringList(left), ...stringList(right)])]
@@ -57,24 +80,12 @@ export const crossStrains = (parentA: Strain, parentB: Strain): Omit<Strain, 'id
         name: `${parentAName.split(' ')[0]} ${parentBName.split(' ').pop()}`,
         genetics: `${parentAName} x ${parentBName}`,
         floweringType: 'Photoperiod',
-        agronomic: {
-            difficulty: pickEither(
-                agronomicValue(parentA.agronomic?.difficulty, 'Medium'),
-                agronomicValue(parentB.agronomic?.difficulty, 'Medium'),
-            ),
-            yield: pickEither(
-                agronomicValue(parentA.agronomic?.yield, 'Medium'),
-                agronomicValue(parentB.agronomic?.yield, 'Medium'),
-            ),
-            height: pickEither(
-                agronomicValue(parentA.agronomic?.height, 'Medium'),
-                agronomicValue(parentB.agronomic?.height, 'Medium'),
-            ),
-        },
         aromas: mixedList(parentA.aromas, parentB.aromas, 4),
         dominantTerpenes: mixedList(parentA.dominantTerpenes, parentB.dominantTerpenes, 3),
     }
     if (offspringType !== undefined) offspring.type = offspringType
+    const agronomy = reportedAgronomy(parentA, parentB)
+    if (agronomy !== undefined) offspring.agronomic = agronomy
     assignReported(offspring, 'thc', averageReported(parentA.thc, parentB.thc, nameScale(0.2)))
     assignReported(offspring, 'cbd', averageReported(parentA.cbd, parentB.cbd))
     assignReported(

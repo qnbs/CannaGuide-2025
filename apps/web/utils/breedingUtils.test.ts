@@ -56,6 +56,36 @@ describe('crossStrains', () => {
         expect(crossStrains(left, right).type).toBe(StrainType.Hybrid)
     })
 
+    it('keeps an explicit zero instead of treating it as missing', () => {
+        const left = parent({ id: 'left', name: 'Left', thc: 0, cbd: 0 })
+        const right = parent({ id: 'right', name: 'Right', thc: 0, cbd: 0 })
+        const offspring = crossStrains(left, right)
+        expect(offspring.thc).toBe(0)
+        expect(offspring.cbd).toBe(0)
+    })
+
+    it('omits agronomy when neither parent reports it', () => {
+        const left = parent({ id: 'left', name: 'Left' })
+        const right = parent({ id: 'right', name: 'Right' })
+        Reflect.deleteProperty(left, 'agronomic')
+        Reflect.deleteProperty(right, 'agronomic')
+        expect(crossStrains(left, right).agronomic).toBeUndefined()
+    })
+
+    it('keeps the reported agronomy when the other parent has none', () => {
+        const left = parent({
+            id: 'left',
+            name: 'Left',
+            agronomic: { difficulty: 'Easy', yield: 'Low', height: 'Short' },
+        })
+        const right = parent({ id: 'right', name: 'Right' })
+        Reflect.deleteProperty(right, 'agronomic')
+        const offspring = crossStrains(left, right)
+        expect(offspring.agronomic?.difficulty).toBe('Easy')
+        expect(offspring.agronomic?.yield).toBe('Low')
+        expect(offspring.agronomic?.height).toBe('Short')
+    })
+
     it('averages chemistry only when both parents reported it', () => {
         const left = parent({ id: 'left', name: 'Left', thc: 20, cbd: 2, floweringTime: 8 })
         const right = parent({ id: 'right', name: 'Right', thc: 10, cbd: 4, floweringTime: 10 })

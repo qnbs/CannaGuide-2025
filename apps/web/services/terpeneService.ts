@@ -289,13 +289,7 @@ export const toDetailedCannabinoidProfile = (
 // Effect prediction (entourage effect analysis)
 // ---------------------------------------------------------------------------
 
-/**
- * Predict therapeutic/consumer effects from terpene + cannabinoid profiles
- * using the entourage effect model.
- *
- * Scores each effect by summing weighted contributions from all compounds.
- * Returns effects sorted by confidence (highest first).
- */
+/** Score entourage effects from terpene and cannabinoid weights, highest confidence first. */
 export const predictEffects = (
     terpeneProfile: TerpeneProfile,
     cannabinoidProfile?: CannabinoidProfile,
@@ -370,15 +364,20 @@ const classifiedType = (
 
 const copyCannabinoids = (
     strain: Strain,
-    nameHash: number,
     thc: number | undefined,
     cbd: number | undefined,
 ): CannabinoidProfile => {
-    const profile: CannabinoidProfile = strain.cannabinoidProfile
-        ? { ...strain.cannabinoidProfile }
-        : generateCannabinoidProfile(thc ?? 0, cbd ?? 0, strain.cbg, strain.thcv, nameHash)
-    const cbg = finiteCannabinoid(strain.cbg)
-    if (profile.CBG === undefined && cbg !== undefined) profile.CBG = cbg
+    const profile: CannabinoidProfile = { ...(strain.cannabinoidProfile ?? {}) }
+    const reported = {
+        THC: thc,
+        CBD: cbd,
+        CBG: finiteCannabinoid(strain.cbg),
+        THCV: finiteCannabinoid(strain.thcv),
+    }
+    for (const key of ['THC', 'CBD', 'CBG', 'THCV'] as const) {
+        const value = reported[key]
+        if (profile[key] === undefined && value !== undefined) profile[key] = value
+    }
     return profile
 }
 /** Type IV when reported CBG beats the majors. A missing major is not treated as zero. */
@@ -393,7 +392,7 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefine
         strain.terpeneProfile ??
         generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, typeText)
 
-    const cannabinoidProfile = copyCannabinoids(strain, nameHash, measuredThc, measuredCbd)
+    const cannabinoidProfile = copyCannabinoids(strain, measuredThc, measuredCbd)
 
     const totalTerpenePercent =
         Math.round(Object.values(terpeneProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /

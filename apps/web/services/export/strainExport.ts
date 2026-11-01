@@ -31,6 +31,13 @@ const difficultyExportText = (strain: Strain, t: TFunction): string => {
 const localizedList = (values: string[] | undefined, t: TFunction, prefix: string): string =>
     (values ?? []).map((item) => t(`${prefix}.${item}`, { defaultValue: item })).join(', ')
 
+const listOrUnknown = (
+    values: string[] | undefined,
+    t: TFunction,
+    prefix: string,
+    unknownLabel: string,
+): string => localizedList(values, t, prefix) || unknownLabel
+
 const catalogText = (strain: Strain, t: TFunction, field: string, fallback: string): string =>
     t(`strainsData.${strain.id}.${field}`, { defaultValue: fallback })
 
@@ -81,8 +88,8 @@ const formatStrainTxt = (strain: Strain, t: TFunction): string => {
         `${t('strainsView.strainModal.heightOutdoor')}: ${catalogText(strain, t, 'heightDetails.outdoor', agronomicDetailFallback(strain, 'heightDetails', 'outdoor', unknownLabel))}`,
         '',
         `--- ${t('strainsView.strainDetail.aromaProfile')} ---`,
-        `${t('strainsView.strainModal.aromas')}: ${localizedList(strain.aromas, t, 'common.aromas')}`,
-        `${t('strainsView.strainModal.dominantTerpenes')}: ${localizedList(strain.dominantTerpenes, t, 'common.terpenes')}`,
+        `${t('strainsView.strainModal.aromas')}: ${listOrUnknown(strain.aromas, t, 'common.aromas', unknownLabel)}`,
+        `${t('strainsView.strainModal.dominantTerpenes')}: ${listOrUnknown(strain.dominantTerpenes, t, 'common.terpenes', unknownLabel)}`,
         '',
         `--- ${t('common.description')} ---`,
         catalogText(strain, t, 'description', translatedOr(strain.description, 'N/A')),
@@ -276,7 +283,7 @@ const writeStrainPdfPage = (doc: jsPDF, strain: Strain, t: TFunction): void => {
         valueOffset,
         y,
         t('strainsView.strainModal.aromas'),
-        localizedList(strain.aromas, t, 'common.aromas'),
+        listOrUnknown(strain.aromas, t, 'common.aromas', unknownLabel),
     )
     y = writeKeyValue(
         doc,
@@ -284,7 +291,7 @@ const writeStrainPdfPage = (doc: jsPDF, strain: Strain, t: TFunction): void => {
         valueOffset,
         y,
         t('strainsView.strainModal.dominantTerpenes'),
-        localizedList(strain.dominantTerpenes, t, 'common.terpenes'),
+        listOrUnknown(strain.dominantTerpenes, t, 'common.terpenes', unknownLabel),
     )
     writeTextBlock(
         doc,

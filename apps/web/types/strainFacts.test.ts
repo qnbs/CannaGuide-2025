@@ -112,6 +112,36 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
             ).toBe(false)
         }
     })
+    it('associates a laboratory result with only its explicitly declared batch', () => {
+        const result = strainFactSchema.parse({
+            ...point,
+            scope: {
+                kind: 'laboratory_result',
+                id: 'laboratory_result:synthetic',
+                batchId: base.scope.id,
+                productId: base.scope.productId,
+            },
+        })
+        const batch = {
+            kind: 'product_batch' as const,
+            id: base.scope.id,
+            productId: base.scope.productId,
+        }
+        expect(factMatchesScope(result, batch)).toBe(true)
+        expect(factMatchesScope(result, { ...batch, id: 'product_batch:other' })).toBe(false)
+        expect(
+            factMatchesScope(result, { ...batch, productId: 'medical_flower_product:other' }),
+        ).toBe(false)
+        expect(
+            factMatchesScope(result, { kind: 'medical_flower_product', id: base.scope.productId }),
+        ).toBe(false)
+        expect(factMatchesScope(result, result.scope)).toBe(true)
+        expect(factMatchesScope(result, { ...result.scope, id: 'laboratory_result:other' })).toBe(
+            false,
+        )
+        expect(factMatchesScope(strainFactSchema.parse(point), result.scope)).toBe(false)
+        expect(result.scope.kind).toBe('laboratory_result')
+    })
     it.each([
         ['aflatoxin_b1', 2, '\u00b5g/kg'],
         ['arsenic', 0.1, 'ppm'],

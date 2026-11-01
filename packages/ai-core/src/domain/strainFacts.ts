@@ -188,6 +188,8 @@ const scopeIdentity = (scope: StrainFactScope): readonly (string | undefined)[] 
 
 /** A batch result cannot be reused for a product or a different batch. */
 export const factMatchesScope = (fact: StrainFact, target: StrainFactScope): boolean => {
+    if (fact.scope.kind === 'laboratory_result' && target.kind === 'product_batch')
+        return fact.scope.batchId === target.id && fact.scope.productId === target.productId
     const targetIdentity = scopeIdentity(target)
     return scopeIdentity(fact.scope).every((value, index) => value === targetIdentity[index])
 }

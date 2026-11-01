@@ -16,7 +16,9 @@ All six date fields are independently optional/nullable ISO calendar dates. A re
 date never supplies a missing test date.
 
 `factMatchesScope` compares the complete identity, including the parent product
-for batches. It must be used when selecting a fact for a target entity; names
+for batches. A laboratory-result fact also matches its explicitly declared batch
+only when both batch and product IDs match; it never matches the product alone
+or changes the stored laboratory-result scope. It must be used when selecting a fact for a target entity; names
 are not identifiers. Evidence IDs are references, not proof of a source's
 contents. This contract does not resolve an evidence repository, independently
 verify a laboratory, or grant rights. `isFactReleaseEligible` checks schema,
@@ -50,7 +52,7 @@ establish byte-identical rebuilding. No research data is imported by this API.
 
 - RED: the targeted Vitest file failed because the new fact module did not
   exist (`Test Files 1 failed (1)`).
-- GREEN: the same targeted file passes 55 tests, including missing versus zero,
+- GREEN: the same targeted file passes 56 tests, including missing versus zero,
   strict versus inclusive bounds, nominal versus batch, exact target scope,
   intervals, rights, invalid numbers/units/states/dates and private legacy IDs.
 - The scoped ai-core TypeScript check passes.
@@ -70,3 +72,7 @@ a numeric zero with only a value-path error and valid claim status.
 
 The adapter scope-alias regression failed with one failing / 54 passing cases
 before giving each sidecar its own scope copy; all 55 cases pass afterward.
+
+Laboratory-result association regression: RED 1 failed / 55 passed before
+matching the declared exact batch; GREEN 56/56 afterward, including other-batch,
+other-product, product-level and reverse-association rejection.

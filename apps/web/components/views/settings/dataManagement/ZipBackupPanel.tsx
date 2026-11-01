@@ -21,6 +21,11 @@ const reloadSoon = (): void => {
     window.setTimeout(() => window.location.reload(), 3500)
 }
 
+const exportFailureMessage = (result: BackupExportResult, t: Translate): string =>
+    result.errorCode === 'imagesUnreadable'
+        ? String(t('settingsView.zipBackup.exportImagesError'))
+        : String(t('settingsView.zipBackup.exportError'))
+
 const exportZip = async (t: Translate): Promise<void> => {
     const result = await backupService.exportBackup()
     if (result.success && result.blob) {
@@ -29,11 +34,6 @@ const exportZip = async (t: Translate): Promise<void> => {
     }
     notify('error', exportFailureMessage(result, t))
 }
-
-const exportFailureMessage = (result: BackupExportResult, t: Translate): string =>
-    result.errorCode === 'imagesUnreadable'
-        ? String(t('settingsView.zipBackup.exportImagesError'))
-        : String(t('settingsView.zipBackup.exportError'))
 
 const finishSuccessfulImport = (result: BackupImportResult, t: Translate): void => {
     if (result.rejectedImageCount <= 0) {

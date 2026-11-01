@@ -59,10 +59,8 @@ vi.mock('jszip', () => {
             this.files[name] = { name }
             return this
         }
-        generateAsync(): Promise<Blob> {
-            const payload = this.files ? 'mockzip' : 'mockzip'
-            return Promise.resolve(new Blob([payload], { type: 'application/zip' }))
-        }
+        generateAsync = (): Promise<Blob> =>
+            Promise.resolve(new Blob(['mockzip'], { type: 'application/zip' }))
     }
     return {
         default: MockJSZip,
@@ -288,6 +286,31 @@ describe('backupService', () => {
             expect(result.metadata?.plantCount).toBe(0)
         })
 
+        it('counts plants stored as an entity map', async () => {
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(
+                JSON.stringify({
+                    simulation: {
+                        plants: { ids: ['p1'], entities: { p1: { id: 'p1' } } },
+                    },
+                }),
+            )
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(result.metadata?.plantCount).toBe(1)
+        })
+
+        it('omits an undefined export error instead of assigning it', () => {
+            const exportFailure = (error: string | undefined): BackupExportResult => ({
+                success: false,
+                blob: null,
+                filename: '',
+                metadata: null,
+                ...(error === undefined ? {} : { error }),
+            })
+            expect(exportFailure(undefined)).not.toHaveProperty('error')
+            expect(exportFailure('stopped')).toMatchObject({ error: 'stopped' })
+        })
+
         it('writes no Cloud TTS key into the ZIP (#654)', async () => {
             // A synthetic canary, never a real key.
             const canary = 'sk_canary_0000000000000000000000000000'
@@ -338,6 +361,26 @@ describe('backupService', () => {
             })
             expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
         }
+
+        it('exports a photo id at the 255-character limit', async () => {
+            const id = 'a'.repeat(255)
+            await seedPhotos({ id, data: VALID_PNG_DATA_URL, createdAt: 1 })
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(result.metadata?.imageCount).toBe(1)
+            expect(mocks.zipEntries.has(`images/${id}.json`)).toBe(true)
+        })
+
+        it('refuses the archive when a photo id is not restorable', async () => {
+            await seedPhotos({ id: 'b'.repeat(256), data: VALID_PNG_DATA_URL, createdAt: 1 })
+            const result = await backupService.exportBackup()
+            expect(result).toMatchObject({
+                success: false,
+                blob: null,
+                errorCode: 'imagesUnreadable',
+            })
+            expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
+        })
 
         it('exports every stored photo with the state', async () => {
             await seedPhotos(photo)
@@ -439,6 +482,32 @@ describe('backupService', () => {
     })
 
     describe('importBackup', () => {
+        it('restores a photo id at the 255-character limit', async () => {
+            const id = 'c'.repeat(255)
+            const result = await importMockBackup(
+                { version: 6 },
+                { [id]: { id, data: VALID_PNG_DATA_URL, createdAt: 4 } },
+            )
+            expect(result).toMatchObject({ success: true, rejectedImageCount: 0 })
+            const request = indexedDB.open('CannaGuideDB')
+            const database = await new Promise<IDBDatabase>((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result)
+                request.onerror = () => reject(request.error)
+            })
+            const stored = await readStoredImage(database, id)
+            database.close()
+            expect(stored).toMatchObject({ id, data: VALID_PNG_DATA_URL })
+        })
+
+        it('counts a photo name that cannot round-trip', async () => {
+            const id = 'd'.repeat(256)
+            const result = await importMockBackup(
+                { version: 6 },
+                { [id]: { id, data: VALID_PNG_DATA_URL, createdAt: 4 } },
+            )
+            expect(result).toMatchObject({ success: true, rejectedImageCount: 1 })
+        })
+
         it('rejects oversized files', async () => {
             const bigFile = new File(['x'], 'big.zip', { type: 'application/zip' })
             Object.defineProperty(bigFile, 'size', { value: 600 * 1024 * 1024 })
@@ -760,9 +829,7 @@ describe('backupService', () => {
                 },
                 [incompletePath]: {
                     async: () =>
-                        Promise.resolve(
-                            JSON.stringify({ id: 'photo-incomplete', createdAt: 12 }),
-                        ),
+                        Promise.resolve(JSON.stringify({ id: 'photo-incomplete', createdAt: 12 })),
                 },
             }
             mocks.loadZip.mockResolvedValueOnce({
@@ -823,7 +890,9 @@ describe('backupService', () => {
             mocks.loadZip.mockResolvedValueOnce({
                 files: { [statePath]: { name: statePath } },
                 file: (name: string) =>
-                    name === statePath ? { async: () => Promise.resolve(JSON.stringify(state)) } : null,
+                    name === statePath
+                        ? { async: () => Promise.resolve(JSON.stringify(state)) }
+                        : null,
             })
 
             const result = await backupService.importBackup(

@@ -20,7 +20,18 @@ export const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
 export const getSafeStrainType = (value: unknown): string =>
-    typeof value === 'string' ? value : 'Hybrid'
+    value === 'Sativa' || value === 'Indica' || value === 'Hybrid' ? value : ''
+
+export const measurementInRange = (
+    value: unknown,
+    range: [number, number],
+    initial: [number, number],
+): boolean => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value >= range[0] && value <= range[1]
+    }
+    return range[0] === initial[0] && range[1] === initial[1]
+}
 
 export const getRangeValue = (
     range: [number, number] | undefined,
@@ -124,15 +135,20 @@ export const computeDrawerFilterCount = (
 
     strains = strains.filter(
         (s) =>
-            getSafeNumericValue(s.thc, 0) >= thcRange[0] &&
-            getSafeNumericValue(s.thc, 0) <= thcRange[1] &&
-            getSafeNumericValue(s.cbd, 0) >= cbdRange[0] &&
-            getSafeNumericValue(s.cbd, 0) <= cbdRange[1] &&
-            getSafeNumericValue(s.floweringTime, 0) >= floweringRange[0] &&
-            getSafeNumericValue(s.floweringTime, 0) <= floweringRange[1] &&
-            (difficulties.size === 0 || difficulties.has(getSafeAgronomic(s).difficulty)) &&
-            (yields.size === 0 || yields.has(getSafeAgronomic(s).yield)) &&
-            (heights.size === 0 || heights.has(getSafeAgronomic(s).height)) &&
+            measurementInRange(s.thc, thcRange, INITIAL_ADVANCED_FILTERS.thcRange) &&
+            measurementInRange(s.cbd, cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange) &&
+            measurementInRange(
+                s.floweringTime,
+                floweringRange,
+                INITIAL_ADVANCED_FILTERS.floweringRange,
+            ) &&
+            (difficulties.size === 0 ||
+                (s.agronomic?.difficulty !== undefined &&
+                    difficulties.has(s.agronomic.difficulty))) &&
+            (yields.size === 0 ||
+                (s.agronomic?.yield !== undefined && yields.has(s.agronomic.yield))) &&
+            (heights.size === 0 ||
+                (s.agronomic?.height !== undefined && heights.has(s.agronomic.height))) &&
             (aromas.size === 0 || getSafeStringArray(s.aromas).some((a) => aromas.has(a))) &&
             (terpenes.size === 0 ||
                 getSafeStringArray(s.dominantTerpenes).some((t) => terpenes.has(t))),

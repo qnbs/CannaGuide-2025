@@ -118,9 +118,9 @@ export function getTodayKey(): string {
 function matchesCategory(strain: Strain, category: PickCategory): boolean {
     switch (category) {
         case 'high-thc':
-            return strain.thc >= 20
+            return typeof strain.thc === 'number' && strain.thc >= 20
         case 'balanced-cbd':
-            return strain.cbd >= 1
+            return typeof strain.cbd === 'number' && strain.cbd >= 1
         case 'autoflower':
             return strain.floweringType === 'Autoflower'
         case 'classic-indica':
@@ -128,7 +128,7 @@ function matchesCategory(strain: Strain, category: PickCategory): boolean {
         case 'classic-sativa':
             return strain.type === 'Sativa' && strain.floweringType === 'Photoperiod'
         case 'beginner-friendly':
-            return strain.agronomic.difficulty === 'Easy'
+            return strain.agronomic?.difficulty === 'Easy'
         case 'terpene-rich':
             return (strain.dominantTerpenes?.length ?? 0) >= 2
     }

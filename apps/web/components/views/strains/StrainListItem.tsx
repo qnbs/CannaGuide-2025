@@ -30,13 +30,15 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-primary-400',
 }
 
-const getSafeStrainType = (type: string | undefined): StrainType => {
+const reportedStrainType = (type: string | undefined): StrainType | undefined => {
     if (type === StrainType.Sativa || type === StrainType.Indica || type === StrainType.Hybrid) {
         return type
     }
-
-    return StrainType.Hybrid
+    return undefined
 }
+
+const reportedNumber = (value: unknown, digits: number, unknownLabel: string): string =>
+    typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : unknownLabel
 
 export const StrainListItem: React.FC<StrainListItemProps> = memo(
     ({
@@ -51,20 +53,17 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
     }) => {
         const { t } = useTranslation()
 
-        const safeType = getSafeStrainType(strain.type)
-        const TypeIcon = typeIcons[safeType]
+        const safeType = reportedStrainType(strain.type)
+        const TypeIcon = safeType ? typeIcons[safeType] : null
+        const unknown = t('common.unknown')
         const safeName =
             typeof strain.name === 'string' && strain.name.trim() !== ''
                 ? strain.name
                 : t('plantsView.unknownStrain')
-        const safeThc =
-            typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
-        const safeCbd =
-            typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
+        const safeThc = reportedNumber(strain.thc, 1, unknown)
+        const safeCbd = reportedNumber(strain.cbd, 1, unknown)
         const safeFloweringTime =
-            typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
-                ? strain.floweringTime
-                : 0
+            strain.floweringTimeRange || reportedNumber(strain.floweringTime, 0, unknown)
 
         const handleActionClick = (e: React.MouseEvent, action: () => void) => {
             e.stopPropagation()
@@ -103,8 +102,10 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     </div>
 
                     {/* Type Icon */}
-                    <div className={`w-8 h-8 flex-shrink-0 ${typeClasses[safeType]}`}>
-                        {TypeIcon}
+                    <div
+                        className={`w-8 h-8 flex-shrink-0 ${safeType ? typeClasses[safeType] : 'text-slate-400'}`}
+                    >
+                        {TypeIcon ?? <PhosphorIcons.Question className="w-full h-full" />}
                     </div>
 
                     {/* Name & Main Stats */}
@@ -119,8 +120,9 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                             <p className="font-bold text-slate-100 truncate">{safeName}</p>
                         </div>
                         <p className="text-xs text-slate-400 mt-1 sm:hidden">
-                            {safeThc.toFixed(1)}% THC | {safeFloweringTime}{' '}
-                            {t('common.units.weeks')}
+                            {safeThc === unknown ? unknown : `${safeThc}%`} THC |{' '}
+                            {safeFloweringTime}{' '}
+                            {safeFloweringTime === unknown ? '' : t('common.units.weeks')}
                         </p>
                     </div>
 
@@ -129,13 +131,13 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                         className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
                         title="THC"
                     >
-                        <span>{safeThc.toFixed(1)}%</span>
+                        <span>{safeThc === unknown ? unknown : `${safeThc}%`}</span>
                     </div>
                     <div
                         className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
                         title="CBD"
                     >
-                        <span>{safeCbd.toFixed(1)}%</span>
+                        <span>{safeCbd === unknown ? unknown : `${safeCbd}%`}</span>
                     </div>
                     <div
                         className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"

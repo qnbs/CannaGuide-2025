@@ -28,12 +28,29 @@ import { type Strain, StrainType } from '@/types'
 import { createStrainObject } from '@/services/strainFactory'`
 
 /** Escape a string for embedding in a single-quoted JS literal. */
-const escapeStr = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+const escapeStr = (s) =>
+    String(s)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/[\u0000-\u001F\u2028\u2029]/g, (ch) => {
+            if (ch === '\n') return '\\n'
+            if (ch === '\r') return '\\r'
+            if (ch === '\t') return '\\t'
+            return `\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`
+        })
 
-const TYPE_ENUM = {
+const TYPE_ENUM = Object.assign(Object.create(null), {
     Sativa: 'StrainType.Sativa',
     Indica: 'StrainType.Indica',
     Hybrid: 'StrainType.Hybrid',
+})
+
+const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/
+const SAFE_KEY = /^[A-Za-z0-9_$. -]+$/
+
+const emitKey = (key) => {
+    if (!SAFE_KEY.test(key)) return null
+    return IDENTIFIER.test(key) ? key : `'${escapeStr(key)}'`
 }
 
 const ORDERED_FIELDS = [
@@ -67,12 +84,13 @@ const formatValue = (value, indent) => {
 }
 
 const formatArray = (value, indent) => {
-    const simple = value.every((item) => typeof item === 'string' || typeof item === 'number')
-    const inline = simple ? value.map((item) => formatValue(item, indent)).join(', ') : ''
+    const items = value.filter((item) => item !== null && item !== undefined)
+    const simple = items.every((item) => typeof item === 'string' || typeof item === 'number')
+    const inline = simple ? items.map((item) => formatValue(item, indent)).join(', ') : ''
     if (simple && inline.length < 80) return `[${inline}]`
     const inner = ' '.repeat(indent + 4)
     const lines = ['[']
-    for (const item of value) lines.push(`${inner}${formatValue(item, indent + 4)},`)
+    for (const item of items) lines.push(`${inner}${formatValue(item, indent + 4)},`)
     lines.push(`${' '.repeat(indent)}]`)
     return lines.join('\n')
 }
@@ -88,14 +106,16 @@ export const formatStrain = (strain) => {
     const written = new Set()
     const addField = (key, value) => {
         if (value === undefined || value === null || written.has(key)) return
+        const emittedKey = emitKey(key)
+        if (!emittedKey) return
         if (key === 'type') {
-            const enumName = TYPE_ENUM[value]
+            const enumName = Object.hasOwn(TYPE_ENUM, value) ? TYPE_ENUM[value] : undefined
             if (!enumName) return
             lines.push(`        type: ${enumName},`)
             written.add(key)
             return
         }
-        lines.push(`        ${key}: ${formatValue(value, 8)},`)
+        lines.push(`        ${emittedKey}: ${formatValue(value, 8)},`)
         written.add(key)
     }
 
@@ -114,12 +134,16 @@ const formatObject = (obj, indent) => {
         ([, value]) =>
             typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean',
     )
-    if (allSimple && entries.length > 0 && entries.length <= 3) {
-        const parts = entries.map(([key, value]) => `${key}: ${formatValue(value, indent)}`)
+    const safeEntries = entries.flatMap(([key, value]) => {
+        const emittedKey = emitKey(key)
+        return emittedKey ? [[emittedKey, value]] : []
+    })
+    if (allSimple && safeEntries.length > 0 && safeEntries.length <= 3) {
+        const parts = safeEntries.map(([key, value]) => `${key}: ${formatValue(value, indent)}`)
         return `{ ${parts.join(', ')} }`
     }
     const lines = ['{']
-    for (const [key, value] of entries) {
+    for (const [key, value] of safeEntries) {
         lines.push(`${innerPad}${key}: ${formatValue(value, indent + 4)},`)
     }
     lines.push(`${pad}}`)

@@ -149,9 +149,10 @@ export const generateTerpeneProfile = (
         profile[terpene] = Math.round(percent * 1000) / 1000
     }
 
-    // Add trace terpenes based on strain type
-    const isIndica = strainType.toLowerCase().includes('indica')
-    const isSativa = strainType.toLowerCase().includes('sativa')
+    // Add trace terpenes based on strain type. An unreported type is neither bias.
+    const typeText = typeof strainType === 'string' ? strainType : ''
+    const isIndica = typeText.toLowerCase().includes('indica')
+    const isSativa = typeText.toLowerCase().includes('sativa')
 
     // Add 2-4 secondary terpenes at trace levels
     const secondaryCount = 2 + (nameHash % 3)
@@ -352,16 +353,21 @@ export const predictEffects = (
  */
 export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
     const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+    const reportedThc =
+        typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
+    const reportedCbd =
+        typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
+    const typeText = typeof strain.type === 'string' ? strain.type : ''
 
     // Terpene profile: use existing or generate
     const terpeneProfile: TerpeneProfile =
         strain.terpeneProfile ??
-        generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, strain.type)
+        generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, typeText)
 
     // Cannabinoid profile: use existing or generate
     const cannabinoidProfile: CannabinoidProfile =
         strain.cannabinoidProfile ??
-        generateCannabinoidProfile(strain.thc, strain.cbd, strain.cbg, strain.thcv, nameHash)
+        generateCannabinoidProfile(reportedThc, reportedCbd, strain.cbg, strain.thcv, nameHash)
 
     // Sum totals
     const totalTerpenePercent =
@@ -372,12 +378,12 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
         Math.round(Object.values(cannabinoidProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /
         1000
 
-    const chemovarType = classifyChemovar(strain.thc, strain.cbd, cannabinoidProfile.CBG)
+    const chemovarType = classifyChemovar(reportedThc, reportedCbd, cannabinoidProfile.CBG)
 
     const thcCbdRatio =
-        strain.cbd > 0
-            ? Math.round((strain.thc / strain.cbd) * 100) / 100
-            : strain.thc > 0
+        reportedCbd > 0
+            ? Math.round((reportedThc / reportedCbd) * 100) / 100
+            : reportedThc > 0
               ? Infinity
               : 0
 

@@ -159,9 +159,7 @@ describe('dailyStrainsService', () => {
             const strain = resolveDiscoveredToStrain(pick)
             expect(strain.id).toBe(pick.id)
             expect(strain.name).toBe(pick.name)
-            // Catalog strains have agronomic and geneticModifiers
-            expect(strain.agronomic).toBeDefined()
-            expect(strain.geneticModifiers).toBeDefined()
+            expect(strain.geneticModifiers).toBeUndefined()
             expect(strain.floweringTime).toBeGreaterThan(0)
         })
 
@@ -187,8 +185,8 @@ describe('dailyStrainsService', () => {
             expect(strain.floweringType).toBe('Autoflower')
             expect(strain.thc).toBe(22)
             expect(strain.cbd).toBe(1.5)
-            expect(strain.agronomic).toBeDefined()
-            expect(strain.geneticModifiers).toBeDefined()
+            expect(strain.agronomic).toBeUndefined()
+            expect(strain.geneticModifiers).toBeUndefined()
             expect(strain.lineage?.breeder).toBe('Test Breeder')
         })
 

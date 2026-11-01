@@ -10,12 +10,6 @@ export type { StrainCatalogVersion } from '@/data/strainCatalogVersion'
 
 type StrainModule = Record<string, unknown>
 
-const DEFAULT_AGRONOMIC = {
-    difficulty: 'Medium',
-    yield: 'Medium',
-    height: 'Medium',
-} as const
-
 const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
     const seenIds = new Set<string>()
     const normalized: Strain[] = []
@@ -74,8 +68,7 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
                         typeof value[0] === 'object' &&
                         value[0] !== null &&
                         'id' in value[0] &&
-                        'name' in value[0] &&
-                        'type' in value[0],
+                        'name' in value[0],
                 ),
             )
 
@@ -149,15 +142,16 @@ class StrainService {
         const calculateSimilarity = (s1: Strain, s2: Strain): number => {
             let score = 0
             if (s1.id === s2.id) return -1 // Exclude self
-            const s1Agronomic = s1.agronomic ?? DEFAULT_AGRONOMIC
-            const s2Agronomic = s2.agronomic ?? DEFAULT_AGRONOMIC
-
             // Type
-            if (s1.type === s2.type) score += 20
+            if (s1.type && s1.type === s2.type) score += 20
 
-            // THC/CBD closeness
-            score += 15 - Math.abs(s1.thc - s2.thc)
-            score += 10 - Math.abs(s1.cbd - s2.cbd)
+            // THC/CBD closeness, only when both cultivars report the number
+            if (typeof s1.thc === 'number' && typeof s2.thc === 'number') {
+                score += 15 - Math.abs(s1.thc - s2.thc)
+            }
+            if (typeof s1.cbd === 'number' && typeof s2.cbd === 'number') {
+                score += 10 - Math.abs(s1.cbd - s2.cbd)
+            }
 
             // Aroma/Terpene overlap
             const aromaIntersection = (s1.aromas ?? []).filter((a) => (s2.aromas ?? []).includes(a))
@@ -168,10 +162,11 @@ class StrainService {
             )
             score += terpeneIntersection.length * 10
 
-            // Agronomics
-            if (s1Agronomic.difficulty === s2Agronomic.difficulty) score += 5
-            if (s1Agronomic.yield === s2Agronomic.yield) score += 3
-            if (s1Agronomic.height === s2Agronomic.height) score += 2
+            if (s1.agronomic?.difficulty && s1.agronomic.difficulty === s2.agronomic?.difficulty) {
+                score += 5
+            }
+            if (s1.agronomic?.yield && s1.agronomic.yield === s2.agronomic?.yield) score += 3
+            if (s1.agronomic?.height && s1.agronomic.height === s2.agronomic?.height) score += 2
 
             return score
         }

@@ -60,7 +60,7 @@ describe('GeneticsService', () => {
             const childNodes = tree!.children || tree!._children
             expect(childNodes).toBeDefined()
             if (childNodes) {
-                const names = childNodes.map(c => c.name)
+                const names = childNodes.map((c) => c.name)
                 expect(names).toContain('ParentA')
                 expect(names).toContain('ParentB')
             }
@@ -78,12 +78,16 @@ describe('GeneticsService', () => {
 
         it('marks unknown parents as landraces', () => {
             const strains = [
-                makeStrain({ id: 's1', name: 'Hybrid', genetics: 'Unknown Parent x Another Unknown' }),
+                makeStrain({
+                    id: 's1',
+                    name: 'Hybrid',
+                    genetics: 'Unknown Parent x Another Unknown',
+                }),
             ]
             const tree = geneticsService.buildGenealogyTree('s1', strains)
             const children = tree!.children || tree!._children
             if (children) {
-                children.forEach(c => {
+                children.forEach((c) => {
                     expect(c.isLandrace).toBe(true)
                 })
             }
@@ -97,7 +101,13 @@ describe('GeneticsService', () => {
         })
 
         it('returns 100% for a single landrace node', () => {
-            const tree = { id: 's1', name: 'Afghan', type: StrainType.Indica, thc: 15, isLandrace: true }
+            const tree = {
+                id: 's1',
+                name: 'Afghan',
+                type: StrainType.Indica,
+                thc: 15,
+                isLandrace: true,
+            }
             const contributions = geneticsService.calculateGeneticContribution(tree)
             expect(contributions).toHaveLength(1)
             expect(contributions[0]!.name).toBe('Afghan')
@@ -106,10 +116,26 @@ describe('GeneticsService', () => {
 
         it('splits contribution equally between two children', () => {
             const tree = {
-                id: 's1', name: 'Hybrid', type: StrainType.Hybrid, thc: 20, isLandrace: false,
+                id: 's1',
+                name: 'Hybrid',
+                type: StrainType.Hybrid,
+                thc: 20,
+                isLandrace: false,
                 children: [
-                    { id: 'p1', name: 'ParentA', type: StrainType.Indica, thc: 18, isLandrace: true },
-                    { id: 'p2', name: 'ParentB', type: StrainType.Sativa, thc: 22, isLandrace: true },
+                    {
+                        id: 'p1',
+                        name: 'ParentA',
+                        type: StrainType.Indica,
+                        thc: 18,
+                        isLandrace: true,
+                    },
+                    {
+                        id: 'p2',
+                        name: 'ParentB',
+                        type: StrainType.Sativa,
+                        thc: 22,
+                        isLandrace: true,
+                    },
                 ],
             }
             const contributions = geneticsService.calculateGeneticContribution(tree)
@@ -120,20 +146,49 @@ describe('GeneticsService', () => {
 
         it('returns sorted contributions (highest first)', () => {
             const tree = {
-                id: 's1', name: 'Hybrid', type: StrainType.Hybrid, thc: 20, isLandrace: false,
+                id: 's1',
+                name: 'Hybrid',
+                type: StrainType.Hybrid,
+                thc: 20,
+                isLandrace: false,
                 children: [
-                    { id: 'p1', name: 'LowContrib', type: StrainType.Indica, thc: 18, isLandrace: false,
+                    {
+                        id: 'p1',
+                        name: 'LowContrib',
+                        type: StrainType.Indica,
+                        thc: 18,
+                        isLandrace: false,
                         children: [
-                            { id: 'g1', name: 'Grand1', type: StrainType.Indica, thc: 15, isLandrace: true },
-                            { id: 'g2', name: 'Grand2', type: StrainType.Indica, thc: 16, isLandrace: true },
+                            {
+                                id: 'g1',
+                                name: 'Grand1',
+                                type: StrainType.Indica,
+                                thc: 15,
+                                isLandrace: true,
+                            },
+                            {
+                                id: 'g2',
+                                name: 'Grand2',
+                                type: StrainType.Indica,
+                                thc: 16,
+                                isLandrace: true,
+                            },
                         ],
                     },
-                    { id: 'p2', name: 'HighContrib', type: StrainType.Sativa, thc: 22, isLandrace: true },
+                    {
+                        id: 'p2',
+                        name: 'HighContrib',
+                        type: StrainType.Sativa,
+                        thc: 22,
+                        isLandrace: true,
+                    },
                 ],
             }
             const contributions = geneticsService.calculateGeneticContribution(tree)
             for (let i = 1; i < contributions.length; i++) {
-                expect(contributions[i - 1]!.contribution).toBeGreaterThanOrEqual(contributions[i]!.contribution)
+                expect(contributions[i - 1]!.contribution).toBeGreaterThanOrEqual(
+                    contributions[i]!.contribution,
+                )
             }
         })
     })
@@ -147,14 +202,27 @@ describe('GeneticsService', () => {
 
         it('finds direct children', () => {
             const parent = makeStrain({ id: 'p1', name: 'OG Kush', genetics: '' })
-            const child1 = makeStrain({ id: 'c1', name: 'Bubba', genetics: 'OG Kush x Purple Kush' })
+            const child1 = makeStrain({
+                id: 'c1',
+                name: 'Bubba',
+                genetics: 'OG Kush x Purple Kush',
+            })
             const child2 = makeStrain({ id: 'c2', name: 'SFV OG', genetics: 'OG Kush x Afghani' })
-            const unrelated = makeStrain({ id: 'u1', name: 'Blue Dream', genetics: 'Blueberry x Haze' })
+            const unrelated = makeStrain({
+                id: 'u1',
+                name: 'Blue Dream',
+                genetics: 'Blueberry x Haze',
+            })
 
-            const result = geneticsService.findDescendants('p1', [parent, child1, child2, unrelated])
-            expect(result.children.map(s => s.id)).toContain('c1')
-            expect(result.children.map(s => s.id)).toContain('c2')
-            expect(result.children.map(s => s.id)).not.toContain('u1')
+            const result = geneticsService.findDescendants('p1', [
+                parent,
+                child1,
+                child2,
+                unrelated,
+            ])
+            expect(result.children.map((s) => s.id)).toContain('c1')
+            expect(result.children.map((s) => s.id)).toContain('c2')
+            expect(result.children.map((s) => s.id)).not.toContain('u1')
         })
     })
 
@@ -167,13 +235,21 @@ describe('GeneticsService', () => {
         }
 
         it('returns average THC of parents at neutral phenotypes', () => {
-            const result = geneticsService.estimateOffspringProfile(parentA, parentB, defaultPhenotypes)
+            const result = geneticsService.estimateOffspringProfile(
+                parentA,
+                parentB,
+                defaultPhenotypes,
+            )
             // avg(20,10) + (5-5)*0.35 = 15
             expect(result.thc).toBeCloseTo(15, 0)
         })
 
         it('returns average CBD of parents at neutral phenotypes', () => {
-            const result = geneticsService.estimateOffspringProfile(parentA, parentB, defaultPhenotypes)
+            const result = geneticsService.estimateOffspringProfile(
+                parentA,
+                parentB,
+                defaultPhenotypes,
+            )
             // avg(1,3) + (5-5)*0.08 = 2
             expect(result.cbd).toBeCloseTo(2, 0)
         })
@@ -188,7 +264,11 @@ describe('GeneticsService', () => {
         })
 
         it('returns stability score between 0 and 100', () => {
-            const result = geneticsService.estimateOffspringProfile(parentA, parentB, defaultPhenotypes)
+            const result = geneticsService.estimateOffspringProfile(
+                parentA,
+                parentB,
+                defaultPhenotypes,
+            )
             expect(result.stabilityScore).toBeGreaterThanOrEqual(0)
             expect(result.stabilityScore).toBeLessThanOrEqual(100)
         })
@@ -199,6 +279,23 @@ describe('GeneticsService', () => {
                 parentB: { vigor: 10, resin: 5, aroma: 5, resistance: 5 },
             })
             expect(result.floweringWeeks).toBeGreaterThanOrEqual(6)
+        })
+
+        it('leaves offspring measurements unknown when a parent measurement is missing', () => {
+            const unmeasured = makeStrain({ id: 'blank', name: 'Blank' })
+            Reflect.deleteProperty(unmeasured, 'thc')
+            Reflect.deleteProperty(unmeasured, 'cbd')
+            Reflect.deleteProperty(unmeasured, 'floweringTime')
+            const result = geneticsService.estimateOffspringProfile(
+                parentA,
+                unmeasured,
+                defaultPhenotypes,
+            )
+            expect(result.thc).toBeNull()
+            expect(result.cbd).toBeNull()
+            expect(result.floweringWeeks).toBeNull()
+            expect(result.stabilityScore).toBeNull()
+            expect(result.vigorScore).toBeGreaterThanOrEqual(0)
         })
 
         it('clamps phenotype scores 0-10', () => {

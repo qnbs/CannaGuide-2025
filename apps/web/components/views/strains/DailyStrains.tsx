@@ -71,7 +71,9 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                 ? 'text-purple-400 bg-purple-400/10'
                 : strain.type === 'Sativa'
                   ? 'text-orange-400 bg-orange-400/10'
-                  : 'text-green-400 bg-green-400/10'
+                  : strain.type === 'Hybrid'
+                    ? 'text-green-400 bg-green-400/10'
+                    : 'text-slate-300 bg-slate-400/10'
 
         return (
             <Card className="p-4 space-y-3">
@@ -84,7 +86,7 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         <span
                             className={`text-xs font-semibold px-2 py-0.5 rounded-full ${typeColor}`}
                         >
-                            {strain.type}
+                            {strain.type || t('common.unknown')}
                         </span>
                         {strain.floweringType === 'Autoflower' && (
                             <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-cyan-400 bg-cyan-400/10">
@@ -121,10 +123,10 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                 )}
 
                 <div className="flex gap-4 text-sm">
-                    {strain.thc > 0 && (
+                    {typeof strain.thc === 'number' && Number.isFinite(strain.thc) && (
                         <span className="text-emerald-400">THC: {strain.thc.toFixed(1)}%</span>
                     )}
-                    {strain.cbd > 0 && (
+                    {typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) && (
                         <span className="text-blue-400">CBD: {strain.cbd.toFixed(1)}%</span>
                     )}
                 </div>

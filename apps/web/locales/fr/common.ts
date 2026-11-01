@@ -17,6 +17,7 @@ export const common = {
     loadingGeneric: 'Chargement...',
     growDeleted: 'Grow supprime.',
     outOfStock: 'Rupture de stock',
+    unknown: 'Inconnu',
     name: 'Nom',
     type: 'Type',
     typeDetails: 'Details du type',

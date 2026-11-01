@@ -84,17 +84,36 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                         {t('plantsView.setupModal.title', { strainName: strain.name })}
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                        <InfoRow label={t('common.type')} value={strain.type} />
-                        <InfoRow label={t('strainsView.table.thc')} value={`${strain.thc}%`} />
+                        <InfoRow
+                            label={t('common.type')}
+                            value={strain.type || t('common.unknown')}
+                        />
+                        <InfoRow
+                            label={t('strainsView.table.thc')}
+                            value={
+                                typeof strain.thc === 'number' && Number.isFinite(strain.thc)
+                                    ? `${strain.thc}%`
+                                    : t('common.unknown')
+                            }
+                        />
                         <InfoRow
                             label={t('strainsView.table.flowering')}
-                            value={`${strain.floweringTime} ${t('common.units.weeks')}`}
+                            value={
+                                typeof strain.floweringTime === 'number' &&
+                                Number.isFinite(strain.floweringTime)
+                                    ? `${strain.floweringTime} ${t('common.units.weeks')}`
+                                    : t('common.unknown')
+                            }
                         />
                         <InfoRow
                             label={t('strainsView.table.difficulty')}
-                            value={t(
-                                `strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`,
-                            )}
+                            value={
+                                strain.agronomic?.difficulty
+                                    ? t(
+                                          `strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`,
+                                      )
+                                    : t('common.unknown')
+                            }
                         />
                     </div>
                 </Card>

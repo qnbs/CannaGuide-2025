@@ -89,42 +89,58 @@ export function exportStrainsAsPdf(strains: Strain[], fileName: string, t: TFunc
         )
 
         printSectionTitle(t('strainsView.strainDetail.cannabinoidProfile'))
-        printKeyValuePair(t('strainsView.table.thc'), strain.thcRange || `${strain.thc}%`)
-        printKeyValuePair(t('strainsView.table.cbd'), strain.cbdRange || `${strain.cbd}%`)
+        printKeyValuePair(
+            t('strainsView.table.thc'),
+            strain.thcRange ||
+                (typeof strain.thc === 'number' && Number.isFinite(strain.thc)
+                    ? `${strain.thc}%`
+                    : t('common.unknown')),
+        )
+        printKeyValuePair(
+            t('strainsView.table.cbd'),
+            strain.cbdRange ||
+                (typeof strain.cbd === 'number' && Number.isFinite(strain.cbd)
+                    ? `${strain.cbd}%`
+                    : t('common.unknown')),
+        )
 
         printSectionTitle(t('strainsView.strainModal.agronomicData'))
         printKeyValuePair(
             t('strainsView.table.difficulty'),
-            t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
+            strain.agronomic?.difficulty
+                ? t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)
+                : t('common.unknown'),
         )
         printKeyValuePair(
             t('strainsView.table.flowering'),
             strain.floweringTimeRange
                 ? `${strain.floweringTimeRange} ${t('common.units.weeks')}`
-                : `${strain.floweringTime} ${t('common.units.weeks')}`,
+                : typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
+                  ? `${strain.floweringTime} ${t('common.units.weeks')}`
+                  : t('common.unknown'),
         )
         printKeyValuePair(
             t('strainsView.strainModal.yieldIndoor'),
             t(`strainsData.${strain.id}.yieldDetails.indoor`, {
-                defaultValue: strain.agronomic.yieldDetails?.indoor ?? 'N/A',
+                defaultValue: strain.agronomic?.yieldDetails?.indoor ?? t('common.unknown'),
             }),
         )
         printKeyValuePair(
             t('strainsView.strainModal.yieldOutdoor'),
             t(`strainsData.${strain.id}.yieldDetails.outdoor`, {
-                defaultValue: strain.agronomic.yieldDetails?.outdoor ?? 'N/A',
+                defaultValue: strain.agronomic?.yieldDetails?.outdoor ?? t('common.unknown'),
             }),
         )
         printKeyValuePair(
             t('strainsView.strainModal.heightIndoor'),
             t(`strainsData.${strain.id}.heightDetails.indoor`, {
-                defaultValue: strain.agronomic.heightDetails?.indoor ?? 'N/A',
+                defaultValue: strain.agronomic?.heightDetails?.indoor ?? t('common.unknown'),
             }),
         )
         printKeyValuePair(
             t('strainsView.strainModal.heightOutdoor'),
             t(`strainsData.${strain.id}.heightDetails.outdoor`, {
-                defaultValue: strain.agronomic.heightDetails?.outdoor ?? 'N/A',
+                defaultValue: strain.agronomic?.heightDetails?.outdoor ?? t('common.unknown'),
             }),
         )
 
@@ -170,23 +186,25 @@ export function exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunc
 
     strains.forEach((s) => {
         const typeDetailsLabel = t(`strainsData.${s.id}.typeDetails`, {
-            defaultValue: s.typeDetails ?? s.type,
+            defaultValue: s.typeDetails ?? s.type ?? t('common.unknown'),
         })
         const geneticsLabel = t(`strainsData.${s.id}.genetics`, {
             defaultValue: s.genetics ?? 'N/A',
         })
-        const difficultyLabel = t(`strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`)
+        const difficultyLabel = s.agronomic?.difficulty
+            ? t(`strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`)
+            : t('common.unknown')
         const yieldIndoorLabel = t(`strainsData.${s.id}.yieldDetails.indoor`, {
-            defaultValue: s.agronomic.yieldDetails?.indoor ?? 'N/A',
+            defaultValue: s.agronomic?.yieldDetails?.indoor ?? t('common.unknown'),
         })
         const yieldOutdoorLabel = t(`strainsData.${s.id}.yieldDetails.outdoor`, {
-            defaultValue: s.agronomic.yieldDetails?.outdoor ?? 'N/A',
+            defaultValue: s.agronomic?.yieldDetails?.outdoor ?? t('common.unknown'),
         })
         const heightIndoorLabel = t(`strainsData.${s.id}.heightDetails.indoor`, {
-            defaultValue: s.agronomic.heightDetails?.indoor ?? 'N/A',
+            defaultValue: s.agronomic?.heightDetails?.indoor ?? t('common.unknown'),
         })
         const heightOutdoorLabel = t(`strainsData.${s.id}.heightDetails.outdoor`, {
-            defaultValue: s.agronomic.heightDetails?.outdoor ?? 'N/A',
+            defaultValue: s.agronomic?.heightDetails?.outdoor ?? t('common.unknown'),
         })
         const descriptionLabel = t(`strainsData.${s.id}.description`, {
             defaultValue: s.description ?? 'N/A',
@@ -200,12 +218,18 @@ export function exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunc
         content += `${t('common.genetics')}: ${geneticsLabel}\n\n`
 
         content += `--- ${t('strainsView.strainDetail.cannabinoidProfile')} ---\n`
-        content += `${t('strainsView.table.thc')}: ${s.thcRange ?? `${s.thc}%`}\n`
-        content += `${t('strainsView.table.cbd')}: ${s.cbdRange ?? `${s.cbd}%`}\n\n`
+        content += `${t('strainsView.table.thc')}: ${s.thcRange ?? (typeof s.thc === 'number' && Number.isFinite(s.thc) ? `${s.thc}%` : t('common.unknown'))}\n`
+        content += `${t('strainsView.table.cbd')}: ${s.cbdRange ?? (typeof s.cbd === 'number' && Number.isFinite(s.cbd) ? `${s.cbd}%` : t('common.unknown'))}\n\n`
 
         content += `--- ${t('strainsView.strainModal.agronomicData')} ---\n`
         content += `${t('strainsView.table.difficulty')}: ${difficultyLabel}\n`
-        content += `${t('strainsView.table.flowering')}: ${s.floweringTimeRange ?? s.floweringTime} ${t('common.units.weeks')}\n`
+        content += `${t('strainsView.table.flowering')}: ${
+            s.floweringTimeRange
+                ? `${s.floweringTimeRange} ${t('common.units.weeks')}`
+                : typeof s.floweringTime === 'number' && Number.isFinite(s.floweringTime)
+                  ? `${s.floweringTime} ${t('common.units.weeks')}`
+                  : t('common.unknown')
+        }\n`
         content += `${t('strainsView.strainModal.yieldIndoor')}: ${yieldIndoorLabel}\n`
         content += `${t('strainsView.strainModal.yieldOutdoor')}: ${yieldOutdoorLabel}\n`
         content += `${t('strainsView.strainModal.heightIndoor')}: ${heightIndoorLabel}\n`

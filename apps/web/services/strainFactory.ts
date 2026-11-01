@@ -15,7 +15,9 @@ const fallbackId = (): string => {
         return globalThis.crypto.randomUUID()
     }
     const bytes = crypto.getRandomValues(new Uint8Array(5))
-    const suffix = Array.from(bytes, (value) => value.toString(36)).join('').slice(0, 8)
+    const suffix = Array.from(bytes, (value) => value.toString(36))
+        .join('')
+        .slice(0, 8)
     return `unknown-${Date.now()}-${suffix}`
 }
 
@@ -27,17 +29,37 @@ const strainTypeOf = (value: unknown): StrainType | undefined =>
         ? value
         : undefined
 
-const keepFinite = (
-    strain: Partial<Strain>,
-    key: 'thc' | 'cbd' | 'floweringTime',
-    value: unknown,
-): void => {
-    const number = finiteNumber(value)
-    if (number === undefined) {
-        delete strain[key]
-        return
-    }
-    strain[key] = number
+const withoutControlledFields = (data: Partial<Strain>): Partial<Strain> => {
+    const copy: Partial<Strain> = { ...data }
+    delete copy.id
+    delete copy.name
+    delete copy.type
+    delete copy.thc
+    delete copy.cbd
+    delete copy.floweringTime
+    delete copy.floweringType
+    delete copy.agronomic
+    delete copy.geneticModifiers
+    return copy
+}
+
+const reportedMeasurements = (data: Partial<Strain>): Partial<Strain> => {
+    const measurements: Partial<Strain> = {}
+    const thc = finiteNumber(data.thc)
+    const cbd = finiteNumber(data.cbd)
+    const floweringTime = finiteNumber(data.floweringTime)
+    if (thc !== undefined) measurements.thc = thc
+    if (cbd !== undefined) measurements.cbd = cbd
+    if (floweringTime !== undefined) measurements.floweringTime = floweringTime
+    return measurements
+}
+
+const reportedFloweringType = (data: Partial<Strain>): Strain['floweringType'] | undefined => {
+    if (data.floweringType) return data.floweringType
+    const typeDetailsText = typeof data.typeDetails === 'string' ? data.typeDetails : ''
+    const floweringTimeRangeText =
+        typeof data.floweringTimeRange === 'string' ? data.floweringTimeRange : ''
+    return inferFloweringType(typeDetailsText, floweringTimeRangeText)
 }
 
 /**
@@ -48,33 +70,18 @@ const keepFinite = (
  */
 export const createStrainObject = (data: Partial<Strain>): Strain => {
     const nameText = typeof data.name === 'string' ? data.name.trim() : ''
-    const typeDetailsText = typeof data.typeDetails === 'string' ? data.typeDetails : ''
-    const floweringTimeRangeText =
-        typeof data.floweringTimeRange === 'string' ? data.floweringTimeRange : ''
+    const reportedType = strainTypeOf(data.type)
+    const floweringType = reportedFloweringType(data)
     const strain: Partial<Strain> = {
-        ...data,
+        ...withoutControlledFields(data),
+        ...reportedMeasurements(data),
         id: typeof data.id === 'string' && data.id.length > 0 ? data.id : fallbackId(),
         name: nameText || 'Unknown Strain',
+        ...(reportedType ? { type: reportedType } : {}),
+        ...(floweringType ? { floweringType } : {}),
+        ...(data.agronomic ? { agronomic: data.agronomic } : {}),
+        ...(data.geneticModifiers ? { geneticModifiers: data.geneticModifiers } : {}),
     }
-
-    const reportedType = strainTypeOf(data.type)
-    if (reportedType) strain.type = reportedType
-    else delete strain.type
-
-    keepFinite(strain, 'thc', data.thc)
-    keepFinite(strain, 'cbd', data.cbd)
-    keepFinite(strain, 'floweringTime', data.floweringTime)
-
-    if (data.floweringType) {
-        strain.floweringType = data.floweringType
-    } else {
-        const inferred = inferFloweringType(typeDetailsText, floweringTimeRangeText)
-        if (inferred) strain.floweringType = inferred
-        else delete strain.floweringType
-    }
-
-    if (!data.agronomic) delete strain.agronomic
-    if (!data.geneticModifiers) delete strain.geneticModifiers
 
     // Catalog modules still type every record as Strain. Absent measurements
     // stay absent at runtime; widening that type is a separate consumer pass.

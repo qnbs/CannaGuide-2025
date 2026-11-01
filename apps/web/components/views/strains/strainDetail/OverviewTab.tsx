@@ -4,41 +4,28 @@ import type { Strain, CannabinoidName } from '@/types'
 import { InfoSection } from '@/components/common/InfoSection'
 import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { Speakable } from '@/components/common/Speakable'
-import { generateCannabinoidProfile } from '@/services/terpeneService'
 import { CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
-import { strHash } from './strainDetailShared'
 
 export const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation()
     const safeThc =
         typeof strain.thc === 'number' && Number.isFinite(strain.thc)
             ? `${strain.thc.toFixed(1)}%`
-            : 'N/A'
+            : t('common.unknown')
     const safeCbd =
         typeof strain.cbd === 'number' && Number.isFinite(strain.cbd)
             ? `${strain.cbd.toFixed(1)}%`
-            : 'N/A'
+            : t('common.unknown')
     const description = t(`strainsData.${strain.id}.description`, {
         defaultValue: strain.description || 'No description available.',
     })
     const genetics = t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics ?? '' })
 
-    // Build extended cannabinoid profile
-    const cannabinoidProfile = useMemo(
-        () =>
-            strain.cannabinoidProfile ??
-            generateCannabinoidProfile(
-                strain.thc,
-                strain.cbd,
-                strain.cbg,
-                strain.thcv,
-                strHash(strain.id),
-            ),
-        [strain],
-    )
+    const cannabinoidProfile = strain.cannabinoidProfile
 
-    // Minor cannabinoids beyond THC/CBD
+    // Minor cannabinoids beyond THC/CBD, only when a source supplied the profile.
     const minorCannabinoids = useMemo(() => {
+        if (!cannabinoidProfile) return []
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const entries = Object.entries(cannabinoidProfile) as [CannabinoidName, number][]
         return entries

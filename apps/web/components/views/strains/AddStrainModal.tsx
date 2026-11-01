@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { Strain, StrainType, DifficultyLevel, YieldLevel, HeightLevel } from '@/types'
+import { Strain, StrainType } from '@/types'
 import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { useForm } from '@/hooks/useForm'
@@ -18,32 +18,31 @@ interface AddStrainModalProps {
     strainToEdit: Strain | null
 }
 
-const getSafeStrainType = (value: unknown): StrainType => {
-    if (value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid) {
-        return value
-    }
+const strainTypeOf = (value: unknown): StrainType | undefined =>
+    value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid
+        ? value
+        : undefined
 
-    return StrainType.Hybrid
-}
+const readOptionalNumber = (raw: string): number | '' => (raw === '' ? '' : Number(raw))
 
 const strainToFormValues = (strain: Partial<Strain>) => ({
     name: strain.name ?? '',
-    type: strain.type ?? 'Hybrid',
+    type: strain.type ?? '',
     typeDetails: strain.typeDetails ?? '',
     genetics: strain.genetics ?? '',
-    isAutoflower: strain.floweringType === 'Autoflower',
-    thc: strain.thc ?? 20,
-    cbd: strain.cbd ?? 1,
+    floweringType: strain.floweringType ?? '',
+    thc: strain.thc ?? ('' as number | ''),
+    cbd: strain.cbd ?? ('' as number | ''),
     thcRange: strain.thcRange ?? '',
     cbdRange: strain.cbdRange ?? '',
-    floweringTime: strain.floweringTime ?? 9,
+    floweringTime: strain.floweringTime ?? ('' as number | ''),
     floweringTimeRange: strain.floweringTimeRange ?? '',
     description: strain.description ?? '',
     aromasString: (strain.aromas ?? []).join(', '),
     terpenesString: (strain.dominantTerpenes ?? []).join(', '),
-    difficulty: strain.agronomic?.difficulty ?? 'Medium',
-    yield: strain.agronomic?.yield ?? 'Medium',
-    height: strain.agronomic?.height ?? 'Medium',
+    difficulty: strain.agronomic?.difficulty ?? '',
+    yield: strain.agronomic?.yield ?? '',
+    height: strain.agronomic?.height ?? '',
     yieldIndoor: strain.agronomic?.yieldDetails?.indoor ?? '',
     yieldOutdoor: strain.agronomic?.yieldDetails?.outdoor ?? '',
     heightIndoor: strain.agronomic?.heightDetails?.indoor ?? '',
@@ -51,6 +50,11 @@ const strainToFormValues = (strain: Partial<Strain>) => ({
 })
 
 const defaultStrainValues = strainToFormValues({
+    type: StrainType.Hybrid,
+    thc: 20,
+    cbd: 1,
+    floweringTime: 9,
+    floweringType: 'Photoperiod',
     agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
 })
 
@@ -67,9 +71,7 @@ const parseCommaSeparatedTokens = (value: string): string[] =>
 
 const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, values }) => (
     <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-3">
-        <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            {title}
-        </p>
+        <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">{title}</p>
         <div className="mt-2 flex min-h-8 flex-wrap gap-2">
             {values.length > 0 ? (
                 values.map((value) => (
@@ -105,12 +107,18 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         const errors: Partial<Record<keyof typeof values, string>> = {}
         if (!values.name?.trim()) errors.name = t('strainsView.addStrainModal.validation.name')
 
-        const thc = Number(values.thc)
-        if (Number.isNaN(thc) || thc < 0 || thc > 50)
+        if (
+            values.thc !== '' &&
+            (Number.isNaN(Number(values.thc)) || values.thc < 0 || values.thc > 50)
+        )
             errors.thc = t('strainsView.addStrainModal.validation.thc')
 
-        const floweringTime = Number(values.floweringTime)
-        if (Number.isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20)
+        if (
+            values.floweringTime !== '' &&
+            (Number.isNaN(Number(values.floweringTime)) ||
+                values.floweringTime < 4 ||
+                values.floweringTime > 20)
+        )
             errors.floweringTime = t('strainsView.addStrainModal.validation.floweringTime')
 
         if (values.thcRange && !isValidRange(values.thcRange))
@@ -122,33 +130,66 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
 
     const onSubmit = (values: ReturnType<typeof strainToFormValues>) => {
         const safeName = typeof values.name === 'string' ? values.name : ''
-        const safeType = getSafeStrainType(values.type)
+        const safeType = strainTypeOf(values.type)
+        const thc = values.thc === '' ? undefined : Number(values.thc)
+        const cbd = values.cbd === '' ? undefined : Number(values.cbd)
+        const floweringTime = values.floweringTime === '' ? undefined : Number(values.floweringTime)
+        const floweringType =
+            values.floweringType === 'Autoflower' || values.floweringType === 'Photoperiod'
+                ? values.floweringType
+                : undefined
+        const difficulty =
+            values.difficulty === 'Easy' ||
+            values.difficulty === 'Medium' ||
+            values.difficulty === 'Hard'
+                ? values.difficulty
+                : undefined
+        const yieldLevel =
+            values.yield === 'Low' || values.yield === 'Medium' || values.yield === 'High'
+                ? values.yield
+                : undefined
+        const height =
+            values.height === 'Short' || values.height === 'Medium' || values.height === 'Tall'
+                ? values.height
+                : undefined
 
         const partialStrainData: Partial<Strain> = {
             id: isEditMode
                 ? strainToEdit.id
                 : `${safeName.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
             name: safeName,
-            type: safeType,
+            ...(safeType ? { type: safeType } : {}),
             typeDetails: values.typeDetails,
             genetics: values.genetics,
-            floweringType: values.isAutoflower ? 'Autoflower' : 'Photoperiod',
-            thc: Number(values.thc),
-            cbd: Number(values.cbd || 1),
+            ...(floweringType ? { floweringType } : {}),
+            ...(thc !== undefined && Number.isFinite(thc) ? { thc } : {}),
+            ...(cbd !== undefined && Number.isFinite(cbd) ? { cbd } : {}),
             thcRange: values.thcRange,
             cbdRange: values.cbdRange,
-            floweringTime: Number(values.floweringTime),
+            ...(floweringTime !== undefined && Number.isFinite(floweringTime)
+                ? { floweringTime }
+                : {}),
             floweringTimeRange: values.floweringTimeRange,
             description: values.description,
             aromas: parseCommaSeparatedTokens(values.aromasString),
             dominantTerpenes: parseCommaSeparatedTokens(values.terpenesString),
-            agronomic: {
-                difficulty: values.difficulty as DifficultyLevel,
-                yield: values.yield as YieldLevel,
-                height: values.height as HeightLevel,
-                yieldDetails: { indoor: values.yieldIndoor, outdoor: values.yieldOutdoor },
-                heightDetails: { indoor: values.heightIndoor, outdoor: values.heightOutdoor },
-            },
+            ...(difficulty && yieldLevel && height
+                ? {
+                      agronomic: {
+                          difficulty,
+                          yield: yieldLevel,
+                          height,
+                          yieldDetails: {
+                              indoor: values.yieldIndoor,
+                              outdoor: values.yieldOutdoor,
+                          },
+                          heightDetails: {
+                              indoor: values.heightIndoor,
+                              outdoor: values.heightOutdoor,
+                          },
+                      },
+                  }
+                : {}),
         }
 
         const finalStrain = createStrainObject(partialStrainData)
@@ -181,8 +222,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         () => parseCommaSeparatedTokens(values.terpenesString),
         [values.terpenesString],
     )
-    const previewType = getSafeStrainType(values.type)
-    const previewTypeTranslationKey = `strainsView.${previewType.toLowerCase()}`
+    const previewType = strainTypeOf(values.type)
 
     const typeOptions = useMemo(
         () => [
@@ -261,10 +301,15 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                         {values.name.trim() || '–'}
                                     </p>
                                     <p className="mt-1 text-sm text-slate-300">
-                                        {t(previewTypeTranslationKey)} ·{' '}
-                                        {values.isAutoflower
+                                        {previewType
+                                            ? t(`strainsView.${previewType.toLowerCase()}`)
+                                            : t('common.unknown')}{' '}
+                                        ·{' '}
+                                        {values.floweringType === 'Autoflower'
                                             ? t('strainsView.addStrainModal.autoflower')
-                                            : t('strainsView.addStrainModal.photoperiod')}
+                                            : values.floweringType === 'Photoperiod'
+                                              ? t('strainsView.addStrainModal.photoperiod')
+                                              : t('common.unknown')}
                                     </p>
                                 </div>
                                 <TokenPreview
@@ -325,10 +370,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                             </p>
                             <SegmentedControl
                                 aria-label={t('strainsView.addStrainModal.floweringTypeLegend')}
-                                value={[values.isAutoflower ? 'Autoflower' : 'Photoperiod']}
-                                onToggle={(value) =>
-                                    handleChange('isAutoflower', value === 'Autoflower')
-                                }
+                                value={[values.floweringType]}
+                                onToggle={(value) => handleChange('floweringType', value)}
                                 options={[
                                     {
                                         value: 'Photoperiod',
@@ -352,13 +395,14 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                     >
                         <div>
                             <Input
-                                label={`${t('strainsView.addStrainModal.thcPercent')} *`}
+                                label={t('strainsView.addStrainModal.thcPercent')}
                                 type="number"
                                 step="0.1"
                                 value={values.thc}
-                                onChange={(e) => handleChange('thc', Number(e.target.value))}
+                                onChange={(e) =>
+                                    handleChange('thc', readOptionalNumber(e.target.value))
+                                }
                                 error={errors.thc}
-                                required
                             />
                         </div>
                         <Input
@@ -366,7 +410,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                             type="number"
                             step="0.1"
                             value={values.cbd}
-                            onChange={(e) => handleChange('cbd', Number(e.target.value))}
+                            onChange={(e) =>
+                                handleChange('cbd', readOptionalNumber(e.target.value))
+                            }
                         />
                         <div>
                             <Input
@@ -394,15 +440,17 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                     >
                         <div>
                             <Input
-                                label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`}
+                                label={t('strainsView.addStrainModal.floweringTimeWeeks')}
                                 type="number"
                                 step="0.5"
                                 value={values.floweringTime}
                                 onChange={(e) =>
-                                    handleChange('floweringTime', Number(e.target.value))
+                                    handleChange(
+                                        'floweringTime',
+                                        readOptionalNumber(e.target.value),
+                                    )
                                 }
                                 error={errors.floweringTime}
-                                required
                             />
                         </div>
                         <Input
@@ -421,9 +469,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 <SegmentedControl
                                     aria-label={t('strainsView.table.difficulty')}
                                     value={[values.difficulty]}
-                                    onToggle={(value) =>
-                                        handleChange('difficulty', value as DifficultyLevel)
-                                    }
+                                    onToggle={(value) => handleChange('difficulty', value)}
                                     options={[
                                         { value: 'Easy', label: t('strainsView.difficulty.easy') },
                                         {
@@ -442,7 +488,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 <SegmentedControl
                                     aria-label={t('strainsView.addStrainModal.yield')}
                                     value={[values.yield]}
-                                    onToggle={(value) => handleChange('yield', value as YieldLevel)}
+                                    onToggle={(value) => handleChange('yield', value)}
                                     options={[
                                         {
                                             value: 'Low',
@@ -467,9 +513,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 <SegmentedControl
                                     aria-label={t('strainsView.addStrainModal.height')}
                                     value={[values.height]}
-                                    onToggle={(value) =>
-                                        handleChange('height', value as HeightLevel)
-                                    }
+                                    onToggle={(value) => handleChange('height', value)}
                                     options={[
                                         {
                                             value: 'Short',

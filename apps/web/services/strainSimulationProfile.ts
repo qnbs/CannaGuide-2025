@@ -21,7 +21,7 @@ export interface SimulatedStrainProfile {
     flavonoidProfile: FlavonoidProfile
     terpeneProfile: TerpeneProfile
     cannabinoidProfile: CannabinoidProfile
-    chemovarProfile: ChemovarProfile
+    chemovarProfile?: ChemovarProfile
 }
 
 const nameHashOf = (name: string): number =>
@@ -55,6 +55,17 @@ const estimateFlavonoidProfile = (
     return profile
 }
 
+const finiteMeasurement = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const simulatedCannabinoids = (data: Partial<Strain>, nameHash: number): CannabinoidProfile => {
+    if (data.cannabinoidProfile) return data.cannabinoidProfile
+    const thc = finiteMeasurement(data.thc)
+    const cbd = finiteMeasurement(data.cbd)
+    if (thc === undefined && cbd === undefined) return {}
+    return generateCannabinoidProfile(thc ?? 0, cbd ?? 0, data.cbg, data.thcv, nameHash)
+}
+
 const simulatedModifiers = (nameHash: number): GeneticModifiers => ({
     pestResistance: 0.8 + (nameHash % 40) / 100,
     nutrientUptakeRate: 0.8 + ((nameHash * 3) % 40) / 100,
@@ -73,36 +84,49 @@ const simulatedModifiers = (nameHash: number): GeneticModifiers => ({
  * This is not a measured cultivar fact and must not be written back onto
  * the catalog record.
  */
+const simulationCarrier = (data: Partial<Strain>, name: string, nameHash: number): Strain => ({
+    id: data.id && data.id.length > 0 ? data.id : 'simulation',
+    name,
+    type: data.type ?? StrainType.Hybrid,
+    floweringType: data.floweringType ?? 'Photoperiod',
+    thc: data.thc ?? 0,
+    cbd: data.cbd ?? 0,
+    floweringTime: data.floweringTime ?? 0,
+    agronomic: data.agronomic ?? { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
+    geneticModifiers: data.geneticModifiers ?? simulatedModifiers(nameHash),
+    ...(data.terpeneProfile ? { terpeneProfile: data.terpeneProfile } : {}),
+    ...(data.cannabinoidProfile ? { cannabinoidProfile: data.cannabinoidProfile } : {}),
+})
+
+const simulatedChemovar = (
+    data: Partial<Strain>,
+    name: string,
+    nameHash: number,
+): ChemovarProfile | undefined => {
+    if (data.chemovarProfile) return data.chemovarProfile
+    const thc = finiteMeasurement(data.thc)
+    const cbd = finiteMeasurement(data.cbd)
+    if (thc === undefined && cbd === undefined) return undefined
+    return buildChemovarProfile(simulationCarrier(data, name, nameHash))
+}
+
 export const simulateStrainProfile = (data: Partial<Strain>): SimulatedStrainProfile => {
     const name = typeof data.name === 'string' ? data.name : ''
     const nameHash = nameHashOf(name)
     const terpeneProfile =
         data.terpeneProfile ??
         generateTerpeneProfile(data.dominantTerpenes ?? [], nameHash, data.type ?? '')
-    const cannabinoidProfile =
-        data.cannabinoidProfile ??
-        generateCannabinoidProfile(data.thc ?? 0, data.cbd ?? 0, data.cbg, data.thcv, nameHash)
-    const carrier: Strain = {
-        id: data.id && data.id.length > 0 ? data.id : 'simulation',
-        name,
-        type: data.type ?? StrainType.Hybrid,
-        floweringType: data.floweringType ?? 'Photoperiod',
-        thc: data.thc ?? 0,
-        cbd: data.cbd ?? 0,
-        floweringTime: data.floweringTime ?? 0,
-        agronomic: data.agronomic ?? { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
-        geneticModifiers: data.geneticModifiers ?? simulatedModifiers(nameHash),
-        terpeneProfile,
-        cannabinoidProfile,
-    }
+    const cannabinoidProfile = simulatedCannabinoids(data, nameHash)
+    const geneticModifiers = data.geneticModifiers ?? simulatedModifiers(nameHash)
+    const chemovarProfile = simulatedChemovar(data, name, nameHash)
     return {
         kind: SIMULATION_PROFILE_KIND,
-        geneticModifiers: data.geneticModifiers ?? simulatedModifiers(nameHash),
+        geneticModifiers,
         flavonoidProfile:
             data.flavonoidProfile ??
             estimateFlavonoidProfile(terpeneProfile, cannabinoidProfile, nameHash),
         terpeneProfile,
         cannabinoidProfile,
-        chemovarProfile: data.chemovarProfile ?? buildChemovarProfile(carrier),
+        ...(chemovarProfile ? { chemovarProfile } : {}),
     }
 }

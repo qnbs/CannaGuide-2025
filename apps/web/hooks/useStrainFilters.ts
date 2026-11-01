@@ -18,9 +18,6 @@ import { INITIAL_ADVANCED_FILTERS } from '@/constants'
 const difficultyOrder: Record<DifficultyLevel, number> = { Easy: 1, Medium: 2, Hard: 3 }
 const yieldOrder: Record<YieldLevel, number> = { Low: 1, Medium: 2, High: 3 }
 const heightOrder: Record<HeightLevel, number> = { Short: 1, Medium: 2, Tall: 3 }
-const fallbackAgronomic = { difficulty: 'Medium', yield: 'Medium', height: 'Medium' } as const
-
-const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? fallbackAgronomic
 const getSafeText = (value: unknown, fallback = ''): string =>
     typeof value === 'string' ? value : fallback
 const getSafeStringArray = (value: unknown): string[] =>
@@ -29,13 +26,26 @@ const getSafeStringArray = (value: unknown): string[] =>
 const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
-const getSafeStrainType = (value: unknown): StrainType => {
-    if (value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid) {
-        return value
-    }
+const getSafeStrainType = (value: unknown): string =>
+    value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid
+        ? value
+        : ''
 
-    return StrainType.Hybrid
+const measurementInRange = (
+    value: unknown,
+    range: [number, number],
+    initial: [number, number],
+): boolean => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value >= range[0] && value <= range[1]
+    }
+    return range[0] === initial[0] && range[1] === initial[1]
 }
+
+const reportedRank = (order: Record<string, number>, value: string | undefined): number =>
+    value !== undefined && Object.prototype.hasOwnProperty.call(order, value)
+        ? order[value]!
+        : Number.POSITIVE_INFINITY
 
 const defaultStrainsViewSettings: AppSettings['strainsView'] = {
     defaultSortKey: 'name',
@@ -207,18 +217,30 @@ export const useStrainFilters = (
 
         strains = strains.filter(
             (s) =>
-                getSafeNumericValue(s.thc, 0) >= advancedFilters.thcRange[0] &&
-                getSafeNumericValue(s.thc, 0) <= advancedFilters.thcRange[1] &&
-                getSafeNumericValue(s.cbd, 0) >= advancedFilters.cbdRange[0] &&
-                getSafeNumericValue(s.cbd, 0) <= advancedFilters.cbdRange[1] &&
-                getSafeNumericValue(s.floweringTime, 0) >= advancedFilters.floweringRange[0] &&
-                getSafeNumericValue(s.floweringTime, 0) <= advancedFilters.floweringRange[1] &&
+                measurementInRange(
+                    s.thc,
+                    advancedFilters.thcRange,
+                    INITIAL_ADVANCED_FILTERS.thcRange,
+                ) &&
+                measurementInRange(
+                    s.cbd,
+                    advancedFilters.cbdRange,
+                    INITIAL_ADVANCED_FILTERS.cbdRange,
+                ) &&
+                measurementInRange(
+                    s.floweringTime,
+                    advancedFilters.floweringRange,
+                    INITIAL_ADVANCED_FILTERS.floweringRange,
+                ) &&
                 (selectedDifficultiesSet.size === 0 ||
-                    selectedDifficultiesSet.has(getSafeAgronomic(s).difficulty)) &&
+                    (s.agronomic?.difficulty !== undefined &&
+                        selectedDifficultiesSet.has(s.agronomic.difficulty))) &&
                 (selectedYieldsSet.size === 0 ||
-                    selectedYieldsSet.has(getSafeAgronomic(s).yield)) &&
+                    (s.agronomic?.yield !== undefined &&
+                        selectedYieldsSet.has(s.agronomic.yield))) &&
                 (selectedHeightsSet.size === 0 ||
-                    selectedHeightsSet.has(getSafeAgronomic(s).height)) &&
+                    (s.agronomic?.height !== undefined &&
+                        selectedHeightsSet.has(s.agronomic.height))) &&
                 (selectedAromasSet.size === 0 ||
                     getSafeStringArray(s.aromas).some((a) => selectedAromasSet.has(a))) &&
                 (selectedTerpenesSet.size === 0 ||
@@ -239,18 +261,18 @@ export const useStrainFilters = (
             switch (key) {
                 case 'difficulty':
                     comparison =
-                        difficultyOrder[getSafeAgronomic(a).difficulty] -
-                        difficultyOrder[getSafeAgronomic(b).difficulty]
+                        reportedRank(difficultyOrder, a.agronomic?.difficulty) -
+                        reportedRank(difficultyOrder, b.agronomic?.difficulty)
                     break
                 case 'yield':
                     comparison =
-                        yieldOrder[getSafeAgronomic(a).yield] -
-                        yieldOrder[getSafeAgronomic(b).yield]
+                        reportedRank(yieldOrder, a.agronomic?.yield) -
+                        reportedRank(yieldOrder, b.agronomic?.yield)
                     break
                 case 'height':
                     comparison =
-                        heightOrder[getSafeAgronomic(a).height] -
-                        heightOrder[getSafeAgronomic(b).height]
+                        reportedRank(heightOrder, a.agronomic?.height) -
+                        reportedRank(heightOrder, b.agronomic?.height)
                     break
                 case 'name':
                 case 'type':
@@ -258,9 +280,18 @@ export const useStrainFilters = (
                     break
                 case 'thc':
                 case 'cbd':
-                case 'floweringTime':
-                    comparison = getSafeNumericValue(a[key], 0) - getSafeNumericValue(b[key], 0)
+                case 'floweringTime': {
+                    const left = getSafeNumericValue(a[key], Number.NaN)
+                    const right = getSafeNumericValue(b[key], Number.NaN)
+                    const leftKnown = Number.isFinite(left)
+                    const rightKnown = Number.isFinite(right)
+                    if (!leftKnown || !rightKnown) {
+                        if (leftKnown === rightKnown) return 0
+                        return leftKnown ? -1 : 1
+                    }
+                    comparison = left - right
                     break
+                }
                 default:
                     return 0
             }

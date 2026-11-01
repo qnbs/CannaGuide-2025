@@ -69,17 +69,7 @@ export type DetailedTerpeneProfile = Partial<Record<TerpeneName, TerpeneProfileE
 
 /** Scientifically recognised cannabis cannabinoids */
 export type CannabinoidName =
-    | 'THC'
-    | 'CBD'
-    | 'CBG'
-    | 'CBN'
-    | 'THCV'
-    | 'CBC'
-    | 'CBDV'
-    | 'THCA'
-    | 'CBDA'
-    | 'CBGA'
-    | 'Delta8THC'
+    'THC' | 'CBD' | 'CBG' | 'CBN' | 'THCV' | 'CBC' | 'CBDV' | 'THCA' | 'CBDA' | 'CBGA' | 'Delta8THC'
 
 /** Cannabinoid percentage profile */
 export type CannabinoidProfile = Partial<Record<CannabinoidName, number>>
@@ -197,10 +187,16 @@ export type StrainApiProvider =
     | 'kushy'
     | 'community'
 
+/**
+ * Provenance source. `local` is the bundled catalog, not a callable API,
+ * so it stays off the provider registry.
+ */
+export type StrainProvenanceProvider = StrainApiProvider | 'local'
+
 /** Data provenance -- tracks where strain data originated */
 export interface DataProvenance {
     /** Which API/source provided this data */
-    provider: StrainApiProvider
+    provider: StrainProvenanceProvider
     /** When this data was fetched/imported (ISO timestamp) */
     fetchedAt: string
     /** Provider-specific external ID */
@@ -393,6 +389,8 @@ export interface Strain {
     medicalInfo?: MedicalInfo | undefined
     /** Data provenance records from external sources */
     dataProvenance?: DataProvenance[] | undefined
+    /** Reported seed form, when a source supplied one. */
+    seedForm?: string | undefined
     /** Data quality assessment */
     dataQuality?: DataQualityScore | undefined
     geneticModifiers: GeneticModifiers

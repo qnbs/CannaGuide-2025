@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import {
-    plantSimulationService,
-    PLANT_STAGE_DETAILS,
-} from '@/services/plantSimulationService'
+import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService'
+import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 import { PlantStage, StrainType, type Strain, type GrowSetup } from '@/types'
 
 const testStrain: Strain = {
@@ -73,6 +71,20 @@ describe('plantSimulationService', () => {
         expect(plant.age).toBe(0)
         expect(plant.health).toBe(100)
         expect(plant.id).toBeTruthy()
+    })
+
+    it('uses a simulation profile when the catalog strain has no genetic modifiers', () => {
+        const { geneticModifiers: _ignored, ...withoutModifiers } = testStrain
+        const plant = plantSimulationService.createPlant(
+            withoutModifiers as Strain,
+            testSetup,
+            'Simulated Plant',
+        )
+        const simulated = simulateStrainProfile(withoutModifiers)
+        expect(plant.phenotypeModifiers?.pestResistance).toBe(
+            simulated.geneticModifiers.pestResistance,
+        )
+        expect(withoutModifiers).not.toHaveProperty('geneticModifiers')
     })
 
     it('creates plant with correct equipment setup', () => {

@@ -18,6 +18,7 @@ import {
     createInitialHarvestData,
 } from '@/services/simulation/postHarvestSimulation'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
+import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 import {
     getCorrectedRh,
     getEnvironmentalInstabilityCurve,
@@ -83,10 +84,7 @@ class PlantSimulationService {
         const altitudeM = getSimulationAltitude(simulationSettings)
         const lightAbsorption =
             1 -
-            Math.exp(
-                -getSimulationLightExtinctionCoefficient(simulationSettings) *
-                    p.leafAreaIndex,
-            )
+            Math.exp(-getSimulationLightExtinctionCoefficient(simulationSettings) * p.leafAreaIndex)
         const nutrientAvailability =
             (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) *
             getSimulationNutrientConversionEfficiency(simulationSettings)
@@ -125,8 +123,7 @@ class PlantSimulationService {
             {
                 id: 'pestPressure',
                 value: `${getPestPressureMultiplier(simulationSettings).toFixed(2)}x`,
-                tone:
-                    getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
+                tone: getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
                 context: {
                     profile: profileCurve.pestPressure.toFixed(2),
                 },
@@ -162,8 +159,7 @@ class PlantSimulationService {
                 stomataSensitivity: getSimulationStomataSensitivity(p, simulationSettings),
             },
             stress: {
-                environmentalInstability:
-                    getEnvironmentalInstabilityCurve(simulationSettings),
+                environmentalInstability: getEnvironmentalInstabilityCurve(simulationSettings),
                 nutrientSensitivityCurve: getNutrientSensitivityCurve(simulationSettings),
                 pestPressureCurve: getPestPressureCurve(simulationSettings),
                 accumulatedSubdayHours: p.simulationClock.accumulatedDayMs / 3600000,
@@ -261,8 +257,11 @@ class PlantSimulationService {
             tasks: [],
             harvestData: null,
             structuralModel: { branches: 1, nodes: 1 },
-            // Copy strain defaults as starting phenotype; can be tuned per-plant via training or amendments
-            phenotypeModifiers: { ...strain.geneticModifiers },
+            // Sourced coefficients stay on the plant. A catalog record without them
+            // still gets a named simulation, and that simulation is not written back.
+            phenotypeModifiers: strain.geneticModifiers
+                ? { ...strain.geneticModifiers }
+                : { ...simulateStrainProfile(strain).geneticModifiers },
             history: [
                 {
                     day: 0,

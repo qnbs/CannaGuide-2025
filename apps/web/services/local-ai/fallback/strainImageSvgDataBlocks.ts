@@ -1,11 +1,6 @@
 import type { Language, Strain } from '@/types'
 import { localizeStr } from './localeHelpers'
-import {
-    DIFFICULTY_VAL,
-    HEIGHT_VAL,
-    YIELD_VAL,
-    type StylePalette,
-} from './strainImagePalette'
+import { DIFFICULTY_VAL, HEIGHT_VAL, YIELD_VAL, type StylePalette } from './strainImagePalette'
 import { svgDataBar, svgTerpeneDots } from './strainImageSvgParts'
 
 interface StrainDataBarsResult {
@@ -18,13 +13,25 @@ export const buildStrainDataBars = (
     palette: StylePalette,
     lang: Language,
 ): StrainDataBarsResult => {
-    const thcPct = (strain.thc / 35) * 100
-    const cbdPct = (strain.cbd / 25) * 100
-    const thcDisplay = strain.thcRange ?? `${strain.thc}%`
-    const cbdDisplay = strain.cbdRange ?? `${strain.cbd}%`
-    const diffVal = DIFFICULTY_VAL[strain.agronomic.difficulty] ?? 50
-    const yieldVal = YIELD_VAL[strain.agronomic.yield] ?? 50
-    const heightVal = HEIGHT_VAL[strain.agronomic.height] ?? 50
+    const finite = (value: unknown): number | undefined =>
+        typeof value === 'number' && Number.isFinite(value) ? value : undefined
+    const unknownLabel = localizeStr(lang, {
+        en: 'Unknown',
+        de: 'Unbekannt',
+        es: 'Desconocido',
+        fr: 'Inconnu',
+        nl: 'Onbekend',
+    })
+    const thc = finite(strain.thc)
+    const cbd = finite(strain.cbd)
+    const thcPct = thc === undefined ? 0 : (thc / 35) * 100
+    const cbdPct = cbd === undefined ? 0 : (cbd / 25) * 100
+    const thcDisplay = strain.thcRange ?? (thc === undefined ? unknownLabel : `${thc}%`)
+    const cbdDisplay = strain.cbdRange ?? (cbd === undefined ? unknownLabel : `${cbd}%`)
+    const agronomic = strain.agronomic
+    const diffVal = agronomic ? (DIFFICULTY_VAL[agronomic.difficulty] ?? 50) : 0
+    const yieldVal = agronomic ? (YIELD_VAL[agronomic.yield] ?? 50) : 0
+    const heightVal = agronomic ? (HEIGHT_VAL[agronomic.height] ?? 50) : 0
     const diffLabel = localizeStr(lang, {
         en: 'Difficulty',
         de: 'Schwierigkeit',
@@ -117,7 +124,7 @@ export const buildStrainDataBars = (
             '#f97316',
             palette.barBg,
             palette.textDim,
-            strain.agronomic.difficulty,
+            agronomic?.difficulty ?? unknownLabel,
         ),
     )
     dataY += 36
@@ -131,7 +138,7 @@ export const buildStrainDataBars = (
             '#22c55e',
             palette.barBg,
             palette.textDim,
-            strain.agronomic.yield,
+            agronomic?.yield ?? unknownLabel,
         ),
     )
     dataY += 36
@@ -145,7 +152,7 @@ export const buildStrainDataBars = (
             '#60a5fa',
             palette.barBg,
             palette.textDim,
-            strain.agronomic.height,
+            agronomic?.height ?? unknownLabel,
         ),
     )
 

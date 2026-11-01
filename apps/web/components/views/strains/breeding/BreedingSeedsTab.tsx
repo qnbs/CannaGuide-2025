@@ -7,7 +7,7 @@ import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { SeedCard, ParentSlot, TraitComparison } from './SeedComponents'
-import { getSafeNumericValue, getSafeStringArray } from './genetics'
+import { getSafeStringArray } from './genetics'
 import type { BreedingLabState } from './useBreedingLab'
 
 export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: Strain[] }> = ({
@@ -15,6 +15,11 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
     allStrains,
 }) => {
     const { t } = useTranslation()
+    const reported = (value: unknown, digits?: number, suffix = ''): string => {
+        if (typeof value !== 'number' || !Number.isFinite(value)) return t('common.unknown')
+        const text = digits === undefined ? String(value) : value.toFixed(digits)
+        return `${text}${suffix}`
+    }
     const {
         collectedSeeds,
         seedParentA_id,
@@ -66,9 +71,7 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                                     isSelected={
                                         seed.id === seedParentA_id || seed.id === seedParentB_id
                                     }
-                                    strain={
-                                        allStrains.find((s) => s.id === seed.strainId) ?? null
-                                    }
+                                    strain={allStrains.find((s) => s.id === seed.strainId) ?? null}
                                 />
                             ))}
                         </div>
@@ -181,16 +184,16 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                             />
                             <TraitComparison
                                 label="THC"
-                                valA={`${getSafeNumericValue(seedParentA.thc, 0).toFixed(1)}%`}
-                                valB={`${getSafeNumericValue(seedParentB.thc, 0).toFixed(1)}%`}
-                                valChild={`~${getSafeNumericValue(seedResult.thc, 0).toFixed(1)}%`}
+                                valA={reported(seedParentA.thc, 1, '%')}
+                                valB={reported(seedParentB.thc, 1, '%')}
+                                valChild={`~${reported(seedResult.thc, 1, '%')}`}
                                 icon={<PhosphorIcons.Lightning weight="fill" />}
                             />
                             <TraitComparison
                                 label={t('knowledgeView.breeding.flowering')}
-                                valA={`${getSafeNumericValue(seedParentA.floweringTime, 0)} w`}
-                                valB={`${getSafeNumericValue(seedParentB.floweringTime, 0)} w`}
-                                valChild={`~${getSafeNumericValue(seedResult.floweringTime, 0).toFixed(0)} w`}
+                                valA={reported(seedParentA.floweringTime, undefined, ' w')}
+                                valB={reported(seedParentB.floweringTime, undefined, ' w')}
+                                valChild={`~${reported(seedResult.floweringTime, 0, ' w')}`}
                                 icon={<PhosphorIcons.ArrowClockwise />}
                             />
                         </div>
@@ -232,27 +235,27 @@ export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: S
                                     </p>
                                     <p>
                                         THC: ~
-                                        {getSafeNumericValue(automatedGenetics.thc, 0).toFixed(1)}%
+                                        {typeof automatedGenetics.thc === 'number'
+                                            ? `${automatedGenetics.thc.toFixed(1)}%`
+                                            : t('common.unknown')}
                                     </p>
                                     <p>
                                         CBD: ~
-                                        {getSafeNumericValue(automatedGenetics.cbd, 0).toFixed(1)}%
+                                        {typeof automatedGenetics.cbd === 'number'
+                                            ? `${automatedGenetics.cbd.toFixed(1)}%`
+                                            : t('common.unknown')}
                                     </p>
                                     <p>
                                         {t('knowledgeView.breeding.flowering')}: ~
-                                        {getSafeNumericValue(
-                                            automatedGenetics.floweringWeeks,
-                                            0,
-                                        ).toFixed(1)}{' '}
-                                        {t('common.units.weeks')}
+                                        {typeof automatedGenetics.floweringWeeks === 'number'
+                                            ? `${automatedGenetics.floweringWeeks.toFixed(1)} ${t('common.units.weeks')}`
+                                            : t('common.unknown')}
                                     </p>
                                     <p>
                                         {t('knowledgeView.breeding.stabilityScore')}:{' '}
-                                        {getSafeNumericValue(
-                                            automatedGenetics.stabilityScore,
-                                            0,
-                                        ).toFixed(0)}{' '}
-                                        / 100
+                                        {typeof automatedGenetics.stabilityScore === 'number'
+                                            ? `${automatedGenetics.stabilityScore.toFixed(0)} / 100`
+                                            : t('common.unknown')}
                                     </p>
                                 </div>
                             )}

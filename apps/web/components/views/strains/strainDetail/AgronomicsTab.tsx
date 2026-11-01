@@ -19,32 +19,39 @@ export const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const heightOutdoor = t(`strainsData.${strain.id}.heightDetails.outdoor`, {
         defaultValue: strain.agronomic?.heightDetails?.outdoor ?? '',
     })
+    const unknown = t('common.unknown')
+    const difficulty = strain.agronomic?.difficulty
+    const flowering =
+        strain.floweringTimeRange ||
+        (typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
+            ? String(strain.floweringTime)
+            : '')
     return (
         <InfoSection title={t('strainsView.strainModal.agronomicData')}>
             <div className="space-y-2">
                 <AttributeDisplay
                     label={t('strainsView.strainModal.difficulty')}
-                    value={<DifficultyMeter difficulty={strain.agronomic?.difficulty ?? 'Medium'} />}
+                    value={difficulty ? <DifficultyMeter difficulty={difficulty} /> : unknown}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.yieldIndoor')}
-                    value={yieldIndoor}
+                    value={yieldIndoor || unknown}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.yieldOutdoor')}
-                    value={yieldOutdoor}
+                    value={yieldOutdoor || unknown}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.heightIndoor')}
-                    value={heightIndoor}
+                    value={heightIndoor || unknown}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.heightOutdoor')}
-                    value={heightOutdoor}
+                    value={heightOutdoor || unknown}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.floweringTime')}
-                    value={`${strain.floweringTimeRange || strain.floweringTime} ${t('common.units.weeks')}`}
+                    value={flowering ? `${flowering} ${t('common.units.weeks')}` : unknown}
                 />
             </div>
         </InfoSection>

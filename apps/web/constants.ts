@@ -2,7 +2,7 @@ import { PlantStage, AdvancedFilterState } from '@/types'
 
 // --- APP ---
 export const APP_VERSION = 6
-export const CURRENT_STRAIN_DATA_VERSION = 7
+export const CURRENT_STRAIN_DATA_VERSION = 8
 
 // --- FEATURE AVAILABILITY ---
 /**

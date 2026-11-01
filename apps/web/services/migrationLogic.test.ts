@@ -111,6 +111,48 @@ describe('migrationLogic', () => {
         expect(merged[0]!.dominantTerpenes).toEqual(['Limonene'])
     })
 
+    it('does not restore omitted bundled agronomy or synthetic profiles from cache', () => {
+        const merged = mergeStrainCatalogForUpdate(
+            [
+                {
+                    id: 'strain-1',
+                    name: 'Legacy',
+                    type: 'Hybrid',
+                    floweringType: 'Photoperiod',
+                    thc: 20,
+                    cbd: 1,
+                    floweringTime: 9,
+                    agronomic: { difficulty: 'Easy', yield: 'Low', height: 'Short' },
+                    geneticModifiers: {
+                        pestResistance: 0.9,
+                        nutrientUptakeRate: 0.9,
+                        stressTolerance: 0.9,
+                        rue: 1.1,
+                        vpdTolerance: { min: 0.8, max: 1.4 },
+                        transpirationFactor: 0.95,
+                        stomataSensitivity: 0.96,
+                    },
+                    terpeneProfile: { Myrcene: 0.4 },
+                } as never,
+            ],
+            [
+                {
+                    id: 'strain-1',
+                    name: 'Bundled',
+                    type: 'Sativa',
+                    floweringType: 'Photoperiod',
+                    thc: 18,
+                    cbd: 1,
+                    floweringTime: 8,
+                } as never,
+            ],
+        )
+
+        expect(merged[0]!.agronomic).toBeUndefined()
+        expect(merged[0]!.geneticModifiers).toBeUndefined()
+        expect(merged[0]!.terpeneProfile).toBeUndefined()
+    })
+
     it('deeply normalizes partial post-harvest data on persisted plants', () => {
         const migrated = migrateState({
             version: 4,
@@ -242,8 +284,7 @@ describe('migrationLogic', () => {
         } as never)
 
         const savedTip = migrated.savedItems?.savedStrainTips.entities?.['tip-1'] as
-            | { imageUrl?: string }
-            | undefined
+            { imageUrl?: string } | undefined
 
         expect(savedTip?.imageUrl).toBe(
             'data:image/svg+xml;charset=utf-8,%3Csvg%3Elegacy%3C/svg%3E',

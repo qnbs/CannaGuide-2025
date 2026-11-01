@@ -33,13 +33,15 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-primary-400',
 }
 
-const getSafeStrainType = (type: string | undefined): StrainType => {
+const reportedStrainType = (type: string | undefined): StrainType | undefined => {
     if (type === StrainType.Sativa || type === StrainType.Indica || type === StrainType.Hybrid) {
         return type
     }
-
-    return StrainType.Hybrid
+    return undefined
 }
+
+const reportedNumber = (value: unknown, digits: number, unknownLabel: string): string =>
+    typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : unknownLabel
 
 const StrainGridItem: React.FC<StrainGridItemProps> = memo(
     ({
@@ -60,17 +62,15 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
             action()
         }
 
-        const safeType = getSafeStrainType(strain.type)
+        const safeType = reportedStrainType(strain.type)
+        const unknown = t('common.unknown')
         const safeName =
             typeof strain.name === 'string' && strain.name.trim() !== ''
                 ? strain.name
                 : t('plantsView.unknownStrain')
-        const safeThc =
-            typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
+        const safeThc = reportedNumber(strain.thc, 1, unknown)
         const safeFloweringTime =
-            typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
-                ? strain.floweringTime
-                : 0
+            strain.floweringTimeRange || reportedNumber(strain.floweringTime, 0, unknown)
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
@@ -114,15 +114,21 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                 )}
 
                 <div
-                    className={`mx-auto mb-2 w-12 h-12 pointer-events-none ${typeClasses[safeType]}`}
+                    className={`mx-auto mb-2 w-12 h-12 pointer-events-none ${safeType ? typeClasses[safeType] : 'text-slate-400'}`}
                 >
-                    {typeIcons[safeType]}
+                    {safeType ? (
+                        typeIcons[safeType]
+                    ) : (
+                        <PhosphorIcons.Question className="w-full h-full" />
+                    )}
                 </div>
 
                 <h3 className="font-bold text-slate-100 truncate pointer-events-none">
                     {safeName}
                 </h3>
-                <p className="text-xs text-slate-400 mb-2 pointer-events-none">{safeType}</p>
+                <p className="text-xs text-slate-400 mb-2 pointer-events-none">
+                    {safeType ?? unknown}
+                </p>
 
                 {matchScore !== undefined && (
                     <div className="pointer-events-none mb-1">
@@ -137,11 +143,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
 
                 <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono pointer-events-none">
                     <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">
-                        {safeThc.toFixed(1)}%
+                        {safeThc === unknown ? unknown : `${safeThc}%`}
                     </div>
                     <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">
                         <PhosphorIcons.ArrowClockwise className="w-3 h-3" />
-                        {strain.floweringTimeRange || safeFloweringTime} w
+                        {safeFloweringTime === unknown ? unknown : `${safeFloweringTime} w`}
                     </div>
                 </div>
 

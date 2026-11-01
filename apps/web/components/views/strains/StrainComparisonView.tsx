@@ -24,21 +24,35 @@ import { chartSeriesColor, CHART_CHROME } from '@/utils/chartPalette'
 const MAX_STRAINS = 3
 
 // Normalize yield level to a numeric 0-100 score
-const yieldLevelToScore = (level: YieldLevel): number => {
+const yieldLevelToScore = (level: YieldLevel | undefined): number => {
     if (level === 'High') return 90
     if (level === 'Medium') return 60
-    return 30
+    if (level === 'Low') return 30
+    return 0
 }
 
+const finiteNumber = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
 // Normalize THC % (0-35 typical max) to 0-100
-const normalizeTHC = (thc: number): number => Math.min(100, Math.round((thc / 35) * 100))
+const normalizeTHC = (thc: number | undefined): number => {
+    const value = finiteNumber(thc)
+    return value === undefined ? 0 : Math.min(100, Math.round((value / 35) * 100))
+}
 
 // Normalize CBD % (0-20 typical max) to 0-100
-const normalizeCBD = (cbd: number): number => Math.min(100, Math.round((cbd / 20) * 100))
+const normalizeCBD = (cbd: number | undefined): number => {
+    const value = finiteNumber(cbd)
+    return value === undefined ? 0 : Math.min(100, Math.round((value / 20) * 100))
+}
 
 // Normalize flowering time: shorter = higher score. Range 56-112 days.
-const normalizeFloweringTime = (days: number): number =>
-    Math.max(0, Math.min(100, Math.round(((112 - days) / 56) * 100)))
+const normalizeFloweringTime = (days: number | undefined): number => {
+    const value = finiteNumber(days)
+    return value === undefined
+        ? 0
+        : Math.max(0, Math.min(100, Math.round(((112 - value) / 56) * 100)))
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -111,7 +125,7 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
             selectedStrains.forEach((strain) => {
                 if (i === 0) point[strain.name] = normalizeTHC(strain.thc)
                 else if (i === 1) point[strain.name] = normalizeCBD(strain.cbd)
-                else if (i === 2) point[strain.name] = yieldLevelToScore(strain.agronomic.yield)
+                else if (i === 2) point[strain.name] = yieldLevelToScore(strain.agronomic?.yield)
                 else point[strain.name] = normalizeFloweringTime(strain.floweringTime)
             })
             return point
@@ -163,7 +177,9 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                     className="w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 flex items-center justify-between"
                                 >
                                     <span>{strain.name}</span>
-                                    <span className="text-xs text-slate-400">{strain.type}</span>
+                                    <span className="text-xs text-slate-400">
+                                        {strain.type || t('common.unknown')}
+                                    </span>
                                 </button>
                             </div>
                         ))}
@@ -243,7 +259,10 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                             ))}
                             {/* Legend + tooltip are HTML, so var() resolves -- use theme-aware tokens */}
                             <Legend
-                                wrapperStyle={{ fontSize: '12px', color: 'rgb(var(--color-chart-label))' }}
+                                wrapperStyle={{
+                                    fontSize: '12px',
+                                    color: 'rgb(var(--color-chart-label))',
+                                }}
                             />
                             <Tooltip
                                 contentStyle={{
@@ -269,7 +288,9 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                             <div className="flex flex-col items-center gap-1">
                                                 <span
                                                     className="font-bold"
-                                                    style={{ color: `rgb(var(--color-chart-${i + 1}))` }}
+                                                    style={{
+                                                        color: `rgb(var(--color-chart-${i + 1}))`,
+                                                    }}
                                                 >
                                                     {strain.name}
                                                 </span>
@@ -321,26 +342,45 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                             <tbody className="divide-y divide-slate-700/50">
                                 <ComparisonRow
                                     label={t('strainsView.comparison.type')}
-                                    values={selectedStrains.map((s) => s.type)}
+                                    values={selectedStrains.map(
+                                        (s) => s.type || t('common.unknown'),
+                                    )}
                                 />
                                 <ComparisonRow
                                     label={`${t('strainsView.comparison.thc')} %`}
-                                    values={selectedStrains.map((s) => s.thcRange ?? `${s.thc}%`)}
+                                    values={selectedStrains.map((s) =>
+                                        s.thcRange
+                                            ? s.thcRange
+                                            : finiteNumber(s.thc) === undefined
+                                              ? t('common.unknown')
+                                              : `${s.thc}%`,
+                                    )}
                                 />
                                 <ComparisonRow
                                     label={`${t('strainsView.comparison.cbd')} %`}
-                                    values={selectedStrains.map((s) => s.cbdRange ?? `${s.cbd}%`)}
+                                    values={selectedStrains.map((s) =>
+                                        s.cbdRange
+                                            ? s.cbdRange
+                                            : finiteNumber(s.cbd) === undefined
+                                              ? t('common.unknown')
+                                              : `${s.cbd}%`,
+                                    )}
                                 />
                                 <ComparisonRow
                                     label={t('strainsView.comparison.floweringTime')}
-                                    values={selectedStrains.map(
-                                        (s) =>
-                                            `${s.floweringTimeRange ?? s.floweringTime} ${t('strainsView.comparison.days')}`,
+                                    values={selectedStrains.map((s) =>
+                                        s.floweringTimeRange
+                                            ? `${s.floweringTimeRange} ${t('strainsView.comparison.days')}`
+                                            : finiteNumber(s.floweringTime) === undefined
+                                              ? t('common.unknown')
+                                              : `${s.floweringTime} ${t('strainsView.comparison.days')}`,
                                     )}
                                 />
                                 <ComparisonRow
                                     label={t('strainsView.comparison.yield')}
-                                    values={selectedStrains.map((s) => s.agronomic.yield)}
+                                    values={selectedStrains.map(
+                                        (s) => s.agronomic?.yield ?? t('common.unknown'),
+                                    )}
                                 />
                                 <ComparisonRow
                                     label={t('strainsView.comparison.terpenes')}

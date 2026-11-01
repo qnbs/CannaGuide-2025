@@ -116,7 +116,9 @@ const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number =>
     if (ctx.targetThcRange !== undefined) {
         const { min, max } = ctx.targetThcRange
         const thc = strain.thc
-        if (thc >= min && thc <= max) {
+        if (typeof thc !== 'number' || !Number.isFinite(thc)) {
+            thcScore = 0.8
+        } else if (thc >= min && thc <= max) {
             thcScore = 1.0
         } else {
             const dist = thc < min ? min - thc : thc - max
@@ -127,7 +129,9 @@ const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number =>
 
     if (ctx.targetCbdMin !== undefined) {
         const cbd = strain.cbd
-        if (cbd >= ctx.targetCbdMin) {
+        if (typeof cbd !== 'number' || !Number.isFinite(cbd)) {
+            cbdScore = 0.8
+        } else if (cbd >= ctx.targetCbdMin) {
             cbdScore = 1.0
         } else {
             cbdScore = clamp01(cbd / Math.max(ctx.targetCbdMin, 0.1))
@@ -139,8 +143,10 @@ const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number =>
 
 const scoreDifficulty = (strain: Strain, ctx: RecommendationContext): number => {
     if (ctx.preferredDifficulty === undefined) return 0.8
+    const difficulty = strain.agronomic?.difficulty
+    if (difficulty === undefined) return 0.8
     const preferred = DIFFICULTY_SCORES[ctx.preferredDifficulty] ?? 2
-    const actual = DIFFICULTY_SCORES[strain.agronomic.difficulty] ?? 2
+    const actual = DIFFICULTY_SCORES[difficulty] ?? 2
     const diff = Math.abs(preferred - actual)
     // 0 diff = 1.0, 1 diff = 0.6, 2 diff = 0.2
     return clamp01(1 - diff * 0.4)
@@ -198,12 +204,13 @@ const scoreDataQuality = (strain: Strain): number => {
 }
 
 const scoreBonus = (strain: Strain): number => {
+    const difficulty = strain.agronomic?.difficulty
     // Low-effort bonus: Easy + Autoflower is beginner-friendly
-    if (strain.agronomic.difficulty === 'Easy' && strain.floweringType === 'Autoflower') {
+    if (difficulty === 'Easy' && strain.floweringType === 'Autoflower') {
         return 0.9
     }
     // Moderate bonus for easy strains
-    if (strain.agronomic.difficulty === 'Easy') return 0.7
+    if (difficulty === 'Easy') return 0.7
     return 0.5
 }
 

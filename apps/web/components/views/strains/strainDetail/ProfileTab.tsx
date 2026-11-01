@@ -4,15 +4,10 @@ import type { Strain, TerpeneName, FlavonoidName } from '@/types'
 import { InfoSection } from '@/components/common/InfoSection'
 import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import {
-    buildChemovarProfile,
-    analyzeEntourage,
-    generateTerpeneProfile,
-    generateCannabinoidProfile,
-} from '@/services/terpeneService'
+import { analyzeEntourage } from '@/services/terpeneService'
 import { TERPENE_DATABASE } from '@/data/terpeneDatabase'
 import { FLAVONOID_DATABASE } from '@/data/flavonoidDatabase'
-import { Tag, strHash } from './strainDetailShared'
+import { Tag } from './strainDetailShared'
 import { FlavonoidEntry } from './FlavonoidEntry'
 
 export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
@@ -24,28 +19,15 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
         ? strain.dominantTerpenes.filter((item): item is string => typeof item === 'string')
         : []
 
-    // Compute full profiles
-    const terpeneProfile = useMemo(
-        () =>
-            strain.terpeneProfile ??
-            generateTerpeneProfile(strain.dominantTerpenes ?? [], strHash(strain.id), strain.type),
-        [strain],
-    )
-    const cannabinoidProfile = useMemo(
-        () =>
-            strain.cannabinoidProfile ??
-            generateCannabinoidProfile(
-                strain.thc,
-                strain.cbd,
-                strain.cbg,
-                strain.thcv,
-                strHash(strain.id),
-            ),
-        [strain],
-    )
-    const chemovar = useMemo(() => buildChemovarProfile(strain), [strain])
+    // Quantitative chemistry is shown only when a source supplied it.
+    const terpeneProfile = strain.terpeneProfile
+    const cannabinoidProfile = strain.cannabinoidProfile
+    const chemovar = strain.chemovarProfile
     const entourage = useMemo(
-        () => analyzeEntourage(terpeneProfile, cannabinoidProfile),
+        () =>
+            terpeneProfile && cannabinoidProfile
+                ? analyzeEntourage(terpeneProfile, cannabinoidProfile)
+                : null,
         [terpeneProfile, cannabinoidProfile],
     )
     const flavonoidProfile = strain.flavonoidProfile
@@ -53,28 +35,32 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     // Sort terpenes by percentage for display
     const sortedTerpenes = useMemo(
         () =>
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-            (Object.entries(terpeneProfile) as [TerpeneName, number][])
-                .filter(([, v]) => v >= 0.01)
-                .sort((a, b) => b[1] - a[1]),
+            terpeneProfile
+                ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+                  (Object.entries(terpeneProfile) as [TerpeneName, number][])
+                      .filter(([, v]) => v >= 0.01)
+                      .sort((a, b) => b[1] - a[1])
+                : [],
         [terpeneProfile],
     )
 
-    const chemovarLabel =
-        {
-            'Type I': t('strainsView.strainDetail.chemovar.typeI'),
-            'Type II': t('strainsView.strainDetail.chemovar.typeII'),
-            'Type III': t('strainsView.strainDetail.chemovar.typeIII'),
-            'Type IV': t('strainsView.strainDetail.chemovar.typeIV'),
-            'Type V': t('strainsView.strainDetail.chemovar.typeV'),
-        }[chemovar.chemovarType] ?? chemovar.chemovarType
+    const chemovarLabel = chemovar
+        ? ({
+              'Type I': t('strainsView.strainDetail.chemovar.typeI'),
+              'Type II': t('strainsView.strainDetail.chemovar.typeII'),
+              'Type III': t('strainsView.strainDetail.chemovar.typeIII'),
+              'Type IV': t('strainsView.strainDetail.chemovar.typeIV'),
+              'Type V': t('strainsView.strainDetail.chemovar.typeV'),
+          }[chemovar.chemovarType] ?? chemovar.chemovarType)
+        : ''
 
-    const profileLabel =
-        {
-            sedating: t('strainsView.strainDetail.chemovar.sedating'),
-            balanced: t('strainsView.strainDetail.chemovar.balanced'),
-            energizing: t('strainsView.strainDetail.chemovar.energizing'),
-        }[entourage.overallProfile] ?? entourage.overallProfile
+    const profileLabel = entourage
+        ? ({
+              sedating: t('strainsView.strainDetail.chemovar.sedating'),
+              balanced: t('strainsView.strainDetail.chemovar.balanced'),
+              energizing: t('strainsView.strainDetail.chemovar.energizing'),
+          }[entourage.overallProfile] ?? entourage.overallProfile)
+        : ''
 
     return (
         <div className="space-y-6">
@@ -138,7 +124,9 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                                                 {ref.class}
                                             </span>
                                             <span>
-                                                {t('strainsView.strainDetail.chemovar.boilingPoint')}
+                                                {t(
+                                                    'strainsView.strainDetail.chemovar.boilingPoint',
+                                                )}
                                                 :{' '}
                                                 {t('strainsView.strainDetail.terpeneBoilingPoint', {
                                                     temp: ref.boilingPointC,
@@ -297,90 +285,92 @@ export const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                 </InfoSection>
             )}
 
-            {/* Chemovar Classification */}
-            <InfoSection title={t('strainsView.strainDetail.chemovarSection')}>
-                <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-slate-800 rounded-lg p-3">
-                        <div className="text-xs text-slate-400">
-                            {t('strainsView.strainDetail.chemovar.type')}
-                        </div>
-                        <div className="text-sm font-semibold text-primary-300 mt-1">
-                            {chemovarLabel}
-                        </div>
-                    </div>
-                    <div className="bg-slate-800 rounded-lg p-3">
-                        <div className="text-xs text-slate-400">
-                            {t('strainsView.strainDetail.chemovar.thcCbdRatio')}
-                        </div>
-                        <div className="text-sm font-semibold text-slate-200 mt-1">
-                            {Number.isFinite(chemovar.thcCbdRatio)
-                                ? `${chemovar.thcCbdRatio.toFixed(1)}:1`
-                                : 'N/A'}
-                        </div>
-                    </div>
-                    <div className="bg-slate-800 rounded-lg p-3">
-                        <div className="text-xs text-slate-400">
-                            {t('strainsView.strainDetail.chemovar.totalCannabinoids')}
-                        </div>
-                        <div className="text-sm font-semibold text-slate-200 mt-1">
-                            {chemovar.totalCannabinoidPercent.toFixed(1)}%
-                        </div>
-                    </div>
-                    <div className="bg-slate-800 rounded-lg p-3">
-                        <div className="text-xs text-slate-400">
-                            {t('strainsView.strainDetail.chemovar.totalTerpenes')}
-                        </div>
-                        <div className="text-sm font-semibold text-slate-200 mt-1">
-                            {chemovar.totalTerpenePercent.toFixed(2)}%
-                        </div>
-                    </div>
-                </div>
-                {chemovar.predictedEffects.length > 0 && (
-                    <div className="mt-3">
-                        <div className="text-xs text-slate-400 mb-2">
-                            {t('strainsView.strainDetail.chemovar.predictedEffects')}
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            {chemovar.predictedEffects.map((effect) => (
-                                <Tag key={effect}>{effect}</Tag>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </InfoSection>
-
-            {/* Entourage Effect & Synergies */}
-            <InfoSection title={t('strainsView.strainDetail.entourageSection')}>
-                <p className="text-xs text-slate-400 mb-3">
-                    {t('strainsView.strainDetail.entourageDescription')}
-                </p>
-                <div className="space-y-3">
-                    <AttributeDisplay
-                        label={t('strainsView.strainDetail.overallCharacter')}
-                        value={<Tag>{profileLabel}</Tag>}
-                    />
-                    {entourage.synergies.length > 0 ? (
-                        <div className="space-y-2">
-                            <div className="text-xs font-semibold text-slate-300">
-                                {t('strainsView.strainDetail.chemovar.synergies')}
+            {chemovar && (
+                <InfoSection title={t('strainsView.strainDetail.chemovarSection')}>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-slate-800 rounded-lg p-3">
+                            <div className="text-xs text-slate-400">
+                                {t('strainsView.strainDetail.chemovar.type')}
                             </div>
-                            {entourage.synergies.map((synergy, idx) => (
-                                <div
-                                    key={`synergy-${idx}`}
-                                    className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 flex items-start gap-2"
-                                >
-                                    <PhosphorIcons.Sparkle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                                    <span>{synergy}</span>
-                                </div>
-                            ))}
+                            <div className="text-sm font-semibold text-primary-300 mt-1">
+                                {chemovarLabel}
+                            </div>
                         </div>
-                    ) : (
-                        <p className="text-sm text-muted italic">
-                            {t('strainsView.strainDetail.noSynergies')}
-                        </p>
+                        <div className="bg-slate-800 rounded-lg p-3">
+                            <div className="text-xs text-slate-400">
+                                {t('strainsView.strainDetail.chemovar.thcCbdRatio')}
+                            </div>
+                            <div className="text-sm font-semibold text-slate-200 mt-1">
+                                {Number.isFinite(chemovar.thcCbdRatio)
+                                    ? `${chemovar.thcCbdRatio.toFixed(1)}:1`
+                                    : 'N/A'}
+                            </div>
+                        </div>
+                        <div className="bg-slate-800 rounded-lg p-3">
+                            <div className="text-xs text-slate-400">
+                                {t('strainsView.strainDetail.chemovar.totalCannabinoids')}
+                            </div>
+                            <div className="text-sm font-semibold text-slate-200 mt-1">
+                                {chemovar.totalCannabinoidPercent.toFixed(1)}%
+                            </div>
+                        </div>
+                        <div className="bg-slate-800 rounded-lg p-3">
+                            <div className="text-xs text-slate-400">
+                                {t('strainsView.strainDetail.chemovar.totalTerpenes')}
+                            </div>
+                            <div className="text-sm font-semibold text-slate-200 mt-1">
+                                {chemovar.totalTerpenePercent.toFixed(2)}%
+                            </div>
+                        </div>
+                    </div>
+                    {chemovar.predictedEffects.length > 0 && (
+                        <div className="mt-3">
+                            <div className="text-xs text-slate-400 mb-2">
+                                {t('strainsView.strainDetail.chemovar.predictedEffects')}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {chemovar.predictedEffects.map((effect) => (
+                                    <Tag key={effect}>{effect}</Tag>
+                                ))}
+                            </div>
+                        </div>
                     )}
-                </div>
-            </InfoSection>
+                </InfoSection>
+            )}
+
+            {entourage && (
+                <InfoSection title={t('strainsView.strainDetail.entourageSection')}>
+                    <p className="text-xs text-slate-400 mb-3">
+                        {t('strainsView.strainDetail.entourageDescription')}
+                    </p>
+                    <div className="space-y-3">
+                        <AttributeDisplay
+                            label={t('strainsView.strainDetail.overallCharacter')}
+                            value={<Tag>{profileLabel}</Tag>}
+                        />
+                        {entourage.synergies.length > 0 ? (
+                            <div className="space-y-2">
+                                <div className="text-xs font-semibold text-slate-300">
+                                    {t('strainsView.strainDetail.chemovar.synergies')}
+                                </div>
+                                {entourage.synergies.map((synergy, idx) => (
+                                    <div
+                                        key={`synergy-${idx}`}
+                                        className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 flex items-start gap-2"
+                                    >
+                                        <PhosphorIcons.Sparkle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                                        <span>{synergy}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted italic">
+                                {t('strainsView.strainDetail.noSynergies')}
+                            </p>
+                        )}
+                    </div>
+                </InfoSection>
+            )}
         </div>
     )
 }

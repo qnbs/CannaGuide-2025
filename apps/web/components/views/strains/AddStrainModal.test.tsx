@@ -1,22 +1,30 @@
-import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-import { AddStrainModal } from './AddStrainModal';
-import { StrainType, type Strain } from '@/types';
+import React from 'react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+import { AddStrainModal } from './AddStrainModal'
+import { StrainType, type Strain } from '@/types'
 
 vi.mock('@/stores/store', () => ({
     useAppDispatch: () => vi.fn(),
-}));
+}))
 
 vi.mock('@/components/common/Modal', () => ({
-    Modal: ({ children, footer, title }: { children: React.ReactNode; footer?: React.ReactNode; title?: string }) => (
+    Modal: ({
+        children,
+        footer,
+        title,
+    }: {
+        children: React.ReactNode
+        footer?: React.ReactNode
+        title?: string
+    }) => (
         <div>
             <h1>{title}</h1>
             <div>{children}</div>
             <div>{footer}</div>
         </div>
     ),
-}));
+}))
 
 const baseStrain: Strain = {
     id: 'strain-1',
@@ -40,11 +48,11 @@ const baseStrain: Strain = {
         transpirationFactor: 1,
         stomataSensitivity: 1,
     },
-};
+}
 
 describe('AddStrainModal', () => {
     it('submits the selected strain type instead of sticking to Hybrid', () => {
-        const handleAddStrain = vi.fn();
+        const handleAddStrain = vi.fn()
 
         render(
             <AddStrainModal
@@ -54,15 +62,17 @@ describe('AddStrainModal', () => {
                 onUpdateStrain={vi.fn()}
                 strainToEdit={null}
             />,
-        );
+        )
 
-        fireEvent.change(screen.getByLabelText(/strain name/i), { target: { value: 'Solar Spear' } });
-        fireEvent.click(screen.getByRole('button', { name: /sativa/i }));
-        fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
+        fireEvent.change(screen.getByLabelText(/strain name/i), {
+            target: { value: 'Solar Spear' },
+        })
+        fireEvent.click(screen.getByRole('button', { name: /sativa/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
 
-        expect(handleAddStrain).toHaveBeenCalledTimes(1);
-        expect(handleAddStrain.mock.calls[0]![0].type).toBe(StrainType.Sativa);
-    });
+        expect(handleAddStrain).toHaveBeenCalledTimes(1)
+        expect(handleAddStrain.mock.calls[0]![0].type).toBe(StrainType.Sativa)
+    })
 
     it('reinitializes form values when switching into edit mode', () => {
         const { rerender } = render(
@@ -73,10 +83,12 @@ describe('AddStrainModal', () => {
                 onUpdateStrain={vi.fn()}
                 strainToEdit={null}
             />,
-        );
+        )
 
-        fireEvent.change(screen.getByLabelText(/strain name/i), { target: { value: 'Temporary Name' } });
-        fireEvent.click(screen.getByRole('button', { name: /indica/i }));
+        fireEvent.change(screen.getByLabelText(/strain name/i), {
+            target: { value: 'Temporary Name' },
+        })
+        fireEvent.click(screen.getByRole('button', { name: /indica/i }))
 
         rerender(
             <AddStrainModal
@@ -86,9 +98,41 @@ describe('AddStrainModal', () => {
                 onUpdateStrain={vi.fn()}
                 strainToEdit={baseStrain}
             />,
-        );
+        )
 
-        expect(screen.getByDisplayValue('Silver Orbit')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /sativa/i })).toHaveAttribute('aria-pressed', 'true');
-    });
-});
+        expect(screen.getByDisplayValue('Silver Orbit')).toBeInTheDocument()
+        expect(screen.getByRole('button', { name: /sativa/i })).toHaveAttribute(
+            'aria-pressed',
+            'true',
+        )
+    })
+
+    it('does not write default measurements when an unmeasured strain is saved unchanged', () => {
+        const handleUpdateStrain = vi.fn()
+        const unmeasured: Strain = { ...baseStrain }
+        for (const key of ['type', 'thc', 'cbd', 'floweringTime', 'floweringType', 'agronomic']) {
+            Reflect.deleteProperty(unmeasured, key)
+        }
+
+        render(
+            <AddStrainModal
+                isOpen={true}
+                onClose={vi.fn()}
+                onAddStrain={vi.fn()}
+                onUpdateStrain={handleUpdateStrain}
+                strainToEdit={unmeasured}
+            />,
+        )
+
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+
+        expect(handleUpdateStrain).toHaveBeenCalledTimes(1)
+        const saved = handleUpdateStrain.mock.calls[0]![0]
+        expect(saved.type).toBeUndefined()
+        expect(saved.thc).toBeUndefined()
+        expect(saved.cbd).toBeUndefined()
+        expect(saved.floweringTime).toBeUndefined()
+        expect(saved.floweringType).toBeUndefined()
+        expect(saved.agronomic).toBeUndefined()
+    })
+})

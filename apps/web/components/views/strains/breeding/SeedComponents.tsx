@@ -54,8 +54,16 @@ export const ParentSlot: React.FC<{
                     <p className="font-bold text-slate-100">{seed.strainName}</p>
                     <div className="text-xs text-slate-400 mt-1">
                         <p>
-                            THC: {parentStrain.thc.toFixed(1)}% | CBD: {parentStrain.cbd.toFixed(1)}
-                            %
+                            THC:{' '}
+                            {typeof parentStrain.thc === 'number' &&
+                            Number.isFinite(parentStrain.thc)
+                                ? `${parentStrain.thc.toFixed(1)}%`
+                                : t('common.unknown')}{' '}
+                            | CBD:{' '}
+                            {typeof parentStrain.cbd === 'number' &&
+                            Number.isFinite(parentStrain.cbd)
+                                ? `${parentStrain.cbd.toFixed(1)}%`
+                                : t('common.unknown')}
                         </p>
                         <p>
                             {t('common.quality')}: {(seed.quality * 100).toFixed(0)}%

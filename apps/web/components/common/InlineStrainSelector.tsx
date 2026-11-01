@@ -16,14 +16,17 @@ interface InlineStrainSelectorProps {
     onSelectStrain: (strain: Strain) => void
 }
 
-const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }> = ({
-    difficulty,
-}) => {
+const DifficultyMeter: React.FC<{
+    difficulty: Strain['agronomic']['difficulty'] | undefined
+}> = ({ difficulty }) => {
     const { t } = useTranslation()
     const safeDifficulty =
         difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard'
             ? difficulty
-            : 'Medium'
+            : undefined
+    if (!safeDifficulty) {
+        return <span className="text-xs text-slate-400">{t('common.unknown')}</span>
+    }
     const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 }
     const level = difficultyMap[safeDifficulty] || 2
     const color =
@@ -67,30 +70,38 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
     const safeType =
         strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
             ? strain.type
-            : 'Hybrid'
+            : undefined
     const safeYield =
         strain.agronomic?.yield === 'Low' ||
         strain.agronomic?.yield === 'Medium' ||
         strain.agronomic?.yield === 'High'
             ? strain.agronomic.yield
-            : 'Medium'
+            : undefined
     const safeHeight =
         strain.agronomic?.height === 'Short' ||
         strain.agronomic?.height === 'Medium' ||
         strain.agronomic?.height === 'Tall'
             ? strain.agronomic.height
-            : 'Medium'
-    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
+            : undefined
+    const TypeIcon = safeType
+        ? { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
+        : PhosphorIcons.Question
+    const unknown = t('common.unknown')
     const safeName =
-        typeof strain.name === 'string' && strain.name.trim() !== ''
-            ? strain.name
-            : 'Unknown Strain'
-    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
-    const safeCbd = typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
+        typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : unknown
+    const safeThc =
+        typeof strain.thc === 'number' && Number.isFinite(strain.thc)
+            ? `${strain.thc.toFixed(1)}%`
+            : unknown
+    const safeCbd =
+        typeof strain.cbd === 'number' && Number.isFinite(strain.cbd)
+            ? `${strain.cbd.toFixed(1)}%`
+            : unknown
     const safeFloweringTime =
-        typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
-            ? strain.floweringTime
-            : 0
+        strain.floweringTimeRange ||
+        (typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
+            ? `${strain.floweringTime} ${t('common.units.weeks')}`
+            : unknown)
 
     return (
         <button
@@ -98,7 +109,9 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
             className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 ring-1 ring-inset ring-white/20"
         >
             <div className="flex-shrink-0">
-                <TypeIcon className={`w-10 h-10 ${typeClasses[safeType]}`} />
+                <TypeIcon
+                    className={`w-10 h-10 ${safeType ? typeClasses[safeType] : 'text-slate-400'}`}
+                />
             </div>
 
             <div className="flex-grow min-w-0">
@@ -114,33 +127,34 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 <div className="grid grid-cols-3 gap-x-4 text-xs text-slate-400 mt-1">
                     <div className="flex items-center gap-1" title="THC">
                         <PhosphorIcons.Lightning className="w-3 h-3 text-red-400" />
-                        <span>{safeThc.toFixed(1)}%</span>
+                        <span>{safeThc}</span>
                     </div>
                     <div className="flex items-center gap-1" title="CBD">
                         <PhosphorIcons.Drop className="w-3 h-3 text-blue-400" />
-                        <span>{safeCbd.toFixed(1)}%</span>
+                        <span>{safeCbd}</span>
                     </div>
                     <div
                         className="flex items-center gap-1"
                         title={t('strainsView.table.flowering')}
                     >
                         <PhosphorIcons.ArrowClockwise className="w-3 h-3 text-slate-400" />
-                        <span>
-                            {strain.floweringTimeRange || safeFloweringTime}{' '}
-                            {t('common.units.weeks')}
-                        </span>
+                        <span>{safeFloweringTime}</span>
                     </div>
                 </div>
             </div>
 
             <div className="flex-shrink-0 flex flex-col items-end gap-1">
-                <DifficultyMeter difficulty={strain.agronomic?.difficulty ?? 'Medium'} />
+                <DifficultyMeter difficulty={strain.agronomic?.difficulty} />
                 <div
                     className="flex items-center gap-1 text-xs text-slate-400"
                     title={t('strainsView.addStrainModal.yield')}
                 >
                     <PhosphorIcons.Archive className="w-3 h-3" />
-                    <span>{t(`strainsView.addStrainModal.yields.${safeYield.toLowerCase()}`)}</span>
+                    <span>
+                        {safeYield
+                            ? t(`strainsView.addStrainModal.yields.${safeYield.toLowerCase()}`)
+                            : unknown}
+                    </span>
                 </div>
                 <div
                     className="flex items-center gap-1 text-xs text-slate-400"
@@ -148,7 +162,9 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Ruler className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.heights.${safeHeight.toLowerCase()}`)}
+                        {safeHeight
+                            ? t(`strainsView.addStrainModal.heights.${safeHeight.toLowerCase()}`)
+                            : unknown}
                     </span>
                 </div>
             </div>

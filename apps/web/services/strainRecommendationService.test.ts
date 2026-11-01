@@ -61,6 +61,14 @@ describe('scoreStrain', () => {
         expect(inRange.score).toBeGreaterThan(outOfRange.score)
     })
 
+    it('does not turn a missing THC value into NaN', () => {
+        const ctx: RecommendationContext = { targetThcRange: { min: 16, max: 22 } }
+        const missingThc = makeStrain()
+        Reflect.deleteProperty(missingThc, 'thc')
+        const result = scoreStrain(missingThc, ctx)
+        expect(Number.isFinite(result.score)).toBe(true)
+    })
+
     it('scores higher when CBD meets target minimum', () => {
         const ctx: RecommendationContext = { targetCbdMin: 1 }
         const meetsCbd = scoreStrain(makeStrain({ cbd: 2 }), ctx)

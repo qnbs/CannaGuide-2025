@@ -188,17 +188,22 @@ export const computeDrawerFilterCount = (
         letterFilter,
         favoriteIds,
     )
+    const difficulties = new Set(tempFilterState.selectedDifficulties)
+    const yields = new Set(tempFilterState.selectedYields)
+    const heights = new Set(tempFilterState.selectedHeights)
+    const aromas = new Set(tempFilterState.selectedAromas)
+    const terpenes = new Set(tempFilterState.selectedTerpenes)
     return narrowed.filter((strain) =>
         passesDrawerFilters(
             strain,
             thcRange,
             cbdRange,
             floweringRange,
-            new Set(tempFilterState.selectedDifficulties),
-            new Set(tempFilterState.selectedYields),
-            new Set(tempFilterState.selectedHeights),
-            new Set(tempFilterState.selectedAromas),
-            new Set(tempFilterState.selectedTerpenes),
+            difficulties,
+            yields,
+            heights,
+            aromas,
+            terpenes,
         ),
     ).length
 }

@@ -26,17 +26,17 @@ const matchesStrainQuery = (strain: Strain, query: string): boolean =>
     includesQuery(strain.type, query) ||
     listIncludesQuery(strain.aromas, query)
 
-const selectorRank = (
+export const selectorRank = (
     strain: Strain,
     userIds: ReadonlySet<string>,
     favoriteIds: ReadonlySet<string>,
 ): number => {
-    if (userIds.has(strain.id)) return 0
-    if (favoriteIds.has(strain.id)) return 1
-    return 2
+    if (userIds.has(strain.id)) return favoriteIds.has(strain.id) ? 0 : 1
+    if (favoriteIds.has(strain.id)) return 2
+    return 3
 }
 
-const compareSelectorStrains = (
+export const compareSelectorStrains = (
     left: Strain,
     right: Strain,
     userIds: ReadonlySet<string>,

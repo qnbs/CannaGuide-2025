@@ -58,6 +58,33 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         const bound = { ...base, state: 'lab_measured_bound', operator, limit: 0.1, value: null }
         expect(strainFactSchema.parse(bound)).toEqual(bound)
     })
+    it('rejects a strict upper bound of zero as an empty nonnegative interval', () => {
+        const empty = {
+            ...base,
+            state: 'lab_measured_bound' as const,
+            value: null,
+            operator: '<' as const,
+            limit: 0,
+            rights: 'production_permitted' as const,
+        }
+        const result = strainFactSchema.safeParse(empty)
+        expect(result.success).toBe(false)
+        if (!result.success)
+            expect(result.error.issues.map((issue) => issue.message)).toEqual([
+                'A strict upper bound of zero is empty for a nonnegative amount',
+            ])
+        expect(isFactReleaseEligible(empty)).toBe(false)
+        const inclusiveZero = { ...empty, operator: '<=' as const }
+        expect(strainFactSchema.parse(inclusiveZero)).toEqual(inclusiveZero)
+        expect(strainFactSchema.parse(point).value).toBe(0)
+        const unknown = strainFactSchema.parse({
+            ...base,
+            state: 'unknown',
+            claimStatus: 'unknown',
+            value: null,
+        })
+        expect(unknown.value).toBeNull()
+    })
     it('keeps nominal product labels distinct from exact batch measurements', () => {
         const nominal = {
             ...point,

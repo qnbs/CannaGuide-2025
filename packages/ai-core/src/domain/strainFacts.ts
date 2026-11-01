@@ -172,6 +172,13 @@ const validateInterval = (fact: FactShape, reject: RejectFact): void => {
         reject('Interval lower bound exceeds upper bound')
 }
 
+/** A nonnegative amount cannot satisfy `< 0`; `<= 0` remains a real measured zero. */
+const validateBound = (fact: FactShape, reject: RejectFact): void => {
+    if (fact.state !== 'lab_measured_bound') return
+    if (fact.operator === '<' && fact.limit === 0)
+        reject('A strict upper bound of zero is empty for a nonnegative amount')
+}
+
 export const strainFactSchema = factShape.superRefine((fact, ctx) => {
     const reject: RejectFact = (message) => ctx.addIssue({ code: 'custom', message })
     validateAttribution(fact, reject)
@@ -179,6 +186,7 @@ export const strainFactSchema = factShape.superRefine((fact, ctx) => {
     validateScope(fact, reject)
     validateConcentration(fact, reject)
     validateInterval(fact, reject)
+    validateBound(fact, reject)
     if (new Set(fact.evidenceIds).size !== fact.evidenceIds.length)
         reject('Evidence IDs must be unique')
 })

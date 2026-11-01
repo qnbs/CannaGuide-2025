@@ -377,7 +377,7 @@ export interface Strain {
     }
     aromas?: string[] | undefined
     dominantTerpenes?: string[] | undefined
-    /** Quantitative terpene profile (% dry-weight). Derived from dominantTerpenes if not set. */
+    /** Quantitative terpene profile (% dry-weight), only when a source supplied it. */
     terpeneProfile?: TerpeneProfile | undefined
     /** Full cannabinoid profile beyond THC/CBD */
     cannabinoidProfile?: CannabinoidProfile | undefined

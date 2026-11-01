@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { StrainType } from '@/types'
 import { createStrainObject } from '@/services/strainFactory'
+import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 
 describe('createStrainObject', () => {
-    it('fills in required fields for malformed strain data', () => {
+    it('leaves unknown chemistry, type and flowering absent', () => {
         const strain = createStrainObject({
             name: '',
             aromas: ['citrus', 42 as unknown as string],
@@ -12,19 +13,40 @@ describe('createStrainObject', () => {
 
         expect(strain.id).toBeTruthy()
         expect(strain.name).toBe('Unknown Strain')
+        expect(strain.type).toBeUndefined()
+        expect(strain.thc).toBeUndefined()
+        expect(strain.cbd).toBeUndefined()
+        expect(strain.floweringTime).toBeUndefined()
+        expect(strain.floweringType).toBeUndefined()
+        expect(strain.agronomic).toBeUndefined()
+        expect(strain.geneticModifiers).toBeUndefined()
+        expect(strain.terpeneProfile).toBeUndefined()
+        expect(strain.cannabinoidProfile).toBeUndefined()
+        expect(strain.flavonoidProfile).toBeUndefined()
+        expect(strain.chemovarProfile).toBeUndefined()
+    })
+
+    it('keeps a reported zero, a reported 9 weeks and an explicit Hybrid', () => {
+        const strain = createStrainObject({
+            id: 'reported-zero',
+            name: 'Reported Zero',
+            type: StrainType.Hybrid,
+            thc: 0,
+            cbd: 0,
+            floweringTime: 9,
+            floweringType: 'Photoperiod',
+        })
+
         expect(strain.type).toBe(StrainType.Hybrid)
         expect(strain.thc).toBe(0)
         expect(strain.cbd).toBe(0)
         expect(strain.floweringTime).toBe(9)
         expect(strain.floweringType).toBe('Photoperiod')
-        expect(strain.agronomic).toEqual({
-            difficulty: 'Medium',
-            yield: 'Medium',
-            height: 'Medium',
-        })
+        expect(strain.flavonoidProfile).toBeUndefined()
+        expect(strain.geneticModifiers).toBeUndefined()
     })
 
-    it('preserves valid fields while inferring missing optional shape', () => {
+    it('preserves sourced fields and reads autoflower only from reported text', () => {
         const strain = createStrainObject({
             id: 'test-strain',
             name: 'Lemon Test',
@@ -38,6 +60,30 @@ describe('createStrainObject', () => {
         expect(strain.id).toBe('test-strain')
         expect(strain.name).toBe('Lemon Test')
         expect(strain.type).toBe(StrainType.Sativa)
+        expect(strain.thc).toBe(18.4)
+        expect(strain.floweringTime).toBe(10)
         expect(strain.floweringType).toBe('Autoflower')
+        expect(strain.cannabinoidProfile).toBeUndefined()
+    })
+
+    it('does not treat a name-hash simulation as a catalog fact', () => {
+        const input = {
+            id: 'hash-source',
+            name: 'Hash Source',
+            type: StrainType.Indica,
+            thc: 22,
+            cbd: 1,
+            floweringTime: 8,
+            dominantTerpenes: ['Myrcene'],
+        }
+        const strain = createStrainObject(input)
+        const simulated = simulateStrainProfile(input)
+
+        expect(strain.flavonoidProfile).toBeUndefined()
+        expect(strain.geneticModifiers).toBeUndefined()
+        expect(simulated.kind).toBe('simulation')
+        expect(simulated.flavonoidProfile['Cannflavin A']).toEqual(expect.any(Number))
+        expect(simulated.geneticModifiers.pestResistance).toEqual(expect.any(Number))
+        expect(input).not.toHaveProperty('flavonoidProfile')
     })
 })

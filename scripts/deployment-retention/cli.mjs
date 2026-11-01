@@ -146,6 +146,18 @@ export function assertDeploySha(env, mainSha) {
     }
 }
 
+/**
+ * Main moving between plan and apply is deferrable drift. Integrity and
+ * provider failures stay null so the caller still fails closed.
+ */
+export function mainAdvanceDecision(error) {
+    const message = error instanceof Error ? error.message : String(error || '')
+    const deployMismatch = message === 'refusing retention: deploy SHA is not current main'
+    const movedDuringWait = message.startsWith('main moved from ')
+    if (!deployMismatch && !movedDuringWait) return null
+    return { abort: true, drift: true, ids: [], errors: [message] }
+}
+
 function gh(args) {
     return execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim()
 }
@@ -384,6 +396,14 @@ async function freshDeleteDecision(backend, frozen, github) {
  * The log line for an aborted batch that only saw plan/apply drift (#592), or
  * null when the abort must fail the run. Either way nothing is deleted.
  */
+function deferMainAdvance(backend, error) {
+    const decision = mainAdvanceDecision(error)
+    if (!decision) return false
+    const message = deferredAbortMessage(backend, decision)
+    if (message) console.log(message)
+    return true
+}
+
 export function deferredAbortMessage(backend, decision) {
     if (!decision?.abort || decision.drift !== true) return null
     return `DEFER ${backend} delete: ${decision.errors.join('; ')} -- nothing deleted; the next run re-plans`
@@ -397,11 +417,23 @@ async function applyDeletes(backend, planPath) {
         return
     }
     const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
-    assertDeploySha(process.env, github.mainSha)
+    try {
+        assertDeploySha(process.env, github.mainSha)
+    } catch (error) {
+        if (deferMainAdvance(backend, error)) return
+        throw error
+    }
     const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
-    const version = await verifyPublicVersion(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
+    let version
+    let current
+    try {
+        version = await verifyPublicVersion(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
+        current = afterPropagationWait(github, () => collectGithubState(github.repo))
+    } catch (error) {
+        if (deferMainAdvance(backend, error)) return
+        throw error
+    }
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
-    const current = afterPropagationWait(github, () => collectGithubState(github.repo))
     const { fresh, decision } = await freshDeleteDecision(backend, frozen, current)
     const deferred = deferredAbortMessage(backend, decision)
     if (deferred) {
@@ -480,6 +512,11 @@ async function checkVercelGate(planPath) {
         console.log(`version ${version.buildVersion} commit ${version.commit}`)
         current = afterPropagationWait(github, () => collectGithubState(github.repo))
     } catch (error) {
+        const advanced = mainAdvanceDecision(error)
+        if (advanced) {
+            console.log(`would-defer: ${advanced.errors.join('; ')}`)
+            return
+        }
         console.log(
             `would-abort: ${error instanceof Error ? error.message : 'version check failed'}`,
         )

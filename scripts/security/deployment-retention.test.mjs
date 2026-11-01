@@ -29,6 +29,7 @@ import {
     assertPostDeleteAnchors,
     assertTrustedApply,
     deferredAbortMessage,
+    mainAdvanceDecision,
     PUBLIC_VERSION_WAIT,
     verifyPublicVersion,
 } from '../deployment-retention/cli.mjs'
@@ -775,6 +776,8 @@ test('plan/apply drift defers the batch without failing; an unsafe row still fai
     const pushed = reconcilePlans(frozen, plan(MAIN, productionSet('vercel'), SHA_B))
     assert.deepEqual(pushed.errors, ['open pull request heads changed'])
     assert.equal(pushed.drift, true)
+    assert.equal(pushed.abort, true)
+    assert.deepEqual(pushed.ids, [])
 
     // A frozen row that is not a safe-delete class is never deferred.
     const tampered = {
@@ -787,6 +790,13 @@ test('plan/apply drift defers the batch without failing; an unsafe row still fai
     assert.equal(unsafe.abort, true)
     assert.equal(unsafe.drift, false)
     assert.equal(deferredAbortMessage('vercel', unsafe), null)
+
+    // Anchor drift must not hide the unsafe frozen row.
+    const driftedUnsafe = reconcilePlans(tampered, plan(SHA_A, productionSet('vercel')))
+    assert.equal(driftedUnsafe.abort, true)
+    assert.equal(driftedUnsafe.drift, false)
+    assert.deepEqual(driftedUnsafe.ids, [])
+    assert.equal(deferredAbortMessage('vercel', driftedUnsafe), null)
 
     // Nothing to defer when the batch is not aborted at all.
     assert.equal(
@@ -1780,6 +1790,19 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
         () => assertDeploySha({ RETENTION_DEPLOY_SHA: SHA_A }, MAIN),
         /deploy SHA is not current main/,
     )
+    const deployDrift = mainAdvanceDecision(
+        new Error('refusing retention: deploy SHA is not current main'),
+    )
+    assert.equal(deployDrift.abort, true)
+    assert.equal(deployDrift.drift, true)
+    assert.deepEqual(deployDrift.ids, [])
+    const waitDrift = mainAdvanceDecision(
+        new Error(`main moved from ${MAIN} to ${SHA_A} during the propagation wait`),
+    )
+    assert.equal(waitDrift.drift, true)
+    assert.deepEqual(waitDrift.ids, [])
+    assert.match(deferredAbortMessage('vercel', waitDrift), /^DEFER vercel delete:/)
+    assert.equal(mainAdvanceDecision(new Error('provider inventory failed')), null)
     assert.throws(
         () =>
             assertTrustedApply({

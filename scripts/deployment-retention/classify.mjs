@@ -762,6 +762,30 @@ const DRIFT_ERRORS = new Set([
     'open pull request heads changed',
 ])
 
+function frozenRowIntegrityErrors(frozen, fresh) {
+    if (!frozen || !fresh || frozen.backend !== fresh.backend) return []
+    const freshById = new Map((fresh.deployments || []).map((row) => [row.id, row]))
+    const protectedIds = new Set([
+        ...(fresh.anchors?.productionIds || []),
+        ...(fresh.anchors?.rollbackIds || []),
+    ])
+    const found = []
+    for (const row of frozen.deployments || []) {
+        if (!row.deletable) continue
+        if (!isDeletableClass(row.class) || row.class === 'UNKNOWN') {
+            found.push(`frozen row ${row.id} is not a safe-delete class`)
+            continue
+        }
+        const now = freshById.get(row.id)
+        if (!now || protectedIds.has(row.id)) continue
+        const activeAlias = now.aliases.some((host) => !isInertBranchAlias(host, fresh?.backend))
+        if (now.class !== row.class || !now.deletable || activeAlias) {
+            found.push(`${row.id} is no longer ${row.class}`)
+        }
+    }
+    return found
+}
+
 export function reconcilePlans(frozen, fresh) {
     const errors = []
     if (!frozen || !fresh || frozen.backend !== fresh.backend) errors.push('backend mismatch')
@@ -784,6 +808,12 @@ export function reconcilePlans(frozen, fresh) {
             .sort()
             .join('|')
     if (heads(frozen) !== heads(fresh)) errors.push('open pull request heads changed')
+    // Integrity is not drift. A moved anchor must not hide an unsafe frozen row,
+    // a class change, or an alias that is no longer inert.
+    const integrity = frozenRowIntegrityErrors(frozen, fresh)
+    if (integrity.length) {
+        return { abort: true, errors: [...errors, ...integrity], ids: [], drift: false }
+    }
     if (errors.length) {
         return { abort: true, errors, ids: [], drift: errors.every((e) => DRIFT_ERRORS.has(e)) }
     }

@@ -387,7 +387,6 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefine
     const reportedThc = measuredThc ?? 0
     const reportedCbd = measuredCbd ?? 0
     const typeText = typeof strain.type === 'string' ? strain.type : ''
-
     const terpeneProfile: TerpeneProfile =
         strain.terpeneProfile ??
         generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, typeText)

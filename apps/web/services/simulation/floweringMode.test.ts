@@ -16,7 +16,7 @@ describe('flowering mode', () => {
     it('accepts only the two reported modes', () => {
         expect(reportedFloweringMode('Photoperiod')).toBe('Photoperiod')
         expect(reportedFloweringMode('Autoflower')).toBe('Autoflower')
-        expect(reportedFloweringMode(undefined)).toBeUndefined()
+        expect(reportedFloweringMode()).toBeUndefined()
         expect(reportedFloweringMode('')).toBeUndefined()
     })
 
@@ -26,7 +26,7 @@ describe('flowering mode', () => {
     })
 
     it('treats a missing mode as autoflower only after an explicit choice', () => {
-        expect(isAutoflowerGrow(undefined, undefined)).toBe(false)
+        expect(isAutoflowerGrow()).toBe(false)
         expect(isAutoflowerGrow(undefined, 'Photoperiod')).toBe(false)
         expect(isAutoflowerGrow(undefined, 'Autoflower')).toBe(true)
     })
@@ -43,19 +43,19 @@ describe('flowering mode', () => {
     it('uses the cultivar mode before the grower choice', () => {
         expect(activeFloweringMode('Photoperiod', 'Autoflower')).toBe('Photoperiod')
         expect(activeFloweringMode(undefined, 'Autoflower')).toBe('Autoflower')
-        expect(activeFloweringMode(undefined, undefined)).toBeUndefined()
+        expect(activeFloweringMode()).toBeUndefined()
     })
 
     it('drops a 24-hour cycle unless the mode is autoflower', () => {
         expect(lightHoursForMode(24, 'Autoflower')).toBe(24)
         expect(lightHoursForMode(24, 'Photoperiod')).toBe(18)
-        expect(lightHoursForMode(24, undefined)).toBe(18)
+        expect(lightHoursForMode(24)).toBe(18)
         expect(lightHoursForMode(12, 'Photoperiod')).toBe(12)
     })
 
     it('refuses to start a blank mode until the grower chooses one', () => {
-        expect(setupForConfirm(setup, 'Photoperiod', undefined)).toBe(setup)
-        expect(setupForConfirm(setup, undefined, undefined)).toBeUndefined()
+        expect(setupForConfirm(setup, 'Photoperiod')).toBe(setup)
+        expect(setupForConfirm(setup)).toBeUndefined()
         expect(setupForConfirm(setup, undefined, 'Autoflower')?.floweringPolicy).toBe('Autoflower')
     })
 
@@ -63,6 +63,6 @@ describe('flowering mode', () => {
         expect(equipmentWithPolicy({ potSize: 11 }, 'Photoperiod').floweringPolicy).toBe(
             'Photoperiod',
         )
-        expect(equipmentWithPolicy({ potSize: 11 }, undefined)).toEqual({ potSize: 11 })
+        expect(equipmentWithPolicy({ potSize: 11 })).toEqual({ potSize: 11 })
     })
 })

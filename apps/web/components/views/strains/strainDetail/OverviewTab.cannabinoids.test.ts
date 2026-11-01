@@ -7,6 +7,6 @@ describe('minorCannabinoidEntries', () => {
     })
 
     it('returns nothing when the profile is absent', () => {
-        expect(minorCannabinoidEntries(undefined)).toEqual([])
+        expect(minorCannabinoidEntries()).toEqual([])
     })
 })

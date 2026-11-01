@@ -197,7 +197,7 @@ describe('StrainComparisonView', () => {
 
 describe('reportedTerpenes', () => {
     it('renders a dash when terpenes are missing, including null', () => {
-        expect(reportedTerpenes(undefined)).toBe('--')
+        expect(reportedTerpenes()).toBe('--')
         expect(reportedTerpenes(null)).toBe('--')
     })
 

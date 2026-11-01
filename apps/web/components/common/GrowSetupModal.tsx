@@ -294,12 +294,12 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
     )
 
     const [setup, setSetup] = useState(initialSetup)
-    const [chosenMode, setChosenMode] = useState<FloweringMode | undefined>(undefined)
+    const [choice, setChoice] = useState<{ strainId: string; mode: FloweringMode }>()
     const reportedMode = reportedFloweringMode(strain.floweringType)
+    const chosenMode = choice?.strainId === strain.id ? choice.mode : undefined
 
     useEffect(() => {
         setSetup(initialSetup)
-        setChosenMode(undefined)
     }, [initialSetup, strain.id])
 
     const mode = activeFloweringMode(reportedMode, chosenMode)
@@ -308,7 +308,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
     const chooseMode = (next: string) => {
         const parsed = reportedFloweringMode(next)
         if (parsed === undefined) return
-        setChosenMode(parsed)
+        setChoice({ strainId: strain.id, mode: parsed })
         setSetup((current) => ({
             ...current,
             lightHours: lightHoursForMode(current.lightHours, parsed),

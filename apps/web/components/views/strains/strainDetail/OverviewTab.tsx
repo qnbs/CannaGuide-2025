@@ -39,7 +39,7 @@ const isMinorCannabinoid = (entry: [string, unknown]): entry is [CannabinoidName
 }
 
 export const minorCannabinoidEntries = (
-    profile: Strain['cannabinoidProfile'],
+    profile?: Strain['cannabinoidProfile'],
 ): [CannabinoidName, number][] => {
     if (profile === undefined) return []
     return Object.entries(profile)

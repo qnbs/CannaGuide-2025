@@ -92,7 +92,7 @@ export const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
 /** Strain `floweringTime` is stored in weeks; the genetics summary shows days. */
-export const floweringDaysFromWeeks = (weeks: unknown): number | undefined => {
+export const floweringDaysFromWeeks = (weeks?: unknown): number | undefined => {
     if (typeof weeks !== 'number' || !Number.isFinite(weeks)) return undefined
     return Math.round(weeks * 7)
 }

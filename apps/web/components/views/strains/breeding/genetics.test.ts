@@ -10,7 +10,7 @@ describe('floweringDaysFromWeeks', () => {
 
     it('keeps an explicit zero and leaves a missing value absent', () => {
         expect(floweringDaysFromWeeks(0)).toBe(0)
-        expect(floweringDaysFromWeeks(undefined)).toBeUndefined()
+        expect(floweringDaysFromWeeks()).toBeUndefined()
         expect(floweringDaysFromWeeks(Number.NaN)).toBeUndefined()
     })
 })

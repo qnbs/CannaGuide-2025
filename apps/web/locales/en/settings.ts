@@ -1179,6 +1179,8 @@ export const settingsView = {
         importPartialSuccess_other:
             'Backup restored; {{count}} images could not be restored. App will reload.',
         importError: 'Failed to import ZIP backup. The file may be corrupted.',
+        importTooLarge:
+            'This backup is larger than CannaGuide can safely restore, so nothing was imported -- your data is unchanged. Use a backup exported by CannaGuide.',
         exportError: 'Failed to create ZIP backup.',
         exportImagesError:
             'Your photos could not be read, so no ZIP backup was created -- your data is unchanged. Close other CannaGuide tabs or restart the app, then try again.',

@@ -1224,6 +1224,8 @@ export const settingsView = {
         importPartialSuccess_other:
             'Copia restaurada; no se pudieron restaurar {{count}} imagenes. La app se recargara.',
         importError: 'No se pudo importar la copia ZIP. El archivo puede estar corrupto.',
+        importTooLarge:
+            'Esta copia es mas grande de lo que CannaGuide puede restaurar de forma segura, asi que no se importo nada; tus datos no han cambiado. Usa una copia exportada por CannaGuide.',
         exportError: 'No se pudo crear la copia ZIP.',
         exportImagesError:
             'No se pudieron leer tus fotos, asi que no se creo ninguna copia ZIP; tus datos no han cambiado. Cierra otras pestanas de CannaGuide o reinicia la app e intentalo de nuevo.',

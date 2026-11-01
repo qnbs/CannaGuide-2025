@@ -154,6 +154,27 @@ describe('ZipBackupPanel', () => {
         expect(mocks.reload).not.toHaveBeenCalled()
     })
 
+    it('explains an import refused for its size (#671)', async () => {
+        mocks.importBackup.mockResolvedValueOnce({
+            success: false,
+            metadata: null,
+            rejectedImageCount: 0,
+            errorCode: 'limitExceeded',
+        })
+        const { container } = render(<ZipBackupPanel />)
+        await act(async () => {
+            fireEvent.change(container.querySelector<HTMLInputElement>('#import-zip-file-input')!, {
+                target: { files: [new File(['zip'], 'backup.zip', { type: 'application/zip' })] },
+            })
+            await Promise.resolve()
+        })
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.zipBackup.importTooLarge:',
+        })
+        expect(mocks.reload).not.toHaveBeenCalled()
+    })
+
     describe('export (#665)', () => {
         const clickExport = async () => {
             render(<ZipBackupPanel />)

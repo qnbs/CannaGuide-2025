@@ -199,6 +199,7 @@ describe('reportedTerpenes', () => {
     it('renders a dash when terpenes are missing, including null', () => {
         expect(reportedTerpenes()).toBe('--')
         expect(reportedTerpenes(null)).toBe('--')
+        expect(reportedTerpenes([])).toBe('--')
     })
 
     it('keeps the first three reported terpenes', () => {

@@ -8,15 +8,18 @@ export const reportedFloweringMode = (value?: unknown): FloweringMode | undefine
     return undefined
 }
 
-/** A reported mode wins. A missing mode is autoflower only after an explicit choice. */
+/**
+ * A reported mode wins. A new grow with a blank mode stores Photoperiod or
+ * Autoflower. A grow saved before that choice has no policy and keeps the
+ * previous age-based flowering, so it does not stay vegetative.
+ */
 export const isAutoflowerGrow = (
     floweringType?: unknown,
     policy?: FloweringMode | undefined,
 ): boolean => {
     const reported = reportedFloweringMode(floweringType)
-    if (reported === 'Autoflower') return true
-    if (reported === 'Photoperiod') return false
-    return policy === 'Autoflower'
+    if (reported !== undefined) return reported === 'Autoflower'
+    return policy !== 'Photoperiod'
 }
 
 export const holdsLongDayFlowerTransition = (

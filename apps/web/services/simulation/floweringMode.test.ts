@@ -25,14 +25,15 @@ describe('flowering mode', () => {
         expect(isAutoflowerGrow('Photoperiod', 'Autoflower')).toBe(false)
     })
 
-    it('treats a missing mode as autoflower only after an explicit choice', () => {
-        expect(isAutoflowerGrow()).toBe(false)
+    it('keeps a saved grow flowering on age until the grower chooses Photoperiod', () => {
+        expect(isAutoflowerGrow()).toBe(true)
         expect(isAutoflowerGrow(undefined, 'Photoperiod')).toBe(false)
         expect(isAutoflowerGrow(undefined, 'Autoflower')).toBe(true)
     })
 
     it('holds flowering on a long day unless the grow is autoflower', () => {
-        expect(holdsLongDayFlowerTransition(undefined, undefined, true, 18)).toBe(true)
+        expect(holdsLongDayFlowerTransition(undefined, undefined, true, 18)).toBe(false)
+        expect(holdsLongDayFlowerTransition(undefined, 'Photoperiod', true, 18)).toBe(true)
         expect(holdsLongDayFlowerTransition('Photoperiod', undefined, true, 18)).toBe(true)
         expect(holdsLongDayFlowerTransition(undefined, 'Autoflower', true, 18)).toBe(false)
         expect(holdsLongDayFlowerTransition('Autoflower', undefined, true, 18)).toBe(false)

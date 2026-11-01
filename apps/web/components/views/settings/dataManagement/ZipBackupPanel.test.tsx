@@ -67,7 +67,7 @@ describe('ZipBackupPanel', () => {
         })
         expect(mocks.reload).not.toHaveBeenCalled()
 
-        await act(async () => {
+        await act(() => {
             vi.advanceTimersByTime(3500)
         })
         expect(mocks.reload).toHaveBeenCalledOnce()
@@ -122,7 +122,7 @@ describe('ZipBackupPanel', () => {
         })
         expect(mocks.reload).not.toHaveBeenCalled()
 
-        await act(async () => {
+        await act(() => {
             vi.advanceTimersByTime(3500)
         })
         expect(mocks.reload).toHaveBeenCalledOnce()

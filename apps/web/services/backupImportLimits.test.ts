@@ -55,7 +55,10 @@ describe('readEntryText (#671, #748 review)', () => {
     })
 
     it('refuses an entry without a stream instead of inflating it whole', async () => {
-        const entry = { name: 'x.json', async: async () => 'x' } as unknown as JSZip.JSZipObject
+        const entry = {
+            name: 'x.json',
+            async: () => Promise.resolve('x'),
+        } as unknown as JSZip.JSZipObject
         await expect(readEntryText(entry, 1000, { remaining: 1000 })).rejects.toBeInstanceOf(
             BackupImportLimitError,
         )

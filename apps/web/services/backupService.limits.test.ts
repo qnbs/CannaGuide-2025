@@ -37,7 +37,7 @@ describe('ZIP import inflation limits (#671)', () => {
         mocks.restore.mockResolvedValue({ success: true, reloadRequired: true })
         vi.stubGlobal(
             'createImageBitmap',
-            vi.fn(async () => ({ width: 1, height: 1, close: vi.fn() })),
+            vi.fn(() => Promise.resolve({ width: 1, height: 1, close: vi.fn() })),
         )
     })
 

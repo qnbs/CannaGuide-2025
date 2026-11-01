@@ -1106,7 +1106,7 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Avertissement',
-            disclaimerContent: `<p>Toutes les informations de cette application sont fournies a des fins educatives et de divertissement uniquement. La culture du cannabis est soumise a des reglementations legales strictes. Veuillez vous informer sur les lois de votre region et agissez toujours de maniere responsable et conforme a la loi.</p>`,
+            disclaimerContent: '<p>Toutes les informations de cette application sont fournies a des fins educatives et de divertissement uniquement. La culture du cannabis est soumise a des reglementations legales strictes. Veuillez vous informer sur les lois de votre region et agissez toujours de maniere responsable et conforme a la loi.</p>',
         },
     },
     communityShare: {

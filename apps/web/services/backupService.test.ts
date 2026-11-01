@@ -6,8 +6,8 @@ const mocks = vi.hoisted(() => ({
     zipEntries: new Map<string, unknown>(),
     replacePrimaryPersistedSnapshot: vi.fn(),
     // Race injection points around the dependent (image) write.
-    beforeDependentApply: vi.fn(async () => {}),
-    afterDependentApply: vi.fn(async () => {}),
+    beforeDependentApply: vi.fn(() => Promise.resolve()),
+    afterDependentApply: vi.fn(() => Promise.resolve()),
 }))
 
 vi.mock('jszip', () => {
@@ -59,8 +59,9 @@ vi.mock('jszip', () => {
             this.files[name] = { name }
             return this
         }
-        async generateAsync(): Promise<Blob> {
-            return new Blob(['mockzip'], { type: 'application/zip' })
+        generateAsync(): Promise<Blob> {
+            const recorded = Object.keys(this.files).length
+            return Promise.resolve(new Blob([`mockzip:${recorded}`], { type: 'application/zip' }))
         }
     }
     return {
@@ -115,7 +116,7 @@ vi.mock('@/services/persistedStateService', () => ({
             replaceError = error
         }
         if (replaced) return { success: true, reloadRequired: true }
-        await dependentWrite?.revert().catch(() => {})
+        await dependentWrite?.revert().catch(() => undefined)
         return { success: false, reloadRequired: false, error: replaceError }
     },
 }))
@@ -202,7 +203,7 @@ const importMockBackup = (state: unknown, images: Record<string, unknown> = {}) 
         files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
         file: (name: string) => {
             const value = entries.get(name)
-            return value === undefined ? null : { async: async () => value }
+            return value === undefined ? null : { async: () => Promise.resolve(value) }
         },
     })
     return backupService.importBackup(new File(['zip'], 'backup.zip', { type: 'application/zip' }))
@@ -275,6 +276,7 @@ describe('backupService', () => {
             const result = await backupService.exportBackup()
             expect(result.success).toBe(false)
             expect(result.error).toContain('No saved state found')
+            expect(result).not.toHaveProperty('errorCode')
         })
 
         it('returns a successful result with state', async () => {
@@ -285,6 +287,19 @@ describe('backupService', () => {
             expect(result.filename).toMatch(/^cannaguide-backup-\d{4}-\d{2}-\d{2}/)
             expect(result.metadata).toBeDefined()
             expect(result.metadata?.plantCount).toBe(0)
+        })
+
+        it('counts plants stored as an entity map', async () => {
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(
+                JSON.stringify({
+                    simulation: {
+                        plants: { ids: ['p1'], entities: { p1: { id: 'p1' } } },
+                    },
+                }),
+            )
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(result.metadata?.plantCount).toBe(1)
         })
 
         it('writes no Cloud TTS key into the ZIP (#654)', async () => {
@@ -337,6 +352,41 @@ describe('backupService', () => {
             })
             expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
         }
+
+        it('exports a photo id at the 255-character limit', async () => {
+            const id = 'a'.repeat(255)
+            await seedPhotos({ id, data: VALID_PNG_DATA_URL, createdAt: 1 })
+            const result = await backupService.exportBackup()
+            expect(result.success).toBe(true)
+            expect(result.metadata?.imageCount).toBe(1)
+            expect(mocks.zipEntries.has(`images/${id}.json`)).toBe(true)
+        })
+
+        it('refuses the archive when a photo id is not restorable', async () => {
+            await seedPhotos({ id: 'b'.repeat(256), data: VALID_PNG_DATA_URL, createdAt: 1 })
+            const result = await backupService.exportBackup()
+            expect(result).toMatchObject({
+                success: false,
+                blob: null,
+                errorCode: 'imageNameNotRestorable',
+            })
+            expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
+        })
+
+        it('does not rewrite an unsafe photo id into another photo name', async () => {
+            await seedPhotos(
+                { id: 'a_b', data: VALID_PNG_DATA_URL, createdAt: 1 },
+                { id: 'a/b', data: VALID_PNG_DATA_URL, createdAt: 2 },
+            )
+            const result = await backupService.exportBackup()
+            expect(result).toMatchObject({
+                success: false,
+                blob: null,
+                errorCode: 'imageNameNotRestorable',
+            })
+            expect(mocks.zipEntries.has('images/a_b.json')).toBe(false)
+            expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
+        })
 
         it('exports every stored photo with the state', async () => {
             await seedPhotos(photo)
@@ -423,7 +473,7 @@ describe('backupService', () => {
                 files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
                 file: (name: string) => {
                     const value = entries.get(name)
-                    return value === undefined ? null : { async: async () => value }
+                    return value === undefined ? null : { async: () => Promise.resolve(value) }
                 },
             })
             const restored = await backupService.importBackup(
@@ -438,6 +488,32 @@ describe('backupService', () => {
     })
 
     describe('importBackup', () => {
+        it('restores a photo id at the 255-character limit', async () => {
+            const id = 'c'.repeat(255)
+            const result = await importMockBackup(
+                { version: 6 },
+                { [id]: { id, data: VALID_PNG_DATA_URL, createdAt: 4 } },
+            )
+            expect(result).toMatchObject({ success: true, rejectedImageCount: 0 })
+            const request = indexedDB.open('CannaGuideDB')
+            const database = await new Promise<IDBDatabase>((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result)
+                request.onerror = () => reject(request.error)
+            })
+            const stored = await readStoredImage(database, id)
+            database.close()
+            expect(stored).toMatchObject({ id, data: VALID_PNG_DATA_URL })
+        })
+
+        it('counts a photo name that cannot round-trip', async () => {
+            const id = 'd'.repeat(256)
+            const result = await importMockBackup(
+                { version: 6 },
+                { [id]: { id, data: VALID_PNG_DATA_URL, createdAt: 4 } },
+            )
+            expect(result).toMatchObject({ success: true, rejectedImageCount: 1 })
+        })
+
         it('rejects oversized files', async () => {
             const bigFile = new File(['x'], 'big.zip', { type: 'application/zip' })
             Object.defineProperty(bigFile, 'size', { value: 600 * 1024 * 1024 })
@@ -485,16 +561,18 @@ describe('backupService', () => {
                 },
                 file: (name: string) => {
                     if (name === 'cannaguide-state.json') {
-                        return { async: async () => '{"version":6}' }
+                        return { async: () => Promise.resolve('{"version":6}') }
                     }
                     if (name === imagePath) {
                         return {
-                            async: async () =>
-                                JSON.stringify({
-                                    id: 'photo-1',
-                                    data: VALID_PNG_DATA_URL,
-                                    createdAt: 10,
-                                }),
+                            async: () =>
+                                Promise.resolve(
+                                    JSON.stringify({
+                                        id: 'photo-1',
+                                        data: VALID_PNG_DATA_URL,
+                                        createdAt: 10,
+                                    }),
+                                ),
                         }
                     }
                     return null
@@ -645,7 +723,7 @@ describe('backupService', () => {
                 files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
                 file: (name: string) => {
                     const value = entries.get(name)
-                    return value === undefined ? null : { async: async () => value }
+                    return value === undefined ? null : { async: () => Promise.resolve(value) }
                 },
             })
 
@@ -690,7 +768,7 @@ describe('backupService', () => {
                 },
                 file: (name: string) => {
                     if (name === 'cannaguide-state.json') {
-                        return { async: async () => '{"version":6}' }
+                        return { async: () => Promise.resolve('{"version":6}') }
                     }
                     if (name === imagePath) {
                         return {
@@ -734,25 +812,30 @@ describe('backupService', () => {
             const externalPath = 'images/photo-external.json'
             const incompletePath = 'images/photo-incomplete.json'
             const entries: Record<string, { async: () => Promise<string> }> = {
-                [statePath]: { async: async () => '{"version":6}' },
+                [statePath]: { async: () => Promise.resolve('{"version":6}') },
                 [validPath]: {
-                    async: async () =>
-                        JSON.stringify({
-                            id: 'photo-valid',
-                            data: VALID_PNG_DATA_URL,
-                            createdAt: 10,
-                        }),
+                    async: () =>
+                        Promise.resolve(
+                            JSON.stringify({
+                                id: 'photo-valid',
+                                data: VALID_PNG_DATA_URL,
+                                createdAt: 10,
+                            }),
+                        ),
                 },
                 [externalPath]: {
-                    async: async () =>
-                        JSON.stringify({
-                            id: 'photo-external',
-                            data: 'https://images.example.test/tracker.png',
-                            createdAt: 11,
-                        }),
+                    async: () =>
+                        Promise.resolve(
+                            JSON.stringify({
+                                id: 'photo-external',
+                                data: 'https://images.example.test/tracker.png',
+                                createdAt: 11,
+                            }),
+                        ),
                 },
                 [incompletePath]: {
-                    async: async () => JSON.stringify({ id: 'photo-incomplete', createdAt: 12 }),
+                    async: () =>
+                        Promise.resolve(JSON.stringify({ id: 'photo-incomplete', createdAt: 12 })),
                 },
             }
             mocks.loadZip.mockResolvedValueOnce({
@@ -813,7 +896,9 @@ describe('backupService', () => {
             mocks.loadZip.mockResolvedValueOnce({
                 files: { [statePath]: { name: statePath } },
                 file: (name: string) =>
-                    name === statePath ? { async: async () => JSON.stringify(state) } : null,
+                    name === statePath
+                        ? { async: () => Promise.resolve(JSON.stringify(state)) }
+                        : null,
             })
 
             const result = await backupService.importBackup(
@@ -1305,7 +1390,7 @@ describe('backupService', () => {
             // jsdom 30 createObjectURL reads an internal blob buffer that Node's Blob
             // does not have. The download path only needs a URL string.
             vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
-            vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+            vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
             const blob = new Blob(['test'])
 
             backupService.downloadBlob(blob, 'test.zip')

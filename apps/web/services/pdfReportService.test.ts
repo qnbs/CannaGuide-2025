@@ -5,6 +5,7 @@ import {
     computeMetricStats,
     buildDiagnosisRows,
 } from './pdfReportService'
+import { harvestPercentText } from './pdf/pdfTypes'
 import type {
     Plant,
     JournalEntry,
@@ -32,6 +33,7 @@ const mockDoc = {
     save: vi.fn(),
     output: vi.fn(() => new ArrayBuffer(100)),
     autoTable: vi.fn(),
+    splitTextToSize: vi.fn((text: string) => [text]),
     lastAutoTable: mockLastAutoTable,
     internal: { getNumberOfPages: vi.fn(() => 1) },
 }
@@ -136,6 +138,13 @@ const basePlant: Plant = {
 // Tests
 // ---------------------------------------------------------------------------
 
+const harvestThcRow = (): string | undefined => {
+    const bodies = mockDoc.autoTable.mock.calls.map(
+        (call: unknown[]) => (call[0] as { body?: [string, string][] }).body,
+    )
+    return bodies.flat().find((row) => row?.[0] === 'THC at Harvest')?.[1]
+}
+
 describe('generateGrowReport', () => {
     beforeEach(() => {
         vi.clearAllMocks()
@@ -193,6 +202,35 @@ describe('generateGrowReport', () => {
         expect(textCalls.some((s: unknown) => typeof s === 'string' && s.includes('Harvest'))).toBe(
             true,
         )
+        const thcRow = harvestThcRow()
+        expect(thcRow).toBe('19.5%')
+    })
+
+    it('prints unknown harvest THC when the cultivar never reported it', async () => {
+        const strain = { ...basePlant.strain }
+        Reflect.deleteProperty(strain, 'thc')
+        const plantWithHarvest: Plant = {
+            ...basePlant,
+            strain,
+            harvestData: {
+                wetWeight: 120,
+                dryWeight: 40,
+                currentDryDay: 7,
+                currentCureDay: 0,
+                lastBurpDay: 5,
+                jarHumidity: 62,
+                chlorophyllPercent: 5,
+                terpeneRetentionPercent: 85,
+                moldRiskPercent: 3,
+                finalQuality: 88,
+                cannabinoidProfile: { thc: 0, cbn: 0 },
+                terpeneProfile: { Myrcene: 0.6 },
+            },
+        }
+        await generateGrowReport(plantWithHarvest, [])
+        expect(harvestThcRow()).toBe('Unknown')
+        expect(harvestPercentText(undefined, 0)).toBe('Unknown')
+        expect(harvestPercentText(18, 14.2)).toBe('14.2%')
     })
 
     it('truncates long journal notes to 80 characters', async () => {
@@ -222,7 +260,6 @@ function makeReading(overrides?: Partial<MetricsReading>): MetricsReading {
         height: 30,
         co2: 400,
         ...overrides,
-         
     } as MetricsReading
 }
 
@@ -236,7 +273,6 @@ function makeDiagnosis(overrides?: Partial<DiagnosisRecord>): DiagnosisRecord {
         severity: 'mild',
         harvestScore: 75,
         ...overrides,
-         
     } as DiagnosisRecord
 }
 

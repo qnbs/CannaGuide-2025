@@ -32,6 +32,11 @@ export const SEVERITY_COLORS: Record<string, [number, number, number]> = {
     severe: [244, 67, 54],
 }
 
+export const harvestPercentText = (source: unknown, value: number): string => {
+    if (typeof source === 'number' && Number.isFinite(source)) return `${value.toFixed(1)}%`
+    return 'Unknown'
+}
+
 export function formatDate(timestamp: number): string {
     return new Date(timestamp).toLocaleDateString('en-CA')
 }

@@ -41,16 +41,13 @@ from the configured test run.
 
 ## Validation evidence
 
-App tests use synthetic fixtures. On 1 November 2026, the original W004 ZIP
-was separately verified outside the repository: SHA-256 and CRC match, all 14
-archive validation checks pass, and 52/53 rebuilt outputs are byte-identical.
-Only the SQLite crosswalk differs in bytes; both integrity checks pass and both
-SQL dumps hash to `8b7a6d0b258328c42ed2e69b9245f025a00738b6f916247f42e010cdce38db8e`.
-Byte reproducibility remains unresolved and no research data is imported.
+App contract validation uses synthetic fixtures only. Research archive checks
+are tracked separately in the PR and execution issue; they do not establish
+application integration.
 
 - RED: the targeted Vitest file failed because the new fact module did not
   exist (`Test Files 1 failed (1)`).
-- GREEN: the same targeted file passes 54 tests, including missing versus zero,
+- GREEN: the same targeted file passes 55 tests, including missing versus zero,
   strict versus inclusive bounds, nominal versus batch, exact target scope,
   intervals, rights, invalid numbers/units/states/dates and private legacy IDs.
 - The scoped ai-core TypeScript check passes.
@@ -67,3 +64,6 @@ Review regression: without the analyte/unit rule, the targeted file reports
 4 failures (50 passing). The explicit matrix restores 54 passing tests.
 Dedicated unknown/legacy fixtures first accept a null control, then reject
 a numeric zero with only a value-path error and valid claim status.
+
+The adapter scope-alias regression failed with one failing / 54 passing cases
+before giving each sidecar its own scope copy; all 55 cases pass afterward.

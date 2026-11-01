@@ -219,7 +219,7 @@ export const adaptLegacyStrainFacts = (
         analyte,
         unit: '%',
         // Legacy identity is opaque; it is not retroactively a certified cultivar ID.
-        scope,
+        scope: { ...scope },
         evidenceIds: [],
         sourceId: null,
         claimStatus: 'unverified',

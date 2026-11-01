@@ -43,6 +43,13 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         expect(legacy.thc).toBe(0)
         expect(strainFactSchema.parse(facts.thc)).toEqual(facts.thc)
     })
+    it('keeps adapted fact identities independent from sibling and caller mutations', () => {
+        const identity = { kind: 'legacy' as const, id: 'legacy:synthetic' }
+        const facts = adaptLegacyStrainFacts({ id: 'synthetic', thc: 0, cbd: 0 }, identity)
+        facts.thc.scope.id = 'legacy:changed'
+        expect(facts.cbd.scope.id).toBe('legacy:synthetic')
+        expect(identity.id).toBe('legacy:synthetic')
+    })
     it('accepts explicit source-backed measured zero and preserves unknown test date', () => {
         expect(strainFactSchema.parse(point)).toEqual(point)
         expect(strainFactSchema.parse(point).dates.testDate).toBeNull()

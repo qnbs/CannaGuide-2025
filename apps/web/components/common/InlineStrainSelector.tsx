@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Strain } from '@/types'
+import { Strain, StrainType } from '@/types'
 import { useAppSelector } from '@/stores/store'
 import { strainService } from '@/services/strainService'
 import { useTranslation } from 'react-i18next'
@@ -11,6 +11,113 @@ import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTyp
 import { SearchBar } from '@/components/common/SearchBar'
 import { compareText } from '@/components/views/strains/compareText'
 import { formatFloweringWeeks } from '@/components/views/strains/reportedStrainFacts'
+
+const lowerText = (value: unknown): string => (typeof value === 'string' ? value : '').toLowerCase()
+
+const includesQuery = (value: unknown, query: string): boolean => lowerText(value).includes(query)
+
+const listIncludesQuery = (values: unknown, query: string): boolean =>
+    (Array.isArray(values) ? values : []).some(
+        (item) => typeof item === 'string' && item.toLowerCase().includes(query),
+    )
+
+const matchesStrainQuery = (strain: Strain, query: string): boolean =>
+    includesQuery(strain.name, query) ||
+    includesQuery(strain.type, query) ||
+    listIncludesQuery(strain.aromas, query)
+
+const selectorRank = (
+    strain: Strain,
+    userIds: ReadonlySet<string>,
+    favoriteIds: ReadonlySet<string>,
+): number => {
+    if (userIds.has(strain.id)) return 0
+    if (favoriteIds.has(strain.id)) return 1
+    return 2
+}
+
+const compareSelectorStrains = (
+    left: Strain,
+    right: Strain,
+    userIds: ReadonlySet<string>,
+    favoriteIds: ReadonlySet<string>,
+): number => {
+    const rankGap =
+        selectorRank(left, userIds, favoriteIds) - selectorRank(right, userIds, favoriteIds)
+    if (rankGap !== 0) return rankGap
+    return compareText(left.name, right.name)
+}
+
+const YIELD_LEVELS = ['Low', 'Medium', 'High'] as const
+const HEIGHT_LEVELS = ['Short', 'Medium', 'Tall'] as const
+
+const oneOf = <T extends string>(value: T | undefined, allowed: readonly T[]): T | undefined => {
+    if (value !== undefined && allowed.includes(value)) return value
+    return undefined
+}
+
+const listOrEmpty = <T,>(value: readonly T[] | undefined): T[] =>
+    value === undefined ? [] : [...value]
+
+const reportedName = (name: unknown, unknownLabel: string): string => {
+    if (typeof name !== 'string' || name.trim() === '') return unknownLabel
+    return name
+}
+
+const reportedPercent = (value: unknown, unknownLabel: string): string => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return unknownLabel
+    return `${value.toFixed(1)}%`
+}
+
+const typeIconFor = (type: string) => {
+    if (type === StrainType.Sativa) return SativaIcon
+    if (type === StrainType.Indica) return IndicaIcon
+    if (type === StrainType.Hybrid) return HybridIcon
+    return PhosphorIcons.Question
+}
+
+const typeClassFor = (type: string): string => {
+    if (type === StrainType.Sativa) return 'text-amber-400'
+    if (type === StrainType.Indica) return 'text-indigo-400'
+    if (type === StrainType.Hybrid) return 'text-blue-400'
+    return 'text-slate-400'
+}
+
+const EmptySearchResult: React.FC<{ message: string }> = ({ message }) => (
+    <div className="text-center py-4 text-muted text-sm">
+        <PhosphorIcons.MagnifyingGlass
+            className="w-8 h-8 mx-auto text-slate-600 mb-1"
+            aria-hidden="true"
+        />
+        {message}
+    </div>
+)
+
+const UserStar: React.FC<{ visible: boolean }> = ({ visible }) => {
+    if (!visible) return null
+    return <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />
+}
+
+const levelLabel = (
+    value: string | undefined,
+    unknownLabel: string,
+    labelFor: (value: string) => string,
+): string => {
+    if (value === undefined) return unknownLabel
+    return labelFor(value)
+}
+
+const MetricChip: React.FC<{
+    title: string
+    icon: React.ComponentType<{ className?: string }>
+    iconClassName: string
+    value: string
+}> = ({ title, icon: Icon, iconClassName, value }) => (
+    <div className="flex items-center gap-1" title={title}>
+        <Icon className={iconClassName} />
+        <span>{value}</span>
+    </div>
+)
 
 const DIFFICULTY_LEVEL: Record<string, number> = { Easy: 1, Medium: 2, Hard: 3 }
 const DIFFICULTY_COLOR: Record<string, string> = {
@@ -60,44 +167,15 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
     onClick,
 }) => {
     const { t } = useTranslation()
-    const userStrains = useAppSelector(selectUserStrains) ?? []
-    const isUserStrain = userStrains.some((s) => s.id === strain.id)
-
-    const typeClasses: Record<string, string> = {
-        Sativa: 'text-amber-400',
-        Indica: 'text-indigo-400',
-        Hybrid: 'text-blue-400',
-    }
-    const safeType =
-        strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
-            ? strain.type
-            : undefined
-    const safeYield =
-        strain.agronomic?.yield === 'Low' ||
-        strain.agronomic?.yield === 'Medium' ||
-        strain.agronomic?.yield === 'High'
-            ? strain.agronomic.yield
-            : undefined
-    const safeHeight =
-        strain.agronomic?.height === 'Short' ||
-        strain.agronomic?.height === 'Medium' ||
-        strain.agronomic?.height === 'Tall'
-            ? strain.agronomic.height
-            : undefined
-    const TypeIcon = safeType
-        ? { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
-        : PhosphorIcons.Question
+    const userStrains = listOrEmpty(useAppSelector(selectUserStrains))
+    const isUserStrain = userStrains.some((item) => item.id === strain.id)
+    const safeYield = oneOf(strain.agronomic?.yield, YIELD_LEVELS)
+    const safeHeight = oneOf(strain.agronomic?.height, HEIGHT_LEVELS)
+    const TypeIcon = typeIconFor(strain.type)
     const unknown = t('common.unknown')
-    const safeName =
-        typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : unknown
-    const safeThc =
-        typeof strain.thc === 'number' && Number.isFinite(strain.thc)
-            ? `${strain.thc.toFixed(1)}%`
-            : unknown
-    const safeCbd =
-        typeof strain.cbd === 'number' && Number.isFinite(strain.cbd)
-            ? `${strain.cbd.toFixed(1)}%`
-            : unknown
+    const safeName = reportedName(strain.name, unknown)
+    const safeThc = reportedPercent(strain.thc, unknown)
+    const safeCbd = reportedPercent(strain.cbd, unknown)
     const safeFloweringTime = formatFloweringWeeks(
         strain.floweringTimeRange,
         strain.floweringTime,
@@ -111,37 +189,33 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
             className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 ring-1 ring-inset ring-white/20"
         >
             <div className="flex-shrink-0">
-                <TypeIcon
-                    className={`w-10 h-10 ${safeType ? typeClasses[safeType] : 'text-slate-400'}`}
-                />
+                <TypeIcon className={`w-10 h-10 ${typeClassFor(strain.type)}`} />
             </div>
 
             <div className="flex-grow min-w-0">
                 <div className="flex items-center gap-2">
-                    {isUserStrain && (
-                        <PhosphorIcons.Star
-                            weight="fill"
-                            className="w-4 h-4 text-amber-400 flex-shrink-0"
-                        />
-                    )}
+                    <UserStar visible={isUserStrain} />
                     <p className="font-bold text-slate-100 truncate">{safeName}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-x-4 text-xs text-slate-400 mt-1">
-                    <div className="flex items-center gap-1" title="THC">
-                        <PhosphorIcons.Lightning className="w-3 h-3 text-red-400" />
-                        <span>{safeThc}</span>
-                    </div>
-                    <div className="flex items-center gap-1" title="CBD">
-                        <PhosphorIcons.Drop className="w-3 h-3 text-blue-400" />
-                        <span>{safeCbd}</span>
-                    </div>
-                    <div
-                        className="flex items-center gap-1"
+                    <MetricChip
+                        title="THC"
+                        icon={PhosphorIcons.Lightning}
+                        iconClassName="w-3 h-3 text-red-400"
+                        value={safeThc}
+                    />
+                    <MetricChip
+                        title="CBD"
+                        icon={PhosphorIcons.Drop}
+                        iconClassName="w-3 h-3 text-blue-400"
+                        value={safeCbd}
+                    />
+                    <MetricChip
                         title={t('strainsView.table.flowering')}
-                    >
-                        <PhosphorIcons.ArrowClockwise className="w-3 h-3 text-slate-400" />
-                        <span>{safeFloweringTime}</span>
-                    </div>
+                        icon={PhosphorIcons.ArrowClockwise}
+                        iconClassName="w-3 h-3 text-slate-400"
+                        value={safeFloweringTime}
+                    />
                 </div>
             </div>
 
@@ -153,9 +227,9 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Archive className="w-3 h-3" />
                     <span>
-                        {safeYield
-                            ? t(`strainsView.addStrainModal.yields.${safeYield.toLowerCase()}`)
-                            : unknown}
+                        {levelLabel(safeYield, unknown, (value) =>
+                            t(`strainsView.addStrainModal.yields.${value.toLowerCase()}`),
+                        )}
                     </span>
                 </div>
                 <div
@@ -164,9 +238,9 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Ruler className="w-3 h-3" />
                     <span>
-                        {safeHeight
-                            ? t(`strainsView.addStrainModal.heights.${safeHeight.toLowerCase()}`)
-                            : unknown}
+                        {levelLabel(safeHeight, unknown, (value) =>
+                            t(`strainsView.addStrainModal.heights.${value.toLowerCase()}`),
+                        )}
                     </span>
                 </div>
             </div>
@@ -204,39 +278,15 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     }, [t])
 
     const filteredStrains = useMemo(() => {
-        const lowerCaseSearch = searchTerm.toLowerCase()
-
-        let strainsToShow = allStrains.filter((strain): strain is Strain => Boolean(strain))
-
-        if (searchTerm.trim() !== '') {
-            strainsToShow = allStrains.filter(
-                (s) =>
-                    (typeof s.name === 'string' ? s.name : '')
-                        .toLowerCase()
-                        .includes(lowerCaseSearch) ||
-                    (typeof s.type === 'string' ? s.type : '')
-                        .toLowerCase()
-                        .includes(lowerCaseSearch) ||
-                    (Array.isArray(s.aromas) ? s.aromas : []).some(
-                        (a) => typeof a === 'string' && a.toLowerCase().includes(lowerCaseSearch),
-                    ),
-            )
-        }
-
-        // Prioritize user strains and favorites
+        const query = searchTerm.toLowerCase()
+        const strainsToShow =
+            searchTerm.trim() === ''
+                ? allStrains.filter((strain): strain is Strain => Boolean(strain))
+                : allStrains.filter((strain) => matchesStrainQuery(strain, query))
+        const userIds = new Set(userStrains.map((strain) => strain.id))
         return strainsToShow
-            .toSorted((a, b) => {
-                const aIsUser = userStrains.some((s) => s.id === a.id)
-                const bIsUser = userStrains.some((s) => s.id === b.id)
-                const aIsFav = favorites.has(a.id)
-                const bIsFav = favorites.has(b.id)
-                if (aIsUser && !bIsUser) return -1
-                if (!aIsUser && bIsUser) return 1
-                if (aIsFav && !bIsFav) return -1
-                if (!aIsFav && bIsFav) return 1
-                return compareText(a.name, b.name)
-            })
-            .slice(0, 100) // Limit results for performance
+            .toSorted((left, right) => compareSelectorStrains(left, right, userIds, favorites))
+            .slice(0, 100)
     }, [searchTerm, allStrains, userStrains, favorites])
 
     return (
@@ -277,15 +327,11 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
                                 onClick={() => onSelectStrain(strain)}
                             />
                         ))}
-                        {filteredStrains.length === 0 && (
-                            <div className="text-center py-4 text-muted text-sm">
-                                <PhosphorIcons.MagnifyingGlass
-                                    className="w-8 h-8 mx-auto text-slate-600 mb-1"
-                                    aria-hidden="true"
-                                />
-                                {t('strainsView.emptyStates.noResults.title')}
-                            </div>
-                        )}
+                        {filteredStrains.length === 0 ? (
+                            <EmptySearchResult
+                                message={t('strainsView.emptyStates.noResults.title')}
+                            />
+                        ) : null}
                     </div>
                 )}
             </div>

@@ -52,7 +52,7 @@ establish byte-identical rebuilding. No research data is imported by this API.
 
 - RED: the targeted Vitest file failed because the new fact module did not
   exist (`Test Files 1 failed (1)`).
-- GREEN: the same targeted file passes 56 tests, including missing versus zero,
+- GREEN: the same targeted file passes 58 tests, including missing versus zero,
   strict versus inclusive bounds, nominal versus batch, exact target scope,
   intervals, rights, invalid numbers/units/states/dates and private legacy IDs.
 - The scoped ai-core TypeScript check passes.
@@ -76,3 +76,8 @@ before giving each sidecar its own scope copy; all 55 cases pass afterward.
 Laboratory-result association regression: RED 1 failed / 55 passed before
 matching the declared exact batch; GREEN 56/56 afterward, including other-batch,
 other-product, product-level and reverse-association rejection.
+
+Laboratory claim status is reserved for measured laboratory points and bounds;
+nominal labels and product specifications require source attribution. RED:
+2 failed / 56 passed for otherwise-valid production-permitted product reports
+with laboratory claim status. GREEN: 58/58, including release-gate rejection.

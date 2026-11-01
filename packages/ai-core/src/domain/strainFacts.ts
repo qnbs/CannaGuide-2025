@@ -129,6 +129,12 @@ const validateAttribution = (fact: FactShape, reject: RejectFact): void => {
         reject('Unknown and legacy values cannot carry attributed claim status')
 }
 
+const validateLaboratoryStatus = (fact: FactShape, reject: RejectFact): void => {
+    if (labStates.has(fact.state)) return
+    if (fact.claimStatus === 'laboratory_reported')
+        reject('Laboratory claim status requires a measured laboratory state')
+}
+
 const validateLabScope = (fact: FactShape, reject: RejectFact): void => {
     if (fact.claimStatus !== 'laboratory_reported')
         reject('Lab facts require a laboratory report claim')
@@ -169,6 +175,7 @@ const validateInterval = (fact: FactShape, reject: RejectFact): void => {
 export const strainFactSchema = factShape.superRefine((fact, ctx) => {
     const reject: RejectFact = (message) => ctx.addIssue({ code: 'custom', message })
     validateAttribution(fact, reject)
+    validateLaboratoryStatus(fact, reject)
     validateScope(fact, reject)
     validateConcentration(fact, reject)
     validateInterval(fact, reject)

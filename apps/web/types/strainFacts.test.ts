@@ -62,6 +62,7 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         const nominal = {
             ...point,
             state: 'source_stated_nominal',
+            claimStatus: 'source_attributed',
             scope: { kind: 'medical_flower_product', id: 'medical_flower_product:synthetic-1' },
             value: 1,
         }
@@ -247,6 +248,7 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         const interval = {
             ...base,
             state: 'specification_interval',
+            claimStatus: 'source_attributed',
             scope: { kind: 'medical_flower_product', id: 'medical_flower_product:synthetic-1' },
             lower: 0,
             lowerOperator: '>=',
@@ -257,6 +259,39 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         expect(strainFactSchema.parse(interval)).toEqual(interval)
         expect(strainFactSchema.safeParse({ ...interval, lower: 2 }).success).toBe(false)
     })
+    it.each(['source_stated_nominal', 'specification_interval'] as const)(
+        'never labels %s as laboratory-reported for release',
+        (state) => {
+            const common = {
+                ...base,
+                state,
+                claimStatus: 'source_attributed',
+                rights: 'production_permitted',
+                scope: { kind: 'medical_flower_product', id: base.scope.productId },
+            }
+            const control =
+                state === 'source_stated_nominal'
+                    ? { ...common, value: 0 }
+                    : {
+                          ...common,
+                          value: null,
+                          lower: 0,
+                          upper: 1,
+                          lowerOperator: '>=',
+                          upperOperator: '<=',
+                      }
+            const valid = strainFactSchema.parse(control)
+            expect(isFactReleaseEligible(valid)).toBe(true)
+            const invalid = { ...valid, claimStatus: 'laboratory_reported' as const }
+            const result = strainFactSchema.safeParse(invalid)
+            expect(result.success).toBe(false)
+            if (!result.success)
+                expect(result.error.issues.map((issue) => issue.message)).toEqual([
+                    'Laboratory claim status requires a measured laboratory state',
+                ])
+            expect(isFactReleaseEligible(invalid)).toBe(false)
+        },
+    )
     it('requires explicit production rights and never promotes schema-only facts', () => {
         expect(isFactReleaseEligible(strainFactSchema.parse(point))).toBe(false)
         expect(

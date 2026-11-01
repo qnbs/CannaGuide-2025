@@ -1,4 +1,5 @@
 import type { Language, Strain } from '@/types'
+import { getT } from '@/i18n'
 import { localizeStr } from './localeHelpers'
 import { DIFFICULTY_VAL, HEIGHT_VAL, YIELD_VAL, type StylePalette } from './strainImagePalette'
 import { svgDataBar, svgTerpeneDots } from './strainImageSvgParts'
@@ -62,13 +63,7 @@ export const buildStrainDataBars = (
     palette: StylePalette,
     lang: Language,
 ): StrainDataBarsResult => {
-    const unknownLabel = barLabel(lang, {
-        en: 'Unknown',
-        de: 'Unbekannt',
-        es: 'Desconocido',
-        fr: 'Inconnu',
-        nl: 'Onbekend',
-    })
+    const unknownLabel = getT()('common.unknown', { lng: lang })
     const thc = finiteNumber(strain.thc)
     const cbd = finiteNumber(strain.cbd)
     const agronomic = strain.agronomic

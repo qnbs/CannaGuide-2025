@@ -31,8 +31,8 @@ const textOr = (value: unknown, fallback: string): string => {
 const stringList = (value: unknown): string[] =>
     Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 
-const crossedType = (left: Strain['type'], right: Strain['type']): StrainType =>
-    left !== undefined && left === right ? left : StrainType.Hybrid
+const crossedType = (left: Strain['type'], right: Strain['type']): Strain['type'] =>
+    left === right ? left : StrainType.Hybrid
 
 const pickEither = <T,>(left: T, right: T): T => (secureRandom() > 0.5 ? left : right)
 
@@ -52,9 +52,9 @@ const nameScale = (magnitude: number): number => 1 + (secureRandom() - 0.5) * ma
 export const crossStrains = (parentA: Strain, parentB: Strain): Omit<Strain, 'id'> => {
     const parentAName = textOr(parentA.name, 'Parent A')
     const parentBName = textOr(parentB.name, 'Parent B')
+    const offspringType = crossedType(parentA.type, parentB.type)
     const offspring: Partial<Strain> = {
         name: `${parentAName.split(' ')[0]} ${parentBName.split(' ').pop()}`,
-        type: crossedType(parentA.type, parentB.type),
         genetics: `${parentAName} x ${parentBName}`,
         floweringType: 'Photoperiod',
         agronomic: {
@@ -74,6 +74,7 @@ export const crossStrains = (parentA: Strain, parentB: Strain): Omit<Strain, 'id
         aromas: mixedList(parentA.aromas, parentB.aromas, 4),
         dominantTerpenes: mixedList(parentA.dominantTerpenes, parentB.dominantTerpenes, 3),
     }
+    if (offspringType !== undefined) offspring.type = offspringType
     assignReported(offspring, 'thc', averageReported(parentA.thc, parentB.thc, nameScale(0.2)))
     assignReported(offspring, 'cbd', averageReported(parentA.cbd, parentB.cbd))
     assignReported(

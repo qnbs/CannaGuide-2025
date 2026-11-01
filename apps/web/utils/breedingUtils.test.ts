@@ -41,6 +41,21 @@ describe('crossStrains', () => {
         expect(offspring.floweringTime).toBeUndefined()
     })
 
+    it('keeps the type unknown when both parents omit it', () => {
+        const left = parent({ id: 'left', name: 'Left' })
+        const right = parent({ id: 'right', name: 'Right' })
+        Reflect.deleteProperty(left, 'type')
+        Reflect.deleteProperty(right, 'type')
+        expect(crossStrains(left, right).type).toBeUndefined()
+    })
+
+    it('uses Hybrid when the parents report different types', () => {
+        const left = parent({ id: 'left', name: 'Left', type: StrainType.Sativa })
+        const right = parent({ id: 'right', name: 'Right' })
+        Reflect.deleteProperty(right, 'type')
+        expect(crossStrains(left, right).type).toBe(StrainType.Hybrid)
+    })
+
     it('averages chemistry only when both parents reported it', () => {
         const left = parent({ id: 'left', name: 'Left', thc: 20, cbd: 2, floweringTime: 8 })
         const right = parent({ id: 'right', name: 'Right', thc: 10, cbd: 4, floweringTime: 10 })

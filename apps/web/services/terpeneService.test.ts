@@ -166,7 +166,11 @@ describe('toDetailedTerpeneProfile', () => {
     })
 
     it('rejects invalid property names to prevent prototype pollution', () => {
-        const malicious = { __proto__: 1.0, constructor: 2.0, Myrcene: 0.5 } as unknown as TerpeneProfile
+        const malicious = {
+            __proto__: 1.0,
+            constructor: 2.0,
+            Myrcene: 0.5,
+        } as unknown as TerpeneProfile
         const detailed = toDetailedTerpeneProfile(malicious)
         expect(detailed.Myrcene?.percent).toBe(0.5)
         expect(Object.keys(detailed)).not.toContain('__proto__')
@@ -235,6 +239,18 @@ describe('buildChemovarProfile', () => {
         expect(profile.predictedEffects.length).toBeGreaterThan(0)
         expect(profile.dataQuality).toBeGreaterThan(0)
         expect(profile.lastUpdated).toBeDefined()
+    })
+
+    it('classifies Type IV from a top-level CBG when the profile omits it', () => {
+        const strain = makeStrain({
+            thc: 0.5,
+            cbd: 0.5,
+            cbg: 5,
+            cannabinoidProfile: { THC: 0.5, CBD: 0.5 },
+        })
+        const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
+        expect(profile.chemovarType).toBe('Type IV')
     })
 
     it('uses existing terpene profile if available', () => {

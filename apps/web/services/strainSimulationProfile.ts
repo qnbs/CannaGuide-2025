@@ -11,6 +11,7 @@ import {
     buildChemovarProfile,
     generateCannabinoidProfile,
     generateTerpeneProfile,
+    isTypeIv,
 } from '@/services/terpeneService'
 
 export const SIMULATION_PROFILE_KIND = 'simulation' as const
@@ -136,21 +137,12 @@ const reportedThcOf = (data: Partial<Strain>): number | undefined =>
 const reportedCbdOf = (data: Partial<Strain>): number | undefined =>
     finiteMeasurement(data.cbd) ?? finiteMeasurement(data.cannabinoidProfile?.CBD)
 
-const beatsMajor = (cbg: number, major: number | undefined): boolean =>
-    major === undefined || cbg > major
-
-const cbgQualifies = (
-    cbg: number | undefined,
-    thc: number | undefined,
-    cbd: number | undefined,
-): boolean => cbg !== undefined && cbg > 2 && beatsMajor(cbg, thc) && beatsMajor(cbg, cbd)
-
 /** Both majors, including 0, or CBG above 2% that beats any reported major. */
 export const hasReportedChemovarInput = (data: Partial<Strain>): boolean => {
     const thc = reportedThcOf(data)
     const cbd = reportedCbdOf(data)
     if (thc !== undefined && cbd !== undefined) return true
-    return cbgQualifies(reportedCbg(data), thc, cbd)
+    return isTypeIv(thc, cbd, reportedCbg(data))
 }
 
 const simulatedChemovar = (

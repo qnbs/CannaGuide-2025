@@ -20,19 +20,19 @@ export interface DiscoveredStrain {
     id: string
     name: string
     breeder: string
-    type?: string | undefined
-    floweringType?: string | undefined
-    thc?: number | undefined
-    cbd?: number | undefined
+    type?: string
+    floweringType?: string
+    thc?: number
+    cbd?: number
     description: string
     genetics: string
     source: 'daily-pick' | 'ai-lookup' | 'local-catalog'
     sourceUrl: string
     discoveredAt: string
     /** Why this strain was picked today */
-    pickReason?: string | undefined
+    pickReason?: string
     /** Category tag for diversity rotation */
-    pickCategory?: string | undefined
+    pickCategory?: string
 }
 
 export interface DailyStrainsFeed {
@@ -56,8 +56,8 @@ export interface ScoredStrain extends DiscoveredStrain {
 export interface UserStrainProfile {
     strainCount: number
     preferredTypes: Record<string, number>
-    avgThc: number
-    avgCbd: number
+    avgThc?: number
+    avgCbd?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -131,9 +131,8 @@ const CATEGORY_MATCHERS: Record<PickCategory, (strain: Strain) => boolean> = {
     'terpene-rich': (strain) => (strain.dominantTerpenes?.length ?? 0) >= 2,
 }
 
-function matchesCategory(strain: Strain, category: PickCategory): boolean {
-    return CATEGORY_MATCHERS[category](strain)
-}
+const matchesCategory = (strain: Strain, category: PickCategory): boolean =>
+    CATEGORY_MATCHERS[category](strain)
 
 function getPickReason(category: PickCategory): string {
     switch (category) {
@@ -421,19 +420,25 @@ const attachAiFacts = (discovered: DiscoveredStrain, item: Record<string, unknow
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null
 
+const slugId = (name: string): string =>
+    `ai-${name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+$/, '')}`
+
+const textField = (item: Record<string, unknown>, key: string, fallback: string): string =>
+    String(item[key] ?? fallback)
+
 const discoveredFromAiItem = (item: unknown): DiscoveredStrain | undefined => {
     if (!isRecord(item)) return undefined
-    const name = String(item.name ?? '').trim()
+    const name = textField(item, 'name', '').trim()
     if (!name) return undefined
     const discovered: DiscoveredStrain = {
-        id: `ai-${name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/-+$/, '')}`,
+        id: slugId(name),
         name,
-        breeder: String(item.breeder ?? 'Unknown'),
-        description: String(item.description ?? '').slice(0, 300),
-        genetics: String(item.genetics ?? ''),
+        breeder: textField(item, 'breeder', 'Unknown'),
+        description: textField(item, 'description', '').slice(0, 300),
+        genetics: textField(item, 'genetics', ''),
         source: 'ai-lookup',
         sourceUrl: '',
         discoveredAt: new Date().toISOString(),
@@ -442,25 +447,23 @@ const discoveredFromAiItem = (item: unknown): DiscoveredStrain | undefined => {
     return discovered
 }
 
-export function parseAIStrainResponse(text: string): DiscoveredStrain[] {
-    const results: DiscoveredStrain[] = []
-    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
-    if (!jsonMatch) return results
-
+const strainsFromAiJson = (json: string): DiscoveredStrain[] => {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- JSON parse boundary
-        const parsed = JSON.parse(jsonMatch) as Array<Record<string, unknown>>
-        if (!Array.isArray(parsed)) return results
-
-        for (const item of parsed) {
+        const parsed: unknown = JSON.parse(json)
+        if (!Array.isArray(parsed)) return []
+        return parsed.flatMap((item: unknown) => {
             const discovered = discoveredFromAiItem(item)
-            if (discovered) results.push(discovered)
-        }
+            return discovered ? [discovered] : []
+        })
     } catch {
-        // JSON parse failed
+        return []
     }
+}
 
-    return results
+export const parseAIStrainResponse = (text: string): DiscoveredStrain[] => {
+    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
+    if (!jsonMatch) return []
+    return strainsFromAiJson(jsonMatch)
 }
 
 // ---------------------------------------------------------------------------
@@ -470,7 +473,7 @@ export function parseAIStrainResponse(text: string): DiscoveredStrain[] {
 /**
  * Build a preference profile from the user's library strains.
  */
-const finiteAverage = (values: Array<number | undefined>, fallback: number): number => {
+const finiteAverage = (values: Array<number | undefined>): number | undefined => {
     let total = 0
     let count = 0
     for (const value of values) {
@@ -478,7 +481,16 @@ const finiteAverage = (values: Array<number | undefined>, fallback: number): num
         total += value
         count += 1
     }
-    return count > 0 ? total / count : fallback
+    if (count === 0) return undefined
+    return total / count
+}
+
+const attachAverage = (
+    profile: UserStrainProfile,
+    key: 'avgThc' | 'avgCbd',
+    value: number | undefined,
+) => {
+    if (value !== undefined) profile[key] = value
 }
 
 export function buildUserProfile(
@@ -490,18 +502,13 @@ export function buildUserProfile(
         preferredTypes[strain.type] = (preferredTypes[strain.type] ?? 0) + 1
     }
 
-    return {
+    const profile: UserStrainProfile = {
         preferredTypes,
-        avgThc: finiteAverage(
-            strains.map((strain) => strain.thc),
-            15,
-        ),
-        avgCbd: finiteAverage(
-            strains.map((strain) => strain.cbd),
-            0.5,
-        ),
         strainCount: strains.length,
     }
+    attachAverage(profile, 'avgThc', finiteAverage(strains.map((strain) => strain.thc)))
+    attachAverage(profile, 'avgCbd', finiteAverage(strains.map((strain) => strain.cbd)))
+    return profile
 }
 
 const typeBonus = (strain: DiscoveredStrain, profile: UserStrainProfile): number => {
@@ -510,14 +517,18 @@ const typeBonus = (strain: DiscoveredStrain, profile: UserStrainProfile): number
     return ((profile.preferredTypes[strain.type] ?? 0) / totalTyped) * 25
 }
 
+const scaledGap = (value: number, average: number, weight: number, scale: number): number =>
+    Math.max(0, weight - Math.abs(value - average) * scale)
+
 const closenessBonus = (
     value: number | undefined,
-    average: number,
+    average: number | undefined,
     weight: number,
     scale: number,
 ): number => {
-    if (value === undefined || value <= 0 || average <= 0) return 0
-    return Math.max(0, weight - Math.abs(value - average) * scale)
+    if (value === undefined || average === undefined) return 0
+    if (value <= 0 || average <= 0) return 0
+    return scaledGap(value, average, weight, scale)
 }
 
 function scoreStrain(strain: DiscoveredStrain, profile: UserStrainProfile): number {

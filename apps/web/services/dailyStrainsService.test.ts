@@ -97,8 +97,8 @@ describe('dailyStrainsService', () => {
         it('returns neutral profile for empty array', () => {
             const profile = buildUserProfile([])
             expect(profile.strainCount).toBe(0)
-            expect(profile.avgThc).toBe(15)
-            expect(profile.avgCbd).toBe(0.5)
+            expect(profile.avgThc).toBeUndefined()
+            expect(profile.avgCbd).toBeUndefined()
         })
 
         it('computes averages correctly', () => {
@@ -117,7 +117,7 @@ describe('dailyStrainsService', () => {
             const profile = buildUserProfile([{ thc: 20 }, {}])
             expect(profile.strainCount).toBe(2)
             expect(profile.avgThc).toBe(20)
-            expect(profile.avgCbd).toBe(0.5)
+            expect(profile.avgCbd).toBeUndefined()
         })
     })
 
@@ -150,6 +150,16 @@ describe('dailyStrainsService', () => {
             const ranked = rankStrainsByRelevance(strains, profile)
             expect(ranked[0]!.id).toBe('indica')
             expect(ranked[0]!.relevanceScore).toBeGreaterThan(ranked[1]!.relevanceScore)
+        })
+
+        it('does not invent a THC preference when the library omitted it', () => {
+            const profile = buildUserProfile([{ type: 'Indica' }])
+            const ranked = rankStrainsByRelevance(
+                [makeStrain({ id: 'far', type: 'Sativa', thc: 15, cbd: 0.5 })],
+                profile,
+            )
+            expect(profile.avgThc).toBeUndefined()
+            expect(ranked[0]!.relevanceScore).toBe(50)
         })
 
         it('gives neutral score when no user data', () => {

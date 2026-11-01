@@ -2,6 +2,7 @@ import React, { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import type { Strain } from '@/types'
 import type { BreedingLabState } from './useBreedingLab'
 
 const BreedingArPreview = lazy(() =>
@@ -68,14 +69,45 @@ const SeedStabilityPreview: React.FC<{ state: BreedingLabState }> = ({ state }) 
     )
 }
 
-const OffspringPreview: React.FC = () => {
+const finiteAmount = (value: number | undefined): string | undefined => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
+    return `${value}%`
+}
+
+const OffspringFact: React.FC<{ label: string; value: string | undefined }> = ({
+    label,
+    value,
+}) => {
     const { t } = useTranslation()
-    return <p className="text-center py-12 text-sm text-slate-300">{t('common.unknown')}</p>
+    return (
+        <p>
+            {label}: {value ?? t('common.unknown')}
+        </p>
+    )
+}
+
+const OffspringPreview: React.FC<{ offspring: Omit<Strain, 'id'> }> = ({ offspring }) => {
+    const { t } = useTranslation()
+    const weeks =
+        typeof offspring.floweringTime === 'number' && Number.isFinite(offspring.floweringTime)
+            ? `${offspring.floweringTime} ${t('common.units.weeks')}`
+            : undefined
+    return (
+        <div className="text-center py-8 text-sm text-slate-300 space-y-1">
+            <p className="text-lg font-bold text-slate-100">
+                {offspring.name || t('common.unknown')}
+            </p>
+            <OffspringFact label={t('common.type')} value={offspring.type} />
+            <OffspringFact label={t('strainsView.table.thc')} value={finiteAmount(offspring.thc)} />
+            <OffspringFact label={t('strainsView.table.cbd')} value={finiteAmount(offspring.cbd)} />
+            <OffspringFact label={t('strainsView.table.flowering')} value={weeks} />
+        </div>
+    )
 }
 
 const ArBody: React.FC<{ state: BreedingLabState }> = ({ state }) => {
     if (state.seedResult) return <SeedStabilityPreview state={state} />
-    if (state.geneticsOffspring) return <OffspringPreview />
+    if (state.geneticsOffspring) return <OffspringPreview offspring={state.geneticsOffspring} />
     return <EmptyArState />
 }
 

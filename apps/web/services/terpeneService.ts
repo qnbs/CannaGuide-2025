@@ -359,24 +359,25 @@ const cannabinoidRatio = (thc: number | undefined, cbd: number | undefined): num
 const majorBelowCbg = (cbg: number, major: number | undefined): boolean =>
     major === undefined || cbg > major
 
-const isTypeIv = (thc: number | undefined, cbd: number | undefined, cbg: number | undefined): boolean =>
-    cbg !== undefined && cbg > 2 && majorBelowCbg(cbg, thc) && majorBelowCbg(cbg, cbd)
+export const isTypeIv = (
+    thc: number | undefined,
+    cbd: number | undefined,
+    cbg: number | undefined,
+): boolean => cbg !== undefined && cbg > 2 && majorBelowCbg(cbg, thc) && majorBelowCbg(cbg, cbd)
 
 const classifiedType = (
     thc: number | undefined,
     cbd: number | undefined,
-    cbg: number | undefined,
+    profileCbg: number | undefined,
+    topLevelCbg: unknown,
 ): ChemovarType | undefined => {
+    const cbg = finiteCannabinoid(topLevelCbg) ?? profileCbg
     if (isTypeIv(thc, cbd, cbg)) return 'Type IV'
     if (thc === undefined || cbd === undefined) return undefined
     return classifyChemovar(thc, cbd, cbg)
 }
 
-/**
- * Build a complete ChemovarProfile for a strain.
- * Uses existing data where available, generates estimates where not.
- * A missing THC or CBD is not treated as zero, so a partial report has no type.
- */
+/** Type IV when reported CBG beats the majors. A missing major is not treated as zero. */
 export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefined => {
     const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
     const measuredThc =
@@ -387,26 +388,26 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefine
     const reportedCbd = measuredCbd ?? 0
     const typeText = typeof strain.type === 'string' ? strain.type : ''
 
-    // Terpene profile: use existing or generate
     const terpeneProfile: TerpeneProfile =
         strain.terpeneProfile ??
         generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, typeText)
 
-    // Cannabinoid profile: use existing or generate
     const cannabinoidProfile: CannabinoidProfile =
         strain.cannabinoidProfile ??
         generateCannabinoidProfile(reportedThc, reportedCbd, strain.cbg, strain.thcv, nameHash)
 
-    // Sum totals
     const totalTerpenePercent =
         Math.round(Object.values(terpeneProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /
         1000
-
     const totalCannabinoidPercent =
         Math.round(Object.values(cannabinoidProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /
         1000
-
-    const chemovarType = classifiedType(measuredThc, measuredCbd, cannabinoidProfile.CBG)
+    const chemovarType = classifiedType(
+        measuredThc,
+        measuredCbd,
+        cannabinoidProfile.CBG,
+        strain.cbg,
+    )
     if (chemovarType === undefined) return undefined
 
     const thcCbdRatio = cannabinoidRatio(measuredThc, measuredCbd)

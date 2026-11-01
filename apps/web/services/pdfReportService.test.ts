@@ -5,7 +5,7 @@ import {
     computeMetricStats,
     buildDiagnosisRows,
 } from './pdfReportService'
-import { harvestPercentText } from './pdf/pdfTypes'
+import { harvestPercentText, reportedPercentText } from './pdf/pdfTypes'
 import type {
     Plant,
     JournalEntry,
@@ -231,6 +231,9 @@ describe('generateGrowReport', () => {
         expect(harvestThcRow()).toBe('Unknown')
         expect(harvestPercentText(undefined, 0)).toBe('Unknown')
         expect(harvestPercentText(18, 14.2)).toBe('14.2%')
+        expect(reportedPercentText(0.04)).toBe('0.04%')
+        expect(reportedPercentText(20)).toBe('20%')
+        expect(reportedPercentText(undefined)).toBe('Unknown')
     })
 
     it('truncates long journal notes to 80 characters', async () => {

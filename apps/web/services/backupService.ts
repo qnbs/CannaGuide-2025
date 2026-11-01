@@ -87,16 +87,28 @@ const readAllStoredImages = async (): Promise<unknown[]> => {
     })
 }
 
-const appendStoredImages = (zip: JSZip, storedImages: readonly unknown[]): number | undefined => {
-    let imageCount = 0
+const restorableImageEntries = (
+    storedImages: readonly unknown[],
+): { img: { id: string; data: string }; entryName: string }[] | undefined => {
+    const entries: { img: { id: string; data: string }; entryName: string }[] = []
+    const usedNames = new Set<string>()
     for (const img of storedImages) {
         if (!isExportableImage(img)) continue
-        const entryName = imageArchiveEntryName(img.id)
+        const entryName = imageArchiveEntryName(img.id, usedNames)
         if (!entryName) return undefined
-        zip.file(`${IMAGES_DIR}${entryName}`, JSON.stringify(img))
-        imageCount += 1
+        usedNames.add(entryName)
+        entries.push({ img, entryName })
     }
-    return imageCount
+    return entries
+}
+
+const appendStoredImages = (zip: JSZip, storedImages: readonly unknown[]): number | undefined => {
+    const entries = restorableImageEntries(storedImages)
+    if (!entries) return undefined
+    for (const entry of entries) {
+        zip.file(`${IMAGES_DIR}${entry.entryName}`, JSON.stringify(entry.img))
+    }
+    return entries.length
 }
 
 const simulationPlantCount = (parsed: unknown): number => {
@@ -135,7 +147,10 @@ const buildExportArchive = async (stateString: string): Promise<BackupExportResu
     if (!Array.isArray(storedImages)) return storedImages
     const imageCount = appendStoredImages(zip, storedImages)
     if (imageCount === undefined) {
-        return failedExport('A stored photo has no restorable archive name', 'imagesUnreadable')
+        return failedExport(
+            'A stored photo has no restorable archive name',
+            'imageNameNotRestorable',
+        )
     }
     const metadata: BackupMetadata = {
         version: '1.0',

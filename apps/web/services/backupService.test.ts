@@ -59,8 +59,10 @@ vi.mock('jszip', () => {
             this.files[name] = { name }
             return this
         }
-        generateAsync = (): Promise<Blob> =>
-            Promise.resolve(new Blob(['mockzip'], { type: 'application/zip' }))
+        generateAsync(): Promise<Blob> {
+            const recorded = Object.keys(this.files).length
+            return Promise.resolve(new Blob([`mockzip:${recorded}`], { type: 'application/zip' }))
+        }
     }
     return {
         default: MockJSZip,
@@ -274,6 +276,7 @@ describe('backupService', () => {
             const result = await backupService.exportBackup()
             expect(result.success).toBe(false)
             expect(result.error).toContain('No saved state found')
+            expect(result).not.toHaveProperty('errorCode')
         })
 
         it('returns a successful result with state', async () => {
@@ -297,18 +300,6 @@ describe('backupService', () => {
             const result = await backupService.exportBackup()
             expect(result.success).toBe(true)
             expect(result.metadata?.plantCount).toBe(1)
-        })
-
-        it('omits an undefined export error instead of assigning it', () => {
-            const exportFailure = (error: string | undefined): BackupExportResult => ({
-                success: false,
-                blob: null,
-                filename: '',
-                metadata: null,
-                ...(error === undefined ? {} : { error }),
-            })
-            expect(exportFailure(undefined)).not.toHaveProperty('error')
-            expect(exportFailure('stopped')).toMatchObject({ error: 'stopped' })
         })
 
         it('writes no Cloud TTS key into the ZIP (#654)', async () => {
@@ -377,8 +368,23 @@ describe('backupService', () => {
             expect(result).toMatchObject({
                 success: false,
                 blob: null,
-                errorCode: 'imagesUnreadable',
+                errorCode: 'imageNameNotRestorable',
             })
+            expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
+        })
+
+        it('does not rewrite an unsafe photo id into another photo name', async () => {
+            await seedPhotos(
+                { id: 'a_b', data: VALID_PNG_DATA_URL, createdAt: 1 },
+                { id: 'a/b', data: VALID_PNG_DATA_URL, createdAt: 2 },
+            )
+            const result = await backupService.exportBackup()
+            expect(result).toMatchObject({
+                success: false,
+                blob: null,
+                errorCode: 'imageNameNotRestorable',
+            })
+            expect(mocks.zipEntries.has('images/a_b.json')).toBe(false)
             expect(mocks.zipEntries.has('backup-meta.json')).toBe(false)
         })
 

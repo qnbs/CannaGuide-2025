@@ -55,10 +55,14 @@ export const isSafeImageEntryName = (name: string): boolean => {
     return isSafeStoredImageId(name.slice(0, -IMAGE_JSON_SUFFIX.length))
 }
 
-export const imageArchiveEntryName = (id: string): string | undefined => {
-    const safeName = id.replace(/[^a-zA-Z0-9._-]/g, '_')
-    const entryName = `${safeName}${IMAGE_JSON_SUFFIX}`
-    return isSafeImageEntryName(entryName) ? entryName : undefined
+export const imageArchiveEntryName = (
+    id: string,
+    usedNames: ReadonlySet<string> = new Set(),
+): string | undefined => {
+    if (!isSafeStoredImageId(id)) return undefined
+    const entryName = `${id}${IMAGE_JSON_SUFFIX}`
+    if (!isSafeImageEntryName(entryName) || usedNames.has(entryName)) return undefined
+    return entryName
 }
 
 const pathPartsArePresent = (parts: readonly string[]): boolean =>
@@ -128,11 +132,11 @@ const dropUnsafeJournalImage = async (
     return referencesRejectedImage ? 0 : 1
 }
 
-const sanitizeJournalEntry = async (
+const sanitizeJournalEntry = (
     entry: unknown,
     rejectedImageIds: ReadonlySet<string>,
 ): Promise<number> => {
-    if (!isRecord(entry) || !isRecord(entry.details)) return 0
+    if (!isRecord(entry) || !isRecord(entry.details)) return Promise.resolve(0)
     const referencesRejectedImage = dropRejectedImageId(entry.details, rejectedImageIds)
     return dropUnsafeJournalImage(entry.details, referencesRejectedImage)
 }

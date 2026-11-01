@@ -269,7 +269,7 @@ const shouldEvaluateStageProgression = (stage: PlantStage, currentStageIndex: nu
     currentStageIndex < STAGES_ORDER.length - 1 &&
     ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(stage)
 
-function applyStageProgression(p: Plant): void {
+const applyStageProgression = (p: Plant): void => {
     const currentStageIndex = STAGES_ORDER.indexOf(p.stage)
     if (!shouldEvaluateStageProgression(p.stage, currentStageIndex)) {
         return

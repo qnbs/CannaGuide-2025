@@ -54,7 +54,7 @@ export const setupForConfirm = (
 export const equipmentWithPolicy = <T extends object>(
     equipment: T,
     policy?: FloweringMode | undefined,
-): T & { floweringPolicy?: FloweringMode | undefined } => {
+): T & { floweringPolicy?: FloweringMode } => {
     if (policy === undefined) return equipment
     return { ...equipment, floweringPolicy: policy }
 }

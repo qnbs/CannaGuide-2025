@@ -76,7 +76,7 @@ const potEquipment = (plant: Plant) => ({
     potType: plant.equipment?.potType ?? 'Fabric',
 })
 
-function normalizeEquipment(plant: Plant): Plant['equipment'] {
+const normalizeEquipment = (plant: Plant): Plant['equipment'] => {
     return equipmentWithPolicy(
         {
             light: lightEquipment(plant),

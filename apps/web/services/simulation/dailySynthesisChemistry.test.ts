@@ -40,6 +40,13 @@ describe('runDailySynthesis', () => {
         const strain = { id: 'known', name: 'Known', thc: 20 } as Plant['strain']
         const after = runDailySynthesis(floweringPlant(strain), deps)
         expect(after.cannabinoidProfile.thc).toBeGreaterThan(0)
-        expect(Number.isFinite(after.cannabinoidProfile.cbd)).toBe(true)
+        expect(after.cannabinoidProfile.cbd).toBeGreaterThan(0)
+    })
+
+    it('does not add production when CBD is reported as zero and THC is absent', () => {
+        const strain = { id: 'zero-cbd', name: 'Zero CBD', cbd: 0 } as Plant['strain']
+        const after = runDailySynthesis(floweringPlant(strain), deps)
+        expect(after.cannabinoidProfile.thc).toBe(0)
+        expect(after.cannabinoidProfile.cbd).toBe(0)
     })
 })

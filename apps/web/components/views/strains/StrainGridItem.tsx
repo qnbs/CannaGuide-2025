@@ -60,18 +60,40 @@ const UserStrainMark: React.FC<{ visible: boolean; title: string }> = ({ visible
 
 const MatchBadge: React.FC<{
     score: { score: number; label: string } | undefined
-    title: string
-}> = ({ score, title }) =>
+    titleFor: (score: number) => string
+}> = ({ score, titleFor }) =>
     score ? (
         <div className="pointer-events-none mb-1">
             <span
                 className={`inline-block px-1.5 py-0.5 rounded text-3xs font-semibold tracking-wide ${getScoreBadgeClass(score.score)}`}
-                title={title}
+                title={titleFor(score.score)}
             >
                 {score.score}% {score.label}
             </span>
         </div>
     ) : null
+
+const FavoriteButton: React.FC<{
+    isFavorite: boolean
+    label: string
+    onClick: (event: React.MouseEvent<HTMLButtonElement>) => void
+}> = ({ isFavorite, label, onClick }) => (
+    <Button
+        variant="ghost"
+        size="icon"
+        className={`favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
+        onClick={onClick}
+        aria-label={label}
+    >
+        <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
+    </Button>
+)
+
+const matchFor = (
+    strain: Strain,
+    context: RecommendationContext | undefined,
+): ReturnType<typeof scoreStrain> | undefined =>
+    context === undefined ? undefined : scoreStrain(strain, context)
 
 const GridStat: React.FC<{ value: string; unknown: string; icon?: boolean }> = ({
     value,
@@ -104,19 +126,13 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
         const safeFloweringTime = formatFloweringWeeks(
             strain.floweringTimeRange,
             strain.floweringTime,
-            'w',
+            t('common.units.weeks'),
             unknown,
         )
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
-        const handleActionClick = (event: React.MouseEvent, action: () => void) => {
-            event.stopPropagation()
-            action()
-        }
-        const matchScore = recommendationContext
-            ? scoreStrain(strain, recommendationContext)
-            : undefined
+        const matchScore = matchFor(strain, recommendationContext)
         const favoriteLabel = favoriteActionLabel(
             isFavorite,
             t('strainsView.accessibility.removeFromFavorites', { name: safeName }),
@@ -156,29 +172,21 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                 </p>
                 <MatchBadge
                     score={matchScore}
-                    title={t('strainsView.matchScore', {
-                        score: matchScore ? matchScore.score : 0,
-                    })}
+                    titleFor={(score) => t('strainsView.matchScore', { score })}
                 />
                 <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono pointer-events-none">
                     <GridStat value={safeThc} unknown={unknown} />
                     <GridStat value={safeFloweringTime} unknown={unknown} icon />
                 </div>
                 <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-20 pointer-events-auto">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className={`favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
-                        onClick={(event: React.MouseEvent<HTMLButtonElement>) =>
-                            handleActionClick(event, () => onToggleFavorite(strain.id))
-                        }
-                        aria-label={favoriteLabel}
-                    >
-                        <PhosphorIcons.Heart
-                            weight={isFavorite ? 'fill' : 'regular'}
-                            className="w-4 h-4"
-                        />
-                    </Button>
+                    <FavoriteButton
+                        isFavorite={isFavorite}
+                        label={favoriteLabel}
+                        onClick={(event) => {
+                            event.stopPropagation()
+                            onToggleFavorite(strain.id)
+                        }}
+                    />
                 </div>
             </Card>
         )

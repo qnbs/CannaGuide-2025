@@ -21,6 +21,17 @@ const formatReported = (
     return `${text}${suffix}`
 }
 
+const estimateText = (
+    value: unknown,
+    unknownLabel: string,
+    digits: number | undefined,
+    suffix: string,
+): string => {
+    const text = formatReported(value, unknownLabel, digits, suffix)
+    if (text === unknownLabel) return unknownLabel
+    return `~${text}`
+}
+
 const phenoLabelKey = (key: 'vigor' | 'resin' | 'aroma' | 'resistance'): string =>
     key === 'resistance'
         ? 'knowledgeView.breeding.diseaseResistance'
@@ -102,17 +113,11 @@ const AutomatedGeneticsSummary: React.FC<{
             <p className="font-semibold text-primary-300">
                 {t('knowledgeView.breeding.automatedGenetics')}
             </p>
+            <p>THC: {estimateText(genetics.thc, unknown, 1, '%')}</p>
+            <p>CBD: {estimateText(genetics.cbd, unknown, 1, '%')}</p>
             <p>
-                THC: ~{typeof genetics.thc === 'number' ? `${genetics.thc.toFixed(1)}%` : unknown}
-            </p>
-            <p>
-                CBD: ~{typeof genetics.cbd === 'number' ? `${genetics.cbd.toFixed(1)}%` : unknown}
-            </p>
-            <p>
-                {t('knowledgeView.breeding.flowering')}: ~
-                {typeof genetics.floweringWeeks === 'number'
-                    ? `${genetics.floweringWeeks.toFixed(1)} ${weeks}`
-                    : unknown}
+                {t('knowledgeView.breeding.flowering')}:{' '}
+                {estimateText(genetics.floweringWeeks, unknown, 1, ` ${weeks}`)}
             </p>
             <p>
                 {t('knowledgeView.breeding.stabilityScore')}:{' '}
@@ -123,6 +128,19 @@ const AutomatedGeneticsSummary: React.FC<{
         </div>
     )
 }
+
+const TokenCloud: React.FC<{ title: string; tokens: string[] }> = ({ title, tokens }) => (
+    <div>
+        <h4 className="font-semibold text-slate-200 mb-2">{title}</h4>
+        <div className="flex flex-wrap gap-1">
+            {tokens.map((token) => (
+                <span key={token} className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">
+                    {token}
+                </span>
+            ))}
+        </div>
+    </div>
+)
 
 const BreedingResultCard: React.FC<{ state: BreedingLabState }> = ({ state }) => {
     const { t } = useTranslation()
@@ -138,6 +156,7 @@ const BreedingResultCard: React.FC<{ state: BreedingLabState }> = ({ state }) =>
     } = state
     if (!seedResult || !seedParentA || !seedParentB) return null
     const unknown = t('common.unknown')
+    const weeks = t('common.units.weeks')
     return (
         <Card className="animate-fade-in bg-slate-800/50">
             <div className="flex justify-between items-center">
@@ -163,48 +182,36 @@ const BreedingResultCard: React.FC<{ state: BreedingLabState }> = ({ state }) =>
                         label="THC"
                         valA={formatReported(seedParentA.thc, unknown, 1, '%')}
                         valB={formatReported(seedParentB.thc, unknown, 1, '%')}
-                        valChild={`~${formatReported(seedResult.thc, unknown, 1, '%')}`}
+                        valChild={estimateText(seedResult.thc, unknown, 1, '%')}
                         icon={<PhosphorIcons.Lightning weight="fill" />}
                     />
                     <TraitComparison
                         label={t('knowledgeView.breeding.flowering')}
-                        valA={formatReported(seedParentA.floweringTime, unknown, undefined, ' w')}
-                        valB={formatReported(seedParentB.floweringTime, unknown, undefined, ' w')}
-                        valChild={`~${formatReported(seedResult.floweringTime, unknown, 0, ' w')}`}
+                        valA={formatReported(
+                            seedParentA.floweringTime,
+                            unknown,
+                            undefined,
+                            ` ${weeks}`,
+                        )}
+                        valB={formatReported(
+                            seedParentB.floweringTime,
+                            unknown,
+                            undefined,
+                            ` ${weeks}`,
+                        )}
+                        valChild={estimateText(seedResult.floweringTime, unknown, 0, ` ${weeks}`)}
                         icon={<PhosphorIcons.ArrowClockwise />}
                     />
                 </div>
                 <div className="space-y-4">
-                    <div>
-                        <h4 className="font-semibold text-slate-200 mb-2">
-                            {t('strainsView.strainModal.aromas')}
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                            {getSafeStringArray(seedResult.aromas).map((aroma) => (
-                                <span
-                                    key={aroma}
-                                    className="bg-slate-700 text-xs px-2 py-0.5 rounded-full"
-                                >
-                                    {aroma}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold text-slate-200 mb-2">
-                            {t('strainsView.strainModal.dominantTerpenes')}
-                        </h4>
-                        <div className="flex flex-wrap gap-1">
-                            {getSafeStringArray(seedResult.dominantTerpenes).map((terpene) => (
-                                <span
-                                    key={terpene}
-                                    className="bg-slate-700 text-xs px-2 py-0.5 rounded-full"
-                                >
-                                    {terpene}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
+                    <TokenCloud
+                        title={t('strainsView.strainModal.aromas')}
+                        tokens={getSafeStringArray(seedResult.aromas)}
+                    />
+                    <TokenCloud
+                        title={t('strainsView.strainModal.dominantTerpenes')}
+                        tokens={getSafeStringArray(seedResult.dominantTerpenes)}
+                    />
                     {automatedGenetics ? (
                         <AutomatedGeneticsSummary genetics={automatedGenetics} />
                     ) : null}
@@ -220,70 +227,76 @@ const BreedingResultCard: React.FC<{ state: BreedingLabState }> = ({ state }) =>
     )
 }
 
+const SeedParentRow: React.FC<{ state: BreedingLabState; allStrains: Strain[] }> = ({
+    state,
+    allStrains,
+}) => {
+    const { t } = useTranslation()
+    return (
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
+            <ParentSlot
+                title={t('knowledgeView.breeding.parentA')}
+                seed={state.seedA}
+                onClear={state.clearSeedParentA}
+                allStrains={allStrains}
+            />
+            <PhosphorIcons.Plus className="w-8 h-8 text-muted mx-auto" />
+            <ParentSlot
+                title={t('knowledgeView.breeding.parentB')}
+                seed={state.seedB}
+                onClear={state.clearSeedParentB}
+                allStrains={allStrains}
+            />
+        </div>
+    )
+}
+
+const PhenotypePanel: React.FC<{ state: BreedingLabState }> = ({ state }) => {
+    const { t } = useTranslation()
+    return (
+        <Card className="bg-slate-800/40 !p-4">
+            <h4 className="font-bold text-slate-100 mb-3">
+                {t('knowledgeView.breeding.phenoTracking')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <PhenotypeColumn
+                    title={t('knowledgeView.breeding.parentA')}
+                    values={state.phenoA}
+                    onChange={state.setPhenoA}
+                />
+                <PhenotypeColumn
+                    title={t('knowledgeView.breeding.parentB')}
+                    values={state.phenoB}
+                    onChange={state.setPhenoB}
+                />
+            </div>
+        </Card>
+    )
+}
+
+const BreedButton: React.FC<{ state: BreedingLabState }> = ({ state }) => (
+    <Button onClick={state.handleBreed} disabled={!state.canStartBreeding} className="w-full">
+        <PhosphorIcons.TestTube className="w-5 h-5 mr-2" />
+        {state.breedButtonLabel}
+    </Button>
+)
+
 export const BreedingSeedsTab: React.FC<{ state: BreedingLabState; allStrains: Strain[] }> = ({
     state,
     allStrains,
 }) => {
     const { t } = useTranslation()
-    const {
-        seedA,
-        seedB,
-        isBreeding,
-        phenoA,
-        setPhenoA,
-        phenoB,
-        setPhenoB,
-        canStartBreeding,
-        breedButtonLabel,
-        clearSeedParentA,
-        clearSeedParentB,
-        handleBreed,
-    } = state
-
     return (
         <>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <SeedInventory state={state} allStrains={allStrains} />
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4">
-                        <ParentSlot
-                            title={t('knowledgeView.breeding.parentA')}
-                            seed={seedA}
-                            onClear={clearSeedParentA}
-                            allStrains={allStrains}
-                        />
-                        <PhosphorIcons.Plus className="w-8 h-8 text-muted mx-auto" />
-                        <ParentSlot
-                            title={t('knowledgeView.breeding.parentB')}
-                            seed={seedB}
-                            onClear={clearSeedParentB}
-                            allStrains={allStrains}
-                        />
-                    </div>
-                    <Card className="bg-slate-800/40 !p-4">
-                        <h4 className="font-bold text-slate-100 mb-3">
-                            {t('knowledgeView.breeding.phenoTracking')}
-                        </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <PhenotypeColumn
-                                title={t('knowledgeView.breeding.parentA')}
-                                values={phenoA}
-                                onChange={setPhenoA}
-                            />
-                            <PhenotypeColumn
-                                title={t('knowledgeView.breeding.parentB')}
-                                values={phenoB}
-                                onChange={setPhenoB}
-                            />
-                        </div>
-                    </Card>
-                    <Button onClick={handleBreed} disabled={!canStartBreeding} className="w-full">
-                        <PhosphorIcons.TestTube className="w-5 h-5 mr-2" />
-                        {breedButtonLabel}
-                    </Button>
+                    <SeedParentRow state={state} allStrains={allStrains} />
+                    <PhenotypePanel state={state} />
+                    <BreedButton state={state} />
                 </div>
             </div>
-            {isBreeding ? (
+            {state.isBreeding ? (
                 <AiLoadingIndicator loadingMessage={t('knowledgeView.breeding.splicingGenes')} />
             ) : null}
             <BreedingResultCard state={state} />

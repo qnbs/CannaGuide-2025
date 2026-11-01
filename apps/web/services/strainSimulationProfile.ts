@@ -74,13 +74,18 @@ const simulatedCannabinoids = (data: Partial<Strain>, nameHash: number): Cannabi
     const thc = finiteMeasurement(data.thc)
     const cbd = finiteMeasurement(data.cbd)
     if (thc !== undefined || cbd !== undefined) {
-        return generateCannabinoidProfile(
+        const profile = generateCannabinoidProfile(
             zeroIfMissing(thc),
             zeroIfMissing(cbd),
             finiteMeasurement(data.cbg),
             finiteMeasurement(data.thcv),
             nameHash,
         )
+        const cbg = finiteMeasurement(data.cbg)
+        const thcv = finiteMeasurement(data.thcv)
+        if (cbg !== undefined) profile.CBG = cbg
+        if (thcv !== undefined) profile.THCV = thcv
+        return profile
     }
     return reportedMinors(data)
 }
@@ -122,11 +127,17 @@ const carrierForChemovar = (data: Partial<Strain>, name: string, nameHash: numbe
     return carrier
 }
 
-/** THC, CBD, or CBG above 2% is enough to classify. Both majors absent is not Type V. */
+const reportedCbg = (data: Partial<Strain>): number | undefined => {
+    const topLevel = finiteMeasurement(data.cbg)
+    if (topLevel !== undefined) return topLevel
+    return finiteMeasurement(data.cannabinoidProfile?.CBG)
+}
+
+/** Any finite THC or CBD counts, including 0. CBG counts only above 2%. */
 export const hasReportedChemovarInput = (data: Partial<Strain>): boolean => {
     if (finiteMeasurement(data.thc) !== undefined) return true
     if (finiteMeasurement(data.cbd) !== undefined) return true
-    const cbg = finiteMeasurement(data.cbg)
+    const cbg = reportedCbg(data)
     return cbg !== undefined && cbg > 2
 }
 

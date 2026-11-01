@@ -115,6 +115,20 @@ describe('createStrainObject', () => {
         expect(simulated.chemovarProfile).toBeUndefined()
     })
 
+    it('keeps a reported zero CBG instead of an estimated one', () => {
+        const simulated = simulateStrainProfile({ name: 'Zero CBG', thc: 20, cbg: 0, thcv: 0 })
+        expect(simulated.cannabinoidProfile.CBG).toBe(0)
+        expect(simulated.cannabinoidProfile.THCV).toBe(0)
+    })
+
+    it('classifies CBG carried only on the cannabinoid profile', () => {
+        const simulated = simulateStrainProfile({
+            name: 'Profile CBG',
+            cannabinoidProfile: { CBG: 5 },
+        })
+        expect(simulated.chemovarProfile?.chemovarType).toBe('Type IV')
+    })
+
     it('does not invent a Type V chemovar when THC and CBD were never reported', () => {
         const simulated = simulateStrainProfile({ id: 'unknown-chem', name: 'Unknown Chem' })
         expect(simulated.kind).toBe('simulation')

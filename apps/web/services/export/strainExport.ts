@@ -180,7 +180,8 @@ export function exportStrainsAsPdf(strains: Strain[], fileName: string, t: TFunc
     doc.save(`${fileName}.pdf`)
 }
 
-const translatedOr = (value: string | undefined, fallback: string): string => value ?? fallback
+const translatedOr = (value: string | undefined, fallback: string): string =>
+    typeof value === 'string' && value.trim().length > 0 ? value : fallback
 
 const percentText = (range: string | undefined, value: unknown, unknownLabel: string): string => {
     if (range) return range
@@ -266,7 +267,7 @@ const formatStrainTxt = (strain: Strain, t: TFunction): string => {
     return lines.join('\n')
 }
 
-export function exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunction) {
+export function exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunction): void {
     let content = `CannaGuide 2025 - ${t('strainsView.exportModal.title')}\n`
     content += `${t('common.generated')}: ${new Date().toLocaleString()}\n\n`
     strains.forEach((strain) => {

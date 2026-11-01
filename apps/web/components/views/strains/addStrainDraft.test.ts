@@ -61,4 +61,38 @@ describe('buildStrainDraft', () => {
         expect(saved.thc).toBeUndefined()
         expect(saved.cbd).toBe(1)
     })
+
+    it('omits cbd and flowering time the editor cleared', () => {
+        const values = strainToFormValues(editing)
+        const saved = buildStrainDraft({ ...values, cbd: '', floweringTime: '' }, editing)
+        expect(saved.cbd).toBeUndefined()
+        expect(saved.floweringTime).toBeUndefined()
+        expect(saved.thc).toBe(24)
+    })
+
+    it('drops a cleared yield and height while keeping difficulty', () => {
+        const withAgro = {
+            ...editing,
+            agronomic: {
+                difficulty: 'Easy' as const,
+                yield: 'High' as const,
+                height: 'Tall' as const,
+            },
+        }
+        const values = strainToFormValues(withAgro)
+        const saved = buildStrainDraft({ ...values, yield: '', height: '' }, withAgro)
+        expect(saved.agronomic?.difficulty).toBe('Easy')
+        expect(saved.agronomic?.yield).toBeUndefined()
+        expect(saved.agronomic?.height).toBeUndefined()
+    })
+
+    it('does not infer Autoflower when the form leaves flowering blank', () => {
+        const values = strainToFormValues(editing)
+        const saved = buildStrainDraft(
+            { ...values, floweringType: '', typeDetails: 'a fast autoflower' },
+            editing,
+        )
+        expect(saved.floweringType).toBeUndefined()
+        expect(saved.typeDetails).toBe('a fast autoflower')
+    })
 })

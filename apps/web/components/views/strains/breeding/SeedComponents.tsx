@@ -35,6 +35,14 @@ export const SeedCard: React.FC<{
     )
 }
 
+const ParentTypeMark: React.FC<{
+    info: { color: string; icon: React.ReactNode } | null | undefined
+}> = ({ info }) => (
+    <div className={`w-12 h-12 mb-2 ${info ? info.color : 'text-slate-400'}`}>
+        {info ? info.icon : <PhosphorIcons.Question className="w-full h-full" />}
+    </div>
+)
+
 export const ParentSlot: React.FC<{
     title: string
     seed: Seed | undefined
@@ -48,9 +56,9 @@ export const ParentSlot: React.FC<{
     return (
         <Card className="flex flex-col items-center justify-center h-48 text-center relative bg-slate-800/30">
             <h4 className="absolute top-2 text-sm font-semibold text-slate-400">{title}</h4>
-            {seed && parentStrain && TypeInfo ? (
+            {seed && parentStrain ? (
                 <>
-                    <div className={`w-12 h-12 mb-2 ${TypeInfo.color}`}>{TypeInfo.icon}</div>
+                    <ParentTypeMark info={TypeInfo} />
                     <p className="font-bold text-slate-100">{seed.strainName}</p>
                     <div className="text-xs text-slate-400 mt-1">
                         <p>

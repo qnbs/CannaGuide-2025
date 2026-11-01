@@ -5,6 +5,7 @@ import {
     generateDailyPicks,
     buildUserProfile,
     rankStrainsByRelevance,
+    parseAIStrainResponse,
     resolveDiscoveredToStrain,
 } from '@/services/dailyStrainsService'
 import type { DiscoveredStrain } from '@/services/dailyStrainsService'
@@ -188,6 +189,22 @@ describe('dailyStrainsService', () => {
             expect(strain.agronomic).toBeUndefined()
             expect(strain.geneticModifiers).toBeUndefined()
             expect(strain.lineage?.breeder).toBe('Test Breeder')
+        })
+
+        it('leaves unreported AI fields unknown, including an explicit zero', () => {
+            const [parsed] = parseAIStrainResponse(
+                '[{"name":"Bare AI","thc":0,"description":"noted"}]',
+            )
+            expect(parsed?.type).toBeUndefined()
+            expect(parsed?.floweringType).toBeUndefined()
+            expect(parsed?.thc).toBe(0)
+            expect(parsed?.cbd).toBeUndefined()
+            if (!parsed) throw new Error('parser returned nothing')
+            const strain = resolveDiscoveredToStrain(parsed)
+            expect(strain.type).toBeUndefined()
+            expect(strain.floweringType).toBeUndefined()
+            expect(strain.thc).toBe(0)
+            expect(strain.cbd).toBeUndefined()
         })
 
         it('handles missing breeder gracefully', () => {

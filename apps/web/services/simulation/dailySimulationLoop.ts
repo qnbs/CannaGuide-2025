@@ -19,6 +19,8 @@ import { getT } from '@/i18n'
 
 const WATER_TASK_ID_PREFIX = 'task-water-'
 
+const positiveAmount = (value: number | undefined): boolean => value !== undefined && value > 0
+
 export type DailySimulationDeps = {
     clonePlant: (plant: Plant) => Plant
     applyEnvironmentalCorrections: (
@@ -169,7 +171,7 @@ export function runDailySynthesis(plant: Plant, deps: DailySimulationDeps): Plan
 
     const reportedThc = simIsFiniteNumber(p.strain.thc) ? p.strain.thc : undefined
     const reportedCbd = simIsFiniteNumber(p.strain.cbd) ? p.strain.cbd : undefined
-    if (newCannabinoids > 0 && (reportedThc !== undefined || reportedCbd !== undefined)) {
+    if (newCannabinoids > 0 && (positiveAmount(reportedThc) || positiveAmount(reportedCbd))) {
         const thc = reportedThc ?? 0
         const cbd = reportedCbd ?? 0
         const thcToCbdRatio = thc / (cbd + 0.1)

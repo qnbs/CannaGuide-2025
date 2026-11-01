@@ -1,6 +1,6 @@
 export type SortDirection = 'asc' | 'desc'
 
-export const getSafeStrainType = (value: unknown): string =>
+export const getSafeStrainType = (value?: unknown): string =>
     value === 'Sativa' || value === 'Indica' || value === 'Hybrid' ? value : ''
 
 export const measurementInRange = (
@@ -14,13 +14,23 @@ export const measurementInRange = (
     return range[0] === initial[0] && range[1] === initial[1]
 }
 
-export const rankIn = (
-    order: Record<string, number>,
-    value: string | undefined,
-): number | undefined => {
+export const rankIn = (order: Record<string, number>, value?: string): number | undefined => {
     if (value === undefined || !Object.hasOwn(order, value)) return undefined
     const rank = order[value]
     return typeof rank === 'number' ? rank : undefined
+}
+
+const reportedRankDelta = (
+    left: number | undefined,
+    right: number | undefined,
+): number | undefined => {
+    if (left === undefined || right === undefined) return undefined
+    return left - right
+}
+
+const missingRankDelta = (left: number | undefined, right: number | undefined): number => {
+    if (left === undefined && right === undefined) return 0
+    return left === undefined ? 1 : -1
 }
 
 /**
@@ -32,10 +42,7 @@ export const compareOptionalRanks = (
     right: number | undefined,
     direction: SortDirection,
 ): number => {
-    if (left === undefined || right === undefined) {
-        if (left === undefined && right === undefined) return 0
-        return left === undefined ? 1 : -1
-    }
-    const delta = left - right
+    const delta = reportedRankDelta(left, right)
+    if (delta === undefined) return missingRankDelta(left, right)
     return direction === 'asc' ? delta : -delta
 }

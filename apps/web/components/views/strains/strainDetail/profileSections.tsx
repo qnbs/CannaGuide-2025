@@ -91,20 +91,26 @@ const sortedTerpenes = (profile: TerpeneProfile | undefined): [TerpeneName, numb
         .sort((left, right) => right[1] - left[1])
 }
 
-export const TerpeneDetailSection: React.FC<{ profile: TerpeneProfile | undefined }> = ({
-    profile,
-}) => {
+const TerpeneReference: React.FC<{ name: TerpeneName }> = ({ name }) => {
     const { t } = useTranslation()
-    const rows = sortedTerpenes(profile)
-    if (rows.length === 0) return null
+    const ref = TERPENE_DATABASE[name]
+    if (!ref) return null
     return (
-        <InfoSection title={t('strainsView.strainDetail.terpeneDetails')}>
-            <div className="space-y-3">
-                {rows.map(([name, percent]) => (
-                    <TerpeneRow key={name} name={name} percent={percent} />
-                ))}
-            </div>
-        </InfoSection>
+        <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1 pl-1">
+            <span>
+                {t('strainsView.strainDetail.terpeneClass')}: {ref.class}
+            </span>
+            <span>
+                {t('strainsView.strainDetail.chemovar.boilingPoint')}:{' '}
+                {t('strainsView.strainDetail.terpeneBoilingPoint', { temp: ref.boilingPointC })}
+            </span>
+            {ref.alsoFoundIn.length > 0 ? (
+                <span>
+                    {t('strainsView.strainDetail.terpeneAlsoFoundIn')}:{' '}
+                    {ref.alsoFoundIn.slice(0, 3).join(', ')}
+                </span>
+            ) : null}
+        </div>
     )
 }
 
@@ -131,26 +137,20 @@ const TerpeneRow: React.FC<{ name: TerpeneName; percent: number }> = ({ name, pe
     )
 }
 
-const TerpeneReference: React.FC<{ name: TerpeneName }> = ({ name }) => {
+export const TerpeneDetailSection: React.FC<{ profile: TerpeneProfile | undefined }> = ({
+    profile,
+}) => {
     const { t } = useTranslation()
-    const ref = TERPENE_DATABASE[name]
-    if (!ref) return null
+    const rows = sortedTerpenes(profile)
+    if (rows.length === 0) return null
     return (
-        <div className="text-xs text-slate-400 flex flex-wrap gap-x-4 gap-y-1 pl-1">
-            <span>
-                {t('strainsView.strainDetail.terpeneClass')}: {ref.class}
-            </span>
-            <span>
-                {t('strainsView.strainDetail.chemovar.boilingPoint')}:{' '}
-                {t('strainsView.strainDetail.terpeneBoilingPoint', { temp: ref.boilingPointC })}
-            </span>
-            {ref.alsoFoundIn.length > 0 ? (
-                <span>
-                    {t('strainsView.strainDetail.terpeneAlsoFoundIn')}:{' '}
-                    {ref.alsoFoundIn.slice(0, 3).join(', ')}
-                </span>
-            ) : null}
-        </div>
+        <InfoSection title={t('strainsView.strainDetail.terpeneDetails')}>
+            <div className="space-y-3">
+                {rows.map(([name, percent]) => (
+                    <TerpeneRow key={name} name={name} percent={percent} />
+                ))}
+            </div>
+        </InfoSection>
     )
 }
 
@@ -160,6 +160,24 @@ const exclusiveFlavonoids = (profile: FlavonoidProfile): [string, number][] =>
         const ref = FLAVONOID_DATABASE[name as FlavonoidName]
         return ref?.cannabisExclusive
     })
+
+const ExclusiveFlavonoidCard: React.FC<{ name: string; value: number }> = ({ name, value }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const ref = FLAVONOID_DATABASE[name as FlavonoidName]
+    return (
+        <div className="bg-slate-800/60 rounded-lg p-2.5">
+            <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-sm font-medium text-amber-300">{name}</span>
+            </div>
+            <div className="text-lg font-mono text-slate-200">{value.toFixed(3)}%</div>
+            {ref ? (
+                <div className="text-xs text-muted mt-1">
+                    {ref.formula} -- {ref.molecularWeight} g/mol
+                </div>
+            ) : null}
+        </div>
+    )
+}
 
 const ExclusiveFlavonoids: React.FC<{ profile: FlavonoidProfile }> = ({ profile }) => {
     const { t } = useTranslation()
@@ -188,61 +206,10 @@ const ExclusiveFlavonoids: React.FC<{ profile: FlavonoidProfile }> = ({ profile 
     )
 }
 
-const ExclusiveFlavonoidCard: React.FC<{ name: string; value: number }> = ({ name, value }) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const ref = FLAVONOID_DATABASE[name as FlavonoidName]
-    return (
-        <div className="bg-slate-800/60 rounded-lg p-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-sm font-medium text-amber-300">{name}</span>
-            </div>
-            <div className="text-lg font-mono text-slate-200">{value.toFixed(3)}%</div>
-            {ref ? (
-                <div className="text-xs text-muted mt-1">
-                    {ref.formula} -- {ref.molecularWeight} g/mol
-                </div>
-            ) : null}
-        </div>
-    )
-}
-
 const rankedFlavonoids = (profile: FlavonoidProfile): [string, number][] =>
     (Object.entries(profile) as [string, number][])
         .filter(([, value]) => value > 0)
         .sort((left, right) => right[1] - left[1])
-
-export const FlavonoidProfileSection: React.FC<{ profile: FlavonoidProfile | undefined }> = ({
-    profile,
-}) => {
-    const { t } = useTranslation()
-    if (!profile || Object.keys(profile).length === 0) return null
-    return (
-        <InfoSection
-            title={t('strainsView.strainDetail.flavonoidSection')}
-            icon={<PhosphorIcons.Leafy className="w-5 h-5 text-amber-400" />}
-        >
-            <p className="text-xs text-slate-400 mb-4">
-                {t('strainsView.flavonoids.sectionDescription')}
-            </p>
-            <div className="flex items-center gap-2 mb-4">
-                <span className="inline-flex items-center gap-1 text-xs bg-slate-700/80 text-amber-300 px-2 py-0.5 rounded-full">
-                    <PhosphorIcons.Info className="w-3 h-3" />
-                    {t('strainsView.flavonoids.estimated')}
-                </span>
-                <span className="text-xs text-muted">
-                    {t('strainsView.flavonoids.estimatedHint')}
-                </span>
-            </div>
-            <ExclusiveFlavonoids profile={profile} />
-            <div className="space-y-3">
-                {rankedFlavonoids(profile).map(([name, value]) => (
-                    <FlavonoidBar key={name} name={name} value={value} />
-                ))}
-            </div>
-            <FlavonoidSubclassLegend />
-        </InfoSection>
-    )
-}
 
 const FlavonoidBar: React.FC<{ name: string; value: number }> = ({ name, value }) => {
     const { t } = useTranslation()
@@ -282,8 +249,43 @@ const FlavonoidSubclassLegend: React.FC = () => {
     )
 }
 
-const ratioText = (ratio: number): string =>
-    Number.isFinite(ratio) ? `${ratio.toFixed(1)}:1` : 'N/A'
+export const FlavonoidProfileSection: React.FC<{ profile: FlavonoidProfile | undefined }> = ({
+    profile,
+}) => {
+    const { t } = useTranslation()
+    if (!profile || Object.keys(profile).length === 0) return null
+    return (
+        <InfoSection
+            title={t('strainsView.strainDetail.flavonoidSection')}
+            icon={<PhosphorIcons.Leafy className="w-5 h-5 text-amber-400" />}
+        >
+            <p className="text-xs text-slate-400 mb-4">
+                {t('strainsView.flavonoids.sectionDescription')}
+            </p>
+            <div className="flex items-center gap-2 mb-4">
+                <span className="inline-flex items-center gap-1 text-xs bg-slate-700/80 text-amber-300 px-2 py-0.5 rounded-full">
+                    <PhosphorIcons.Info className="w-3 h-3" />
+                    {t('strainsView.flavonoids.estimated')}
+                </span>
+                <span className="text-xs text-muted">
+                    {t('strainsView.flavonoids.estimatedHint')}
+                </span>
+            </div>
+            <ExclusiveFlavonoids profile={profile} />
+            <div className="space-y-3">
+                {rankedFlavonoids(profile).map(([name, value]) => (
+                    <FlavonoidBar key={name} name={name} value={value} />
+                ))}
+            </div>
+            <FlavonoidSubclassLegend />
+        </InfoSection>
+    )
+}
+
+const ratioText = (ratio: number): string => {
+    if (ratio === Number.POSITIVE_INFINITY) return 'Infinity:1'
+    return Number.isFinite(ratio) ? `${ratio.toFixed(1)}:1` : 'N/A'
+}
 
 export const ChemovarSection: React.FC<{ profile: ChemovarProfile | undefined }> = ({
     profile,
@@ -342,6 +344,31 @@ export const ChemovarSection: React.FC<{ profile: ChemovarProfile | undefined }>
     )
 }
 
+const SynergyList: React.FC<{ synergies: string[] }> = ({ synergies }) => {
+    const { t } = useTranslation()
+    if (synergies.length === 0) {
+        return (
+            <p className="text-sm text-muted italic">{t('strainsView.strainDetail.noSynergies')}</p>
+        )
+    }
+    return (
+        <div className="space-y-2">
+            <div className="text-xs font-semibold text-slate-300">
+                {t('strainsView.strainDetail.chemovar.synergies')}
+            </div>
+            {synergies.map((synergy) => (
+                <div
+                    key={synergy}
+                    className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 flex items-start gap-2"
+                >
+                    <PhosphorIcons.Sparkle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                    <span>{synergy}</span>
+                </div>
+            ))}
+        </div>
+    )
+}
+
 export const EntourageSection: React.FC<{
     terpeneProfile: TerpeneProfile | undefined
     cannabinoidProfile: CannabinoidProfile | undefined
@@ -365,30 +392,5 @@ export const EntourageSection: React.FC<{
                 <SynergyList synergies={entourage.synergies} />
             </div>
         </InfoSection>
-    )
-}
-
-const SynergyList: React.FC<{ synergies: string[] }> = ({ synergies }) => {
-    const { t } = useTranslation()
-    if (synergies.length === 0) {
-        return (
-            <p className="text-sm text-muted italic">{t('strainsView.strainDetail.noSynergies')}</p>
-        )
-    }
-    return (
-        <div className="space-y-2">
-            <div className="text-xs font-semibold text-slate-300">
-                {t('strainsView.strainDetail.chemovar.synergies')}
-            </div>
-            {synergies.map((synergy) => (
-                <div
-                    key={synergy}
-                    className="bg-slate-800 rounded-lg p-3 text-sm text-slate-300 flex items-start gap-2"
-                >
-                    <PhosphorIcons.Sparkle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                    <span>{synergy}</span>
-                </div>
-            ))}
-        </div>
     )
 }

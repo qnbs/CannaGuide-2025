@@ -11,7 +11,7 @@ const yieldOrder = { Low: 1, Medium: 2, High: 3 }
 describe('compareOptionalRanks', () => {
     it('puts an unknown yield after High when sorting descending', () => {
         const high = rankIn(yieldOrder, 'High')
-        const unknown = rankIn(yieldOrder, undefined)
+        const unknown = rankIn(yieldOrder)
         expect(compareOptionalRanks(unknown, high, 'desc')).toBeGreaterThan(0)
         expect(compareOptionalRanks(high, unknown, 'desc')).toBeLessThan(0)
     })
@@ -32,7 +32,9 @@ describe('measurement filters', () => {
         expect(measurementInRange(undefined, [0, 30], [0, 30])).toBe(true)
         expect(measurementInRange(undefined, [10, 20], [0, 30])).toBe(false)
         expect(measurementInRange(0, [0, 30], [0, 30])).toBe(true)
-        expect(getSafeStrainType(undefined)).toBe('')
+        expect(measurementInRange(Number.NaN, [0, 30], [0, 30])).toBe(true)
+        expect(measurementInRange(Number.POSITIVE_INFINITY, [10, 20], [0, 30])).toBe(false)
+        expect(getSafeStrainType()).toBe('')
         expect(getSafeStrainType('Sativa')).toBe('Sativa')
     })
 })

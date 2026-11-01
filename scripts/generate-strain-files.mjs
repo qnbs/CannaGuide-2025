@@ -51,6 +51,7 @@ const QUOTED_IDENTIFIER = new Set(['__proto__', 'constructor', 'prototype'])
 
 const emitKey = (key) => {
     if (!SAFE_KEY.test(key)) return null
+    if (key === '__proto__') return "['__proto__']"
     if (QUOTED_IDENTIFIER.has(key) || !IDENTIFIER.test(key)) return `'${escapeStr(key)}'`
     return key
 }

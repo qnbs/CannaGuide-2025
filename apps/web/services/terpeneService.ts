@@ -351,12 +351,21 @@ export const predictEffects = (
  * Build a complete ChemovarProfile for a strain.
  * Uses existing data where available, generates estimates where not.
  */
+const finiteCannabinoid = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const cannabinoidRatio = (thc: number | undefined, cbd: number | undefined): number => {
+    if (thc === undefined || cbd === undefined) return Number.NaN
+    if (cbd > 0) return Math.round((thc / cbd) * 100) / 100
+    return thc > 0 ? Number.POSITIVE_INFINITY : 0
+}
+
 export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
     const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
-    const reportedThc =
-        typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
-    const reportedCbd =
-        typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
+    const measuredThc = finiteCannabinoid(strain.thc)
+    const measuredCbd = finiteCannabinoid(strain.cbd)
+    const reportedThc = measuredThc ?? 0
+    const reportedCbd = measuredCbd ?? 0
     const typeText = typeof strain.type === 'string' ? strain.type : ''
 
     // Terpene profile: use existing or generate
@@ -380,12 +389,7 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
 
     const chemovarType = classifyChemovar(reportedThc, reportedCbd, cannabinoidProfile.CBG)
 
-    const thcCbdRatio =
-        reportedCbd > 0
-            ? Math.round((reportedThc / reportedCbd) * 100) / 100
-            : reportedThc > 0
-              ? Infinity
-              : 0
+    const thcCbdRatio = cannabinoidRatio(measuredThc, measuredCbd)
 
     const predictedEffects = predictEffects(terpeneProfile, cannabinoidProfile)
 

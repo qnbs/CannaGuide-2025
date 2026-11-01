@@ -21,7 +21,9 @@ describe('strainImagePalette', () => {
     it('exposes agronomic lookup tables', () => {
         expect(DIFFICULTY_VAL.Hard).toBe(95)
         expect(YIELD_VAL.High).toBe(90)
+        expect(YIELD_VAL['Very High']).toBe(90)
         expect(HEIGHT_VAL.Tall).toBe(90)
+        expect(HEIGHT_VAL['Very Tall']).toBe(90)
     })
 
     it('maps common terpenes to hex colors', () => {

@@ -120,7 +120,7 @@ const asHeight = (value: string): HeightLevel | undefined =>
     value === 'Short' || value === 'Medium' || value === 'Tall' ? value : undefined
 
 const detailPair = (indoor: string, outdoor: string) => {
-    const details: { indoor?: string; outdoor?: string } = {}
+    const details: { indoor?: string | undefined; outdoor?: string | undefined } = {}
     if (indoor.trim()) details.indoor = indoor
     if (outdoor.trim()) details.outdoor = outdoor
     if (!details.indoor && !details.outdoor) return undefined
@@ -150,29 +150,44 @@ const reportedAgronomic = (values: StrainFormValues): Record<string, unknown> | 
     return Object.keys(bag).length > 0 ? bag : undefined
 }
 
-const FORM_OWNED: (keyof Strain)[] = [
-    'name',
-    'type',
-    'typeDetails',
-    'genetics',
-    'floweringType',
-    'thc',
-    'cbd',
-    'thcRange',
-    'cbdRange',
-    'floweringTime',
-    'floweringTimeRange',
-    'description',
-    'aromas',
-    'dominantTerpenes',
-    'agronomic',
-]
-
 const preservedStrainFields = (strain: Strain | null): Partial<Strain> => {
     if (!strain) return {}
-    const copy: Partial<Strain> = { ...strain }
-    for (const key of FORM_OWNED) delete copy[key]
-    return copy
+    const {
+        name,
+        type,
+        typeDetails,
+        genetics,
+        floweringType,
+        thc,
+        cbd,
+        thcRange,
+        cbdRange,
+        floweringTime,
+        floweringTimeRange,
+        description,
+        aromas,
+        dominantTerpenes,
+        agronomic,
+        ...kept
+    } = strain
+    void [
+        name,
+        type,
+        typeDetails,
+        genetics,
+        floweringType,
+        thc,
+        cbd,
+        thcRange,
+        cbdRange,
+        floweringTime,
+        floweringTimeRange,
+        description,
+        aromas,
+        dominantTerpenes,
+        agronomic,
+    ]
+    return kept
 }
 
 const attachMeasurements = (
@@ -227,5 +242,9 @@ export const buildStrainDraft = (values: StrainFormValues, editing: Strain | nul
         optionalFinite(values.floweringTime),
     )
     attachClassification(partial, values)
-    return createStrainObject(partial)
+    const draft = createStrainObject(partial)
+    if (!asFlowering(values.floweringType)) {
+        Reflect.deleteProperty(draft, 'floweringType')
+    }
+    return draft
 }

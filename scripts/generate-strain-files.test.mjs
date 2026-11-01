@@ -57,7 +57,7 @@ test('lineage, seed form and provenance survive the generator', () => {
     assert.match(text, /confidence: 0.4/)
 })
 
-test('__proto__ is quoted so it is an own property, not a prototype setter', () => {
+test('__proto__ is a computed own property, not a prototype setter', () => {
     const lineage = Object.assign(Object.create(null), { breeder: 'Lab' })
     lineage['__proto__'] = { note: 'kept' }
     const text = formatStrain({
@@ -65,8 +65,12 @@ test('__proto__ is quoted so it is an own property, not a prototype setter', () 
         name: 'Proto',
         lineage,
     })
-    assert.match(text, /'__proto__':/)
-    assert.equal(text.includes('\n        __proto__:'), false)
+    assert.match(text, /\['__proto__'\]:/)
+    assert.equal(text.includes("'__proto__':"), false)
+    const objectText = text.replace(/^\s*createStrainObject\(/, '').replace(/\),\s*$/, '')
+    const value = Function(`return (${objectText})`)()
+    assert.equal(Object.hasOwn(value.lineage, '__proto__'), true)
+    assert.deepEqual(value.lineage['__proto__'], { note: 'kept' })
 })
 
 test('line breaks stay inside the generated string and null array items are dropped', () => {

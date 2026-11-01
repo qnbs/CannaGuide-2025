@@ -212,7 +212,7 @@ describe('normalizeTHC', () => {
     })
 
     it('leaves an unreported THC off the chart', () => {
-        expect(normalizeTHC(undefined)).toBeNull()
+        expect(normalizeTHC()).toBeNull()
     })
 })
 
@@ -250,6 +250,6 @@ describe('yieldLevelToScore', () => {
     })
 
     it('leaves an unreported yield off the chart', () => {
-        expect(yieldLevelToScore(undefined)).toBeNull()
+        expect(yieldLevelToScore()).toBeNull()
     })
 })

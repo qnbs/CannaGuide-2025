@@ -16,6 +16,7 @@ import { selectFavoriteIds } from '@/stores/selectors'
 import { toggleFavorite } from '@/stores/slices/favoritesSlice'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { chartSeriesColor, CHART_CHROME } from '@/utils/chartPalette'
+import { formatFloweringWeeks } from './reportedStrainFacts'
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -24,7 +25,7 @@ import { chartSeriesColor, CHART_CHROME } from '@/utils/chartPalette'
 const MAX_STRAINS = 3
 
 // Normalize yield level to a numeric 0-100 score
-const yieldLevelToScore = (level: YieldLevel | undefined): number | null => {
+const yieldLevelToScore = (level?: YieldLevel): number | null => {
     if (level === 'High') return 90
     if (level === 'Medium') return 60
     if (level === 'Low') return 30
@@ -35,7 +36,7 @@ const finiteNumber = (value: unknown): number | undefined =>
     typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
 // Normalize THC % (0-35 typical max) to 0-100
-const normalizeTHC = (thc: number | undefined): number | null => {
+const normalizeTHC = (thc?: number): number | null => {
     const value = finiteNumber(thc)
     return value === undefined ? null : Math.min(100, Math.round((value / 35) * 100))
 }
@@ -370,11 +371,12 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                 <ComparisonRow
                                     label={t('strainsView.comparison.floweringTime')}
                                     values={selectedStrains.map((s) =>
-                                        s.floweringTimeRange
-                                            ? `${s.floweringTimeRange} ${t('strainsView.comparison.days')}`
-                                            : finiteNumber(s.floweringTime) === undefined
-                                              ? t('common.unknown')
-                                              : `${s.floweringTime} ${t('strainsView.comparison.days')}`,
+                                        formatFloweringWeeks(
+                                            s.floweringTimeRange,
+                                            s.floweringTime,
+                                            t('common.units.weeks'),
+                                            t('common.unknown'),
+                                        ),
                                     )}
                                 />
                                 <ComparisonRow

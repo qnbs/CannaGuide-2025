@@ -211,10 +211,10 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
         if (searchTerm.trim() !== '') {
             strainsToShow = allStrains.filter(
                 (s) =>
-                    (typeof s.name === 'string' ? s.name : 'Unknown Strain')
+                    (typeof s.name === 'string' ? s.name : '')
                         .toLowerCase()
                         .includes(lowerCaseSearch) ||
-                    (typeof s.type === 'string' ? s.type : 'Hybrid')
+                    (typeof s.type === 'string' ? s.type : '')
                         .toLowerCase()
                         .includes(lowerCaseSearch) ||
                     (Array.isArray(s.aromas) ? s.aromas : []).some(

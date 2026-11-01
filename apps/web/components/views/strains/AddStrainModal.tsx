@@ -163,6 +163,16 @@ const DraftPreview: React.FC<{
     )
 }
 
+const BannerCopy: React.FC<{ title: string; body: string }> = ({ title, body }) => (
+    <div>
+        <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.24em] text-primary-200">
+            <PhosphorIcons.Flask className="h-3.5 w-3.5" />
+            {title}
+        </div>
+        <p className="max-w-2xl text-sm leading-6 text-slate-300">{body}</p>
+    </div>
+)
+
 const StrainFormBanner: React.FC<{
     isEditMode: boolean
     values: StrainFormValues
@@ -176,15 +186,7 @@ const StrainFormBanner: React.FC<{
     return (
         <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.18),rgba(15,23,42,0.92))] !p-0">
             <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.9fr)] lg:items-start">
-                <div>
-                    <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.24em] text-primary-200">
-                        <PhosphorIcons.Flask className="h-3.5 w-3.5" />
-                        {title}
-                    </div>
-                    <p className="max-w-2xl text-sm leading-6 text-slate-300">
-                        {t('strainsView.addStrainModal.description')}
-                    </p>
-                </div>
+                <BannerCopy title={title} body={t('strainsView.addStrainModal.description')} />
                 <DraftPreview values={values} aromas={aromas} terpenes={terpenes} />
             </div>
         </Card>
@@ -249,6 +251,251 @@ const GrowChoiceGrid: React.FC<{
         </div>
     )
 }
+
+type StrainFieldChange = <K extends keyof StrainFormValues>(
+    key: K,
+    value: StrainFormValues[K],
+) => void
+
+type StrainFieldErrors = Partial<Record<keyof StrainFormValues, string>>
+
+type StrainTypeOption = { value: StrainType; label: string; icon: React.ReactNode }
+
+const GeneralInfoSection: React.FC<{
+    values: StrainFormValues
+    errors: StrainFieldErrors
+    typeOptions: StrainTypeOption[]
+    onChange: StrainFieldChange
+}> = ({ values, errors, typeOptions, onChange }) => {
+    const { t } = useTranslation()
+    return (
+        <FormSection
+            title={t('strainsView.addStrainModal.generalInfo')}
+            defaultOpen
+            icon={<PhosphorIcons.Question className="h-5 w-5" />}
+        >
+            <div className="sm:col-span-2">
+                <Input
+                    label={`${t('strainsView.addStrainModal.strainName')} *`}
+                    value={values.name}
+                    onChange={(e) => onChange('name', e.target.value)}
+                    placeholder={t('strainsView.addStrainModal.strainNamePlaceholder')}
+                    error={errors.name}
+                    required
+                />
+            </div>
+            <div className="sm:col-span-2">
+                <p className="mb-2 text-sm font-semibold text-slate-300">
+                    {t('strainsView.addStrainModal.typeLegend')}
+                </p>
+                <SegmentedControl
+                    aria-label={t('strainsView.addStrainModal.typeLegend')}
+                    value={[values.type]}
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+                    onToggle={(value) => onChange('type', value as StrainType)}
+                    options={typeOptions}
+                    buttonClassName="min-h-11"
+                />
+            </div>
+            <Input
+                label={t('common.typeDetails')}
+                value={values.typeDetails}
+                onChange={(e) => onChange('typeDetails', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')}
+            />
+            <Input
+                label={t('common.genetics')}
+                value={values.genetics}
+                onChange={(e) => onChange('genetics', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.geneticsPlaceholder')}
+            />
+            <div className="sm:col-span-2">
+                <p className="mb-2 text-sm font-semibold text-slate-300">
+                    {t('strainsView.addStrainModal.floweringTypeLegend')}
+                </p>
+                <SegmentedControl
+                    aria-label={t('strainsView.addStrainModal.floweringTypeLegend')}
+                    value={[values.floweringType]}
+                    onToggle={(value) => onChange('floweringType', value)}
+                    options={[
+                        {
+                            value: 'Photoperiod',
+                            label: t('strainsView.addStrainModal.photoperiod'),
+                            icon: <PhosphorIcons.Sun className="h-4 w-4" />,
+                        },
+                        {
+                            value: 'Autoflower',
+                            label: t('strainsView.addStrainModal.autoflower'),
+                            icon: <PhosphorIcons.Lightning className="h-4 w-4" />,
+                        },
+                    ]}
+                    buttonClassName="min-h-11"
+                />
+            </div>
+        </FormSection>
+    )
+}
+
+const CannabinoidSection: React.FC<{
+    values: StrainFormValues
+    errors: StrainFieldErrors
+    onChange: StrainFieldChange
+}> = ({ values, errors, onChange }) => {
+    const { t } = useTranslation()
+    return (
+        <FormSection
+            title={t('strainsView.addStrainModal.cannabinoids')}
+            icon={<PhosphorIcons.Drop className="h-5 w-5" />}
+        >
+            <Input
+                label={t('strainsView.addStrainModal.thcPercent')}
+                type="number"
+                step="0.1"
+                value={values.thc}
+                onChange={(e) => onChange('thc', readOptionalNumber(e.target.value))}
+                error={errors.thc}
+            />
+            <Input
+                label={t('strainsView.addStrainModal.cbdPercent')}
+                type="number"
+                step="0.1"
+                value={values.cbd}
+                onChange={(e) => onChange('cbd', readOptionalNumber(e.target.value))}
+            />
+            <Input
+                label={t('strainsView.addStrainModal.thcRange')}
+                value={values.thcRange}
+                onChange={(e) => onChange('thcRange', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')}
+                error={errors.thcRange}
+            />
+            <Input
+                label={t('strainsView.addStrainModal.cbdRange')}
+                value={values.cbdRange}
+                onChange={(e) => onChange('cbdRange', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')}
+                error={errors.cbdRange}
+            />
+        </FormSection>
+    )
+}
+
+const GrowDataSection: React.FC<{
+    values: StrainFormValues
+    errors: StrainFieldErrors
+    onChange: StrainFieldChange
+}> = ({ values, errors, onChange }) => {
+    const { t } = useTranslation()
+    return (
+        <FormSection
+            title={t('strainsView.addStrainModal.growData')}
+            icon={<PhosphorIcons.ChartLineUp className="h-5 w-5" />}
+        >
+            <Input
+                label={t('strainsView.addStrainModal.floweringTimeWeeks')}
+                type="number"
+                step="0.5"
+                value={values.floweringTime}
+                onChange={(e) => onChange('floweringTime', readOptionalNumber(e.target.value))}
+                error={errors.floweringTime}
+            />
+            <Input
+                label={t('strainsView.addStrainModal.floweringTimeRange')}
+                value={values.floweringTimeRange}
+                onChange={(e) => onChange('floweringTimeRange', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}
+            />
+            <GrowChoiceGrid values={values} onChange={(key, value) => onChange(key, value)} />
+            <Input
+                label={t('strainsView.strainModal.yieldIndoor')}
+                value={values.yieldIndoor}
+                onChange={(e) => onChange('yieldIndoor', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}
+            />
+            <Input
+                label={t('strainsView.strainModal.yieldOutdoor')}
+                value={values.yieldOutdoor}
+                onChange={(e) => onChange('yieldOutdoor', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}
+            />
+            <Input
+                label={t('strainsView.strainModal.heightIndoor')}
+                value={values.heightIndoor}
+                onChange={(e) => onChange('heightIndoor', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}
+            />
+            <Input
+                label={t('strainsView.strainModal.heightOutdoor')}
+                value={values.heightOutdoor}
+                onChange={(e) => onChange('heightOutdoor', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.heightOutdoorPlaceholder')}
+            />
+        </FormSection>
+    )
+}
+
+const ProfileSection: React.FC<{
+    values: StrainFormValues
+    onChange: StrainFieldChange
+}> = ({ values, onChange }) => {
+    const { t } = useTranslation()
+    return (
+        <FormSection
+            title={t('strainsView.addStrainModal.profile')}
+            icon={<PhosphorIcons.Sparkle className="h-5 w-5" />}
+        >
+            <div className="sm:col-span-2">
+                <Input
+                    as="textarea"
+                    rows={3}
+                    label={t('common.description')}
+                    value={values.description}
+                    onChange={(e) => onChange('description', e.target.value)}
+                />
+            </div>
+            <Input
+                label={t('strainsView.strainModal.aromas')}
+                value={values.aromasString}
+                onChange={(e) => onChange('aromasString', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.aromasPlaceholder')}
+            />
+            <Input
+                label={t('strainsView.strainModal.dominantTerpenes')}
+                value={values.terpenesString}
+                onChange={(e) => onChange('terpenesString', e.target.value)}
+                placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')}
+            />
+        </FormSection>
+    )
+}
+
+const AddStrainFormBody: React.FC<{
+    isEditMode: boolean
+    values: StrainFormValues
+    errors: StrainFieldErrors
+    aromas: string[]
+    terpenes: string[]
+    typeOptions: StrainTypeOption[]
+    onChange: StrainFieldChange
+}> = ({ isEditMode, values, errors, aromas, terpenes, typeOptions, onChange }) => (
+    <div className="space-y-5 pb-4">
+        <StrainFormBanner
+            isEditMode={isEditMode}
+            values={values}
+            aromas={aromas}
+            terpenes={terpenes}
+        />
+        <GeneralInfoSection
+            values={values}
+            errors={errors}
+            typeOptions={typeOptions}
+            onChange={onChange}
+        />
+        <CannabinoidSection values={values} errors={errors} onChange={onChange} />
+        <GrowDataSection values={values} errors={errors} onChange={onChange} />
+        <ProfileSection values={values} onChange={onChange} />
+    </div>
+)
 
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({
     isOpen,
@@ -327,12 +574,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
             >
                 {t('common.cancel')}
             </Button>
-            <Button
-                type="submit"
-                form="add-strain-form"
-                glow={true}
-                className="min-h-11 w-full sm:w-auto"
-            >
+            <Button type="submit" form="add-strain-form" glow className="min-h-11 w-full sm:w-auto">
                 {t('common.save')}
             </Button>
         </>
@@ -347,208 +589,15 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
             footer={footer}
         >
             <form onSubmit={handleSubmit} id="add-strain-form" className="flex h-full flex-col">
-                <div className="space-y-5 pb-4">
-                    <StrainFormBanner
-                        isEditMode={isEditMode}
-                        values={values}
-                        aromas={parsedAromas}
-                        terpenes={parsedTerpenes}
-                    />
-
-                    <FormSection
-                        title={t('strainsView.addStrainModal.generalInfo')}
-                        defaultOpen={true}
-                        icon={<PhosphorIcons.Question className="h-5 w-5" />}
-                    >
-                        <div className="sm:col-span-2">
-                            <Input
-                                label={`${t('strainsView.addStrainModal.strainName')} *`}
-                                value={values.name}
-                                onChange={(e) => handleChange('name', e.target.value)}
-                                placeholder={t('strainsView.addStrainModal.strainNamePlaceholder')}
-                                error={errors.name}
-                                required
-                            />
-                        </div>
-                        <div className="sm:col-span-2">
-                            <p className="mb-2 text-sm font-semibold text-slate-300">
-                                {t('strainsView.addStrainModal.typeLegend')}
-                            </p>
-                            <SegmentedControl
-                                aria-label={t('strainsView.addStrainModal.typeLegend')}
-                                value={[values.type]}
-                                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                                onToggle={(value) => handleChange('type', value as StrainType)}
-                                options={typeOptions}
-                                buttonClassName="min-h-11"
-                            />
-                        </div>
-                        <Input
-                            label={t('common.typeDetails')}
-                            value={values.typeDetails}
-                            onChange={(e) => handleChange('typeDetails', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')}
-                        />
-                        <Input
-                            label={t('common.genetics')}
-                            value={values.genetics}
-                            onChange={(e) => handleChange('genetics', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.geneticsPlaceholder')}
-                        />
-                        <div className="sm:col-span-2">
-                            <p className="mb-2 text-sm font-semibold text-slate-300">
-                                {t('strainsView.addStrainModal.floweringTypeLegend')}
-                            </p>
-                            <SegmentedControl
-                                aria-label={t('strainsView.addStrainModal.floweringTypeLegend')}
-                                value={[values.floweringType]}
-                                onToggle={(value) => handleChange('floweringType', value)}
-                                options={[
-                                    {
-                                        value: 'Photoperiod',
-                                        label: t('strainsView.addStrainModal.photoperiod'),
-                                        icon: <PhosphorIcons.Sun className="h-4 w-4" />,
-                                    },
-                                    {
-                                        value: 'Autoflower',
-                                        label: t('strainsView.addStrainModal.autoflower'),
-                                        icon: <PhosphorIcons.Lightning className="h-4 w-4" />,
-                                    },
-                                ]}
-                                buttonClassName="min-h-11"
-                            />
-                        </div>
-                    </FormSection>
-
-                    <FormSection
-                        title={t('strainsView.addStrainModal.cannabinoids')}
-                        icon={<PhosphorIcons.Drop className="h-5 w-5" />}
-                    >
-                        <div>
-                            <Input
-                                label={t('strainsView.addStrainModal.thcPercent')}
-                                type="number"
-                                step="0.1"
-                                value={values.thc}
-                                onChange={(e) =>
-                                    handleChange('thc', readOptionalNumber(e.target.value))
-                                }
-                                error={errors.thc}
-                            />
-                        </div>
-                        <Input
-                            label={t('strainsView.addStrainModal.cbdPercent')}
-                            type="number"
-                            step="0.1"
-                            value={values.cbd}
-                            onChange={(e) =>
-                                handleChange('cbd', readOptionalNumber(e.target.value))
-                            }
-                        />
-                        <div>
-                            <Input
-                                label={t('strainsView.addStrainModal.thcRange')}
-                                value={values.thcRange}
-                                onChange={(e) => handleChange('thcRange', e.target.value)}
-                                placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')}
-                                error={errors.thcRange}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label={t('strainsView.addStrainModal.cbdRange')}
-                                value={values.cbdRange}
-                                onChange={(e) => handleChange('cbdRange', e.target.value)}
-                                placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')}
-                                error={errors.cbdRange}
-                            />
-                        </div>
-                    </FormSection>
-
-                    <FormSection
-                        title={t('strainsView.addStrainModal.growData')}
-                        icon={<PhosphorIcons.ChartLineUp className="h-5 w-5" />}
-                    >
-                        <div>
-                            <Input
-                                label={t('strainsView.addStrainModal.floweringTimeWeeks')}
-                                type="number"
-                                step="0.5"
-                                value={values.floweringTime}
-                                onChange={(e) =>
-                                    handleChange(
-                                        'floweringTime',
-                                        readOptionalNumber(e.target.value),
-                                    )
-                                }
-                                error={errors.floweringTime}
-                            />
-                        </div>
-                        <Input
-                            label={t('strainsView.addStrainModal.floweringTimeRange')}
-                            value={values.floweringTimeRange}
-                            onChange={(e) => handleChange('floweringTimeRange', e.target.value)}
-                            placeholder={t(
-                                'strainsView.addStrainModal.floweringTimeRangePlaceholder',
-                            )}
-                        />
-                        <GrowChoiceGrid
-                            values={values}
-                            onChange={(key, value) => handleChange(key, value)}
-                        />
-                        <Input
-                            label={t('strainsView.strainModal.yieldIndoor')}
-                            value={values.yieldIndoor}
-                            onChange={(e) => handleChange('yieldIndoor', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}
-                        />
-                        <Input
-                            label={t('strainsView.strainModal.yieldOutdoor')}
-                            value={values.yieldOutdoor}
-                            onChange={(e) => handleChange('yieldOutdoor', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}
-                        />
-                        <Input
-                            label={t('strainsView.strainModal.heightIndoor')}
-                            value={values.heightIndoor}
-                            onChange={(e) => handleChange('heightIndoor', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}
-                        />
-                        <Input
-                            label={t('strainsView.strainModal.heightOutdoor')}
-                            value={values.heightOutdoor}
-                            onChange={(e) => handleChange('heightOutdoor', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.heightOutdoorPlaceholder')}
-                        />
-                    </FormSection>
-
-                    <FormSection
-                        title={t('strainsView.addStrainModal.profile')}
-                        icon={<PhosphorIcons.Sparkle className="h-5 w-5" />}
-                    >
-                        <div className="sm:col-span-2">
-                            <Input
-                                as="textarea"
-                                rows={3}
-                                label={t('common.description')}
-                                value={values.description}
-                                onChange={(e) => handleChange('description', e.target.value)}
-                            />
-                        </div>
-                        <Input
-                            label={t('strainsView.strainModal.aromas')}
-                            value={values.aromasString}
-                            onChange={(e) => handleChange('aromasString', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.aromasPlaceholder')}
-                        />
-                        <Input
-                            label={t('strainsView.strainModal.dominantTerpenes')}
-                            value={values.terpenesString}
-                            onChange={(e) => handleChange('terpenesString', e.target.value)}
-                            placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')}
-                        />
-                    </FormSection>
-                </div>
+                <AddStrainFormBody
+                    isEditMode={isEditMode}
+                    values={values}
+                    errors={errors}
+                    aromas={parsedAromas}
+                    terpenes={parsedTerpenes}
+                    typeOptions={typeOptions}
+                    onChange={handleChange}
+                />
             </form>
         </Modal>
     )

@@ -6,7 +6,7 @@ import {
 } from '@/services/simulation/simulationProfiles'
 import { simClamp, simIsFiniteNumber } from '@/services/simulation/simulationMath'
 
-export function createInitialHarvestData(plant: Plant): HarvestData {
+export const createInitialHarvestData = (plant: Plant): HarvestData => {
     const wetWeight = Math.max(12, Number((plant.biomass.flowers * 5.5).toFixed(1)))
     const targetDryRatio = simClamp(0.2 + (plant.health / 100) * 0.05, 0.18, 0.28)
     const dryWeight = Number((wetWeight * targetDryRatio).toFixed(1))
@@ -37,10 +37,10 @@ export function createInitialHarvestData(plant: Plant): HarvestData {
     }
 }
 
-export function computePostHarvestQuality(
+export const computePostHarvestQuality = (
     harvestData: HarvestData,
     simulationSettings?: SimulationSettings | undefined,
-): number {
+): number => {
     const profilePrecision = getSimulationProfileCurve(simulationSettings).postHarvestPrecision
     const humiditySweetSpot = Math.max(0, 12 - Math.abs(harvestData.jarHumidity - 61) * 3.5) * 2.1
     const chlorophyllScore = Math.max(0, 100 - harvestData.chlorophyllPercent)

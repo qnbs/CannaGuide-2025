@@ -86,6 +86,18 @@ describe('crossStrains', () => {
         expect(offspring.agronomic?.height).toBe('Short')
     })
 
+    it('omits agronomy when any of the three levels is missing', () => {
+        const left = parent({
+            id: 'left',
+            name: 'Left',
+            agronomic: { difficulty: 'Easy', yield: 'Low', height: 'Short' },
+        })
+        const right = parent({ id: 'right', name: 'Right' })
+        Reflect.deleteProperty(left.agronomic, 'yield')
+        Reflect.deleteProperty(right, 'agronomic')
+        expect(crossStrains(left, right).agronomic).toBeUndefined()
+    })
+
     it('averages chemistry only when both parents reported it', () => {
         const left = parent({ id: 'left', name: 'Left', thc: 20, cbd: 2, floweringTime: 8 })
         const right = parent({ id: 'right', name: 'Right', thc: 10, cbd: 4, floweringTime: 10 })

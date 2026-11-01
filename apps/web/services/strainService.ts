@@ -10,6 +10,18 @@ export type { StrainCatalogVersion } from '@/data/strainCatalogVersion'
 
 type StrainModule = Record<string, unknown>
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+const hasStrainIdentity = (value: Record<string, unknown>): boolean =>
+    'id' in value && 'name' in value
+
+const isStrainList = (value: unknown): value is Strain[] => {
+    if (!Array.isArray(value) || value.length === 0) return false
+    const first: unknown = value[0]
+    return isRecord(first) && hasStrainIdentity(first)
+}
+
 const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
     const seenIds = new Set<string>()
     const normalized: Strain[] = []
@@ -60,17 +72,7 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
                 (result): result is PromiseFulfilledResult<StrainModule> =>
                     result.status === 'fulfilled',
             )
-            .flatMap((result) =>
-                Object.values(result.value).filter(
-                    (value): value is Strain[] =>
-                        Array.isArray(value) &&
-                        value.length > 0 &&
-                        typeof value[0] === 'object' &&
-                        value[0] !== null &&
-                        'id' in value[0] &&
-                        'name' in value[0],
-                ),
-            )
+            .flatMap((result) => Object.values(result.value).filter(isStrainList))
 
         strainsDataCache = normalizeStrainCatalog(allStrains.flat() as Partial<Strain>[])
         loadPromise = null
@@ -89,18 +91,43 @@ const bothNumbers = (left: unknown, right: unknown): boolean =>
 const sameReportedLevel = (left: string | undefined, right: string | undefined): boolean =>
     left !== undefined && left === right
 
+const typeSimilarity = (left: Strain, right: Strain): number =>
+    left.type !== undefined && left.type === right.type ? 20 : 0
+
+const measurementGap = (left: number, right: number, weight: number): number =>
+    weight - Math.abs(left - right)
+
+const chemistrySimilarity = (left: Strain, right: Strain): number => {
+    const thc = bothNumbers(left.thc, right.thc) ? measurementGap(left.thc, right.thc, 15) : 0
+    const cbd = bothNumbers(left.cbd, right.cbd) ? measurementGap(left.cbd, right.cbd, 10) : 0
+    return thc + cbd
+}
+
+const listSimilarity = (left: Strain, right: Strain): number =>
+    sharedNames(left.aromas, right.aromas) * 5 +
+    sharedNames(left.dominantTerpenes, right.dominantTerpenes) * 10
+
+const difficultyOf = (strain: Strain): string | undefined => strain.agronomic?.difficulty
+
+const yieldOf = (strain: Strain): string | undefined => strain.agronomic?.yield
+
+const heightOf = (strain: Strain): string | undefined => strain.agronomic?.height
+
+const agronomySimilarity = (left: Strain, right: Strain): number => {
+    const difficulty = sameReportedLevel(difficultyOf(left), difficultyOf(right)) ? 5 : 0
+    const yieldLevel = sameReportedLevel(yieldOf(left), yieldOf(right)) ? 3 : 0
+    const height = sameReportedLevel(heightOf(left), heightOf(right)) ? 2 : 0
+    return difficulty + yieldLevel + height
+}
+
 export const scoreStrainSimilarity = (left: Strain, right: Strain): number => {
     if (left.id === right.id) return -1
-    let score = 0
-    if (left.type && left.type === right.type) score += 20
-    if (bothNumbers(left.thc, right.thc)) score += 15 - Math.abs(left.thc - right.thc)
-    if (bothNumbers(left.cbd, right.cbd)) score += 10 - Math.abs(left.cbd - right.cbd)
-    score += sharedNames(left.aromas, right.aromas) * 5
-    score += sharedNames(left.dominantTerpenes, right.dominantTerpenes) * 10
-    if (sameReportedLevel(left.agronomic?.difficulty, right.agronomic?.difficulty)) score += 5
-    if (sameReportedLevel(left.agronomic?.yield, right.agronomic?.yield)) score += 3
-    if (sameReportedLevel(left.agronomic?.height, right.agronomic?.height)) score += 2
-    return score
+    return (
+        typeSimilarity(left, right) +
+        chemistrySimilarity(left, right) +
+        listSimilarity(left, right) +
+        agronomySimilarity(left, right)
+    )
 }
 
 class StrainService {

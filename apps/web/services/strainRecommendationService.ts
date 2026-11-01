@@ -109,37 +109,35 @@ const weightedScore = (parts: Array<[number, number]>): number => {
 // Sub-scorers
 // ---------------------------------------------------------------------------
 
-const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number => {
-    let thcScore = 0.8 // neutral if no preference
-    let cbdScore = 0.8
+const finitePercent = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
-    if (ctx.targetThcRange !== undefined) {
-        const { min, max } = ctx.targetThcRange
-        const thc = strain.thc
-        if (typeof thc !== 'number' || !Number.isFinite(thc)) {
-            thcScore = 0.8
-        } else if (thc >= min && thc <= max) {
-            thcScore = 1.0
-        } else {
-            const dist = thc < min ? min - thc : thc - max
-            // 5 % tolerance window before score drops to 0
-            thcScore = clamp01(1 - dist / 5)
-        }
-    }
-
-    if (ctx.targetCbdMin !== undefined) {
-        const cbd = strain.cbd
-        if (typeof cbd !== 'number' || !Number.isFinite(cbd)) {
-            cbdScore = 0.8
-        } else if (cbd >= ctx.targetCbdMin) {
-            cbdScore = 1.0
-        } else {
-            cbdScore = clamp01(cbd / Math.max(ctx.targetCbdMin, 0.1))
-        }
-    }
-
-    return thcScore * 0.7 + cbdScore * 0.3
+const scoreWindow = (value: number, min: number, max: number): number => {
+    if (value >= min && value <= max) return 1
+    const dist = value < min ? min - value : value - max
+    // 5 % tolerance window before score drops to 0
+    return clamp01(1 - dist / 5)
 }
+
+const scoreThcTarget = (strain: Strain, ctx: RecommendationContext): number => {
+    const range = ctx.targetThcRange
+    if (range === undefined) return 0.8
+    const thc = finitePercent(strain.thc)
+    if (thc === undefined) return 0.8
+    return scoreWindow(thc, range.min, range.max)
+}
+
+const scoreCbdFloor = (strain: Strain, ctx: RecommendationContext): number => {
+    const minimum = ctx.targetCbdMin
+    if (minimum === undefined) return 0.8
+    const cbd = finitePercent(strain.cbd)
+    if (cbd === undefined) return 0.8
+    if (cbd >= minimum) return 1
+    return clamp01(cbd / Math.max(minimum, 0.1))
+}
+
+const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number =>
+    scoreThcTarget(strain, ctx) * 0.7 + scoreCbdFloor(strain, ctx) * 0.3
 
 const scoreDifficulty = (strain: Strain, ctx: RecommendationContext): number => {
     if (ctx.preferredDifficulty === undefined) return 0.8

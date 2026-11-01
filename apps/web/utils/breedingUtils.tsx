@@ -44,21 +44,34 @@ const reportedLevel = <T extends string>(
     return left ?? right
 }
 
-const hasReportedLevel = (values: Array<string | undefined>): boolean =>
-    values.some((value) => value !== undefined)
+type Agronomic = Strain['agronomic']
 
-const reportedAgronomy = (parentA: Strain, parentB: Strain): Strain['agronomic'] | undefined => {
-    const difficulty = reportedLevel(parentA.agronomic?.difficulty, parentB.agronomic?.difficulty)
-    const yieldLevel = reportedLevel(parentA.agronomic?.yield, parentB.agronomic?.yield)
-    const height = reportedLevel(parentA.agronomic?.height, parentB.agronomic?.height)
-    if (!hasReportedLevel([difficulty, yieldLevel, height])) return undefined
-    const agronomic: Partial<Strain['agronomic']> = {}
-    if (difficulty !== undefined) agronomic.difficulty = difficulty
-    if (yieldLevel !== undefined) agronomic.yield = yieldLevel
-    if (height !== undefined) agronomic.height = height
-    // The Strain type requires all three levels. Unreported ones stay absent at runtime.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    return agronomic as Strain['agronomic']
+const agronomicLevel = <K extends 'difficulty' | 'yield' | 'height'>(
+    strain: Strain,
+    key: K,
+): Agronomic[K] | undefined => {
+    const agronomic = strain.agronomic
+    if (agronomic === undefined) return undefined
+    return agronomic[key]
+}
+
+/** All three levels are required. A missing level omits the whole object. */
+const reportedAgronomy = (parentA: Strain, parentB: Strain): Agronomic | undefined => {
+    const difficulty = reportedLevel(
+        agronomicLevel(parentA, 'difficulty'),
+        agronomicLevel(parentB, 'difficulty'),
+    )
+    const yieldLevel = reportedLevel(
+        agronomicLevel(parentA, 'yield'),
+        agronomicLevel(parentB, 'yield'),
+    )
+    const height = reportedLevel(
+        agronomicLevel(parentA, 'height'),
+        agronomicLevel(parentB, 'height'),
+    )
+    if (difficulty === undefined || yieldLevel === undefined || height === undefined)
+        return undefined
+    return { difficulty, yield: yieldLevel, height }
 }
 
 const mixedList = (left: unknown, right: unknown, limit: number): string[] =>

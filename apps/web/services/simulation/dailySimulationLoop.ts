@@ -99,11 +99,11 @@ export function runDailyMetabolism(
     return p
 }
 
-export function runDailyGrowth(
+export const runDailyGrowth = (
     plant: Plant,
     simulationSettings: SimulationSettings | undefined,
     deps: DailySimulationDeps,
-): Plant {
+): Plant => {
     const p = deps.clonePlant(plant)
     const nutrientConversionEfficiency =
         getSimulationNutrientConversionEfficiency(simulationSettings)
@@ -159,42 +159,56 @@ export function runDailyGrowth(
     return p
 }
 
-export function runDailySynthesis(plant: Plant, deps: DailySimulationDeps): Plant {
-    const p = deps.clonePlant(plant)
+const productionFactorOf = (plant: Plant): number =>
+    0.02 * (plant.health / 100) * (1 - plant.stressLevel / 150)
 
-    if (p.stage !== PlantStage.Flowering) {
-        return p
+const reportedMajor = (value: unknown): number | undefined =>
+    simIsFiniteNumber(value) ? value : undefined
+
+const zeroMajor = (value: number | undefined): number => value ?? 0
+
+const majorsWereReported = (thc: number | undefined, cbd: number | undefined): boolean =>
+    positiveAmount(thc) || positiveAmount(cbd)
+
+const addCannabinoidGain = (plant: Plant, amount: number, thc: number, cbd: number): void => {
+    const thcToCbdRatio = thc / (cbd + 0.1)
+    plant.cannabinoidProfile.thc += amount * (thcToCbdRatio / (thcToCbdRatio + 1))
+    plant.cannabinoidProfile.cbd += amount * (1 / (thcToCbdRatio + 1))
+}
+
+const applyReportedCannabinoids = (plant: Plant, productionFactor: number): void => {
+    const newCannabinoids = plant.biomass.flowers * productionFactor
+    const thc = reportedMajor(plant.strain.thc)
+    const cbd = reportedMajor(plant.strain.cbd)
+    if (newCannabinoids > 0 && majorsWereReported(thc, cbd)) {
+        addCannabinoidGain(plant, newCannabinoids, zeroMajor(thc), zeroMajor(cbd))
     }
+}
 
-    const productionFactor = 0.02 * (p.health / 100) * (1 - p.stressLevel / 150)
-    const newCannabinoids = p.biomass.flowers * productionFactor
+const BLOCKED_TERPENE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
-    const reportedThc = simIsFiniteNumber(p.strain.thc) ? p.strain.thc : undefined
-    const reportedCbd = simIsFiniteNumber(p.strain.cbd) ? p.strain.cbd : undefined
-    if (newCannabinoids > 0 && (positiveAmount(reportedThc) || positiveAmount(reportedCbd))) {
-        const thc = reportedThc ?? 0
-        const cbd = reportedCbd ?? 0
-        const thcToCbdRatio = thc / (cbd + 0.1)
-        p.cannabinoidProfile.thc += newCannabinoids * (thcToCbdRatio / (thcToCbdRatio + 1))
-        p.cannabinoidProfile.cbd += newCannabinoids * (1 / (thcToCbdRatio + 1))
-    }
+const addTerpeneShare = (profile: Map<string, number>, name: string, share: number): void => {
+    if (BLOCKED_TERPENE_KEYS.has(name)) return
+    const currentTerpeneAmount = profile.get(name) ?? 0
+    profile.set(name, currentTerpeneAmount + share)
+}
 
-    if (p.strain.dominantTerpenes && p.strain.dominantTerpenes.length > 0) {
-        const newTerpenes = p.biomass.flowers * (productionFactor * 0.2)
-        const terpeneCount = p.strain.dominantTerpenes.length
-        const blockedTerpeneKeys = new Set(['__proto__', 'constructor', 'prototype'])
-        const nextTerpeneProfile = new Map<string, number>(Object.entries(p.terpeneProfile))
-        p.strain.dominantTerpenes.forEach((terpName) => {
-            if (blockedTerpeneKeys.has(terpName)) {
-                return
-            }
-            const currentTerpeneAmount = nextTerpeneProfile.get(terpName) ?? 0
-            nextTerpeneProfile.set(terpName, currentTerpeneAmount + newTerpenes / terpeneCount)
-        })
-        p.terpeneProfile = Object.fromEntries(nextTerpeneProfile)
-    }
+const applyDominantTerpenes = (plant: Plant, productionFactor: number): void => {
+    const names = plant.strain.dominantTerpenes
+    if (!names || names.length === 0) return
+    const share = (plant.biomass.flowers * (productionFactor * 0.2)) / names.length
+    const nextTerpeneProfile = new Map<string, number>(Object.entries(plant.terpeneProfile))
+    for (const terpName of names) addTerpeneShare(nextTerpeneProfile, terpName, share)
+    plant.terpeneProfile = Object.fromEntries(nextTerpeneProfile)
+}
 
-    return p
+export const runDailySynthesis = (plant: Plant, deps: DailySimulationDeps): Plant => {
+    const next = deps.clonePlant(plant)
+    if (next.stage !== PlantStage.Flowering) return next
+    const productionFactor = productionFactorOf(next)
+    applyReportedCannabinoids(next, productionFactor)
+    applyDominantTerpenes(next, productionFactor)
+    return next
 }
 
 export function updateHealthAndStress(
@@ -250,14 +264,9 @@ export function updateHealthAndStress(
     return p
 }
 
-function shouldEvaluateStageProgression(stage: PlantStage, currentStageIndex: number): boolean {
-    return (
-        currentStageIndex < STAGES_ORDER.length - 1 &&
-        ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(
-            stage,
-        )
-    )
-}
+const shouldEvaluateStageProgression = (stage: PlantStage, currentStageIndex: number): boolean =>
+    currentStageIndex < STAGES_ORDER.length - 1 &&
+    ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(stage)
 
 function applyStageProgression(p: Plant): void {
     const currentStageIndex = STAGES_ORDER.indexOf(p.stage)

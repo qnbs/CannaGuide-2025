@@ -62,6 +62,30 @@ const reportedFloweringType = (data: Partial<Strain>): Strain['floweringType'] |
     return inferFloweringType(typeDetailsText, floweringTimeRangeText)
 }
 
+const reportedId = (id: unknown): string => {
+    if (typeof id !== 'string' || id.length === 0) return fallbackId()
+    return id
+}
+
+const reportedName = (name: unknown): string => {
+    if (typeof name !== 'string') return 'Unknown Strain'
+    const text = name.trim()
+    return text.length > 0 ? text : 'Unknown Strain'
+}
+
+const withReportedType = (type: StrainType | undefined): Partial<Strain> =>
+    type === undefined ? {} : { type }
+
+const withFloweringType = (floweringType: Strain['floweringType'] | undefined): Partial<Strain> =>
+    floweringType === undefined ? {} : { floweringType }
+
+const withAgronomic = (agronomic: Strain['agronomic'] | undefined): Partial<Strain> =>
+    agronomic === undefined ? {} : { agronomic }
+
+const withGeneticModifiers = (
+    geneticModifiers: Strain['geneticModifiers'] | undefined,
+): Partial<Strain> => (geneticModifiers === undefined ? {} : { geneticModifiers })
+
 /**
  * Copies reported cultivar fields. Missing chemistry, flowering time, type,
  * agronomy and genetic coefficients stay absent. A real 0, a real 9-week
@@ -69,18 +93,15 @@ const reportedFloweringType = (data: Partial<Strain>): Strain['floweringType'] |
  * `simulateStrainProfile`.
  */
 export const createStrainObject = (data: Partial<Strain>): Strain => {
-    const nameText = typeof data.name === 'string' ? data.name.trim() : ''
-    const reportedType = strainTypeOf(data.type)
-    const floweringType = reportedFloweringType(data)
     const strain: Partial<Strain> = {
         ...withoutControlledFields(data),
         ...reportedMeasurements(data),
-        id: typeof data.id === 'string' && data.id.length > 0 ? data.id : fallbackId(),
-        name: nameText || 'Unknown Strain',
-        ...(reportedType ? { type: reportedType } : {}),
-        ...(floweringType ? { floweringType } : {}),
-        ...(data.agronomic ? { agronomic: data.agronomic } : {}),
-        ...(data.geneticModifiers ? { geneticModifiers: data.geneticModifiers } : {}),
+        id: reportedId(data.id),
+        name: reportedName(data.name),
+        ...withReportedType(strainTypeOf(data.type)),
+        ...withFloweringType(reportedFloweringType(data)),
+        ...withAgronomic(data.agronomic),
+        ...withGeneticModifiers(data.geneticModifiers),
     }
 
     // Catalog modules still type every record as Strain. Absent measurements

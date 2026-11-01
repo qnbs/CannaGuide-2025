@@ -226,6 +226,7 @@ describe('buildChemovarProfile', () => {
     it('builds a complete profile', () => {
         const strain = makeStrain()
         const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
 
         expect(profile.chemovarType).toBe('Type I')
         expect(profile.totalTerpenePercent).toBeGreaterThan(0)
@@ -239,6 +240,7 @@ describe('buildChemovarProfile', () => {
     it('uses existing terpene profile if available', () => {
         const strain = makeStrain({ terpeneProfile: { Myrcene: 1.0 } })
         const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
         expect(profile.detailedTerpeneProfile.Myrcene?.percent).toBe(1.0)
         expect(profile.dataQuality).toBeGreaterThanOrEqual(0.6)
     })

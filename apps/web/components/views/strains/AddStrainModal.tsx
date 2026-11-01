@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from 'react'
 import { Strain, StrainType } from '@/types'
 import { Button } from '@/components/common/Button'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, type TFunction } from 'react-i18next'
 import { useForm } from '@/hooks/useForm'
 import { Modal } from '@/components/common/Modal'
 import { Input, FormSection } from '@/components/ui/form'
@@ -32,6 +32,81 @@ const SPAN_RANGE_RE = /^\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?$/
 const isValidRange = (range: string): boolean =>
     SINGLE_VALUE_RANGE_RE.test(range) || SPAN_RANGE_RE.test(range)
 
+const nameError = (name: string, message: string): string | undefined => {
+    if (!name.trim()) return message
+    return undefined
+}
+
+const boundedNumberError = (
+    value: number | '',
+    min: number,
+    max: number,
+    message: string,
+): string | undefined => {
+    if (value === '') return undefined
+    if (Number.isNaN(Number(value)) || value < min || value > max) return message
+    return undefined
+}
+
+const rangeError = (range: string, message: string): string | undefined => {
+    if (range && !isValidRange(range)) return message
+    return undefined
+}
+
+const assignError = (
+    errors: Partial<Record<keyof StrainFormValues, string>>,
+    key: keyof StrainFormValues,
+    message: string | undefined,
+) => {
+    if (message) errors[key] = message
+}
+
+const strainFormErrors = (values: StrainFormValues, translate: TFunction) => {
+    const errors: Partial<Record<keyof StrainFormValues, string>> = {}
+    assignError(
+        errors,
+        'name',
+        nameError(values.name, translate('strainsView.addStrainModal.validation.name')),
+    )
+    assignError(
+        errors,
+        'thc',
+        boundedNumberError(
+            values.thc,
+            0,
+            50,
+            translate('strainsView.addStrainModal.validation.thc'),
+        ),
+    )
+    assignError(
+        errors,
+        'floweringTime',
+        boundedNumberError(
+            values.floweringTime,
+            4,
+            20,
+            translate('strainsView.addStrainModal.validation.floweringTime'),
+        ),
+    )
+    assignError(
+        errors,
+        'thcRange',
+        rangeError(values.thcRange, translate('strainsView.addStrainModal.validation.thcRange')),
+    )
+    assignError(
+        errors,
+        'cbdRange',
+        rangeError(values.cbdRange, translate('strainsView.addStrainModal.validation.cbdRange')),
+    )
+    return errors
+}
+
+const floweringChoiceLabel = (floweringType: string, translate: TFunction): string => {
+    if (floweringType === 'Autoflower') return translate('strainsView.addStrainModal.autoflower')
+    if (floweringType === 'Photoperiod') return translate('strainsView.addStrainModal.photoperiod')
+    return translate('common.unknown')
+}
+
 const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, values }) => (
     <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-3">
         <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">{title}</p>
@@ -52,6 +127,41 @@ const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, va
     </div>
 )
 
+const DraftPreview: React.FC<{
+    values: StrainFormValues
+    aromas: string[]
+    terpenes: string[]
+}> = ({ values, aromas, terpenes }) => {
+    const { t } = useTranslation()
+    const previewType = strainTypeOf(values.type)
+    const typeLabel = previewType
+        ? t(`strainsView.${previewType.toLowerCase()}`)
+        : t('common.unknown')
+    return (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+            <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-3">
+                <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                    {t('strainsView.addStrainModal.quickPreview')}
+                </p>
+                <p className="mt-2 truncate text-lg font-bold font-display text-slate-50">
+                    {values.name.trim() || '–'}
+                </p>
+                <p className="mt-1 text-sm text-slate-300">
+                    {typeLabel} · {floweringChoiceLabel(values.floweringType, t)}
+                </p>
+            </div>
+            <TokenPreview
+                title={t('strainsView.addStrainModal.aromasPreview')}
+                values={aromas.slice(0, 4)}
+            />
+            <TokenPreview
+                title={t('strainsView.addStrainModal.terpenesPreview')}
+                values={terpenes.slice(0, 4)}
+            />
+        </div>
+    )
+}
+
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({
     isOpen,
     onAddStrain,
@@ -66,30 +176,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         [isEditMode, strainToEdit],
     )
 
-    const validate = (values: StrainFormValues) => {
-        const errors: Partial<Record<keyof typeof values, string>> = {}
-        if (!values.name?.trim()) errors.name = t('strainsView.addStrainModal.validation.name')
-
-        if (
-            values.thc !== '' &&
-            (Number.isNaN(Number(values.thc)) || values.thc < 0 || values.thc > 50)
-        )
-            errors.thc = t('strainsView.addStrainModal.validation.thc')
-
-        if (
-            values.floweringTime !== '' &&
-            (Number.isNaN(Number(values.floweringTime)) ||
-                values.floweringTime < 4 ||
-                values.floweringTime > 20)
-        )
-            errors.floweringTime = t('strainsView.addStrainModal.validation.floweringTime')
-
-        if (values.thcRange && !isValidRange(values.thcRange))
-            errors.thcRange = t('strainsView.addStrainModal.validation.thcRange')
-        if (values.cbdRange && !isValidRange(values.cbdRange))
-            errors.cbdRange = t('strainsView.addStrainModal.validation.cbdRange')
-        return errors
-    }
+    const validate = (values: StrainFormValues) => strainFormErrors(values, t)
 
     const onSubmit = (values: StrainFormValues) => {
         const draft = buildStrainDraft(values, strainToEdit)
@@ -118,8 +205,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         () => parseCommaSeparatedTokens(values.terpenesString),
         [values.terpenesString],
     )
-    const previewType = strainTypeOf(values.type)
-
     const typeOptions = useMemo(
         () => [
             {
@@ -188,35 +273,11 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                     {t('strainsView.addStrainModal.description')}
                                 </p>
                             </div>
-                            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                                <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-3">
-                                    <p className="text-2xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-                                        {t('strainsView.addStrainModal.quickPreview')}
-                                    </p>
-                                    <p className="mt-2 truncate text-lg font-bold font-display text-slate-50">
-                                        {values.name.trim() || '–'}
-                                    </p>
-                                    <p className="mt-1 text-sm text-slate-300">
-                                        {previewType
-                                            ? t(`strainsView.${previewType.toLowerCase()}`)
-                                            : t('common.unknown')}{' '}
-                                        ·{' '}
-                                        {values.floweringType === 'Autoflower'
-                                            ? t('strainsView.addStrainModal.autoflower')
-                                            : values.floweringType === 'Photoperiod'
-                                              ? t('strainsView.addStrainModal.photoperiod')
-                                              : t('common.unknown')}
-                                    </p>
-                                </div>
-                                <TokenPreview
-                                    title={t('strainsView.addStrainModal.aromasPreview')}
-                                    values={parsedAromas.slice(0, 4)}
-                                />
-                                <TokenPreview
-                                    title={t('strainsView.addStrainModal.terpenesPreview')}
-                                    values={parsedTerpenes.slice(0, 4)}
-                                />
-                            </div>
+                            <DraftPreview
+                                values={values}
+                                aromas={parsedAromas}
+                                terpenes={parsedTerpenes}
+                            />
                         </div>
                     </Card>
 

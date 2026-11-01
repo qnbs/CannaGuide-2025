@@ -1,36 +1,90 @@
 import { useMemo, useCallback } from 'react'
-import {
-    Strain,
-    SortKey,
-    StrainType,
-    DifficultyLevel,
-    YieldLevel,
-    HeightLevel,
-    AppSettings,
-    AdvancedFilterState,
-} from '@/types'
+import { Strain, SortKey, StrainType, AppSettings, AdvancedFilterState } from '@/types'
 import { useAppSelector } from '@/stores/store'
 import { useFiltersStore } from '@/stores/useFiltersStore'
 import { selectFavoriteIds, selectUserStrainIds } from '@/stores/selectors'
 import React from 'react'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
-import {
-    compareOptionalRanks,
-    getSafeStrainType,
-    measurementInRange,
-    rankIn,
-} from '@/hooks/strainFilterSort'
+import { compareStrains, getSafeStrainType, measurementInRange } from '@/hooks/strainFilterSort'
 
-const difficultyOrder: Record<DifficultyLevel, number> = { Easy: 1, Medium: 2, Hard: 3 }
-const yieldOrder: Record<YieldLevel, number> = { Low: 1, Medium: 2, High: 3 }
-const heightOrder: Record<HeightLevel, number> = { Short: 1, Medium: 2, Tall: 3 }
 const getSafeText = (value: unknown, fallback = ''): string =>
     typeof value === 'string' ? value : fallback
 const getSafeStringArray = (value: unknown): string[] =>
     Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 
-const getSafeNumericValue = (value: unknown, fallback: number): number =>
-    typeof value === 'number' && Number.isFinite(value) ? value : fallback
+const matchesSearch = (strain: Strain, term: string): boolean => {
+    const haystack = [
+        getSafeText(strain.name, 'Unknown Strain'),
+        getSafeStrainType(strain.type),
+        ...getSafeStringArray(strain.aromas),
+        ...getSafeStringArray(strain.dominantTerpenes),
+        getSafeText(strain.genetics, ''),
+    ]
+    return haystack.some((entry) => entry.toLowerCase().includes(term))
+}
+
+const applySearch = (strains: Strain[], term: string): Strain[] => {
+    if (!term) return strains
+    return strains.filter((strain) => matchesSearch(strain, term.toLowerCase()))
+}
+
+const applyFavorites = (
+    strains: Strain[],
+    onlyFavorites: boolean,
+    favorites: Set<string>,
+): Strain[] => {
+    if (!onlyFavorites) return strains
+    return strains.filter((strain) => favorites.has(strain.id))
+}
+
+const applyTypes = (strains: Strain[], types: Strain['type'][]): Strain[] => {
+    if (types.length === 0) return strains
+    return strains.filter((strain) => types.includes(strain.type))
+}
+
+const matchesLetter = (name: string, letter: string): boolean => {
+    if (letter === '#') return /^\d/.test(name)
+    return name.toLowerCase().startsWith(letter.toLowerCase())
+}
+
+const applyLetter = (strains: Strain[], letter: string | null): Strain[] => {
+    if (!letter) return strains
+    return strains.filter((strain) => matchesLetter(getSafeText(strain.name, ''), letter))
+}
+
+const allowsValue = (selected: Set<string>, value: string | undefined): boolean =>
+    selected.size === 0 || (value !== undefined && selected.has(value))
+
+const overlaps = (selected: Set<string>, values: string[]): boolean =>
+    selected.size === 0 || values.some((value) => selected.has(value))
+
+const measurementsPass = (strain: Strain, filters: AdvancedFilterState): boolean =>
+    measurementInRange(strain.thc, filters.thcRange, INITIAL_ADVANCED_FILTERS.thcRange) &&
+    measurementInRange(strain.cbd, filters.cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange) &&
+    measurementInRange(
+        strain.floweringTime,
+        filters.floweringRange,
+        INITIAL_ADVANCED_FILTERS.floweringRange,
+    )
+
+const agronomicField = (
+    strain: Strain,
+    key: 'difficulty' | 'yield' | 'height',
+): string | undefined => strain.agronomic?.[key]
+
+const agronomyPass = (strain: Strain, filters: AdvancedFilterState): boolean =>
+    allowsValue(new Set(filters.selectedDifficulties), agronomicField(strain, 'difficulty')) &&
+    allowsValue(new Set(filters.selectedYields), agronomicField(strain, 'yield')) &&
+    allowsValue(new Set(filters.selectedHeights), agronomicField(strain, 'height'))
+
+const sensoryPass = (strain: Strain, filters: AdvancedFilterState): boolean =>
+    overlaps(new Set(filters.selectedAromas), getSafeStringArray(strain.aromas)) &&
+    overlaps(new Set(filters.selectedTerpenes), getSafeStringArray(strain.dominantTerpenes))
+
+const passesAdvanced = (strain: Strain, filters: AdvancedFilterState): boolean =>
+    measurementsPass(strain, filters) &&
+    agronomyPass(strain, filters) &&
+    sensoryPass(strain, filters)
 
 const defaultStrainsViewSettings: AppSettings['strainsView'] = {
     defaultSortKey: 'name',
@@ -160,134 +214,21 @@ export const useStrainFilters = (
     }, [advancedFilters])
 
     const filteredStrains = useMemo(() => {
-        let strains = allStrains.filter((strain): strain is Strain => Boolean(strain))
-
-        if (searchTerm) {
-            const lowerCaseSearch = searchTerm.toLowerCase()
-            strains = strains.filter(
-                (s) =>
-                    getSafeText(s.name, 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
-                    getSafeStrainType(s.type).toLowerCase().includes(lowerCaseSearch) ||
-                    getSafeStringArray(s.aromas).some((a) =>
-                        a.toLowerCase().includes(lowerCaseSearch),
-                    ) ||
-                    getSafeStringArray(s.dominantTerpenes).some((t) =>
-                        t.toLowerCase().includes(lowerCaseSearch),
-                    ) ||
-                    getSafeText(s.genetics, '').toLowerCase().includes(lowerCaseSearch),
-            )
-        }
-
-        if (showFavoritesOnly) strains = strains.filter((s) => favorites.has(s.id))
-
-        if (typeFilter.length > 0) {
-            strains = strains.filter((s) => typeFilter.includes(s.type))
-        }
-
-        if (letterFilter) {
-            if (letterFilter === '#') {
-                strains = strains.filter((s) => /^\d/.test(getSafeText(s.name, '')))
-            } else {
-                strains = strains.filter((s) =>
-                    getSafeText(s.name, '').toLowerCase().startsWith(letterFilter.toLowerCase()),
-                )
-            }
-        }
-
-        const selectedDifficultiesSet = new Set(advancedFilters.selectedDifficulties)
-        const selectedYieldsSet = new Set(advancedFilters.selectedYields)
-        const selectedHeightsSet = new Set(advancedFilters.selectedHeights)
-        const selectedAromasSet = new Set(advancedFilters.selectedAromas)
-        const selectedTerpenesSet = new Set(advancedFilters.selectedTerpenes)
-
-        strains = strains.filter(
-            (s) =>
-                measurementInRange(
-                    s.thc,
-                    advancedFilters.thcRange,
-                    INITIAL_ADVANCED_FILTERS.thcRange,
-                ) &&
-                measurementInRange(
-                    s.cbd,
-                    advancedFilters.cbdRange,
-                    INITIAL_ADVANCED_FILTERS.cbdRange,
-                ) &&
-                measurementInRange(
-                    s.floweringTime,
-                    advancedFilters.floweringRange,
-                    INITIAL_ADVANCED_FILTERS.floweringRange,
-                ) &&
-                (selectedDifficultiesSet.size === 0 ||
-                    (s.agronomic?.difficulty !== undefined &&
-                        selectedDifficultiesSet.has(s.agronomic.difficulty))) &&
-                (selectedYieldsSet.size === 0 ||
-                    (s.agronomic?.yield !== undefined &&
-                        selectedYieldsSet.has(s.agronomic.yield))) &&
-                (selectedHeightsSet.size === 0 ||
-                    (s.agronomic?.height !== undefined &&
-                        selectedHeightsSet.has(s.agronomic.height))) &&
-                (selectedAromasSet.size === 0 ||
-                    getSafeStringArray(s.aromas).some((a) => selectedAromasSet.has(a))) &&
-                (selectedTerpenesSet.size === 0 ||
-                    getSafeStringArray(s.dominantTerpenes).some((t) => selectedTerpenesSet.has(t))),
+        const present = allStrains.filter((strain): strain is Strain => Boolean(strain))
+        const searched = applySearch(present, searchTerm)
+        const favored = applyFavorites(searched, showFavoritesOnly, favorites)
+        const typed = applyTypes(favored, typeFilter)
+        const lettered = applyLetter(typed, letterFilter)
+        const advanced = lettered.filter((strain) => passesAdvanced(strain, advancedFilters))
+        return advanced.toSorted((left, right) =>
+            compareStrains(left, right, {
+                key: sortKey,
+                direction: sortDirection,
+                prioritize: safeSettings.prioritizeUserStrains,
+                userStrainIds,
+                favorites,
+            }),
         )
-
-        strains = strains.toSorted((a, b) => {
-            if (safeSettings.prioritizeUserStrains) {
-                const aIsPriority = userStrainIds.has(a.id) || favorites.has(a.id)
-                const bIsPriority = userStrainIds.has(b.id) || favorites.has(b.id)
-                if (aIsPriority && !bIsPriority) return -1
-                if (!aIsPriority && bIsPriority) return 1
-            }
-
-            let comparison = 0
-            const key = sortKey
-
-            switch (key) {
-                case 'difficulty':
-                    return compareOptionalRanks(
-                        rankIn(difficultyOrder, a.agronomic?.difficulty),
-                        rankIn(difficultyOrder, b.agronomic?.difficulty),
-                        sortDirection,
-                    )
-                case 'yield':
-                    return compareOptionalRanks(
-                        rankIn(yieldOrder, a.agronomic?.yield),
-                        rankIn(yieldOrder, b.agronomic?.yield),
-                        sortDirection,
-                    )
-                case 'height':
-                    return compareOptionalRanks(
-                        rankIn(heightOrder, a.agronomic?.height),
-                        rankIn(heightOrder, b.agronomic?.height),
-                        sortDirection,
-                    )
-                case 'name':
-                case 'type':
-                    comparison = getSafeText(a[key], '').localeCompare(getSafeText(b[key], ''))
-                    break
-                case 'thc':
-                case 'cbd':
-                case 'floweringTime': {
-                    const left = getSafeNumericValue(a[key], Number.NaN)
-                    const right = getSafeNumericValue(b[key], Number.NaN)
-                    const leftKnown = Number.isFinite(left)
-                    const rightKnown = Number.isFinite(right)
-                    if (!leftKnown || !rightKnown) {
-                        if (leftKnown === rightKnown) return 0
-                        return leftKnown ? -1 : 1
-                    }
-                    comparison = left - right
-                    break
-                }
-                default:
-                    return 0
-            }
-
-            return sortDirection === 'asc' ? comparison : -comparison
-        })
-
-        return strains
     }, [
         allStrains,
         searchTerm,

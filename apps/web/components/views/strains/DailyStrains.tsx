@@ -61,20 +61,128 @@ interface DiscoveryCardProps {
     isInLibrary: boolean
 }
 
+const typeTone = (type: string | undefined): string => {
+    if (type === 'Indica') return 'text-purple-400 bg-purple-400/10'
+    if (type === 'Sativa') return 'text-orange-400 bg-orange-400/10'
+    if (type === 'Hybrid') return 'text-green-400 bg-green-400/10'
+    return 'text-slate-300 bg-slate-400/10'
+}
+
+const relevanceOf = (strain: DiscoveredStrain | ScoredStrain): number | null =>
+    'relevanceScore' in strain ? strain.relevanceScore : null
+
+const TypeBadge: React.FC<{ type: string | undefined }> = ({ type }) => {
+    const { t } = useTranslation()
+    return (
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${typeTone(type)}`}>
+            {type || t('common.unknown')}
+        </span>
+    )
+}
+
+const AutoBadge: React.FC<{ floweringType: string | undefined }> = ({ floweringType }) => {
+    const { t } = useTranslation()
+    if (floweringType !== 'Autoflower') return null
+    return (
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-cyan-400 bg-cyan-400/10">
+            {t('strainsView.dailyStrains.auto')}
+        </span>
+    )
+}
+
+const MatchBadge: React.FC<{ score: number | null }> = ({ score }) => {
+    const { t } = useTranslation()
+    if (score === null || score < 65) return null
+    return (
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-amber-400 bg-amber-400/10">
+            {score}% {t('strainsView.dailyStrains.match')}
+        </span>
+    )
+}
+
+const PickReason: React.FC<{ strain: DiscoveredStrain }> = ({ strain }) => {
+    const { t } = useTranslation()
+    if (!strain.pickCategory) return null
+    return (
+        <p className="text-xs text-primary-400 font-medium">
+            {t('strainsView.dailyStrains.whyToday')}:{' '}
+            {t(
+                `strainsView.dailyStrains.pickReasons.${strain.pickCategory}`,
+                strain.pickReason ?? '',
+            )}
+        </p>
+    )
+}
+
+const GeneticsLine: React.FC<{ genetics: string }> = ({ genetics }) => {
+    const { t } = useTranslation()
+    if (!genetics) return null
+    return (
+        <p className="text-xs text-muted">
+            <span className="font-semibold text-slate-400">
+                {t('strainsView.dailyStrains.genetics')}:
+            </span>{' '}
+            {genetics}
+        </p>
+    )
+}
+
+const reportedPercent = (value: number | undefined): string | undefined => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
+    return `${value.toFixed(1)}%`
+}
+
+const SourceMark: React.FC<{ source: DiscoveredStrain['source'] }> = ({ source }) => {
+    const { t } = useTranslation()
+    if (source === 'ai-lookup') return <span className="text-primary-400">AI</span>
+    if (source === 'local-catalog') {
+        return <span className="text-emerald-400">{t('strainsView.dailyStrains.catalog')}</span>
+    }
+    if (source === 'daily-pick') {
+        return <span className="text-amber-400">{t('strainsView.dailyStrains.dailyPick')}</span>
+    }
+    return null
+}
+
+const LibraryActions: React.FC<{
+    strain: DiscoveredStrain
+    isInLibrary: boolean
+    onEditAndAdd: (strain: DiscoveredStrain) => void
+    onQuickAdd: (strain: DiscoveredStrain) => void
+}> = ({ strain, isInLibrary, onEditAndAdd, onQuickAdd }) => {
+    const { t } = useTranslation()
+    if (isInLibrary) {
+        return (
+            <span className="text-xs text-emerald-400 flex items-center gap-1 px-2">
+                <PhosphorIcons.CheckCircle className="w-4 h-4" />
+                {t('strainsView.dailyStrains.inLibrary')}
+            </span>
+        )
+    }
+    return (
+        <>
+            <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onEditAndAdd(strain)}
+                aria-label={t('strainsView.dailyStrains.editAndAdd')}
+                title={t('strainsView.dailyStrains.editAndAdd')}
+            >
+                <PhosphorIcons.PencilSimple className="w-4 h-4" />
+            </Button>
+            <Button size="sm" onClick={() => onQuickAdd(strain)}>
+                <PhosphorIcons.Plus className="w-4 h-4 mr-1" />
+                {t('strainsView.dailyStrains.addToLibrary')}
+            </Button>
+        </>
+    )
+}
+
 const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
     ({ strain, onDismiss, onQuickAdd, onEditAndAdd, isInLibrary }) => {
         const { t } = useTranslation()
-        const relevanceScore = 'relevanceScore' in strain ? strain.relevanceScore : null
-
-        const typeColor =
-            strain.type === 'Indica'
-                ? 'text-purple-400 bg-purple-400/10'
-                : strain.type === 'Sativa'
-                  ? 'text-orange-400 bg-orange-400/10'
-                  : strain.type === 'Hybrid'
-                    ? 'text-green-400 bg-green-400/10'
-                    : 'text-slate-300 bg-slate-400/10'
-
+        const thc = reportedPercent(strain.thc)
+        const cbd = reportedPercent(strain.cbd)
         return (
             <Card className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -83,73 +191,26 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         <p className="text-sm text-slate-400">{strain.breeder}</p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
-                        <span
-                            className={`text-xs font-semibold px-2 py-0.5 rounded-full ${typeColor}`}
-                        >
-                            {strain.type || t('common.unknown')}
-                        </span>
-                        {strain.floweringType === 'Autoflower' && (
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-cyan-400 bg-cyan-400/10">
-                                {t('strainsView.dailyStrains.auto')}
-                            </span>
-                        )}
-                        {strain.pickCategory && <CategoryBadge category={strain.pickCategory} />}
-                        {relevanceScore !== null && relevanceScore >= 65 && (
-                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-amber-400 bg-amber-400/10">
-                                {relevanceScore}% {t('strainsView.dailyStrains.match')}
-                            </span>
-                        )}
+                        <TypeBadge type={strain.type} />
+                        <AutoBadge floweringType={strain.floweringType} />
+                        {strain.pickCategory ? (
+                            <CategoryBadge category={strain.pickCategory} />
+                        ) : null}
+                        <MatchBadge score={relevanceOf(strain)} />
                     </div>
                 </div>
-
-                {/* Pick reason */}
-                {strain.pickCategory && (
-                    <p className="text-xs text-primary-400 font-medium">
-                        {t('strainsView.dailyStrains.whyToday')}:{' '}
-                        {t(
-                            `strainsView.dailyStrains.pickReasons.${strain.pickCategory}`,
-                            strain.pickReason ?? '',
-                        )}
-                    </p>
-                )}
-
-                {strain.genetics && (
-                    <p className="text-xs text-muted">
-                        <span className="font-semibold text-slate-400">
-                            {t('strainsView.dailyStrains.genetics')}:
-                        </span>{' '}
-                        {strain.genetics}
-                    </p>
-                )}
-
+                <PickReason strain={strain} />
+                <GeneticsLine genetics={strain.genetics} />
                 <div className="flex gap-4 text-sm">
-                    {typeof strain.thc === 'number' && Number.isFinite(strain.thc) && (
-                        <span className="text-emerald-400">THC: {strain.thc.toFixed(1)}%</span>
-                    )}
-                    {typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) && (
-                        <span className="text-blue-400">CBD: {strain.cbd.toFixed(1)}%</span>
-                    )}
+                    {thc ? <span className="text-emerald-400">THC: {thc}</span> : null}
+                    {cbd ? <span className="text-blue-400">CBD: {cbd}</span> : null}
                 </div>
-
-                {strain.description && (
+                {strain.description ? (
                     <p className="text-sm text-slate-400 line-clamp-2">{strain.description}</p>
-                )}
-
+                ) : null}
                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
                     <div className="flex items-center gap-2 text-xs text-muted">
-                        {strain.source === 'ai-lookup' && (
-                            <span className="text-primary-400">AI</span>
-                        )}
-                        {strain.source === 'local-catalog' && (
-                            <span className="text-emerald-400">
-                                {t('strainsView.dailyStrains.catalog')}
-                            </span>
-                        )}
-                        {strain.source === 'daily-pick' && (
-                            <span className="text-amber-400">
-                                {t('strainsView.dailyStrains.dailyPick')}
-                            </span>
-                        )}
+                        <SourceMark source={strain.source} />
                     </div>
                     <div className="flex gap-2">
                         <Button
@@ -160,28 +221,12 @@ const DiscoveryCard: React.FC<DiscoveryCardProps> = memo(
                         >
                             <PhosphorIcons.X className="w-4 h-4" />
                         </Button>
-                        {isInLibrary ? (
-                            <span className="text-xs text-emerald-400 flex items-center gap-1 px-2">
-                                <PhosphorIcons.CheckCircle className="w-4 h-4" />
-                                {t('strainsView.dailyStrains.inLibrary')}
-                            </span>
-                        ) : (
-                            <>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => onEditAndAdd(strain)}
-                                    aria-label={t('strainsView.dailyStrains.editAndAdd')}
-                                    title={t('strainsView.dailyStrains.editAndAdd')}
-                                >
-                                    <PhosphorIcons.PencilSimple className="w-4 h-4" />
-                                </Button>
-                                <Button size="sm" onClick={() => onQuickAdd(strain)}>
-                                    <PhosphorIcons.Plus className="w-4 h-4 mr-1" />
-                                    {t('strainsView.dailyStrains.addToLibrary')}
-                                </Button>
-                            </>
-                        )}
+                        <LibraryActions
+                            strain={strain}
+                            isInLibrary={isInLibrary}
+                            onEditAndAdd={onEditAndAdd}
+                            onQuickAdd={onQuickAdd}
+                        />
                     </div>
                 </div>
             </Card>

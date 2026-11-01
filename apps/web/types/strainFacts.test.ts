@@ -233,6 +233,31 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
             ),
         ).toBe(false)
     })
+    it.each(['aflatoxin_b1', 'arsenic'])(
+        'rejects percent for %s for the unit rule alone',
+        (analyte) => {
+            expect(strainFactSchema.safeParse({ ...point, analyte, unit: 'ppm' }).success).toBe(
+                true,
+            )
+            const result = strainFactSchema.safeParse({ ...point, analyte, unit: '%' })
+            expect(result.success).toBe(false)
+            if (!result.success)
+                expect(result.error.issues.map((issue) => issue.message)).toEqual([
+                    'Unit is not supported for this analyte',
+                ])
+        },
+    )
+    it.each([
+        ['unknown', 'unknown'],
+        ['legacy_unverified', 'unverified'],
+    ])('rejects non-null %s solely at the value boundary', (state, claimStatus) => {
+        const valid = { ...base, state, claimStatus, value: null }
+        expect(strainFactSchema.safeParse(valid).success).toBe(true)
+        const result = strainFactSchema.safeParse({ ...valid, value: 0 })
+        expect(result.success).toBe(false)
+        if (!result.success)
+            expect(result.error.issues.map((issue) => issue.path)).toEqual([['value']])
+    })
     it.each([
         { value: NaN },
         { evidenceIds: ['evidence:duplicate', 'evidence:duplicate'] },
@@ -242,6 +267,10 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
         { value: -1 },
         { value: 101 },
         { unit: 'pg' },
+        { analyte: 'aflatoxin_b1', unit: '%' },
+        { analyte: 'arsenic', unit: '%' },
+        { state: 'unknown', value: 0, claimStatus: 'unknown' },
+        { state: 'legacy_unverified', value: 0, claimStatus: 'unverified' },
         { analyte: 'THC-ish' },
         { evidenceIds: [] },
         { state: 'estimated_simulation_only' },

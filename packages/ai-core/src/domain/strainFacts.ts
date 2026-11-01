@@ -67,6 +67,19 @@ const common = {
     method: z.string().trim().min(1).nullable(),
     rights: z.enum(['unknown', 'restricted', 'schema_only', 'production_permitted']),
 }
+const analyteUnits: Record<
+    z.infer<typeof common.analyte>,
+    readonly z.infer<typeof common.unit>[]
+> = {
+    thc: ['%', 'ppm', '\u00b5g/kg'],
+    thca: ['%', 'ppm', '\u00b5g/kg'],
+    total_thc: ['%', 'ppm', '\u00b5g/kg'],
+    cbd: ['%', 'ppm', '\u00b5g/kg'],
+    cbda: ['%', 'ppm', '\u00b5g/kg'],
+    total_cbd: ['%', 'ppm', '\u00b5g/kg'],
+    aflatoxin_b1: ['ppm', '\u00b5g/kg'],
+    arsenic: ['ppm', '\u00b5g/kg'],
+}
 const amount = z.number().finite().nonnegative()
 
 /** Simulation estimates deliberately have no variant in the factual schema. */
@@ -125,6 +138,8 @@ export const strainFactSchema = z
             fact.scope.kind !== 'medical_extract_product'
         )
             reject('Specifications require a product scope')
+        if (!analyteUnits[fact.analyte].includes(fact.unit))
+            reject('Unit is not supported for this analyte')
         const ceiling = { '%': 100, ppm: 1000000, '\u00b5g/kg': 1000000000 }[fact.unit]
         const values =
             fact.state === 'specification_interval'

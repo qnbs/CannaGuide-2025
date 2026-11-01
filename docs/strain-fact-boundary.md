@@ -10,7 +10,8 @@ bounds, and product specification intervals. Simulation values are rejected.
 A measured zero requires the same evidence and exact batch scope as other lab
 points. Units are preserved as `%`, `ppm`, or `\u00b5g/kg` (the latter notation
 represents the microgram symbol in source string escapes); no conversion is
-performed. Analytes distinguish THC, THCA, total THC, CBD, CBDA, total CBD, aflatoxin B1, and arsenic.
+performed. Trace contaminants support ppm and micrograms per kilogram; the
+contract does not assign regulatory safety thresholds. Analytes distinguish THC, THCA, total THC, CBD, CBDA, total CBD, aflatoxin B1, and arsenic.
 All six date fields are independently optional/nullable ISO calendar dates. A report
 date never supplies a missing test date.
 
@@ -40,12 +41,16 @@ from the configured test run.
 
 ## Validation evidence
 
-Synthetic fixtures only: the W003 archive is unavailable on this workstation,
-so no research validator or archive hash was independently rerun.
+App tests use synthetic fixtures. On 1 November 2026, the original W004 ZIP
+was separately verified outside the repository: SHA-256 and CRC match, all 14
+archive validation checks pass, and 52/53 rebuilt outputs are byte-identical.
+Only the SQLite crosswalk differs in bytes; both integrity checks pass and both
+SQL dumps hash to `8b7a6d0b258328c42ed2e69b9245f025a00738b6f916247f42e010cdce38db8e`.
+Byte reproducibility remains unresolved and no research data is imported.
 
 - RED: the targeted Vitest file failed because the new fact module did not
   exist (`Test Files 1 failed (1)`).
-- GREEN: the same targeted file passes 46 tests, including missing versus zero,
+- GREEN: the same targeted file passes 54 tests, including missing versus zero,
   strict versus inclusive bounds, nominal versus batch, exact target scope,
   intervals, rights, invalid numbers/units/states/dates and private legacy IDs.
 - The scoped ai-core TypeScript check passes.
@@ -57,3 +62,8 @@ wrapper attempted an automatic dependency-status install and failed to open
 its sandboxed SQLite store before running tests. No explicit installation was
 requested, and the shared lockfile, modules metadata and successful-install
 stamp retained their original timestamps. This is not a failing test result.
+
+Review regression: without the analyte/unit rule, the targeted file reports
+4 failures (50 passing). The explicit matrix restores 54 passing tests.
+Dedicated unknown/legacy fixtures first accept a null control, then reject
+a numeric zero with only a value-path error and valid claim status.

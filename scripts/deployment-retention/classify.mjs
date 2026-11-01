@@ -762,13 +762,31 @@ const DRIFT_ERRORS = new Set([
     'open pull request heads changed',
 ])
 
+const protectedDeploymentIds = (plan) =>
+    new Set([...(plan?.anchors?.productionIds || []), ...(plan?.anchors?.rollbackIds || [])])
+
+const activeAliasAppeared = (before, after, backend) =>
+    hasActiveAlias(after, backend) && !hasActiveAlias(before, backend)
+
+/**
+ * A reason the frozen row must fail the run, or null when the change is only
+ * a deletable relabel or a move into the new production/rollback set.
+ * An alias that becomes active is never hidden by that move.
+ */
+function frozenRowIntegrityReason(row, now, fresh, protectedIds) {
+    if (!now) return null
+    if (activeAliasAppeared(row, now, fresh.backend)) return `${row.id} gained an active alias`
+    if (protectedIds.has(row.id)) return null
+    if (!now.deletable || !isDeletableClass(now.class) || now.class === 'UNKNOWN') {
+        return `${row.id} is no longer ${row.class}`
+    }
+    return null
+}
+
 function frozenRowIntegrityErrors(frozen, fresh) {
     if (!frozen || !fresh || frozen.backend !== fresh.backend) return []
     const freshById = new Map((fresh.deployments || []).map((row) => [row.id, row]))
-    const protectedIds = new Set([
-        ...(fresh.anchors?.productionIds || []),
-        ...(fresh.anchors?.rollbackIds || []),
-    ])
+    const protectedIds = protectedDeploymentIds(fresh)
     const found = []
     for (const row of frozen.deployments || []) {
         if (!row.deletable) continue
@@ -776,12 +794,8 @@ function frozenRowIntegrityErrors(frozen, fresh) {
             found.push(`frozen row ${row.id} is not a safe-delete class`)
             continue
         }
-        const now = freshById.get(row.id)
-        if (!now || protectedIds.has(row.id)) continue
-        const activeAlias = now.aliases.some((host) => !isInertBranchAlias(host, fresh?.backend))
-        if (now.class !== row.class || !now.deletable || activeAlias) {
-            found.push(`${row.id} is no longer ${row.class}`)
-        }
+        const reason = frozenRowIntegrityReason(row, freshById.get(row.id), fresh, protectedIds)
+        if (reason) found.push(reason)
     }
     return found
 }
@@ -819,6 +833,7 @@ export function reconcilePlans(frozen, fresh) {
     }
 
     const freshById = new Map((fresh.deployments || []).map((row) => [row.id, row]))
+    const protectedIds = protectedDeploymentIds(fresh)
     const ids = []
     for (const row of frozen.deployments || []) {
         if (!row.deletable) continue
@@ -832,14 +847,19 @@ export function reconcilePlans(frozen, fresh) {
         }
         const now = freshById.get(row.id)
         if (!now) continue
-        const activeAlias = now.aliases.some((host) => !isInertBranchAlias(host, fresh?.backend))
-        if (now.class !== row.class || !now.deletable || activeAlias) {
-            return {
-                abort: true,
-                errors: [`${row.id} is no longer ${row.class}`],
-                ids: [],
-                drift: false,
+        const reason = frozenRowIntegrityReason(row, now, fresh, protectedIds)
+        // A deletable-to-deletable relabel is not integrity, but it is also
+        // not something this batch may delete.
+        if (reason || now.class !== row.class || protectedIds.has(row.id)) {
+            if (reason || now.class !== row.class) {
+                return {
+                    abort: true,
+                    errors: [reason || `${row.id} is no longer ${row.class}`],
+                    ids: [],
+                    drift: false,
+                }
             }
+            continue
         }
         ids.push(row.id)
     }

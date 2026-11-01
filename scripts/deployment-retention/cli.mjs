@@ -141,7 +141,10 @@ export function assertDeploySha(env, mainSha) {
     const deployed = String(env.RETENTION_DEPLOY_SHA || '').toLowerCase()
     if (!deployed) return
     const main = String(mainSha || '').toLowerCase()
-    if (!SHA.test(deployed) || deployed !== main) {
+    if (!SHA.test(deployed)) {
+        throw new Error('refusing retention: deploy SHA is malformed')
+    }
+    if (deployed !== main) {
         throw new Error('refusing retention: deploy SHA is not current main')
     }
 }
@@ -156,6 +159,31 @@ export function mainAdvanceDecision(error) {
     const movedDuringWait = message.startsWith('main moved from ')
     if (!deployMismatch && !movedDuringWait) return null
     return { abort: true, drift: true, ids: [], errors: [message] }
+}
+
+/**
+ * The public version showed a commit other than the one apply started with.
+ * Defer only when a fresh main read shows that commit is the new main.
+ * A host still serving the previous commit, or any other SHA, stays a failure.
+ */
+export function servedMainDecision(error, plannedMainSha, currentMainSha) {
+    const message = error instanceof Error ? error.message : String(error || '')
+    const match = /served ([0-9a-f]{40}) HTTP /i.exec(message)
+    if (!match) return null
+    const served = match[1].toLowerCase()
+    const planned = String(plannedMainSha || '').toLowerCase()
+    const current = String(currentMainSha || '').toLowerCase()
+    if (!SHA.test(served) || !SHA.test(current) || !SHA.test(planned)) return null
+    if (served === current && current !== planned) {
+        return { abort: true, drift: true, ids: [], errors: [message] }
+    }
+    return null
+}
+
+export function retentionWaitDecision(error, plannedMainSha, currentMainSha) {
+    return (
+        mainAdvanceDecision(error) || servedMainDecision(error, plannedMainSha, currentMainSha)
+    )
 }
 
 function gh(args) {
@@ -404,19 +432,37 @@ function deferMainAdvance(backend, error) {
     return true
 }
 
+const servedCommitMismatch = (error) =>
+    /served ([0-9a-f]{40}) HTTP /i.test(error instanceof Error ? error.message : String(error || ''))
+
+/**
+ * Decision for a version or propagation failure. A served-commit mismatch
+ * re-reads main once; the caller fails closed when that read throws.
+ */
+export function explainWaitError(error, plannedMainSha, readMain) {
+    const advanced = mainAdvanceDecision(error)
+    if (advanced) return advanced
+    if (!servedCommitMismatch(error)) return null
+    return servedMainDecision(error, plannedMainSha, readMain())
+}
+
 export function deferredAbortMessage(backend, decision) {
     if (!decision?.abort || decision.drift !== true) return null
     return `DEFER ${backend} delete: ${decision.errors.join('; ')} -- nothing deleted; the next run re-plans`
 }
 
-async function applyDeletes(backend, planPath) {
+export async function applyDeletes(backend, planPath, io = {}) {
+    const collect = io.collectGithubState || collectGithubState
+    const verify = io.verifyPublicVersion || verifyPublicVersion
+    const waitForMain = io.afterPropagationWait || afterPropagationWait
+    const remove = io.deleteProvenDeployments || deleteProvenDeployments
     assertTrustedApply()
     const frozen = readJson(planPath)
     if (frozen.skipped) {
         console.log(`SKIP ${backend} delete: ${frozen.reason}`)
         return
     }
-    const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    const github = collect(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
     try {
         assertDeploySha(process.env, github.mainSha)
     } catch (error) {
@@ -427,10 +473,15 @@ async function applyDeletes(backend, planPath) {
     let version
     let current
     try {
-        version = await verifyPublicVersion(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
-        current = afterPropagationWait(github, () => collectGithubState(github.repo))
+        version = await verify(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
+        current = waitForMain(github, () => collect(github.repo))
     } catch (error) {
-        if (deferMainAdvance(backend, error)) return
+        const decision = explainWaitError(error, github.mainSha, () => collect(github.repo).mainSha)
+        const deferred = deferredAbortMessage(backend, decision)
+        if (deferred) {
+            console.log(deferred)
+            return
+        }
         throw error
     }
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
@@ -443,7 +494,7 @@ async function applyDeletes(backend, planPath) {
     if (decision.abort) {
         throw new Error(`retention batch aborted: ${decision.errors.join('; ')}`)
     }
-    const results = await deleteProvenDeployments({
+    const results = await remove({
         backend,
         plan: fresh,
         ids: decision.ids,
@@ -512,9 +563,11 @@ async function checkVercelGate(planPath) {
         console.log(`version ${version.buildVersion} commit ${version.commit}`)
         current = afterPropagationWait(github, () => collectGithubState(github.repo))
     } catch (error) {
-        const advanced = mainAdvanceDecision(error)
-        if (advanced) {
-            console.log(`would-defer: ${advanced.errors.join('; ')}`)
+        const decision = explainWaitError(error, github.mainSha, () =>
+            collectGithubState(github.repo).mainSha,
+        )
+        if (decision?.drift === true) {
+            console.log(`would-defer: ${decision.errors.join('; ')}`)
             return
         }
         console.log(

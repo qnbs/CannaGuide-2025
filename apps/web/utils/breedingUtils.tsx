@@ -55,23 +55,37 @@ const agronomicLevel = <K extends 'difficulty' | 'yield' | 'height'>(
     return agronomic[key]
 }
 
-/** All three levels are required. A missing level omits the whole object. */
+const withDifficulty = (
+    difficulty: Agronomic['difficulty'],
+): Pick<Agronomic, 'difficulty'> | Record<string, never> =>
+    difficulty === undefined ? {} : { difficulty }
+
+const withYield = (
+    yieldLevel: Agronomic['yield'],
+): Pick<Agronomic, 'yield'> | Record<string, never> =>
+    yieldLevel === undefined ? {} : { yield: yieldLevel }
+
+const withHeight = (
+    height: Agronomic['height'],
+): Pick<Agronomic, 'height'> | Record<string, never> => (height === undefined ? {} : { height })
+
+/** Each reported level is kept. A missing level stays absent. */
 const reportedAgronomy = (parentA: Strain, parentB: Strain): Agronomic | undefined => {
-    const difficulty = reportedLevel(
-        agronomicLevel(parentA, 'difficulty'),
-        agronomicLevel(parentB, 'difficulty'),
-    )
-    const yieldLevel = reportedLevel(
-        agronomicLevel(parentA, 'yield'),
-        agronomicLevel(parentB, 'yield'),
-    )
-    const height = reportedLevel(
-        agronomicLevel(parentA, 'height'),
-        agronomicLevel(parentB, 'height'),
-    )
-    if (difficulty === undefined || yieldLevel === undefined || height === undefined)
-        return undefined
-    return { difficulty, yield: yieldLevel, height }
+    const agronomic: Agronomic = {
+        ...withDifficulty(
+            reportedLevel(
+                agronomicLevel(parentA, 'difficulty'),
+                agronomicLevel(parentB, 'difficulty'),
+            ),
+        ),
+        ...withYield(
+            reportedLevel(agronomicLevel(parentA, 'yield'), agronomicLevel(parentB, 'yield')),
+        ),
+        ...withHeight(
+            reportedLevel(agronomicLevel(parentA, 'height'), agronomicLevel(parentB, 'height')),
+        ),
+    }
+    return Object.keys(agronomic).length > 0 ? agronomic : undefined
 }
 
 const mixedList = (left: unknown, right: unknown, limit: number): string[] =>

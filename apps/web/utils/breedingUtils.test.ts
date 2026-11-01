@@ -86,7 +86,7 @@ describe('crossStrains', () => {
         expect(offspring.agronomic?.height).toBe('Short')
     })
 
-    it('omits agronomy when any of the three levels is missing', () => {
+    it('keeps each reported agronomic level when another level is missing', () => {
         const left = parent({
             id: 'left',
             name: 'Left',
@@ -95,7 +95,28 @@ describe('crossStrains', () => {
         const right = parent({ id: 'right', name: 'Right' })
         Reflect.deleteProperty(left.agronomic, 'yield')
         Reflect.deleteProperty(right, 'agronomic')
-        expect(crossStrains(left, right).agronomic).toBeUndefined()
+        const offspring = crossStrains(left, right)
+        expect(offspring.agronomic?.difficulty).toBe('Easy')
+        expect(offspring.agronomic?.yield).toBeUndefined()
+        expect(offspring.agronomic?.height).toBe('Short')
+    })
+
+    it('fills a missing agronomic level from the other parent', () => {
+        const left = parent({
+            id: 'left',
+            name: 'Left',
+            agronomic: { difficulty: 'Easy', yield: 'Low', height: 'Short' },
+        })
+        const right = parent({
+            id: 'right',
+            name: 'Right',
+            agronomic: { difficulty: 'Hard', yield: 'High', height: 'Tall' },
+        })
+        Reflect.deleteProperty(left.agronomic, 'yield')
+        const offspring = crossStrains(left, right)
+        expect(offspring.agronomic?.yield).toBe('High')
+        expect(['Easy', 'Hard']).toContain(offspring.agronomic?.difficulty)
+        expect(['Short', 'Tall']).toContain(offspring.agronomic?.height)
     })
 
     it('averages chemistry only when both parents reported it', () => {

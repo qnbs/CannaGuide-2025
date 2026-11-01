@@ -365,9 +365,9 @@ export interface Strain {
     floweringTimeRange?: string | undefined
     description?: string | undefined
     agronomic: {
-        difficulty: DifficultyLevel
-        yield: YieldLevel
-        height: HeightLevel
+        difficulty?: DifficultyLevel
+        yield?: YieldLevel
+        height?: HeightLevel
         yieldDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
         heightDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
     }
@@ -390,7 +390,7 @@ export interface Strain {
     /** Data provenance records from external sources */
     dataProvenance?: DataProvenance[] | undefined
     /** Reported seed form, when a source supplied one. */
-    seedForm?: string | undefined
+    seedForm?: string
     /** Data quality assessment */
     dataQuality?: DataQualityScore | undefined
     geneticModifiers: GeneticModifiers

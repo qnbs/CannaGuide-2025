@@ -73,119 +73,139 @@ const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
 // Message handler
 // ---------------------------------------------------------------------------
 
-self.onmessage = (e: MessageEvent<WorkerRequest>) => {
-    if (!isTrustedWorkerMessage(e)) return
+type WorkerHandler = (messageId: string, payload: unknown) => void
 
-    const { messageId, type, payload } = e.data
+const rejectPayload = (messageId: string, message: string): void => {
+    self.postMessage(workerErr(messageId, message))
+}
 
+const chemovarOrNull = (strain: Strain) =>
+    hasReportedChemovarInput(strain) ? (buildChemovarProfile(strain) ?? null) : null
+
+const orNumber = (value: number | undefined, fallback: number): number => value ?? fallback
+
+const invalidSimilar = (request: FindSimilarPayload): boolean =>
+    !request?.referenceProfile || !Array.isArray(request.strains)
+
+const handleFindSimilar: WorkerHandler = (messageId, payload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const request = payload as FindSimilarPayload
+    if (invalidSimilar(request)) {
+        rejectPayload(messageId, 'Invalid FIND_SIMILAR payload')
+        return
+    }
+    const results = findSimilarStrains(
+        request.referenceProfile,
+        request.strains,
+        orNumber(request.limit, 10),
+        orNumber(request.minSimilarity, 0.1),
+    )
+    self.postMessage(workerOk(messageId, results))
+}
+
+const handleBuildChemovar: WorkerHandler = (messageId, payload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const request = payload as BuildChemovarPayload
+    if (!request?.strain) {
+        rejectPayload(messageId, 'Invalid BUILD_CHEMOVAR payload')
+        return
+    }
+    self.postMessage(workerOk(messageId, chemovarOrNull(request.strain)))
+}
+
+const handleBatchChemovar: WorkerHandler = (messageId, payload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const request = payload as BatchChemovarPayload
+    if (!Array.isArray(request?.strains)) {
+        rejectPayload(messageId, 'Invalid BATCH_CHEMOVAR payload')
+        return
+    }
+    const profiles: Array<{
+        strainId: string
+        profile: ReturnType<typeof buildChemovarProfile> | null
+    }> = []
+    for (const strain of request.strains) {
+        checkAborted(messageId)
+        profiles.push({ strainId: strain.id, profile: chemovarOrNull(strain) })
+    }
+    clearAborted(messageId)
+    self.postMessage(workerOk(messageId, profiles))
+}
+
+const handlePredictBreeding: WorkerHandler = (messageId, payload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const request = payload as PredictBreedingPayload
+    if (!request?.parentA || !request?.parentB) {
+        rejectPayload(messageId, 'Invalid PREDICT_BREEDING payload')
+        return
+    }
+    self.postMessage(
+        workerOk(
+            messageId,
+            predictBreedingProfile(request.parentA, request.parentB, request.nameHash),
+        ),
+    )
+}
+
+const invalidScore = (request: ScoreEffectsPayload): boolean =>
+    !Array.isArray(request?.strains) || !Array.isArray(request?.desiredEffects)
+
+const handleScoreEffects: WorkerHandler = (messageId, payload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const request = payload as ScoreEffectsPayload
+    if (invalidScore(request)) {
+        rejectPayload(messageId, 'Invalid SCORE_EFFECTS payload')
+        return
+    }
+    const scored = request.strains
+        .map((strain) => ({
+            strainId: strain.id,
+            strainName: strain.name,
+            score: scoreStrainForEffects(strain.terpeneProfile, request.desiredEffects),
+        }))
+        .sort((left, right) => right.score - left.score)
+        .slice(0, orNumber(request.limit, 20))
+    self.postMessage(workerOk(messageId, scored))
+}
+
+const handleAnalyzeEntourage: WorkerHandler = (messageId, payload) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const request = payload as AnalyzeEntouragePayload
+    if (!request?.terpeneProfile || !request?.cannabinoidProfile) {
+        rejectPayload(messageId, 'Invalid ANALYZE_ENTOURAGE payload')
+        return
+    }
+    self.postMessage(
+        workerOk(messageId, analyzeEntourage(request.terpeneProfile, request.cannabinoidProfile)),
+    )
+}
+
+const WORKER_HANDLERS: Record<string, WorkerHandler> = {
+    FIND_SIMILAR: handleFindSimilar,
+    BUILD_CHEMOVAR: handleBuildChemovar,
+    BATCH_CHEMOVAR: handleBatchChemovar,
+    PREDICT_BREEDING: handlePredictBreeding,
+    SCORE_EFFECTS: handleScoreEffects,
+    ANALYZE_ENTOURAGE: handleAnalyzeEntourage,
+}
+
+const dispatchWorkerMessage = (messageId: string, type: string, payload: unknown): void => {
+    const handler = WORKER_HANDLERS[type]
+    if (!handler) {
+        rejectPayload(messageId, `Unknown command: ${type}`)
+        return
+    }
+    handler(messageId, payload)
+}
+
+self.onmessage = (event: MessageEvent<WorkerRequest>) => {
+    if (!isTrustedWorkerMessage(event)) return
+    const { messageId, type, payload } = event.data
     try {
-        switch (type) {
-            case 'FIND_SIMILAR': {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const p = payload as FindSimilarPayload
-                if (!p?.referenceProfile || !Array.isArray(p.strains)) {
-                    self.postMessage(workerErr(messageId, 'Invalid FIND_SIMILAR payload'))
-                    return
-                }
-                const results = findSimilarStrains(
-                    p.referenceProfile,
-                    p.strains,
-                    p.limit ?? 10,
-                    p.minSimilarity ?? 0.1,
-                )
-                self.postMessage(workerOk(messageId, results))
-                return
-            }
-
-            case 'BUILD_CHEMOVAR': {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const p = payload as BuildChemovarPayload
-                if (!p?.strain) {
-                    self.postMessage(workerErr(messageId, 'Invalid BUILD_CHEMOVAR payload'))
-                    return
-                }
-                const profile = hasReportedChemovarInput(p.strain)
-                    ? (buildChemovarProfile(p.strain) ?? null)
-                    : null
-                self.postMessage(workerOk(messageId, profile))
-                return
-            }
-
-            case 'BATCH_CHEMOVAR': {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const p = payload as BatchChemovarPayload
-                if (!Array.isArray(p?.strains)) {
-                    self.postMessage(workerErr(messageId, 'Invalid BATCH_CHEMOVAR payload'))
-                    return
-                }
-                // W-02.1: Use for-loop with cooperative abort check for large batches
-                const profiles: Array<{
-                    strainId: string
-                    profile: ReturnType<typeof buildChemovarProfile> | null
-                }> = []
-                for (const strain of p.strains) {
-                    checkAborted(messageId)
-                    profiles.push({
-                        strainId: strain.id,
-                        profile: hasReportedChemovarInput(strain)
-                            ? (buildChemovarProfile(strain) ?? null)
-                            : null,
-                    })
-                }
-                clearAborted(messageId)
-                self.postMessage(workerOk(messageId, profiles))
-                return
-            }
-
-            case 'PREDICT_BREEDING': {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const p = payload as PredictBreedingPayload
-                if (!p?.parentA || !p?.parentB) {
-                    self.postMessage(workerErr(messageId, 'Invalid PREDICT_BREEDING payload'))
-                    return
-                }
-                const predicted = predictBreedingProfile(p.parentA, p.parentB, p.nameHash)
-                self.postMessage(workerOk(messageId, predicted))
-                return
-            }
-
-            case 'SCORE_EFFECTS': {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const p = payload as ScoreEffectsPayload
-                if (!Array.isArray(p?.strains) || !Array.isArray(p?.desiredEffects)) {
-                    self.postMessage(workerErr(messageId, 'Invalid SCORE_EFFECTS payload'))
-                    return
-                }
-                const scored = p.strains
-                    .map((s) => ({
-                        strainId: s.id,
-                        strainName: s.name,
-                        score: scoreStrainForEffects(s.terpeneProfile, p.desiredEffects),
-                    }))
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, p.limit ?? 20)
-                self.postMessage(workerOk(messageId, scored))
-                return
-            }
-
-            case 'ANALYZE_ENTOURAGE': {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                const p = payload as AnalyzeEntouragePayload
-                if (!p?.terpeneProfile || !p?.cannabinoidProfile) {
-                    self.postMessage(workerErr(messageId, 'Invalid ANALYZE_ENTOURAGE payload'))
-                    return
-                }
-                const analysis = analyzeEntourage(p.terpeneProfile, p.cannabinoidProfile)
-                self.postMessage(workerOk(messageId, analysis))
-                return
-            }
-
-            default:
-                self.postMessage(workerErr(messageId, `Unknown command: ${type}`))
-        }
+        dispatchWorkerMessage(messageId, type, payload)
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unknown worker error'
-        self.postMessage(workerErr(messageId, message))
+        rejectPayload(messageId, message)
     }
 }
 

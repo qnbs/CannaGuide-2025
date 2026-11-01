@@ -34,7 +34,9 @@ import {
     deferredAbortMessage,
     explainWaitError,
     mainAdvanceDecision,
+    PublicVersionMismatch,
     PUBLIC_VERSION_WAIT,
+    retentionWaitDecision,
     servedMainDecision,
     verifyPublicVersion,
 } from '../deployment-retention/cli.mjs'
@@ -929,8 +931,10 @@ test('applyDeletes defers only a served commit that is the new main', async () =
                 }
             },
             verifyPublicVersion: async () => {
-                throw new Error(
-                    `https://cannaguide-2025.pages.dev/version.json served ${SHA_A} HTTP 200`,
+                throw new PublicVersionMismatch(
+                    'https://cannaguide-2025.pages.dev/version.json',
+                    SHA_A,
+                    200,
                 )
             },
             deleteProvenDeployments: remove,
@@ -949,8 +953,10 @@ test('applyDeletes defers only a served commit that is the new main', async () =
                         pulls: [],
                     }),
                     verifyPublicVersion: async () => {
-                        throw new Error(
-                            `https://cannaguide-2025.pages.dev/version.json served ${MAIN} HTTP 200`,
+                        throw new PublicVersionMismatch(
+                            'https://cannaguide-2025.pages.dev/version.json',
+                            MAIN,
+                            200,
                         )
                     },
                     deleteProvenDeployments: remove,
@@ -958,6 +964,59 @@ test('applyDeletes defers only a served commit that is the new main', async () =
             new RegExp(`served ${MAIN}`),
         )
         assert.equal(deletes, 0)
+
+        deletes = 0
+        reads = 0
+        process.env.RETENTION_DEPLOY_SHA = MAIN
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    collectGithubState: () => {
+                        reads += 1
+                        return {
+                            repo: 'qnbs/CannaGuide-2025',
+                            mainSha: reads === 1 ? MAIN : SHA_A,
+                            pulls: [],
+                        }
+                    },
+                    verifyPublicVersion: async () => {
+                        throw new Error(
+                            `https://cannaguide-2025.pages.dev/version.json served ${SHA_A} HTTP 200`,
+                        )
+                    },
+                    deleteProvenDeployments: remove,
+                }),
+            new RegExp(`served ${SHA_A}`),
+        )
+        assert.equal(deletes, 0)
+        assert.equal(reads, 1)
+
+        deletes = 0
+        reads = 0
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    collectGithubState: () => {
+                        reads += 1
+                        return {
+                            repo: 'qnbs/CannaGuide-2025',
+                            mainSha: reads === 1 ? MAIN : SHA_A,
+                            pulls: [],
+                        }
+                    },
+                    verifyPublicVersion: async () => {
+                        throw new PublicVersionMismatch(
+                            'https://cannaguide-2025.pages.dev/version.json',
+                            SHA_A,
+                            500,
+                        )
+                    },
+                    deleteProvenDeployments: remove,
+                }),
+            (error) => error instanceof PublicVersionMismatch && error.status === 500,
+        )
+        assert.equal(deletes, 0)
+        assert.equal(reads, 1)
 
         process.env.RETENTION_DEPLOY_SHA = 'not-a-sha'
         await assert.rejects(
@@ -974,6 +1033,85 @@ test('applyDeletes defers only a served commit that is the new main', async () =
                     deleteProvenDeployments: remove,
                 }),
             /deploy SHA is malformed/,
+        )
+        assert.equal(deletes, 0)
+    } finally {
+        restore()
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('applyDeletes deletes nothing when fresh reconciliation aborts', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'retention-apply-'))
+    const planPath = join(dir, 'plan.json')
+    writeFileSync(
+        planPath,
+        JSON.stringify({
+            skipped: false,
+            backend: 'cloudflare',
+            anchors: { mainSha: MAIN, productionIds: [], rollbackIds: [], openPulls: [] },
+            deployments: [],
+        }),
+    )
+    const keys = [
+        'GITHUB_ACTIONS',
+        'GITHUB_REF',
+        'GITHUB_REPOSITORY',
+        'GITHUB_EVENT_NAME',
+        'RETENTION_DEPLOY_SHA',
+    ]
+    const saved = Object.fromEntries(keys.map((key) => [key, process.env[key]]))
+    const restore = () => {
+        for (const key of keys) {
+            if (saved[key] === undefined) delete process.env[key]
+            else process.env[key] = saved[key]
+        }
+    }
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.GITHUB_REF = 'refs/heads/main'
+    process.env.GITHUB_REPOSITORY = 'qnbs/CannaGuide-2025'
+    process.env.GITHUB_EVENT_NAME = 'schedule'
+    process.env.RETENTION_DEPLOY_SHA = MAIN
+    let deletes = 0
+    const github = { repo: 'qnbs/CannaGuide-2025', mainSha: MAIN, pulls: [] }
+    const io = {
+        collectGithubState: () => github,
+        verifyPublicVersion: async () => ({ buildVersion: '1.11.0', commit: MAIN }),
+        deleteProvenDeployments: async () => {
+            deletes += 1
+            return []
+        },
+    }
+    try {
+        await applyDeletes('cloudflare', planPath, {
+            ...io,
+            freshDeleteDecision: async () => ({
+                fresh: { anchors: { productionIds: [], rollbackIds: [] } },
+                decision: {
+                    abort: true,
+                    drift: true,
+                    ids: ['should-not-delete'],
+                    errors: ['production deployment set changed'],
+                },
+            }),
+        })
+        assert.equal(deletes, 0)
+
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    ...io,
+                    freshDeleteDecision: async () => ({
+                        fresh: { anchors: { productionIds: [], rollbackIds: [] } },
+                        decision: {
+                            abort: true,
+                            drift: false,
+                            ids: ['should-not-delete'],
+                            errors: ['frozen row oldprod gained an active alias'],
+                        },
+                    }),
+                }),
+            /retention batch aborted: frozen row oldprod gained an active alias/,
         )
         assert.equal(deletes, 0)
     } finally {
@@ -1782,21 +1920,46 @@ test('deletes wait out edge propagation instead of failing on the prior build', 
                     json: async () => ({ commit: SHA_A, buildVersion: '1.10.0' }),
                 }),
             }),
-        new RegExp(`served ${SHA_A}`),
+        (error) => {
+            assert.ok(error instanceof PublicVersionMismatch)
+            assert.equal(error.status, 200)
+            assert.equal(error.commit, SHA_A)
+            assert.match(error.message, new RegExp(`served ${SHA_A}`))
+            return true
+        },
+    )
+    await assert.rejects(
+        () =>
+            verifyPublicVersion(PAGES_URL_FOR_WAIT, MAIN, {
+                attempts: 1,
+                pauseMs: 0,
+                fetchImpl: async () => ({
+                    status: 500,
+                    json: async () => ({ commit: SHA_A, buildVersion: '1.10.0' }),
+                }),
+            }),
+        (error) => {
+            assert.ok(error instanceof PublicVersionMismatch)
+            assert.equal(error.status, 500)
+            assert.equal(error.commit, SHA_A)
+            return true
+        },
     )
 
     // Every public-version check in the CLI uses this window, not a local literal.
     const cli = readFileSync(new URL('../deployment-retention/cli.mjs', import.meta.url), 'utf8')
-    assert.match(cli, /verify\(versionUrl, github\.mainSha, PUBLIC_VERSION_WAIT\)/)
-    assert.match(
-        cli,
-        /verifyPublicVersion\(\s*VERCEL_VERSION_URL,\s*github\.mainSha,\s*PUBLIC_VERSION_WAIT,?\s*\)/,
-    )
+    const sites = cli.match(/await verify\w*\([^)]*\)/g) || []
+    assert.ok(sites.length >= 2, 'expected the apply and the gate-check call sites')
+    for (const site of sites) assert.match(site, /PUBLIC_VERSION_WAIT,?\s*\)$/)
 
     // No delete decision is classified with the GitHub state read before the wait.
-    const decisions = cli.match(/await freshDeleteDecision\([^)]*\)/g) || []
+    const decisions = [
+        ...(cli.match(/await freshDeleteDecision\([^)]*\)/g) || []),
+        ...(cli.match(/await decide\([^)]*\)/g) || []),
+    ]
     assert.ok(decisions.length >= 2, 'expected the apply and the gate-check decisions')
     for (const call of decisions) assert.doesNotMatch(call, /\bgithub\)$/)
+    assert.match(cli, /const decide = io\.freshDeleteDecision \|\| freshDeleteDecision/)
 })
 
 test('a stalled version request is abandoned and retried, never awaited forever', async () => {
@@ -1990,20 +2153,35 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
         mainAdvanceDecision(new Error('refusing retention: deploy SHA is malformed')),
         null,
     )
-    const servedNew = new Error(
-        `https://cannaguide-2025.pages.dev/version.json served ${SHA_A} HTTP 200`,
-    )
+    const pagesVersion = 'https://cannaguide-2025.pages.dev/version.json'
+    const servedNew = new PublicVersionMismatch(pagesVersion, SHA_A, 200)
     const advanced = servedMainDecision(servedNew, MAIN, SHA_A)
     assert.equal(advanced.abort, true)
     assert.equal(advanced.drift, true)
     assert.deepEqual(advanced.ids, [])
     assert.equal(servedMainDecision(servedNew, SHA_A, SHA_A), null)
-    const servedOld = new Error(
-        `https://cannaguide-2025.pages.dev/version.json served ${MAIN} HTTP 200`,
-    )
+    const servedOld = new PublicVersionMismatch(pagesVersion, MAIN, 200)
     assert.equal(servedMainDecision(servedOld, SHA_A, SHA_A), null)
-    assert.equal(explainWaitError(servedNew, MAIN, () => SHA_A).drift, true)
-    assert.equal(explainWaitError(new Error('provider inventory failed'), MAIN, () => SHA_A), null)
+    const spoofed = new Error(`${pagesVersion} served ${SHA_A} HTTP 200`)
+    assert.equal(servedMainDecision(spoofed, MAIN, SHA_A), null)
+    const http500 = new PublicVersionMismatch(pagesVersion, SHA_A, 500)
+    assert.equal(servedMainDecision(http500, MAIN, SHA_A), null)
+    let reread = 0
+    const readMain = () => {
+        reread += 1
+        return SHA_A
+    }
+    assert.deepEqual(
+        explainWaitError(servedNew, MAIN, readMain),
+        retentionWaitDecision(servedNew, MAIN, SHA_A),
+    )
+    assert.equal(reread, 1)
+    assert.equal(explainWaitError(spoofed, MAIN, readMain), null)
+    assert.equal(explainWaitError(http500, MAIN, readMain), null)
+    assert.equal(explainWaitError(new Error('provider inventory failed'), MAIN, readMain), null)
+    const deployMismatch = new Error('refusing retention: deploy SHA is not current main')
+    assert.equal(explainWaitError(deployMismatch, MAIN, readMain).drift, true)
+    assert.equal(reread, 1)
     assert.throws(
         () =>
             assertTrustedApply({

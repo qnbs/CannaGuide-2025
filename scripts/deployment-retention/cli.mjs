@@ -162,22 +162,39 @@ export function mainAdvanceDecision(error) {
 }
 
 /**
+ * Thrown only by verifyPublicVersion. A provider error that happens to mention
+ * a served commit cannot be mistaken for this type, so it cannot defer a delete.
+ */
+export class PublicVersionMismatch extends Error {
+    constructor(url, commit, status) {
+        super(`${url} served ${commit || '(missing)'} HTTP ${status}`)
+        this.name = 'PublicVersionMismatch'
+        this.commit = commit || ''
+        this.status = status
+    }
+}
+
+const http200ServedCommit = (error) => {
+    if (!(error instanceof PublicVersionMismatch)) return ''
+    if (error.status !== 200) return ''
+    const served = String(error.commit || '').toLowerCase()
+    if (!SHA.test(served)) return ''
+    return served
+}
+
+/**
  * The public version showed a commit other than the one apply started with.
- * Defer only when a fresh main read shows that commit is the new main.
- * A host still serving the previous commit, or any other SHA, stays a failure.
+ * Defer only for an HTTP 200 PublicVersionMismatch when a fresh main read
+ * shows that commit is the new main. A host still serving the previous
+ * commit, a non-200 response, or any other error stays a failure.
  */
 export function servedMainDecision(error, plannedMainSha, currentMainSha) {
-    const message = error instanceof Error ? error.message : String(error || '')
-    const match = /served ([0-9a-f]{40}) HTTP /i.exec(message)
-    if (!match) return null
-    const served = match[1].toLowerCase()
+    const served = http200ServedCommit(error)
     const planned = String(plannedMainSha || '').toLowerCase()
     const current = String(currentMainSha || '').toLowerCase()
-    if (!SHA.test(served) || !SHA.test(current) || !SHA.test(planned)) return null
-    if (served === current && current !== planned) {
-        return { abort: true, drift: true, ids: [], errors: [message] }
-    }
-    return null
+    if (!served || !SHA.test(planned)) return null
+    if (served !== current || current === planned) return null
+    return { abort: true, drift: true, ids: [], errors: [error.message] }
 }
 
 export function retentionWaitDecision(error, plannedMainSha, currentMainSha) {
@@ -340,7 +357,7 @@ export async function verifyPublicVersion(url, expectedSha, options = {}) {
     if (lastError) {
         throw new Error(`${url} version check failed after ${attempts} attempts: ${lastError}`)
     }
-    throw new Error(`${url} served ${lastCommit || '(missing)'} HTTP ${lastStatus}`)
+    throw new PublicVersionMismatch(url, lastCommit, lastStatus)
 }
 
 async function inventoryCloudflare(outPath) {
@@ -432,18 +449,20 @@ function deferMainAdvance(backend, error) {
     return true
 }
 
-const servedCommitMismatch = (error) =>
-    /served ([0-9a-f]{40}) HTTP /i.test(error instanceof Error ? error.message : String(error || ''))
+const isHttp200VersionMismatch = (error) =>
+    error instanceof PublicVersionMismatch && error.status === 200
 
 /**
- * Decision for a version or propagation failure. A served-commit mismatch
- * re-reads main once; the caller fails closed when that read throws.
+ * Decision for a version or propagation failure. Main moving during the wait
+ * does not re-read main. An HTTP 200 version mismatch re-reads main once;
+ * the caller fails closed when that read throws. Any other error stays null.
  */
 export function explainWaitError(error, plannedMainSha, readMain) {
-    const advanced = mainAdvanceDecision(error)
-    if (advanced) return advanced
-    if (!servedCommitMismatch(error)) return null
-    return servedMainDecision(error, plannedMainSha, readMain())
+    if (mainAdvanceDecision(error)) {
+        return retentionWaitDecision(error, plannedMainSha, plannedMainSha)
+    }
+    if (!isHttp200VersionMismatch(error)) return null
+    return retentionWaitDecision(error, plannedMainSha, readMain())
 }
 
 export function deferredAbortMessage(backend, decision) {
@@ -456,6 +475,7 @@ export async function applyDeletes(backend, planPath, io = {}) {
     const verify = io.verifyPublicVersion || verifyPublicVersion
     const waitForMain = io.afterPropagationWait || afterPropagationWait
     const remove = io.deleteProvenDeployments || deleteProvenDeployments
+    const decide = io.freshDeleteDecision || freshDeleteDecision
     assertTrustedApply()
     const frozen = readJson(planPath)
     if (frozen.skipped) {
@@ -485,7 +505,7 @@ export async function applyDeletes(backend, planPath, io = {}) {
         throw error
     }
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
-    const { fresh, decision } = await freshDeleteDecision(backend, frozen, current)
+    const { fresh, decision } = await decide(backend, frozen, current)
     const deferred = deferredAbortMessage(backend, decision)
     if (deferred) {
         console.log(deferred)

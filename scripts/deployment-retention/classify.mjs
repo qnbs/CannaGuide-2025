@@ -847,20 +847,17 @@ export function reconcilePlans(frozen, fresh) {
         }
         const now = freshById.get(row.id)
         if (!now) continue
-        const reason = frozenRowIntegrityReason(row, now, fresh, protectedIds)
-        // A deletable-to-deletable relabel is not integrity, but it is also
-        // not something this batch may delete.
-        if (reason || now.class !== row.class || protectedIds.has(row.id)) {
-            if (reason || now.class !== row.class) {
-                return {
-                    abort: true,
-                    errors: [reason || `${row.id} is no longer ${row.class}`],
-                    ids: [],
-                    drift: false,
-                }
+        // Integrity errors were returned above. A deletable relabel still
+        // aborts this batch, and a protected id is never deleted.
+        if (now.class !== row.class) {
+            return {
+                abort: true,
+                errors: [`${row.id} is no longer ${row.class}`],
+                ids: [],
+                drift: false,
             }
-            continue
         }
+        if (protectedIds.has(row.id)) continue
         ids.push(row.id)
     }
     return { abort: false, errors: [], ids: ids.slice(0, MAX_DELETE_PER_RUN), drift: false }

@@ -114,23 +114,29 @@ const labStates = new Set(['lab_measured_point', 'lab_measured_bound'])
 const productScopes = new Set(['medical_flower_product', 'medical_extract_product'])
 const batchScopes = new Set(['product_batch', 'laboratory_result'])
 
-const validateAttribution = (fact: FactShape, reject: RejectFact): void => {
-    if (unverifiedStates.has(fact.state)) {
-        if (!unverifiedStatuses.has(fact.claimStatus))
-            reject('Unknown and legacy values cannot carry attributed claim status')
-        return
-    }
+const validateStatedFact = (fact: FactShape, reject: RejectFact): void => {
     if (fact.sourceId === null || unverifiedStatuses.has(fact.claimStatus))
         reject('Stated facts require an attributed source')
     if (fact.evidenceIds.length === 0) reject('A stated fact requires evidence IDs')
 }
 
-const validateScope = (fact: FactShape, reject: RejectFact): void => {
-    if (labStates.has(fact.state)) {
-        if (fact.claimStatus !== 'laboratory_reported')
-            reject('Lab facts require a laboratory report claim')
-        if (!batchScopes.has(fact.scope.kind)) reject('Lab facts require an exact batch scope')
+const validateAttribution = (fact: FactShape, reject: RejectFact): void => {
+    if (!unverifiedStates.has(fact.state)) {
+        validateStatedFact(fact, reject)
+        return
     }
+    if (!unverifiedStatuses.has(fact.claimStatus))
+        reject('Unknown and legacy values cannot carry attributed claim status')
+}
+
+const validateLabScope = (fact: FactShape, reject: RejectFact): void => {
+    if (fact.claimStatus !== 'laboratory_reported')
+        reject('Lab facts require a laboratory report claim')
+    if (!batchScopes.has(fact.scope.kind)) reject('Lab facts require an exact batch scope')
+}
+
+const validateScope = (fact: FactShape, reject: RejectFact): void => {
+    if (labStates.has(fact.state)) validateLabScope(fact, reject)
     if (productScopes.has(fact.scope.kind)) return
     if (fact.state === 'source_stated_nominal') reject('Nominal labels require a product scope')
     if (fact.state === 'specification_interval') reject('Specifications require a product scope')
@@ -152,12 +158,11 @@ const validateConcentration = (fact: FactShape, reject: RejectFact): void => {
 
 const validateInterval = (fact: FactShape, reject: RejectFact): void => {
     if (fact.state !== 'specification_interval') return
-    if (fact.lower > fact.upper) {
-        reject('Interval lower bound exceeds upper bound')
-        return
-    }
-    if (fact.lower !== fact.upper) return
-    if (fact.lowerOperator === '>' || fact.upperOperator === '<')
+    const hasOpenBoundary = [fact.lowerOperator, fact.upperOperator].some(
+        (operator) => operator === '>' || operator === '<',
+    )
+    const emptyPointInterval = fact.lower === fact.upper && hasOpenBoundary
+    if (fact.lower > fact.upper || emptyPointInterval)
         reject('Interval lower bound exceeds upper bound')
 }
 

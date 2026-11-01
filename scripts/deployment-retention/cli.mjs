@@ -141,9 +141,66 @@ export function assertDeploySha(env, mainSha) {
     const deployed = String(env.RETENTION_DEPLOY_SHA || '').toLowerCase()
     if (!deployed) return
     const main = String(mainSha || '').toLowerCase()
-    if (!SHA.test(deployed) || deployed !== main) {
+    if (!SHA.test(deployed)) {
+        throw new Error('refusing retention: deploy SHA is malformed')
+    }
+    if (deployed !== main) {
         throw new Error('refusing retention: deploy SHA is not current main')
     }
+}
+
+/**
+ * Main moving between plan and apply is deferrable drift. Integrity and
+ * provider failures stay null so the caller still fails closed.
+ */
+export function mainAdvanceDecision(error) {
+    const message = error instanceof Error ? error.message : String(error || '')
+    const deployMismatch = message === 'refusing retention: deploy SHA is not current main'
+    const movedDuringWait = message.startsWith('main moved from ')
+    if (!deployMismatch && !movedDuringWait) return null
+    return { abort: true, drift: true, ids: [], errors: [message] }
+}
+
+/**
+ * Thrown only by verifyPublicVersion. A provider error that happens to mention
+ * a served commit cannot be mistaken for this type, so it cannot defer a delete.
+ */
+export class PublicVersionMismatch extends Error {
+    constructor(url, commit, status) {
+        super(`${url} served ${commit || '(missing)'} HTTP ${status}`)
+        this.name = 'PublicVersionMismatch'
+        this.commit = commit || ''
+        this.status = status
+    }
+}
+
+const http200ServedCommit = (error) => {
+    if (!(error instanceof PublicVersionMismatch)) return ''
+    if (error.status !== 200) return ''
+    const served = String(error.commit || '').toLowerCase()
+    if (!SHA.test(served)) return ''
+    return served
+}
+
+/**
+ * The public version showed a commit other than the one apply started with.
+ * Defer only for an HTTP 200 PublicVersionMismatch when a fresh main read
+ * shows that commit is the new main. A host still serving the previous
+ * commit, a non-200 response, or any other error stays a failure.
+ */
+export function servedMainDecision(error, plannedMainSha, currentMainSha) {
+    const served = http200ServedCommit(error)
+    const planned = String(plannedMainSha || '').toLowerCase()
+    const current = String(currentMainSha || '').toLowerCase()
+    if (!served || !SHA.test(planned)) return null
+    if (served !== current || current === planned) return null
+    return { abort: true, drift: true, ids: [], errors: [error.message] }
+}
+
+export function retentionWaitDecision(error, plannedMainSha, currentMainSha) {
+    return (
+        mainAdvanceDecision(error) || servedMainDecision(error, plannedMainSha, currentMainSha)
+    )
 }
 
 function gh(args) {
@@ -300,7 +357,7 @@ export async function verifyPublicVersion(url, expectedSha, options = {}) {
     if (lastError) {
         throw new Error(`${url} version check failed after ${attempts} attempts: ${lastError}`)
     }
-    throw new Error(`${url} served ${lastCommit || '(missing)'} HTTP ${lastStatus}`)
+    throw new PublicVersionMismatch(url, lastCommit, lastStatus)
 }
 
 async function inventoryCloudflare(outPath) {
@@ -380,24 +437,84 @@ async function freshDeleteDecision(backend, frozen, github) {
     return { fresh, decision: reconcilePlans(frozen, fresh) }
 }
 
-async function applyDeletes(backend, planPath) {
+/**
+ * The log line for an aborted batch that only saw plan/apply drift (#592), or
+ * null when the abort must fail the run. Either way nothing is deleted.
+ */
+function deferMainAdvance(backend, error) {
+    const decision = mainAdvanceDecision(error)
+    if (!decision) return false
+    const message = deferredAbortMessage(backend, decision)
+    if (message) console.log(message)
+    return true
+}
+
+const isHttp200VersionMismatch = (error) =>
+    error instanceof PublicVersionMismatch && error.status === 200
+
+/**
+ * Decision for a version or propagation failure. Main moving during the wait
+ * does not re-read main. An HTTP 200 version mismatch re-reads main once;
+ * the caller fails closed when that read throws. Any other error stays null.
+ */
+export function explainWaitError(error, plannedMainSha, readMain) {
+    if (mainAdvanceDecision(error)) {
+        return retentionWaitDecision(error, plannedMainSha, plannedMainSha)
+    }
+    if (!isHttp200VersionMismatch(error)) return null
+    return retentionWaitDecision(error, plannedMainSha, readMain())
+}
+
+export function deferredAbortMessage(backend, decision) {
+    if (!decision?.abort || decision.drift !== true) return null
+    return `DEFER ${backend} delete: ${decision.errors.join('; ')} -- nothing deleted; the next run re-plans`
+}
+
+export async function applyDeletes(backend, planPath, io = {}) {
+    const collect = io.collectGithubState || collectGithubState
+    const verify = io.verifyPublicVersion || verifyPublicVersion
+    const waitForMain = io.afterPropagationWait || afterPropagationWait
+    const remove = io.deleteProvenDeployments || deleteProvenDeployments
+    const decide = io.freshDeleteDecision || freshDeleteDecision
     assertTrustedApply()
     const frozen = readJson(planPath)
     if (frozen.skipped) {
         console.log(`SKIP ${backend} delete: ${frozen.reason}`)
         return
     }
-    const github = collectGithubState(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
-    assertDeploySha(process.env, github.mainSha)
+    const github = collect(process.env.GITHUB_REPOSITORY || 'qnbs/CannaGuide-2025')
+    try {
+        assertDeploySha(process.env, github.mainSha)
+    } catch (error) {
+        if (deferMainAdvance(backend, error)) return
+        throw error
+    }
     const versionUrl = backend === 'cloudflare' ? PAGES_VERSION_URL : VERCEL_VERSION_URL
-    const version = await verifyPublicVersion(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
+    let version
+    let current
+    try {
+        version = await verify(versionUrl, github.mainSha, PUBLIC_VERSION_WAIT)
+        current = waitForMain(github, () => collect(github.repo))
+    } catch (error) {
+        const decision = explainWaitError(error, github.mainSha, () => collect(github.repo).mainSha)
+        const deferred = deferredAbortMessage(backend, decision)
+        if (deferred) {
+            console.log(deferred)
+            return
+        }
+        throw error
+    }
     console.log(`version ${version.buildVersion} commit ${version.commit}`)
-    const current = afterPropagationWait(github, () => collectGithubState(github.repo))
-    const { fresh, decision } = await freshDeleteDecision(backend, frozen, current)
+    const { fresh, decision } = await decide(backend, frozen, current)
+    const deferred = deferredAbortMessage(backend, decision)
+    if (deferred) {
+        console.log(deferred)
+        return
+    }
     if (decision.abort) {
         throw new Error(`retention batch aborted: ${decision.errors.join('; ')}`)
     }
-    const results = await deleteProvenDeployments({
+    const results = await remove({
         backend,
         plan: fresh,
         ids: decision.ids,
@@ -466,6 +583,13 @@ async function checkVercelGate(planPath) {
         console.log(`version ${version.buildVersion} commit ${version.commit}`)
         current = afterPropagationWait(github, () => collectGithubState(github.repo))
     } catch (error) {
+        const decision = explainWaitError(error, github.mainSha, () =>
+            collectGithubState(github.repo).mainSha,
+        )
+        if (decision?.drift === true) {
+            console.log(`would-defer: ${decision.errors.join('; ')}`)
+            return
+        }
         console.log(
             `would-abort: ${error instanceof Error ? error.message : 'version check failed'}`,
         )
@@ -473,6 +597,11 @@ async function checkVercelGate(planPath) {
         return
     }
     const { fresh, decision } = await freshDeleteDecision('vercel', frozen, current)
+    const deferred = deferredAbortMessage('vercel', decision)
+    if (deferred) {
+        console.log(`would-defer: ${decision.errors.join('; ')}`)
+        return
+    }
     if (decision.abort) {
         console.log(`would-abort: ${decision.errors.join('; ')}`)
         process.exitCode = 1

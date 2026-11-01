@@ -751,6 +751,55 @@ export function classifyRetention({
     }
 }
 
+// The world moved on between plan and apply -- a merge, a deploy or a PR push
+// landed in that window. Nothing unsafe happened and the next run plans
+// against the new state, so this aborts the batch without failing the run
+// (#592). Any other reason stays a failure.
+const DRIFT_ERRORS = new Set([
+    'main SHA changed',
+    'production deployment set changed',
+    'rollback window changed',
+    'open pull request heads changed',
+])
+
+const protectedDeploymentIds = (plan) =>
+    new Set([...(plan?.anchors?.productionIds || []), ...(plan?.anchors?.rollbackIds || [])])
+
+const activeAliasAppeared = (before, after, backend) =>
+    hasActiveAlias(after, backend) && !hasActiveAlias(before, backend)
+
+/**
+ * A reason the frozen row must fail the run, or null when the change is only
+ * a deletable relabel or a move into the new production/rollback set.
+ * An alias that becomes active is never hidden by that move.
+ */
+function frozenRowIntegrityReason(row, now, fresh, protectedIds) {
+    if (!now) return null
+    if (activeAliasAppeared(row, now, fresh.backend)) return `${row.id} gained an active alias`
+    if (protectedIds.has(row.id)) return null
+    if (!now.deletable || !isDeletableClass(now.class) || now.class === 'UNKNOWN') {
+        return `${row.id} is no longer ${row.class}`
+    }
+    return null
+}
+
+function frozenRowIntegrityErrors(frozen, fresh) {
+    if (!frozen || !fresh || frozen.backend !== fresh.backend) return []
+    const freshById = new Map((fresh.deployments || []).map((row) => [row.id, row]))
+    const protectedIds = protectedDeploymentIds(fresh)
+    const found = []
+    for (const row of frozen.deployments || []) {
+        if (!row.deletable) continue
+        if (!isDeletableClass(row.class) || row.class === 'UNKNOWN') {
+            found.push(`frozen row ${row.id} is not a safe-delete class`)
+            continue
+        }
+        const reason = frozenRowIntegrityReason(row, freshById.get(row.id), fresh, protectedIds)
+        if (reason) found.push(reason)
+    }
+    return found
+}
+
 export function reconcilePlans(frozen, fresh) {
     const errors = []
     if (!frozen || !fresh || frozen.backend !== fresh.backend) errors.push('backend mismatch')
@@ -773,9 +822,18 @@ export function reconcilePlans(frozen, fresh) {
             .sort()
             .join('|')
     if (heads(frozen) !== heads(fresh)) errors.push('open pull request heads changed')
-    if (errors.length) return { abort: true, errors, ids: [] }
+    // Integrity is not drift. A moved anchor must not hide an unsafe frozen row,
+    // a class change, or an alias that is no longer inert.
+    const integrity = frozenRowIntegrityErrors(frozen, fresh)
+    if (integrity.length) {
+        return { abort: true, errors: [...errors, ...integrity], ids: [], drift: false }
+    }
+    if (errors.length) {
+        return { abort: true, errors, ids: [], drift: errors.every((e) => DRIFT_ERRORS.has(e)) }
+    }
 
     const freshById = new Map((fresh.deployments || []).map((row) => [row.id, row]))
+    const protectedIds = protectedDeploymentIds(fresh)
     const ids = []
     for (const row of frozen.deployments || []) {
         if (!row.deletable) continue
@@ -784,21 +842,25 @@ export function reconcilePlans(frozen, fresh) {
                 abort: true,
                 errors: [`frozen row ${row.id} is not a safe-delete class`],
                 ids: [],
+                drift: false,
             }
         }
         const now = freshById.get(row.id)
         if (!now) continue
-        const activeAlias = now.aliases.some((host) => !isInertBranchAlias(host, fresh?.backend))
-        if (now.class !== row.class || !now.deletable || activeAlias) {
+        // Integrity errors were returned above. A deletable relabel still
+        // aborts this batch, and a protected id is never deleted.
+        if (now.class !== row.class) {
             return {
                 abort: true,
                 errors: [`${row.id} is no longer ${row.class}`],
                 ids: [],
+                drift: false,
             }
         }
+        if (protectedIds.has(row.id)) continue
         ids.push(row.id)
     }
-    return { abort: false, errors: [], ids: ids.slice(0, MAX_DELETE_PER_RUN) }
+    return { abort: false, errors: [], ids: ids.slice(0, MAX_DELETE_PER_RUN), drift: false }
 }
 
 export function cloudflareDeleteUrl(accountId, projectName, deploymentId) {

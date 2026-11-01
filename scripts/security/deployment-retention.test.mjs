@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { test } from 'node:test'
 
 import {
@@ -27,8 +29,15 @@ import {
     afterPropagationWait,
     assertDeploySha,
     assertPostDeleteAnchors,
+    applyDeletes,
     assertTrustedApply,
+    deferredAbortMessage,
+    explainWaitError,
+    mainAdvanceDecision,
+    PublicVersionMismatch,
     PUBLIC_VERSION_WAIT,
+    retentionWaitDecision,
+    servedMainDecision,
     verifyPublicVersion,
 } from '../deployment-retention/cli.mjs'
 
@@ -740,6 +749,375 @@ test('reconcile aborts when main or a safe row changes and never deletes UNKNOWN
     assert.deepEqual(ok.ids, ['oldprod'])
     assert.throws(() => assertSafeDeleteBatch(frozen, ['prod']), /refusing to delete/)
     assert.throws(() => assertSafeDeleteBatch(frozen, ['mystery']), /refusing to delete/)
+})
+
+test('plan/apply drift defers the batch without failing; an unsafe row still fails (#592)', () => {
+    const plan = (mainSha, deployments, headRefOid = OPEN_SHA) =>
+        classifyRetention({
+            backend: 'vercel',
+            mainSha,
+            pulls: [{ number: 540, state: 'OPEN', headRefName: 'feat/x', headRefOid }],
+            deployments,
+        })
+    const frozen = plan(MAIN, productionSet('vercel'))
+
+    // A merge between plan and apply: new main SHA and production set.
+    const merged = plan(
+        SHA_A,
+        productionSet('vercel').map((row) =>
+            row.id === 'prod'
+                ? { ...row, sha: SHA_A, aliases: ['canna-guide-2025-web.vercel.app'] }
+                : row,
+        ),
+    )
+    const drifted = reconcilePlans(frozen, merged)
+    assert.equal(drifted.abort, true)
+    assert.equal(drifted.drift, true)
+    assert.equal(drifted.ids.length, 0)
+    assert.match(
+        deferredAbortMessage('cloudflare', drifted),
+        /^DEFER cloudflare delete: .*nothing deleted; the next run re-plans$/,
+    )
+
+    // Only a PR push between plan and apply.
+    const pushed = reconcilePlans(frozen, plan(MAIN, productionSet('vercel'), SHA_B))
+    assert.deepEqual(pushed.errors, ['open pull request heads changed'])
+    assert.equal(pushed.drift, true)
+    assert.equal(pushed.abort, true)
+    assert.deepEqual(pushed.ids, [])
+
+    // A frozen row that is not a safe-delete class is never deferred.
+    const tampered = {
+        ...frozen,
+        deployments: frozen.deployments.map((row) =>
+            row.deletable ? { ...row, class: 'UNKNOWN' } : row,
+        ),
+    }
+    const unsafe = reconcilePlans(tampered, plan(MAIN, productionSet('vercel')))
+    assert.equal(unsafe.abort, true)
+    assert.equal(unsafe.drift, false)
+    assert.equal(deferredAbortMessage('vercel', unsafe), null)
+
+    // Anchor drift must not hide the unsafe frozen row.
+    const driftedUnsafe = reconcilePlans(tampered, plan(SHA_A, productionSet('vercel')))
+    assert.equal(driftedUnsafe.abort, true)
+    assert.equal(driftedUnsafe.drift, false)
+    assert.deepEqual(driftedUnsafe.ids, [])
+    assert.equal(deferredAbortMessage('vercel', driftedUnsafe), null)
+
+    // Nothing to defer when the batch is not aborted at all.
+    assert.equal(
+        deferredAbortMessage('vercel', reconcilePlans(frozen, plan(MAIN, productionSet('vercel')))),
+        null,
+    )
+})
+
+test('a deletable relabel can defer, and a new active alias cannot', () => {
+    const row = (id, className, aliases = []) => ({
+        id,
+        class: className,
+        deletable: className.startsWith('SAFE_DELETE_'),
+        aliases,
+    })
+    const plan = (mainSha, deployments, extra = {}) => ({
+        backend: 'vercel',
+        anchors: {
+            mainSha,
+            productionIds: extra.productionIds || ['prod'],
+            rollbackIds: extra.rollbackIds || [],
+            openPulls: extra.openPulls || [],
+        },
+        deployments,
+    })
+    const frozenPreview = plan(
+        MAIN,
+        [row('preview', 'SAFE_DELETE_SUPERSEDED_PREVIEW'), row('prod', 'PROTECT_PRODUCTION')],
+        { openPulls: [{ number: 1, sha: SHA_A }] },
+    )
+    const mergedPreview = plan(
+        MAIN,
+        [row('preview', 'SAFE_DELETE_MERGED_PR'), row('prod', 'PROTECT_PRODUCTION')],
+        { openPulls: [] },
+    )
+    const relabel = reconcilePlans(frozenPreview, mergedPreview)
+    assert.equal(relabel.abort, true)
+    assert.equal(relabel.drift, true)
+    assert.deepEqual(relabel.ids, [])
+
+    const sameHeads = plan(
+        MAIN,
+        [row('preview', 'SAFE_DELETE_MERGED_PR'), row('prod', 'PROTECT_PRODUCTION')],
+        { openPulls: [{ number: 1, sha: SHA_A }] },
+    )
+    const blocked = reconcilePlans(frozenPreview, sameHeads)
+    assert.equal(blocked.abort, true)
+    assert.equal(blocked.drift, false)
+    assert.deepEqual(blocked.ids, [])
+
+    const frozenOld = plan(MAIN, [
+        row('oldprod', 'SAFE_DELETE_OLD_PRODUCTION'),
+        row('prod', 'PROTECT_PRODUCTION'),
+    ])
+    const rotated = plan(
+        SHA_A,
+        [row('oldprod', 'PROTECT_ROLLBACK'), row('prod', 'PROTECT_PRODUCTION')],
+        { rollbackIds: ['oldprod'] },
+    )
+    const deferred = reconcilePlans(frozenOld, rotated)
+    assert.equal(deferred.abort, true)
+    assert.equal(deferred.drift, true)
+    assert.deepEqual(deferred.ids, [])
+
+    const aliased = plan(
+        SHA_A,
+        [
+            row('oldprod', 'PROTECT_ROLLBACK', ['archive.example.com']),
+            row('prod', 'PROTECT_PRODUCTION'),
+        ],
+        { rollbackIds: ['oldprod'] },
+    )
+    const revealed = reconcilePlans(frozenOld, aliased)
+    assert.equal(revealed.abort, true)
+    assert.equal(revealed.drift, false)
+    assert.deepEqual(revealed.ids, [])
+    assert.equal(deferredAbortMessage('vercel', revealed), null)
+})
+
+test('applyDeletes defers only a served commit that is the new main', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'retention-apply-'))
+    const planPath = join(dir, 'plan.json')
+    writeFileSync(
+        planPath,
+        JSON.stringify({
+            skipped: false,
+            backend: 'cloudflare',
+            anchors: { mainSha: MAIN, productionIds: [], rollbackIds: [], openPulls: [] },
+            deployments: [],
+        }),
+    )
+    const keys = [
+        'GITHUB_ACTIONS',
+        'GITHUB_REF',
+        'GITHUB_REPOSITORY',
+        'GITHUB_EVENT_NAME',
+        'RETENTION_DEPLOY_SHA',
+    ]
+    const saved = Object.fromEntries(keys.map((key) => [key, process.env[key]]))
+    const restore = () => {
+        for (const key of keys) {
+            if (saved[key] === undefined) delete process.env[key]
+            else process.env[key] = saved[key]
+        }
+    }
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.GITHUB_REF = 'refs/heads/main'
+    process.env.GITHUB_REPOSITORY = 'qnbs/CannaGuide-2025'
+    process.env.GITHUB_EVENT_NAME = 'schedule'
+    let deletes = 0
+    const remove = async () => {
+        deletes += 1
+        return []
+    }
+    try {
+        process.env.RETENTION_DEPLOY_SHA = MAIN
+        let reads = 0
+        await applyDeletes('cloudflare', planPath, {
+            collectGithubState: () => {
+                reads += 1
+                return {
+                    repo: 'qnbs/CannaGuide-2025',
+                    mainSha: reads === 1 ? MAIN : SHA_A,
+                    pulls: [],
+                }
+            },
+            verifyPublicVersion: async () => {
+                throw new PublicVersionMismatch(
+                    'https://cannaguide-2025.pages.dev/version.json',
+                    SHA_A,
+                    200,
+                )
+            },
+            deleteProvenDeployments: remove,
+        })
+        assert.equal(deletes, 0)
+        assert.ok(reads >= 2)
+
+        deletes = 0
+        process.env.RETENTION_DEPLOY_SHA = SHA_A
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    collectGithubState: () => ({
+                        repo: 'qnbs/CannaGuide-2025',
+                        mainSha: SHA_A,
+                        pulls: [],
+                    }),
+                    verifyPublicVersion: async () => {
+                        throw new PublicVersionMismatch(
+                            'https://cannaguide-2025.pages.dev/version.json',
+                            MAIN,
+                            200,
+                        )
+                    },
+                    deleteProvenDeployments: remove,
+                }),
+            new RegExp(`served ${MAIN}`),
+        )
+        assert.equal(deletes, 0)
+
+        deletes = 0
+        reads = 0
+        process.env.RETENTION_DEPLOY_SHA = MAIN
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    collectGithubState: () => {
+                        reads += 1
+                        return {
+                            repo: 'qnbs/CannaGuide-2025',
+                            mainSha: reads === 1 ? MAIN : SHA_A,
+                            pulls: [],
+                        }
+                    },
+                    verifyPublicVersion: async () => {
+                        throw new Error(
+                            `https://cannaguide-2025.pages.dev/version.json served ${SHA_A} HTTP 200`,
+                        )
+                    },
+                    deleteProvenDeployments: remove,
+                }),
+            new RegExp(`served ${SHA_A}`),
+        )
+        assert.equal(deletes, 0)
+        assert.equal(reads, 1)
+
+        deletes = 0
+        reads = 0
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    collectGithubState: () => {
+                        reads += 1
+                        return {
+                            repo: 'qnbs/CannaGuide-2025',
+                            mainSha: reads === 1 ? MAIN : SHA_A,
+                            pulls: [],
+                        }
+                    },
+                    verifyPublicVersion: async () => {
+                        throw new PublicVersionMismatch(
+                            'https://cannaguide-2025.pages.dev/version.json',
+                            SHA_A,
+                            500,
+                        )
+                    },
+                    deleteProvenDeployments: remove,
+                }),
+            (error) => error instanceof PublicVersionMismatch && error.status === 500,
+        )
+        assert.equal(deletes, 0)
+        assert.equal(reads, 1)
+
+        process.env.RETENTION_DEPLOY_SHA = 'not-a-sha'
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    collectGithubState: () => ({
+                        repo: 'qnbs/CannaGuide-2025',
+                        mainSha: MAIN,
+                        pulls: [],
+                    }),
+                    verifyPublicVersion: async () => {
+                        throw new Error('version check must not run')
+                    },
+                    deleteProvenDeployments: remove,
+                }),
+            /deploy SHA is malformed/,
+        )
+        assert.equal(deletes, 0)
+    } finally {
+        restore()
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('applyDeletes deletes nothing when fresh reconciliation aborts', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'retention-apply-'))
+    const planPath = join(dir, 'plan.json')
+    writeFileSync(
+        planPath,
+        JSON.stringify({
+            skipped: false,
+            backend: 'cloudflare',
+            anchors: { mainSha: MAIN, productionIds: [], rollbackIds: [], openPulls: [] },
+            deployments: [],
+        }),
+    )
+    const keys = [
+        'GITHUB_ACTIONS',
+        'GITHUB_REF',
+        'GITHUB_REPOSITORY',
+        'GITHUB_EVENT_NAME',
+        'RETENTION_DEPLOY_SHA',
+    ]
+    const saved = Object.fromEntries(keys.map((key) => [key, process.env[key]]))
+    const restore = () => {
+        for (const key of keys) {
+            if (saved[key] === undefined) delete process.env[key]
+            else process.env[key] = saved[key]
+        }
+    }
+    process.env.GITHUB_ACTIONS = 'true'
+    process.env.GITHUB_REF = 'refs/heads/main'
+    process.env.GITHUB_REPOSITORY = 'qnbs/CannaGuide-2025'
+    process.env.GITHUB_EVENT_NAME = 'schedule'
+    process.env.RETENTION_DEPLOY_SHA = MAIN
+    let deletes = 0
+    const github = { repo: 'qnbs/CannaGuide-2025', mainSha: MAIN, pulls: [] }
+    const io = {
+        collectGithubState: () => github,
+        verifyPublicVersion: async () => ({ buildVersion: '1.11.0', commit: MAIN }),
+        deleteProvenDeployments: async () => {
+            deletes += 1
+            return []
+        },
+    }
+    try {
+        await applyDeletes('cloudflare', planPath, {
+            ...io,
+            freshDeleteDecision: async () => ({
+                fresh: { anchors: { productionIds: [], rollbackIds: [] } },
+                decision: {
+                    abort: true,
+                    drift: true,
+                    ids: ['should-not-delete'],
+                    errors: ['production deployment set changed'],
+                },
+            }),
+        })
+        assert.equal(deletes, 0)
+
+        await assert.rejects(
+            () =>
+                applyDeletes('cloudflare', planPath, {
+                    ...io,
+                    freshDeleteDecision: async () => ({
+                        fresh: { anchors: { productionIds: [], rollbackIds: [] } },
+                        decision: {
+                            abort: true,
+                            drift: false,
+                            ids: ['should-not-delete'],
+                            errors: ['frozen row oldprod gained an active alias'],
+                        },
+                    }),
+                }),
+            /retention batch aborted: frozen row oldprod gained an active alias/,
+        )
+        assert.equal(deletes, 0)
+    } finally {
+        restore()
+        rmSync(dir, { recursive: true, force: true })
+    }
 })
 
 test('cloudflare and vercel delete URLs cannot enable force or a project delete', () => {
@@ -1542,19 +1920,46 @@ test('deletes wait out edge propagation instead of failing on the prior build', 
                     json: async () => ({ commit: SHA_A, buildVersion: '1.10.0' }),
                 }),
             }),
-        new RegExp(`served ${SHA_A}`),
+        (error) => {
+            assert.ok(error instanceof PublicVersionMismatch)
+            assert.equal(error.status, 200)
+            assert.equal(error.commit, SHA_A)
+            assert.match(error.message, new RegExp(`served ${SHA_A}`))
+            return true
+        },
+    )
+    await assert.rejects(
+        () =>
+            verifyPublicVersion(PAGES_URL_FOR_WAIT, MAIN, {
+                attempts: 1,
+                pauseMs: 0,
+                fetchImpl: async () => ({
+                    status: 500,
+                    json: async () => ({ commit: SHA_A, buildVersion: '1.10.0' }),
+                }),
+            }),
+        (error) => {
+            assert.ok(error instanceof PublicVersionMismatch)
+            assert.equal(error.status, 500)
+            assert.equal(error.commit, SHA_A)
+            return true
+        },
     )
 
     // Every public-version check in the CLI uses this window, not a local literal.
     const cli = readFileSync(new URL('../deployment-retention/cli.mjs', import.meta.url), 'utf8')
-    const sites = cli.match(/await verifyPublicVersion\([^)]*\)/g) || []
+    const sites = cli.match(/await verify\w*\([^)]*\)/g) || []
     assert.ok(sites.length >= 2, 'expected the apply and the gate-check call sites')
     for (const site of sites) assert.match(site, /PUBLIC_VERSION_WAIT,?\s*\)$/)
 
     // No delete decision is classified with the GitHub state read before the wait.
-    const decisions = cli.match(/await freshDeleteDecision\([^)]*\)/g) || []
+    const decisions = [
+        ...(cli.match(/await freshDeleteDecision\([^)]*\)/g) || []),
+        ...(cli.match(/await decide\([^)]*\)/g) || []),
+    ]
     assert.ok(decisions.length >= 2, 'expected the apply and the gate-check decisions')
     for (const call of decisions) assert.doesNotMatch(call, /\bgithub\)$/)
+    assert.match(cli, /const decide = io\.freshDeleteDecision \|\| freshDeleteDecision/)
 })
 
 test('a stalled version request is abandoned and retried, never awaited forever', async () => {
@@ -1727,6 +2132,56 @@ test('apply accepts a successful main push and refuses a pull-request workflow_r
         () => assertDeploySha({ RETENTION_DEPLOY_SHA: SHA_A }, MAIN),
         /deploy SHA is not current main/,
     )
+    const deployDrift = mainAdvanceDecision(
+        new Error('refusing retention: deploy SHA is not current main'),
+    )
+    assert.equal(deployDrift.abort, true)
+    assert.equal(deployDrift.drift, true)
+    assert.deepEqual(deployDrift.ids, [])
+    const waitDrift = mainAdvanceDecision(
+        new Error(`main moved from ${MAIN} to ${SHA_A} during the propagation wait`),
+    )
+    assert.equal(waitDrift.drift, true)
+    assert.deepEqual(waitDrift.ids, [])
+    assert.match(deferredAbortMessage('vercel', waitDrift), /^DEFER vercel delete:/)
+    assert.equal(mainAdvanceDecision(new Error('provider inventory failed')), null)
+    assert.throws(
+        () => assertDeploySha({ RETENTION_DEPLOY_SHA: 'not-a-sha' }, MAIN),
+        /deploy SHA is malformed/,
+    )
+    assert.equal(
+        mainAdvanceDecision(new Error('refusing retention: deploy SHA is malformed')),
+        null,
+    )
+    const pagesVersion = 'https://cannaguide-2025.pages.dev/version.json'
+    const servedNew = new PublicVersionMismatch(pagesVersion, SHA_A, 200)
+    const advanced = servedMainDecision(servedNew, MAIN, SHA_A)
+    assert.equal(advanced.abort, true)
+    assert.equal(advanced.drift, true)
+    assert.deepEqual(advanced.ids, [])
+    assert.equal(servedMainDecision(servedNew, SHA_A, SHA_A), null)
+    const servedOld = new PublicVersionMismatch(pagesVersion, MAIN, 200)
+    assert.equal(servedMainDecision(servedOld, SHA_A, SHA_A), null)
+    const spoofed = new Error(`${pagesVersion} served ${SHA_A} HTTP 200`)
+    assert.equal(servedMainDecision(spoofed, MAIN, SHA_A), null)
+    const http500 = new PublicVersionMismatch(pagesVersion, SHA_A, 500)
+    assert.equal(servedMainDecision(http500, MAIN, SHA_A), null)
+    let reread = 0
+    const readMain = () => {
+        reread += 1
+        return SHA_A
+    }
+    assert.deepEqual(
+        explainWaitError(servedNew, MAIN, readMain),
+        retentionWaitDecision(servedNew, MAIN, SHA_A),
+    )
+    assert.equal(reread, 1)
+    assert.equal(explainWaitError(spoofed, MAIN, readMain), null)
+    assert.equal(explainWaitError(http500, MAIN, readMain), null)
+    assert.equal(explainWaitError(new Error('provider inventory failed'), MAIN, readMain), null)
+    const deployMismatch = new Error('refusing retention: deploy SHA is not current main')
+    assert.equal(explainWaitError(deployMismatch, MAIN, readMain).drift, true)
+    assert.equal(reread, 1)
     assert.throws(
         () =>
             assertTrustedApply({

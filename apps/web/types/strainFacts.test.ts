@@ -73,9 +73,10 @@ describe('versioned strain fact boundary (synthetic fixtures only)', () => {
             expect(result.error.issues.map((issue) => issue.message)).toEqual([
                 'A strict upper bound of zero is empty for a nonnegative amount',
             ])
-        expect(isFactReleaseEligible(empty)).toBe(false)
         const inclusiveZero = { ...empty, operator: '<=' as const }
-        expect(strainFactSchema.parse(inclusiveZero)).toEqual(inclusiveZero)
+        const inclusive = strainFactSchema.parse(inclusiveZero)
+        expect(inclusive).toEqual(inclusiveZero)
+        expect(isFactReleaseEligible(inclusive)).toBe(true)
         expect(strainFactSchema.parse(point).value).toBe(0)
         const unknown = strainFactSchema.parse({
             ...base,

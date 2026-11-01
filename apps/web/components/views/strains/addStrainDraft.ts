@@ -150,43 +150,28 @@ const reportedAgronomic = (values: StrainFormValues): Record<string, unknown> | 
     return Object.keys(bag).length > 0 ? bag : undefined
 }
 
+const dropFormOwned = (kept: Partial<Strain>): void => {
+    Reflect.deleteProperty(kept, 'name')
+    Reflect.deleteProperty(kept, 'type')
+    Reflect.deleteProperty(kept, 'typeDetails')
+    Reflect.deleteProperty(kept, 'genetics')
+    Reflect.deleteProperty(kept, 'floweringType')
+    Reflect.deleteProperty(kept, 'thc')
+    Reflect.deleteProperty(kept, 'cbd')
+    Reflect.deleteProperty(kept, 'thcRange')
+    Reflect.deleteProperty(kept, 'cbdRange')
+    Reflect.deleteProperty(kept, 'floweringTime')
+    Reflect.deleteProperty(kept, 'floweringTimeRange')
+    Reflect.deleteProperty(kept, 'description')
+    Reflect.deleteProperty(kept, 'aromas')
+    Reflect.deleteProperty(kept, 'dominantTerpenes')
+    Reflect.deleteProperty(kept, 'agronomic')
+}
+
 const preservedStrainFields = (strain: Strain | null): Partial<Strain> => {
     if (!strain) return {}
-    const {
-        name,
-        type,
-        typeDetails,
-        genetics,
-        floweringType,
-        thc,
-        cbd,
-        thcRange,
-        cbdRange,
-        floweringTime,
-        floweringTimeRange,
-        description,
-        aromas,
-        dominantTerpenes,
-        agronomic,
-        ...kept
-    } = strain
-    void [
-        name,
-        type,
-        typeDetails,
-        genetics,
-        floweringType,
-        thc,
-        cbd,
-        thcRange,
-        cbdRange,
-        floweringTime,
-        floweringTimeRange,
-        description,
-        aromas,
-        dominantTerpenes,
-        agronomic,
-    ]
+    const kept: Partial<Strain> = { ...strain }
+    dropFormOwned(kept)
     return kept
 }
 

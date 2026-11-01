@@ -44,6 +44,9 @@ from the configured test run.
 App contract validation uses synthetic fixtures only. Research archive checks
 are tracked separately in the PR and execution issue; they do not establish
 application integration.
+The external research archive is not stored in this repository. Its SQLite
+byte reproducibility remains unresolved; matching logical contents do not
+establish byte-identical rebuilding. No research data is imported by this API.
 
 - RED: the targeted Vitest file failed because the new fact module did not
   exist (`Test Files 1 failed (1)`).

@@ -384,7 +384,7 @@ function buildStrainLookupPrompt(query: string, lang: string): string {
 }
 
 const finiteOrUndefined = (value: number): number | undefined =>
-    Number.isFinite(value) ? value : undefined
+    Number.isFinite(value) && value >= 0 ? value : undefined
 
 const parseReportedPercent = (value: unknown): number | undefined => {
     if (typeof value === 'number') return finiteOrUndefined(value)
@@ -470,28 +470,37 @@ export function parseAIStrainResponse(text: string): DiscoveredStrain[] {
 /**
  * Build a preference profile from the user's library strains.
  */
+const finiteAverage = (values: Array<number | undefined>, fallback: number): number => {
+    let total = 0
+    let count = 0
+    for (const value of values) {
+        if (typeof value !== 'number' || !Number.isFinite(value)) continue
+        total += value
+        count += 1
+    }
+    return count > 0 ? total / count : fallback
+}
+
 export function buildUserProfile(
     strains: Array<{ type?: string; thc?: number; cbd?: number }>,
 ): UserStrainProfile {
     const preferredTypes: Record<string, number> = {}
-    let thcSum = 0
-    let cbdSum = 0
-    let count = 0
-
-    for (const s of strains) {
-        if (s.type) {
-            preferredTypes[s.type] = (preferredTypes[s.type] ?? 0) + 1
-        }
-        thcSum += s.thc ?? 0
-        cbdSum += s.cbd ?? 0
-        count++
+    for (const strain of strains) {
+        if (!strain.type) continue
+        preferredTypes[strain.type] = (preferredTypes[strain.type] ?? 0) + 1
     }
 
     return {
         preferredTypes,
-        avgThc: count > 0 ? thcSum / count : 15,
-        avgCbd: count > 0 ? cbdSum / count : 0.5,
-        strainCount: count,
+        avgThc: finiteAverage(
+            strains.map((strain) => strain.thc),
+            15,
+        ),
+        avgCbd: finiteAverage(
+            strains.map((strain) => strain.cbd),
+            0.5,
+        ),
+        strainCount: strains.length,
     }
 }
 

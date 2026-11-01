@@ -132,6 +132,12 @@ describe('generateCannabinoidProfile', () => {
         expect(profile.CBD).toBe(2)
     })
 
+    it('keeps a reported zero for CBG and THCV', () => {
+        const profile = generateCannabinoidProfile(20, 1, 0, 0)
+        expect(profile.CBG).toBe(0)
+        expect(profile.THCV).toBe(0)
+    })
+
     it('generates minor cannabinoids', () => {
         const profile = generateCannabinoidProfile(20, 2, undefined, undefined, 100)
         expect(profile.CBG).toBeGreaterThan(0)

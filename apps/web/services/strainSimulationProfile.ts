@@ -74,18 +74,13 @@ const simulatedCannabinoids = (data: Partial<Strain>, nameHash: number): Cannabi
     const thc = finiteMeasurement(data.thc)
     const cbd = finiteMeasurement(data.cbd)
     if (thc !== undefined || cbd !== undefined) {
-        const profile = generateCannabinoidProfile(
+        return generateCannabinoidProfile(
             zeroIfMissing(thc),
             zeroIfMissing(cbd),
             finiteMeasurement(data.cbg),
             finiteMeasurement(data.thcv),
             nameHash,
         )
-        const cbg = finiteMeasurement(data.cbg)
-        const thcv = finiteMeasurement(data.thcv)
-        if (cbg !== undefined) profile.CBG = cbg
-        if (thcv !== undefined) profile.THCV = thcv
-        return profile
     }
     return reportedMinors(data)
 }

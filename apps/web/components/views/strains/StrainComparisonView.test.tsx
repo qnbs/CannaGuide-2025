@@ -227,12 +227,16 @@ describe('normalizeCBD', () => {
 })
 
 describe('normalizeFloweringTime', () => {
-    it('normalizes 56 days (fastest) to 100', () => {
-        expect(normalizeFloweringTime(56)).toBe(100)
+    it('normalizes 8 weeks (fastest) to 100', () => {
+        expect(normalizeFloweringTime(8)).toBe(100)
     })
 
-    it('normalizes 112 days (slowest) to 0', () => {
-        expect(normalizeFloweringTime(112)).toBe(0)
+    it('normalizes 16 weeks (slowest) to 0', () => {
+        expect(normalizeFloweringTime(16)).toBe(0)
+    })
+
+    it('keeps a typical 9-week flowering off the top of the axis', () => {
+        expect(normalizeFloweringTime(9)).toBe(88)
     })
 })
 

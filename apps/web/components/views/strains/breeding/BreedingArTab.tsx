@@ -2,7 +2,6 @@ import React, { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { getSafeText, getSafeNumericValue } from './genetics'
 import type { BreedingLabState } from './useBreedingLab'
 
 const BreedingArPreview = lazy(() =>
@@ -69,23 +68,14 @@ const SeedStabilityPreview: React.FC<{ state: BreedingLabState }> = ({ state }) 
     )
 }
 
-const OffspringPreview: React.FC<{
-    offspring: NonNullable<BreedingLabState['geneticsOffspring']>
-}> = ({ offspring }) => (
-    <Suspense fallback={<ArLoading />}>
-        <BreedingArPreview
-            label={getSafeText(offspring.name, 'Offspring')}
-            vigor={6}
-            resin={Math.round(getSafeNumericValue(offspring.thc, 0) / 2)}
-            aroma={aromaScore(offspring.aromas, offspring.dominantTerpenes)}
-            resistance={5}
-        />
-    </Suspense>
-)
+const OffspringPreview: React.FC = () => {
+    const { t } = useTranslation()
+    return <p className="text-center py-12 text-sm text-slate-300">{t('common.unknown')}</p>
+}
 
 const ArBody: React.FC<{ state: BreedingLabState }> = ({ state }) => {
     if (state.seedResult) return <SeedStabilityPreview state={state} />
-    if (state.geneticsOffspring) return <OffspringPreview offspring={state.geneticsOffspring} />
+    if (state.geneticsOffspring) return <OffspringPreview />
     return <EmptyArState />
 }
 

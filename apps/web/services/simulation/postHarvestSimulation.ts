@@ -17,7 +17,7 @@ export function createInitialHarvestData(plant: Plant): HarvestData {
         reportedThc > 0 ? 4 : 0,
         reportedThc > 0 ? reportedThc * 1.05 : 0,
     )
-    const cbn = thcWasReported ? simClamp(thc * 0.015, 0.05, 0.8) : 0
+    const cbn = reportedThc > 0 ? simClamp(thc * 0.015, 0.05, 0.8) : 0
     return {
         wetWeight,
         dryWeight,

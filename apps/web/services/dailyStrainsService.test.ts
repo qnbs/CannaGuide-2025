@@ -112,6 +112,13 @@ describe('dailyStrainsService', () => {
             expect(profile.preferredTypes['Indica']).toBe(1)
             expect(profile.preferredTypes['Sativa']).toBe(1)
         })
+
+        it('leaves an unreported THC out of the average', () => {
+            const profile = buildUserProfile([{ thc: 20 }, {}])
+            expect(profile.strainCount).toBe(2)
+            expect(profile.avgThc).toBe(20)
+            expect(profile.avgCbd).toBe(0.5)
+        })
     })
 
     describe('rankStrainsByRelevance', () => {
@@ -199,6 +206,9 @@ describe('dailyStrainsService', () => {
             expect(parsed?.floweringType).toBeUndefined()
             expect(parsed?.thc).toBe(0)
             expect(parsed?.cbd).toBeUndefined()
+            const [negative] = parseAIStrainResponse('[{"name":"Negative","thc":-1,"cbd":"nope"}]')
+            expect(negative?.thc).toBeUndefined()
+            expect(negative?.cbd).toBeUndefined()
             if (!parsed) throw new Error('parser returned nothing')
             const strain = resolveDiscoveredToStrain(parsed)
             expect(strain.type).toBeUndefined()

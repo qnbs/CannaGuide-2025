@@ -47,12 +47,12 @@ const normalizeCBD = (cbd: number | undefined): number | null => {
     return value === undefined ? null : Math.min(100, Math.round((value / 20) * 100))
 }
 
-// Normalize flowering time: shorter = higher score. Range 56-112 days.
-const normalizeFloweringTime = (days: number | undefined): number | null => {
-    const value = finiteNumber(days)
-    return value === undefined
-        ? null
-        : Math.max(0, Math.min(100, Math.round(((112 - value) / 56) * 100)))
+// Shorter flowering scores higher. The stored value is weeks; 8-16 weeks matches 56-112 days.
+const normalizeFloweringTime = (weeks: number | undefined): number | null => {
+    const value = finiteNumber(weeks)
+    if (value === undefined) return null
+    const days = value * 7
+    return Math.max(0, Math.min(100, Math.round(((112 - days) / 56) * 100)))
 }
 
 // ---------------------------------------------------------------------------

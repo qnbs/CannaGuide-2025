@@ -203,14 +203,14 @@ export const generateCannabinoidProfile = (
         CBD: cbd,
     }
 
-    if (cbg !== undefined && cbg > 0) {
+    if (cbg !== undefined) {
         profile.CBG = cbg
     } else {
         // CBG typically 0.1-1.5% -- precursor, inversely related to THC+CBD maturity
         profile.CBG = Math.round((0.1 + ((hash * 7) % 140) / 100) * 100) / 100
     }
 
-    if (thcv !== undefined && thcv > 0) {
+    if (thcv !== undefined) {
         profile.THCV = thcv
     } else if (thc > 15) {
         // THCV more common in high-THC strains, typically 0.1-0.5%
@@ -347,10 +347,6 @@ export const predictEffects = (
 // Full chemovar profile builder
 // ---------------------------------------------------------------------------
 
-/**
- * Build a complete ChemovarProfile for a strain.
- * Uses existing data where available, generates estimates where not.
- */
 const finiteCannabinoid = (value: unknown): number | undefined =>
     typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
@@ -360,6 +356,10 @@ const cannabinoidRatio = (thc: number | undefined, cbd: number | undefined): num
     return thc > 0 ? Number.POSITIVE_INFINITY : 0
 }
 
+/**
+ * Build a complete ChemovarProfile for a strain.
+ * Uses existing data where available, generates estimates where not.
+ */
 export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
     const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
     const measuredThc = finiteCannabinoid(strain.thc)

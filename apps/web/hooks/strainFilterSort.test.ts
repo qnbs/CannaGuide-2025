@@ -31,14 +31,24 @@ describe('compareOptionalRanks', () => {
     })
 })
 
-const strain = (patch: Partial<Strain> & Pick<Strain, 'id' | 'name'>): Strain => ({
+const strain = (patch: { id: string; name: string; thc?: number }): Strain => ({
+    id: patch.id,
+    name: patch.name,
     type: StrainType.Hybrid,
     floweringType: 'Photoperiod',
-    thc: 18,
+    thc: patch.thc ?? 18,
     cbd: 1,
     floweringTime: 9,
     agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
-    ...patch,
+    geneticModifiers: {
+        pestResistance: 1,
+        nutrientUptakeRate: 1,
+        stressTolerance: 1,
+        rue: 1.5,
+        vpdTolerance: { min: 0.8, max: 1.4 },
+        transpirationFactor: 1,
+        stomataSensitivity: 1,
+    },
 })
 
 const sortOf = (patch: Partial<StrainSort>): StrainSort => ({

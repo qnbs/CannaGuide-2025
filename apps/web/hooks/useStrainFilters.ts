@@ -72,19 +72,33 @@ const agronomicField = (
     key: 'difficulty' | 'yield' | 'height',
 ): string | undefined => strain.agronomic?.[key]
 
-const agronomyPass = (strain: Strain, filters: AdvancedFilterState): boolean =>
-    allowsValue(new Set(filters.selectedDifficulties), agronomicField(strain, 'difficulty')) &&
-    allowsValue(new Set(filters.selectedYields), agronomicField(strain, 'yield')) &&
-    allowsValue(new Set(filters.selectedHeights), agronomicField(strain, 'height'))
+interface FilterSets {
+    difficulties: Set<string>
+    yields: Set<string>
+    heights: Set<string>
+    aromas: Set<string>
+    terpenes: Set<string>
+}
 
-const sensoryPass = (strain: Strain, filters: AdvancedFilterState): boolean =>
-    overlaps(new Set(filters.selectedAromas), getSafeStringArray(strain.aromas)) &&
-    overlaps(new Set(filters.selectedTerpenes), getSafeStringArray(strain.dominantTerpenes))
+const filterSets = (filters: AdvancedFilterState): FilterSets => ({
+    difficulties: new Set(filters.selectedDifficulties),
+    yields: new Set(filters.selectedYields),
+    heights: new Set(filters.selectedHeights),
+    aromas: new Set(filters.selectedAromas),
+    terpenes: new Set(filters.selectedTerpenes),
+})
 
-const passesAdvanced = (strain: Strain, filters: AdvancedFilterState): boolean =>
-    measurementsPass(strain, filters) &&
-    agronomyPass(strain, filters) &&
-    sensoryPass(strain, filters)
+const agronomyPass = (strain: Strain, sets: FilterSets): boolean =>
+    allowsValue(sets.difficulties, agronomicField(strain, 'difficulty')) &&
+    allowsValue(sets.yields, agronomicField(strain, 'yield')) &&
+    allowsValue(sets.heights, agronomicField(strain, 'height'))
+
+const sensoryPass = (strain: Strain, sets: FilterSets): boolean =>
+    overlaps(sets.aromas, getSafeStringArray(strain.aromas)) &&
+    overlaps(sets.terpenes, getSafeStringArray(strain.dominantTerpenes))
+
+const passesAdvanced = (strain: Strain, filters: AdvancedFilterState, sets: FilterSets): boolean =>
+    measurementsPass(strain, filters) && agronomyPass(strain, sets) && sensoryPass(strain, sets)
 
 const defaultStrainsViewSettings: AppSettings['strainsView'] = {
     defaultSortKey: 'name',
@@ -219,7 +233,8 @@ export const useStrainFilters = (
         const favored = applyFavorites(searched, showFavoritesOnly, favorites)
         const typed = applyTypes(favored, typeFilter)
         const lettered = applyLetter(typed, letterFilter)
-        const advanced = lettered.filter((strain) => passesAdvanced(strain, advancedFilters))
+        const sets = filterSets(advancedFilters)
+        const advanced = lettered.filter((strain) => passesAdvanced(strain, advancedFilters, sets))
         return advanced.toSorted((left, right) =>
             compareStrains(left, right, {
                 key: sortKey,

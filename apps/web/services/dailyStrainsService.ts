@@ -294,6 +294,90 @@ function dismissStrainId(id: string): void {
 // AI-powered strain search
 // ---------------------------------------------------------------------------
 
+const finiteOrUndefined = (value: number): number | undefined =>
+    Number.isFinite(value) && value >= 0 ? value : undefined
+
+const parseReportedPercent = (value: unknown): number | undefined => {
+    if (typeof value === 'number') return finiteOrUndefined(value)
+    if (typeof value !== 'string' || value.trim() === '') return undefined
+    return finiteOrUndefined(Number.parseFloat(value))
+}
+
+const reportedTypeName = (value: unknown): string | undefined => {
+    const raw = String(value ?? '').toLowerCase()
+    if (raw.includes('indica')) return 'Indica'
+    if (raw.includes('sativa')) return 'Sativa'
+    if (raw.includes('hybrid')) return 'Hybrid'
+    return undefined
+}
+
+const reportedFloweringName = (value: unknown): string | undefined => {
+    const raw = String(value ?? '')
+    if (raw === 'Autoflower') return 'Autoflower'
+    if (raw === 'Photoperiod') return 'Photoperiod'
+    return undefined
+}
+
+const attachAiFacts = (discovered: DiscoveredStrain, item: Record<string, unknown>): void => {
+    const type = reportedTypeName(item.type)
+    const floweringType = reportedFloweringName(item.floweringType)
+    const thc = parseReportedPercent(item.thc)
+    const cbd = parseReportedPercent(item.cbd)
+    if (type) discovered.type = type
+    if (floweringType) discovered.floweringType = floweringType
+    if (thc !== undefined) discovered.thc = thc
+    if (cbd !== undefined) discovered.cbd = cbd
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+const slugId = (name: string): string =>
+    `ai-${name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+$/, '')}`
+
+const textField = (item: Record<string, unknown>, key: string, fallback: string): string =>
+    String(item[key] ?? fallback)
+
+const discoveredFromAiItem = (item: unknown): DiscoveredStrain | undefined => {
+    if (!isRecord(item)) return undefined
+    const name = textField(item, 'name', '').trim()
+    if (!name) return undefined
+    const discovered: DiscoveredStrain = {
+        id: slugId(name),
+        name,
+        breeder: textField(item, 'breeder', 'Unknown'),
+        description: textField(item, 'description', '').slice(0, 300),
+        genetics: textField(item, 'genetics', ''),
+        source: 'ai-lookup',
+        sourceUrl: '',
+        discoveredAt: new Date().toISOString(),
+    }
+    attachAiFacts(discovered, item)
+    return discovered
+}
+
+const strainsFromAiJson = (json: string): DiscoveredStrain[] => {
+    try {
+        const parsed: unknown = JSON.parse(json)
+        if (!Array.isArray(parsed)) return []
+        return parsed.flatMap((item: unknown) => {
+            const discovered = discoveredFromAiItem(item)
+            return discovered ? [discovered] : []
+        })
+    } catch {
+        return []
+    }
+}
+
+export const parseAIStrainResponse = (text: string): DiscoveredStrain[] => {
+    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
+    if (!jsonMatch) return []
+    return strainsFromAiJson(jsonMatch)
+}
+
 export async function searchStrainsWithAI(query: string): Promise<DiscoveredStrain[]> {
     if (!query || query.length < 2) return []
 
@@ -382,90 +466,6 @@ function buildStrainLookupPrompt(query: string, lang: string): string {
               'Only real, verified strains. No fabricated data.'
 }
 
-const finiteOrUndefined = (value: number): number | undefined =>
-    Number.isFinite(value) && value >= 0 ? value : undefined
-
-const parseReportedPercent = (value: unknown): number | undefined => {
-    if (typeof value === 'number') return finiteOrUndefined(value)
-    if (typeof value !== 'string' || value.trim() === '') return undefined
-    return finiteOrUndefined(Number.parseFloat(value))
-}
-
-const reportedTypeName = (value: unknown): string | undefined => {
-    const raw = String(value ?? '').toLowerCase()
-    if (raw.includes('indica')) return 'Indica'
-    if (raw.includes('sativa')) return 'Sativa'
-    if (raw.includes('hybrid')) return 'Hybrid'
-    return undefined
-}
-
-const reportedFloweringName = (value: unknown): string | undefined => {
-    const raw = String(value ?? '')
-    if (raw === 'Autoflower') return 'Autoflower'
-    if (raw === 'Photoperiod') return 'Photoperiod'
-    return undefined
-}
-
-const attachAiFacts = (discovered: DiscoveredStrain, item: Record<string, unknown>): void => {
-    const type = reportedTypeName(item.type)
-    const floweringType = reportedFloweringName(item.floweringType)
-    const thc = parseReportedPercent(item.thc)
-    const cbd = parseReportedPercent(item.cbd)
-    if (type) discovered.type = type
-    if (floweringType) discovered.floweringType = floweringType
-    if (thc !== undefined) discovered.thc = thc
-    if (cbd !== undefined) discovered.cbd = cbd
-}
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null
-
-const slugId = (name: string): string =>
-    `ai-${name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/-+$/, '')}`
-
-const textField = (item: Record<string, unknown>, key: string, fallback: string): string =>
-    String(item[key] ?? fallback)
-
-const discoveredFromAiItem = (item: unknown): DiscoveredStrain | undefined => {
-    if (!isRecord(item)) return undefined
-    const name = textField(item, 'name', '').trim()
-    if (!name) return undefined
-    const discovered: DiscoveredStrain = {
-        id: slugId(name),
-        name,
-        breeder: textField(item, 'breeder', 'Unknown'),
-        description: textField(item, 'description', '').slice(0, 300),
-        genetics: textField(item, 'genetics', ''),
-        source: 'ai-lookup',
-        sourceUrl: '',
-        discoveredAt: new Date().toISOString(),
-    }
-    attachAiFacts(discovered, item)
-    return discovered
-}
-
-const strainsFromAiJson = (json: string): DiscoveredStrain[] => {
-    try {
-        const parsed: unknown = JSON.parse(json)
-        if (!Array.isArray(parsed)) return []
-        return parsed.flatMap((item: unknown) => {
-            const discovered = discoveredFromAiItem(item)
-            return discovered ? [discovered] : []
-        })
-    } catch {
-        return []
-    }
-}
-
-export const parseAIStrainResponse = (text: string): DiscoveredStrain[] => {
-    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
-    if (!jsonMatch) return []
-    return strainsFromAiJson(jsonMatch)
-}
-
 // ---------------------------------------------------------------------------
 // Recommendation scoring
 // ---------------------------------------------------------------------------
@@ -493,9 +493,9 @@ const attachAverage = (
     if (value !== undefined) profile[key] = value
 }
 
-export function buildUserProfile(
+export const buildUserProfile = (
     strains: Array<{ type?: string; thc?: number; cbd?: number }>,
-): UserStrainProfile {
+): UserStrainProfile => {
     const preferredTypes: Record<string, number> = {}
     for (const strain of strains) {
         if (!strain.type) continue
@@ -531,7 +531,7 @@ const closenessBonus = (
     return scaledGap(value, average, weight, scale)
 }
 
-function scoreStrain(strain: DiscoveredStrain, profile: UserStrainProfile): number {
+const scoreStrain = (strain: DiscoveredStrain, profile: UserStrainProfile): number => {
     if (profile.strainCount === 0) return 50
     const score =
         50 +
@@ -661,7 +661,7 @@ const aiLookupPartial = (discovered: DiscoveredStrain): Partial<Strain> => {
  * Daily picks come from the catalog. An AI lookup copies only the fields
  * the model actually reported.
  */
-export function resolveDiscoveredToStrain(discovered: DiscoveredStrain): Strain {
+export const resolveDiscoveredToStrain = (discovered: DiscoveredStrain): Strain => {
     const catalogMatch = allStrainsData.find((s) => s.id === discovered.id)
     if (catalogMatch) return catalogMatch
     return createStrainObject(aiLookupPartial(discovered))

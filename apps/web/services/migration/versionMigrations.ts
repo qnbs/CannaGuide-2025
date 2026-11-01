@@ -52,13 +52,12 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
 
     const migratedState: PersistedState = state
 
-    if (migratedState.simulation?.plants?.entities) {
-        for (const id in migratedState.simulation.plants.entities) {
-            const plant = migratedState.simulation.plants.entities[id] as unknown as
+    const plantEntities = migratedState.simulation?.plants?.entities
+    if (plantEntities) {
+        for (const id of Object.keys(plantEntities)) {
+            const plant = plantEntities[id as keyof typeof plantEntities] as unknown as
                 Record<string, unknown> | undefined
-            if (plant && !plant.mediumType) {
-                plant.mediumType = 'Soil'
-            }
+            if (plant && !plant.mediumType) plant.mediumType = 'Soil'
         }
     }
 

@@ -39,7 +39,7 @@ export const SEVERITY_COLORS: Record<string, [number, number, number]> = {
 }
 
 /** Cultivar percentages keep the reported precision. A missing source stays unknown. */
-export const reportedPercentText = (source: unknown): string => {
+export const reportedPercentText = (source?: unknown): string => {
     const value = reportedNumber(source)
     if (value === undefined) return unknownLabel()
     return `${value}%`

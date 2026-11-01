@@ -5,181 +5,6 @@ import { TFunction } from 'i18next'
 import { generateTxt } from './exportDownload'
 import type { JsPDFWithAutoTable } from './types'
 
-export function exportStrainsAsPdf(strains: Strain[], fileName: string, t: TFunction) {
-    const doc = new jsPDF()
-    const leftMargin = 15
-    const rightMargin = 15
-    const topMargin = 20
-    const contentWidth = 210 - leftMargin - rightMargin
-    const valueOffset = 50
-
-    strains.forEach((strain, index) => {
-        if (index > 0) {
-            doc.addPage()
-        }
-
-        let y = topMargin
-
-        // --- Header ---
-        doc.setFontSize(9)
-        doc.setTextColor(150)
-        doc.text('CannaGuide 2025', leftMargin, topMargin - 10)
-        doc.text(t('strainsView.exportModal.title'), 210 - rightMargin, topMargin - 10, {
-            align: 'right',
-        })
-        doc.setDrawColor(50)
-        doc.line(leftMargin, topMargin - 7, 210 - rightMargin, topMargin - 7)
-        doc.setTextColor(0)
-
-        // --- Strain Name ---
-        doc.setFontSize(24)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(40, 50, 70)
-        doc.text(strain.name, leftMargin, y)
-        y += 12
-
-        // --- Helper Functions ---
-        const printKeyValuePair = (
-            key: string,
-            value: string | undefined | null,
-            keyBold = true,
-            valBold = false,
-        ) => {
-            if (!value) return
-            doc.setFontSize(11)
-            doc.setFont('helvetica', keyBold ? 'bold' : 'normal')
-            doc.setTextColor(50)
-            doc.text(key + ':', leftMargin, y)
-            doc.setFont('helvetica', valBold ? 'bold' : 'normal')
-            doc.setTextColor(20)
-            doc.text(value, leftMargin + valueOffset, y)
-            y += 7
-        }
-
-        const printSectionTitle = (title: string) => {
-            y += 8
-            doc.setFontSize(14)
-            doc.setFont('helvetica', 'bold')
-            doc.setTextColor(40, 50, 70)
-            doc.text(title, leftMargin, y)
-            y += 8
-        }
-
-        const printTextBlock = (title: string, text: string | undefined | null) => {
-            if (!text) return
-            printSectionTitle(title)
-            doc.setFontSize(11)
-            doc.setFont('helvetica', 'normal')
-            doc.setTextColor(20)
-            const splitText = doc.splitTextToSize(text, contentWidth)
-            doc.text(splitText, leftMargin, y)
-            y += splitText.length * 5 + 5
-        }
-
-        // --- Content Sections ---
-        printKeyValuePair(
-            t('common.type'),
-            t(`strainsData.${strain.id}.typeDetails`, {
-                defaultValue: strain.typeDetails || strain.type || t('common.unknown'),
-            }),
-        )
-        printKeyValuePair(
-            t('common.genetics'),
-            t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics ?? 'N/A' }),
-        )
-
-        printSectionTitle(t('strainsView.strainDetail.cannabinoidProfile'))
-        printKeyValuePair(
-            t('strainsView.table.thc'),
-            strain.thcRange ||
-                (typeof strain.thc === 'number' && Number.isFinite(strain.thc)
-                    ? `${strain.thc}%`
-                    : t('common.unknown')),
-        )
-        printKeyValuePair(
-            t('strainsView.table.cbd'),
-            strain.cbdRange ||
-                (typeof strain.cbd === 'number' && Number.isFinite(strain.cbd)
-                    ? `${strain.cbd}%`
-                    : t('common.unknown')),
-        )
-
-        printSectionTitle(t('strainsView.strainModal.agronomicData'))
-        printKeyValuePair(
-            t('strainsView.table.difficulty'),
-            strain.agronomic?.difficulty
-                ? t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)
-                : t('common.unknown'),
-        )
-        printKeyValuePair(
-            t('strainsView.table.flowering'),
-            strain.floweringTimeRange
-                ? `${strain.floweringTimeRange} ${t('common.units.weeks')}`
-                : typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
-                  ? `${strain.floweringTime} ${t('common.units.weeks')}`
-                  : t('common.unknown'),
-        )
-        printKeyValuePair(
-            t('strainsView.strainModal.yieldIndoor'),
-            t(`strainsData.${strain.id}.yieldDetails.indoor`, {
-                defaultValue: strain.agronomic?.yieldDetails?.indoor ?? t('common.unknown'),
-            }),
-        )
-        printKeyValuePair(
-            t('strainsView.strainModal.yieldOutdoor'),
-            t(`strainsData.${strain.id}.yieldDetails.outdoor`, {
-                defaultValue: strain.agronomic?.yieldDetails?.outdoor ?? t('common.unknown'),
-            }),
-        )
-        printKeyValuePair(
-            t('strainsView.strainModal.heightIndoor'),
-            t(`strainsData.${strain.id}.heightDetails.indoor`, {
-                defaultValue: strain.agronomic?.heightDetails?.indoor ?? t('common.unknown'),
-            }),
-        )
-        printKeyValuePair(
-            t('strainsView.strainModal.heightOutdoor'),
-            t(`strainsData.${strain.id}.heightDetails.outdoor`, {
-                defaultValue: strain.agronomic?.heightDetails?.outdoor ?? t('common.unknown'),
-            }),
-        )
-
-        printSectionTitle(t('strainsView.strainDetail.aromaProfile'))
-        printKeyValuePair(
-            t('strainsView.strainModal.aromas'),
-            (strain.aromas ?? [])
-                .map((a) => t(`common.aromas.${a}`, { defaultValue: a }))
-                .join(', '),
-        )
-        printKeyValuePair(
-            t('strainsView.strainModal.dominantTerpenes'),
-            (strain.dominantTerpenes ?? [])
-                .map((terp) => t(`common.terpenes.${terp}`, { defaultValue: terp }))
-                .join(', '),
-        )
-
-        const description = t(`strainsData.${strain.id}.description`, {
-            defaultValue: strain.description ?? '',
-        })
-        printTextBlock(t('common.description'), description)
-    })
-
-    // --- Add Footers to all pages ---
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const pageCount = (doc as JsPDFWithAutoTable).internal.getNumberOfPages()
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i)
-        doc.setFontSize(8)
-        doc.setTextColor(150)
-        doc.text(`${t('common.generated')}: ${new Date().toLocaleString()}`, leftMargin, 297 - 10)
-        doc.text(`${t('common.page')} ${i} / ${pageCount}`, 210 - rightMargin, 297 - 10, {
-            align: 'right',
-        })
-    }
-
-    doc.save(`${fileName}.pdf`)
-}
-
 const translatedOr = (value: string | undefined, fallback: string): string =>
     typeof value === 'string' && value.trim().length > 0 ? value : fallback
 
@@ -267,7 +92,235 @@ const formatStrainTxt = (strain: Strain, t: TFunction): string => {
     return lines.join('\n')
 }
 
-export function exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunction): void {
+const writePdfBanner = (
+    doc: jsPDF,
+    t: TFunction,
+    left: number,
+    right: number,
+    top: number,
+): void => {
+    doc.setFontSize(9)
+    doc.setTextColor(150)
+    doc.text('CannaGuide 2025', left, top - 10)
+    doc.text(t('strainsView.exportModal.title'), 210 - right, top - 10, { align: 'right' })
+    doc.setDrawColor(50)
+    doc.line(left, top - 7, 210 - right, top - 7)
+    doc.setTextColor(0)
+}
+
+const writeKeyValue = (
+    doc: jsPDF,
+    left: number,
+    valueOffset: number,
+    y: number,
+    key: string,
+    value: string,
+): number => {
+    if (!value) return y
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(50)
+    doc.text(`${key}:`, left, y)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(20)
+    doc.text(value, left + valueOffset, y)
+    return y + 7
+}
+
+const writeSectionTitle = (doc: jsPDF, left: number, y: number, title: string): number => {
+    const titleY = y + 8
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(40, 50, 70)
+    doc.text(title, left, titleY)
+    return titleY + 8
+}
+
+const writeTextBlock = (
+    doc: jsPDF,
+    left: number,
+    width: number,
+    y: number,
+    title: string,
+    text: string,
+): number => {
+    if (!text) return y
+    const textY = writeSectionTitle(doc, left, y, title)
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(20)
+    const splitText = doc.splitTextToSize(text, width)
+    doc.text(splitText, left, textY)
+    return textY + splitText.length * 5 + 5
+}
+
+const writeStrainPdfPage = (doc: jsPDF, strain: Strain, t: TFunction): void => {
+    const left = 15
+    const right = 15
+    const top = 20
+    const width = 210 - left - right
+    const valueOffset = 50
+    const unknownLabel = t('common.unknown')
+    writePdfBanner(doc, t, left, right, top)
+    doc.setFontSize(24)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(40, 50, 70)
+    doc.text(strain.name, left, top)
+    let y = top + 12
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('common.type'),
+        catalogText(strain, t, 'typeDetails', typeExportFallback(strain, unknownLabel)),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('common.genetics'),
+        catalogText(strain, t, 'genetics', translatedOr(strain.genetics, 'N/A')),
+    )
+    y = writeSectionTitle(doc, left, y, t('strainsView.strainDetail.cannabinoidProfile'))
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.table.thc'),
+        percentText(strain.thcRange, strain.thc, unknownLabel),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.table.cbd'),
+        percentText(strain.cbdRange, strain.cbd, unknownLabel),
+    )
+    y = writeSectionTitle(doc, left, y, t('strainsView.strainModal.agronomicData'))
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.table.difficulty'),
+        difficultyExportText(strain, t),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.table.flowering'),
+        floweringExportText(strain, unknownLabel, t('common.units.weeks')),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.strainModal.yieldIndoor'),
+        catalogText(
+            strain,
+            t,
+            'yieldDetails.indoor',
+            agronomicDetailFallback(strain, 'yieldDetails', 'indoor', unknownLabel),
+        ),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.strainModal.yieldOutdoor'),
+        catalogText(
+            strain,
+            t,
+            'yieldDetails.outdoor',
+            agronomicDetailFallback(strain, 'yieldDetails', 'outdoor', unknownLabel),
+        ),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.strainModal.heightIndoor'),
+        catalogText(
+            strain,
+            t,
+            'heightDetails.indoor',
+            agronomicDetailFallback(strain, 'heightDetails', 'indoor', unknownLabel),
+        ),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.strainModal.heightOutdoor'),
+        catalogText(
+            strain,
+            t,
+            'heightDetails.outdoor',
+            agronomicDetailFallback(strain, 'heightDetails', 'outdoor', unknownLabel),
+        ),
+    )
+    y = writeSectionTitle(doc, left, y, t('strainsView.strainDetail.aromaProfile'))
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.strainModal.aromas'),
+        localizedList(strain.aromas, t, 'common.aromas'),
+    )
+    y = writeKeyValue(
+        doc,
+        left,
+        valueOffset,
+        y,
+        t('strainsView.strainModal.dominantTerpenes'),
+        localizedList(strain.dominantTerpenes, t, 'common.terpenes'),
+    )
+    writeTextBlock(
+        doc,
+        left,
+        width,
+        y,
+        t('common.description'),
+        catalogText(strain, t, 'description', translatedOr(strain.description, '')),
+    )
+}
+
+const writePdfFooters = (doc: jsPDF, t: TFunction): void => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+    const pageCount = (doc as JsPDFWithAutoTable).internal.getNumberOfPages()
+    for (let page = 1; page <= pageCount; page += 1) {
+        doc.setPage(page)
+        doc.setFontSize(8)
+        doc.setTextColor(150)
+        doc.text(`${t('common.generated')}: ${new Date().toLocaleString()}`, 15, 297 - 10)
+        doc.text(`${t('common.page')} ${page} / ${pageCount}`, 210 - 15, 297 - 10, {
+            align: 'right',
+        })
+    }
+}
+
+export const exportStrainsAsPdf = (strains: Strain[], fileName: string, t: TFunction): void => {
+    const doc = new jsPDF()
+    strains.forEach((strain, index) => {
+        if (index > 0) doc.addPage()
+        writeStrainPdfPage(doc, strain, t)
+    })
+    writePdfFooters(doc, t)
+    doc.save(`${fileName}.pdf`)
+}
+
+export const exportStrainsAsTxt = (strains: Strain[], fileName: string, t: TFunction): void => {
     let content = `CannaGuide 2025 - ${t('strainsView.exportModal.title')}\n`
     content += `${t('common.generated')}: ${new Date().toLocaleString()}\n\n`
     strains.forEach((strain) => {

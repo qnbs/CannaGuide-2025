@@ -233,7 +233,7 @@ describe('generateGrowReport', () => {
         expect(harvestPercentText(18, 14.2)).toBe('14.2%')
         expect(reportedPercentText(0.04)).toBe('0.04%')
         expect(reportedPercentText(20)).toBe('20%')
-        expect(reportedPercentText(undefined)).toBe('Unknown')
+        expect(reportedPercentText()).toBe('Unknown')
     })
 
     it('truncates long journal notes to 80 characters', async () => {
@@ -255,7 +255,7 @@ describe('generateGrowReport', () => {
 // Enhanced report helpers
 // ---------------------------------------------------------------------------
 
-function makeReading(overrides?: Partial<MetricsReading>): MetricsReading {
+const makeReading = (overrides?: Partial<MetricsReading>): MetricsReading => {
     return {
         id: 'reading-1',
         plantId: 'plant-1',
@@ -266,7 +266,7 @@ function makeReading(overrides?: Partial<MetricsReading>): MetricsReading {
     } as MetricsReading
 }
 
-function makeDiagnosis(overrides?: Partial<DiagnosisRecord>): DiagnosisRecord {
+const makeDiagnosis = (overrides?: Partial<DiagnosisRecord>): DiagnosisRecord => {
     return {
         id: 'diag-1',
         plantId: 'plant-1',

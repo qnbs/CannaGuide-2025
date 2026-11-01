@@ -61,6 +61,47 @@ const uniqueById = <T extends { id: string }>(items: T[]): T[] => [
     ...new Map(items.map((item) => [item.id, item])).values(),
 ]
 
+const averagePair = (left: number, right: number): number => (left + right) / 2
+
+const clampTen = (value: number): number => Math.max(0, Math.min(10, value))
+
+const finiteMeasurement = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const averageKnownMeasurements = (left: unknown, right: unknown): number | null => {
+    const leftMeasurement = finiteMeasurement(left)
+    const rightMeasurement = finiteMeasurement(right)
+    if (leftMeasurement === undefined || rightMeasurement === undefined) return null
+    return averagePair(leftMeasurement, rightMeasurement)
+}
+
+const offsetMeasurement = (base: number | null, delta: number): number | null =>
+    base === null ? null : base + delta
+
+const flooredMeasurement = (base: number | null, delta: number, floor: number): number | null =>
+    base === null ? null : Math.max(floor, base + delta)
+
+const stabilityOrNull = (
+    thcA: number | undefined,
+    thcB: number | undefined,
+    flowerA: number | undefined,
+    flowerB: number | undefined,
+    resistanceScore: number,
+): number | null => {
+    if (thcA === undefined || thcB === undefined) return null
+    if (flowerA === undefined || flowerB === undefined) return null
+    return Math.max(
+        0,
+        Math.min(
+            100,
+            55 +
+                (10 - Math.abs(thcA - thcB)) * 2 +
+                (10 - Math.abs(flowerA - flowerB)) * 1.5 +
+                resistanceScore * 1.2,
+        ),
+    )
+}
+
 class GeneticsService {
     private _getCanonicalName(name: string): string {
         const lowerName = name.trim().toLowerCase()
@@ -220,53 +261,44 @@ class GeneticsService {
         aromaScore: number
         resistanceScore: number
     } {
-        const avg = (a: number, b: number) => (a + b) / 2
-        const norm = (value: number) => Math.max(0, Math.min(10, value))
-        const finite = (value: unknown): number | undefined =>
-            typeof value === 'number' && Number.isFinite(value) ? value : undefined
-        const averageKnown = (left: unknown, right: unknown): number | null => {
-            const leftMeasurement = finite(left)
-            const rightMeasurement = finite(right)
-            if (leftMeasurement === undefined || rightMeasurement === undefined) return null
-            return avg(leftMeasurement, rightMeasurement)
-        }
-
-        const vigorScore = avg(norm(phenotypes.parentA.vigor), norm(phenotypes.parentB.vigor))
-        const resinScore = avg(norm(phenotypes.parentA.resin), norm(phenotypes.parentB.resin))
-        const aromaScore = avg(norm(phenotypes.parentA.aroma), norm(phenotypes.parentB.aroma))
-        const resistanceScore = avg(
-            norm(phenotypes.parentA.resistance),
-            norm(phenotypes.parentB.resistance),
+        const vigorScore = averagePair(
+            clampTen(phenotypes.parentA.vigor),
+            clampTen(phenotypes.parentB.vigor),
+        )
+        const resinScore = averagePair(
+            clampTen(phenotypes.parentA.resin),
+            clampTen(phenotypes.parentB.resin),
+        )
+        const aromaScore = averagePair(
+            clampTen(phenotypes.parentA.aroma),
+            clampTen(phenotypes.parentB.aroma),
+        )
+        const resistanceScore = averagePair(
+            clampTen(phenotypes.parentA.resistance),
+            clampTen(phenotypes.parentB.resistance),
         )
 
-        const thcBase = averageKnown(parentA.thc, parentB.thc)
-        const cbdBase = averageKnown(parentA.cbd, parentB.cbd)
-        const floweringBase = averageKnown(parentA.floweringTime, parentB.floweringTime)
-        const thc = thcBase === null ? null : thcBase + (resinScore - 5) * 0.35
-        const cbd = cbdBase === null ? null : Math.max(0, cbdBase + (resistanceScore - 5) * 0.08)
-        const floweringWeeks =
-            floweringBase === null ? null : Math.max(6, floweringBase - (vigorScore - 5) * 0.15)
-
-        const thcA = finite(parentA.thc)
-        const thcB = finite(parentB.thc)
-        const flowerA = finite(parentA.floweringTime)
-        const flowerB = finite(parentB.floweringTime)
-        const stabilityScore =
-            thcA === undefined ||
-            thcB === undefined ||
-            flowerA === undefined ||
-            flowerB === undefined
-                ? null
-                : Math.max(
-                      0,
-                      Math.min(
-                          100,
-                          55 +
-                              (10 - Math.abs(thcA - thcB)) * 2 +
-                              (10 - Math.abs(flowerA - flowerB)) * 1.5 +
-                              resistanceScore * 1.2,
-                      ),
-                  )
+        const thc = offsetMeasurement(
+            averageKnownMeasurements(parentA.thc, parentB.thc),
+            (resinScore - 5) * 0.35,
+        )
+        const cbd = flooredMeasurement(
+            averageKnownMeasurements(parentA.cbd, parentB.cbd),
+            (resistanceScore - 5) * 0.08,
+            0,
+        )
+        const floweringWeeks = flooredMeasurement(
+            averageKnownMeasurements(parentA.floweringTime, parentB.floweringTime),
+            -(vigorScore - 5) * 0.15,
+            6,
+        )
+        const stabilityScore = stabilityOrNull(
+            finiteMeasurement(parentA.thc),
+            finiteMeasurement(parentB.thc),
+            finiteMeasurement(parentA.floweringTime),
+            finiteMeasurement(parentB.floweringTime),
+            resistanceScore,
+        )
 
         return {
             thc,

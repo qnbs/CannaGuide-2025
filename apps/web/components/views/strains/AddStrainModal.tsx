@@ -163,6 +163,93 @@ const DraftPreview: React.FC<{
     )
 }
 
+const StrainFormBanner: React.FC<{
+    isEditMode: boolean
+    values: StrainFormValues
+    aromas: string[]
+    terpenes: string[]
+}> = ({ isEditMode, values, aromas, terpenes }) => {
+    const { t } = useTranslation()
+    const title = isEditMode
+        ? t('strainsView.addStrainModal.editTitle')
+        : t('strainsView.addStrainModal.title')
+    return (
+        <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.18),rgba(15,23,42,0.92))] !p-0">
+            <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.9fr)] lg:items-start">
+                <div>
+                    <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.24em] text-primary-200">
+                        <PhosphorIcons.Flask className="h-3.5 w-3.5" />
+                        {title}
+                    </div>
+                    <p className="max-w-2xl text-sm leading-6 text-slate-300">
+                        {t('strainsView.addStrainModal.description')}
+                    </p>
+                </div>
+                <DraftPreview values={values} aromas={aromas} terpenes={terpenes} />
+            </div>
+        </Card>
+    )
+}
+
+const GrowChoiceGrid: React.FC<{
+    values: StrainFormValues
+    onChange: (key: 'difficulty' | 'yield' | 'height', value: string) => void
+}> = ({ values, onChange }) => {
+    const { t } = useTranslation()
+    return (
+        <div className="grid gap-4 sm:col-span-2 lg:grid-cols-3">
+            <div>
+                <p className="mb-2 text-sm font-semibold text-slate-300">
+                    {t('strainsView.table.difficulty')}
+                </p>
+                <SegmentedControl
+                    aria-label={t('strainsView.table.difficulty')}
+                    value={[values.difficulty]}
+                    onToggle={(value) => onChange('difficulty', value)}
+                    options={[
+                        { value: 'Easy', label: t('strainsView.difficulty.easy') },
+                        { value: 'Medium', label: t('strainsView.difficulty.medium') },
+                        { value: 'Hard', label: t('strainsView.difficulty.hard') },
+                    ]}
+                    className="grid grid-cols-3"
+                />
+            </div>
+            <div>
+                <p className="mb-2 text-sm font-semibold text-slate-300">
+                    {t('strainsView.addStrainModal.yield')}
+                </p>
+                <SegmentedControl
+                    aria-label={t('strainsView.addStrainModal.yield')}
+                    value={[values.yield]}
+                    onToggle={(value) => onChange('yield', value)}
+                    options={[
+                        { value: 'Low', label: t('strainsView.addStrainModal.yields.low') },
+                        { value: 'Medium', label: t('strainsView.addStrainModal.yields.medium') },
+                        { value: 'High', label: t('strainsView.addStrainModal.yields.high') },
+                    ]}
+                    className="grid grid-cols-3"
+                />
+            </div>
+            <div>
+                <p className="mb-2 text-sm font-semibold text-slate-300">
+                    {t('strainsView.addStrainModal.height')}
+                </p>
+                <SegmentedControl
+                    aria-label={t('strainsView.addStrainModal.height')}
+                    value={[values.height]}
+                    onToggle={(value) => onChange('height', value)}
+                    options={[
+                        { value: 'Short', label: t('strainsView.addStrainModal.heights.short') },
+                        { value: 'Medium', label: t('strainsView.addStrainModal.heights.medium') },
+                        { value: 'Tall', label: t('strainsView.addStrainModal.heights.tall') },
+                    ]}
+                    className="grid grid-cols-3"
+                />
+            </div>
+        </div>
+    )
+}
+
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({
     isOpen,
     onAddStrain,
@@ -261,26 +348,12 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         >
             <form onSubmit={handleSubmit} id="add-strain-form" className="flex h-full flex-col">
                 <div className="space-y-5 pb-4">
-                    <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.18),rgba(15,23,42,0.92))] !p-0">
-                        <div className="grid gap-4 p-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(18rem,0.9fr)] lg:items-start">
-                            <div>
-                                <div className="surface-badge mb-3 text-2xs font-semibold uppercase tracking-[0.24em] text-primary-200">
-                                    <PhosphorIcons.Flask className="h-3.5 w-3.5" />
-                                    {isEditMode
-                                        ? t('strainsView.addStrainModal.editTitle')
-                                        : t('strainsView.addStrainModal.title')}
-                                </div>
-                                <p className="max-w-2xl text-sm leading-6 text-slate-300">
-                                    {t('strainsView.addStrainModal.description')}
-                                </p>
-                            </div>
-                            <DraftPreview
-                                values={values}
-                                aromas={parsedAromas}
-                                terpenes={parsedTerpenes}
-                            />
-                        </div>
-                    </Card>
+                    <StrainFormBanner
+                        isEditMode={isEditMode}
+                        values={values}
+                        aromas={parsedAromas}
+                        terpenes={parsedTerpenes}
+                    />
 
                     <FormSection
                         title={t('strainsView.addStrainModal.generalInfo')}
@@ -419,77 +492,10 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
                                 'strainsView.addStrainModal.floweringTimeRangePlaceholder',
                             )}
                         />
-                        <div className="sm:col-span-2 grid gap-4 lg:grid-cols-3">
-                            <div>
-                                <p className="mb-2 text-sm font-semibold text-slate-300">
-                                    {t('strainsView.table.difficulty')}
-                                </p>
-                                <SegmentedControl
-                                    aria-label={t('strainsView.table.difficulty')}
-                                    value={[values.difficulty]}
-                                    onToggle={(value) => handleChange('difficulty', value)}
-                                    options={[
-                                        { value: 'Easy', label: t('strainsView.difficulty.easy') },
-                                        {
-                                            value: 'Medium',
-                                            label: t('strainsView.difficulty.medium'),
-                                        },
-                                        { value: 'Hard', label: t('strainsView.difficulty.hard') },
-                                    ]}
-                                    className="grid grid-cols-3"
-                                />
-                            </div>
-                            <div>
-                                <p className="mb-2 text-sm font-semibold text-slate-300">
-                                    {t('strainsView.addStrainModal.yield')}
-                                </p>
-                                <SegmentedControl
-                                    aria-label={t('strainsView.addStrainModal.yield')}
-                                    value={[values.yield]}
-                                    onToggle={(value) => handleChange('yield', value)}
-                                    options={[
-                                        {
-                                            value: 'Low',
-                                            label: t('strainsView.addStrainModal.yields.low'),
-                                        },
-                                        {
-                                            value: 'Medium',
-                                            label: t('strainsView.addStrainModal.yields.medium'),
-                                        },
-                                        {
-                                            value: 'High',
-                                            label: t('strainsView.addStrainModal.yields.high'),
-                                        },
-                                    ]}
-                                    className="grid grid-cols-3"
-                                />
-                            </div>
-                            <div>
-                                <p className="mb-2 text-sm font-semibold text-slate-300">
-                                    {t('strainsView.addStrainModal.height')}
-                                </p>
-                                <SegmentedControl
-                                    aria-label={t('strainsView.addStrainModal.height')}
-                                    value={[values.height]}
-                                    onToggle={(value) => handleChange('height', value)}
-                                    options={[
-                                        {
-                                            value: 'Short',
-                                            label: t('strainsView.addStrainModal.heights.short'),
-                                        },
-                                        {
-                                            value: 'Medium',
-                                            label: t('strainsView.addStrainModal.heights.medium'),
-                                        },
-                                        {
-                                            value: 'Tall',
-                                            label: t('strainsView.addStrainModal.heights.tall'),
-                                        },
-                                    ]}
-                                    className="grid grid-cols-3"
-                                />
-                            </div>
-                        </div>
+                        <GrowChoiceGrid
+                            values={values}
+                            onChange={(key, value) => handleChange(key, value)}
+                        />
                         <Input
                             label={t('strainsView.strainModal.yieldIndoor')}
                             value={values.yieldIndoor}

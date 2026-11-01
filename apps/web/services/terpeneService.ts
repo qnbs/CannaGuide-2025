@@ -1,13 +1,4 @@
-/**
- * Terpene & Chemovar Analysis Service
- *
- * Provides classification, similarity computation, effect prediction,
- * and profile enrichment for cannabis strains. All computations are
- * pure functions suitable for main-thread or worker-thread execution.
- *
- * Heavy batch operations (similarity search across 700+ strains) should
- * be dispatched to the terpene worker via WorkerBus.
- */
+/** Terpene and chemovar analysis. Batch similarity search goes through the terpene worker. */
 
 import type {
     TerpeneName,
@@ -377,6 +368,19 @@ const classifiedType = (
     return classifyChemovar(thc, cbd, cbg)
 }
 
+const copyCannabinoids = (
+    strain: Strain,
+    nameHash: number,
+    thc: number | undefined,
+    cbd: number | undefined,
+): CannabinoidProfile => {
+    const profile: CannabinoidProfile = strain.cannabinoidProfile
+        ? { ...strain.cannabinoidProfile }
+        : generateCannabinoidProfile(thc ?? 0, cbd ?? 0, strain.cbg, strain.thcv, nameHash)
+    const cbg = finiteCannabinoid(strain.cbg)
+    if (profile.CBG === undefined && cbg !== undefined) profile.CBG = cbg
+    return profile
+}
 /** Type IV when reported CBG beats the majors. A missing major is not treated as zero. */
 export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefined => {
     const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
@@ -384,16 +388,12 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefine
         finiteCannabinoid(strain.thc) ?? finiteCannabinoid(strain.cannabinoidProfile?.THC)
     const measuredCbd =
         finiteCannabinoid(strain.cbd) ?? finiteCannabinoid(strain.cannabinoidProfile?.CBD)
-    const reportedThc = measuredThc ?? 0
-    const reportedCbd = measuredCbd ?? 0
     const typeText = typeof strain.type === 'string' ? strain.type : ''
     const terpeneProfile: TerpeneProfile =
         strain.terpeneProfile ??
         generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, typeText)
 
-    const cannabinoidProfile: CannabinoidProfile =
-        strain.cannabinoidProfile ??
-        generateCannabinoidProfile(reportedThc, reportedCbd, strain.cbg, strain.thcv, nameHash)
+    const cannabinoidProfile = copyCannabinoids(strain, nameHash, measuredThc, measuredCbd)
 
     const totalTerpenePercent =
         Math.round(Object.values(terpeneProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /

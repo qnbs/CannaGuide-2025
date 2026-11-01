@@ -32,6 +32,11 @@ const finitePercent = (value: number, unknown: string): string =>
 const finiteWeeks = (value: number, weeks: string, unknown: string): string =>
     Number.isFinite(value) ? `${value} ${weeks}` : unknown
 
+const floweringLabel = (strain: Strain, weeks: string, unknown: string): string => {
+    if (strain.floweringTimeRange) return `${strain.floweringTimeRange} ${weeks}`
+    return finiteWeeks(strain.floweringTime, weeks, unknown)
+}
+
 const difficultyLabel = (difficulty: string | undefined, translate: TFunction): string => {
     if (!difficulty) return translate('common.unknown')
     return translate(`strainsView.difficulty.${difficulty.toLowerCase()}`)
@@ -64,7 +69,7 @@ const SetupStrainCard: React.FC<{ strain: Strain }> = ({ strain }) => {
                 />
                 <InfoRow
                     label={t('strainsView.table.flowering')}
-                    value={finiteWeeks(strain.floweringTime, t('common.units.weeks'), unknown)}
+                    value={floweringLabel(strain, t('common.units.weeks'), unknown)}
                 />
                 <InfoRow
                     label={t('strainsView.table.difficulty')}
@@ -105,7 +110,7 @@ const LightingSection: React.FC<{
                     min={50}
                     max={1000}
                     step={10}
-                    singleValue={true}
+                    singleValue
                     value={setup.lightWattage || 150}
                     onChange={(val) => setSetup((current) => ({ ...current, lightWattage: val }))}
                     unit="W"
@@ -189,7 +194,7 @@ const ContainerSection: React.FC<{
                     min={3}
                     max={50}
                     step={1}
-                    singleValue={true}
+                    singleValue
                     value={setup.potSize}
                     onChange={(val) => setSetup((current) => ({ ...current, potSize: val }))}
                     unit="L"

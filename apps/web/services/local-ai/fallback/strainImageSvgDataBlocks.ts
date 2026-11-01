@@ -14,155 +14,131 @@ const knownBarPercent = (table: Record<string, number>, value: string | undefine
     return typeof score === 'number' ? score : 0
 }
 
+const finiteNumber = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
+
+const scaledPercent = (value: number | undefined, scale: number): number =>
+    value === undefined ? 0 : (value / scale) * 100
+
+const percentLabel = (
+    range: string | undefined,
+    value: number | undefined,
+    unknownLabel: string,
+): string => {
+    if (range) return range
+    return value === undefined ? unknownLabel : `${value}%`
+}
+
+const pushBar = (
+    bars: string[],
+    y: number,
+    label: string,
+    percent: number,
+    color: string,
+    palette: StylePalette,
+    display: string,
+): number => {
+    bars.push(svgDataBar(86, y, label, percent, color, palette.barBg, palette.textDim, display))
+    return y + 36
+}
+
+const pushOptionalPercent = (
+    bars: string[],
+    y: number,
+    label: string,
+    value: number | null | undefined,
+    color: string,
+    palette: StylePalette,
+): number => {
+    if (value === undefined || value === null) return y
+    return pushBar(bars, y, label, scaledPercent(value, 5), color, palette, `${value}%`)
+}
+
+const barLabel = (lang: Language, labels: Record<Language, string>): string =>
+    localizeStr(lang, labels)
+
 export const buildStrainDataBars = (
     strain: Strain,
     palette: StylePalette,
     lang: Language,
 ): StrainDataBarsResult => {
-    const finite = (value: unknown): number | undefined =>
-        typeof value === 'number' && Number.isFinite(value) ? value : undefined
-    const unknownLabel = localizeStr(lang, {
+    const unknownLabel = barLabel(lang, {
         en: 'Unknown',
         de: 'Unbekannt',
         es: 'Desconocido',
         fr: 'Inconnu',
         nl: 'Onbekend',
     })
-    const thc = finite(strain.thc)
-    const cbd = finite(strain.cbd)
-    const thcPct = thc === undefined ? 0 : (thc / 35) * 100
-    const cbdPct = cbd === undefined ? 0 : (cbd / 25) * 100
-    const thcDisplay = strain.thcRange ?? (thc === undefined ? unknownLabel : `${thc}%`)
-    const cbdDisplay = strain.cbdRange ?? (cbd === undefined ? unknownLabel : `${cbd}%`)
+    const thc = finiteNumber(strain.thc)
+    const cbd = finiteNumber(strain.cbd)
     const agronomic = strain.agronomic
-    const diffVal = knownBarPercent(DIFFICULTY_VAL, agronomic?.difficulty)
-    const yieldVal = knownBarPercent(YIELD_VAL, agronomic?.yield)
-    const heightVal = knownBarPercent(HEIGHT_VAL, agronomic?.height)
-    const diffLabel = localizeStr(lang, {
-        en: 'Difficulty',
-        de: 'Schwierigkeit',
-        es: 'Dificultad',
-        fr: 'Difficulte',
-        nl: 'Moeilijkheid',
-    })
-    const yieldLabel = localizeStr(lang, {
-        en: 'Yield',
-        de: 'Ertrag',
-        es: 'Rendimiento',
-        fr: 'Rendement',
-        nl: 'Opbrengst',
-    })
-    const heightLabel = localizeStr(lang, {
-        en: 'Height',
-        de: 'H\u00f6he',
-        es: 'Altura',
-        fr: 'Hauteur',
-        nl: 'Hoogte',
-    })
-
-    let dataY = 820
     const bars: string[] = []
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            'THC',
-            thcPct,
-            palette.accent,
-            palette.barBg,
-            palette.textDim,
-            thcDisplay,
-        ),
+    let dataY = pushBar(
+        bars,
+        820,
+        'THC',
+        scaledPercent(thc, 35),
+        palette.accent,
+        palette,
+        percentLabel(strain.thcRange, thc, unknownLabel),
     )
-    dataY += 36
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            'CBD',
-            cbdPct,
-            palette.accent2,
-            palette.barBg,
-            palette.textDim,
-            cbdDisplay,
-        ),
+    dataY = pushBar(
+        bars,
+        dataY,
+        'CBD',
+        scaledPercent(cbd, 25),
+        palette.accent2,
+        palette,
+        percentLabel(strain.cbdRange, cbd, unknownLabel),
     )
-    dataY += 36
-
-    if (strain.cbg != null) {
-        bars.push(
-            svgDataBar(
-                86,
-                dataY,
-                'CBG',
-                (strain.cbg / 5) * 100,
-                '#fbbf24',
-                palette.barBg,
-                palette.textDim,
-                `${strain.cbg}%`,
-            ),
-        )
-        dataY += 36
-    }
-
-    if (strain.thcv != null) {
-        bars.push(
-            svgDataBar(
-                86,
-                dataY,
-                'THCV',
-                (strain.thcv / 5) * 100,
-                '#2dd4bf',
-                palette.barBg,
-                palette.textDim,
-                `${strain.thcv}%`,
-            ),
-        )
-        dataY += 36
-    }
-
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            diffLabel,
-            diffVal,
-            '#f97316',
-            palette.barBg,
-            palette.textDim,
-            agronomic?.difficulty ?? unknownLabel,
-        ),
+    dataY = pushOptionalPercent(bars, dataY, 'CBG', strain.cbg, '#fbbf24', palette)
+    dataY = pushOptionalPercent(bars, dataY, 'THCV', strain.thcv, '#2dd4bf', palette)
+    dataY = pushBar(
+        bars,
+        dataY,
+        barLabel(lang, {
+            en: 'Difficulty',
+            de: 'Schwierigkeit',
+            es: 'Dificultad',
+            fr: 'Difficulte',
+            nl: 'Moeilijkheid',
+        }),
+        knownBarPercent(DIFFICULTY_VAL, agronomic?.difficulty),
+        '#f97316',
+        palette,
+        agronomic?.difficulty ?? unknownLabel,
     )
-    dataY += 36
-
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            yieldLabel,
-            yieldVal,
-            '#22c55e',
-            palette.barBg,
-            palette.textDim,
-            agronomic?.yield ?? unknownLabel,
-        ),
+    dataY = pushBar(
+        bars,
+        dataY,
+        barLabel(lang, {
+            en: 'Yield',
+            de: 'Ertrag',
+            es: 'Rendimiento',
+            fr: 'Rendement',
+            nl: 'Opbrengst',
+        }),
+        knownBarPercent(YIELD_VAL, agronomic?.yield),
+        '#22c55e',
+        palette,
+        agronomic?.yield ?? unknownLabel,
     )
-    dataY += 36
-
-    bars.push(
-        svgDataBar(
-            86,
-            dataY,
-            heightLabel,
-            heightVal,
-            '#60a5fa',
-            palette.barBg,
-            palette.textDim,
-            agronomic?.height ?? unknownLabel,
-        ),
+    dataY = pushBar(
+        bars,
+        dataY,
+        barLabel(lang, {
+            en: 'Height',
+            de: 'H\u00f6he',
+            es: 'Altura',
+            fr: 'Hauteur',
+            nl: 'Hoogte',
+        }),
+        knownBarPercent(HEIGHT_VAL, agronomic?.height),
+        '#60a5fa',
+        palette,
+        agronomic?.height ?? unknownLabel,
     )
-
-    return { bars, dataY: dataY + 44 }
+    return { bars, dataY: dataY + 8 }
 }
 
 export const buildTerpenesBlock = (

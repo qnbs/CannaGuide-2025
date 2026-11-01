@@ -251,6 +251,19 @@ describe('buildChemovarProfile', () => {
         const profile = buildChemovarProfile(strain)
         if (!profile) throw new Error('expected a chemovar profile')
         expect(profile.chemovarType).toBe('Type IV')
+        expect(profile.detailedCannabinoidProfile.CBG?.percent).toBe(5)
+        expect(profile.totalCannabinoidPercent).toBeGreaterThan(0)
+    })
+
+    it('keeps a top-level CBG in an otherwise empty cannabinoid profile', () => {
+        const strain = makeStrain({ cbg: 5, cannabinoidProfile: {} })
+        Reflect.deleteProperty(strain, 'thc')
+        Reflect.deleteProperty(strain, 'cbd')
+        const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
+        expect(profile.chemovarType).toBe('Type IV')
+        expect(profile.detailedCannabinoidProfile.CBG?.percent).toBe(5)
+        expect(profile.totalCannabinoidPercent).toBe(5)
     })
 
     it('uses existing terpene profile if available', () => {

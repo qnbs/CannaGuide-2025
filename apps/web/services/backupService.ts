@@ -24,6 +24,12 @@ import {
     isSafeRasterImageDataUrl,
     MAX_IMAGE_DATA_URL_LENGTH,
 } from '@/services/backupImageValidation'
+import {
+    BACKUP_IMPORT_LIMITS,
+    BackupImportLimitError,
+    type BackupImportLimits,
+    readEntryText,
+} from '@/services/backupImportLimits'
 import type { StoredImageData } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -56,13 +62,25 @@ export interface BackupExportResult {
     errorCode?: BackupExportErrorCode | undefined
 }
 
+/** Why an import was refused, where the UI can say more than "corrupted". */
+export type BackupImportErrorCode = 'limitExceeded'
+
 export interface BackupImportResult {
     success: boolean
     metadata: BackupMetadata | null
     rejectedImageCount: number
     reloadRequired?: boolean
     error?: string | undefined
+    errorCode?: BackupImportErrorCode | undefined
 }
+
+const limitExceededResult = (): BackupImportResult => ({
+    success: false,
+    metadata: null,
+    rejectedImageCount: 0,
+    error: 'Backup exceeds the import limits',
+    errorCode: 'limitExceeded',
+})
 
 const createBackupFilename = (): string => {
     const now = new Date()
@@ -406,7 +424,10 @@ export const backupService = {
      * Import a backup ZIP, restoring state and images.
      * CAUTION: This overwrites all current data.
      */
-    async importBackup(file: File): Promise<BackupImportResult> {
+    async importBackup(
+        file: File,
+        limits: Readonly<BackupImportLimits> = BACKUP_IMPORT_LIMITS,
+    ): Promise<BackupImportResult> {
         let imageDb: IDBDatabase | undefined
         const rejectedImageIds = new Set<string>()
         let rejectedInlineImageCount = 0
@@ -419,11 +440,16 @@ export const backupService = {
                     metadata: null,
                     rejectedImageCount: 0,
                     error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max ${MAX_IMPORT_SIZE_BYTES / 1024 / 1024} MB.`,
+                    errorCode: 'limitExceeded',
                 }
             }
 
             const arrayBuffer = await file.arrayBuffer()
             const zip = await JSZip.loadAsync(arrayBuffer)
+            // Nothing is inflated yet; refuse an archive with more entries
+            // than any backup has, then read within the byte budget (#671).
+            if (Object.keys(zip.files).length > limits.maxEntries) return limitExceededResult()
+            const budget = { remaining: limits.maxTotalBytes }
 
             // 1. Validate structure
             const stateFile = zip.file(STATE_FILENAME)
@@ -437,7 +463,7 @@ export const backupService = {
             }
 
             // 2. Parse and validate state JSON
-            const stateString = await stateFile.async('string')
+            const stateString = await readEntryText(stateFile, limits.maxStateBytes, budget)
             let parsedState: unknown
             try {
                 parsedState = JSON.parse(stateString)
@@ -464,11 +490,16 @@ export const backupService = {
             const metaFile = zip.file(METADATA_FILENAME)
             if (metaFile) {
                 try {
-                    const metaString = await metaFile.async('string')
+                    const metaString = await readEntryText(
+                        metaFile,
+                        limits.maxMetadataBytes,
+                        budget,
+                    )
                     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
                     metadata = JSON.parse(metaString) as BackupMetadata
-                } catch {
-                    // Non-critical
+                } catch (error) {
+                    // Unreadable metadata is non-critical; an oversized entry is not.
+                    if (error instanceof BackupImportLimitError) throw error
                 }
             }
 
@@ -487,7 +518,11 @@ export const backupService = {
                 const imgFile = zip.file(imgPath)
                 if (!imgFile) continue
                 try {
-                    const imgString = await imgFile.async('string')
+                    const imgString = await readEntryText(
+                        imgFile,
+                        limits.maxImageEntryBytes,
+                        budget,
+                    )
                     const parsedImage: unknown = JSON.parse(imgString)
                     const imageId = getStoredImageId(parsedImage)
                     if (imageId && seenImageIds.has(imageId)) {
@@ -515,7 +550,10 @@ export const backupService = {
                     if (imageId && !rejectedImageIds.has(imageId)) {
                         imagesById.set(imageId, parsedImage)
                     }
-                } catch {
+                } catch (error) {
+                    // A corrupt photo is skipped; an oversized one fails the whole
+                    // import before anything is written (#671).
+                    if (error instanceof BackupImportLimitError) throw error
                     unidentifiedRejectedImageCount += 1
                     console.debug(`[backupService] Skipping corrupt image: ${imgPath}`)
                 }
@@ -571,6 +609,8 @@ export const backupService = {
         } catch (e) {
             const msg = e instanceof Error ? e.message : 'Unknown import error'
             console.error('[backupService] Import failed:', msg)
+            // Raised while reading, before anything was written.
+            if (e instanceof BackupImportLimitError) return limitExceededResult()
             return {
                 success: false,
                 metadata: null,

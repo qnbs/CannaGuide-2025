@@ -1209,6 +1209,8 @@ export const settingsView = {
             'Backup wiederhergestellt; {{count}} Bilder konnten nicht wiederhergestellt werden. Die App wird neu geladen.',
         importError:
             'ZIP-Backup konnte nicht importiert werden. Die Datei ist moeglicherweise beschaedigt.',
+        importTooLarge:
+            'Dieses Backup ist groesser, als CannaGuide sicher wiederherstellen kann, daher wurde nichts importiert -- deine Daten sind unveraendert. Verwende ein von CannaGuide exportiertes Backup.',
         exportError: 'ZIP-Backup konnte nicht erstellt werden.',
         exportImagesError:
             'Deine Fotos konnten nicht gelesen werden, daher wurde kein ZIP-Backup erstellt -- deine Daten sind unveraendert. Schliesse andere CannaGuide-Tabs oder starte die App neu und versuche es erneut.',

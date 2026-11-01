@@ -1203,6 +1203,8 @@ export const settingsView = {
         importPartialSuccess_other:
             'Back-up hersteld; {{count}} afbeeldingen konden niet worden hersteld. De app wordt herladen.',
         importError: 'ZIP-backup kon niet worden geimporteerd. Het bestand is mogelijk beschadigd.',
+        importTooLarge:
+            'Deze back-up is groter dan CannaGuide veilig kan herstellen, daarom is er niets geimporteerd; je gegevens zijn ongewijzigd. Gebruik een back-up die door CannaGuide is geexporteerd.',
         exportError: 'ZIP-backup kon niet worden aangemaakt.',
         exportImagesError:
             "Je foto's konden niet worden gelezen, daarom is er geen ZIP-backup gemaakt; je gegevens zijn ongewijzigd. Sluit andere CannaGuide-tabbladen of herstart de app en probeer het opnieuw.",

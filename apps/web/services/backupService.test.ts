@@ -11,10 +11,48 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('jszip', () => {
+    type FakeEntry = { async: (type?: string) => Promise<string> }
+    // The import reads entries through ZipObject#internalStream (#671); give
+    // every fake entry one that emits exactly what its async() returns.
+    const withInflateStream = (name: string, entry: FakeEntry) => ({
+        name,
+        ...entry,
+        internalStream: () => {
+            const handlers: Record<string, (arg?: unknown) => void> = {}
+            const stream = {
+                on(event: string, listener: (arg?: unknown) => void) {
+                    handlers[event] = listener
+                    return stream
+                },
+                pause: () => stream,
+                resume() {
+                    entry.async('string').then(
+                        (text) => {
+                            handlers['data']?.(new TextEncoder().encode(text))
+                            handlers['end']?.()
+                        },
+                        (error: unknown) => handlers['error']?.(error),
+                    )
+                    return stream
+                },
+            }
+            return stream
+        },
+    })
     class MockJSZip {
         files: Record<string, unknown> = {}
-        static loadAsync(file: Blob): Promise<unknown> {
-            return mocks.loadZip(file)
+        static async loadAsync(file: Blob): Promise<unknown> {
+            const zip = (await mocks.loadZip(file)) as {
+                files: Record<string, unknown>
+                file: (name: string) => FakeEntry | null
+            }
+            return {
+                ...zip,
+                file: (name: string) => {
+                    const entry = zip.file(name)
+                    return entry ? withInflateStream(name, entry) : null
+                },
+            }
         }
         file(name: string, data?: string): MockJSZip {
             mocks.zipEntries.set(name, data)

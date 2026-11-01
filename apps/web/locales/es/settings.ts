@@ -1099,7 +1099,7 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Aviso Legal',
-            disclaimerContent: `<p>Toda la informacion en esta aplicacion es solo para fines educativos y de entretenimiento. El cultivo de cannabis esta sujeto a regulaciones legales estrictas. Por favor informate sobre las leyes de tu region y actua siempre de manera responsable y conforme a la ley.</p>`,
+            disclaimerContent: '<p>Toda la informacion en esta aplicacion es solo para fines educativos y de entretenimiento. El cultivo de cannabis esta sujeto a regulaciones legales estrictas. Por favor informate sobre las leyes de tu region y actua siempre de manera responsable y conforme a la ley.</p>',
         },
     },
     communityShare: {

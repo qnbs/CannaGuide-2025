@@ -58,8 +58,8 @@ export interface BackupExportResult {
     blob: Blob | null
     filename: string
     metadata: BackupMetadata | null
-    error?: string | undefined
-    errorCode?: BackupExportErrorCode | undefined
+    error?: string
+    errorCode?: BackupExportErrorCode
 }
 
 /** Why an import was refused, where the UI can say more than "corrupted". */
@@ -70,8 +70,8 @@ export interface BackupImportResult {
     metadata: BackupMetadata | null
     rejectedImageCount: number
     reloadRequired?: boolean
-    error?: string | undefined
-    errorCode?: BackupImportErrorCode | undefined
+    error?: string
+    errorCode?: BackupImportErrorCode
 }
 
 const limitExceededResult = (): BackupImportResult => ({
@@ -112,73 +112,103 @@ const isSafeStoredImageId = (value: unknown): value is string =>
 const getStoredImageId = (image: unknown): string | undefined =>
     isRecord(image) && isSafeStoredImageId(image.id) ? image.id : undefined
 
+const isNonNegativeTimestamp = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+
 const isStoredImageShape = (image: unknown): image is StoredImageData =>
     isRecord(image) &&
     isSafeStoredImageId(image.id) &&
     typeof image.data === 'string' &&
-    typeof image.createdAt === 'number' &&
-    Number.isSafeInteger(image.createdAt) &&
-    image.createdAt >= 0
-const normalizeSafeSavedTipImageUrl = async (value: unknown): Promise<string | undefined> => {
-    if (typeof value !== 'string' || value.length > MAX_IMAGE_DATA_URL_LENGTH) return undefined
+    isNonNegativeTimestamp(image.createdAt)
 
-    const normalized = normalizeImageDataUrl(value)
-    if (!normalized || normalized.length > MAX_IMAGE_DATA_URL_LENGTH) return undefined
-    return (await isSafeRasterImageDataUrl(normalized)) ? normalized : undefined
+const boundedImageUrl = (value: unknown): string | undefined => {
+    if (typeof value !== 'string') return undefined
+    if (value.length > MAX_IMAGE_DATA_URL_LENGTH) return undefined
+    return value
+}
+
+const normalizeSafeSavedTipImageUrl = async (value: unknown): Promise<string | undefined> => {
+    const raw = boundedImageUrl(value)
+    if (!raw) return undefined
+    const normalized = boundedImageUrl(normalizeImageDataUrl(raw))
+    if (!normalized) return undefined
+    if (!(await isSafeRasterImageDataUrl(normalized))) return undefined
+    return normalized
+}
+
+const plantEntitiesOf = (plants: unknown): unknown[] => {
+    if (Array.isArray(plants)) return plants
+    if (!isRecord(plants) || !isRecord(plants.entities)) return []
+    return Object.values(plants.entities)
+}
+
+const dropRejectedImageId = (
+    details: Record<string, unknown>,
+    rejectedImageIds: ReadonlySet<string>,
+): boolean => {
+    if (typeof details.imageId !== 'string' || !rejectedImageIds.has(details.imageId)) return false
+    delete details.imageId
+    return true
+}
+
+const sanitizeJournalEntry = async (
+    entry: unknown,
+    rejectedImageIds: ReadonlySet<string>,
+): Promise<number> => {
+    if (!isRecord(entry) || !isRecord(entry.details)) return 0
+    const referencesRejectedImage = dropRejectedImageId(entry.details, rejectedImageIds)
+    if (!('imageUrl' in entry.details)) return 0
+    if (await isSafeRasterImageDataUrl(entry.details.imageUrl)) return 0
+    delete entry.details.imageUrl
+    return referencesRejectedImage ? 0 : 1
+}
+
+const sanitizePlantJournals = async (
+    plants: unknown,
+    rejectedImageIds: ReadonlySet<string>,
+): Promise<number> => {
+    let rejectedInlineImageCount = 0
+    for (const plant of plantEntitiesOf(plants)) {
+        if (!isRecord(plant) || !Array.isArray(plant.journal)) continue
+        for (const entry of plant.journal) {
+            rejectedInlineImageCount += await sanitizeJournalEntry(entry, rejectedImageIds)
+        }
+    }
+    return rejectedInlineImageCount
+}
+
+const sanitizeSavedStrainTip = async (tip: unknown): Promise<number> => {
+    if (!isRecord(tip) || !('imageUrl' in tip)) return 0
+    const normalizedImageUrl = await normalizeSafeSavedTipImageUrl(tip.imageUrl)
+    if (normalizedImageUrl) {
+        tip.imageUrl = normalizedImageUrl
+        return 0
+    }
+    delete tip.imageUrl
+    return 1
+}
+
+const sanitizeSavedStrainTips = async (savedItems: unknown): Promise<number> => {
+    if (!isRecord(savedItems) || !isRecord(savedItems.savedStrainTips)) return 0
+    const entities = savedItems.savedStrainTips.entities
+    if (!isRecord(entities)) return 0
+    let rejectedInlineImageCount = 0
+    for (const tip of Object.values(entities)) {
+        rejectedInlineImageCount += await sanitizeSavedStrainTip(tip)
+    }
+    return rejectedInlineImageCount
 }
 
 const sanitizeImportedStateImageReferences = async (
     state: unknown,
     rejectedImageIds: ReadonlySet<string>,
 ): Promise<number> => {
-    let rejectedInlineImageCount = 0
-    if (!isRecord(state)) return rejectedInlineImageCount
-
-    if (isRecord(state.simulation)) {
-        const plants = state.simulation.plants
-        const plantEntities = Array.isArray(plants)
-            ? plants
-            : isRecord(plants) && isRecord(plants.entities)
-              ? Object.values(plants.entities)
-              : []
-
-        for (const plant of plantEntities) {
-            if (!isRecord(plant) || !Array.isArray(plant.journal)) continue
-            for (const entry of plant.journal) {
-                if (!isRecord(entry) || !isRecord(entry.details)) continue
-                const referencesRejectedImage =
-                    typeof entry.details.imageId === 'string' &&
-                    rejectedImageIds.has(entry.details.imageId)
-                if (referencesRejectedImage) {
-                    delete entry.details.imageId
-                }
-                if (
-                    'imageUrl' in entry.details &&
-                    !(await isSafeRasterImageDataUrl(entry.details.imageUrl))
-                ) {
-                    delete entry.details.imageUrl
-                    if (!referencesRejectedImage) rejectedInlineImageCount += 1
-                }
-            }
-        }
-    }
-
-    if (!isRecord(state.savedItems) || !isRecord(state.savedItems.savedStrainTips)) {
-        return rejectedInlineImageCount
-    }
-    const entities = state.savedItems.savedStrainTips.entities
-    if (!isRecord(entities)) return rejectedInlineImageCount
-    for (const tip of Object.values(entities)) {
-        if (!isRecord(tip) || !('imageUrl' in tip)) continue
-        const normalizedImageUrl = await normalizeSafeSavedTipImageUrl(tip.imageUrl)
-        if (normalizedImageUrl) {
-            tip.imageUrl = normalizedImageUrl
-        } else {
-            delete tip.imageUrl
-            rejectedInlineImageCount += 1
-        }
-    }
-    return rejectedInlineImageCount
+    if (!isRecord(state)) return 0
+    const fromPlants = isRecord(state.simulation)
+        ? await sanitizePlantJournals(state.simulation.plants, rejectedImageIds)
+        : 0
+    const fromTips = await sanitizeSavedStrainTips(state.savedItems)
+    return fromPlants + fromTips
 }
 
 const isSameImage = (stored: unknown, image: StoredImageData): boolean =>
@@ -245,10 +275,10 @@ const runImageTransaction = async (
         // A synchronous throw leaves the requests queued before it pending; abort
         // so they cannot commit as a partial batch.
         tx.abort()
-        transactionComplete.catch(() => {})
+        transactionComplete.catch(() => undefined)
         throw error
     }
-    return transactionComplete
+    await transactionComplete
 }
 
 /**
@@ -311,6 +341,148 @@ const readAllStoredImages = async (): Promise<unknown[]> => {
     })
 }
 
+interface ImportedImages {
+    images: StoredImageData[]
+    rejectedImageIds: Set<string>
+    unidentifiedRejectedImageCount: number
+}
+
+const imageEntryPaths = (zip: JSZip): string[] =>
+    Object.keys(zip.files).filter(
+        (name) =>
+            name.startsWith(IMAGES_DIR) &&
+            name.endsWith('.json') &&
+            isSafeFilename(name.slice(IMAGES_DIR.length)),
+    )
+
+const noteUnusableImage = (
+    parsedImage: unknown,
+    rejectedImageIds: Set<string>,
+    tally: ImportedImages,
+): void => {
+    const rawImageId =
+        isRecord(parsedImage) && typeof parsedImage.id === 'string' ? parsedImage.id : undefined
+    if (rawImageId) {
+        rejectedImageIds.add(rawImageId)
+        return
+    }
+    tally.unidentifiedRejectedImageCount += 1
+}
+
+const acceptImportedImage = async (
+    parsedImage: unknown,
+    seenImageIds: Set<string>,
+    imagesById: Map<string, StoredImageData>,
+    tally: ImportedImages,
+): Promise<void> => {
+    const imageId = getStoredImageId(parsedImage)
+    if (imageId && seenImageIds.has(imageId)) {
+        tally.rejectedImageIds.add(imageId)
+        imagesById.delete(imageId)
+        return
+    }
+    if (imageId) seenImageIds.add(imageId)
+    const usable =
+        isStoredImageShape(parsedImage) && (await isSafeRasterImageDataUrl(parsedImage.data))
+    if (!usable) {
+        noteUnusableImage(parsedImage, tally.rejectedImageIds, tally)
+        return
+    }
+    if (imageId && !tally.rejectedImageIds.has(imageId)) imagesById.set(imageId, parsedImage)
+}
+
+const readImportedImage = async (
+    zip: JSZip,
+    imgPath: string,
+    limits: Readonly<BackupImportLimits>,
+    budget: { remaining: number },
+    seenImageIds: Set<string>,
+    imagesById: Map<string, StoredImageData>,
+    tally: ImportedImages,
+): Promise<void> => {
+    const imgFile = zip.file(imgPath)
+    if (!imgFile) return
+    try {
+        const imgString = await readEntryText(imgFile, limits.maxImageEntryBytes, budget)
+        const parsedImage: unknown = JSON.parse(imgString)
+        await acceptImportedImage(parsedImage, seenImageIds, imagesById, tally)
+    } catch (error) {
+        // A corrupt photo is skipped; an oversized one fails the whole import
+        // before anything is written (#671).
+        if (error instanceof BackupImportLimitError) throw error
+        tally.unidentifiedRejectedImageCount += 1
+        console.debug(`[backupService] Skipping corrupt image: ${imgPath}`)
+    }
+}
+
+const collectImportedImages = async (
+    zip: JSZip,
+    limits: Readonly<BackupImportLimits>,
+    budget: { remaining: number },
+): Promise<ImportedImages> => {
+    const imagesById = new Map<string, StoredImageData>()
+    const seenImageIds = new Set<string>()
+    const tally: ImportedImages = {
+        images: [],
+        rejectedImageIds: new Set<string>(),
+        unidentifiedRejectedImageCount: 0,
+    }
+    for (const imgPath of imageEntryPaths(zip)) {
+        await readImportedImage(zip, imgPath, limits, budget, seenImageIds, imagesById, tally)
+    }
+    tally.images = [...imagesById.values()]
+    return tally
+}
+
+const failedExport = (
+    error: string,
+    errorCode?: BackupExportErrorCode,
+): BackupExportResult => ({
+    success: false,
+    blob: null,
+    filename: '',
+    metadata: null,
+    error,
+    ...(errorCode === undefined ? {} : { errorCode }),
+})
+
+const appendStoredImages = (zip: JSZip, storedImages: readonly unknown[]): number => {
+    let imageCount = 0
+    for (const img of storedImages) {
+        if (!isExportableImage(img)) continue
+        const safeName = img.id.replace(/[^a-zA-Z0-9._-]/g, '_')
+        zip.file(`${IMAGES_DIR}${safeName}.json`, JSON.stringify(img))
+        imageCount += 1
+    }
+    return imageCount
+}
+
+const simulationPlantCount = (parsed: unknown): number => {
+    if (!isRecord(parsed) || !isRecord(parsed.simulation)) return 0
+    const plants = parsed.simulation.plants
+    return Array.isArray(plants) ? plants.length : 0
+}
+
+const plantCountFromState = (stateString: string): number => {
+    try {
+        return simulationPlantCount(JSON.parse(stateString))
+    } catch {
+        return 0
+    }
+}
+
+const readExportImages = async (): Promise<unknown[] | BackupExportResult> => {
+    try {
+        return await readAllStoredImages()
+    } catch (error) {
+        console.error(
+            '[backupService] Stored photos could not be read; no backup created:',
+            error instanceof Error ? error.message : error,
+        )
+        return failedExport('Stored photos could not be read', 'imagesUnreadable')
+    }
+}
+
 export const backupService = {
     /**
      * Export the full app state as a ZIP file.
@@ -319,104 +491,33 @@ export const backupService = {
     async exportBackup(): Promise<BackupExportResult> {
         try {
             const zip = new JSZip()
-
-            // 1. Redux state from IndexedDB
             const stateString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-            if (!stateString) {
-                return {
-                    success: false,
-                    blob: null,
-                    filename: '',
-                    metadata: null,
-                    error: 'No saved state found in IndexedDB',
-                }
-            }
-
+            if (!stateString) return failedExport('No saved state found in IndexedDB')
             // A legacy plaintext Cloud TTS key never leaves in a backup (#654).
             zip.file(STATE_FILENAME, redactSnapshotSecrets(stateString))
 
-            // 2. Images from IndexedDB (CannaGuideDB.images). A backup that leaves
-            // out photos the state refers to is worse than no backup: when they
-            // cannot be read, fail closed; an empty photo store is complete (#665).
-            let storedImages: unknown[]
-            try {
-                storedImages = await readAllStoredImages()
-            } catch (e) {
-                console.error(
-                    '[backupService] Stored photos could not be read; no backup created:',
-                    e instanceof Error ? e.message : e,
-                )
-                return {
-                    success: false,
-                    blob: null,
-                    filename: '',
-                    metadata: null,
-                    error: 'Stored photos could not be read',
-                    errorCode: 'imagesUnreadable',
-                }
-            }
-
-            let imageCount = 0
-            for (const img of storedImages) {
-                if (isExportableImage(img)) {
-                    const safeName = img.id.replace(/[^a-zA-Z0-9._-]/g, '_')
-                    zip.file(`${IMAGES_DIR}${safeName}.json`, JSON.stringify(img))
-                    imageCount++
-                }
-            }
-
-            // 3. Parse state for metadata
-            let plantCount = 0
-            try {
-                const parsed = JSON.parse(stateString)
-                if (
-                    parsed &&
-                    typeof parsed === 'object' &&
-                    'simulation' in parsed &&
-                    parsed.simulation &&
-                    typeof parsed.simulation === 'object' &&
-                    'plants' in parsed.simulation &&
-                    Array.isArray(parsed.simulation.plants)
-                ) {
-                    plantCount = parsed.simulation.plants.length
-                }
-            } catch {
-                // Non-critical
-            }
-
+            // A backup that leaves out photos the state refers to is worse than
+            // no backup. An empty photo store is still complete (#665).
+            const storedImages = await readExportImages()
+            if (!Array.isArray(storedImages)) return storedImages
             const metadata: BackupMetadata = {
                 version: '1.0',
                 exportedAt: Date.now(),
                 appVersion: '1.6.0',
-                plantCount,
-                imageCount,
+                plantCount: plantCountFromState(stateString),
+                imageCount: appendStoredImages(zip, storedImages),
             }
-
             zip.file(METADATA_FILENAME, JSON.stringify(metadata, null, 2))
-
-            // 4. Generate ZIP blob
             const blob = await zip.generateAsync({
                 type: 'blob',
                 compression: 'DEFLATE',
                 compressionOptions: { level: 6 },
             })
-
-            return {
-                success: true,
-                blob,
-                filename: createBackupFilename(),
-                metadata,
-            }
-        } catch (e) {
-            const msg = e instanceof Error ? e.message : 'Unknown export error'
+            return { success: true, blob, filename: createBackupFilename(), metadata }
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : 'Unknown export error'
             console.error('[backupService] Export failed:', msg)
-            return {
-                success: false,
-                blob: null,
-                filename: '',
-                metadata: null,
-                error: msg,
-            }
+            return failedExport(msg)
         }
     },
 
@@ -429,7 +530,7 @@ export const backupService = {
         limits: Readonly<BackupImportLimits> = BACKUP_IMPORT_LIMITS,
     ): Promise<BackupImportResult> {
         let imageDb: IDBDatabase | undefined
-        const rejectedImageIds = new Set<string>()
+        let rejectedImageIds = new Set<string>()
         let rejectedInlineImageCount = 0
         let unidentifiedRejectedImageCount = 0
         try {
@@ -505,61 +606,10 @@ export const backupService = {
 
             // ZIP decompression is asynchronous. Resolve every image before opening
             // an IndexedDB transaction, which can auto-commit while awaiting JSZip.
-            const imageFiles = Object.keys(zip.files).filter(
-                (name) =>
-                    name.startsWith(IMAGES_DIR) &&
-                    name.endsWith('.json') &&
-                    isSafeFilename(name.slice(IMAGES_DIR.length)),
-            )
-            const imagesById = new Map<string, StoredImageData>()
-            const seenImageIds = new Set<string>()
-
-            for (const imgPath of imageFiles) {
-                const imgFile = zip.file(imgPath)
-                if (!imgFile) continue
-                try {
-                    const imgString = await readEntryText(
-                        imgFile,
-                        limits.maxImageEntryBytes,
-                        budget,
-                    )
-                    const parsedImage: unknown = JSON.parse(imgString)
-                    const imageId = getStoredImageId(parsedImage)
-                    if (imageId && seenImageIds.has(imageId)) {
-                        rejectedImageIds.add(imageId)
-                        imagesById.delete(imageId)
-                        continue
-                    }
-                    if (imageId) seenImageIds.add(imageId)
-
-                    if (
-                        !isStoredImageShape(parsedImage) ||
-                        !(await isSafeRasterImageDataUrl(parsedImage.data))
-                    ) {
-                        const rawImageId =
-                            isRecord(parsedImage) && typeof parsedImage.id === 'string'
-                                ? parsedImage.id
-                                : undefined
-                        if (rawImageId) {
-                            rejectedImageIds.add(rawImageId)
-                        } else {
-                            unidentifiedRejectedImageCount += 1
-                        }
-                        continue
-                    }
-                    if (imageId && !rejectedImageIds.has(imageId)) {
-                        imagesById.set(imageId, parsedImage)
-                    }
-                } catch (error) {
-                    // A corrupt photo is skipped; an oversized one fails the whole
-                    // import before anything is written (#671).
-                    if (error instanceof BackupImportLimitError) throw error
-                    unidentifiedRejectedImageCount += 1
-                    console.debug(`[backupService] Skipping corrupt image: ${imgPath}`)
-                }
-            }
-
-            const images = [...imagesById.values()]
+            const importedImages = await collectImportedImages(zip, limits, budget)
+            rejectedImageIds = importedImages.rejectedImageIds
+            const images = importedImages.images
+            unidentifiedRejectedImageCount = importedImages.unidentifiedRejectedImageCount
             rejectedInlineImageCount = await sanitizeImportedStateImageReferences(
                 parsedState,
                 rejectedImageIds,
@@ -628,16 +678,16 @@ export const backupService = {
      */
     downloadBlob(blob: Blob, filename: string): void {
         const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = filename
-        a.style.display = 'none'
-        document.body.appendChild(a)
-        a.click()
+        const downloadLink = document.createElement('a')
+        downloadLink.href = url
+        downloadLink.download = filename
+        downloadLink.style.display = 'none'
+        document.body.appendChild(downloadLink)
+        downloadLink.click()
         // Cleanup after a short delay to ensure download starts
         setTimeout(() => {
             URL.revokeObjectURL(url)
-            document.body.removeChild(a)
+            document.body.removeChild(downloadLink)
         }, 1000)
     },
 }

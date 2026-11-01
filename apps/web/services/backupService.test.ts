@@ -6,8 +6,8 @@ const mocks = vi.hoisted(() => ({
     zipEntries: new Map<string, unknown>(),
     replacePrimaryPersistedSnapshot: vi.fn(),
     // Race injection points around the dependent (image) write.
-    beforeDependentApply: vi.fn(async () => {}),
-    afterDependentApply: vi.fn(async () => {}),
+    beforeDependentApply: vi.fn(() => Promise.resolve()),
+    afterDependentApply: vi.fn(() => Promise.resolve()),
 }))
 
 vi.mock('jszip', () => {
@@ -59,8 +59,9 @@ vi.mock('jszip', () => {
             this.files[name] = { name }
             return this
         }
-        async generateAsync(): Promise<Blob> {
-            return new Blob(['mockzip'], { type: 'application/zip' })
+        generateAsync(): Promise<Blob> {
+            const payload = this.files ? 'mockzip' : 'mockzip'
+            return Promise.resolve(new Blob([payload], { type: 'application/zip' }))
         }
     }
     return {
@@ -115,7 +116,7 @@ vi.mock('@/services/persistedStateService', () => ({
             replaceError = error
         }
         if (replaced) return { success: true, reloadRequired: true }
-        await dependentWrite?.revert().catch(() => {})
+        await dependentWrite?.revert().catch(() => undefined)
         return { success: false, reloadRequired: false, error: replaceError }
     },
 }))
@@ -202,7 +203,7 @@ const importMockBackup = (state: unknown, images: Record<string, unknown> = {}) 
         files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
         file: (name: string) => {
             const value = entries.get(name)
-            return value === undefined ? null : { async: async () => value }
+            return value === undefined ? null : { async: () => Promise.resolve(value) }
         },
     })
     return backupService.importBackup(new File(['zip'], 'backup.zip', { type: 'application/zip' }))
@@ -423,7 +424,7 @@ describe('backupService', () => {
                 files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
                 file: (name: string) => {
                     const value = entries.get(name)
-                    return value === undefined ? null : { async: async () => value }
+                    return value === undefined ? null : { async: () => Promise.resolve(value) }
                 },
             })
             const restored = await backupService.importBackup(
@@ -485,16 +486,18 @@ describe('backupService', () => {
                 },
                 file: (name: string) => {
                     if (name === 'cannaguide-state.json') {
-                        return { async: async () => '{"version":6}' }
+                        return { async: () => Promise.resolve('{"version":6}') }
                     }
                     if (name === imagePath) {
                         return {
-                            async: async () =>
-                                JSON.stringify({
-                                    id: 'photo-1',
-                                    data: VALID_PNG_DATA_URL,
-                                    createdAt: 10,
-                                }),
+                            async: () =>
+                                Promise.resolve(
+                                    JSON.stringify({
+                                        id: 'photo-1',
+                                        data: VALID_PNG_DATA_URL,
+                                        createdAt: 10,
+                                    }),
+                                ),
                         }
                     }
                     return null
@@ -645,7 +648,7 @@ describe('backupService', () => {
                 files: Object.fromEntries([...entries.keys()].map((name) => [name, { name }])),
                 file: (name: string) => {
                     const value = entries.get(name)
-                    return value === undefined ? null : { async: async () => value }
+                    return value === undefined ? null : { async: () => Promise.resolve(value) }
                 },
             })
 
@@ -690,7 +693,7 @@ describe('backupService', () => {
                 },
                 file: (name: string) => {
                     if (name === 'cannaguide-state.json') {
-                        return { async: async () => '{"version":6}' }
+                        return { async: () => Promise.resolve('{"version":6}') }
                     }
                     if (name === imagePath) {
                         return {
@@ -734,25 +737,32 @@ describe('backupService', () => {
             const externalPath = 'images/photo-external.json'
             const incompletePath = 'images/photo-incomplete.json'
             const entries: Record<string, { async: () => Promise<string> }> = {
-                [statePath]: { async: async () => '{"version":6}' },
+                [statePath]: { async: () => Promise.resolve('{"version":6}') },
                 [validPath]: {
-                    async: async () =>
-                        JSON.stringify({
-                            id: 'photo-valid',
-                            data: VALID_PNG_DATA_URL,
-                            createdAt: 10,
-                        }),
+                    async: () =>
+                        Promise.resolve(
+                            JSON.stringify({
+                                id: 'photo-valid',
+                                data: VALID_PNG_DATA_URL,
+                                createdAt: 10,
+                            }),
+                        ),
                 },
                 [externalPath]: {
-                    async: async () =>
-                        JSON.stringify({
-                            id: 'photo-external',
-                            data: 'https://images.example.test/tracker.png',
-                            createdAt: 11,
-                        }),
+                    async: () =>
+                        Promise.resolve(
+                            JSON.stringify({
+                                id: 'photo-external',
+                                data: 'https://images.example.test/tracker.png',
+                                createdAt: 11,
+                            }),
+                        ),
                 },
                 [incompletePath]: {
-                    async: async () => JSON.stringify({ id: 'photo-incomplete', createdAt: 12 }),
+                    async: () =>
+                        Promise.resolve(
+                            JSON.stringify({ id: 'photo-incomplete', createdAt: 12 }),
+                        ),
                 },
             }
             mocks.loadZip.mockResolvedValueOnce({
@@ -813,7 +823,7 @@ describe('backupService', () => {
             mocks.loadZip.mockResolvedValueOnce({
                 files: { [statePath]: { name: statePath } },
                 file: (name: string) =>
-                    name === statePath ? { async: async () => JSON.stringify(state) } : null,
+                    name === statePath ? { async: () => Promise.resolve(JSON.stringify(state)) } : null,
             })
 
             const result = await backupService.importBackup(
@@ -1305,7 +1315,7 @@ describe('backupService', () => {
             // jsdom 30 createObjectURL reads an internal blob buffer that Node's Blob
             // does not have. The download path only needs a URL string.
             vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
-            vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {})
+            vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined)
             const blob = new Blob(['test'])
 
             backupService.downloadBlob(blob, 'test.zip')

@@ -1058,7 +1058,7 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Disclaimer',
-            disclaimerContent: `<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>`,
+            disclaimerContent: '<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>',
         },
     },
     communityShare: {

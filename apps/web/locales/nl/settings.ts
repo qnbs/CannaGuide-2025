@@ -1081,7 +1081,7 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Disclaimer',
-            disclaimerContent: `<p>Alle informatie in deze app is uitsluitend bedoeld voor educatieve en entertainmentdoeleinden. De teelt van cannabis is onderworpen aan strenge wettelijke regelgeving. Informeer jezelf over de wetten in je regio en handel altijd verantwoordelijk en in overeenstemming met de wet.</p>`,
+            disclaimerContent: '<p>Alle informatie in deze app is uitsluitend bedoeld voor educatieve en entertainmentdoeleinden. De teelt van cannabis is onderworpen aan strenge wettelijke regelgeving. Informeer jezelf over de wetten in je regio en handel altijd verantwoordelijk en in overeenstemming met de wet.</p>',
         },
     },
     communityShare: {

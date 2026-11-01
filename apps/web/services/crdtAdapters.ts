@@ -65,6 +65,7 @@ const PlantCrdtSchema = z.object({
         circulationFan: z.object({ isOn: z.boolean() }),
         potSize: z.number(),
         potType: z.string(),
+        floweringPolicy: z.enum(['Photoperiod', 'Autoflower']).optional(),
     }),
     structuralModel: z.object({ branches: z.number(), nodes: z.number() }),
     stressCounters: z.object({

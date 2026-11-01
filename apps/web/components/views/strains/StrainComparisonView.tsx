@@ -66,8 +66,8 @@ const reportedPercent = (
     return `${numeric}%`
 }
 
-const reportedTerpenes = (terpenes: readonly string[] | undefined): string => {
-    if (terpenes === undefined) return '--'
+export const reportedTerpenes = (terpenes: unknown): string => {
+    if (!Array.isArray(terpenes)) return '--'
     return terpenes.slice(0, 3).join(', ')
 }
 

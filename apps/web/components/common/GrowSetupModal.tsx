@@ -12,6 +12,13 @@ import { RangeSlider } from '@/components/common/RangeSlider'
 import { Switch } from '@/components/common/Switch'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
+import {
+    activeFloweringMode,
+    lightHoursForMode,
+    reportedFloweringMode,
+    setupForConfirm,
+    type FloweringMode,
+} from '@/services/simulation/floweringMode'
 
 interface GrowSetupModalProps {
     strain: Strain
@@ -42,14 +49,20 @@ const difficultyLabel = (difficulty: string | undefined, translate: TFunction): 
     return translate(`strainsView.difficulty.${difficulty.toLowerCase()}`)
 }
 
-const cycleChoices = (photoperiod: boolean, translate: TFunction) => {
+const cycleChoices = (mode: FloweringMode | undefined, translate: TFunction) => {
     const options = [
         { value: '18', label: translate('plantsView.setupModal.cycles.veg') },
         { value: '12', label: translate('plantsView.setupModal.cycles.flower') },
         { value: '24', label: translate('plantsView.setupModal.cycles.auto') },
     ]
-    if (!photoperiod) return options
+    if (mode === 'Autoflower') return options
     return options.filter((option) => option.value !== '24')
+}
+
+const cycleInfoKey = (mode: FloweringMode | undefined): string => {
+    if (mode === 'Photoperiod') return 'plantsView.setupModal.photoperiodInfo'
+    if (mode === 'Autoflower') return 'plantsView.setupModal.autoflowerInfo'
+    return 'plantsView.setupModal.unknownFloweringInfo'
 }
 
 const SetupStrainCard: React.FC<{ strain: Strain }> = ({ strain }) => {
@@ -80,11 +93,48 @@ const SetupStrainCard: React.FC<{ strain: Strain }> = ({ strain }) => {
     )
 }
 
+const FloweringModeSection: React.FC<{
+    reported: FloweringMode | undefined
+    chosen: FloweringMode | undefined
+    onChoose: (mode: string) => void
+}> = ({ reported, chosen, onChoose }) => {
+    const { t } = useTranslation()
+    if (reported !== undefined) return null
+    return (
+        <FormSection
+            title={t('plantsView.setupModal.floweringModeTitle')}
+            icon={<PhosphorIcons.Plant />}
+            defaultOpen
+        >
+            <div className="sm:col-span-2">
+                <p className="text-xs text-slate-400 mb-2">
+                    {t('plantsView.setupModal.floweringModePrompt')}
+                </p>
+                <SegmentedControl
+                    aria-label={t('plantsView.setupModal.floweringModeTitle')}
+                    value={chosen === undefined ? [] : [chosen]}
+                    onToggle={onChoose}
+                    options={[
+                        {
+                            value: 'Photoperiod',
+                            label: t('plantsView.setupModal.floweringModes.photoperiod'),
+                        },
+                        {
+                            value: 'Autoflower',
+                            label: t('plantsView.setupModal.floweringModes.autoflower'),
+                        },
+                    ]}
+                />
+            </div>
+        </FormSection>
+    )
+}
+
 const LightingSection: React.FC<{
     setup: GrowSetup
     setSetup: React.Dispatch<React.SetStateAction<GrowSetup>>
-    photoperiod: boolean
-}> = ({ setup, setSetup, photoperiod }) => {
+    mode: FloweringMode | undefined
+}> = ({ setup, setSetup, mode }) => {
     const { t } = useTranslation()
     return (
         <FormSection
@@ -125,13 +175,9 @@ const LightingSection: React.FC<{
                     onToggle={(val) =>
                         setSetup((current) => ({ ...current, lightHours: Number(val) }))
                     }
-                    options={cycleChoices(photoperiod, t)}
+                    options={cycleChoices(mode, t)}
                 />
-                <p className="text-xs text-slate-400 mt-1">
-                    {photoperiod
-                        ? t('plantsView.setupModal.photoperiodInfo')
-                        : t('plantsView.setupModal.autoflowerInfo')}
-                </p>
+                <p className="text-xs text-slate-400 mt-1">{t(cycleInfoKey(mode))}</p>
             </div>
         </FormSection>
     )
@@ -248,15 +294,30 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
     )
 
     const [setup, setSetup] = useState(initialSetup)
+    const [chosenMode, setChosenMode] = useState<FloweringMode | undefined>(undefined)
+    const reportedMode = reportedFloweringMode(strain.floweringType)
 
     useEffect(() => {
         setSetup(initialSetup)
+        setChosenMode(undefined)
     }, [initialSetup, strain.id])
 
-    const isPhotoperiod = strain.floweringType === 'Photoperiod'
+    const mode = activeFloweringMode(reportedMode, chosenMode)
+    const confirmedSetup = setupForConfirm(setup, reportedMode, chosenMode)
+
+    const chooseMode = (next: string) => {
+        const parsed = reportedFloweringMode(next)
+        if (parsed === undefined) return
+        setChosenMode(parsed)
+        setSetup((current) => ({
+            ...current,
+            lightHours: lightHoursForMode(current.lightHours, parsed),
+        }))
+    }
 
     const handleConfirm = () => {
-        onConfirm(setup)
+        if (confirmedSetup === undefined) return
+        onConfirm(confirmedSetup)
     }
 
     const footer = (
@@ -264,7 +325,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
             <Button variant="secondary" onClick={onClose}>
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleConfirm} glow>
+            <Button onClick={handleConfirm} glow disabled={confirmedSetup === undefined}>
                 {t('plantsView.setupModal.confirm')}
             </Button>
         </>
@@ -280,7 +341,12 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
         >
             <div className="space-y-4">
                 <SetupStrainCard strain={strain} />
-                <LightingSection setup={setup} setSetup={setSetup} photoperiod={isPhotoperiod} />
+                <FloweringModeSection
+                    reported={reportedMode}
+                    chosen={chosenMode}
+                    onChoose={chooseMode}
+                />
+                <LightingSection setup={setup} setSetup={setSetup} mode={mode} />
                 <EnvironmentSection setup={setup} setSetup={setSetup} />
                 <ContainerSection setup={setup} setSetup={setSetup} />
             </div>

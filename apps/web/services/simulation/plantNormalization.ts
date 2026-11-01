@@ -1,4 +1,5 @@
 import type { Plant, GeneticModifiers } from '@/types'
+import { equipmentWithPolicy, reportedFloweringMode } from '@/services/simulation/floweringMode'
 import { normalizeGeneticModifiers } from '@/services/simulation/geneticModifiers'
 import {
     simClamp,
@@ -50,38 +51,40 @@ function normalizeRootSystem(plant: Plant): Plant['rootSystem'] {
     }
 }
 
+const finiteOr = (value: number | undefined, fallback: number): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback
+
+const lightEquipment = (plant: Plant): Plant['equipment']['light'] => ({
+    type: plant.equipment?.light?.type ?? 'LED',
+    wattage: Math.max(10, finiteOr(plant.equipment?.light?.wattage, 300)),
+    isOn: Boolean(plant.equipment?.light?.isOn ?? true),
+    lightHours: simClamp(finiteOr(plant.equipment?.light?.lightHours, 18), 0, 24),
+})
+
+const fanEquipment = (plant: Plant) => ({
+    exhaustFan: {
+        power: plant.equipment?.exhaustFan?.power ?? 'medium',
+        isOn: Boolean(plant.equipment?.exhaustFan?.isOn ?? true),
+    },
+    circulationFan: {
+        isOn: Boolean(plant.equipment?.circulationFan?.isOn ?? true),
+    },
+})
+
+const potEquipment = (plant: Plant) => ({
+    potSize: Math.max(1, finiteOr(plant.equipment?.potSize, 11)),
+    potType: plant.equipment?.potType ?? 'Fabric',
+})
+
 function normalizeEquipment(plant: Plant): Plant['equipment'] {
-    return {
-        light: {
-            type: plant.equipment?.light?.type ?? 'LED',
-            wattage: Math.max(
-                10,
-                Number.isFinite(plant.equipment?.light?.wattage)
-                    ? plant.equipment.light.wattage
-                    : 300,
-            ),
-            isOn: Boolean(plant.equipment?.light?.isOn ?? true),
-            lightHours: simClamp(
-                Number.isFinite(plant.equipment?.light?.lightHours)
-                    ? plant.equipment.light.lightHours
-                    : 18,
-                0,
-                24,
-            ),
+    return equipmentWithPolicy(
+        {
+            light: lightEquipment(plant),
+            ...fanEquipment(plant),
+            ...potEquipment(plant),
         },
-        exhaustFan: {
-            power: plant.equipment?.exhaustFan?.power ?? 'medium',
-            isOn: Boolean(plant.equipment?.exhaustFan?.isOn ?? true),
-        },
-        circulationFan: {
-            isOn: Boolean(plant.equipment?.circulationFan?.isOn ?? true),
-        },
-        potSize: Math.max(
-            1,
-            Number.isFinite(plant.equipment?.potSize) ? plant.equipment.potSize : 11,
-        ),
-        potType: plant.equipment?.potType ?? 'Fabric',
-    }
+        reportedFloweringMode(plant.equipment?.floweringPolicy),
+    )
 }
 
 function normalizeStructuralModel(plant: Plant): Plant['structuralModel'] {

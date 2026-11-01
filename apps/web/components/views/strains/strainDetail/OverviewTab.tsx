@@ -29,15 +29,16 @@ const cannabinoidActivity = (name: CannabinoidName): string | undefined => {
     return '(non-psychoactive)'
 }
 
-const isPositiveNumber = (value: unknown): value is number => typeof value === 'number' && value > 0
+const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value)
 
 const isMinorCannabinoid = (entry: [string, unknown]): entry is [CannabinoidName, number] => {
     const [name, value] = entry
     if (name === 'THC' || name === 'CBD') return false
-    return isPositiveNumber(value)
+    return isFiniteNumber(value)
 }
 
-const minorCannabinoidEntries = (
+export const minorCannabinoidEntries = (
     profile: Strain['cannabinoidProfile'],
 ): [CannabinoidName, number][] => {
     if (profile === undefined) return []

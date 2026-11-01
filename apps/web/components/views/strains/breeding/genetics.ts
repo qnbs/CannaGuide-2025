@@ -92,8 +92,25 @@ export const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
 /** Strain `floweringTime` is stored in weeks; the genetics summary shows days. */
-export const floweringDaysFromWeeks = (weeks: unknown, fallbackWeeks = 9): number =>
-    Math.round(getSafeNumericValue(weeks, fallbackWeeks) * 7)
+export const floweringDaysFromWeeks = (weeks: unknown): number | undefined => {
+    if (typeof weeks !== 'number' || !Number.isFinite(weeks)) return undefined
+    return Math.round(weeks * 7)
+}
+
+export const formatReportedPercent = (value: unknown, unknownLabel: string): string => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return unknownLabel
+    return `${value.toFixed(1)}%`
+}
+
+export const formatFloweringDays = (
+    weeks: unknown,
+    unknownLabel: string,
+    dayLabel: string,
+): string => {
+    const days = floweringDaysFromWeeks(weeks)
+    if (days === undefined) return unknownLabel
+    return `${days} ${dayLabel}`
+}
 
 export const getSafeStringArray = (value: unknown): string[] =>
     Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []

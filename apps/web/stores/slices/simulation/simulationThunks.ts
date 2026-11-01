@@ -1,11 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import {
-    Plant,
-    GrowSetup,
-    JournalEntry,
-    Task,
-    JournalEntryType,
-} from '@/types'
+import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType } from '@/types'
 import { plantSimulationService, vpdService } from '@/services/plantSimulationService'
 import { RootState } from '../../store'
 import { getUISnapshot } from '../../useUIStore'
@@ -85,6 +79,7 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 potType: validation.data.potType ?? 'Fabric',
                 medium: validation.data.medium,
                 dynamicLighting: validation.data.dynamicLighting ?? false,
+                floweringPolicy: validation.data.floweringPolicy,
             }
 
             const newPlant = plantSimulationService.createPlant(

@@ -594,6 +594,15 @@ export const plantsView = {
         photoperiodInfo:
             'Photoperiodische Pflanzen benötigen eine 12/12 Lichtphase, um die Blüte einzuleiten.',
         autoflowerInfo: 'Für Autoflowers wird ein 18/6- oder 24/0-Zyklus empfohlen.',
+        floweringModeTitle: 'Blütenmodus',
+        floweringModePrompt:
+            'Diese Sorte hat keinen angegebenen Blütenmodus. Wähle einen für diesen Grow. Der Sorteneintrag bleibt unverändert.',
+        unknownFloweringInfo:
+            'Wähle Photoperiodisch oder Autoflower, bevor du startest. Ein 24/0-Zyklus gibt es nur, nachdem du Autoflower gewählt hast.',
+        floweringModes: {
+            photoperiod: 'Photoperiodisch',
+            autoflower: 'Autoflower',
+        },
         environmentTitle: 'Umgebung',
         exhaustFanPower: 'Abluft-Leistung',
         circulationFan: 'Umluftventilator',

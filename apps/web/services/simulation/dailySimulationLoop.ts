@@ -16,6 +16,7 @@ import {
 } from '@/services/simulation/simulationEnvironmentHelpers'
 import { createInitialHarvestData } from '@/services/simulation/postHarvestSimulation'
 import { getT } from '@/i18n'
+import { holdsLongDayFlowerTransition } from '@/services/simulation/floweringMode'
 
 const WATER_TASK_ID_PREFIX = 'task-water-'
 
@@ -280,10 +281,12 @@ function applyStageProgression(p: Plant): void {
     }
 
     const nextStage = STAGES_ORDER[currentStageIndex + 1]!
-    const isPhotoperiodBlockedFlowerTransition =
-        nextStage === PlantStage.Flowering &&
-        p.strain.floweringType === 'Photoperiod' &&
-        p.equipment.light.lightHours > 12
+    const isPhotoperiodBlockedFlowerTransition = holdsLongDayFlowerTransition(
+        p.strain.floweringType,
+        p.equipment.floweringPolicy,
+        nextStage === PlantStage.Flowering,
+        p.equipment.light.lightHours,
+    )
 
     if (!isPhotoperiodBlockedFlowerTransition && p.age >= cumulativeDuration) {
         p.stage = nextStage

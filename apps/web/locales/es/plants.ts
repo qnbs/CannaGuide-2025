@@ -555,6 +555,15 @@ export const plantsView = {
         photoperiodInfo:
             'Las plantas fotoperiodicas requieren un horario de luz 12/12 para inducir la floracion.',
         autoflowerInfo: 'Para autoflorecientes, se recomienda un ciclo de 18/6 o 24/0.',
+        floweringModeTitle: 'Modo de floracion',
+        floweringModePrompt:
+            'Esta variedad no tiene un modo de floracion indicado. Elige uno para este cultivo. El registro de la variedad no cambia.',
+        unknownFloweringInfo:
+            'Elige Fotoperiodica o Autofloreciente antes de empezar. El ciclo 24/0 solo esta disponible despues de elegir Autofloreciente.',
+        floweringModes: {
+            photoperiod: 'Fotoperiodica',
+            autoflower: 'Autofloreciente',
+        },
         environmentTitle: 'Entorno',
         exhaustFanPower: 'Potencia del Extractor',
         circulationFan: 'Ventilador de Circulacion',

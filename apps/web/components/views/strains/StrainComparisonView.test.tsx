@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { StrainType, type Strain } from '@/types'
 import {
     StrainComparisonView,
+    reportedTerpenes,
     normalizeTHC,
     normalizeCBD,
     normalizeFloweringTime,
@@ -193,6 +194,19 @@ describe('StrainComparisonView', () => {
 // ---------------------------------------------------------------------------
 // Normalization utility tests
 // ---------------------------------------------------------------------------
+
+describe('reportedTerpenes', () => {
+    it('renders a dash when terpenes are missing, including null', () => {
+        expect(reportedTerpenes(undefined)).toBe('--')
+        expect(reportedTerpenes(null)).toBe('--')
+    })
+
+    it('keeps the first three reported terpenes', () => {
+        expect(reportedTerpenes(['Myrcene', 'Limonene', 'Caryophyllene', 'Pinene'])).toBe(
+            'Myrcene, Limonene, Caryophyllene',
+        )
+    })
+})
 
 describe('normalizeTHC', () => {
     it('normalizes 35% THC to 100', () => {

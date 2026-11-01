@@ -572,6 +572,15 @@ export const plantsView = {
         lightCycle: 'Light Cycle',
         photoperiodInfo: 'Photoperiod plants require a 12/12 light schedule to induce flowering.',
         autoflowerInfo: 'For Autoflowers, an 18/6 or 24/0 cycle is recommended.',
+        floweringModeTitle: 'Flowering mode',
+        floweringModePrompt:
+            'This cultivar has no reported flowering mode. Choose one for this grow. The cultivar record stays unchanged.',
+        unknownFloweringInfo:
+            'Choose Photoperiod or Autoflower before starting. A 24/0 cycle is available only after you choose Autoflower.',
+        floweringModes: {
+            photoperiod: 'Photoperiod',
+            autoflower: 'Autoflower',
+        },
         environmentTitle: 'Environment',
         exhaustFanPower: 'Exhaust Fan Power',
         circulationFan: 'Circulation Fan',

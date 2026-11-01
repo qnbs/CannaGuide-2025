@@ -93,6 +93,21 @@ describe('plantSimulationService', () => {
         expect(plant.equipment.light.lightHours).toBe(18)
         expect(plant.equipment.light.type).toBe('LED')
         expect(plant.equipment.circulationFan.isOn).toBe(true)
+        expect(plant.equipment.floweringPolicy).toBeUndefined()
+    })
+
+    it('copies a flowering policy onto the grow and leaves the cultivar unchanged', () => {
+        const strain = { ...testStrain }
+        delete (strain as { floweringType?: string }).floweringType
+        const plant = plantSimulationService.createPlant(
+            strain,
+            { ...testSetup, floweringPolicy: 'Autoflower' },
+            'Policy Plant',
+        )
+        expect(plant.equipment.floweringPolicy).toBe('Autoflower')
+        expect(strain.floweringType).toBeUndefined()
+        expect(plant.strain).not.toBe(strain)
+        expect(plant.strain.floweringType).toBeUndefined()
     })
 
     it('creates plant with correct medium', () => {

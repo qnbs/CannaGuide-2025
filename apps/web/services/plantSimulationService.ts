@@ -18,6 +18,7 @@ import {
     createInitialHarvestData,
 } from '@/services/simulation/postHarvestSimulation'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
+import { equipmentWithPolicy } from '@/services/simulation/floweringMode'
 import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 import {
     getCorrectedRh,
@@ -235,23 +236,26 @@ class PlantSimulationService {
             },
             nutrientPool: { nitrogen: 5, phosphorus: 5, potassium: 5 },
             rootSystem: { health: 100, rootMass: 0.01 },
-            equipment: {
-                light: {
-                    type: setup.lightType,
-                    wattage: setup.lightWattage,
-                    isOn: true,
-                    lightHours: setup.lightHours,
+            equipment: equipmentWithPolicy(
+                {
+                    light: {
+                        type: setup.lightType,
+                        wattage: setup.lightWattage,
+                        isOn: true,
+                        lightHours: setup.lightHours,
+                    },
+                    exhaustFan: {
+                        power: setup.ventilation,
+                        isOn: true,
+                    },
+                    circulationFan: {
+                        isOn: setup.hasCirculationFan,
+                    },
+                    potSize: setup.potSize,
+                    potType: setup.potType,
                 },
-                exhaustFan: {
-                    power: setup.ventilation,
-                    isOn: true,
-                },
-                circulationFan: {
-                    isOn: setup.hasCirculationFan,
-                },
-                potSize: setup.potSize,
-                potType: setup.potType,
-            },
+                setup.floweringPolicy,
+            ),
             problems: [],
             journal: [],
             tasks: [],

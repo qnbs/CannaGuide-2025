@@ -56,9 +56,6 @@ const oneOf = <T extends string>(value: T | undefined, allowed: readonly T[]): T
     return undefined
 }
 
-const listOrEmpty = <T,>(value: readonly T[] | undefined): T[] =>
-    value === undefined ? [] : [...value]
-
 const reportedName = (name: unknown, unknownLabel: string): string => {
     if (typeof name !== 'string' || name.trim() === '') return unknownLabel
     return name
@@ -162,13 +159,12 @@ const DifficultyMeter: React.FC<{
     )
 }
 
-const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }> = ({
-    strain,
-    onClick,
-}) => {
+const DetailedStrainSelectItem: React.FC<{
+    strain: Strain
+    isUserStrain: boolean
+    onClick: () => void
+}> = ({ strain, isUserStrain, onClick }) => {
     const { t } = useTranslation()
-    const userStrains = listOrEmpty(useAppSelector(selectUserStrains))
-    const isUserStrain = userStrains.some((item) => item.id === strain.id)
     const safeYield = oneOf(strain.agronomic?.yield, YIELD_LEVELS)
     const safeHeight = oneOf(strain.agronomic?.height, HEIGHT_LEVELS)
     const TypeIcon = typeIconFor(strain.type)
@@ -277,17 +273,18 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
             })
     }, [t])
 
+    const userIds = useMemo(() => new Set(userStrains.map((strain) => strain.id)), [userStrains])
+
     const filteredStrains = useMemo(() => {
         const query = searchTerm.toLowerCase()
         const strainsToShow =
             searchTerm.trim() === ''
                 ? allStrains.filter((strain): strain is Strain => Boolean(strain))
                 : allStrains.filter((strain) => matchesStrainQuery(strain, query))
-        const userIds = new Set(userStrains.map((strain) => strain.id))
         return strainsToShow
             .toSorted((left, right) => compareSelectorStrains(left, right, userIds, favorites))
             .slice(0, 100)
-    }, [searchTerm, allStrains, userStrains, favorites])
+    }, [searchTerm, allStrains, userIds, favorites])
 
     return (
         <Card className="flex flex-col h-full animate-fade-in">
@@ -324,6 +321,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
                             <DetailedStrainSelectItem
                                 key={strain.id}
                                 strain={strain}
+                                isUserStrain={userIds.has(strain.id)}
                                 onClick={() => onSelectStrain(strain)}
                             />
                         ))}

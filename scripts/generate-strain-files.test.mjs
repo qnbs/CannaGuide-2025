@@ -50,12 +50,23 @@ test('lineage, seed form and provenance survive the generator', () => {
     })
     assert.match(text, /type: StrainType.Sativa,/)
     assert.match(text, /breeder: 'Reported Breeder'/)
-    assert.match(text, /name: 'Parent A'/)
-    assert.match(text, /name: 'Parent B'/)
+    assert.match(text, /parents: \[\n\s+\{ name: 'Parent A' \},\n\s+\{ name: 'Parent B' \},\n\s+\]/)
     assert.match(text, /seedForm: 'Feminized'/)
     assert.match(text, /provider: 'community'/)
     assert.match(text, /labVerified: false/)
     assert.match(text, /confidence: 0.4/)
+})
+
+test('__proto__ is quoted so it is an own property, not a prototype setter', () => {
+    const lineage = Object.assign(Object.create(null), { breeder: 'Lab' })
+    lineage['__proto__'] = { note: 'kept' }
+    const text = formatStrain({
+        id: 'proto',
+        name: 'Proto',
+        lineage,
+    })
+    assert.match(text, /'__proto__':/)
+    assert.equal(text.includes('\n        __proto__:'), false)
 })
 
 test('line breaks stay inside the generated string and null array items are dropped', () => {

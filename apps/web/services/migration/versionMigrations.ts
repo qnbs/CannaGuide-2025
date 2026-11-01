@@ -88,6 +88,11 @@ export const mergeStrainCatalogForUpdate = (
         cannabinoidProfile: strain.cannabinoidProfile,
         flavonoidProfile: strain.flavonoidProfile,
         chemovarProfile: strain.chemovarProfile,
+        thc: strain.thc,
+        cbd: strain.cbd,
+        floweringTime: strain.floweringTime,
+        type: strain.type,
+        floweringType: strain.floweringType,
         aromas: strain.aromas ?? legacy.aromas,
         dominantTerpenes: strain.dominantTerpenes ?? legacy.dominantTerpenes,
     })

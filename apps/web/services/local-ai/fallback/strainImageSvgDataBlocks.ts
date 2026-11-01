@@ -8,6 +8,12 @@ interface StrainDataBarsResult {
     dataY: number
 }
 
+const knownBarPercent = (table: Record<string, number>, value: string | undefined): number => {
+    if (value === undefined || !Object.hasOwn(table, value)) return 0
+    const score = table[value]
+    return typeof score === 'number' ? score : 0
+}
+
 export const buildStrainDataBars = (
     strain: Strain,
     palette: StylePalette,
@@ -29,9 +35,9 @@ export const buildStrainDataBars = (
     const thcDisplay = strain.thcRange ?? (thc === undefined ? unknownLabel : `${thc}%`)
     const cbdDisplay = strain.cbdRange ?? (cbd === undefined ? unknownLabel : `${cbd}%`)
     const agronomic = strain.agronomic
-    const diffVal = agronomic ? (DIFFICULTY_VAL[agronomic.difficulty] ?? 50) : 0
-    const yieldVal = agronomic ? (YIELD_VAL[agronomic.yield] ?? 50) : 0
-    const heightVal = agronomic ? (HEIGHT_VAL[agronomic.height] ?? 50) : 0
+    const diffVal = knownBarPercent(DIFFICULTY_VAL, agronomic?.difficulty)
+    const yieldVal = knownBarPercent(YIELD_VAL, agronomic?.yield)
+    const heightVal = knownBarPercent(HEIGHT_VAL, agronomic?.height)
     const diffLabel = localizeStr(lang, {
         en: 'Difficulty',
         de: 'Schwierigkeit',

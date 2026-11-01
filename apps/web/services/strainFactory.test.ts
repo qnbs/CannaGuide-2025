@@ -89,6 +89,32 @@ describe('createStrainObject', () => {
         expect(input).not.toHaveProperty('flavonoidProfile')
     })
 
+    it('classifies reported CBG with the same dominant terpenes the profile returns', () => {
+        const simulated = simulateStrainProfile({
+            name: 'CBG Leaf',
+            thc: 0.5,
+            cbd: 0.5,
+            cbg: 5,
+            thcv: 0.4,
+            dominantTerpenes: ['Myrcene'],
+        })
+        expect(simulated.chemovarProfile?.chemovarType).toBe('Type IV')
+        expect(simulated.cannabinoidProfile.CBG).toBe(5)
+        expect(simulated.cannabinoidProfile.THCV).toBe(0.4)
+        expect(simulated.chemovarProfile?.detailedTerpeneProfile.Myrcene?.percent).toBe(
+            simulated.terpeneProfile.Myrcene,
+        )
+    })
+
+    it('keeps reported minor cannabinoids when THC and CBD were never reported', () => {
+        const simulated = simulateStrainProfile({ name: 'Minor Only', cbg: 1.2, thcv: 0.4 })
+        expect(simulated.cannabinoidProfile.THC).toBeUndefined()
+        expect(simulated.cannabinoidProfile.CBD).toBeUndefined()
+        expect(simulated.cannabinoidProfile.CBG).toBe(1.2)
+        expect(simulated.cannabinoidProfile.THCV).toBe(0.4)
+        expect(simulated.chemovarProfile).toBeUndefined()
+    })
+
     it('does not invent a Type V chemovar when THC and CBD were never reported', () => {
         const simulated = simulateStrainProfile({ id: 'unknown-chem', name: 'Unknown Chem' })
         expect(simulated.kind).toBe('simulation')

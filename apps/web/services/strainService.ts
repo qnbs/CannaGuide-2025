@@ -80,6 +80,29 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
     return loadPromise
 }
 
+const sharedNames = (left: string[] | undefined, right: string[] | undefined): number =>
+    (left ?? []).filter((name) => (right ?? []).includes(name)).length
+
+const bothNumbers = (left: unknown, right: unknown): boolean =>
+    typeof left === 'number' && typeof right === 'number'
+
+const sameReportedLevel = (left: string | undefined, right: string | undefined): boolean =>
+    left !== undefined && left === right
+
+export const scoreStrainSimilarity = (left: Strain, right: Strain): number => {
+    if (left.id === right.id) return -1
+    let score = 0
+    if (left.type && left.type === right.type) score += 20
+    if (bothNumbers(left.thc, right.thc)) score += 15 - Math.abs(left.thc - right.thc)
+    if (bothNumbers(left.cbd, right.cbd)) score += 10 - Math.abs(left.cbd - right.cbd)
+    score += sharedNames(left.aromas, right.aromas) * 5
+    score += sharedNames(left.dominantTerpenes, right.dominantTerpenes) * 10
+    if (sameReportedLevel(left.agronomic?.difficulty, right.agronomic?.difficulty)) score += 5
+    if (sameReportedLevel(left.agronomic?.yield, right.agronomic?.yield)) score += 3
+    if (sameReportedLevel(left.agronomic?.height, right.agronomic?.height)) score += 2
+    return score
+}
+
 class StrainService {
     private allStrains: Strain[] = []
     private isInitialized = false
@@ -139,42 +162,10 @@ class StrainService {
             await this.init()
         }
 
-        const calculateSimilarity = (s1: Strain, s2: Strain): number => {
-            let score = 0
-            if (s1.id === s2.id) return -1 // Exclude self
-            // Type
-            if (s1.type && s1.type === s2.type) score += 20
-
-            // THC/CBD closeness, only when both cultivars report the number
-            if (typeof s1.thc === 'number' && typeof s2.thc === 'number') {
-                score += 15 - Math.abs(s1.thc - s2.thc)
-            }
-            if (typeof s1.cbd === 'number' && typeof s2.cbd === 'number') {
-                score += 10 - Math.abs(s1.cbd - s2.cbd)
-            }
-
-            // Aroma/Terpene overlap
-            const aromaIntersection = (s1.aromas ?? []).filter((a) => (s2.aromas ?? []).includes(a))
-            score += aromaIntersection.length * 5
-
-            const terpeneIntersection = (s1.dominantTerpenes ?? []).filter((t) =>
-                (s2.dominantTerpenes ?? []).includes(t),
-            )
-            score += terpeneIntersection.length * 10
-
-            if (s1.agronomic?.difficulty && s1.agronomic.difficulty === s2.agronomic?.difficulty) {
-                score += 5
-            }
-            if (s1.agronomic?.yield && s1.agronomic.yield === s2.agronomic?.yield) score += 3
-            if (s1.agronomic?.height && s1.agronomic.height === s2.agronomic?.height) score += 2
-
-            return score
-        }
-
         return this.allStrains
             .map((strain) => ({
                 strain,
-                score: calculateSimilarity(currentStrain, strain),
+                score: scoreStrainSimilarity(currentStrain, strain),
             }))
             .toSorted((a, b) => b.score - a.score)
             .slice(0, count)

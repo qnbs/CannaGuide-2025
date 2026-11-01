@@ -5,8 +5,15 @@ import { useTranslation } from 'react-i18next'
 import { useForm } from '@/hooks/useForm'
 import { Modal } from '@/components/common/Modal'
 import { Input, FormSection } from '@/components/ui/form'
-import { createStrainObject } from '@/services/strainFactory'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
+import {
+    buildStrainDraft,
+    defaultStrainValues,
+    parseCommaSeparatedTokens,
+    strainToFormValues,
+    strainTypeOf,
+    type StrainFormValues,
+} from './addStrainDraft'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
@@ -18,56 +25,12 @@ interface AddStrainModalProps {
     strainToEdit: Strain | null
 }
 
-const strainTypeOf = (value: unknown): StrainType | undefined =>
-    value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid
-        ? value
-        : undefined
-
 const readOptionalNumber = (raw: string): number | '' => (raw === '' ? '' : Number(raw))
-
-const strainToFormValues = (strain: Partial<Strain>) => ({
-    name: strain.name ?? '',
-    type: strain.type ?? '',
-    typeDetails: strain.typeDetails ?? '',
-    genetics: strain.genetics ?? '',
-    floweringType: strain.floweringType ?? '',
-    thc: strain.thc ?? ('' as number | ''),
-    cbd: strain.cbd ?? ('' as number | ''),
-    thcRange: strain.thcRange ?? '',
-    cbdRange: strain.cbdRange ?? '',
-    floweringTime: strain.floweringTime ?? ('' as number | ''),
-    floweringTimeRange: strain.floweringTimeRange ?? '',
-    description: strain.description ?? '',
-    aromasString: (strain.aromas ?? []).join(', '),
-    terpenesString: (strain.dominantTerpenes ?? []).join(', '),
-    difficulty: strain.agronomic?.difficulty ?? '',
-    yield: strain.agronomic?.yield ?? '',
-    height: strain.agronomic?.height ?? '',
-    yieldIndoor: strain.agronomic?.yieldDetails?.indoor ?? '',
-    yieldOutdoor: strain.agronomic?.yieldDetails?.outdoor ?? '',
-    heightIndoor: strain.agronomic?.heightDetails?.indoor ?? '',
-    heightOutdoor: strain.agronomic?.heightDetails?.outdoor ?? '',
-})
-
-const defaultStrainValues = strainToFormValues({
-    type: StrainType.Hybrid,
-    thc: 20,
-    cbd: 1,
-    floweringTime: 9,
-    floweringType: 'Photoperiod',
-    agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
-})
 
 const SINGLE_VALUE_RANGE_RE = /^[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?$/
 const SPAN_RANGE_RE = /^\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?$/
 const isValidRange = (range: string): boolean =>
     SINGLE_VALUE_RANGE_RE.test(range) || SPAN_RANGE_RE.test(range)
-
-const parseCommaSeparatedTokens = (value: string): string[] =>
-    value
-        .split(',')
-        .map((token) => token.trim())
-        .filter(Boolean)
 
 const TokenPreview: React.FC<{ title: string; values: string[] }> = ({ title, values }) => (
     <div className="rounded-2xl border border-white/10 bg-slate-900/45 p-3">
@@ -103,7 +66,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         [isEditMode, strainToEdit],
     )
 
-    const validate = (values: ReturnType<typeof strainToFormValues>) => {
+    const validate = (values: StrainFormValues) => {
         const errors: Partial<Record<keyof typeof values, string>> = {}
         if (!values.name?.trim()) errors.name = t('strainsView.addStrainModal.validation.name')
 
@@ -128,77 +91,10 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({
         return errors
     }
 
-    const onSubmit = (values: ReturnType<typeof strainToFormValues>) => {
-        const safeName = typeof values.name === 'string' ? values.name : ''
-        const safeType = strainTypeOf(values.type)
-        const thc = values.thc === '' ? undefined : Number(values.thc)
-        const cbd = values.cbd === '' ? undefined : Number(values.cbd)
-        const floweringTime = values.floweringTime === '' ? undefined : Number(values.floweringTime)
-        const floweringType =
-            values.floweringType === 'Autoflower' || values.floweringType === 'Photoperiod'
-                ? values.floweringType
-                : undefined
-        const difficulty =
-            values.difficulty === 'Easy' ||
-            values.difficulty === 'Medium' ||
-            values.difficulty === 'Hard'
-                ? values.difficulty
-                : undefined
-        const yieldLevel =
-            values.yield === 'Low' || values.yield === 'Medium' || values.yield === 'High'
-                ? values.yield
-                : undefined
-        const height =
-            values.height === 'Short' || values.height === 'Medium' || values.height === 'Tall'
-                ? values.height
-                : undefined
-
-        const partialStrainData: Partial<Strain> = {
-            id: isEditMode
-                ? strainToEdit.id
-                : `${safeName.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
-            name: safeName,
-            ...(safeType ? { type: safeType } : {}),
-            typeDetails: values.typeDetails,
-            genetics: values.genetics,
-            ...(floweringType ? { floweringType } : {}),
-            ...(thc !== undefined && Number.isFinite(thc) ? { thc } : {}),
-            ...(cbd !== undefined && Number.isFinite(cbd) ? { cbd } : {}),
-            thcRange: values.thcRange,
-            cbdRange: values.cbdRange,
-            ...(floweringTime !== undefined && Number.isFinite(floweringTime)
-                ? { floweringTime }
-                : {}),
-            floweringTimeRange: values.floweringTimeRange,
-            description: values.description,
-            aromas: parseCommaSeparatedTokens(values.aromasString),
-            dominantTerpenes: parseCommaSeparatedTokens(values.terpenesString),
-            ...(difficulty && yieldLevel && height
-                ? {
-                      agronomic: {
-                          difficulty,
-                          yield: yieldLevel,
-                          height,
-                          yieldDetails: {
-                              indoor: values.yieldIndoor,
-                              outdoor: values.yieldOutdoor,
-                          },
-                          heightDetails: {
-                              indoor: values.heightIndoor,
-                              outdoor: values.heightOutdoor,
-                          },
-                      },
-                  }
-                : {}),
-        }
-
-        const finalStrain = createStrainObject(partialStrainData)
-
-        if (isEditMode) {
-            onUpdateStrain(finalStrain)
-        } else {
-            onAddStrain(finalStrain)
-        }
+    const onSubmit = (values: StrainFormValues) => {
+        const draft = buildStrainDraft(values, strainToEdit)
+        if (strainToEdit) onUpdateStrain(draft)
+        else onAddStrain(draft)
     }
 
     const { values, errors, handleChange, handleSubmit, resetForm } = useForm({

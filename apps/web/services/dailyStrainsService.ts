@@ -115,23 +115,24 @@ export function getTodayKey(): string {
 // Category filters
 // ---------------------------------------------------------------------------
 
+const finiteAtLeast = (value: unknown, minimum: number): boolean =>
+    typeof value === 'number' && value >= minimum
+
+const photoperiodType = (strain: Strain, type: string): boolean =>
+    strain.type === type && strain.floweringType === 'Photoperiod'
+
+const CATEGORY_MATCHERS: Record<PickCategory, (strain: Strain) => boolean> = {
+    'high-thc': (strain) => finiteAtLeast(strain.thc, 20),
+    'balanced-cbd': (strain) => finiteAtLeast(strain.cbd, 1),
+    autoflower: (strain) => strain.floweringType === 'Autoflower',
+    'classic-indica': (strain) => photoperiodType(strain, 'Indica'),
+    'classic-sativa': (strain) => photoperiodType(strain, 'Sativa'),
+    'beginner-friendly': (strain) => strain.agronomic?.difficulty === 'Easy',
+    'terpene-rich': (strain) => (strain.dominantTerpenes?.length ?? 0) >= 2,
+}
+
 function matchesCategory(strain: Strain, category: PickCategory): boolean {
-    switch (category) {
-        case 'high-thc':
-            return typeof strain.thc === 'number' && strain.thc >= 20
-        case 'balanced-cbd':
-            return typeof strain.cbd === 'number' && strain.cbd >= 1
-        case 'autoflower':
-            return strain.floweringType === 'Autoflower'
-        case 'classic-indica':
-            return strain.type === 'Indica' && strain.floweringType === 'Photoperiod'
-        case 'classic-sativa':
-            return strain.type === 'Sativa' && strain.floweringType === 'Photoperiod'
-        case 'beginner-friendly':
-            return strain.agronomic?.difficulty === 'Easy'
-        case 'terpene-rich':
-            return (strain.dominantTerpenes?.length ?? 0) >= 2
-    }
+    return CATEGORY_MATCHERS[category](strain)
 }
 
 function getPickReason(category: PickCategory): string {

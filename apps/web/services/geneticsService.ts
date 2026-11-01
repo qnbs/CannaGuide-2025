@@ -225,10 +225,10 @@ class GeneticsService {
         const finite = (value: unknown): number | undefined =>
             typeof value === 'number' && Number.isFinite(value) ? value : undefined
         const averageKnown = (left: unknown, right: unknown): number | null => {
-            const a = finite(left)
-            const b = finite(right)
-            if (a === undefined || b === undefined) return null
-            return avg(a, b)
+            const leftMeasurement = finite(left)
+            const rightMeasurement = finite(right)
+            if (leftMeasurement === undefined || rightMeasurement === undefined) return null
+            return avg(leftMeasurement, rightMeasurement)
         }
 
         const vigorScore = avg(norm(phenotypes.parentA.vigor), norm(phenotypes.parentB.vigor))

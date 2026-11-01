@@ -24,33 +24,33 @@ import { chartSeriesColor, CHART_CHROME } from '@/utils/chartPalette'
 const MAX_STRAINS = 3
 
 // Normalize yield level to a numeric 0-100 score
-const yieldLevelToScore = (level: YieldLevel | undefined): number => {
+const yieldLevelToScore = (level: YieldLevel | undefined): number | null => {
     if (level === 'High') return 90
     if (level === 'Medium') return 60
     if (level === 'Low') return 30
-    return 0
+    return null
 }
 
 const finiteNumber = (value: unknown): number | undefined =>
     typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
 // Normalize THC % (0-35 typical max) to 0-100
-const normalizeTHC = (thc: number | undefined): number => {
+const normalizeTHC = (thc: number | undefined): number | null => {
     const value = finiteNumber(thc)
-    return value === undefined ? 0 : Math.min(100, Math.round((value / 35) * 100))
+    return value === undefined ? null : Math.min(100, Math.round((value / 35) * 100))
 }
 
 // Normalize CBD % (0-20 typical max) to 0-100
-const normalizeCBD = (cbd: number | undefined): number => {
+const normalizeCBD = (cbd: number | undefined): number | null => {
     const value = finiteNumber(cbd)
-    return value === undefined ? 0 : Math.min(100, Math.round((value / 20) * 100))
+    return value === undefined ? null : Math.min(100, Math.round((value / 20) * 100))
 }
 
 // Normalize flowering time: shorter = higher score. Range 56-112 days.
-const normalizeFloweringTime = (days: number | undefined): number => {
+const normalizeFloweringTime = (days: number | undefined): number | null => {
     const value = finiteNumber(days)
     return value === undefined
-        ? 0
+        ? null
         : Math.max(0, Math.min(100, Math.round(((112 - value) / 56) * 100)))
 }
 
@@ -60,7 +60,7 @@ const normalizeFloweringTime = (days: number | undefined): number => {
 
 interface RadarDataPoint {
     metric: string
-    [strainName: string]: string | number
+    [strainName: string]: string | number | null
 }
 
 interface StrainComparisonViewProps {
@@ -255,6 +255,7 @@ export const StrainComparisonView: React.FC<StrainComparisonViewProps> = memo(({
                                     stroke={chartSeriesColor(i)}
                                     fill={chartSeriesColor(i)}
                                     fillOpacity={0.15}
+                                    connectNulls={false}
                                 />
                             ))}
                             {/* Legend + tooltip are HTML, so var() resolves -- use theme-aware tokens */}

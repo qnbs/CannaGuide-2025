@@ -67,6 +67,7 @@ describe('scoreStrain', () => {
         Reflect.deleteProperty(missingThc, 'thc')
         const result = scoreStrain(missingThc, ctx)
         expect(Number.isFinite(result.score)).toBe(true)
+        expect(result.breakdown.cannabinoid).toBe(80)
     })
 
     it('scores higher when CBD meets target minimum', () => {

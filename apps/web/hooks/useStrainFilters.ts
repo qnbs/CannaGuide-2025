@@ -14,6 +14,12 @@ import { useFiltersStore } from '@/stores/useFiltersStore'
 import { selectFavoriteIds, selectUserStrainIds } from '@/stores/selectors'
 import React from 'react'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
+import {
+    compareOptionalRanks,
+    getSafeStrainType,
+    measurementInRange,
+    rankIn,
+} from '@/hooks/strainFilterSort'
 
 const difficultyOrder: Record<DifficultyLevel, number> = { Easy: 1, Medium: 2, Hard: 3 }
 const yieldOrder: Record<YieldLevel, number> = { Low: 1, Medium: 2, High: 3 }
@@ -25,27 +31,6 @@ const getSafeStringArray = (value: unknown): string[] =>
 
 const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
-
-const getSafeStrainType = (value: unknown): string =>
-    value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid
-        ? value
-        : ''
-
-const measurementInRange = (
-    value: unknown,
-    range: [number, number],
-    initial: [number, number],
-): boolean => {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-        return value >= range[0] && value <= range[1]
-    }
-    return range[0] === initial[0] && range[1] === initial[1]
-}
-
-const reportedRank = (order: Record<string, number>, value: string | undefined): number =>
-    value !== undefined && Object.prototype.hasOwnProperty.call(order, value)
-        ? order[value]!
-        : Number.POSITIVE_INFINITY
 
 const defaultStrainsViewSettings: AppSettings['strainsView'] = {
     defaultSortKey: 'name',
@@ -260,20 +245,23 @@ export const useStrainFilters = (
 
             switch (key) {
                 case 'difficulty':
-                    comparison =
-                        reportedRank(difficultyOrder, a.agronomic?.difficulty) -
-                        reportedRank(difficultyOrder, b.agronomic?.difficulty)
-                    break
+                    return compareOptionalRanks(
+                        rankIn(difficultyOrder, a.agronomic?.difficulty),
+                        rankIn(difficultyOrder, b.agronomic?.difficulty),
+                        sortDirection,
+                    )
                 case 'yield':
-                    comparison =
-                        reportedRank(yieldOrder, a.agronomic?.yield) -
-                        reportedRank(yieldOrder, b.agronomic?.yield)
-                    break
+                    return compareOptionalRanks(
+                        rankIn(yieldOrder, a.agronomic?.yield),
+                        rankIn(yieldOrder, b.agronomic?.yield),
+                        sortDirection,
+                    )
                 case 'height':
-                    comparison =
-                        reportedRank(heightOrder, a.agronomic?.height) -
-                        reportedRank(heightOrder, b.agronomic?.height)
-                    break
+                    return compareOptionalRanks(
+                        rankIn(heightOrder, a.agronomic?.height),
+                        rankIn(heightOrder, b.agronomic?.height),
+                        sortDirection,
+                    )
                 case 'name':
                 case 'type':
                     comparison = getSafeText(a[key], '').localeCompare(getSafeText(b[key], ''))

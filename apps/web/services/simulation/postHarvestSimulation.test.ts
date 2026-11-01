@@ -51,6 +51,14 @@ describe('postHarvestSimulation', () => {
         expect(data.cannabinoidProfile.thc).toBeGreaterThan(0)
     })
 
+    it('keeps the harvest cannabinoid finite when cultivar THC was never reported', () => {
+        const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Unknown THC')
+        Reflect.deleteProperty(plant.strain, 'thc')
+        const data = createInitialHarvestData(plant)
+        expect(Number.isFinite(data.cannabinoidProfile.thc)).toBe(true)
+        expect(data.cannabinoidProfile.thc).toBe(0)
+    })
+
     it('isPostHarvestActionAllowed respects stage gates', () => {
         expect(isPostHarvestActionAllowed(PlantStage.Harvest, 'dry')).toBe(true)
         expect(isPostHarvestActionAllowed(PlantStage.Vegetative, 'dry')).toBe(false)

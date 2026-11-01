@@ -56,7 +56,7 @@ describe('AddStrainModal', () => {
 
         render(
             <AddStrainModal
-                isOpen={true}
+                isOpen
                 onClose={vi.fn()}
                 onAddStrain={handleAddStrain}
                 onUpdateStrain={vi.fn()}
@@ -74,10 +74,38 @@ describe('AddStrainModal', () => {
         expect(handleAddStrain.mock.calls[0]![0].type).toBe(StrainType.Sativa)
     })
 
+    it('saves a name without inventing measurements', () => {
+        const handleAddStrain = vi.fn()
+
+        render(
+            <AddStrainModal
+                isOpen
+                onClose={vi.fn()}
+                onAddStrain={handleAddStrain}
+                onUpdateStrain={vi.fn()}
+                strainToEdit={null}
+            />,
+        )
+
+        fireEvent.change(screen.getByLabelText(/strain name/i), {
+            target: { value: 'Bare Name' },
+        })
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+
+        const saved = handleAddStrain.mock.calls[0]![0]
+        expect(saved.name).toBe('Bare Name')
+        expect(saved.type).toBeUndefined()
+        expect(saved.thc).toBeUndefined()
+        expect(saved.cbd).toBeUndefined()
+        expect(saved.floweringTime).toBeUndefined()
+        expect(saved.floweringType).toBeUndefined()
+        expect(saved.agronomic).toBeUndefined()
+    })
+
     it('reinitializes form values when switching into edit mode', () => {
         const { rerender } = render(
             <AddStrainModal
-                isOpen={true}
+                isOpen
                 onClose={vi.fn()}
                 onAddStrain={vi.fn()}
                 onUpdateStrain={vi.fn()}
@@ -92,7 +120,7 @@ describe('AddStrainModal', () => {
 
         rerender(
             <AddStrainModal
-                isOpen={true}
+                isOpen
                 onClose={vi.fn()}
                 onAddStrain={vi.fn()}
                 onUpdateStrain={vi.fn()}
@@ -116,7 +144,7 @@ describe('AddStrainModal', () => {
 
         render(
             <AddStrainModal
-                isOpen={true}
+                isOpen
                 onClose={vi.fn()}
                 onAddStrain={vi.fn()}
                 onUpdateStrain={handleUpdateStrain}
@@ -134,5 +162,53 @@ describe('AddStrainModal', () => {
         expect(saved.floweringTime).toBeUndefined()
         expect(saved.floweringType).toBeUndefined()
         expect(saved.agronomic).toBeUndefined()
+    })
+
+    it('clears a stored measurement and keeps fields the form does not own', () => {
+        const handleUpdateStrain = vi.fn()
+        const described: Strain = { ...baseStrain, description: 'Kept note' }
+
+        render(
+            <AddStrainModal
+                isOpen
+                onClose={vi.fn()}
+                onAddStrain={vi.fn()}
+                onUpdateStrain={handleUpdateStrain}
+                strainToEdit={described}
+            />,
+        )
+
+        fireEvent.change(screen.getByLabelText('THC %'), { target: { value: '' } })
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+
+        const saved = handleUpdateStrain.mock.calls[0]![0]
+        expect(saved.thc).toBeUndefined()
+        expect(saved.cbd).toBe(1)
+        expect(saved.description).toBe('Kept note')
+        expect(saved.geneticModifiers.pestResistance).toBe(1)
+    })
+
+    it('saves a difficulty without requiring yield and height', () => {
+        const handleUpdateStrain = vi.fn()
+        const bare: Strain = { ...baseStrain }
+        Reflect.deleteProperty(bare, 'agronomic')
+
+        render(
+            <AddStrainModal
+                isOpen
+                onClose={vi.fn()}
+                onAddStrain={vi.fn()}
+                onUpdateStrain={handleUpdateStrain}
+                strainToEdit={bare}
+            />,
+        )
+
+        fireEvent.click(screen.getByRole('button', { name: /^easy$/i }))
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+
+        const saved = handleUpdateStrain.mock.calls[0]![0]
+        expect(saved.agronomic.difficulty).toBe('Easy')
+        expect(saved.agronomic.yield).toBeUndefined()
+        expect(saved.agronomic.height).toBeUndefined()
     })
 })

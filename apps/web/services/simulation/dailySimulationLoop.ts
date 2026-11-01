@@ -1,16 +1,9 @@
-import {
-    Plant,
-    PlantStage,
-    JournalEntry,
-    JournalEntryType,
-    Task,
-    ProblemType,
-} from '@/types'
+import { Plant, PlantStage, JournalEntry, JournalEntryType, Task, ProblemType } from '@/types'
 import { STAGES_ORDER, SIM_PAR_PER_WATT_LED } from '@/constants'
 import { secureRandom } from '@/utils/random'
 import { PLANT_STAGE_DETAILS } from '@/services/simulation/plantStageDetails'
 import type { SimulationSettings } from '@/services/simulation/simulationProfiles'
-import { simClamp } from '@/services/simulation/simulationMath'
+import { simClamp, simIsFiniteNumber } from '@/services/simulation/simulationMath'
 import { getPlantGeneticModifiers } from '@/services/simulation/plantNormalization'
 import {
     applyDailyEnvironmentalDrift,
@@ -117,8 +110,7 @@ export function runDailyGrowth(
     const parEfficiency =
         p.equipment.light.type === 'LED' ? SIM_PAR_PER_WATT_LED : SIM_PAR_PER_WATT_LED * 0.8
     const dailyLightIntegral =
-        (p.equipment.light.wattage * parEfficiency * p.equipment.light.lightHours * 3600) /
-        1000000
+        (p.equipment.light.wattage * parEfficiency * p.equipment.light.lightHours * 3600) / 1000000
     const lightAbsorbed = 1 - Math.exp(-lightExtinctionCoefficient * p.leafAreaIndex)
     const co2Factor = simClamp(p.environment.co2Level / 400, 0.5, 2.0)
     const potentialBiomassGain =
@@ -175,8 +167,12 @@ export function runDailySynthesis(plant: Plant, deps: DailySimulationDeps): Plan
     const productionFactor = 0.02 * (p.health / 100) * (1 - p.stressLevel / 150)
     const newCannabinoids = p.biomass.flowers * productionFactor
 
-    if (newCannabinoids > 0) {
-        const thcToCbdRatio = p.strain.thc / (p.strain.cbd + 0.1)
+    const reportedThc = simIsFiniteNumber(p.strain.thc) ? p.strain.thc : undefined
+    const reportedCbd = simIsFiniteNumber(p.strain.cbd) ? p.strain.cbd : undefined
+    if (newCannabinoids > 0 && (reportedThc !== undefined || reportedCbd !== undefined)) {
+        const thc = reportedThc ?? 0
+        const cbd = reportedCbd ?? 0
+        const thcToCbdRatio = thc / (cbd + 0.1)
         p.cannabinoidProfile.thc += newCannabinoids * (thcToCbdRatio / (thcToCbdRatio + 1))
         p.cannabinoidProfile.cbd += newCannabinoids * (1 / (thcToCbdRatio + 1))
     }
@@ -255,12 +251,9 @@ export function updateHealthAndStress(
 function shouldEvaluateStageProgression(stage: PlantStage, currentStageIndex: number): boolean {
     return (
         currentStageIndex < STAGES_ORDER.length - 1 &&
-        ![
-            PlantStage.Harvest,
-            PlantStage.Drying,
-            PlantStage.Curing,
-            PlantStage.Finished,
-        ].includes(stage)
+        ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(
+            stage,
+        )
     )
 }
 

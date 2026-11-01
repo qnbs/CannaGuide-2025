@@ -58,12 +58,31 @@ const estimateFlavonoidProfile = (
 const finiteMeasurement = (value: unknown): number | undefined =>
     typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
+const zeroIfMissing = (value: number | undefined): number => value ?? 0
+
+const reportedMinors = (data: Partial<Strain>): CannabinoidProfile => {
+    const profile: CannabinoidProfile = {}
+    const cbg = finiteMeasurement(data.cbg)
+    const thcv = finiteMeasurement(data.thcv)
+    if (cbg !== undefined) profile.CBG = cbg
+    if (thcv !== undefined) profile.THCV = thcv
+    return profile
+}
+
 const simulatedCannabinoids = (data: Partial<Strain>, nameHash: number): CannabinoidProfile => {
     if (data.cannabinoidProfile) return data.cannabinoidProfile
     const thc = finiteMeasurement(data.thc)
     const cbd = finiteMeasurement(data.cbd)
-    if (thc === undefined && cbd === undefined) return {}
-    return generateCannabinoidProfile(thc ?? 0, cbd ?? 0, data.cbg, data.thcv, nameHash)
+    if (thc !== undefined || cbd !== undefined) {
+        return generateCannabinoidProfile(
+            zeroIfMissing(thc),
+            zeroIfMissing(cbd),
+            finiteMeasurement(data.cbg),
+            finiteMeasurement(data.thcv),
+            nameHash,
+        )
+    }
+    return reportedMinors(data)
 }
 
 const simulatedModifiers = (nameHash: number): GeneticModifiers => ({
@@ -79,11 +98,6 @@ const simulatedModifiers = (nameHash: number): GeneticModifiers => ({
     stomataSensitivity: 0.9 + ((nameHash * 17) % 20) / 100,
 })
 
-/**
- * Name-hash chemistry and agronomic coefficients for the grow simulation.
- * This is not a measured cultivar fact and must not be written back onto
- * the catalog record.
- */
 const simulationCarrier = (data: Partial<Strain>, name: string, nameHash: number): Strain => ({
     id: data.id && data.id.length > 0 ? data.id : 'simulation',
     name,
@@ -98,24 +112,46 @@ const simulationCarrier = (data: Partial<Strain>, name: string, nameHash: number
     ...(data.cannabinoidProfile ? { cannabinoidProfile: data.cannabinoidProfile } : {}),
 })
 
+const carrierForChemovar = (data: Partial<Strain>, name: string, nameHash: number): Strain => {
+    const carrier = simulationCarrier(data, name, nameHash)
+    const cbg = finiteMeasurement(data.cbg)
+    const thcv = finiteMeasurement(data.thcv)
+    if (cbg !== undefined) carrier.cbg = cbg
+    if (thcv !== undefined) carrier.thcv = thcv
+    if (data.dominantTerpenes) carrier.dominantTerpenes = data.dominantTerpenes
+    return carrier
+}
+
+/** THC, CBD, or CBG above 2% is enough to classify. Both majors absent is not Type V. */
+export const hasReportedChemovarInput = (data: Partial<Strain>): boolean => {
+    if (finiteMeasurement(data.thc) !== undefined) return true
+    if (finiteMeasurement(data.cbd) !== undefined) return true
+    const cbg = finiteMeasurement(data.cbg)
+    return cbg !== undefined && cbg > 2
+}
+
 const simulatedChemovar = (
     data: Partial<Strain>,
     name: string,
     nameHash: number,
 ): ChemovarProfile | undefined => {
     if (data.chemovarProfile) return data.chemovarProfile
-    const thc = finiteMeasurement(data.thc)
-    const cbd = finiteMeasurement(data.cbd)
-    if (thc === undefined && cbd === undefined) return undefined
-    return buildChemovarProfile(simulationCarrier(data, name, nameHash))
+    if (!hasReportedChemovarInput(data)) return undefined
+    return buildChemovarProfile(carrierForChemovar(data, name, nameHash))
 }
 
+/**
+ * Name-hash chemistry and agronomic coefficients for the grow simulation.
+ * This is not a measured cultivar fact and must not be written back onto
+ * the catalog record.
+ */
 export const simulateStrainProfile = (data: Partial<Strain>): SimulatedStrainProfile => {
     const name = typeof data.name === 'string' ? data.name : ''
     const nameHash = nameHashOf(name)
+    const typeText = data.type ?? StrainType.Hybrid
     const terpeneProfile =
         data.terpeneProfile ??
-        generateTerpeneProfile(data.dominantTerpenes ?? [], nameHash, data.type ?? '')
+        generateTerpeneProfile(data.dominantTerpenes ?? [], nameHash, typeText)
     const cannabinoidProfile = simulatedCannabinoids(data, nameHash)
     const geneticModifiers = data.geneticModifiers ?? simulatedModifiers(nameHash)
     const chemovarProfile = simulatedChemovar(data, name, nameHash)

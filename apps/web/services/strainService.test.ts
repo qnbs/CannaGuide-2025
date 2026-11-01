@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { Strain } from '@/types'
+import { scoreStrainSimilarity } from '@/services/strainService'
 import { StrainType } from '@/types'
 
 const mockStrain = (overrides: Partial<Strain> = {}): Strain =>
@@ -52,6 +53,26 @@ vi.mock('@/services/strainFactory', () => ({
         ...data,
     })),
 }))
+
+describe('scoreStrainSimilarity', () => {
+    const blank = (id: string, aromas: string[] = []): Strain => {
+        const strain = mockStrain({ id, aromas, dominantTerpenes: [] })
+        for (const key of ['thc', 'cbd', 'type', 'agronomic']) {
+            Reflect.deleteProperty(strain, key)
+        }
+        return strain
+    }
+
+    it('does not treat omitted facts as a match and does not return NaN', () => {
+        const base = blank('base', ['Pine'])
+        const sharedAroma = blank('shared', ['Pine'])
+        const omittedTwin = blank('twin')
+        expect(scoreStrainSimilarity(base, sharedAroma)).toBe(5)
+        expect(scoreStrainSimilarity(base, omittedTwin)).toBe(0)
+        expect(Number.isNaN(scoreStrainSimilarity(base, omittedTwin))).toBe(false)
+        expect(scoreStrainSimilarity(base, base)).toBe(-1)
+    })
+})
 
 describe('strainService', () => {
     beforeEach(() => {

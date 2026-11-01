@@ -47,10 +47,12 @@ const TYPE_ENUM = Object.assign(Object.create(null), {
 
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 const SAFE_KEY = /^[A-Za-z0-9_$. -]+$/
+const QUOTED_IDENTIFIER = new Set(['__proto__', 'constructor', 'prototype'])
 
 const emitKey = (key) => {
     if (!SAFE_KEY.test(key)) return null
-    return IDENTIFIER.test(key) ? key : `'${escapeStr(key)}'`
+    if (QUOTED_IDENTIFIER.has(key) || !IDENTIFIER.test(key)) return `'${escapeStr(key)}'`
+    return key
 }
 
 const ORDERED_FIELDS = [

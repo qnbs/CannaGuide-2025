@@ -80,7 +80,7 @@ export function exportStrainsAsPdf(strains: Strain[], fileName: string, t: TFunc
         printKeyValuePair(
             t('common.type'),
             t(`strainsData.${strain.id}.typeDetails`, {
-                defaultValue: strain.typeDetails || strain.type,
+                defaultValue: strain.typeDetails || strain.type || t('common.unknown'),
             }),
         )
         printKeyValuePair(
@@ -180,67 +180,97 @@ export function exportStrainsAsPdf(strains: Strain[], fileName: string, t: TFunc
     doc.save(`${fileName}.pdf`)
 }
 
+const translatedOr = (value: string | undefined, fallback: string): string => value ?? fallback
+
+const percentText = (range: string | undefined, value: unknown, unknownLabel: string): string => {
+    if (range) return range
+    if (typeof value === 'number' && Number.isFinite(value)) return `${value}%`
+    return unknownLabel
+}
+
+const floweringExportText = (strain: Strain, unknownLabel: string, weeksLabel: string): string => {
+    if (strain.floweringTimeRange) return `${strain.floweringTimeRange} ${weeksLabel}`
+    if (typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)) {
+        return `${strain.floweringTime} ${weeksLabel}`
+    }
+    return unknownLabel
+}
+
+const difficultyExportText = (strain: Strain, t: TFunction): string => {
+    const difficulty = strain.agronomic?.difficulty
+    if (!difficulty) return t('common.unknown')
+    return t(`strainsView.difficulty.${difficulty.toLowerCase()}`)
+}
+
+const localizedList = (values: string[] | undefined, t: TFunction, prefix: string): string =>
+    (values ?? []).map((item) => t(`${prefix}.${item}`, { defaultValue: item })).join(', ')
+
+const catalogText = (strain: Strain, t: TFunction, field: string, fallback: string): string =>
+    t(`strainsData.${strain.id}.${field}`, { defaultValue: fallback })
+
+const typeExportFallback = (strain: Strain, unknownLabel: string): string =>
+    translatedOr(strain.typeDetails, translatedOr(strain.type, unknownLabel))
+
+const detailExportFallback = (
+    details: { indoor?: string | undefined; outdoor?: string | undefined } | undefined,
+    key: 'indoor' | 'outdoor',
+    unknownLabel: string,
+): string => {
+    if (!details) return unknownLabel
+    return translatedOr(details[key], unknownLabel)
+}
+
+const agronomicDetailFallback = (
+    strain: Strain,
+    group: 'yieldDetails' | 'heightDetails',
+    key: 'indoor' | 'outdoor',
+    unknownLabel: string,
+): string => {
+    const agronomic = strain.agronomic
+    if (!agronomic) return unknownLabel
+    return detailExportFallback(agronomic[group], key, unknownLabel)
+}
+
+const formatStrainTxt = (strain: Strain, t: TFunction): string => {
+    const unknownLabel = t('common.unknown')
+    const weeksLabel = t('common.units.weeks')
+    const lines = [
+        '========================================',
+        strain.name.toUpperCase(),
+        '========================================',
+        '',
+        `${t('common.type')}: ${catalogText(strain, t, 'typeDetails', typeExportFallback(strain, unknownLabel))}`,
+        `${t('common.genetics')}: ${catalogText(strain, t, 'genetics', translatedOr(strain.genetics, 'N/A'))}`,
+        '',
+        `--- ${t('strainsView.strainDetail.cannabinoidProfile')} ---`,
+        `${t('strainsView.table.thc')}: ${percentText(strain.thcRange, strain.thc, unknownLabel)}`,
+        `${t('strainsView.table.cbd')}: ${percentText(strain.cbdRange, strain.cbd, unknownLabel)}`,
+        '',
+        `--- ${t('strainsView.strainModal.agronomicData')} ---`,
+        `${t('strainsView.table.difficulty')}: ${difficultyExportText(strain, t)}`,
+        `${t('strainsView.table.flowering')}: ${floweringExportText(strain, unknownLabel, weeksLabel)}`,
+        `${t('strainsView.strainModal.yieldIndoor')}: ${catalogText(strain, t, 'yieldDetails.indoor', agronomicDetailFallback(strain, 'yieldDetails', 'indoor', unknownLabel))}`,
+        `${t('strainsView.strainModal.yieldOutdoor')}: ${catalogText(strain, t, 'yieldDetails.outdoor', agronomicDetailFallback(strain, 'yieldDetails', 'outdoor', unknownLabel))}`,
+        `${t('strainsView.strainModal.heightIndoor')}: ${catalogText(strain, t, 'heightDetails.indoor', agronomicDetailFallback(strain, 'heightDetails', 'indoor', unknownLabel))}`,
+        `${t('strainsView.strainModal.heightOutdoor')}: ${catalogText(strain, t, 'heightDetails.outdoor', agronomicDetailFallback(strain, 'heightDetails', 'outdoor', unknownLabel))}`,
+        '',
+        `--- ${t('strainsView.strainDetail.aromaProfile')} ---`,
+        `${t('strainsView.strainModal.aromas')}: ${localizedList(strain.aromas, t, 'common.aromas')}`,
+        `${t('strainsView.strainModal.dominantTerpenes')}: ${localizedList(strain.dominantTerpenes, t, 'common.terpenes')}`,
+        '',
+        `--- ${t('common.description')} ---`,
+        catalogText(strain, t, 'description', translatedOr(strain.description, 'N/A')),
+        '',
+        '',
+    ]
+    return lines.join('\n')
+}
+
 export function exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunction) {
     let content = `CannaGuide 2025 - ${t('strainsView.exportModal.title')}\n`
     content += `${t('common.generated')}: ${new Date().toLocaleString()}\n\n`
-
-    strains.forEach((s) => {
-        const typeDetailsLabel = t(`strainsData.${s.id}.typeDetails`, {
-            defaultValue: s.typeDetails ?? s.type ?? t('common.unknown'),
-        })
-        const geneticsLabel = t(`strainsData.${s.id}.genetics`, {
-            defaultValue: s.genetics ?? 'N/A',
-        })
-        const difficultyLabel = s.agronomic?.difficulty
-            ? t(`strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`)
-            : t('common.unknown')
-        const yieldIndoorLabel = t(`strainsData.${s.id}.yieldDetails.indoor`, {
-            defaultValue: s.agronomic?.yieldDetails?.indoor ?? t('common.unknown'),
-        })
-        const yieldOutdoorLabel = t(`strainsData.${s.id}.yieldDetails.outdoor`, {
-            defaultValue: s.agronomic?.yieldDetails?.outdoor ?? t('common.unknown'),
-        })
-        const heightIndoorLabel = t(`strainsData.${s.id}.heightDetails.indoor`, {
-            defaultValue: s.agronomic?.heightDetails?.indoor ?? t('common.unknown'),
-        })
-        const heightOutdoorLabel = t(`strainsData.${s.id}.heightDetails.outdoor`, {
-            defaultValue: s.agronomic?.heightDetails?.outdoor ?? t('common.unknown'),
-        })
-        const descriptionLabel = t(`strainsData.${s.id}.description`, {
-            defaultValue: s.description ?? 'N/A',
-        })
-
-        content += `========================================\n`
-        content += `${s.name.toUpperCase()}\n`
-        content += `========================================\n\n`
-
-        content += `${t('common.type')}: ${typeDetailsLabel}\n`
-        content += `${t('common.genetics')}: ${geneticsLabel}\n\n`
-
-        content += `--- ${t('strainsView.strainDetail.cannabinoidProfile')} ---\n`
-        content += `${t('strainsView.table.thc')}: ${s.thcRange ?? (typeof s.thc === 'number' && Number.isFinite(s.thc) ? `${s.thc}%` : t('common.unknown'))}\n`
-        content += `${t('strainsView.table.cbd')}: ${s.cbdRange ?? (typeof s.cbd === 'number' && Number.isFinite(s.cbd) ? `${s.cbd}%` : t('common.unknown'))}\n\n`
-
-        content += `--- ${t('strainsView.strainModal.agronomicData')} ---\n`
-        content += `${t('strainsView.table.difficulty')}: ${difficultyLabel}\n`
-        content += `${t('strainsView.table.flowering')}: ${
-            s.floweringTimeRange
-                ? `${s.floweringTimeRange} ${t('common.units.weeks')}`
-                : typeof s.floweringTime === 'number' && Number.isFinite(s.floweringTime)
-                  ? `${s.floweringTime} ${t('common.units.weeks')}`
-                  : t('common.unknown')
-        }\n`
-        content += `${t('strainsView.strainModal.yieldIndoor')}: ${yieldIndoorLabel}\n`
-        content += `${t('strainsView.strainModal.yieldOutdoor')}: ${yieldOutdoorLabel}\n`
-        content += `${t('strainsView.strainModal.heightIndoor')}: ${heightIndoorLabel}\n`
-        content += `${t('strainsView.strainModal.heightOutdoor')}: ${heightOutdoorLabel}\n\n`
-
-        content += `--- ${t('strainsView.strainDetail.aromaProfile')} ---\n`
-        content += `${t('strainsView.strainModal.aromas')}: ${(s.aromas ?? []).map((a) => t(`common.aromas.${a}`, { defaultValue: a })).join(', ')}\n`
-        content += `${t('strainsView.strainModal.dominantTerpenes')}: ${(s.dominantTerpenes ?? []).map((terp) => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', ')}\n\n`
-
-        content += `--- ${t('common.description')} ---\n`
-        content += `${descriptionLabel}\n\n\n`
+    strains.forEach((strain) => {
+        content += formatStrainTxt(strain, t)
     })
     generateTxt(content, `${fileName}.txt`)
 }

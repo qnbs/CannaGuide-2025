@@ -153,6 +153,34 @@ describe('migrationLogic', () => {
         expect(merged[0]!.terpeneProfile).toBeUndefined()
     })
 
+    it('does not revive cached measurements when the bundle omits them', () => {
+        const merged = mergeStrainCatalogForUpdate(
+            [
+                {
+                    id: 'strain-1',
+                    name: 'Legacy',
+                    type: 'Hybrid',
+                    floweringType: 'Photoperiod',
+                    thc: 0,
+                    cbd: 1,
+                    floweringTime: 9,
+                } as never,
+            ],
+            [
+                {
+                    id: 'strain-1',
+                    name: 'Bundled',
+                } as never,
+            ],
+        )
+        expect(merged[0]!.name).toBe('Bundled')
+        expect(merged[0]!.thc).toBeUndefined()
+        expect(merged[0]!.cbd).toBeUndefined()
+        expect(merged[0]!.floweringTime).toBeUndefined()
+        expect(merged[0]!.type).toBeUndefined()
+        expect(merged[0]!.floweringType).toBeUndefined()
+    })
+
     it('deeply normalizes partial post-harvest data on persisted plants', () => {
         const migrated = migrateState({
             version: 4,

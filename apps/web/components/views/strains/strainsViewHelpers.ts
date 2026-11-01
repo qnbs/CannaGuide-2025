@@ -3,6 +3,9 @@ import type { Strain, AdvancedFilterState } from '@/types'
 import { StrainViewTab } from '@/types'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
 import { compareText } from '@/components/views/strains/compareText'
+import { getSafeStrainType, measurementInRange } from '@/hooks/strainFilterSort'
+
+export { getSafeStrainType, measurementInRange }
 
 export const DEFAULT_AGRONOMIC = {
     difficulty: 'Medium',
@@ -18,20 +21,6 @@ export const getSafeStringArray = (value: unknown): string[] =>
 
 export const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
-
-export const getSafeStrainType = (value: unknown): string =>
-    value === 'Sativa' || value === 'Indica' || value === 'Hybrid' ? value : ''
-
-export const measurementInRange = (
-    value: unknown,
-    range: [number, number],
-    initial: [number, number],
-): boolean => {
-    if (typeof value === 'number' && Number.isFinite(value)) {
-        return value >= range[0] && value <= range[1]
-    }
-    return range[0] === initial[0] && range[1] === initial[1]
-}
 
 export const getRangeValue = (
     range: [number, number] | undefined,

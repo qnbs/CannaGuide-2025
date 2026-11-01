@@ -10,6 +10,14 @@ import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { compareText } from '@/components/views/strains/compareText'
+import { formatFloweringWeeks } from '@/components/views/strains/reportedStrainFacts'
+
+const DIFFICULTY_LEVEL: Record<string, number> = { Easy: 1, Medium: 2, Hard: 3 }
+const DIFFICULTY_COLOR: Record<string, string> = {
+    Easy: 'text-green-400',
+    Medium: 'text-amber-400',
+    Hard: 'text-red-400',
+}
 
 interface InlineStrainSelectorProps {
     onClose: () => void
@@ -20,25 +28,18 @@ const DifficultyMeter: React.FC<{
     difficulty: Strain['agronomic']['difficulty'] | undefined
 }> = ({ difficulty }) => {
     const { t } = useTranslation()
-    const safeDifficulty =
-        difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard'
-            ? difficulty
-            : undefined
-    if (!safeDifficulty) {
+    if (difficulty === undefined) {
         return <span className="text-xs text-slate-400">{t('common.unknown')}</span>
     }
-    const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 }
-    const level = difficultyMap[safeDifficulty] || 2
-    const color =
-        {
-            Easy: 'text-green-400',
-            Medium: 'text-amber-400',
-            Hard: 'text-red-400',
-        }[safeDifficulty] ?? 'text-amber-400'
+    const level = DIFFICULTY_LEVEL[difficulty]
+    const color = DIFFICULTY_COLOR[difficulty]
+    if (level === undefined || color === undefined) {
+        return <span className="text-xs text-slate-400">{t('common.unknown')}</span>
+    }
     return (
         <div
             className="flex gap-0.5 items-center"
-            title={t(`strainsView.difficulty.${safeDifficulty.toLowerCase()}`)}
+            title={t(`strainsView.difficulty.${difficulty.toLowerCase()}`)}
         >
             {[1, 2, 3].map((marker) => {
                 const markerColorClassName = marker <= level ? color : 'text-slate-600'
@@ -97,11 +98,12 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
         typeof strain.cbd === 'number' && Number.isFinite(strain.cbd)
             ? `${strain.cbd.toFixed(1)}%`
             : unknown
-    const safeFloweringTime =
-        strain.floweringTimeRange ||
-        (typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
-            ? `${strain.floweringTime} ${t('common.units.weeks')}`
-            : unknown)
+    const safeFloweringTime = formatFloweringWeeks(
+        strain.floweringTimeRange,
+        strain.floweringTime,
+        t('common.units.weeks'),
+        unknown,
+    )
 
     return (
         <button

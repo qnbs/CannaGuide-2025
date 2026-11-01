@@ -23,6 +23,7 @@ import {
     scoreStrainForEffects,
     analyzeEntourage,
 } from '@/services/terpeneService'
+import { hasReportedChemovarInput } from '@/services/strainSimulationProfile'
 
 // ---------------------------------------------------------------------------
 // Payload types
@@ -103,7 +104,9 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
                     self.postMessage(workerErr(messageId, 'Invalid BUILD_CHEMOVAR payload'))
                     return
                 }
-                const profile = buildChemovarProfile(p.strain)
+                const profile = hasReportedChemovarInput(p.strain)
+                    ? buildChemovarProfile(p.strain)
+                    : null
                 self.postMessage(workerOk(messageId, profile))
                 return
             }
@@ -118,13 +121,15 @@ self.onmessage = (e: MessageEvent<WorkerRequest>) => {
                 // W-02.1: Use for-loop with cooperative abort check for large batches
                 const profiles: Array<{
                     strainId: string
-                    profile: ReturnType<typeof buildChemovarProfile>
+                    profile: ReturnType<typeof buildChemovarProfile> | null
                 }> = []
                 for (const strain of p.strains) {
                     checkAborted(messageId)
                     profiles.push({
                         strainId: strain.id,
-                        profile: buildChemovarProfile(strain),
+                        profile: hasReportedChemovarInput(strain)
+                            ? buildChemovarProfile(strain)
+                            : null,
                     })
                 }
                 clearAborted(messageId)

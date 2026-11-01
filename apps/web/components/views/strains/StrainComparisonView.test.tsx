@@ -210,6 +210,10 @@ describe('normalizeTHC', () => {
     it('caps values above 35% at 100', () => {
         expect(normalizeTHC(50)).toBe(100)
     })
+
+    it('leaves an unreported THC off the chart', () => {
+        expect(normalizeTHC(undefined)).toBeNull()
+    })
 })
 
 describe('normalizeCBD', () => {
@@ -243,5 +247,9 @@ describe('yieldLevelToScore', () => {
 
     it('High yields 90', () => {
         expect(yieldLevelToScore('High')).toBe(90)
+    })
+
+    it('leaves an unreported yield off the chart', () => {
+        expect(yieldLevelToScore(undefined)).toBeNull()
     })
 })

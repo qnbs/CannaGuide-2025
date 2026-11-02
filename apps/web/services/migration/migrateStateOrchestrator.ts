@@ -67,26 +67,50 @@ const stripTransientState = (state: PersistedState): void => {
     }
 }
 
-const validateSliceVersions = (state: PersistedState): VersionedSliceName[] => {
+/**
+ * Slices that hold no user data, so a schema-version mismatch may drop them and
+ * let the initial state take over. Every other slice carries user data and is
+ * kept: the shape guards that run after this step repair what they can, and a
+ * snapshot they cannot repair fails hydration loudly (so the backup path runs)
+ * instead of being silently emptied and then saved over the original.
+ */
+const SLICES_SAFE_TO_RESET: ReadonlySet<VersionedSliceName> = new Set<VersionedSliceName>(['ui'])
+
+interface SliceVersionReport {
+    /** Dropped on mismatch (transient slices only). */
+    reset: VersionedSliceName[]
+    /** Version differed, data kept for the shape guards to repair. */
+    retained: VersionedSliceName[]
+}
+
+const validateSliceVersions = (state: PersistedState): SliceVersionReport => {
     const persistedVersions = state._sliceVersions ?? {}
-    const resetSlices: VersionedSliceName[] = []
+    const report: SliceVersionReport = { reset: [], retained: [] }
 
     for (const [sliceName, expectedVersion] of Object.entries(SLICE_SCHEMA_VERSIONS)) {
         const name = sliceName as VersionedSliceName
         const persistedVersion = persistedVersions[name]
 
-        if (persistedVersion !== undefined && persistedVersion !== expectedVersion) {
+        if (persistedVersion === undefined || persistedVersion === expectedVersion) continue
+
+        const versions = `stored: ${persistedVersion}, expected: ${expectedVersion}`
+        if (SLICES_SAFE_TO_RESET.has(name)) {
             console.debug(
-                `[MigrationLogic] Slice "${name}" version mismatch (stored: ${persistedVersion}, expected: ${expectedVersion}) – resetting to initial state.`,
+                `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - resetting to initial state.`,
             )
             delete (state as Record<string, unknown>)[name]
-            resetSlices.push(name)
+            report.reset.push(name)
+        } else {
+            console.warn(
+                `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - keeping the stored data for the shape guards.`,
+            )
+            report.retained.push(name)
         }
     }
 
     state._sliceVersions = { ...SLICE_SCHEMA_VERSIONS }
 
-    return resetSlices
+    return report
 }
 
 /**
@@ -103,9 +127,9 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         migratedState.settings.version = APP_VERSION
     }
 
-    const resetSlices = validateSliceVersions(migratedState)
-    if (resetSlices.length > 0) {
-        console.debug(`[MigrationLogic] Auto-reset slices: ${resetSlices.join(', ')}`)
+    const sliceVersionReport = validateSliceVersions(migratedState)
+    if (sliceVersionReport.reset.length > 0) {
+        console.debug(`[MigrationLogic] Auto-reset slices: ${sliceVersionReport.reset.join(', ')}`)
     }
 
     const shapeValidators = [

@@ -81,6 +81,22 @@ describe('plantNormalization', () => {
         expect(normalizePlant(plant).equipment.floweringPolicy).toBeUndefined()
     })
 
+    it('does not invent genetic modifiers on a cultivar that reported none', () => {
+        const plant = sparsePlant()
+        const strain = { ...plant.strain }
+        delete (strain as { geneticModifiers?: unknown }).geneticModifiers
+        plant.strain = strain
+        const normalized = normalizePlant(plant)
+        expect(normalized.strain.geneticModifiers).toBeUndefined()
+        expect(normalized.phenotypeModifiers?.pestResistance).toEqual(expect.any(Number))
+        expect(plant.strain.geneticModifiers).toBeUndefined()
+    })
+
+    it('keeps reported genetic modifiers on the cultivar', () => {
+        const normalized = normalizePlant(sparsePlant())
+        expect(normalized.strain.geneticModifiers?.pestResistance).toBe(1)
+    })
+
     it('getPlantGeneticModifiers prefers phenotypeModifiers', () => {
         const plant = normalizePlant(sparsePlant())
         plant.phenotypeModifiers = {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { Strain } from '@/types'
+import { resinFromReportedThc } from './breedingArMetrics'
 import type { BreedingLabState } from './useBreedingLab'
 
 const BreedingArPreview = lazy(() =>
@@ -61,7 +62,7 @@ const SeedStabilityPreview: React.FC<{ state: BreedingLabState }> = ({ state }) 
             <BreedingArPreview
                 label={previewLabel(newStrainName, seedResult.name)}
                 vigor={stability.vigor}
-                resin={Math.round(seedResult.thc / 2)}
+                resin={resinFromReportedThc(seedResult.thc)}
                 aroma={aromaScore(seedResult.aromas, seedResult.dominantTerpenes)}
                 resistance={stability.resistance}
             />

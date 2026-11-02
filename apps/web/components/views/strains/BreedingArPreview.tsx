@@ -1,27 +1,43 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js'
-import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
+import { Card } from '@/components/common/Card'
+import {
+    clampPreviewStat,
+    finitePreviewResin,
+} from '@/components/views/strains/breeding/breedingArMetrics'
 
 interface BreedingArPreviewProps {
     label: string
     vigor: number
-    resin: number
+    resin: number | undefined
     aroma: number
     resistance: number
 }
 
+const addBloom = (group: THREE.Group, resin: number | undefined, stemHeight: number): void => {
+    if (resin === undefined) return
+    const bloomRadius = 0.18 + resin * 0.012
+    const bloom = new THREE.Mesh(
+        new THREE.SphereGeometry(bloomRadius, 20, 16),
+        new THREE.MeshStandardMaterial({
+            color: new THREE.Color(`hsl(${300 - resin * 3}, 68%, 60%)`),
+        }),
+    )
+    bloom.position.y = stemHeight + bloomRadius * 0.7
+    group.add(bloom)
+}
+
 const createPlant = (
     vigor: number,
-    resin: number,
+    resin: number | undefined,
     aroma: number,
     resistance: number,
 ): THREE.Group => {
     const group = new THREE.Group()
     const stemHeight = 1.2 + vigor * 0.08
     const leafScale = 0.45 + aroma * 0.03
-    const bloomRadius = 0.18 + resin * 0.012
 
     const stem = new THREE.Mesh(
         new THREE.CylinderGeometry(0.08, 0.12, stemHeight, 10),
@@ -45,15 +61,7 @@ const createPlant = (
         group.add(leaf)
     }
 
-    const bloom = new THREE.Mesh(
-        new THREE.SphereGeometry(bloomRadius, 20, 16),
-        new THREE.MeshStandardMaterial({
-            color: new THREE.Color(`hsl(${300 - resin * 3}, 68%, 60%)`),
-        }),
-    )
-    bloom.position.y = stemHeight + bloomRadius * 0.7
-    group.add(bloom)
-
+    addBloom(group, resin, stemHeight)
     return group
 }
 
@@ -113,10 +121,10 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
 
     const normalizedStats = useMemo(
         () => ({
-            vigor: Math.max(0, Math.min(10, vigor)),
-            resin: Math.max(0, Math.min(10, resin)),
-            aroma: Math.max(0, Math.min(10, aroma)),
-            resistance: Math.max(0, Math.min(10, resistance)),
+            vigor: clampPreviewStat(vigor),
+            resin: finitePreviewResin(resin),
+            aroma: clampPreviewStat(aroma),
+            resistance: clampPreviewStat(resistance),
         }),
         [aroma, resistance, resin, vigor],
     )

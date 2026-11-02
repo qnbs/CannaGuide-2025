@@ -49,10 +49,16 @@ describe('crossStrains', () => {
         expect(crossStrains(left, right).type).toBeUndefined()
     })
 
-    it('uses Hybrid when the parents report different types', () => {
+    it('keeps the type unknown when either parent omits it', () => {
         const left = parent({ id: 'left', name: 'Left', type: StrainType.Sativa })
         const right = parent({ id: 'right', name: 'Right' })
         Reflect.deleteProperty(right, 'type')
+        expect(crossStrains(left, right).type).toBeUndefined()
+    })
+
+    it('uses Hybrid when both parents report different types', () => {
+        const left = parent({ id: 'left', name: 'Left', type: StrainType.Sativa })
+        const right = parent({ id: 'right', name: 'Right', type: StrainType.Indica })
         expect(crossStrains(left, right).type).toBe(StrainType.Hybrid)
     })
 

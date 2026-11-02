@@ -254,6 +254,19 @@ describe('GeneticsService', () => {
             expect(result.cbd).toBeCloseTo(2, 0)
         })
 
+        it('does not invent a negative THC when resin is low', () => {
+            const lowResin = {
+                parentA: { vigor: 5, resin: 0, aroma: 5, resistance: 5 },
+                parentB: { vigor: 5, resin: 0, aroma: 5, resistance: 5 },
+            }
+            const result = geneticsService.estimateOffspringProfile(
+                makeStrain({ id: 'zero-a', name: 'Zero A', thc: 0, cbd: 0, floweringTime: 8 }),
+                makeStrain({ id: 'zero-b', name: 'Zero B', thc: 0, cbd: 0, floweringTime: 8 }),
+                lowResin,
+            )
+            expect(result.thc).toBe(0)
+        })
+
         it('adjusts THC upward with high resin phenotype', () => {
             const highResin = {
                 parentA: { vigor: 5, resin: 10, aroma: 5, resistance: 5 },

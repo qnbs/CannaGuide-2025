@@ -216,6 +216,7 @@ describe('dailyStrainsService', () => {
             expect(parsed?.floweringType).toBeUndefined()
             expect(parsed?.thc).toBe(0)
             expect(parsed?.cbd).toBeUndefined()
+            expect(parsed?.breeder).toBeUndefined()
             const [negative] = parseAIStrainResponse('[{"name":"Negative","thc":-1,"cbd":"nope"}]')
             expect(negative?.thc).toBeUndefined()
             expect(negative?.cbd).toBeUndefined()
@@ -225,6 +226,13 @@ describe('dailyStrainsService', () => {
             expect(strain.floweringType).toBeUndefined()
             expect(strain.thc).toBe(0)
             expect(strain.cbd).toBeUndefined()
+            expect(strain.lineage).toBeUndefined()
+            const [placeholder] = parseAIStrainResponse(
+                '[{"name":"Placeholder","breeder":"Unknown"}]',
+            )
+            expect(placeholder?.breeder).toBeUndefined()
+            if (!placeholder) throw new Error('parser returned nothing')
+            expect(resolveDiscoveredToStrain(placeholder).lineage).toBeUndefined()
         })
 
         it('handles missing breeder gracefully', () => {

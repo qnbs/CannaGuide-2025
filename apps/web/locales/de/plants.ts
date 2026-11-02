@@ -598,7 +598,7 @@ export const plantsView = {
         floweringModePrompt:
             'Diese Sorte hat keinen angegebenen Blütenmodus. Wähle einen für diesen Grow. Der Sorteneintrag bleibt unverändert.',
         unknownFloweringInfo:
-            'Wähle Photoperiodisch oder Autoflower, bevor du startest. Ein 24/0-Zyklus gibt es nur, nachdem du Autoflower gewählt hast.',
+            'Wähle Photoperiodisch oder Autoflower, bevor du startest. Einen 24/0-Zyklus gibt es nur, nachdem du Autoflower gewählt hast.',
         floweringModes: {
             photoperiod: 'Photoperiodisch',
             autoflower: 'Autoflower',

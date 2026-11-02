@@ -206,8 +206,10 @@ const GrowChoiceGrid: React.FC<{
                 </p>
                 <SegmentedControl
                     aria-label={t('strainsView.table.difficulty')}
-                    value={[values.difficulty]}
-                    onToggle={(value) => onChange('difficulty', value)}
+                    value={choiceValue(values.difficulty)}
+                    onToggle={(value) =>
+                        onChange('difficulty', nextChoice(values.difficulty, value))
+                    }
                     options={[
                         { value: 'Easy', label: t('strainsView.difficulty.easy') },
                         { value: 'Medium', label: t('strainsView.difficulty.medium') },
@@ -222,8 +224,8 @@ const GrowChoiceGrid: React.FC<{
                 </p>
                 <SegmentedControl
                     aria-label={t('strainsView.addStrainModal.yield')}
-                    value={[values.yield]}
-                    onToggle={(value) => onChange('yield', value)}
+                    value={choiceValue(values.yield)}
+                    onToggle={(value) => onChange('yield', nextChoice(values.yield, value))}
                     options={[
                         { value: 'Low', label: t('strainsView.addStrainModal.yields.low') },
                         { value: 'Medium', label: t('strainsView.addStrainModal.yields.medium') },
@@ -238,8 +240,8 @@ const GrowChoiceGrid: React.FC<{
                 </p>
                 <SegmentedControl
                     aria-label={t('strainsView.addStrainModal.height')}
-                    value={[values.height]}
-                    onToggle={(value) => onChange('height', value)}
+                    value={choiceValue(values.height)}
+                    onToggle={(value) => onChange('height', nextChoice(values.height, value))}
                     options={[
                         { value: 'Short', label: t('strainsView.addStrainModal.heights.short') },
                         { value: 'Medium', label: t('strainsView.addStrainModal.heights.medium') },
@@ -256,6 +258,10 @@ type StrainFieldChange = <K extends keyof StrainFormValues>(
     key: K,
     value: StrainFormValues[K],
 ) => void
+
+const choiceValue = (current: string): string[] => (current === '' ? [] : [current])
+
+const nextChoice = (current: string, picked: string): string => (current === picked ? '' : picked)
 
 type StrainFieldErrors = Partial<Record<keyof StrainFormValues, string>>
 
@@ -290,9 +296,8 @@ const GeneralInfoSection: React.FC<{
                 </p>
                 <SegmentedControl
                     aria-label={t('strainsView.addStrainModal.typeLegend')}
-                    value={[values.type]}
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    onToggle={(value) => onChange('type', value as StrainType)}
+                    value={choiceValue(values.type)}
+                    onToggle={(value) => onChange('type', nextChoice(values.type, value))}
                     options={typeOptions}
                     buttonClassName="min-h-11"
                 />
@@ -315,8 +320,10 @@ const GeneralInfoSection: React.FC<{
                 </p>
                 <SegmentedControl
                     aria-label={t('strainsView.addStrainModal.floweringTypeLegend')}
-                    value={[values.floweringType]}
-                    onToggle={(value) => onChange('floweringType', value)}
+                    value={choiceValue(values.floweringType)}
+                    onToggle={(value) =>
+                        onChange('floweringType', nextChoice(values.floweringType, value))
+                    }
                     options={[
                         {
                             value: 'Photoperiod',

@@ -31,8 +31,13 @@ const textOr = (value: unknown, fallback: string): string => {
 const stringList = (value: unknown): string[] =>
     Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 
-const crossedType = (left: Strain['type'], right: Strain['type']): Strain['type'] =>
-    left === right ? left : StrainType.Hybrid
+const crossedType = (
+    left: StrainType | undefined,
+    right: StrainType | undefined,
+): StrainType | undefined => {
+    if (left === undefined || right === undefined) return undefined
+    return left === right ? left : StrainType.Hybrid
+}
 
 const pickEither = <T,>(left: T, right: T): T => (secureRandom() > 0.5 ? left : right)
 
@@ -93,12 +98,12 @@ const mixedList = (left: unknown, right: unknown, limit: number): string[] =>
         .sort(() => 0.5 - secureRandom())
         .slice(0, limit)
 
-/**
- * Crosses two parent strains and returns a plausible offspring profile.
- * Pure function — safe to call outside React.
- */
 const nameScale = (magnitude: number): number => 1 + (secureRandom() - 0.5) * magnitude
 
+/**
+ * Crosses two parent strains and returns a plausible offspring profile.
+ * Pure function -- safe to call outside React.
+ */
 export const crossStrains = (parentA: Strain, parentB: Strain): Omit<Strain, 'id'> => {
     const parentAName = textOr(parentA.name, 'Parent A')
     const parentBName = textOr(parentB.name, 'Parent B')

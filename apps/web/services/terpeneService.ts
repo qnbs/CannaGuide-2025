@@ -274,11 +274,12 @@ export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefine
         strain.cbg,
     )
     if (chemovarType === undefined) return undefined
+    const ratio = cannabinoidRatio(measuredThc, measuredCbd)
     return {
         chemovarType,
         totalTerpenePercent: roundedTotal(Object.values(terpeneProfile)),
         totalCannabinoidPercent: roundedTotal(Object.values(cannabinoidProfile)),
-        thcCbdRatio: cannabinoidRatio(measuredThc, measuredCbd),
+        ...(Number.isNaN(ratio) ? {} : { thcCbdRatio: ratio }),
         detailedTerpeneProfile: toDetailedTerpeneProfile(terpeneProfile, 0),
         detailedCannabinoidProfile: toDetailedCannabinoidProfile(cannabinoidProfile, 0),
         predictedEffects: predictEffects(terpeneProfile, cannabinoidProfile),

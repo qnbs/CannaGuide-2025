@@ -158,8 +158,8 @@ export interface ChemovarProfile {
     totalTerpenePercent: number
     /** Total cannabinoid content percentage */
     totalCannabinoidPercent: number
-    /** THC:CBD ratio (Infinity if CBD is 0) */
-    thcCbdRatio: number
+    /** THC:CBD ratio when both majors were reported. Infinity if CBD is 0. */
+    thcCbdRatio?: number | undefined
     /** Detailed terpene profile with lab statistics */
     detailedTerpeneProfile: DetailedTerpeneProfile
     /** Detailed cannabinoid profile with lab statistics */
@@ -365,9 +365,9 @@ export interface Strain {
     floweringTimeRange?: string | undefined
     description?: string | undefined
     agronomic: {
-        difficulty?: DifficultyLevel
-        yield?: YieldLevel
-        height?: HeightLevel
+        difficulty?: DifficultyLevel | undefined
+        yield?: YieldLevel | undefined
+        height?: HeightLevel | undefined
         yieldDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
         heightDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
     }
@@ -390,7 +390,7 @@ export interface Strain {
     /** Data provenance records from external sources */
     dataProvenance?: DataProvenance[] | undefined
     /** Reported seed form, when a source supplied one. */
-    seedForm?: string
+    seedForm?: string | undefined
     /** Data quality assessment */
     dataQuality?: DataQualityScore | undefined
     geneticModifiers: GeneticModifiers

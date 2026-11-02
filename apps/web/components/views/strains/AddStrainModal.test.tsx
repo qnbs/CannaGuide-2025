@@ -74,6 +74,30 @@ describe('AddStrainModal', () => {
         expect(handleAddStrain.mock.calls[0]![0].type).toBe(StrainType.Sativa)
     })
 
+    it('clears a selected type when the same choice is clicked again', () => {
+        const handleAddStrain = vi.fn()
+
+        render(
+            <AddStrainModal
+                isOpen
+                onClose={vi.fn()}
+                onAddStrain={handleAddStrain}
+                onUpdateStrain={vi.fn()}
+                strainToEdit={null}
+            />,
+        )
+
+        fireEvent.change(screen.getByLabelText(/strain name/i), {
+            target: { value: 'Solar Spear' },
+        })
+        const sativa = screen.getByRole('button', { name: /sativa/i })
+        fireEvent.click(sativa)
+        fireEvent.click(sativa)
+        fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+
+        expect(handleAddStrain.mock.calls[0]![0].type).toBeUndefined()
+    })
+
     it('saves a name without inventing measurements', () => {
         const handleAddStrain = vi.fn()
 

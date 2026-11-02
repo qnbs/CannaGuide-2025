@@ -280,7 +280,8 @@ export const FlavonoidProfileSection: React.FC<{ profile: FlavonoidProfile | und
     )
 }
 
-const ratioText = (ratio: number): string => {
+const ratioText = (ratio: number | undefined): string => {
+    if (ratio === undefined || Number.isNaN(ratio)) return 'N/A'
     if (ratio === Number.POSITIVE_INFINITY) return 'Infinity:1'
     return Number.isFinite(ratio) ? `${ratio.toFixed(1)}:1` : 'N/A'
 }

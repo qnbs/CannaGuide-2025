@@ -19,7 +19,7 @@ import { StrainType, type Strain } from '@/types'
 export interface DiscoveredStrain {
     id: string
     name: string
-    breeder: string
+    breeder?: string
     type?: string
     floweringType?: string
     thc?: number
@@ -338,23 +338,26 @@ const slugId = (name: string): string =>
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/-+$/, '')}`
 
-const textField = (item: Record<string, unknown>, key: string, fallback: string): string =>
-    String(item[key] ?? fallback)
+const reportedText = (item: Record<string, unknown>, key: string): string => {
+    const value = item[key]
+    return typeof value === 'string' ? value.trim() : ''
+}
 
 const discoveredFromAiItem = (item: unknown): DiscoveredStrain | undefined => {
     if (!isRecord(item)) return undefined
-    const name = textField(item, 'name', '').trim()
+    const name = reportedText(item, 'name')
     if (!name) return undefined
     const discovered: DiscoveredStrain = {
         id: slugId(name),
         name,
-        breeder: textField(item, 'breeder', 'Unknown'),
-        description: textField(item, 'description', '').slice(0, 300),
-        genetics: textField(item, 'genetics', ''),
+        description: reportedText(item, 'description').slice(0, 300),
+        genetics: reportedText(item, 'genetics'),
         source: 'ai-lookup',
         sourceUrl: '',
         discoveredAt: new Date().toISOString(),
     }
+    const breeder = reportedText(item, 'breeder')
+    if (breeder && breeder.toLowerCase() !== 'unknown') discovered.breeder = breeder
     attachAiFacts(discovered, item)
     return discovered
 }

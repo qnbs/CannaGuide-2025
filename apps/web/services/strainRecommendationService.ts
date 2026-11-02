@@ -119,11 +119,14 @@ const scoreWindow = (value: number, min: number, max: number): number => {
     return clamp01(1 - dist / 5)
 }
 
+/** Below a one-step miss (0.6) so a blank fact does not outrank a reported near-match. */
+const UNKNOWN_TARGET_SCORE = 0.5
+
 const scoreThcTarget = (strain: Strain, ctx: RecommendationContext): number => {
     const range = ctx.targetThcRange
     if (range === undefined) return 0.8
     const thc = finitePercent(strain.thc)
-    if (thc === undefined) return 0.8
+    if (thc === undefined) return UNKNOWN_TARGET_SCORE
     return scoreWindow(thc, range.min, range.max)
 }
 
@@ -131,7 +134,7 @@ const scoreCbdFloor = (strain: Strain, ctx: RecommendationContext): number => {
     const minimum = ctx.targetCbdMin
     if (minimum === undefined) return 0.8
     const cbd = finitePercent(strain.cbd)
-    if (cbd === undefined) return 0.8
+    if (cbd === undefined) return UNKNOWN_TARGET_SCORE
     if (cbd >= minimum) return 1
     return clamp01(cbd / Math.max(minimum, 0.1))
 }
@@ -142,7 +145,7 @@ const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number =>
 const scoreDifficulty = (strain: Strain, ctx: RecommendationContext): number => {
     if (ctx.preferredDifficulty === undefined) return 0.8
     const difficulty = strain.agronomic?.difficulty
-    if (difficulty === undefined) return 0.8
+    if (difficulty === undefined) return UNKNOWN_TARGET_SCORE
     const preferred = DIFFICULTY_SCORES[ctx.preferredDifficulty] ?? 2
     const actual = DIFFICULTY_SCORES[difficulty] ?? 2
     const diff = Math.abs(preferred - actual)

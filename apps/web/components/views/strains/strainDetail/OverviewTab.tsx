@@ -6,15 +6,17 @@ import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { Speakable } from '@/components/common/Speakable'
 import { CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
 
-const finitePercent = (value: unknown): string | undefined => {
+export const formatReportedPercent = (value: unknown): string | undefined => {
     if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
-    return `${value.toFixed(1)}%`
+    const tenths = value.toFixed(1)
+    if (Number(tenths) === 0 && value !== 0) return `${value}%`
+    return `${tenths}%`
 }
 
 const textOr = (value: string | undefined, fallback: string): string => value || fallback
 
 const percentLabel = (value: unknown, unknownLabel: string): string =>
-    finitePercent(value) ?? unknownLabel
+    formatReportedPercent(value) ?? unknownLabel
 
 const cannabinoidLabel = (name: CannabinoidName): string => {
     const entry = CANNABINOID_DATABASE[name]

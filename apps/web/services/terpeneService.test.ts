@@ -266,6 +266,8 @@ describe('buildChemovarProfile', () => {
         expect(profile.detailedCannabinoidProfile.THC).toBeUndefined()
         expect(profile.detailedCannabinoidProfile.CBD).toBeUndefined()
         expect(profile.totalCannabinoidPercent).toBe(5)
+        expect(profile.thcCbdRatio).toBeUndefined()
+        expect(JSON.stringify(profile)).not.toContain('"thcCbdRatio"')
     })
 
     it('uses existing terpene profile if available', () => {

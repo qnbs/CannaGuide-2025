@@ -75,9 +75,6 @@ const averageKnownMeasurements = (left: unknown, right: unknown): number | null 
     return averagePair(leftMeasurement, rightMeasurement)
 }
 
-const offsetMeasurement = (base: number | null, delta: number): number | null =>
-    base === null ? null : base + delta
-
 const flooredMeasurement = (base: number | null, delta: number, floor: number): number | null =>
     base === null ? null : Math.max(floor, base + delta)
 
@@ -278,9 +275,10 @@ class GeneticsService {
             clampTen(phenotypes.parentB.resistance),
         )
 
-        const thc = offsetMeasurement(
+        const thc = flooredMeasurement(
             averageKnownMeasurements(parentA.thc, parentB.thc),
             (resinScore - 5) * 0.35,
+            0,
         )
         const cbd = flooredMeasurement(
             averageKnownMeasurements(parentA.cbd, parentB.cbd),

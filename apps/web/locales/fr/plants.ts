@@ -559,9 +559,9 @@ export const plantsView = {
         autoflowerInfo: 'Pour les autofloraisons, un cycle de 18/6 ou 24/0 est recommande.',
         floweringModeTitle: 'Mode de floraison',
         floweringModePrompt:
-            "Ce cultivar n'a pas de mode de floraison indique. Choisis-en un pour cette culture. La fiche du cultivar reste inchangee.",
+            "Ce cultivar n'a pas de mode de floraison indique. Choisissez-en un pour cette culture. La fiche du cultivar reste inchangee.",
         unknownFloweringInfo:
-            "Choisis Photoperiodique ou Autofloraison avant de commencer. Le cycle 24/0 n'est disponible qu'apres avoir choisi Autofloraison.",
+            "Choisissez Photoperiodique ou Autofloraison avant de commencer. Le cycle 24/0 n'est disponible qu'apres avoir choisi Autofloraison.",
         floweringModes: {
             photoperiod: 'Photoperiodique',
             autoflower: 'Autofloraison',

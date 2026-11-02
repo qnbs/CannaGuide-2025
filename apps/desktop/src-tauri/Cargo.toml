@@ -18,7 +18,8 @@ tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-notification = "2"
-tauri-plugin-global-shortcut = "2"
+# Matches @tauri-apps/plugin-global-shortcut 2.4.1. Rust and JS ship in lockstep.
+tauri-plugin-global-shortcut = "2.4.1"
 # 2.12.0 fixes updater signature/version validation (SNYK-JS-TAURIAPPSPLUGINUPDATER-20081664).
 tauri-plugin-updater = "2.13.1"
 tauri-plugin-shell = "2"

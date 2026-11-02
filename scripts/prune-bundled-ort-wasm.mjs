@@ -14,7 +14,7 @@
  *                         emitted by apps/web/lib/transformersOrtAssets.mjs)
  *
  * Only dist/assets/ is scanned, so those ort-1.14.0/ binaries -- which ARE
- * fetched -- are never pruned. The 1.30 copy Vite emits into assets/ is never
+ * fetched -- are never pruned. The 1.31.1 copy Vite emits into assets/ is never
  * fetched. It is emitted only because ORT's JS
  * references it statically (the hashed filename -- ort-wasm-...-DC5y_g6C.wasm --
  * is the giveaway that Rollup resolved it at build time), and a runtime setting

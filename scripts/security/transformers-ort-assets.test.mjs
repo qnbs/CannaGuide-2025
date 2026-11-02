@@ -53,7 +53,7 @@ test('the installed nested onnxruntime-web matches every pinned digest', (t) => 
     assert.match(
         packageDir,
         /onnxruntime-web@1\.14\.0/,
-        'resolved through transformers.js, not the 1.30 dependency',
+        'resolved through transformers.js, not the 1.31.1 dependency',
     )
     const files = readVerifiedTransformersOrtWasm(packageDir)
     assert.deepEqual([...files.keys()].sort(), Object.keys(TRANSFORMERS_ORT_WASM).sort())
@@ -218,7 +218,7 @@ test('the runtime prefix, the build directory and the service-worker route agree
     }
     assert.ok(
         !route.test('/assets/ort-wasm-simd-threaded.jsep-ABC.wasm'),
-        'the 1.30 asset is not this route',
+        'the 1.31.1 asset is not this route',
     )
     assert.ok(
         !route.test(`/${TRANSFORMERS_ORT_DIR}/payload.js`),

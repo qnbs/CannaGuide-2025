@@ -42,7 +42,7 @@ describe('BreedingArTab', () => {
         render(<BreedingArTab state={labState(null)} />)
         const preview = await screen.findByTestId('ar-preview')
         expect(preview.getAttribute('data-resin')).toBe('missing')
-        expect(screen.getByText('Unknown')).toBeTruthy()
+        expect(screen.getByText('Stability Score: Unknown')).toBeTruthy()
     })
 
     it('draws a zero bloom when THC is a reported zero and stability is known', async () => {
@@ -50,6 +50,6 @@ describe('BreedingArTab', () => {
         const preview = await screen.findByTestId('ar-preview')
         expect(preview.getAttribute('data-resin')).toBe('0')
         expect(preview.getAttribute('data-vigor')).toBe('0')
-        expect(screen.queryByText('Unknown')).toBeNull()
+        expect(screen.queryByText('Stability Score: Unknown')).toBeNull()
     })
 })

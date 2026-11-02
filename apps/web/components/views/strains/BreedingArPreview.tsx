@@ -29,7 +29,7 @@ const addBloom = (group: THREE.Group, resin: number | undefined, stemHeight: num
     group.add(bloom)
 }
 
-const createPlant = (
+export const createPlant = (
     vigor: number,
     resin: number | undefined,
     aroma: number,

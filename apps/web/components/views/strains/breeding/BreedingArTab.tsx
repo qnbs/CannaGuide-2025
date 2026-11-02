@@ -47,7 +47,9 @@ const SeedStabilityPreview: React.FC<{ state: BreedingLabState }> = ({ state }) 
     return (
         <>
             {axes.stabilityKnown ? null : (
-                <p className="text-center py-4 text-sm text-slate-300">{t('common.unknown')}</p>
+                <p className="text-center py-4 text-sm text-slate-300">
+                    {t('knowledgeView.breeding.stabilityScore')}: {t('common.unknown')}
+                </p>
             )}
             <Suspense fallback={<ArLoading />}>
                 <BreedingArPreview

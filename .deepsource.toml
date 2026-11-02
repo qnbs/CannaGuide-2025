@@ -28,6 +28,12 @@ test_patterns = [
 name = "docker"
 enabled = true
 
+[analyzers.meta]
+dockerfile_paths = [
+    ".clusterfuzzlite/Dockerfile",
+    ".devcontainer/Dockerfile",
+]
+
 [[analyzers]]
 name = "javascript"
 enabled = true
@@ -37,7 +43,6 @@ dialect = "typescript"
 # The repo is "type": "module". commonjs parsing rejects the ESM entrypoints.
 style_guide = "airbnb"
 module_system = "es-modules"
-track_test_doc_coverage = false
 cyclomatic_complexity_threshold = "low"
 
 [[analyzers]]
@@ -48,7 +53,6 @@ enabled = true
 type_checker = "mypy"
 max_line_length = 100
 runtime_version = "3.x.x"
-track_test_doc_coverage = false
 cyclomatic_complexity_threshold = "medium"
 
 [[analyzers]]

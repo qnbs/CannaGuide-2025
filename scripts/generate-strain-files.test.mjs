@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
@@ -175,6 +175,7 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.match(before, /^index\.ts /m)
     assert.match(before, /^numeric\.ts /m)
     assert.match(before, /^strains\.json /m)
+    assert.match(before, /^pending\/pending-strains\.json /m)
     const result = spawnSync(
         process.execPath,
         [path.join(repoRoot, 'scripts/generate-strain-files.mjs')],
@@ -187,15 +188,23 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.equal(createHash('sha256').update(readFileSync(strainsPath)).digest('hex'), sha256)
 })
 
-const directoryManifest = (dir) =>
-    readdirSync(dir, { withFileTypes: true })
-        .sort((left, right) => left.name.localeCompare(right.name))
-        .map((entry) => {
-            if (!entry.isFile()) return `${entry.name}/`
-            const bytes = readFileSync(path.join(dir, entry.name))
-            return `${entry.name} ${createHash('sha256').update(bytes).digest('hex')}`
-        })
-        .join('\n')
+const manifestLines = (dir, prefix, lines) => {
+    const entries = readdirSync(dir, { withFileTypes: true }).sort((left, right) =>
+        left.name.localeCompare(right.name),
+    )
+    for (const entry of entries) {
+        const relative = prefix ? `${prefix}/${entry.name}` : entry.name
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) manifestLines(full, relative, lines)
+        else if (entry.isFile()) {
+            const bytes = readFileSync(full)
+            lines.push(`${relative} ${createHash('sha256').update(bytes).digest('hex')}`)
+        }
+    }
+    return lines
+}
+
+const directoryManifest = (dir) => manifestLines(dir, '', []).join('\n')
 
 test('a changed or added catalog file turns the manifest red', () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'strain-nowrite-'))
@@ -210,6 +219,11 @@ test('a changed or added catalog file turns the manifest red', () => {
         assert.notEqual(directoryManifest(dir), before)
         rmSync(path.join(dir, 'extra.ts'))
         assert.equal(directoryManifest(dir), before)
+        mkdirSync(path.join(dir, 'pending'))
+        writeFileSync(path.join(dir, 'pending', 'pending-strains.json'), 'old')
+        const nested = directoryManifest(dir)
+        writeFileSync(path.join(dir, 'pending', 'pending-strains.json'), 'new')
+        assert.notEqual(directoryManifest(dir), nested)
     } finally {
         rmSync(dir, { recursive: true, force: true })
     }

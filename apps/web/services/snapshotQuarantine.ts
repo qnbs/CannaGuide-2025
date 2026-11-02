@@ -17,9 +17,7 @@ import { redactSnapshotSecrets, scrubSecretsInText } from '@/utils/redactSecrets
  * Never throws: a failure is logged and reported as `false`, because the
  * caller is already on its failure path.
  */
-export const quarantineUnreadableSnapshot = async (
-    snapshot: string | null | undefined,
-): Promise<boolean> => {
+export const quarantineUnreadableSnapshot = async (snapshot?: string | null): Promise<boolean> => {
     if (!snapshot) return false
     let stored = false
     try {

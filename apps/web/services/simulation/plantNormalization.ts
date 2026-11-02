@@ -8,9 +8,9 @@ import {
     simFiniteOrMin,
 } from '@/services/simulation/simulationMath'
 
-export function getPlantGeneticModifiers(plant: Plant): GeneticModifiers {
-    return normalizeGeneticModifiers(plant.phenotypeModifiers ?? plant.strain.geneticModifiers)
-}
+/** Phenotype coefficients win. A missing strain does not throw. */
+export const getPlantGeneticModifiers = (plant: Plant): GeneticModifiers =>
+    normalizeGeneticModifiers(plant.phenotypeModifiers ?? plant.strain?.geneticModifiers)
 
 /** Reported coefficients stay on the cultivar. A missing set is not filled with defaults. */
 const strainWithReportedModifiers = (strain: Plant['strain']): Plant['strain'] => {
@@ -192,9 +192,6 @@ const normalizeIdentity = (
     leafAreaIndex: finiteOr(plant.leafAreaIndex, 0.01),
 })
 
-const reportedPhenotype = (plant: Plant): GeneticModifiers =>
-    normalizeGeneticModifiers(plant.phenotypeModifiers ?? plant.strain?.geneticModifiers)
-
 const terpeneProfileOf = (plant: Plant): Plant['terpeneProfile'] =>
     plant.terpeneProfile && typeof plant.terpeneProfile === 'object' ? plant.terpeneProfile : {}
 
@@ -215,7 +212,7 @@ export const normalizePlant = (plant: Plant): Plant => ({
     tasks: listOrEmpty(plant.tasks),
     harvestData: harvestDataOf(plant),
     structuralModel: normalizeStructuralModel(plant),
-    phenotypeModifiers: reportedPhenotype(plant),
+    phenotypeModifiers: getPlantGeneticModifiers(plant),
     strain: strainWithReportedModifiers(plant.strain),
     history: listOrEmpty(plant.history),
     cannabinoidProfile: normalizeCannabinoidProfile(plant),

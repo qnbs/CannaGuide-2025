@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { PlantStage, StrainType } from '@/types'
 import type { Plant } from '@/types'
 import { getPlantGeneticModifiers, normalizePlant } from '@/services/simulation/plantNormalization'
@@ -97,6 +97,7 @@ describe('plantNormalization', () => {
         delete (plant as { strain?: Plant['strain'] }).strain
         const normalized = normalizePlant(plant)
         expect(normalized.strain.geneticModifiers).toBeUndefined()
+        expect(normalized.phenotypeModifiers).toEqual(getPlantGeneticModifiers(plant))
     })
 
     it('keeps an explicit phenotype modifier through normalization', () => {
@@ -163,27 +164,29 @@ describe('plantNormalization', () => {
         delete (plant as { terpeneProfile?: unknown }).terpeneProfile
         delete (plant as { harvestData?: unknown }).harvestData
         delete (plant as { mediumType?: unknown }).mediumType
-        const before = Date.now()
-        const normalized = normalizePlant(plant)
-        const after = Date.now()
-        expect(normalized.createdAt).toBeGreaterThanOrEqual(before)
-        expect(normalized.createdAt).toBeLessThanOrEqual(after)
-        expect(normalized.lastUpdated).toBeGreaterThanOrEqual(before)
-        expect(normalized.lastUpdated).toBeLessThanOrEqual(after)
-        expect(normalized.age).toBe(0)
-        expect(normalized.health).toBe(100)
-        expect(normalized.stressLevel).toBe(0)
-        expect(normalized.height).toBe(0)
-        expect(normalized.leafAreaIndex).toBe(0.01)
-        expect(normalized.biomass).toEqual({ total: 0.01, stem: 0.01, leaves: 0, flowers: 0 })
-        expect(normalized.mediumType).toBe('Soil')
-        expect(normalized.problems).toEqual([])
-        expect(normalized.journal).toEqual([])
-        expect(normalized.tasks).toEqual([])
-        expect(normalized.history).toEqual([])
-        expect(normalized.terpeneProfile).toEqual({})
-        expect(normalized.harvestData).toBeNull()
-        expect(normalized.medium.substrateWater).toBe(5 * 1000 * 0.35)
+        vi.useFakeTimers()
+        vi.setSystemTime(new Date('2026-11-02T12:00:00Z'))
+        try {
+            const normalized = normalizePlant(plant)
+            expect(normalized.createdAt).toBe(Date.now())
+            expect(normalized.lastUpdated).toBe(Date.now())
+            expect(normalized.age).toBe(0)
+            expect(normalized.health).toBe(100)
+            expect(normalized.stressLevel).toBe(0)
+            expect(normalized.height).toBe(0)
+            expect(normalized.leafAreaIndex).toBe(0.01)
+            expect(normalized.biomass).toEqual({ total: 0.01, stem: 0.01, leaves: 0, flowers: 0 })
+            expect(normalized.mediumType).toBe('Soil')
+            expect(normalized.problems).toEqual([])
+            expect(normalized.journal).toEqual([])
+            expect(normalized.tasks).toEqual([])
+            expect(normalized.history).toEqual([])
+            expect(normalized.terpeneProfile).toEqual({})
+            expect(normalized.harvestData).toBeNull()
+            expect(normalized.medium.substrateWater).toBe(5 * 1000 * 0.35)
+        } finally {
+            vi.useRealTimers()
+        }
     })
 
     it('getPlantGeneticModifiers prefers phenotypeModifiers', () => {

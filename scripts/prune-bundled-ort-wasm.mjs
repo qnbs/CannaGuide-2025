@@ -14,7 +14,7 @@
  *                         emitted by apps/web/lib/transformersOrtAssets.mjs)
  *
  * Only dist/assets/ is scanned, so those ort-1.14.0/ binaries -- which ARE
- * fetched -- are never pruned. The 1.30 copy Vite emits into assets/ is never
+ * fetched -- are never pruned. The 1.31.1 copy Vite emits into assets/ is never
  * fetched. It is emitted only because ORT's JS
  * references it statically (the hashed filename -- ort-wasm-...-DC5y_g6C.wasm --
  * is the giveaway that Rollup resolved it at build time), and a runtime setting
@@ -22,7 +22,7 @@
  *
  * Why it matters beyond size
  * --------------------------
- * `ort-wasm-simd-threaded.jsep.wasm` is 25.6 MiB. Cloudflare Pages rejects any
+ * `ort-wasm-simd-threaded.jsep.wasm` is 28.2 MiB. Cloudflare Pages rejects any
  * single file over 25 MiB, so while this shipped, that deploy could not succeed
  * at all -- it had been failing silently behind `continue-on-error` (see #488).
  *

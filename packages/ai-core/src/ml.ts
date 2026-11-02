@@ -17,12 +17,12 @@
  * `ort-version-pin.test.ts` asserts this against the installed package, so the
  * drift fails a test instead of a user's inference call.
  */
-export const ORT_VERSION = '1.30.0'
+export const ORT_VERSION = '1.31.1'
 
 /**
  * Where onnxruntime-web loads its `.wasm` from.
  *
- * Pointing this at jsDelivr keeps `ort-wasm-simd-threaded.jsep.wasm` -- 25.6 MiB
+ * Pointing this at jsDelivr keeps `ort-wasm-simd-threaded.jsep.wasm` -- 28.2 MiB
  * -- out of every deployed bundle. That size is not merely wasteful: it exceeds
  * Cloudflare Pages' hard 25 MiB per-file limit, so the Cloudflare mirror could
  * never deploy at all while the file was bundled.
@@ -42,7 +42,7 @@ export const ORT_WASM_URL = `${ORT_WASM_CDN_BASE}${ORT_WASM_FILE}`
  * `ortVersionPin.test.ts` recomputes it from the installed package, so a version
  * bump without a new digest fails a test instead of every inference call.
  */
-export const ORT_WASM_SRI = 'sha256-OtIyMbW9bZ3aVaf4RgYxXgvzW2dQwo7pk8mHxUysqw8='
+export const ORT_WASM_SRI = 'sha256-Wrg2F4OCLQKlfR6XzyUUvOtFGmKPKymuDXtuYYIB/48='
 
 let verifiedOrtWasm: Promise<ArrayBuffer> | null = null
 
@@ -109,7 +109,7 @@ export const transformersOrtWasmPrefix = (baseUrl: string, locationHref: string)
  * pipeline (and so any ORT session) can start. The bytes are the same build; the
  * build verifies them against pinned digests.
  *
- * Never point this at ORT_WASM_CDN_BASE: that is 1.30.0 wasm, and handing it to
+ * Never point this at ORT_WASM_CDN_BASE: that is 1.31.1 wasm, and handing it to
  * 1.14.0 JS is the version mismatch those constants exist to prevent.
  *
  * Throws instead of returning a module still aimed at the CDN when the ORT env

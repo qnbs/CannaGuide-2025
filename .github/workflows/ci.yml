@@ -481,7 +481,7 @@ jobs:
                   components: clippy, rustfmt
 
             - name: Rust cache
-              uses: swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+              uses: swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
               with:
                   workspaces: apps/desktop/src-tauri
 
@@ -689,7 +689,7 @@ jobs:
               run: pnpm run test:e2e:install:chromium:ci
 
             - name: Download build artifact
-              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
               with:
                   name: dist
                   path: apps/web/dist/
@@ -765,7 +765,7 @@ jobs:
               run: pnpm --filter @cannaguide/web exec playwright install firefox
 
             - name: Download build artifact
-              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
               with:
                   name: dist
                   path: apps/web/dist/
@@ -807,7 +807,7 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
             - name: Download build artifact
-              uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
               with:
                   name: dist
                   path: apps/web/dist/

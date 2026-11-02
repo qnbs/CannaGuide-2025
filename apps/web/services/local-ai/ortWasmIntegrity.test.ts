@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // loadOnnxRuntime must hand ORT integrity-verified wasm bytes and never a
-// `wasmPaths` prefix: with a prefix, onnxruntime-web 1.30 resolves its JS glue
+// `wasmPaths` prefix: with a prefix, onnxruntime-web 1.31.1 resolves its JS glue
 // against the CDN and import()s it unverified (GH #585).
 
 const ortEnv = vi.hoisted(() => ({ wasm: {} as Record<string, unknown> }))

@@ -2,7 +2,7 @@
  * Same-origin hosting for the ONNX Runtime that `@xenova/transformers` bundles.
  *
  * transformers.js 2.17.2 depends on its own onnxruntime-web 1.14.0 (nested, not
- * the 1.30 direct dependency) and points that runtime at
+ * the 1.31.1 direct dependency) and points that runtime at
  * `cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/` at module load. ORT
  * 1.14 builds its pthread worker and threaded glue from Blobs of bundled code,
  * so the only bytes it takes from that prefix are the `.wasm` binaries -- and it
@@ -57,7 +57,7 @@ export const TRANSFORMERS_ORT_WASM = Object.freeze({
  * The `dist/` of the onnxruntime-web that transformers.js itself resolves, or
  * null when transformers.js is not installed (lite installs stub it, see
  * optionalMlPlugin in vite.config.ts). Resolved from the transformers package,
- * not from the app, so the direct 1.30 dependency can never be picked up.
+ * not from the app, so the direct 1.31.1 dependency can never be picked up.
  */
 export function resolveTransformersOrtPackageDir(fromFile) {
     const requireFromApp = createRequire(fromFile)

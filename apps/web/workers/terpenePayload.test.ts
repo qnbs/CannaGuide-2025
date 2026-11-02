@@ -47,9 +47,7 @@ describe('terpene worker payload readers', () => {
         })
         expect(similar?.strains.map((strain) => strain.id)).toEqual(['s1'])
         expect(readFindSimilar({ referenceProfile: { Myrcene: -1 }, strains: [] })).toBeUndefined()
-        expect(
-            readFindSimilar({ referenceProfile: { Myrcene: 101 }, strains: [] }),
-        ).toBeUndefined()
+        expect(readFindSimilar({ referenceProfile: { Myrcene: 101 }, strains: [] })).toBeUndefined()
         expect(
             readFindSimilar({ referenceProfile: { NotATerpene: 1 }, strains: [] }),
         ).toBeUndefined()
@@ -59,7 +57,12 @@ describe('terpene worker payload readers', () => {
                 cannabinoidProfile: { NotACannabinoid: 1 },
             }),
         ).toBeUndefined()
-        expect(readScoreEffects({ strains: [{ id: 'bare', name: 'No profile' }], desiredEffects: ['Relaxing'] })?.strains).toEqual([])
+        expect(
+            readScoreEffects({
+                strains: [{ id: 'bare', name: 'No profile' }],
+                desiredEffects: ['Relaxing'],
+            })?.strains,
+        ).toEqual([])
     })
 
     it('rejects a non-finite limit and an unknown effect tag', () => {

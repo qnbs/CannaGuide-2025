@@ -59,6 +59,8 @@ test('Cursor does not configure Graphify; Claude Code keeps it', () => {
     const doctor = read('scripts/graphify-mcp-doctor.mjs')
     assert.equal(doctor.includes('Cursor reads .cursor/mcp.json'), false)
     assert.match(doctor, /Cursor does not run Graphify or codegraph/)
+    assert.match(doctor, /root \.mcp\.json registers the node Graphify launcher/)
+    assert.match(doctor, /legacy shell launcher is advisory/)
 })
 
 test('project rules have the expected scope and do not name a permanent writer', () => {

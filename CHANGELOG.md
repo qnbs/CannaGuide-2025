@@ -8,7 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **docs(agents):** Four short Cursor project rules are tracked for the writer lease, web state, strain evidence, and dependency floors. Graphify stays with Claude Code CLI through root `.mcp.json`. codegraph is the CLI `scripts/codegraph.mjs`. Cursor does not run either and has no project MCP file. The writer lease points at the owner's session and QNB-259 instead of a hard-coded agent name. Copilot and the architecture note say the same. Copilot's stack notes match package 1.11.0, Vite 8, and pnpm 11.19.0, and they describe Cloudflare Pages as the live GitHub Actions mirror. A catalog regenerate or `strains:sync` needs an owner authorization in the current session. New dependency edits in a workspace `package.json` use the same floor rule.
+- **docs(agents):** Four short Cursor project rules are tracked for the writer lease, web state, strain evidence, and dependency floors. Graphify stays with Claude Code CLI through root `.mcp.json`. codegraph is the CLI `scripts/codegraph.mjs`. Cursor does not run either and has no project MCP file. The writer lease points at the owner's session and QNB-259 instead of a hard-coded agent name. Copilot and the architecture note say the same. Copilot's stack notes match package 1.11.0, Vite 8, and pnpm 11.19.0, and they describe Cloudflare Pages as the live GitHub Actions mirror. A catalog regenerate or `strains:sync` needs an owner authorization in the current session. A new override floor in `pnpm-workspace.yaml` stays inside one major. The dependency rule is also shown when a workspace `package.json` is edited.
 
 ### Fixed
 

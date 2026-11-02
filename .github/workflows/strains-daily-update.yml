@@ -53,7 +53,7 @@ jobs:
               run: node scripts/extract-strains-to-json.mjs
 
             - name: Generate TS files from strains.json
-              run: node scripts/generate-strain-files.mjs
+              run: node scripts/generate-strain-files.mjs --write-canonical
 
             - name: Check for duplicate IDs
               env:

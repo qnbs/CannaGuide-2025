@@ -27,6 +27,7 @@ import {
     countValueNodes,
     commitFiles,
     formatStrain,
+    resolveCatalogAction,
     resolveCatalogDir,
 } from './generate-strain-files.mjs'
 
@@ -315,6 +316,56 @@ const catalogOracle = () => {
         sha256: createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
     }
 }
+
+test('a catalog write is explicit and a bare run only checks', () => {
+    const canonical = path.dirname(strainsPath)
+    const fixture = path.join(tmpdir(), 'strain-fixture')
+    assert.deepEqual(resolveCatalogAction(['node', 'script'], canonical), {
+        mode: 'check',
+        dir: canonical,
+    })
+    assert.deepEqual(resolveCatalogAction(['node', 'script', '--check'], canonical), {
+        mode: 'check',
+        dir: canonical,
+    })
+    assert.deepEqual(
+        resolveCatalogAction(['node', 'script', '--catalog-dir', fixture], canonical),
+        { mode: 'write', dir: path.resolve(fixture) },
+    )
+    assert.deepEqual(resolveCatalogAction(['node', 'script', '--write-canonical'], canonical), {
+        mode: 'write',
+        dir: canonical,
+    })
+    assert.throws(
+        () => resolveCatalogAction(['node', 'script', '--check', '--write-canonical'], canonical),
+        /--check does not write/,
+    )
+    assert.throws(
+        () =>
+            resolveCatalogAction(
+                ['node', 'script', '--write-canonical', '--catalog-dir', fixture],
+                canonical,
+            ),
+        /--write-canonical does not take --catalog-dir/,
+    )
+})
+
+test('a bare generator and --check leave the checked-in catalog unchanged', () => {
+    const before = catalogOracle()
+    const bare = spawnGenerate([])
+    assert.equal(bare.status, 0, bare.stderr)
+    assert.match(bare.stdout, /Check only:/)
+    assert.equal(bare.stdout.includes('Total written'), false)
+    const check = spawnGenerate(['--check'])
+    assert.equal(check.status, 0, check.stderr)
+    assert.match(check.stdout, /776 strains, 776 typed sourceUrl nulls/)
+    const refused = spawnGenerate(['--check', '--catalog-dir', before.strainsDir])
+    assert.equal(refused.status, 1)
+    assert.match(refused.stderr, /--check does not write/)
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
 
 test('the catalog directory flag resolves a fixture and rejects a missing path', () => {
     const fixture = path.join(tmpdir(), 'strain-fixture')

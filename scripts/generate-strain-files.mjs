@@ -5,11 +5,14 @@
  * and generates uniform TypeScript strain data files (a.ts-z.ts, numeric.ts)
  * plus index.ts.
  *
- * Usage: node scripts/generate-strain-files.mjs [--catalog-dir DIR]
+ * Usage: node scripts/generate-strain-files.mjs [--check]
+ *        node scripts/generate-strain-files.mjs --catalog-dir DIR
+ *        node scripts/generate-strain-files.mjs --write-canonical
  *
  * dataProvenance.sourceUrl may be a string, null, or omitted. A null counts
  * only on an array entry. Any other JSON null stops the write before a
- * module changes. --catalog-dir writes that directory instead of
+ * module changes. No flag checks the checked-in catalog and writes nothing.
+ * --catalog-dir writes that directory. --write-canonical publishes
  * apps/web/data/strains. A publish failure restores the previous file.
  * If that restore fails, the private staging directory is kept.
  */
@@ -293,6 +296,26 @@ export const resolveCatalogDir = (argv, fallback) => {
     return path.resolve(dir)
 }
 
+/**
+ * No flag and `--check` read the checked-in catalog and write nothing.
+ * `--catalog-dir` writes that directory. `--write-canonical` writes the
+ * checked-in catalog. The write flags do not combine.
+ */
+export const resolveCatalogAction = (argv, canonicalDir) => {
+    const check = argv.includes('--check')
+    const writeCanonical = argv.includes('--write-canonical')
+    const hasFixture = argv.includes('--catalog-dir')
+    if (check && (writeCanonical || hasFixture)) {
+        throw new Error('[generate] --check does not write')
+    }
+    if (writeCanonical && hasFixture) {
+        throw new Error('[generate] --write-canonical does not take --catalog-dir')
+    }
+    if (writeCanonical) return { mode: 'write', dir: canonicalDir }
+    if (hasFixture) return { mode: 'write', dir: resolveCatalogDir(argv, canonicalDir) }
+    return { mode: 'check', dir: canonicalDir }
+}
+
 const EXPORT_NAMES = {
     numeric: 'strainsNumeric',
     a: 'strainsA',
@@ -509,8 +532,8 @@ const writeCatalog = async (dir, files) => {
 }
 
 const run = async () => {
-    const dir = resolveCatalogDir(process.argv, strainsDir)
-    const raw = await fs.readFile(path.join(dir, 'strains.json'), 'utf8')
+    const action = resolveCatalogAction(process.argv, strainsDir)
+    const raw = await fs.readFile(path.join(action.dir, 'strains.json'), 'utf8')
     const strains = JSON.parse(raw)
     console.log(`[generate] Loaded ${strains.length} strains from strains.json`)
     const assessment = assessCatalog(strains)
@@ -519,7 +542,16 @@ const run = async () => {
         process.exitCode = 1
         return
     }
-    const total = await writeCatalog(dir, buildStrainFiles(strains))
+    if (action.mode === 'check') {
+        console.log(
+            `[generate] Check only: ${strains.length} strains, ${assessment.typedNullCount} typed sourceUrl nulls`,
+        )
+        console.log(
+            '[generate] No files written. Pass --write-canonical to publish the checked-in catalog.',
+        )
+        return
+    }
+    const total = await writeCatalog(action.dir, buildStrainFiles(strains))
     console.log(`[generate] Total written: ${total} strains`)
 }
 

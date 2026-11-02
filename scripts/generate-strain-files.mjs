@@ -7,9 +7,10 @@
  *
  * Usage: node scripts/generate-strain-files.mjs [--catalog-dir DIR]
  *
- * dataProvenance.sourceUrl may be a string, null, or omitted. Any other
- * JSON null stops the write before a module changes. --catalog-dir writes
- * that directory instead of apps/web/data/strains.
+ * dataProvenance.sourceUrl may be a string, null, or omitted. A null counts
+ * only on an array entry. Any other JSON null stops the write before a
+ * module changes. --catalog-dir writes that directory instead of
+ * apps/web/data/strains.
  */
 
 import fs from 'node:fs/promises'
@@ -204,18 +205,18 @@ const bucketOf = (name) => {
 
 const pointerToken = (segment) => String(segment).replaceAll('~', '~0').replaceAll('/', '~1')
 
-const collectNullPointers = (value, pointer, out) => {
+const collectNullPointers = (value, segments, out) => {
     if (value === null) {
-        out.push(pointer)
+        out.push(segments)
         return
     }
     if (Array.isArray(value)) {
-        value.forEach((item, index) => collectNullPointers(item, `${pointer}/${index}`, out))
+        value.forEach((item, index) => collectNullPointers(item, segments.concat({ index }), out))
         return
     }
     if (typeof value === 'object') {
         for (const key of Object.keys(value)) {
-            collectNullPointers(value[key], `${pointer}/${pointerToken(key)}`, out)
+            collectNullPointers(value[key], segments.concat({ key }), out)
         }
     }
 }
@@ -232,20 +233,31 @@ const nestedNodeCount = (value) => {
 export const countValueNodes = (value) => 1 + nestedNodeCount(value)
 
 /**
- * dataProvenance.sourceUrl is `string | null | undefined`. That null is typed.
+ * dataProvenance.sourceUrl is `string | null`. That null is typed only when
+ * each index is an array index. A numeric object key is not an array index.
  * Every other JSON null still blocks the module write.
  */
-const TYPED_NULL_POINTER = /^\/\d+\/dataProvenance\/\d+\/sourceUrl$/
+const formatPointer = (segments) =>
+    `/${segments
+        .map((segment) => pointerToken(segment.index !== undefined ? segment.index : segment.key))
+        .join('/')}`
+
+const isTypedSourceUrlNull = (segments) =>
+    segments.length === 4 &&
+    segments[0].index !== undefined &&
+    segments[1].key === 'dataProvenance' &&
+    segments[2].index !== undefined &&
+    segments[3].key === 'sourceUrl'
 
 const strainId = (strain) => (typeof strain?.id === 'string' ? strain.id : '<missing-id>')
 
 const collectFindings = (strains, index, unexpected, typed) => {
     const pointers = []
-    collectNullPointers(strains[index], `/${index}`, pointers)
+    collectNullPointers(strains[index], [{ index }], pointers)
     const id = strainId(strains[index])
-    for (const pointer of pointers) {
-        const finding = { pointer, id }
-        if (TYPED_NULL_POINTER.test(pointer)) typed.push(finding)
+    for (const segments of pointers) {
+        const finding = { pointer: formatPointer(segments), id }
+        if (isTypedSourceUrlNull(segments)) typed.push(finding)
         else unexpected.push(finding)
     }
 }

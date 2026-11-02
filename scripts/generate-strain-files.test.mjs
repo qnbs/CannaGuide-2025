@@ -352,6 +352,16 @@ test('a typed sourceUrl null is written only in the requested directory', () => 
         const topLevel = assessCatalog([{ id: 'top', name: 'Top', sourceUrl: null }])
         assert.equal(topLevel.admitted, false)
         assert.deepEqual(topLevel.pointers, ['/0/sourceUrl'])
+        const disguised = assessCatalog([
+            {
+                id: 'obj',
+                name: 'Obj',
+                dataProvenance: { 0: { sourceUrl: null } },
+            },
+        ])
+        assert.equal(disguised.admitted, false)
+        assert.equal(disguised.typedNullCount, 0)
+        assert.deepEqual(disguised.pointers, ['/0/dataProvenance/0/sourceUrl'])
 
         const result = spawnGenerate(['--catalog-dir', dir])
         assert.equal(result.status, 0, result.stderr)

@@ -188,7 +188,9 @@ pnpm run check:i18n
   skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a
   review. It is not a green check, and it is not a merge block once two of CodeRabbit,
   CodeAnt, and Codex have covered that head. Do not merge a head that none of the three
-  has reviewed.
+  has reviewed. When `chatgpt-codex-connector[bot]` has no review on that head,
+  comment `@codex review` once. Do not send a second `@codex review` while that
+  request is unanswered. A review of an older commit does not cover the head.
   Nitpicks and "outside diff range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.

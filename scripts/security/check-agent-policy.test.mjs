@@ -17,6 +17,7 @@ const REVIEW_SENTENCE = [
     'Do not merge until two of CodeRabbit, CodeAnt, and Codex have covered that head.',
     'REVIEW_UNAVAILABLE is not a green check, and it is not a merge block once two of them have covered.',
     'Do not merge a head that none of the three has reviewed.',
+    'When that head has no Codex review, comment `@codex review` once.',
 ].join(' ')
 const SOUND_AGENTS = [
     '### Authority and trust (all agents)',

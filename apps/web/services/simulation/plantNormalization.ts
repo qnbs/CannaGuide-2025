@@ -14,7 +14,7 @@ export function getPlantGeneticModifiers(plant: Plant): GeneticModifiers {
 
 /** Reported coefficients stay on the cultivar. A missing set is not filled with defaults. */
 const strainWithReportedModifiers = (strain: Plant['strain']): Plant['strain'] => {
-    if (!strain.geneticModifiers) return { ...strain }
+    if (!strain?.geneticModifiers) return { ...strain }
     return {
         ...strain,
         geneticModifiers: normalizeGeneticModifiers(strain.geneticModifiers),

@@ -92,6 +92,13 @@ describe('plantNormalization', () => {
         expect(plant.strain.geneticModifiers).toBeUndefined()
     })
 
+    it('does not throw when a legacy plant has no strain object', () => {
+        const plant = sparsePlant()
+        delete (plant as { strain?: Plant['strain'] }).strain
+        const normalized = normalizePlant(plant)
+        expect(normalized.strain.geneticModifiers).toBeUndefined()
+    })
+
     it('keeps reported genetic modifiers on the cultivar', () => {
         const normalized = normalizePlant(sparsePlant())
         expect(normalized.strain.geneticModifiers?.pestResistance).toBe(1)

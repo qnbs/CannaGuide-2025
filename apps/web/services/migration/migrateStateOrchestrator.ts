@@ -83,28 +83,39 @@ interface SliceVersionReport {
     retained: VersionedSliceName[]
 }
 
+const isVersionMismatch = (stored: number | undefined, expected: number): boolean =>
+    stored !== undefined && stored !== expected
+
+/** Resets a transient slice or keeps a user-data slice, and records which. */
+const handleSliceMismatch = (
+    state: PersistedState,
+    name: VersionedSliceName,
+    versions: string,
+    report: SliceVersionReport,
+): void => {
+    if (SLICES_SAFE_TO_RESET.has(name)) {
+        console.debug(
+            `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - resetting to initial state.`,
+        )
+        delete (state as Record<string, unknown>)[name]
+        report.reset.push(name)
+        return
+    }
+    console.warn(
+        `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - keeping the stored data for the shape guards.`,
+    )
+    report.retained.push(name)
+}
+
 const validateSliceVersions = (state: PersistedState): SliceVersionReport => {
     const persistedVersions = state._sliceVersions ?? {}
     const report: SliceVersionReport = { reset: [], retained: [] }
 
     for (const [sliceName, expectedVersion] of Object.entries(SLICE_SCHEMA_VERSIONS)) {
         const name = sliceName as VersionedSliceName
-        const persistedVersion = persistedVersions[name]
-
-        if (persistedVersion === undefined || persistedVersion === expectedVersion) continue
-
-        const versions = `stored: ${persistedVersion}, expected: ${expectedVersion}`
-        if (SLICES_SAFE_TO_RESET.has(name)) {
-            console.debug(
-                `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - resetting to initial state.`,
-            )
-            delete (state as Record<string, unknown>)[name]
-            report.reset.push(name)
-        } else {
-            console.warn(
-                `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - keeping the stored data for the shape guards.`,
-            )
-            report.retained.push(name)
+        const stored = persistedVersions[name]
+        if (isVersionMismatch(stored, expectedVersion)) {
+            handleSliceMismatch(state, name, `stored: ${stored}, expected: ${expectedVersion}`, report)
         }
     }
 

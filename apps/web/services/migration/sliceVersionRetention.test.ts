@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { SLICE_SCHEMA_VERSIONS } from '@/constants'
+import { APP_VERSION, SLICE_SCHEMA_VERSIONS } from '@/constants'
+import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { migrateState } from '@/services/migrationLogic'
 import { PlantStage } from '@/types'
 
@@ -122,6 +123,21 @@ describe('migrateState slice version mismatch', () => {
         expect(warn).not.toHaveBeenCalled()
     })
 
+    it('keeps a slice stored under a newer schema version for the shape guards', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        const migrated = migrateState({
+            version: 5,
+            _sliceVersions: { simulation: SLICE_SCHEMA_VERSIONS.simulation + 1 },
+            simulation: populatedSimulation(),
+        } as never)
+
+        // A snapshot written by a newer build is not emptied by an older one.
+        // The stamp is rewritten to the current version on the next save
+        // (bootstrap/persistence.ts), so a later newer build revalidates it.
+        expect(migrated.simulation?.plants.ids).toEqual(['plant-1'])
+    })
+
     it('still drops the transient ui slice on a version mismatch', () => {
         vi.spyOn(console, 'debug').mockImplementation(() => undefined)
 
@@ -132,5 +148,38 @@ describe('migrateState slice version mismatch', () => {
         } as never)
 
         expect(migrated.ui).toBeUndefined()
+    })
+})
+
+describe('persisted snapshot hydration with a slice version mismatch', () => {
+    const snapshotWith = (simulation: unknown) =>
+        JSON.stringify({
+            version: APP_VERSION,
+            _sliceVersions: { simulation: SLICE_SCHEMA_VERSIONS.simulation - 1 },
+            simulation,
+        })
+
+    it('hydrates the stored plants and keeps them across a save and reload', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        const first = parseAndMigratePersistedSnapshot(snapshotWith(populatedSimulation()))
+        expect(first.simulation?.plants.ids).toEqual(['plant-1'])
+
+        // What bootstrap/persistence.ts saves is parsed again on the next start.
+        const reloaded = parseAndMigratePersistedSnapshot(JSON.stringify(first))
+        expect(reloaded.simulation?.plants.ids).toEqual(['plant-1'])
+        expect(reloaded.simulation?.plants.entities['plant-1']?.name).toBe('Legacy Plant')
+    })
+
+    it('fails loudly when the stored slice cannot be repaired, instead of emptying it', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        // createAppStore catches this error and recovers from the pre-migration
+        // backup (stores/store.ts). Before the fix the mismatched slice was
+        // deleted first, the validator saw nothing wrong, and an empty
+        // simulation was hydrated and saved over the original.
+        expect(() => parseAndMigratePersistedSnapshot(snapshotWith({ plants: [] }))).toThrow(
+            'Persisted simulation.plants must be an entity collection.',
+        )
     })
 })

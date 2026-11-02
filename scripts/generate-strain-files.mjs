@@ -377,10 +377,25 @@ const reportQuarantine = (assessment) => {
     console.error('[generate] Catalog files were not modified.')
 }
 
+let temporarySerial = 0
+
+/** Write beside the target, then rename. A failed write leaves the previous file. */
+export const replaceFile = async (target, content) => {
+    temporarySerial += 1
+    const temporary = `${target}.${process.pid}.${temporarySerial}.tmp`
+    try {
+        await fs.writeFile(temporary, content, 'utf8')
+        await fs.rename(temporary, target)
+    } catch (error) {
+        await fs.rm(temporary, { force: true })
+        throw error
+    }
+}
+
 const writeCatalog = async (dir, files) => {
     let total = 0
     for (const file of files) {
-        await fs.writeFile(path.join(dir, file.fileName), file.content, 'utf8')
+        await replaceFile(path.join(dir, file.fileName), file.content)
         total += file.count
         const label = file.count > 0 ? `${file.count} strains` : 'generated'
         console.log(`[generate]   ${file.fileName}: ${label}`)

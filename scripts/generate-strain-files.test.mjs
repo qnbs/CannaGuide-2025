@@ -12,6 +12,7 @@ import {
     buildStrainFiles,
     countValueNodes,
     formatStrain,
+    replaceFile,
     resolveCatalogDir,
 } from './generate-strain-files.mjs'
 
@@ -398,6 +399,10 @@ test('the full 776 catalog trial writes only in the requested directory', () => 
         for (const strain of strains) assert.ok(written.includes(`id: '${strain.id}',`), strain.id)
         assert.equal(readFileSync(path.join(dir, 'sentinel.ts'), 'utf8'), 'keep')
         assert.equal(
+            readdirSync(dir).some((name) => name.endsWith('.tmp')),
+            false,
+        )
+        assert.equal(
             createHash('sha256').update(readFileSync(path.join(dir, 'strains.json'))).digest('hex'),
             BASELINE_SHA256,
         )
@@ -405,6 +410,32 @@ test('the full 776 catalog trial writes only in the requested directory', () => 
         assert.equal(
             createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
             BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a failed module replace leaves the previous file and no temp file', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-replace-'))
+    try {
+        const target = path.join(dir, 'a.ts')
+        writeFileSync(target, 'original')
+        await replaceFile(target, 'next')
+        assert.equal(readFileSync(target, 'utf8'), 'next')
+        assert.equal(
+            readdirSync(dir).some((name) => name.endsWith('.tmp')),
+            false,
+        )
+
+        rmSync(target)
+        mkdirSync(target)
+        writeFileSync(path.join(target, 'keep'), 'x')
+        await assert.rejects(replaceFile(target, 'truncated'))
+        assert.equal(readFileSync(path.join(target, 'keep'), 'utf8'), 'x')
+        assert.equal(
+            readdirSync(dir).some((name) => name.endsWith('.tmp')),
+            false,
         )
     } finally {
         rmSync(dir, { recursive: true, force: true })

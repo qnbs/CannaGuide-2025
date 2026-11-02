@@ -150,10 +150,39 @@ describe('non-chemical cultivar claims', () => {
             sourceId: 'source:other',
             evidenceIds: ['evidence:other'],
         })
+        const matchingFlowering = strainClaimSchema.parse({
+            ...attributed,
+            kind: 'duration',
+            subject: 'flowering',
+            quantity: 45,
+            unit: 'days',
+            sourceId: 'source:matching-flowering',
+            evidenceIds: ['evidence:matching-flowering'],
+        })
+        const sameQuantityLifecycle = strainClaimSchema.parse({
+            ...attributed,
+            kind: 'duration',
+            subject: 'lifecycle',
+            quantity: 45,
+            unit: 'days',
+            sourceId: 'source:lifecycle-days',
+            evidenceIds: ['evidence:lifecycle-days'],
+        })
+        const sameQuantityWeeks = strainClaimSchema.parse({
+            ...attributed,
+            kind: 'duration',
+            subject: 'flowering',
+            quantity: 45,
+            unit: 'weeks',
+            sourceId: 'source:flowering-weeks',
+            evidenceIds: ['evidence:flowering-weeks'],
+        })
         expect(durationsMatch(flowering, lifecycle)).toBe(false)
         expect(durationsMatch(sameDays, nineWeeks)).toBe(false)
         expect(durationsMatch(flowering, otherCultivar)).toBe(false)
-        expect(durationsMatch(flowering, flowering)).toBe(true)
+        expect(durationsMatch(flowering, sameQuantityLifecycle)).toBe(false)
+        expect(durationsMatch(flowering, sameQuantityWeeks)).toBe(false)
+        expect(durationsMatch(flowering, matchingFlowering)).toBe(true)
     })
 
     it('does not accept a party claim as a laboratory analyte fact', () => {

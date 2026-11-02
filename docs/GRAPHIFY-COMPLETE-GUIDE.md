@@ -2,10 +2,13 @@
 
 **Zielgruppe:** Menschen und **KI-Agenten**, die dieses Repository verstehen, Graphify betreiben oder **dieselbe Integrationsform in anderen Apps/Repositories** nachbauen wollen.
 
-> **Note (migration):** CannaGuide now uses Claude Code CLI instead of Cursor. The MCP servers
-> (`graphify`, `gitkraken`) are now configured in **`.mcp.json`** at the repo root (no longer in
-> `.cursor/mcp.json`). Sections below that mention `.cursor/` or `mdc:*` scripts describe the retired
-> Cursor setup and are historical only.
+> **Current setup (2026-11-02):** Cursor project MCP is `.cursor/mcp.json`. It starts `node` on
+> `${workspaceFolder}/scripts/graphify-mcp-launcher.mjs` (pins in `scripts/graphify-pins.mjs`).
+> Root `.mcp.json` stays the Claude Code entry and is not assumed to load in Cursor. Check the
+> launcher with `pnpm run graphify:mcp:doctor`. GitKraken is not in the Cursor project file.
+>
+> **Historical:** Sections below that mention a retired `.cursor/` tree, `mdc:*` scripts, or a
+> bash-only MCP file describe the July 2026 setup. They are archive, not the current path.
 
 **Lesereihenfolge für Agenten (empfohlen):**
 

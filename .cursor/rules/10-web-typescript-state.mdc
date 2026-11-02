@@ -1,0 +1,11 @@
+---
+description: Persisted Redux versus transient Zustand, and how web UI calls AI
+globs: apps/web/**/*.ts,apps/web/**/*.tsx
+alwaysApply: false
+---
+
+# Web TypeScript state
+
+Redux slices under apps/web/stores/slices are the persisted domain state. Zustand stores are transient UI and are not written to IndexedDB. Cross the two only through services/uiStateBridge.ts.
+
+Render AI output with components/common/AiDisclaimer.tsx. Health and diagnosis surfaces pass medical. Call cloud AI through services/aiFacade.ts. User-visible strings go through t() or getT().

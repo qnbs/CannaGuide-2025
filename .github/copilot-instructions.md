@@ -5,7 +5,7 @@
 CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for cannabis cultivation management. Built with React 19, TypeScript (strict), Redux Toolkit, and Google Gemini AI. The app is 100% offline-first with dual IndexedDB persistence.
 
 **Live:** https://qnbs.github.io/CannaGuide-2025/
-**Version:** 1.8.2
+**Version:** 1.11.0 (root package.json; this line is not itself a GitHub release)
 
 ---
 
@@ -17,8 +17,8 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **State:** Redux Toolkit (persisted app-state) + Zustand (transient UI-state) + RTK Query (AI API caching)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
 - **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web -- 22 services, 8 ML models, 3-layer fallback (WebLLM -> Transformers.js -> Heuristics)
-- **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
-- **Package Manager:** pnpm 10 via Corepack (shamefully-hoist, workspace:\* protocol)
+- **Build:** Vite 8 + vite-plugin-pwa (InjectManifest)
+- **Package Manager:** pnpm 11.19.0 via Corepack (shamefully-hoist, workspace:\* protocol)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
@@ -26,7 +26,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Desktop:** Tauri v2 (apps/desktop/) -- 99% code sharing with PWA, CI/CD matrix builds
 - **Error Tracking:** Sentry (browser SDK)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
-- **Distribution:** GitHub Pages, Vercel (automated); Cloudflare Pages + Netlify CI paused — see `docs/distribution.md`; Tauri Desktop (Linux/macOS/Windows)
+- **Distribution:** GitHub Pages, Vercel, and Cloudflare Pages (GitHub Actions when CLOUDFLARE_* secrets are set); Netlify GitHub Actions deploys stay paused -- see `docs/distribution.md`; Tauri Desktop (Linux/macOS/Windows)
 
 ### Monorepo Layout
 
@@ -40,7 +40,7 @@ turbo.json               # TurboRepo pipeline (build, dev, test, lint, typecheck
 tsconfig.json            # References-only (apps/web, packages/*)
 
 apps/
-  web/                   # Main PWA (React 19 + Vite 7)
+  web/                   # Main PWA (React 19 + Vite 8)
     package.json         # @cannaguide/web -- all frontend deps
     vite.config.ts       # Vite build + optionalMlPlugin() for ML stub fallback
     tsconfig.json        # strict, baseUrl ".", @/* path alias
@@ -449,13 +449,13 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Deployment
 
-| Target           | Method                                  | Trigger                                                                       |
-| ---------------- | --------------------------------------- | ----------------------------------------------------------------------------- |
-| GitHub Pages     | `.github/workflows/deploy.yml`          | Push to `main`                                                                |
-| Netlify          | `netlify.toml`                          | **PAUSED** -- project disabled on dashboard (bandwidth limit, until v2.0)     |
-| Vercel           | `vercel.json` + Git integration         | Push to `main` (connect via Vercel Dashboard)                                 |
-| Cloudflare Pages | `_headers` + `_redirects`               | **PAUSED** — `deploy-cloudflare.yml` stub only; dashboard/Git builds optional |
-| GitHub Release   | `.github/workflows/release-publish.yml` | Tag push `v*` (parallel to gate) -- GitHub build attestation + CycloneDX SBOM |
+| Target           | Method                                    | Trigger                                                                       |
+| ---------------- | ----------------------------------------- | ----------------------------------------------------------------------------- |
+| GitHub Pages     | `.github/workflows/deploy.yml`            | Push to `main`                                                                |
+| Netlify          | `netlify.toml`                            | **PAUSED** -- project disabled on dashboard (bandwidth limit, until v2.0)     |
+| Vercel           | `vercel.json` + Git integration           | Push to `main` (connect via Vercel Dashboard)                                 |
+| Cloudflare Pages | `.github/workflows/deploy-cloudflare.yml` | Push to `main` after CI, when `CLOUDFLARE_*` secrets are set                  |
+| GitHub Release   | `.github/workflows/release-publish.yml`   | Tag push `v*` (parallel to gate) -- GitHub build attestation + CycloneDX SBOM |
 
 ---
 

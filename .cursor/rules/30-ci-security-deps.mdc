@@ -1,0 +1,11 @@
+---
+description: Dependency floors, audit exceptions, and the required merge check
+globs: .github/**,scripts/security/**,pnpm-workspace.yaml,pnpm-lock.yaml
+alwaysApply: false
+---
+
+# CI and dependency security
+
+Keep an override floor inside one major. Every ignoreGhsas id needs a matching audit-exceptions.json record with an expiry. Do not ignore a withdrawn advisory, and do not remove an ignore while the scanner still reports that advisory.
+
+Do not override a package to a version that is not published. Do not take a major bump without a compatibility proof. The required merge check is CI Status. Do not merge with --admin. A release or a tag needs an explicit owner decision.

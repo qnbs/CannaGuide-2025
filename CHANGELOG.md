@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **docs(agents):** Cursor project MCP and five short project rules are tracked. The writer lease points at the owner's session and QNB-259 instead of a hard-coded agent name. Copilot's stack notes match package 1.11.0, Vite 8, and pnpm 11.19.0, and they describe Cloudflare Pages as the live GitHub Actions mirror.
+
 ### Fixed
 
 - **fix(strains):** The strain file generator keeps an explicit null, a zero, and false, including null positions in an array and nested provenance. Keys that are not bare identifiers are quoted strings. A catalog that still contains null stops before any module is written, and the catalog bytes stay as they were. Extracting the TypeScript modules copies dataProvenance, including an explicit null. When a module omits that field, the previous strains.json value for the same id is kept. A missing strains.json still starts empty. Malformed JSON, a non-array document, or another read error stops the extract before it writes. A previous catalog is left untouched unless every id and value round-trips; a parse error, a duplicate id, or a strain without an id also stops the extract before it writes (#781).

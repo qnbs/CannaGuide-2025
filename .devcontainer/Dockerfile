@@ -14,12 +14,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # System packages in one RUN layer + cache cleanup
 # gh CLI requires official GitHub apt repo (not in default Ubuntu repos)
+# Versions are pinned: ripgrep from noble universe, jq and ca-certificates
+# from noble-updates, gh from the GitHub CLI stable repo (2026-11-02).
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
         -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
         > /etc/apt/sources.list.d/github-cli.list \
     && apt-get update \
-    && apt-get install -y --no-install-recommends ripgrep gh jq ca-certificates \
+    && apt-get install -y --no-install-recommends \
+        ripgrep=14.1.0-1 \
+        gh=2.103.3 \
+        jq=1.7.1-3ubuntu0.24.04.2 \
+        ca-certificates=20260816ubuntu0.24.04.1 \
     && curl -LsSf "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/uv-x86_64-unknown-linux-gnu.tar.gz" \
         -o /tmp/uv.tar.gz \
     && tar -xzf /tmp/uv.tar.gz -C /tmp \

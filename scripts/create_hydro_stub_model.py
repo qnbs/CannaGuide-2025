@@ -79,4 +79,4 @@ size_kb = os.path.getsize(out_path) / 1024
 print(f"[OK] Model saved to {out_path} ({size_kb:.1f} KB)")
 print(f"     Input:  [1, {WINDOW}, {FEATURES}] (Float32)")
 print(f"     Output: [1, {FEATURES}] (Float32)")
-print(f"     Ops:    Reshape -> MatMul -> Add")
+print("     Ops:    Reshape -> MatMul -> Add")

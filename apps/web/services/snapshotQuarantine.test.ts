@@ -63,6 +63,22 @@ describe('quarantineUnreadableSnapshot', () => {
         expect(stored.quarantine).not.toContain('sk-secret-value')
     })
 
+    it('redacts a credential in a snapshot that is not valid JSON', async () => {
+        const stored: Record<string, string> = {}
+        mocks.getItem.mockImplementation(async (key: string) => stored[key] ?? null)
+        mocks.setItem.mockImplementation(async (key: string, value: string) => {
+            stored[key] = value
+        })
+        const truncated =
+            '{"version":5,"settings":{"settings":{"tts":{"cloudTtsApiKey":"sk-secret-value"}},'
+
+        await quarantineUnreadableSnapshot(truncated)
+
+        expect(stored.quarantine).toBeDefined()
+        expect(stored.quarantine).not.toContain('sk-secret-value')
+        expect(stored.quarantine).toContain('"version":5')
+    })
+
     it('reports a failed write as false instead of throwing', async () => {
         mocks.getItem.mockResolvedValue(null)
         mocks.setItem.mockRejectedValue(new Error('QuotaExceededError'))

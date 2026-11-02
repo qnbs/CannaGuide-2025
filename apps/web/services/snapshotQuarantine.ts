@@ -1,7 +1,7 @@
 import { schedulePersistenceWrite } from '@/bootstrap/persistenceCoordinator'
 import { REDUX_STATE_QUARANTINE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { redactSnapshotSecrets } from '@/utils/redactSecrets'
+import { redactSnapshotSecrets, scrubSecretsInText } from '@/utils/redactSecrets'
 
 /**
  * Keeps the first persisted snapshot that could not be hydrated, before the
@@ -25,7 +25,9 @@ export const quarantineUnreadableSnapshot = async (
     try {
         await schedulePersistenceWrite(async () => {
             if ((await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)) !== null) return
-            const kept = redactSnapshotSecrets(snapshot)
+            // Redact the parsed form first, then scrub the text: a snapshot that is
+            // not valid JSON is returned as is by the first step.
+            const kept = scrubSecretsInText(redactSnapshotSecrets(snapshot))
             await indexedDBStorage.setItem(REDUX_STATE_QUARANTINE_KEY, kept)
             if ((await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)) !== kept) {
                 throw new Error('Quarantine snapshot verification failed.')

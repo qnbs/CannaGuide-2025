@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { redactSettingsSecrets, redactSnapshotSecrets } from '@/utils/redactSecrets'
+import {
+    redactSettingsSecrets,
+    redactSnapshotSecrets,
+    scrubSecretsInText,
+} from '@/utils/redactSecrets'
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
@@ -85,5 +89,29 @@ describe('Porcupine access key (#709)', () => {
             settings: { settings: { voiceControl: { porcupineAccessKey: PORCUPINE_CANARY } } },
         })
         expect(redactSnapshotSecrets(snapshot)).not.toContain(PORCUPINE_CANARY)
+    })
+})
+
+describe('scrubSecretsInText', () => {
+    it('blanks a key in text that is not valid JSON, where the parsed path gives up', () => {
+        const broken = `{"version":5,"settings":{"settings":{"tts":{"cloudTtsApiKey":"${CANARY}"}},`
+        expect(() => JSON.parse(broken)).toThrow()
+
+        expect(redactSnapshotSecrets(broken)).toContain(CANARY)
+        const scrubbed = scrubSecretsInText(broken)
+        expect(scrubbed).not.toContain(CANARY)
+        expect(scrubbed).toContain('"cloudTtsApiKey":null')
+    })
+
+    it('handles an escaped quote inside the value and both fields', () => {
+        const text = String.raw`{"cloudTtsApiKey" : "a\"b${CANARY}", "porcupineAccessKey":"p-secret"`
+        const scrubbed = scrubSecretsInText(text)
+        expect(scrubbed).not.toContain(CANARY)
+        expect(scrubbed).not.toContain('p-secret')
+    })
+
+    it('leaves text without a secret field untouched', () => {
+        const text = '{"version":5,"favorites":{"favoriteIds":["a"]}'
+        expect(scrubSecretsInText(text)).toBe(text)
     })
 })

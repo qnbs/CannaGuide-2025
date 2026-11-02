@@ -74,7 +74,7 @@ const stripTransientState = (state: PersistedState): void => {
  * snapshot they cannot repair fails hydration loudly (so the backup path runs)
  * instead of being silently emptied and then saved over the original.
  */
-const SLICES_SAFE_TO_RESET: ReadonlySet<VersionedSliceName> = new Set<VersionedSliceName>(['ui'])
+const TRANSIENT_SLICE: VersionedSliceName = 'ui'
 
 interface SliceVersionReport {
     /** Dropped on mismatch (transient slices only). */
@@ -93,11 +93,11 @@ const handleSliceMismatch = (
     versions: string,
     report: SliceVersionReport,
 ): void => {
-    if (SLICES_SAFE_TO_RESET.has(name)) {
+    if (name === TRANSIENT_SLICE) {
         console.debug(
             `[MigrationLogic] Slice "${name}" version mismatch (${versions}) - resetting to initial state.`,
         )
-        delete (state as Record<string, unknown>)[name]
+        delete state.ui
         report.reset.push(name)
         return
     }
@@ -107,21 +107,23 @@ const handleSliceMismatch = (
     report.retained.push(name)
 }
 
+const checkSliceVersion = (
+    state: PersistedState,
+    name: VersionedSliceName,
+    expected: number,
+    report: SliceVersionReport,
+): void => {
+    const stored = state._sliceVersions?.[name]
+    if (isVersionMismatch(stored, expected)) {
+        handleSliceMismatch(state, name, `stored: ${stored}, expected: ${expected}`, report)
+    }
+}
+
 const validateSliceVersions = (state: PersistedState): SliceVersionReport => {
-    const persistedVersions = state._sliceVersions ?? {}
     const report: SliceVersionReport = { reset: [], retained: [] }
 
     for (const [sliceName, expectedVersion] of Object.entries(SLICE_SCHEMA_VERSIONS)) {
-        const name = sliceName as VersionedSliceName
-        const stored = persistedVersions[name]
-        if (isVersionMismatch(stored, expectedVersion)) {
-            handleSliceMismatch(
-                state,
-                name,
-                `stored: ${stored}, expected: ${expectedVersion}`,
-                report,
-            )
-        }
+        checkSliceVersion(state, sliceName as VersionedSliceName, expectedVersion, report)
     }
 
     state._sliceVersions = { ...SLICE_SCHEMA_VERSIONS }

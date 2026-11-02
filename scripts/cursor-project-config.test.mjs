@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { test } from 'node:test'
 
+import { selectsGraphifyNodeLauncher } from './graphify-node-launcher.mjs'
+
 const read = (path) => readFileSync(path, 'utf8')
 
 function globToRegExp(glob) {
@@ -154,7 +156,8 @@ test('agent-doc changes still run this file', () => {
     assert.ok(paths)
     const policyPaths = new RegExp(paths)
     assert.equal(policyPaths.test('docs/GRAPHIFY-COMPLETE-GUIDE.md'), true)
-    assert.equal(policyPaths.test('docs/ARCHITECTURE.md'), false)
+    assert.equal(policyPaths.test('docs/ARCHITECTURE.md'), true)
+    assert.equal(policyPaths.test('README.md'), false)
 })
 
 test('state and dependency rules match the code they describe', () => {
@@ -176,7 +179,7 @@ test('agent docs name the lease and the current stack', () => {
     const agents = read('AGENTS.md')
     assert.match(agents, /QNB-259/)
     assert.equal(agents.includes('currently Claude Code'), false)
-    const guide = read('docs/GRAPHIFY-COMPLETE-GUIDE.md').split('\n').slice(0, 12).join('\n')
+    const guide = read('docs/GRAPHIFY-COMPLETE-GUIDE.md').split('\n').slice(0, 14).join('\n')
     assert.match(guide, /Claude Code CLI/)
     assert.match(guide, /Cursor does not run those tools/)
     assert.match(guide, /\.cursor\/rules\/\*\.mdc/)
@@ -199,4 +202,19 @@ test('agent docs name the lease and the current stack', () => {
     const architecture = read('docs/ARCHITECTURE.md')
     assert.equal(architecture.includes('Cursor integration uses `.cursor/mcp.json`'), false)
     assert.match(architecture, /codegraph is the CLI `scripts\/codegraph\.mjs`/)
+})
+
+test('the doctor warns on an old graph and requires the launcher entry', () => {
+    const doctor = read('scripts/graphify-mcp-doctor.mjs')
+    assert.match(doctor, /selectsGraphifyNodeLauncher/)
+    assert.match(doctor, /graph\.json older than last commit/)
+    assert.equal(doctor.includes('bad("graph.json older than last git commit'), false)
+    assert.equal(selectsGraphifyNodeLauncher(['scripts/graphify-mcp-launcher.mjs']), true)
+    assert.equal(
+        selectsGraphifyNodeLauncher(['--version', 'scripts/graphify-mcp-launcher.mjs']),
+        false,
+    )
+    assert.equal(selectsGraphifyNodeLauncher(['scripts/other.mjs']), false)
+    assert.equal(selectsGraphifyNodeLauncher([]), false)
+    assert.match(read('docs/GRAPHIFY-COMPLETE-GUIDE.md'), /warns when `graph\.json` is older than HEAD/)
 })

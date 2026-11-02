@@ -147,10 +147,11 @@ jobs:
                   # policy tests that guard them (CG-AUD-20261028-A02). They are not
                   # docs to an agent: they are executed. Route them to the light
                   # `policy` job instead. Same grep discipline as above.
-                  # The Graphify guide is not an AGENT_FILES instruction file. It is
-                  # listed here so a guide-only edit still runs cursor-project-config.test.mjs.
-                  # docs/ARCHITECTURE.md stays a plain doc on purpose.
-                  POLICY_PATHS='(^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/DEVOPS-GATES\.md$|^docs/GRAPHIFY-COMPLETE-GUIDE\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/)'
+                  # The Graphify guide and the architecture note are not AGENT_FILES
+                  # instruction files. They are listed so a guide-only or
+                  # architecture-only edit still runs cursor-project-config.test.mjs.
+                  # README.md stays a plain doc.
+                  POLICY_PATHS='(^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/ARCHITECTURE\.md$|^docs/DEVOPS-GATES\.md$|^docs/GRAPHIFY-COMPLETE-GUIDE\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/)'
                   set +e
                   POLICY=$(printf '%s\n' "$CHANGED" | grep -E "$POLICY_PATHS")
                   POLICY_STATUS=$?

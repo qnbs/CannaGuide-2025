@@ -5,7 +5,9 @@
 > **Current setup (2026-11-02):** Graphify stays with Claude Code CLI in VS Code.
 > Claude reads root `.mcp.json`, which registers Graphify. codegraph is `scripts/codegraph.mjs`.
 > Cursor does not run those tools and does not have a project MCP file for them.
-> A later graph refresh is that Claude session's work.
+> A later graph refresh is that Claude session's work. `graphify:mcp:doctor` warns when
+> `graph.json` is older than HEAD, so `pnpm run gate:push` stays green. A missing graph, an
+> invalid graph, or a graph older than 168 hours still fails the doctor.
 >
 > **Historical:** Sections below that describe the retired `.cursor/mcp.json` or `mdc:*` scripts
 > cover the July 2026 setup. The tracked `.cursor/rules/*.mdc` files are current project rules.
@@ -152,7 +154,7 @@ Monorepo mit u. a. `apps/web`, `packages/*`. Graphify umfasst den gesamten Cor
 
 **Cursor project rules:** `.cursor/rules/*.mdc`. This repository has no `.cursor/mcp.json`.
 
-A graph refresh belongs to a later Claude Code CLI session. It is not a step on every code change.
+A graph refresh belongs to a later Claude Code CLI session. It is not a step on every code change. `graphify:mcp:doctor` warns when `graph.json` is older than HEAD, so `pnpm run gate:push` stays green. A missing graph, an invalid graph, or a graph older than 168 hours still fails the doctor.
 
 ---
 
@@ -234,7 +236,7 @@ Git-Bash oder WSL können stattdessen das Bash-Script nutzen.
 1. **`graphify-out/GRAPH_REPORT.md`** öffnen — God Nodes und Communities erfassen.
 2. Falls `graphify-out/wiki/index.md` existiert — dort zuerst navigieren.
 3. Für Konkordanz „X zu Y“: **`graphify path`** oder MCP **`shortest_path`** / **`query_graph`** bevorzugen gegenüber blindem Voll-Repo-Grep.
-4. A graph refresh belongs to a later Claude Code CLI session. It is not a step on every code change.
+4. A graph refresh belongs to a later Claude Code CLI session. It is not a step on every code change. `graphify:mcp:doctor` warns when `graph.json` is older than HEAD, so `pnpm run gate:push` stays green. A missing graph, an invalid graph, or a graph older than 168 hours still fails the doctor.
 
 **Reihenfolge bei Widersprüchen:** Quellcode > Tests > Graph (INFERRED mit Vorsicht).
 

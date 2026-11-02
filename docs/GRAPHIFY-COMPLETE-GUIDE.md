@@ -2,12 +2,13 @@
 
 **Zielgruppe:** Menschen und **KI-Agenten**, die dieses Repository verstehen, Graphify betreiben oder **dieselbe Integrationsform in anderen Apps/Repositories** nachbauen wollen.
 
-> **Current setup (2026-11-02):** Graphify and codegraph stay with Claude Code CLI in VS Code.
-> Claude reads root `.mcp.json`. Cursor does not run those tools and does not have a project
-> MCP file for them. A later graph refresh is that Claude session's work.
+> **Current setup (2026-11-02):** Graphify stays with Claude Code CLI in VS Code.
+> Claude reads root `.mcp.json`, which registers Graphify. codegraph is `scripts/codegraph.mjs`.
+> Cursor does not run those tools and does not have a project MCP file for them.
+> A later graph refresh is that Claude session's work.
 >
-> **Historical:** Sections below that mention a retired `.cursor/` tree or `mdc:*` scripts
-> describe the July 2026 setup. They are archive, not a Cursor task.
+> **Historical:** Sections below that describe the retired `.cursor/mcp.json` or `mdc:*` scripts
+> cover the July 2026 setup. The tracked `.cursor/rules/*.mdc` files are current project rules.
 
 **Lesereihenfolge für Agenten (empfohlen):**
 

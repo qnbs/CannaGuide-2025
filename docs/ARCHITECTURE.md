@@ -36,7 +36,7 @@ For architecture investigations, use a query-first flow:
 2. Run `graphify query "<question>"`, `graphify path "<A>" "<B>"`, or `graphify explain "<concept>"`.
 3. Validate inferred edges before high-impact refactors.
 
-Cursor integration uses `.cursor/mcp.json` with cross-platform launcher `scripts/graphify-mcp-launcher.mjs` (requires `uv` on PATH).
+Claude Code CLI reads root `.mcp.json`, which registers Graphify through `scripts/graphify-mcp-launcher.mjs` (requires `uv` on PATH). codegraph is the CLI `scripts/codegraph.mjs`. Cursor does not run either tool and has no project MCP file for them.
 Legacy fallbacks: `scripts/graphify-mcp-stdio.sh` (Linux/macOS), `scripts/graphify-mcp-stdio-windows.cmd`.
 GitKraken MCP: `{ "command": "gk", "args": ["mcp"] }` — run `gk auth login` first. Diagnose: `pnpm run mcp:doctor`.
 

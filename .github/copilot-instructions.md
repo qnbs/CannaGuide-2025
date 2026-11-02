@@ -103,9 +103,9 @@ docs/                    # Developer guides, roadmap
 
 - Read `graphify-out/GRAPH_REPORT.md` before broad architecture changes.
 - Prefer query-first analysis with `graphify query`, `graphify path`, and `graphify explain`.
-- Cursor MCP entry is `.cursor/mcp.json` and starts `scripts/graphify-mcp-stdio.sh`.
-- For Windows without bash, use `scripts/graphify-mcp-stdio-windows.cmd` as fallback launcher.
-- Validate environment locally with `pnpm run graphify:mcp:doctor`.
+- Claude Code CLI reads root `.mcp.json`. That file registers Graphify. codegraph is `node scripts/codegraph.mjs`.
+- Cursor does not run Graphify or codegraph and does not have a project MCP file for them.
+- Validate the Claude Code setup locally with `pnpm run graphify:mcp:doctor`.
 
 ### ML Isolation Strategy
 

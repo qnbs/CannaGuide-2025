@@ -1,9 +1,9 @@
 # Graphify/MCP Strategic Blueprint
 
 > **Note (archived / historical):** This blueprint planned an MDC-to-graph bridge, a rules
-> explorer, and starter templates. That bridge was not built. The body below stays archive.
-> Graphify and codegraph stay with Claude Code CLI via root `.mcp.json`. Cursor does not
-> run them.
+> explorer, and starter templates. That bridge was not built. The body below remains archived.
+> Graphify is configured in root `.mcp.json` for Claude Code. codegraph remains the CLI
+> `scripts/codegraph.mjs`. Cursor does not run either tool.
 
 ## Scope
 

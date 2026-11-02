@@ -243,7 +243,7 @@ console.log(
     "Claude Code reads .mcp.json at the repo root -- the 'graphify' server appears in /mcp; approve it there.",
 );
 console.log(
-    "Cursor does not run Graphify or codegraph. Those stay with Claude Code CLI.",
+    "Cursor does not run Graphify or codegraph. Graphify is the MCP server in root .mcp.json. codegraph is node scripts/codegraph.mjs.",
 );
 console.log(
     "Launcher: node scripts/graphify-mcp-launcher.mjs (cross-platform) or bash/cmd fallbacks in scripts/",

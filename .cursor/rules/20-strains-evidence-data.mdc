@@ -6,6 +6,6 @@ alwaysApply: false
 
 # Strain evidence
 
-The checked-in catalog is 776 ids and 30955 value nodes. strains.json SHA256 is 90d9f688452094db0d0b3bbdb044e7c19271e12ffef04ed6723daea7abef6e27. Do not regenerate those modules, and do not run strains:sync against the real catalog.
+The checked-in catalog is 776 ids and 30955 value nodes. strains.json SHA256 is 90d9f688452094db0d0b3bbdb044e7c19271e12ffef04ed6723daea7abef6e27. Do not regenerate those modules, and do not run strains:sync against the real catalog, unless the owner authorizes that catalog update in the current session.
 
 A missing measurement stays unknown. Explicit null, 0, and false stay as reported. Simulated coefficients stay off the cultivar fact. Quarantined research files stay out of the app until the owner authorizes an import.

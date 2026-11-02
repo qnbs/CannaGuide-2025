@@ -75,10 +75,30 @@ test('project rules have the expected scope and do not name a permanent writer',
     assert.equal(governance.alwaysApply, true)
     assert.deepEqual(governance.globs, [])
     assert.match(governance.fields.description, /Writer lease/)
-    for (const rule of rules.slice(1)) {
-        assert.equal(rule.alwaysApply, false)
-        assert.ok(rule.globs.length > 0)
-    }
+    assert.deepEqual(
+        rules.slice(1).map(({ alwaysApply, globs }) => ({ alwaysApply, globs })),
+        [
+            { alwaysApply: false, globs: ['apps/web/**/*.ts', 'apps/web/**/*.tsx'] },
+            {
+                alwaysApply: false,
+                globs: [
+                    'apps/web/data/strains/**',
+                    'packages/ai-core/src/domain/strain.ts',
+                    'scripts/*strain*',
+                ],
+            },
+            {
+                alwaysApply: false,
+                globs: [
+                    '.github/**',
+                    'scripts/security/**',
+                    '**/package.json',
+                    'pnpm-workspace.yaml',
+                    'pnpm-lock.yaml',
+                ],
+            },
+        ],
+    )
     const governanceText = read(governance.path)
     assert.equal(governanceText.includes('currently Claude'), false)
     assert.equal(governanceText.includes('permanent sole'), false)
@@ -111,6 +131,10 @@ test('scoped rules match their files and skip unrelated ones', () => {
         ),
     )
     assert.ok(matches('.github/workflows/ci.yml').includes('.cursor/rules/30-ci-security-deps.mdc'))
+    assert.ok(matches('package.json').includes('.cursor/rules/30-ci-security-deps.mdc'))
+    assert.ok(
+        matches('apps/web/package.json').includes('.cursor/rules/30-ci-security-deps.mdc'),
+    )
     assert.deepEqual(matches('scripts/codegraph.mjs'), [
         '.cursor/rules/00-repository-governance.mdc',
     ])
@@ -122,6 +146,7 @@ test('scoped rules match their files and skip unrelated ones', () => {
 test('agent-doc changes still run this file', () => {
     const ci = read('.github/workflows/ci.yml')
     const policy = ci.slice(ci.indexOf('\n    policy:'), ci.indexOf('\n    rust:'))
+    assert.match(policy, /name: Cursor project config tests/)
     assert.match(policy, /cursor-project-config\.test\.mjs/)
 })
 
@@ -134,6 +159,8 @@ test('state and dependency rules match the code they describe', () => {
     const deps = read('.cursor/rules/30-ci-security-deps.mdc')
     assert.match(deps, /LEGACY_UNBOUNDED/)
     assert.match(deps, /may only shrink/)
+    const strains = read('.cursor/rules/20-strains-evidence-data.mdc')
+    assert.match(strains, /unless the owner authorizes that catalog update/)
 })
 
 test('agent docs name the lease and the current stack', () => {
@@ -143,6 +170,7 @@ test('agent docs name the lease and the current stack', () => {
     const guide = read('docs/GRAPHIFY-COMPLETE-GUIDE.md').split('\n').slice(0, 12).join('\n')
     assert.match(guide, /Claude Code CLI/)
     assert.match(guide, /Cursor does not run those tools/)
+    assert.match(guide, /\.cursor\/rules\/\*\.mdc/)
     assert.equal(guide.includes('Cursor project MCP'), false)
     const copilot = read('.github/copilot-instructions.md')
     assert.match(copilot, /\*\*Version:\*\* 1\.11\.0/)
@@ -150,4 +178,9 @@ test('agent docs name the lease and the current stack', () => {
     assert.match(copilot, /pnpm 11\.19\.0/)
     assert.equal(/Cloudflare Pages[^\n]*PAUSED/.test(copilot), false)
     assert.match(copilot, /Netlify GitHub Actions deploys stay paused/)
+    assert.equal(copilot.includes('Cursor MCP entry is `.cursor/mcp.json`'), false)
+    assert.match(copilot, /Claude Code CLI reads root `\.mcp\.json`/)
+    const architecture = read('docs/ARCHITECTURE.md')
+    assert.equal(architecture.includes('Cursor integration uses `.cursor/mcp.json`'), false)
+    assert.match(architecture, /codegraph is the CLI `scripts\/codegraph\.mjs`/)
 })

@@ -1,6 +1,6 @@
 ---
 description: Dependency floors, audit exceptions, and the required merge check
-globs: .github/**,scripts/security/**,pnpm-workspace.yaml,pnpm-lock.yaml
+globs: .github/**,scripts/security/**,**/package.json,pnpm-workspace.yaml,pnpm-lock.yaml
 alwaysApply: false
 ---
 

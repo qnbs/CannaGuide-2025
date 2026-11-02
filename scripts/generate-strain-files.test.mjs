@@ -165,8 +165,12 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.equal(rendered.match(/sourceUrl: null/g).length, BASELINE_IDS)
     for (const strain of strains) assert.ok(rendered.includes(`id: '${strain.id}',`), strain.id)
 
-    const sentinel = path.join(repoRoot, 'apps/web/data/strains/numeric.ts')
-    const before = readFileSync(sentinel)
+    const strainsDir = path.dirname(strainsPath)
+    const generatedPaths = first.map((file) => path.join(strainsDir, file.fileName))
+    const before = new Map(generatedPaths.map((filePath) => [filePath, readFileSync(filePath)]))
+    assert.ok(before.has(path.join(strainsDir, 'numeric.ts')))
+    assert.ok(before.has(path.join(strainsDir, 'a.ts')))
+    assert.ok(before.has(path.join(strainsDir, 'index.ts')))
     const result = spawnSync(
         process.execPath,
         [path.join(repoRoot, 'scripts/generate-strain-files.mjs')],
@@ -174,7 +178,9 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     )
     assert.equal(result.status, 1)
     assert.match(result.stderr, /Quarantine: 776/)
-    assert.ok(readFileSync(sentinel).equals(before))
+    for (const [filePath, content] of before) {
+        assert.ok(readFileSync(filePath).equals(content), filePath)
+    }
 })
 
 test('a catalog without null is admitted and still keeps zero and false', () => {

@@ -38,39 +38,43 @@ const resolveEnumValue = (raw) => {
  * Extract the object literal body from a createStrainObject({...}) call.
  * Handles nested braces correctly.
  */
+const closingBrace = (source, braceStart) => {
+    let depth = 0
+    for (let index = braceStart; index < source.length; index += 1) {
+        if (source[index] === '{') depth += 1
+        else if (source[index] === '}') depth -= 1
+        if (depth === 0) return index
+    }
+    return -1
+}
+
+const scanCall = (source, start) => {
+    const braceStart = source.indexOf('{', start + 'createStrainObject('.length)
+    if (braceStart === -1) return { body: undefined, next: source.length }
+    const end = closingBrace(source, braceStart)
+    if (end === -1) return { body: undefined, next: source.length }
+    return { body: source.slice(braceStart, end + 1), next: end + 1 }
+}
+
 const extractObjectBodies = (source) => {
     const bodies = []
+    let unmatched = 0
     const marker = 'createStrainObject('
     let idx = 0
 
-    while (true) {
+    while (idx < source.length) {
         const start = source.indexOf(marker, idx)
         if (start === -1) break
-
-        // Find the opening { after the marker
-        let braceStart = source.indexOf('{', start + marker.length)
-        if (braceStart === -1) break
-
-        // Walk forward counting braces
-        let depth = 0
-        let i = braceStart
-        while (i < source.length) {
-            if (source[i] === '{') depth++
-            else if (source[i] === '}') {
-                depth--
-                if (depth === 0) break
-            }
-            i++
+        const scanned = scanCall(source, start)
+        if (!scanned.body) {
+            unmatched += 1
+            break
         }
-
-        if (depth === 0) {
-            bodies.push(source.slice(braceStart, i + 1))
-        }
-
-        idx = i + 1
+        bodies.push(scanned.body)
+        idx = scanned.next
     }
 
-    return bodies
+    return { bodies, unmatched }
 }
 
 /**
@@ -407,8 +411,10 @@ const takeStrain = (parsed, fileName, seenIds, strains, failures) => {
 }
 
 const collectBodies = (source, fileName, seenIds, strains, failures) => {
+    const collected = extractObjectBodies(source)
+    if (collected.unmatched > 0) pushFailure(failures, 'parse', fileName, '')
     let fileCount = 0
-    for (const body of extractObjectBodies(source)) {
+    for (const body of collected.bodies) {
         const parsed = parseObjectLiteral(body)
         if (!parsed) {
             pushFailure(failures, 'parse', fileName, '')
@@ -424,7 +430,10 @@ const reportRefusal = (findings) => {
         `[extract] Refused: ${findings.length} finding(s). Catalog files were not modified.`,
     )
     for (const finding of findings.slice(0, 3)) {
-        console.error(`[extract]   ${finding.pointer} id=${finding.id} reason=${finding.reason}`)
+        const file = finding.file ? ` file=${finding.file}` : ''
+        console.error(
+            `[extract]   ${finding.pointer} id=${finding.id} reason=${finding.reason}${file}`,
+        )
     }
 }
 
@@ -465,15 +474,12 @@ export const runExtract = async ({ strainsDir: dir, outputPath: catalogPath }) =
     })
     if (!decision.write) throw refuseExtract(decision.findings)
 
-    const json = catalogText(catalog)
     if (state.exists) {
-        const current = await fs.readFile(catalogPath, 'utf8')
-        if (current !== json) throw refuseExtract([{ pointer: '', id: '', reason: 'format' }])
         console.log('[extract] Catalog already matches. No write.')
         return { written: false, count: catalog.length }
     }
 
-    await fs.writeFile(catalogPath, json, 'utf8')
+    await fs.writeFile(catalogPath, catalogText(catalog), 'utf8')
     console.log(`[extract] Total extracted: ${catalog.length} unique strains`)
     console.log(`[extract] Written to: ${catalogPath}`)
     return { written: true, count: catalog.length }

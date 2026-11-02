@@ -292,13 +292,19 @@ test('an exact catalog is not rewritten and a missing catalog can be created', a
     }
 })
 
-test('a formatting-only catalog difference is refused', async () => {
+test('a formatting-only catalog difference is left untouched', async () => {
     const dir = mkdtempSync(path.join(tmpdir(), 'extract-guard-'))
     try {
         const { source, text } = matchedCatalog({})
         const compact = JSON.stringify(JSON.parse(text))
         writeFixture(dir, { modules: { 'a.ts': source }, catalog: compact })
-        await refused(dir)
+        const before = readFileSync(path.join(dir, 'strains.json'), 'utf8')
+        const result = await runExtract({
+            strainsDir: dir,
+            outputPath: path.join(dir, 'strains.json'),
+        })
+        assert.equal(result.written, false)
+        assert.equal(readFileSync(path.join(dir, 'strains.json'), 'utf8'), before)
         const decision = planCatalogWrite({
             previousExists: true,
             previous: JSON.parse(text),
@@ -306,6 +312,48 @@ test('a formatting-only catalog difference is refused', async () => {
             failures: [],
         })
         assert.equal(decision.write, true)
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('an omitted module provenance is retained from the previous catalog', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'extract-guard-'))
+    try {
+        const source = formatStrain({
+            id: 'ok',
+            name: 'Ok',
+            type: 'Hybrid',
+            floweringType: 'Photoperiod',
+        })
+        const strain = normalizeStrain(parseObjectLiteral(objectBody(source)))
+        const text = `${JSON.stringify([{ ...strain, dataProvenance: provenance }], null, 4)}\n`
+        writeFixture(dir, { modules: { 'a.ts': source }, catalog: text })
+        const before = readFileSync(path.join(dir, 'strains.json'))
+        const result = await runExtract({
+            strainsDir: dir,
+            outputPath: path.join(dir, 'strains.json'),
+        })
+        assert.equal(result.written, false)
+        assert.deepEqual(readFileSync(path.join(dir, 'strains.json')), before)
+        assert.equal(JSON.parse(before.toString())[0].dataProvenance[0].sourceUrl, null)
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('an unmatched createStrainObject call writes nothing', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'extract-guard-'))
+    try {
+        writeFixture(dir, {
+            modules: { 'a.ts': 'createStrainObject({ id: "ok", name: "Ok"' },
+        })
+        rmSync(path.join(dir, 'strains.json'), { force: true })
+        await assert.rejects(
+            () => runExtract({ strainsDir: dir, outputPath: path.join(dir, 'strains.json') }),
+            { code: 'EXTRACT_REFUSED' },
+        )
+        assert.equal(readdirSync(dir).includes('strains.json'), false)
     } finally {
         rmSync(dir, { recursive: true, force: true })
     }

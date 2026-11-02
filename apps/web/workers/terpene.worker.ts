@@ -140,29 +140,43 @@ const handleAnalyzeEntourage: WorkerHandler = (messageId, payload) => {
     )
 }
 
-const dispatchWorkerMessage = (messageId: string, type: string, payload: unknown): void => {
+const dispatchChemovar = (messageId: string, type: string, payload: unknown): boolean => {
     switch (type) {
         case 'FIND_SIMILAR':
             handleFindSimilar(messageId, payload)
-            return
+            return true
         case 'BUILD_CHEMOVAR':
             handleBuildChemovar(messageId, payload)
-            return
+            return true
         case 'BATCH_CHEMOVAR':
             handleBatchChemovar(messageId, payload)
-            return
+            return true
+        default:
+            return false
+    }
+}
+
+const dispatchEffects = (messageId: string, type: string, payload: unknown): boolean => {
+    switch (type) {
         case 'PREDICT_BREEDING':
             handlePredictBreeding(messageId, payload)
-            return
+            return true
         case 'SCORE_EFFECTS':
             handleScoreEffects(messageId, payload)
-            return
+            return true
         case 'ANALYZE_ENTOURAGE':
             handleAnalyzeEntourage(messageId, payload)
-            return
+            return true
         default:
-            rejectPayload(messageId, `Unknown command: ${type}`)
+            return false
     }
+}
+
+const dispatchWorkerMessage = (messageId: string, type: string, payload: unknown): void => {
+    if (dispatchChemovar(messageId, type, payload) || dispatchEffects(messageId, type, payload)) {
+        return
+    }
+    rejectPayload(messageId, `Unknown command: ${type}`)
 }
 
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {

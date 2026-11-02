@@ -104,24 +104,29 @@ const isStringList = (value: unknown): value is string[] =>
 const isEffectTag = (value: unknown): value is EffectTag =>
     typeof value === 'string' && EFFECT_TAGS.has(value)
 
+const isNamedRow = (
+    value: unknown,
+): value is Record<string, unknown> & { id: string; name: string } =>
+    isRecord(value) && typeof value.id === 'string' && typeof value.name === 'string'
+
 /**
- * Keep rows that have a valid profile. A row with no profile is unknown and
- * is skipped. A null row, a bad id, or a profile that fails the allowlist
- * rejects the whole request.
+ * null skips a row that has no profile. undefined rejects the whole request:
+ * a null row, a bad id, or a profile that fails the allowlist.
  */
+const namedFrom = (value: unknown): NamedTerpeneStrain | null | undefined => {
+    if (!isNamedRow(value)) return undefined
+    if (value.terpeneProfile === undefined) return null
+    if (!isPercentProfile(value.terpeneProfile)) return undefined
+    return { id: value.id, name: value.name, terpeneProfile: value.terpeneProfile }
+}
+
+/** Keep rows that have a valid profile. A row with no profile is skipped. */
 const readNamedStrains = (values: unknown[]): NamedTerpeneStrain[] | undefined => {
     const accepted: NamedTerpeneStrain[] = []
     for (const value of values) {
-        if (!isRecord(value) || typeof value.id !== 'string' || typeof value.name !== 'string') {
-            return undefined
-        }
-        if (value.terpeneProfile === undefined) continue
-        if (!isPercentProfile(value.terpeneProfile)) return undefined
-        accepted.push({
-            id: value.id,
-            name: value.name,
-            terpeneProfile: value.terpeneProfile,
-        })
+        const row = namedFrom(value)
+        if (row === undefined) return undefined
+        if (row !== null) accepted.push(row)
     }
     return accepted
 }
@@ -131,16 +136,29 @@ const readNamedStrains = (values: unknown[]): NamedTerpeneStrain[] | undefined =
  * Optional chemistry may be absent. A present field must be the right shape,
  * so `[null]` and `{ terpeneProfile: { Myrcene: 'high' } }` are rejected.
  */
+const identityOk = (value: Record<string, unknown>): boolean =>
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    (value.type === undefined || typeof value.type === 'string')
+
+const terpenesOk = (value: Record<string, unknown>): boolean =>
+    value.terpeneProfile === undefined || isPercentProfile(value.terpeneProfile)
+
+const cannabinoidsOk = (value: Record<string, unknown>): boolean =>
+    value.cannabinoidProfile === undefined || isCannabinoidProfile(value.cannabinoidProfile)
+
+const dominantOk = (value: Record<string, unknown>): boolean =>
+    value.dominantTerpenes === undefined || isStringList(value.dominantTerpenes)
+
+const chemistryOk = (value: Record<string, unknown>): boolean =>
+    ['thc', 'cbd', 'cbg', 'thcv'].every((key) => optionalFinite(value, key))
+
+const nestedFactsOk = (value: Record<string, unknown>): boolean =>
+    terpenesOk(value) && cannabinoidsOk(value) && dominantOk(value) && chemistryOk(value)
+
 const isWorkerStrain = (value: unknown): value is Strain => {
-    if (!isRecord(value)) return false
-    if (typeof value.id !== 'string' || typeof value.name !== 'string') return false
-    if (value.type !== undefined && typeof value.type !== 'string') return false
-    if (value.terpeneProfile !== undefined && !isPercentProfile(value.terpeneProfile)) return false
-    if (value.cannabinoidProfile !== undefined && !isCannabinoidProfile(value.cannabinoidProfile)) {
-        return false
-    }
-    if (value.dominantTerpenes !== undefined && !isStringList(value.dominantTerpenes)) return false
-    return ['thc', 'cbd', 'cbg', 'thcv'].every((key) => optionalFinite(value, key))
+    if (!isRecord(value) || !identityOk(value)) return false
+    return nestedFactsOk(value)
 }
 
 const collect = <T>(values: unknown[], accept: (value: unknown) => value is T): T[] | undefined => {
@@ -155,21 +173,44 @@ const collect = <T>(values: unknown[], accept: (value: unknown) => value is T): 
 const finiteAt = (record: Record<string, unknown>, key: string): number | undefined =>
     isFiniteNumber(record[key]) ? record[key] : undefined
 
+const optionalLimit = (
+    payload: Record<string, unknown>,
+): { limit: number } | Record<string, never> => {
+    const limit = finiteAt(payload, 'limit')
+    return limit === undefined ? {} : { limit }
+}
+
+const optionalMinSimilarity = (
+    payload: Record<string, unknown>,
+): { minSimilarity: number } | Record<string, never> => {
+    const minSimilarity = finiteAt(payload, 'minSimilarity')
+    return minSimilarity === undefined ? {} : { minSimilarity }
+}
+
+const optionalNameHash = (
+    payload: Record<string, unknown>,
+): { nameHash: number } | Record<string, never> => {
+    const nameHash = finiteAt(payload, 'nameHash')
+    return nameHash === undefined ? {} : { nameHash }
+}
+
+const similarBoundsOk = (payload: Record<string, unknown>): boolean =>
+    optionalFinite(payload, 'limit') && optionalFinite(payload, 'minSimilarity')
+
+const similarStrains = (payload: Record<string, unknown>): NamedTerpeneStrain[] | undefined => {
+    if (!Array.isArray(payload.strains) || !similarBoundsOk(payload)) return undefined
+    return readNamedStrains(payload.strains)
+}
+
 export const readFindSimilar = (payload: unknown): FindSimilarPayload | undefined => {
     if (!isRecord(payload) || !isPercentProfile(payload.referenceProfile)) return undefined
-    if (!Array.isArray(payload.strains)) return undefined
-    const strains = readNamedStrains(payload.strains)
+    const strains = similarStrains(payload)
     if (strains === undefined) return undefined
-    if (!optionalFinite(payload, 'limit') || !optionalFinite(payload, 'minSimilarity')) {
-        return undefined
-    }
-    const limit = finiteAt(payload, 'limit')
-    const minSimilarity = finiteAt(payload, 'minSimilarity')
     return {
         referenceProfile: payload.referenceProfile,
         strains,
-        ...(limit === undefined ? {} : { limit }),
-        ...(minSimilarity === undefined ? {} : { minSimilarity }),
+        ...optionalLimit(payload),
+        ...optionalMinSimilarity(payload),
     }
 }
 
@@ -185,27 +226,41 @@ export const readBatchChemovar = (payload: unknown): BatchChemovarPayload | unde
     return { strains }
 }
 
+const breedingParentsOk = (
+    payload: Record<string, unknown>,
+): payload is Record<string, unknown> & { parentA: TerpeneProfile; parentB: TerpeneProfile } =>
+    isPercentProfile(payload.parentA) && isPercentProfile(payload.parentB)
+
 export const readPredictBreeding = (payload: unknown): PredictBreedingPayload | undefined => {
-    if (!isRecord(payload)) return undefined
-    if (!isPercentProfile(payload.parentA) || !isPercentProfile(payload.parentB)) return undefined
+    if (!isRecord(payload) || !breedingParentsOk(payload)) return undefined
     if (!optionalFinite(payload, 'nameHash')) return undefined
-    const nameHash = finiteAt(payload, 'nameHash')
     return {
         parentA: payload.parentA,
         parentB: payload.parentB,
-        ...(nameHash === undefined ? {} : { nameHash }),
+        ...optionalNameHash(payload),
     }
 }
 
-export const readScoreEffects = (payload: unknown): ScoreEffectsPayload | undefined => {
-    if (!isRecord(payload)) return undefined
-    if (!Array.isArray(payload.strains) || !Array.isArray(payload.desiredEffects)) return undefined
+const effectTagsFrom = (value: unknown): EffectTag[] | undefined => {
+    if (!Array.isArray(value)) return undefined
+    return collect(value, isEffectTag)
+}
+
+const scoreLists = (
+    payload: Record<string, unknown>,
+): Pick<ScoreEffectsPayload, 'strains' | 'desiredEffects'> | undefined => {
+    if (!Array.isArray(payload.strains)) return undefined
     const strains = readNamedStrains(payload.strains)
-    const desiredEffects = collect(payload.desiredEffects, isEffectTag)
+    const desiredEffects = effectTagsFrom(payload.desiredEffects)
     if (strains === undefined || desiredEffects === undefined) return undefined
-    if (!optionalFinite(payload, 'limit')) return undefined
-    const limit = finiteAt(payload, 'limit')
-    return { strains, desiredEffects, ...(limit === undefined ? {} : { limit }) }
+    return { strains, desiredEffects }
+}
+
+export const readScoreEffects = (payload: unknown): ScoreEffectsPayload | undefined => {
+    if (!isRecord(payload) || !optionalFinite(payload, 'limit')) return undefined
+    const lists = scoreLists(payload)
+    if (lists === undefined) return undefined
+    return { ...lists, ...optionalLimit(payload) }
 }
 
 export const readAnalyzeEntourage = (payload: unknown): AnalyzeEntouragePayload | undefined => {

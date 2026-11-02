@@ -46,8 +46,16 @@ describe('previewAxesFromStability', () => {
             resistance: 5,
             stabilityKnown: true,
         })
-        expect(previewAxesFromStability(null).stabilityKnown).toBe(false)
-        expect(previewAxesFromStability(missingPercent()).stabilityKnown).toBe(false)
+        expect(previewAxesFromStability(null)).toEqual({
+            vigor: 0,
+            resistance: 0,
+            stabilityKnown: false,
+        })
+        expect(previewAxesFromStability(missingPercent())).toEqual({
+            vigor: 0,
+            resistance: 0,
+            stabilityKnown: false,
+        })
     })
 })
 

@@ -7,6 +7,7 @@ import {
     constants,
     fstatSync,
     mkdirSync,
+    existsSync,
     mkdtempSync,
     openSync,
     readFileSync,
@@ -469,20 +470,28 @@ test('--catalog-dir=DIR does not publish the checked-in catalog', () => {
     assert.equal(after.sha256, BASELINE_SHA256)
 })
 
-test('another spelling of the checked-in catalog does not publish it', () => {
-    const before = catalogOracle()
-    const flipped = flipBasenameCase(before.strainsDir)
-    assert.notEqual(flipped, before.strainsDir)
-    const result = spawnGenerate(['--catalog-dir', flipped])
-    assert.equal(result.status, 1)
-    assert.equal(result.stdout.includes('Total written'), false)
-    if (result.stderr.includes('cannot target the checked-in catalog')) {
+const flippedCatalog = flipBasenameCase(path.dirname(strainsPath))
+
+test(
+    'another spelling of the checked-in catalog does not publish it',
+    {
+        skip: existsSync(flippedCatalog)
+            ? false
+            : 'this filesystem does not resolve another spelling of the catalog directory',
+    },
+    () => {
+        const before = catalogOracle()
+        assert.notEqual(flippedCatalog, before.strainsDir)
+        assert.equal(existsSync(flippedCatalog), true)
+        const result = spawnGenerate(['--catalog-dir', flippedCatalog])
+        assert.equal(result.status, 1, result.stderr)
         assert.match(result.stderr, /cannot target the checked-in catalog/)
-    }
-    const after = catalogOracle()
-    assert.equal(after.manifest, before.manifest)
-    assert.equal(after.sha256, BASELINE_SHA256)
-})
+        assert.equal(result.stdout.includes('Total written'), false)
+        const after = catalogOracle()
+        assert.equal(after.manifest, before.manifest)
+        assert.equal(after.sha256, BASELINE_SHA256)
+    },
+)
 
 test('the catalog directory flag resolves a fixture and rejects a missing path', () => {
     const fixture = path.join(tmpdir(), 'strain-fixture')

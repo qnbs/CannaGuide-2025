@@ -306,8 +306,8 @@ export const resolveCatalogDir = (argv, fallback) => {
 
 /**
  * A missing fixture is not the checked-in catalog. Identity is the directory
- * device and inode, so a symlink or another spelling of the same directory
- * is refused and is not opened for write.
+ * device and inode as exact integers, so a symlink or another spelling of
+ * the same directory is refused and is not opened for write.
  */
 const sameDirectory = (left, right) =>
     left.isDirectory() &&
@@ -315,9 +315,11 @@ const sameDirectory = (left, right) =>
     left.dev === right.dev &&
     left.ino === right.ino
 
+const directoryIdentity = (dir) => statSync(dir, { bigint: true })
+
 const sameCheckedInCatalog = (dir, canonicalDir) => {
     try {
-        return sameDirectory(statSync(dir), statSync(canonicalDir))
+        return sameDirectory(directoryIdentity(dir), directoryIdentity(canonicalDir))
     } catch (error) {
         if (error && error.code === 'ENOENT') return false
         throw error

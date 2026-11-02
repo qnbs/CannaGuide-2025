@@ -14,3 +14,4 @@ export * from './issue'
 export * from './shared'
 
 export * from './strainFacts'
+export * from './strainClaims'

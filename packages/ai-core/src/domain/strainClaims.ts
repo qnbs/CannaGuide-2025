@@ -161,10 +161,15 @@ export const conflictingPartyClaims = (claims: readonly StrainClaim[]): PartyCla
  * Flowering and lifecycle are different subjects. A match also requires the
  * same cultivar.
  */
-export const durationsMatch = (left: StrainClaim, right: StrainClaim): boolean =>
-    left.kind === 'duration' &&
-    right.kind === 'duration' &&
+type DurationClaim = Extract<StrainClaim, { kind: 'duration' }>
+
+const isDuration = (claim: StrainClaim): claim is DurationClaim => claim.kind === 'duration'
+
+const sameDuration = (left: DurationClaim, right: DurationClaim): boolean =>
     left.cultivarId === right.cultivarId &&
     left.subject === right.subject &&
     left.unit === right.unit &&
     left.quantity === right.quantity
+
+export const durationsMatch = (left: StrainClaim, right: StrainClaim): boolean =>
+    isDuration(left) && isDuration(right) && sameDuration(left, right)

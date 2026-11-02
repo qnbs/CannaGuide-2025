@@ -115,6 +115,12 @@ test('scoped rules match their files and skip unrelated ones', () => {
     ])
 })
 
+test('agent-doc changes still run this file', () => {
+    const ci = read('.github/workflows/ci.yml')
+    const policy = ci.slice(ci.indexOf('\n    policy:'), ci.indexOf('\n    rust:'))
+    assert.match(policy, /cursor-project-config\.test\.mjs/)
+})
+
 test('agent docs name the lease and the current stack', () => {
     const agents = read('AGENTS.md')
     assert.match(agents, /QNB-259/)

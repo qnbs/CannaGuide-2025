@@ -62,8 +62,9 @@ test('a non-identifier key is quoted and an unsafe key is escaped', () => {
         '\u00dcnicode': 'kept',
     })
     assert.match(text, /'seed-form': 'Regular'/)
-    assert.match(text, /\['bad key\\n;'\]: 'nope'/)
-    assert.match(text, /\['\u00dcnicode'\]: 'kept'/)
+    assert.match(text, /'bad key\\n;': 'nope'/)
+    assert.match(text, /'\u00dcnicode': 'kept'/)
+    assert.equal(text.includes('['), false)
     assert.equal(text.includes('\n;'), false)
     const value = readObject(text)
     assert.equal(value['bad key\n;'], 'nope')
@@ -151,7 +152,9 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.equal(assessment.admitted, false)
     assert.equal(assessment.nullCount, BASELINE_IDS)
     assert.ok(
-        assessment.pointers.every((pointer) => pointer.endsWith('/dataProvenance/0/sourceUrl')),
+        assessment.pointers.every((pointer) =>
+            /^\/\d+\/dataProvenance\/0\/sourceUrl$/.test(pointer),
+        ),
     )
 
     const fingerprint = (files) =>
@@ -181,6 +184,17 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     for (const [filePath, content] of before) {
         assert.ok(readFileSync(filePath).equals(content), filePath)
     }
+})
+
+test('null pointers are array indexes and sparse slots stay undefined', () => {
+    const strains = [{ id: 'first', cbd: null }, { id: 'second' }]
+    assert.deepEqual(assessCatalog(strains).pointers, ['/0/cbd'])
+    const sparse = []
+    sparse.length = 2
+    sparse[1] = 'Spice'
+    const text = formatStrain({ id: 'hole', name: 'Hole', aromas: sparse })
+    assert.match(text, /aromas: \[undefined, 'Spice'\]/)
+    assert.deepEqual(readObject(text).aromas, [undefined, 'Spice'])
 })
 
 test('a catalog without null is admitted and still keeps zero and false', () => {

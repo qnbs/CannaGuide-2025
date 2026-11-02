@@ -59,8 +59,7 @@ const emitKey = (key) => {
     const text = String(key)
     if (text === '__proto__') return "['__proto__']"
     if (isBareIdentifier(text)) return text
-    if (SAFE_KEY.test(text)) return `'${escapeStr(text)}'`
-    return `['${escapeStr(text)}']`
+    return `'${escapeStr(text)}'`
 }
 
 const ORDERED_FIELDS = [
@@ -113,10 +112,20 @@ const formatArrayLines = (value, indent) => {
     return lines.join('\n')
 }
 
+const inlineArrayParts = (value, indent) => {
+    const parts = []
+    for (let index = 0; index < value.length; index += 1) {
+        const item = index in value ? value[index] : undefined
+        if (!isInlineItem(item)) return undefined
+        parts.push(formatValue(item, indent))
+    }
+    return parts
+}
+
 const formatArray = (value, indent) => {
-    const simple = value.every(isInlineItem)
-    const inline = simple ? value.map((item) => formatValue(item, indent)).join(', ') : ''
-    if (simple && inline.length < 80) return `[${inline}]`
+    const parts = inlineArrayParts(value, indent)
+    const inline = parts ? parts.join(', ') : undefined
+    if (inline !== undefined && inline.length < 80) return `[${inline}]`
     return formatArrayLines(value, indent)
 }
 
@@ -228,9 +237,8 @@ export const countValueNodes = (value) => 1 + nestedNodeCount(value)
  */
 export const assessCatalog = (strains) => {
     const pointers = []
-    for (const strain of strains) {
-        const id = typeof strain?.id === 'string' ? strain.id : '<missing-id>'
-        collectNullPointers(strain, `/${pointerToken(id)}`, pointers)
+    for (let index = 0; index < strains.length; index += 1) {
+        collectNullPointers(strains[index], `/${index}`, pointers)
     }
     return { admitted: pointers.length === 0, nullCount: pointers.length, pointers }
 }

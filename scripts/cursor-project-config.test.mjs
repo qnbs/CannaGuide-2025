@@ -148,6 +148,11 @@ test('agent-doc changes still run this file', () => {
     const policy = ci.slice(ci.indexOf('\n    policy:'), ci.indexOf('\n    rust:'))
     assert.match(policy, /name: Cursor project config tests/)
     assert.match(policy, /cursor-project-config\.test\.mjs/)
+    const paths = /POLICY_PATHS='([^']+)'/.exec(ci)?.[1]
+    assert.ok(paths)
+    const policyPaths = new RegExp(paths)
+    assert.equal(policyPaths.test('docs/GRAPHIFY-COMPLETE-GUIDE.md'), true)
+    assert.equal(policyPaths.test('docs/ARCHITECTURE.md'), false)
 })
 
 test('state and dependency rules match the code they describe', () => {
@@ -156,7 +161,8 @@ test('state and dependency rules match the code they describe', () => {
     assert.match(state, /useIotStore/)
     assert.match(state, /AiDiagnosticsModal passes medical/)
     assert.match(state, /LeafDiagnosisPanel does not/)
-    assert.match(state, /MentorChatView imports services\/aiService\.ts/)
+    assert.match(state, /stores\/api\.ts/)
+    assert.match(state, /A new call uses the facade/)
     const deps = read('.cursor/rules/30-ci-security-deps.mdc')
     assert.match(deps, /LEGACY_UNBOUNDED/)
     assert.match(deps, /may only shrink/)

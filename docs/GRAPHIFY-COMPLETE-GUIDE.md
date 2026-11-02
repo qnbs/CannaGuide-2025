@@ -234,7 +234,7 @@ Git-Bash oder WSL können stattdessen das Bash-Script nutzen.
 1. **`graphify-out/GRAPH_REPORT.md`** öffnen — God Nodes und Communities erfassen.
 2. Falls `graphify-out/wiki/index.md` existiert — dort zuerst navigieren.
 3. Für Konkordanz „X zu Y“: **`graphify path`** oder MCP **`shortest_path`** / **`query_graph`** bevorzugen gegenüber blindem Voll-Repo-Grep.
-4. Nach **eigenen Codeänderungen in derselben Session:** `graphify update .` ausführen (Teamregel).
+4. A graph refresh belongs to a later Claude Code CLI session. It is not a step on every code change.
 
 **Reihenfolge bei Widersprüchen:** Quellcode > Tests > Graph (INFERRED mit Vorsicht).
 

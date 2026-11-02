@@ -163,20 +163,25 @@ pnpm run check:i18n
   50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before
   15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits,
   89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); do not rewrite that history.
-  Count against the merge-base with the **remote** branch -- a local `main` can be stale
-  or divergent, which is the same trap the verify scripts already avoid:
+  Count this pull against its remote base. A local `main` can be stale or divergent.
+  For a stacked pull, count against `origin/<parent>` as well; the `origin/main` count
+  is the whole stack. Warn when either count crosses the budget:
 
     ```bash
+    git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
 - **Review one stable head.** Collect findings, group them by root cause, and ship one
   fail-before/green-after fix. Then request one fresh review of that final head. Do not
-  request a full bot review after every intermediate fix. Another full review only when
-  the code changes again. The loop ends when that fresh review yields **0 new comments
-  and 0 unresolved threads**. An unavailable reviewer is `REVIEW_UNAVAILABLE` and stays
-  blocking: it is not a green check and not a timeout waiver. Nitpicks and "outside diff
-  range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.
+  merge until that review is attached to the final head. Do not request a full bot review
+  after every intermediate fix. Another full review only when the code changes again. A
+  false positive that is refuted with evidence and resolved, with no code change, is
+  dispositioned and does not require another full review. The loop ends when every finding
+  from that review is fixed or refuted and 0 threads are unresolved. `REVIEW_UNAVAILABLE`
+  covers an unavailable, skipped, paused, rate-limited, or quota-skipped reviewer, and an
+  expired trial. It stays blocking: it is not a green check and not a timeout waiver.
+  Nitpicks and "outside diff range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.
 - **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so

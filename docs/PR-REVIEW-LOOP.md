@@ -23,8 +23,16 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 
 ## 1. Before pushing: keep the PR reviewable
 
-- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Check with `git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l`.
-- **Commit and file budget.** Count commits and the file command above against the merge-base with `origin/main`. Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception: 26 commits and 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`. Do not rewrite that history to look smaller.
+- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Count this pull against its remote base, not a stale local `main`:
+
+    ```bash
+    git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
+    ```
+
+    For a stacked pull, repeat both commands with the parent branch (`origin/<parent>`) as the merge-base. That parent count is this pull. The `origin/main` count is the whole stack. Warn when either count crosses the budget.
+
+- **Commit and file budget.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception: 26 commits and 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`. Do not rewrite that history to look smaller.
 - i18n fans out hard (5 locales × N namespace files). A single copy change can cross the limit — split into stacked PRs (PR2's base = PR1's branch; GitHub retargets it automatically when PR1 merges).
 - One concern per PR. A mixed PR gets mixed findings and cannot be reverted cleanly.
 
@@ -101,9 +109,9 @@ gh pr comment <N> --body "@coderabbitai full review"
 
 5. Another full review only when the code changes again. A reply, a resolved thread, or a note that does not change the reviewed code does not need a new full review.
 
-An unavailable reviewer is `REVIEW_UNAVAILABLE`. It stays blocking. It is not a green check and not a timeout waiver. A skipped check, a paused review, a quota skip, an expired trial, or a full-review request that never attaches a review object to the current head is `REVIEW_UNAVAILABLE`. Do not merge that head. Do not send a second full-review request while the same request is still unanswered and the check stays paused.
+An unavailable reviewer is `REVIEW_UNAVAILABLE`. It stays blocking. It is not a green check and not a timeout waiver. A skipped check, a paused review, a rate limit, a quota skip, an expired trial, or a full-review request that never attaches a review object to the current head is `REVIEW_UNAVAILABLE`. Do not merge that head. Do not send a second full-review request while the same request is still unanswered and the check stays paused or rate limited.
 
-Go back to **step 2** only when that fresh review returns new findings. The loop ends when a fresh review of the current head yields **0 new comments** and **0 unresolved threads**. Never declare a PR done while comments are still arriving.
+When that fresh review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, every finding from the latest fresh review is fixed or refuted, and 0 threads are unresolved. Never declare a PR done while comments are still arriving.
 
 ---
 
@@ -126,10 +134,10 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 
 ## 7. Definition of done (binary)
 
-- [ ] 0 unresolved review threads (verified by the step-2 query, not by eyeballing the UI).
-- [ ] A fresh review of the current head produced 0 new comments.
-- [ ] That review is attached to the current head. `REVIEW_UNAVAILABLE` (paused, skipped, quota, expired trial, or a request with no review object) blocks the merge. It is not a green check and not a timeout waiver.
+- [ ] 0 unresolved review threads (verified by the Section 2 query, not by eyeballing the UI).
+- [ ] The latest fresh review of the current head left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.
+- [ ] That review is attached to the current head. `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) blocks the merge. It is not a green check and not a timeout waiver.
 - [ ] Every finding either fixed at the root or refuted with evidence, in-thread, citing a commit.
 - [ ] No new lint/type suppressions anywhere in the diff.
-- [ ] All required checks green, evidenced by run URL. On a code change this still includes CodeQL, Socket, GitGuardian, DeepSource, unit tests, and both Chromium E2E shards. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
+- [ ] `✅ CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `✅ CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
 - [ ] `CHANGELOG.md` `[Unreleased]` updated.

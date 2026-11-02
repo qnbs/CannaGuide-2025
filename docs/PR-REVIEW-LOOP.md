@@ -2,7 +2,7 @@
 
 Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
 
-The loop is not "read the comments and reply". It ends when the latest fresh review of the **current head** left no undispositioned finding and **zero unresolved threads**. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.
+The loop is not "read the comments and reply". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head** and that coverage left no undispositioned finding and **zero unresolved threads** from those reviews. A reviewer that is expired, skipped, or silent does not add a block once those two are covered. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.
 
 ---
 
@@ -113,9 +113,11 @@ Do not request a full bot review after every intermediate fix.
 
 5. Another full review only when the code changes again. A reply, a resolved thread, or a note that does not change the reviewed code does not need a new full review.
 
-An unavailable reviewer is `REVIEW_UNAVAILABLE`. It stays blocking. It is not a green check and not a timeout waiver. A skipped check, a paused review, a rate limit, a quota skip, an expired trial, or a full-review request that never attaches a review object to the current head is `REVIEW_UNAVAILABLE`. Do not merge that head. Do not send a second full-review request while the same request is still unanswered and the check stays paused or rate limited.
+`REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or a full-review request never attaches a review object to the current head. It is not a green check. It is not, by itself, a merge block.
 
-When that fresh review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, every finding from the latest fresh review is fixed or refuted, and 0 threads are unresolved. Never declare a PR done while comments are still arriving.
+CodeRabbit, CodeAnt, and Codex are the major reviewers. When two of them are reviewing the current head, or have attached a review to it, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.
+
+When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, every finding from the two major reviews is fixed or refuted, and 0 threads from those reviews are unresolved. A notice that a trial ended, or that a reviewer has no comments, is not a new finding.
 
 ---
 
@@ -138,9 +140,9 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 
 ## 7. Definition of done (binary)
 
-- [ ] 0 unresolved review threads (verified by the Section 2 query, not by eyeballing the UI).
-- [ ] The latest fresh review of the current head left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.
-- [ ] That review is attached to the current head. `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) blocks the merge. It is not a green check and not a timeout waiver.
+- [ ] 0 unresolved review threads from reviewers that attached findings (verified by the Section 2 query, not by eyeballing the UI). A review that only says the trial ended, or that never comments, adds no thread to clear.
+- [ ] Two of CodeRabbit, CodeAnt, and Codex have covered the current head, and that coverage left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.
+- [ ] `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) is not a green check and is not a merge block once those two major reviewers have covered the head. Do not merge a head that none of the three has reviewed.
 - [ ] Every finding is either fixed at the root, with the reply citing the resolving commit, or refuted with evidence in-thread. A refutation that changes no code cites the current head SHA.
 - [ ] No new lint/type suppressions anywhere in the diff.
 - [ ] `✅ CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `✅ CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.

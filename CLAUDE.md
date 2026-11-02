@@ -178,15 +178,17 @@ pnpm run check:i18n
 
 - **Review one stable head.** Collect findings, group them by root cause, and ship one
   fail-before/green-after fix. Then request one fresh review of that final head. Do not
-  merge until that review is attached to the final head. Do not request a full bot review
+  merge until two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not request a full bot review
   after every intermediate fix. Another full review only when the code changes again. A
   false positive that is refuted with evidence and resolved, with no code change, is
   dispositioned and does not require another full review. Do not push while that head is
   still being reviewed or tested. A new push makes the previous CI and review evidence
-  stale. The loop ends when every finding from that review is fixed or refuted and 0
-  threads are unresolved. `REVIEW_UNAVAILABLE`
-  covers an unavailable, skipped, paused, rate-limited, or quota-skipped reviewer, and an
-  expired trial. It stays blocking: it is not a green check and not a timeout waiver.
+  stale. The loop ends when every finding from those two reviews is fixed or refuted and 0
+  threads from those reviews are unresolved. `REVIEW_UNAVAILABLE` means a reviewer is
+  skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a
+  review. It is not a green check, and it is not a merge block once two of CodeRabbit,
+  CodeAnt, and Codex have covered that head. Do not merge a head that none of the three
+  has reviewed.
   Nitpicks and "outside diff range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.

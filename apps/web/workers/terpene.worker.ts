@@ -140,22 +140,29 @@ const handleAnalyzeEntourage: WorkerHandler = (messageId, payload) => {
     )
 }
 
-const WORKER_HANDLERS: ReadonlyMap<string, WorkerHandler> = new Map<string, WorkerHandler>([
-    ['FIND_SIMILAR', handleFindSimilar],
-    ['BUILD_CHEMOVAR', handleBuildChemovar],
-    ['BATCH_CHEMOVAR', handleBatchChemovar],
-    ['PREDICT_BREEDING', handlePredictBreeding],
-    ['SCORE_EFFECTS', handleScoreEffects],
-    ['ANALYZE_ENTOURAGE', handleAnalyzeEntourage],
-])
-
 const dispatchWorkerMessage = (messageId: string, type: string, payload: unknown): void => {
-    const handler = WORKER_HANDLERS.get(type)
-    if (handler === undefined) {
-        rejectPayload(messageId, `Unknown command: ${type}`)
-        return
+    switch (type) {
+        case 'FIND_SIMILAR':
+            handleFindSimilar(messageId, payload)
+            return
+        case 'BUILD_CHEMOVAR':
+            handleBuildChemovar(messageId, payload)
+            return
+        case 'BATCH_CHEMOVAR':
+            handleBatchChemovar(messageId, payload)
+            return
+        case 'PREDICT_BREEDING':
+            handlePredictBreeding(messageId, payload)
+            return
+        case 'SCORE_EFFECTS':
+            handleScoreEffects(messageId, payload)
+            return
+        case 'ANALYZE_ENTOURAGE':
+            handleAnalyzeEntourage(messageId, payload)
+            return
+        default:
+            rejectPayload(messageId, `Unknown command: ${type}`)
     }
-    handler(messageId, payload)
 }
 
 self.onmessage = (event: MessageEvent<WorkerRequest>) => {

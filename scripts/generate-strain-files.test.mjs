@@ -378,6 +378,39 @@ test('a typed sourceUrl null is written only in the requested directory', () => 
     }
 })
 
+test('the full 776 catalog trial writes only in the requested directory', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-trial-776-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(path.join(dir, 'strains.json'), readFileSync(strainsPath))
+        writeFileSync(path.join(dir, 'sentinel.ts'), 'keep')
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 0, result.stderr)
+        assert.equal(result.stderr.includes('Quarantine'), false)
+        assert.match(result.stdout, /Loaded 776 strains/)
+        assert.match(result.stdout, /Total written: 776 strains/)
+        const written = readdirSync(dir)
+            .filter((name) => name.endsWith('.ts') && name !== 'sentinel.ts')
+            .map((name) => readFileSync(path.join(dir, name), 'utf8'))
+            .join('\n')
+        assert.equal(written.match(/sourceUrl: null/g).length, BASELINE_IDS)
+        const strains = JSON.parse(readFileSync(strainsPath, 'utf8'))
+        for (const strain of strains) assert.ok(written.includes(`id: '${strain.id}',`), strain.id)
+        assert.equal(readFileSync(path.join(dir, 'sentinel.ts'), 'utf8'), 'keep')
+        assert.equal(
+            createHash('sha256').update(readFileSync(path.join(dir, 'strains.json'))).digest('hex'),
+            BASELINE_SHA256,
+        )
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
 test('a missing catalog directory argument writes nothing', () => {
     const oracle = catalogOracle()
     const result = spawnGenerate(['--catalog-dir'])

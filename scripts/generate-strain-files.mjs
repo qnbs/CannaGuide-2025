@@ -432,7 +432,8 @@ const fsOps = {
  * The previous file is moved aside and its mode is applied to the staged
  * inode before that inode is published. A later failure restores files
  * already moved. If a restore itself fails, the staging directory stays
- * so the backup can be recovered. The temp directory comes from mkdtemp,
+ * so the backup can be recovered. Removing that directory is best-effort
+ * and does not replace the publish result. The temp directory comes from mkdtemp,
  * and each staged file is opened with wx.
  */
 export const commitFiles = async (dir, files, ops = {}) => {
@@ -483,7 +484,16 @@ export const commitFiles = async (dir, files, ops = {}) => {
         }
         throw error
     } finally {
-        if (!keepStaging) await io.rm(staging, { recursive: true, force: true })
+        if (!keepStaging) {
+            try {
+                await io.rm(staging, { recursive: true, force: true })
+            } catch (cleanupError) {
+                const code = cleanupError && cleanupError.code ? cleanupError.code : 'unknown'
+                console.error(
+                    `[generate] Staging cleanup failed (${code}); remove ${staging} manually`,
+                )
+            }
+        }
     }
 }
 

@@ -646,6 +646,53 @@ test('a failed restore keeps the backup directory', async () => {
     }
 })
 
+test('a staging cleanup failure leaves a successful publish in place', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-cleanup-ok-'))
+    try {
+        await commitFiles(dir, [{ fileName: 'a.ts', content: 'next' }], {
+            rm: async () => {
+                throw failWith('cleanup failed')
+            },
+        })
+        assert.equal(readFileSync(path.join(dir, 'a.ts'), 'utf8'), 'next')
+        assert.equal(
+            readdirSync(dir).filter((name) => name.startsWith('.strain-stage-')).length,
+            1,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a staging cleanup failure does not replace the publish error', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-cleanup-err-'))
+    try {
+        const target = path.join(dir, 'a.ts')
+        writeFileSync(target, 'original-a')
+        await assert.rejects(
+            commitFiles(dir, [{ fileName: 'a.ts', content: 'new-a' }], {
+                chmodNoFollow: async () => {
+                    throw failWith('chmod failed')
+                },
+                rm: async () => {
+                    throw failWith('cleanup failed')
+                },
+            }),
+            (error) => {
+                assert.equal(error.message, 'chmod failed')
+                return true
+            },
+        )
+        assert.equal(readFileSync(target, 'utf8'), 'original-a')
+        assert.equal(
+            readdirSync(dir).filter((name) => name.startsWith('.strain-stage-')).length,
+            1,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
 test('a missing catalog directory argument writes nothing', () => {
     const oracle = catalogOracle()
     const result = spawnGenerate(['--catalog-dir'])

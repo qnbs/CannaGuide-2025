@@ -356,6 +356,18 @@ test('a catalog write is explicit and a bare run only checks', () => {
             ),
         /--write-canonical does not take --catalog-dir/,
     )
+    assert.throws(
+        () => resolveCatalogAction(['node', 'script', `--catalog-dir=${fixture}`], canonical),
+        /takes the directory as the next argument/,
+    )
+    assert.throws(
+        () =>
+            resolveCatalogAction(
+                ['node', 'script', '--write-canonical', `--catalog-dir=${fixture}`],
+                canonical,
+            ),
+        /--write-canonical does not take --catalog-dir/,
+    )
 })
 
 test('a bare generator and --check leave the checked-in catalog unchanged', () => {
@@ -427,6 +439,45 @@ test('--catalog-dir refuses the checked-in catalog and a symlink alias', () => {
         assert.equal(checked.stdout.includes('Total written'), false)
     } finally {
         rmSync(linkDir, { recursive: true, force: true })
+    }
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
+
+const flipBasenameCase = (dir) => {
+    const base = path.basename(dir)
+    const first = base.charAt(0) === base.charAt(0).toLowerCase()
+        ? base.charAt(0).toUpperCase()
+        : base.charAt(0).toLowerCase()
+    return path.join(path.dirname(dir), `${first}${base.slice(1)}`)
+}
+
+test('--catalog-dir=DIR does not publish the checked-in catalog', () => {
+    const before = catalogOracle()
+    const fixture = path.join(tmpdir(), 'strain-equals')
+    const mixed = spawnGenerate(['--write-canonical', `--catalog-dir=${fixture}`])
+    assert.equal(mixed.status, 1)
+    assert.match(mixed.stderr, /does not take --catalog-dir/)
+    assert.equal(mixed.stdout.includes('Total written'), false)
+    const alone = spawnGenerate([`--catalog-dir=${fixture}`])
+    assert.equal(alone.status, 1)
+    assert.match(alone.stderr, /takes the directory as the next argument/)
+    assert.equal(alone.stdout.includes('Total written'), false)
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
+
+test('another spelling of the checked-in catalog does not publish it', () => {
+    const before = catalogOracle()
+    const flipped = flipBasenameCase(before.strainsDir)
+    assert.notEqual(flipped, before.strainsDir)
+    const result = spawnGenerate(['--catalog-dir', flipped])
+    assert.equal(result.status, 1)
+    assert.equal(result.stdout.includes('Total written'), false)
+    if (result.stderr.includes('cannot target the checked-in catalog')) {
+        assert.match(result.stderr, /cannot target the checked-in catalog/)
     }
     const after = catalogOracle()
     assert.equal(after.manifest, before.manifest)

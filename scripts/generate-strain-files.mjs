@@ -20,7 +20,7 @@
  * If that restore fails, the private staging directory is kept.
  */
 
-import { constants as fsConstants, realpathSync } from 'node:fs'
+import { constants as fsConstants, statSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -288,8 +288,13 @@ export const assessCatalog = (strains) => {
     }
 }
 
-/** `--catalog-dir` selects a fixture. The default stays the checked-in catalog. */
+const equalsCatalogDir = (arg) => arg.startsWith('--catalog-dir=')
+
+/** `--catalog-dir` selects a fixture. The directory is the next argument. */
 export const resolveCatalogDir = (argv, fallback) => {
+    if (argv.some(equalsCatalogDir)) {
+        throw new Error('[generate] --catalog-dir takes the directory as the next argument')
+    }
     const index = argv.indexOf('--catalog-dir')
     if (index === -1) return fallback
     const dir = argv[index + 1]
@@ -300,12 +305,19 @@ export const resolveCatalogDir = (argv, fallback) => {
 }
 
 /**
- * A missing fixture is not the checked-in catalog. realpath is only the
- * identity test: a matching symlink is refused, and it is not opened for write.
+ * A missing fixture is not the checked-in catalog. Identity is the directory
+ * device and inode, so a symlink or another spelling of the same directory
+ * is refused and is not opened for write.
  */
+const sameDirectory = (left, right) =>
+    left.isDirectory() &&
+    right.isDirectory() &&
+    left.dev === right.dev &&
+    left.ino === right.ino
+
 const sameCheckedInCatalog = (dir, canonicalDir) => {
     try {
-        return realpathSync(dir) === realpathSync(canonicalDir)
+        return sameDirectory(statSync(dir), statSync(canonicalDir))
     } catch (error) {
         if (error && error.code === 'ENOENT') return false
         throw error
@@ -315,7 +327,7 @@ const sameCheckedInCatalog = (dir, canonicalDir) => {
 const catalogFlags = (argv) => ({
     check: argv.includes('--check'),
     writeCanonical: argv.includes('--write-canonical'),
-    hasFixture: argv.includes('--catalog-dir'),
+    hasFixture: argv.some((arg) => arg === '--catalog-dir' || equalsCatalogDir(arg)),
 })
 
 const refuseMixedCatalogFlags = (flags) => {

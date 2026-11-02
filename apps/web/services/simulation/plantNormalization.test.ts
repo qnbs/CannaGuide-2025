@@ -97,7 +97,15 @@ describe('plantNormalization', () => {
         delete (plant as { strain?: Plant['strain'] }).strain
         const normalized = normalizePlant(plant)
         expect(normalized.strain.geneticModifiers).toBeUndefined()
-        expect(normalized.phenotypeModifiers).toEqual(getPlantGeneticModifiers(plant))
+        expect(normalized.phenotypeModifiers).toEqual({
+            pestResistance: 1,
+            nutrientUptakeRate: 1,
+            stressTolerance: 1,
+            rue: 1.5,
+            vpdTolerance: { min: 0.8, max: 1.4 },
+            transpirationFactor: 1,
+            stomataSensitivity: 1,
+        })
     })
 
     it('keeps an explicit phenotype modifier through normalization', () => {

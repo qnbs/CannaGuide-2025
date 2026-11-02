@@ -205,8 +205,13 @@ export interface DataProvenance {
     labVerified: boolean
     /** Data confidence score (0--1) */
     confidence: number
-    /** URL to original data source */
-    sourceUrl?: string | undefined
+    /**
+     * URL of the original record.
+     * Explicit null means the record reported no URL.
+     * Omitted means this record did not carry the field.
+     * An explicit undefined is not a value of this field.
+     */
+    sourceUrl?: string | null
     /** API version or dataset version */
     dataVersion?: string | undefined
 }

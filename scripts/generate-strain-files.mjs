@@ -5,12 +5,16 @@
  * and generates uniform TypeScript strain data files (a.ts-z.ts, numeric.ts)
  * plus index.ts.
  *
- * Usage: node scripts/generate-strain-files.mjs
+ * Usage: node scripts/generate-strain-files.mjs [--catalog-dir DIR]
  *
- * Explicit null stays in the serializer. The canonical write stops, without
- * editing the catalog, while Strain cannot represent those nulls.
+ * dataProvenance.sourceUrl may be a string, null, or omitted. A null counts
+ * only on an array entry. Any other JSON null stops the write before a
+ * module changes. --catalog-dir writes that directory instead of
+ * apps/web/data/strains. A publish failure restores the previous file.
+ * If that restore fails, the private staging directory is kept.
  */
 
+import { constants as fsConstants } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -19,7 +23,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, '..')
 const strainsDir = path.join(repoRoot, 'apps', 'web', 'data', 'strains')
-const jsonPath = path.join(strainsDir, 'strains.json')
 
 // -----------------------------------------------------------------------
 // Helpers
@@ -204,18 +207,18 @@ const bucketOf = (name) => {
 
 const pointerToken = (segment) => String(segment).replaceAll('~', '~0').replaceAll('/', '~1')
 
-const collectNullPointers = (value, pointer, out) => {
+const collectNullPointers = (value, segments, out) => {
     if (value === null) {
-        out.push(pointer)
+        out.push(segments)
         return
     }
     if (Array.isArray(value)) {
-        value.forEach((item, index) => collectNullPointers(item, `${pointer}/${index}`, out))
+        value.forEach((item, index) => collectNullPointers(item, segments.concat({ index }), out))
         return
     }
     if (typeof value === 'object') {
         for (const key of Object.keys(value)) {
-            collectNullPointers(value[key], `${pointer}/${pointerToken(key)}`, out)
+            collectNullPointers(value[key], segments.concat({ key }), out)
         }
     }
 }
@@ -232,30 +235,62 @@ const nestedNodeCount = (value) => {
 export const countValueNodes = (value) => 1 + nestedNodeCount(value)
 
 /**
- * Explicit JSON null is representable in the serializer, but Strain.sourceUrl
- * is `string | undefined`. A null in the canonical file blocks the module write.
+ * dataProvenance.sourceUrl is `string | null`. That null is typed only when
+ * each index is an array index. A numeric object key is not an array index.
+ * Every other JSON null still blocks the module write.
  */
+const formatPointer = (segments) =>
+    `/${segments
+        .map((segment) => pointerToken(segment.index !== undefined ? segment.index : segment.key))
+        .join('/')}`
+
+const isTypedSourceUrlNull = (segments) =>
+    segments.length === 4 &&
+    segments[0].index !== undefined &&
+    segments[1].key === 'dataProvenance' &&
+    segments[2].index !== undefined &&
+    segments[3].key === 'sourceUrl'
+
 const strainId = (strain) => (typeof strain?.id === 'string' ? strain.id : '<missing-id>')
 
-const collectFindings = (strains, index, findings) => {
+const collectFindings = (strains, index, unexpected, typed) => {
     const pointers = []
-    collectNullPointers(strains[index], `/${index}`, pointers)
+    collectNullPointers(strains[index], [{ index }], pointers)
     const id = strainId(strains[index])
-    for (const pointer of pointers) findings.push({ pointer, id })
+    for (const segments of pointers) {
+        const finding = { pointer: formatPointer(segments), id }
+        if (isTypedSourceUrlNull(segments)) typed.push(finding)
+        else unexpected.push(finding)
+    }
 }
 
 /** Pointers are RFC 6901 paths into the strains array. The id stays a separate field. */
 export const assessCatalog = (strains) => {
     const findings = []
+    const typedNulls = []
     for (let index = 0; index < strains.length; index += 1) {
-        collectFindings(strains, index, findings)
+        collectFindings(strains, index, findings, typedNulls)
     }
     return {
         admitted: findings.length === 0,
         nullCount: findings.length,
+        typedNullCount: typedNulls.length,
         pointers: findings.map((finding) => finding.pointer),
+        typedPointers: typedNulls.map((finding) => finding.pointer),
         findings,
+        typedNulls,
     }
+}
+
+/** `--catalog-dir` selects a fixture. The default stays the checked-in catalog. */
+export const resolveCatalogDir = (argv, fallback) => {
+    const index = argv.indexOf('--catalog-dir')
+    if (index === -1) return fallback
+    const dir = argv[index + 1]
+    if (dir === undefined || dir.startsWith('--')) {
+        throw new Error('[generate] --catalog-dir needs a directory')
+    }
+    return path.resolve(dir)
 }
 
 const EXPORT_NAMES = {
@@ -336,20 +371,136 @@ export const buildStrainFiles = (strains) => {
 
 const reportQuarantine = (assessment) => {
     console.error(
-        `[generate] Quarantine: ${assessment.nullCount} explicit JSON null values are not representable in Strain modules.`,
+        `[generate] Quarantine: ${assessment.nullCount} explicit JSON null values are not typed on Strain.`,
     )
     for (const finding of assessment.findings.slice(0, 3)) {
         console.error(`[generate]   ${finding.pointer} id=${finding.id}`)
     }
-    console.error(
-        '[generate] Strain fields are not typed as null. Catalog files were not modified.',
-    )
+    console.error('[generate] Catalog files were not modified.')
 }
 
-const writeCatalog = async (files) => {
+const catalogFileName = (name) => {
+    if (typeof name !== 'string' || path.basename(name) !== name || name === '' || name === '.' || name === '..') {
+        throw new Error('[generate] Unsafe catalog file name')
+    }
+    return name
+}
+
+const openNoFollow = (filePath) =>
+    fs.open(filePath, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW)
+
+const inspectNoFollow = async (filePath) => {
+    let handle
+    try {
+        handle = await openNoFollow(filePath)
+    } catch (error) {
+        if (error.code === 'ELOOP') return { isDirectory: false, isFile: false, mode: null }
+        throw error
+    }
+    try {
+        const stat = await handle.stat()
+        return {
+            isDirectory: stat.isDirectory(),
+            isFile: stat.isFile(),
+            mode: stat.isFile() ? stat.mode & 0o777 : null,
+        }
+    } finally {
+        await handle.close()
+    }
+}
+
+const chmodNoFollow = async (filePath, mode) => {
+    const handle = await openNoFollow(filePath)
+    try {
+        await handle.chmod(mode & 0o777)
+    } finally {
+        await handle.close()
+    }
+}
+
+const fsOps = {
+    rename: (from, to) => fs.rename(from, to),
+    rm: (target, options) => fs.rm(target, options),
+    writeFile: (filePath, content, options) => fs.writeFile(filePath, content, options),
+    mkdtemp: (prefix) => fs.mkdtemp(prefix),
+    chmodNoFollow,
+    inspectNoFollow,
+}
+
+/**
+ * Stage every module in a private directory, then publish them together.
+ * The previous file is moved aside and its mode is applied to the staged
+ * inode before that inode is published. A later failure restores files
+ * already moved. If a restore itself fails, the staging directory stays
+ * so the backup can be recovered. Removing that directory is best-effort
+ * and does not replace the publish result. The temp directory comes from mkdtemp,
+ * and each staged file is opened with wx.
+ */
+export const commitFiles = async (dir, files, ops = {}) => {
+    const io = { ...fsOps, ...ops }
+    const staging = await io.mkdtemp(path.join(dir, '.strain-stage-'))
+    const published = []
+    let keepStaging = false
+    try {
+        for (const file of files) {
+            const name = catalogFileName(file.fileName)
+            await io.writeFile(path.join(staging, name), file.content, { encoding: 'utf8', flag: 'wx' })
+        }
+        for (const file of files) {
+            const name = catalogFileName(file.fileName)
+            const target = path.join(dir, name)
+            const staged = path.join(staging, name)
+            const backup = path.join(staging, `${name}.previous`)
+            const item = { target, backup, backedUp: false, published: false }
+            published.push(item)
+            try {
+                await io.rename(target, backup)
+                item.backedUp = true
+            } catch (error) {
+                if (error.code !== 'ENOENT') throw error
+            }
+            if (item.backedUp) {
+                const moved = await io.inspectNoFollow(backup)
+                if (moved.isDirectory) {
+                    throw new Error(`[generate] Refusing to replace a directory: ${name}`)
+                }
+                if (moved.isFile) await io.chmodNoFollow(staged, moved.mode)
+            }
+            await io.rename(staged, target)
+            item.published = true
+        }
+    } catch (error) {
+        for (const item of published.reverse()) {
+            try {
+                if (item.published) await io.rm(item.target, { force: true })
+                if (item.backedUp) await io.rename(item.backup, item.target)
+            } catch (restoreError) {
+                keepStaging = true
+                const code = restoreError && restoreError.code ? restoreError.code : 'unknown'
+                console.error(
+                    `[generate] Rollback failed for ${path.basename(item.target)} (${code}); backup kept in ${staging}`,
+                )
+            }
+        }
+        throw error
+    } finally {
+        if (!keepStaging) {
+            try {
+                await io.rm(staging, { recursive: true, force: true })
+            } catch (cleanupError) {
+                const code = cleanupError && cleanupError.code ? cleanupError.code : 'unknown'
+                console.error(
+                    `[generate] Staging cleanup failed (${code}); remove ${staging} manually`,
+                )
+            }
+        }
+    }
+}
+
+const writeCatalog = async (dir, files) => {
+    await commitFiles(dir, files)
     let total = 0
     for (const file of files) {
-        await fs.writeFile(path.join(strainsDir, file.fileName), file.content, 'utf8')
         total += file.count
         const label = file.count > 0 ? `${file.count} strains` : 'generated'
         console.log(`[generate]   ${file.fileName}: ${label}`)
@@ -358,7 +509,8 @@ const writeCatalog = async (files) => {
 }
 
 const run = async () => {
-    const raw = await fs.readFile(jsonPath, 'utf8')
+    const dir = resolveCatalogDir(process.argv, strainsDir)
+    const raw = await fs.readFile(path.join(dir, 'strains.json'), 'utf8')
     const strains = JSON.parse(raw)
     console.log(`[generate] Loaded ${strains.length} strains from strains.json`)
     const assessment = assessCatalog(strains)
@@ -367,7 +519,7 @@ const run = async () => {
         process.exitCode = 1
         return
     }
-    const total = await writeCatalog(buildStrainFiles(strains))
+    const total = await writeCatalog(dir, buildStrainFiles(strains))
     console.log(`[generate] Total written: ${total} strains`)
 }
 

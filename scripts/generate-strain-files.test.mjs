@@ -1,7 +1,21 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+    chmodSync,
+    closeSync,
+    constants,
+    fstatSync,
+    mkdirSync,
+    mkdtempSync,
+    openSync,
+    readFileSync,
+    readdirSync,
+    rmSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs'
+import { rename as renamePath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
@@ -11,7 +25,9 @@ import {
     assessCatalog,
     buildStrainFiles,
     countValueNodes,
+    commitFiles,
     formatStrain,
+    resolveCatalogDir,
 } from './generate-strain-files.mjs'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -23,6 +39,18 @@ const BASELINE_VALUE_NODES = 30955
 const readObject = (text) => {
     const objectText = text.replace(/^\s*createStrainObject\(/, '').replace(/\),\s*$/, '')
     return Function(`return (${objectText})`)()
+}
+
+// Inspect one opened descriptor. A path stat or lstat followed by a later
+// read or write of that path is the file-system race CodeQL reports.
+const readOpenedFile = (filePath) => {
+    const fd = openSync(filePath, constants.O_RDONLY | constants.O_NOFOLLOW)
+    try {
+        const stat = fstatSync(fd)
+        return { isFile: stat.isFile(), mode: stat.mode, text: readFileSync(fd, 'utf8') }
+    } finally {
+        closeSync(fd)
+    }
 }
 
 test('a missing field stays missing, and explicit null, zero and false stay', () => {
@@ -140,7 +168,7 @@ test('line breaks stay inside the string and null array positions stay', () => {
     assert.deepEqual(value.lineage, { breeder: null })
 })
 
-test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
+test('the canonical catalog keeps its oracle and admits typed sourceUrl nulls', () => {
     const raw = readFileSync(strainsPath)
     const sha256 = createHash('sha256').update(raw).digest('hex')
     const strains = JSON.parse(raw.toString('utf8'))
@@ -150,10 +178,13 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.equal(countValueNodes(strains) - 1, BASELINE_VALUE_NODES)
 
     const assessment = assessCatalog(strains)
-    assert.equal(assessment.admitted, false)
-    assert.equal(assessment.nullCount, BASELINE_IDS)
+    assert.equal(assessment.admitted, true)
+    assert.equal(assessment.nullCount, 0)
+    assert.equal(assessment.findings.length, 0)
+    assert.equal(assessment.typedNullCount, BASELINE_IDS)
+    assert.equal(assessment.typedPointers.length, BASELINE_IDS)
     assert.ok(
-        assessment.pointers.every((pointer) =>
+        assessment.typedPointers.every((pointer) =>
             /^\/\d+\/dataProvenance\/0\/sourceUrl$/.test(pointer),
         ),
     )
@@ -176,14 +207,10 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.match(before, /^numeric\.ts /m)
     assert.match(before, /^strains\.json /m)
     assert.match(before, /^pending\/pending-strains\.json /m)
-    const result = spawnSync(
-        process.execPath,
-        [path.join(repoRoot, 'scripts/generate-strain-files.mjs')],
-        { cwd: repoRoot, encoding: 'utf8' },
+    assert.equal(
+        resolveCatalogDir(['node', 'generate-strain-files.mjs'], strainsDir),
+        strainsDir,
     )
-    assert.equal(result.status, 1)
-    assert.match(result.stderr, /Quarantine: 776/)
-    assert.match(result.stderr, /\/\d+\/dataProvenance\/0\/sourceUrl id=/)
     assert.equal(directoryManifest(strainsDir), before)
     assert.equal(createHash('sha256').update(readFileSync(strainsPath)).digest('hex'), sha256)
 })
@@ -241,6 +268,8 @@ const resolvePointer = (document, pointer) => {
 test('null pointers are array indexes and sparse slots stay undefined', () => {
     const strains = [{ id: 'first', cbd: null }, { id: 'second' }]
     const assessment = assessCatalog(strains)
+    assert.equal(assessment.admitted, false)
+    assert.equal(assessment.typedNullCount, 0)
     assert.deepEqual(assessment.pointers, ['/0/cbd'])
     assert.deepEqual(assessment.findings, [{ pointer: '/0/cbd', id: 'first' }])
     assert.equal(resolvePointer(strains, assessment.pointers[0]), null)
@@ -263,10 +292,415 @@ test('a catalog without null is admitted and still keeps zero and false', () => 
     const assessment = assessCatalog(strains)
     assert.equal(assessment.admitted, true)
     assert.equal(assessment.nullCount, 0)
+    assert.equal(assessment.typedNullCount, 0)
     const rendered = buildStrainFiles(strains)
         .map((file) => file.content)
         .join('\n')
     assert.match(rendered, /thc: 0,/)
     assert.match(rendered, /labVerified: false,/)
     assert.equal(rendered.includes('null'), false)
+})
+
+const spawnGenerate = (args) =>
+    spawnSync(process.execPath, [path.join(repoRoot, 'scripts/generate-strain-files.mjs'), ...args], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+    })
+
+const catalogOracle = () => {
+    const strainsDir = path.dirname(strainsPath)
+    return {
+        strainsDir,
+        manifest: directoryManifest(strainsDir),
+        sha256: createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+    }
+}
+
+test('the catalog directory flag resolves a fixture and rejects a missing path', () => {
+    const fixture = path.join(tmpdir(), 'strain-fixture')
+    assert.equal(
+        resolveCatalogDir(['node', 'script', '--catalog-dir', fixture], path.dirname(strainsPath)),
+        path.resolve(fixture),
+    )
+    assert.throws(
+        () => resolveCatalogDir(['node', 'script', '--catalog-dir'], path.dirname(strainsPath)),
+        /--catalog-dir needs a directory/,
+    )
+})
+
+test('an unexpected null aborts before any module write', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-quarantine-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(
+            path.join(dir, 'strains.json'),
+            `${JSON.stringify([
+                {
+                    id: 'bad',
+                    name: 'Bad',
+                    cbd: null,
+                    dataProvenance: [{ sourceUrl: null }],
+                },
+            ])}\n`,
+        )
+        writeFileSync(path.join(dir, 'a.ts'), 'sentinel')
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 1)
+        assert.match(result.stderr, /Quarantine: 1/)
+        assert.match(result.stderr, /\/0\/cbd id=bad/)
+        assert.equal(result.stderr.includes('sourceUrl'), false)
+        assert.equal(readFileSync(path.join(dir, 'a.ts'), 'utf8'), 'sentinel')
+        assert.equal(readdirSync(dir).includes('b.ts'), false)
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            oracle.sha256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a typed sourceUrl null is written only in the requested directory', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-typed-null-'))
+    const oracle = catalogOracle()
+    try {
+        const strains = [
+            {
+                id: 'ok',
+                name: 'Ok',
+                dataProvenance: [{ sourceUrl: 'https://example.com/old' }, { sourceUrl: null }],
+            },
+        ]
+        writeFileSync(path.join(dir, 'strains.json'), `${JSON.stringify(strains)}\n`)
+        const assessment = assessCatalog(strains)
+        assert.equal(assessment.admitted, true)
+        assert.deepEqual(assessment.typedPointers, ['/0/dataProvenance/1/sourceUrl'])
+        const topLevel = assessCatalog([{ id: 'top', name: 'Top', sourceUrl: null }])
+        assert.equal(topLevel.admitted, false)
+        assert.deepEqual(topLevel.pointers, ['/0/sourceUrl'])
+        const disguised = assessCatalog([
+            {
+                id: 'obj',
+                name: 'Obj',
+                dataProvenance: { 0: { sourceUrl: null } },
+            },
+        ])
+        assert.equal(disguised.admitted, false)
+        assert.equal(disguised.typedNullCount, 0)
+        assert.deepEqual(disguised.pointers, ['/0/dataProvenance/0/sourceUrl'])
+
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 0, result.stderr)
+        const written = readFileSync(path.join(dir, 'o.ts'), 'utf8')
+        assert.match(written, /sourceUrl: null/)
+        assert.match(written, /sourceUrl: 'https:\/\/example.com\/old'/)
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a numeric object key aborts before any module write', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-object-key-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(
+            path.join(dir, 'strains.json'),
+            `${JSON.stringify([
+                {
+                    id: 'obj',
+                    name: 'Obj',
+                    dataProvenance: { 0: { sourceUrl: null } },
+                },
+            ])}\n`,
+        )
+        writeFileSync(path.join(dir, 'sentinel.ts'), 'keep')
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 1, result.stderr)
+        assert.match(result.stderr, /Quarantine: 1/)
+        assert.match(result.stderr, /\/0\/dataProvenance\/0\/sourceUrl/)
+        assert.equal(readFileSync(path.join(dir, 'sentinel.ts'), 'utf8'), 'keep')
+        assert.equal(
+            readdirSync(dir).some((name) => name.endsWith('.ts') && name !== 'sentinel.ts'),
+            false,
+        )
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('the full 776 catalog trial writes only in the requested directory', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-trial-776-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(path.join(dir, 'strains.json'), readFileSync(strainsPath))
+        writeFileSync(path.join(dir, 'sentinel.ts'), 'keep')
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 0, result.stderr)
+        assert.equal(result.stderr.includes('Quarantine'), false)
+        assert.match(result.stdout, /Loaded 776 strains/)
+        assert.match(result.stdout, /Total written: 776 strains/)
+        const written = readdirSync(dir)
+            .filter((name) => name.endsWith('.ts') && name !== 'sentinel.ts')
+            .map((name) => readFileSync(path.join(dir, name), 'utf8'))
+            .join('\n')
+        assert.equal(written.match(/sourceUrl: null/g).length, BASELINE_IDS)
+        const strains = JSON.parse(readFileSync(strainsPath, 'utf8'))
+        for (const strain of strains) assert.ok(written.includes(`id: '${strain.id}',`), strain.id)
+        assert.equal(readFileSync(path.join(dir, 'sentinel.ts'), 'utf8'), 'keep')
+        assert.equal(
+            readdirSync(dir).some(
+                (name) => name.endsWith('.tmp') || name.startsWith('.strain-stage-'),
+            ),
+            false,
+        )
+        assert.equal(
+            createHash('sha256').update(readFileSync(path.join(dir, 'strains.json'))).digest('hex'),
+            BASELINE_SHA256,
+        )
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+const isPublishRename = (from, to) => path.basename(from) === path.basename(to)
+
+const failWith = (message) => {
+    const error = new Error(message)
+    error.code = 'EIO'
+    return error
+}
+
+test('a catalog commit preserves the existing file mode', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-mode-'))
+    try {
+        const target = path.join(dir, 'a.ts')
+        writeFileSync(target, 'original')
+        chmodSync(target, 0o640)
+        await commitFiles(dir, [{ fileName: 'a.ts', content: 'next' }])
+        const published = readOpenedFile(target)
+        assert.equal(published.text, 'next')
+        assert.equal(published.mode & 0o777, 0o640)
+        assert.equal(
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
+            false,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a catalog commit replaces a symlink without following it', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-link-'))
+    try {
+        const outside = path.join(dir, 'outside.txt')
+        const linked = path.join(dir, 'linked.ts')
+        writeFileSync(outside, 'safe')
+        chmodSync(outside, 0o640)
+        symlinkSync(outside, linked)
+        await commitFiles(dir, [{ fileName: 'linked.ts', content: 'local' }])
+        const published = readOpenedFile(linked)
+        assert.equal(published.isFile, true)
+        assert.equal(published.text, 'local')
+        const referent = readOpenedFile(outside)
+        assert.equal(referent.text, 'safe')
+        assert.equal(referent.mode & 0o777, 0o640)
+        assert.equal(
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
+            false,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a catalog commit restores files already replaced when a later target is a directory', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-rollback-'))
+    try {
+        const target = path.join(dir, 'a.ts')
+        writeFileSync(target, 'original-a')
+        mkdirSync(path.join(dir, 'b.ts'))
+        writeFileSync(path.join(dir, 'b.ts', 'keep'), 'x')
+        await assert.rejects(
+            commitFiles(dir, [
+                { fileName: 'a.ts', content: 'new-a' },
+                { fileName: 'b.ts', content: 'new-b' },
+            ]),
+        )
+        assert.equal(readFileSync(target, 'utf8'), 'original-a')
+        assert.equal(readFileSync(path.join(dir, 'b.ts', 'keep'), 'utf8'), 'x')
+        assert.equal(
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
+            false,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a chmod failure after the backup restores the original file', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-chmod-'))
+    try {
+        const target = path.join(dir, 'a.ts')
+        writeFileSync(target, 'original-a')
+        chmodSync(target, 0o640)
+        await assert.rejects(
+            commitFiles(dir, [{ fileName: 'a.ts', content: 'new-a' }], {
+                chmodNoFollow: async () => {
+                    throw failWith('chmod failed')
+                },
+            }),
+            (error) => {
+                assert.equal(error.message, 'chmod failed')
+                return true
+            },
+        )
+        const restored = readOpenedFile(target)
+        assert.equal(restored.text, 'original-a')
+        assert.equal(restored.mode & 0o777, 0o640)
+        assert.equal(
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
+            false,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a publish rename failure restores every file already moved', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-rename-'))
+    try {
+        writeFileSync(path.join(dir, 'a.ts'), 'original-a')
+        writeFileSync(path.join(dir, 'b.ts'), 'original-b')
+        let publishes = 0
+        await assert.rejects(
+            commitFiles(
+                dir,
+                [
+                    { fileName: 'a.ts', content: 'new-a' },
+                    { fileName: 'b.ts', content: 'new-b' },
+                ],
+                {
+                    rename: async (from, to) => {
+                        if (isPublishRename(from, to)) {
+                            publishes += 1
+                            if (publishes === 2) throw failWith('publish failed')
+                        }
+                        return renamePath(from, to)
+                    },
+                },
+            ),
+            (error) => {
+                assert.equal(error.message, 'publish failed')
+                return true
+            },
+        )
+        assert.equal(readFileSync(path.join(dir, 'a.ts'), 'utf8'), 'original-a')
+        assert.equal(readFileSync(path.join(dir, 'b.ts'), 'utf8'), 'original-b')
+        assert.equal(
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
+            false,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a failed restore keeps the backup directory', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-restore-'))
+    try {
+        writeFileSync(path.join(dir, 'a.ts'), 'original-a')
+        await assert.rejects(
+            commitFiles(dir, [{ fileName: 'a.ts', content: 'new-a' }], {
+                rename: async (from, to) => {
+                    if (isPublishRename(from, to)) throw failWith('publish failed')
+                    if (path.basename(from).endsWith('.previous')) throw failWith('restore failed')
+                    return renamePath(from, to)
+                },
+            }),
+            (error) => {
+                assert.equal(error.message, 'publish failed')
+                return true
+            },
+        )
+        const stages = readdirSync(dir).filter((name) => name.startsWith('.strain-stage-'))
+        assert.equal(stages.length, 1)
+        assert.equal(readFileSync(path.join(dir, stages[0], 'a.ts.previous'), 'utf8'), 'original-a')
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a staging cleanup failure leaves a successful publish in place', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-cleanup-ok-'))
+    try {
+        await commitFiles(dir, [{ fileName: 'a.ts', content: 'next' }], {
+            rm: async () => {
+                throw failWith('cleanup failed')
+            },
+        })
+        assert.equal(readFileSync(path.join(dir, 'a.ts'), 'utf8'), 'next')
+        assert.equal(
+            readdirSync(dir).filter((name) => name.startsWith('.strain-stage-')).length,
+            1,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a staging cleanup failure does not replace the publish error', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-cleanup-err-'))
+    try {
+        const target = path.join(dir, 'a.ts')
+        writeFileSync(target, 'original-a')
+        await assert.rejects(
+            commitFiles(dir, [{ fileName: 'a.ts', content: 'new-a' }], {
+                chmodNoFollow: async () => {
+                    throw failWith('chmod failed')
+                },
+                rm: async () => {
+                    throw failWith('cleanup failed')
+                },
+            }),
+            (error) => {
+                assert.equal(error.message, 'chmod failed')
+                return true
+            },
+        )
+        assert.equal(readFileSync(target, 'utf8'), 'original-a')
+        assert.equal(
+            readdirSync(dir).filter((name) => name.startsWith('.strain-stage-')).length,
+            1,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a missing catalog directory argument writes nothing', () => {
+    const oracle = catalogOracle()
+    const result = spawnGenerate(['--catalog-dir'])
+    assert.equal(result.status, 1)
+    assert.match(result.stderr, /--catalog-dir needs a directory/)
+    assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+    assert.equal(
+        createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+        oracle.sha256,
+    )
 })

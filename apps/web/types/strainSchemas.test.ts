@@ -131,6 +131,39 @@ describe('dataProvenanceSchema', () => {
         expect(result.success).toBe(true)
     })
 
+    it('accepts an explicit null source URL and rejects a non-URL', () => {
+        const admitted = dataProvenanceSchema.safeParse({
+            provider: 'community',
+            fetchedAt: '2024-06-15T10:30:00Z',
+            sourceUrl: null,
+        })
+        expect(admitted.success).toBe(true)
+        if (admitted.success) expect(admitted.data.sourceUrl).toBeNull()
+
+        const rejected = dataProvenanceSchema.safeParse({
+            provider: 'community',
+            fetchedAt: '2024-06-15T10:30:00Z',
+            sourceUrl: 'not a url',
+        })
+        expect(rejected.success).toBe(false)
+    })
+
+    it('rejects an explicit undefined source URL and still allows omission', () => {
+        const omitted = dataProvenanceSchema.safeParse({
+            provider: 'community',
+            fetchedAt: '2024-06-15T10:30:00Z',
+        })
+        expect(omitted.success).toBe(true)
+        if (omitted.success) expect(omitted.data).not.toHaveProperty('sourceUrl')
+
+        const rejected = dataProvenanceSchema.safeParse({
+            provider: 'community',
+            fetchedAt: '2024-06-15T10:30:00Z',
+            sourceUrl: undefined,
+        })
+        expect(rejected.success).toBe(false)
+    })
+
     it('rejects confidence > 1', () => {
         const result = dataProvenanceSchema.safeParse({
             provider: 'otreeba',

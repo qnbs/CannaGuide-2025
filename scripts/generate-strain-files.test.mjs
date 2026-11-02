@@ -12,6 +12,7 @@ import {
     buildStrainFiles,
     countValueNodes,
     formatStrain,
+    resolveCatalogDir,
 } from './generate-strain-files.mjs'
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -140,7 +141,7 @@ test('line breaks stay inside the string and null array positions stay', () => {
     assert.deepEqual(value.lineage, { breeder: null })
 })
 
-test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
+test('the canonical catalog keeps its oracle and admits typed sourceUrl nulls', () => {
     const raw = readFileSync(strainsPath)
     const sha256 = createHash('sha256').update(raw).digest('hex')
     const strains = JSON.parse(raw.toString('utf8'))
@@ -150,10 +151,13 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.equal(countValueNodes(strains) - 1, BASELINE_VALUE_NODES)
 
     const assessment = assessCatalog(strains)
-    assert.equal(assessment.admitted, false)
-    assert.equal(assessment.nullCount, BASELINE_IDS)
+    assert.equal(assessment.admitted, true)
+    assert.equal(assessment.nullCount, 0)
+    assert.equal(assessment.findings.length, 0)
+    assert.equal(assessment.typedNullCount, BASELINE_IDS)
+    assert.equal(assessment.typedPointers.length, BASELINE_IDS)
     assert.ok(
-        assessment.pointers.every((pointer) =>
+        assessment.typedPointers.every((pointer) =>
             /^\/\d+\/dataProvenance\/0\/sourceUrl$/.test(pointer),
         ),
     )
@@ -176,14 +180,10 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     assert.match(before, /^numeric\.ts /m)
     assert.match(before, /^strains\.json /m)
     assert.match(before, /^pending\/pending-strains\.json /m)
-    const result = spawnSync(
-        process.execPath,
-        [path.join(repoRoot, 'scripts/generate-strain-files.mjs')],
-        { cwd: repoRoot, encoding: 'utf8' },
+    assert.equal(
+        resolveCatalogDir(['node', 'generate-strain-files.mjs'], strainsDir),
+        strainsDir,
     )
-    assert.equal(result.status, 1)
-    assert.match(result.stderr, /Quarantine: 776/)
-    assert.match(result.stderr, /\/\d+\/dataProvenance\/0\/sourceUrl id=/)
     assert.equal(directoryManifest(strainsDir), before)
     assert.equal(createHash('sha256').update(readFileSync(strainsPath)).digest('hex'), sha256)
 })
@@ -241,6 +241,8 @@ const resolvePointer = (document, pointer) => {
 test('null pointers are array indexes and sparse slots stay undefined', () => {
     const strains = [{ id: 'first', cbd: null }, { id: 'second' }]
     const assessment = assessCatalog(strains)
+    assert.equal(assessment.admitted, false)
+    assert.equal(assessment.typedNullCount, 0)
     assert.deepEqual(assessment.pointers, ['/0/cbd'])
     assert.deepEqual(assessment.findings, [{ pointer: '/0/cbd', id: 'first' }])
     assert.equal(resolvePointer(strains, assessment.pointers[0]), null)
@@ -263,10 +265,117 @@ test('a catalog without null is admitted and still keeps zero and false', () => 
     const assessment = assessCatalog(strains)
     assert.equal(assessment.admitted, true)
     assert.equal(assessment.nullCount, 0)
+    assert.equal(assessment.typedNullCount, 0)
     const rendered = buildStrainFiles(strains)
         .map((file) => file.content)
         .join('\n')
     assert.match(rendered, /thc: 0,/)
     assert.match(rendered, /labVerified: false,/)
     assert.equal(rendered.includes('null'), false)
+})
+
+const spawnGenerate = (args) =>
+    spawnSync(process.execPath, [path.join(repoRoot, 'scripts/generate-strain-files.mjs'), ...args], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+    })
+
+const catalogOracle = () => {
+    const strainsDir = path.dirname(strainsPath)
+    return {
+        strainsDir,
+        manifest: directoryManifest(strainsDir),
+        sha256: createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+    }
+}
+
+test('the catalog directory flag resolves a fixture and rejects a missing path', () => {
+    const fixture = path.join(tmpdir(), 'strain-fixture')
+    assert.equal(
+        resolveCatalogDir(['node', 'script', '--catalog-dir', fixture], path.dirname(strainsPath)),
+        path.resolve(fixture),
+    )
+    assert.throws(
+        () => resolveCatalogDir(['node', 'script', '--catalog-dir'], path.dirname(strainsPath)),
+        /--catalog-dir needs a directory/,
+    )
+})
+
+test('an unexpected null aborts before any module write', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-quarantine-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(
+            path.join(dir, 'strains.json'),
+            `${JSON.stringify([
+                {
+                    id: 'bad',
+                    name: 'Bad',
+                    cbd: null,
+                    dataProvenance: [{ sourceUrl: null }],
+                },
+            ])}\n`,
+        )
+        writeFileSync(path.join(dir, 'a.ts'), 'sentinel')
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 1)
+        assert.match(result.stderr, /Quarantine: 1/)
+        assert.match(result.stderr, /\/0\/cbd id=bad/)
+        assert.equal(result.stderr.includes('sourceUrl'), false)
+        assert.equal(readFileSync(path.join(dir, 'a.ts'), 'utf8'), 'sentinel')
+        assert.equal(readdirSync(dir).includes('b.ts'), false)
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            oracle.sha256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a typed sourceUrl null is written only in the requested directory', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-typed-null-'))
+    const oracle = catalogOracle()
+    try {
+        const strains = [
+            {
+                id: 'ok',
+                name: 'Ok',
+                dataProvenance: [{ sourceUrl: 'https://example.com/old' }, { sourceUrl: null }],
+            },
+        ]
+        writeFileSync(path.join(dir, 'strains.json'), `${JSON.stringify(strains)}\n`)
+        const assessment = assessCatalog(strains)
+        assert.equal(assessment.admitted, true)
+        assert.deepEqual(assessment.typedPointers, ['/0/dataProvenance/1/sourceUrl'])
+        const topLevel = assessCatalog([{ id: 'top', name: 'Top', sourceUrl: null }])
+        assert.equal(topLevel.admitted, false)
+        assert.deepEqual(topLevel.pointers, ['/0/sourceUrl'])
+
+        const result = spawnGenerate(['--catalog-dir', dir])
+        assert.equal(result.status, 0, result.stderr)
+        const written = readFileSync(path.join(dir, 'o.ts'), 'utf8')
+        assert.match(written, /sourceUrl: null/)
+        assert.match(written, /sourceUrl: 'https:\/\/example.com\/old'/)
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('a missing catalog directory argument writes nothing', () => {
+    const oracle = catalogOracle()
+    const result = spawnGenerate(['--catalog-dir'])
+    assert.equal(result.status, 1)
+    assert.match(result.stderr, /--catalog-dir needs a directory/)
+    assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+    assert.equal(
+        createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+        oracle.sha256,
+    )
 })

@@ -5,10 +5,11 @@
  * and generates uniform TypeScript strain data files (a.ts-z.ts, numeric.ts)
  * plus index.ts.
  *
- * Usage: node scripts/generate-strain-files.mjs
+ * Usage: node scripts/generate-strain-files.mjs [--catalog-dir DIR]
  *
- * Explicit null stays in the serializer. The canonical write stops, without
- * editing the catalog, while Strain cannot represent those nulls.
+ * dataProvenance.sourceUrl may be a string, null, or omitted. Any other
+ * JSON null stops the write before a module changes. --catalog-dir writes
+ * that directory instead of apps/web/data/strains.
  */
 
 import fs from 'node:fs/promises'
@@ -19,7 +20,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, '..')
 const strainsDir = path.join(repoRoot, 'apps', 'web', 'data', 'strains')
-const jsonPath = path.join(strainsDir, 'strains.json')
 
 // -----------------------------------------------------------------------
 // Helpers
@@ -232,30 +232,51 @@ const nestedNodeCount = (value) => {
 export const countValueNodes = (value) => 1 + nestedNodeCount(value)
 
 /**
- * Explicit JSON null is representable in the serializer, but Strain.sourceUrl
- * is `string | undefined`. A null in the canonical file blocks the module write.
+ * dataProvenance.sourceUrl is `string | null | undefined`. That null is typed.
+ * Every other JSON null still blocks the module write.
  */
+const TYPED_NULL_POINTER = /^\/\d+\/dataProvenance\/\d+\/sourceUrl$/
+
 const strainId = (strain) => (typeof strain?.id === 'string' ? strain.id : '<missing-id>')
 
-const collectFindings = (strains, index, findings) => {
+const collectFindings = (strains, index, unexpected, typed) => {
     const pointers = []
     collectNullPointers(strains[index], `/${index}`, pointers)
     const id = strainId(strains[index])
-    for (const pointer of pointers) findings.push({ pointer, id })
+    for (const pointer of pointers) {
+        const finding = { pointer, id }
+        if (TYPED_NULL_POINTER.test(pointer)) typed.push(finding)
+        else unexpected.push(finding)
+    }
 }
 
 /** Pointers are RFC 6901 paths into the strains array. The id stays a separate field. */
 export const assessCatalog = (strains) => {
     const findings = []
+    const typedNulls = []
     for (let index = 0; index < strains.length; index += 1) {
-        collectFindings(strains, index, findings)
+        collectFindings(strains, index, findings, typedNulls)
     }
     return {
         admitted: findings.length === 0,
         nullCount: findings.length,
+        typedNullCount: typedNulls.length,
         pointers: findings.map((finding) => finding.pointer),
+        typedPointers: typedNulls.map((finding) => finding.pointer),
         findings,
+        typedNulls,
     }
+}
+
+/** `--catalog-dir` selects a fixture. The default stays the checked-in catalog. */
+export const resolveCatalogDir = (argv, fallback) => {
+    const index = argv.indexOf('--catalog-dir')
+    if (index === -1) return fallback
+    const dir = argv[index + 1]
+    if (dir === undefined || dir.startsWith('--')) {
+        throw new Error('[generate] --catalog-dir needs a directory')
+    }
+    return path.resolve(dir)
 }
 
 const EXPORT_NAMES = {
@@ -336,20 +357,18 @@ export const buildStrainFiles = (strains) => {
 
 const reportQuarantine = (assessment) => {
     console.error(
-        `[generate] Quarantine: ${assessment.nullCount} explicit JSON null values are not representable in Strain modules.`,
+        `[generate] Quarantine: ${assessment.nullCount} explicit JSON null values are not typed on Strain.`,
     )
     for (const finding of assessment.findings.slice(0, 3)) {
         console.error(`[generate]   ${finding.pointer} id=${finding.id}`)
     }
-    console.error(
-        '[generate] Strain fields are not typed as null. Catalog files were not modified.',
-    )
+    console.error('[generate] Catalog files were not modified.')
 }
 
-const writeCatalog = async (files) => {
+const writeCatalog = async (dir, files) => {
     let total = 0
     for (const file of files) {
-        await fs.writeFile(path.join(strainsDir, file.fileName), file.content, 'utf8')
+        await fs.writeFile(path.join(dir, file.fileName), file.content, 'utf8')
         total += file.count
         const label = file.count > 0 ? `${file.count} strains` : 'generated'
         console.log(`[generate]   ${file.fileName}: ${label}`)
@@ -358,7 +377,8 @@ const writeCatalog = async (files) => {
 }
 
 const run = async () => {
-    const raw = await fs.readFile(jsonPath, 'utf8')
+    const dir = resolveCatalogDir(process.argv, strainsDir)
+    const raw = await fs.readFile(path.join(dir, 'strains.json'), 'utf8')
     const strains = JSON.parse(raw)
     console.log(`[generate] Loaded ${strains.length} strains from strains.json`)
     const assessment = assessCatalog(strains)
@@ -367,7 +387,7 @@ const run = async () => {
         process.exitCode = 1
         return
     }
-    const total = await writeCatalog(buildStrainFiles(strains))
+    const total = await writeCatalog(dir, buildStrainFiles(strains))
     console.log(`[generate] Total written: ${total} strains`)
 }
 

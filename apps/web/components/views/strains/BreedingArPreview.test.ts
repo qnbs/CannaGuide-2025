@@ -1,17 +1,17 @@
-import * as THREE from 'three'
+import { Group, Mesh, SphereGeometry } from 'three'
 import { describe, expect, it } from 'vitest'
 import { createPlant } from './BreedingArPreview'
 
-const bloomMeshes = (group: THREE.Group): THREE.Mesh[] =>
-    group.children.filter((child): child is THREE.Mesh => {
-        if (!(child instanceof THREE.Mesh)) return false
-        if (!(child.geometry instanceof THREE.SphereGeometry)) return false
+const bloomMeshes = (group: Group): Mesh[] =>
+    group.children.filter((child): child is Mesh => {
+        if (!(child instanceof Mesh)) return false
+        if (!(child.geometry instanceof SphereGeometry)) return false
         return child.geometry.parameters.radius < 0.3
     })
 
-const disposePlant = (group: THREE.Group): void => {
+const disposePlant = (group: Group): void => {
     group.traverse((obj) => {
-        if (!(obj instanceof THREE.Mesh)) return
+        if (!(obj instanceof Mesh)) return
         obj.geometry.dispose()
         if (Array.isArray(obj.material)) {
             obj.material.forEach((material) => material.dispose())

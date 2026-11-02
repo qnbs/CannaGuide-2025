@@ -10,7 +10,7 @@
 
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -38,39 +38,43 @@ const resolveEnumValue = (raw) => {
  * Extract the object literal body from a createStrainObject({...}) call.
  * Handles nested braces correctly.
  */
+const closingBrace = (source, braceStart) => {
+    let depth = 0
+    for (let index = braceStart; index < source.length; index += 1) {
+        if (source[index] === '{') depth += 1
+        else if (source[index] === '}') depth -= 1
+        if (depth === 0) return index
+    }
+    return -1
+}
+
+const scanCall = (source, start) => {
+    const braceStart = source.indexOf('{', start + 'createStrainObject('.length)
+    if (braceStart === -1) return { body: undefined, next: source.length }
+    const end = closingBrace(source, braceStart)
+    if (end === -1) return { body: undefined, next: source.length }
+    return { body: source.slice(braceStart, end + 1), next: end + 1 }
+}
+
 const extractObjectBodies = (source) => {
     const bodies = []
+    let unmatched = 0
     const marker = 'createStrainObject('
     let idx = 0
 
-    while (true) {
+    while (idx < source.length) {
         const start = source.indexOf(marker, idx)
         if (start === -1) break
-
-        // Find the opening { after the marker
-        let braceStart = source.indexOf('{', start + marker.length)
-        if (braceStart === -1) break
-
-        // Walk forward counting braces
-        let depth = 0
-        let i = braceStart
-        while (i < source.length) {
-            if (source[i] === '{') depth++
-            else if (source[i] === '}') {
-                depth--
-                if (depth === 0) break
-            }
-            i++
+        const scanned = scanCall(source, start)
+        if (!scanned.body) {
+            unmatched += 1
+            break
         }
-
-        if (depth === 0) {
-            bodies.push(source.slice(braceStart, i + 1))
-        }
-
-        idx = i + 1
+        bodies.push(scanned.body)
+        idx = scanned.next
     }
 
-    return bodies
+    return { bodies, unmatched }
 }
 
 /**
@@ -79,7 +83,7 @@ const extractObjectBodies = (source) => {
  * single-quoted strings (including apostrophes), trailing commas,
  * StrainType.X enums, nested objects/arrays, multi-line strings.
  */
-const parseObjectLiteral = (objStr) => {
+export const parseObjectLiteral = (objStr) => {
     // Tokenize character by character to correctly handle strings
     const tokens = []
     let i = 0
@@ -175,7 +179,31 @@ const parseObjectLiteral = (objStr) => {
  * Normalize a parsed strain object: ensure consistent field names
  * and strip any runtime-only fields.
  */
-const normalizeStrain = (raw) => {
+const copyProvenance = (strain, raw) => {
+    if (!Object.hasOwn(raw, 'dataProvenance')) return
+    strain.dataProvenance = structuredClone(raw.dataProvenance)
+}
+
+const priorProvenance = (previous) => {
+    const prior = new Map()
+    for (const strain of previous) {
+        if (!strain || !Object.hasOwn(strain, 'dataProvenance')) continue
+        prior.set(strain.id, strain.dataProvenance)
+    }
+    return prior
+}
+
+const attachPriorProvenance = (strain, prior) => {
+    if (Object.hasOwn(strain, 'dataProvenance') || !prior.has(strain.id)) return strain
+    return { ...strain, dataProvenance: structuredClone(prior.get(strain.id)) }
+}
+
+export const preserveProvenance = (extracted, previous) => {
+    const prior = priorProvenance(previous)
+    return extracted.map((strain) => attachPriorProvenance(strain, prior))
+}
+
+export const normalizeStrain = (raw) => {
     if (!raw || !raw.id || !raw.name) return null
 
     const strain = {
@@ -231,6 +259,7 @@ const normalizeStrain = (raw) => {
         strain.lineage = raw.lineage
     }
 
+    copyProvenance(strain, raw)
     return strain
 }
 
@@ -238,66 +267,230 @@ const normalizeStrain = (raw) => {
 // Main
 // -----------------------------------------------------------------------
 
-const run = async () => {
-    const files = (await fs.readdir(strainsDir))
-        .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
+const catalogArray = (text) => {
+    const parsed = JSON.parse(text)
+    if (Array.isArray(parsed)) return parsed
+    throw new Error('previous catalog must be a JSON array')
+}
+
+export const readCatalogState = async (filePath) => {
+    try {
+        const text = await fs.readFile(filePath, 'utf8')
+        return { exists: true, strains: catalogArray(text) }
+    } catch (error) {
+        if (error && error.code === 'ENOENT') return { exists: false, strains: [] }
+        throw error
+    }
+}
+
+export const readCatalogFile = async (filePath) => (await readCatalogState(filePath)).strains
+
+const isPlainObject = (value) =>
+    value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const pointerToken = (segment) => String(segment).replaceAll('~', '~0').replaceAll('/', '~1')
+
+const arrayChanged = (previous, extracted) =>
+    !Array.isArray(previous) || !Array.isArray(extracted) || previous.length !== extracted.length
+
+const valueKind = (value) => {
+    if (Array.isArray(value)) return 'array'
+    if (isPlainObject(value)) return 'object'
+    return 'scalar'
+}
+
+const diffArray = (previous, extracted, pointer, id, out) => {
+    if (arrayChanged(previous, extracted)) {
+        out.push({ pointer, id, reason: 'changed' })
+        return
+    }
+    for (let index = 0; index < previous.length; index += 1) {
+        diffValues(previous[index], extracted[index], `${pointer}/${index}`, id, out)
+    }
+}
+
+const diffKey = (previous, extracted, pointer, id, key, out) => {
+    const child = `${pointer}/${pointerToken(key)}`
+    if (!Object.hasOwn(previous, key)) {
+        out.push({ pointer: child, id, reason: 'added' })
+        return
+    }
+    if (!Object.hasOwn(extracted, key)) {
+        out.push({ pointer: child, id, reason: 'missing' })
+        return
+    }
+    diffValues(previous[key], extracted[key], child, id, out)
+}
+
+const diffObject = (previous, extracted, pointer, id, out) => {
+    if (!isPlainObject(previous) || !isPlainObject(extracted)) {
+        out.push({ pointer, id, reason: 'changed' })
+        return
+    }
+    const keys = new Set([...Object.keys(previous), ...Object.keys(extracted)])
+    for (const key of keys) diffKey(previous, extracted, pointer, id, key, out)
+}
+
+const diffValues = (previous, extracted, pointer, id, out) => {
+    if (Object.is(previous, extracted)) return
+    const kind = valueKind(previous)
+    if (kind !== valueKind(extracted)) {
+        out.push({ pointer, id, reason: 'changed' })
+        return
+    }
+    if (kind === 'array') {
+        diffArray(previous, extracted, pointer, id, out)
+        return
+    }
+    if (kind === 'object') {
+        diffObject(previous, extracted, pointer, id, out)
+        return
+    }
+    out.push({ pointer, id, reason: 'changed' })
+}
+
+const indexStrains = (strains, findings) => {
+    const index = new Map()
+    for (const strain of strains) {
+        const id = strain && strain.id
+        if (!id) {
+            findings.push({ pointer: '', id: '', reason: 'normalize' })
+            continue
+        }
+        if (index.has(id)) {
+            findings.push({ pointer: `/${pointerToken(id)}`, id, reason: 'duplicate' })
+            continue
+        }
+        index.set(id, strain)
+    }
+    return index
+}
+
+export const assessCatalogRoundTrip = (previous, extracted) => {
+    const findings = []
+    const prior = indexStrains(previous, findings)
+    const next = indexStrains(extracted, findings)
+    for (const [id, strain] of prior) {
+        if (!next.has(id)) {
+            findings.push({ pointer: `/${pointerToken(id)}`, id, reason: 'missing' })
+            continue
+        }
+        diffValues(strain, next.get(id), `/${pointerToken(id)}`, id, findings)
+    }
+    for (const [id] of next) {
+        if (!prior.has(id)) findings.push({ pointer: `/${pointerToken(id)}`, id, reason: 'added' })
+    }
+    return findings
+}
+
+export const planCatalogWrite = ({ previousExists, previous, extracted, failures }) => {
+    const findings = failures.map((failure) => ({ ...failure }))
+    if (previousExists) {
+        for (const finding of assessCatalogRoundTrip(previous, extracted)) findings.push(finding)
+    }
+    return { write: findings.length === 0, findings }
+}
+
+const pushFailure = (failures, reason, fileName, id) => {
+    failures.push({ pointer: '', id, reason, file: fileName })
+}
+
+const takeStrain = (parsed, fileName, seenIds, strains, failures) => {
+    const strain = normalizeStrain(parsed)
+    if (!strain) {
+        pushFailure(failures, 'normalize', fileName, '')
+        return false
+    }
+    if (seenIds.has(strain.id)) {
+        pushFailure(failures, 'duplicate', fileName, strain.id)
+        return false
+    }
+    seenIds.add(strain.id)
+    strains.push(strain)
+    return true
+}
+
+const collectBodies = (source, fileName, seenIds, strains, failures) => {
+    const collected = extractObjectBodies(source)
+    if (collected.unmatched > 0) pushFailure(failures, 'parse', fileName, '')
+    let fileCount = 0
+    for (const body of collected.bodies) {
+        const parsed = parseObjectLiteral(body)
+        if (!parsed) {
+            pushFailure(failures, 'parse', fileName, '')
+            continue
+        }
+        if (takeStrain(parsed, fileName, seenIds, strains, failures)) fileCount += 1
+    }
+    return fileCount
+}
+
+const reportRefusal = (findings) => {
+    console.error(
+        `[extract] Refused: ${findings.length} finding(s). Catalog files were not modified.`,
+    )
+    for (const finding of findings.slice(0, 3)) {
+        const file = finding.file ? ` file=${finding.file}` : ''
+        console.error(
+            `[extract]   ${finding.pointer} id=${finding.id} reason=${finding.reason}${file}`,
+        )
+    }
+}
+
+const refuseExtract = (findings) => {
+    reportRefusal(findings)
+    const error = new Error('extract refused before writing the catalog')
+    error.code = 'EXTRACT_REFUSED'
+    error.findings = findings
+    return error
+}
+
+const catalogText = (catalog) => `${JSON.stringify(catalog, null, 2)}\n`
+
+export const runExtract = async ({ strainsDir: dir, outputPath: catalogPath }) => {
+    const state = await readCatalogState(catalogPath)
+    const files = (await fs.readdir(dir))
+        .filter((file) => file.endsWith('.ts') && file !== 'index.ts')
         .sort()
 
     console.log(`[extract] Scanning ${files.length} strain files...`)
 
-    const allStrains = []
+    const strains = []
     const seenIds = new Set()
-    let duplicateCount = 0
-
+    const failures = []
     for (const fileName of files) {
-        const filePath = path.join(strainsDir, fileName)
-        const source = await fs.readFile(filePath, 'utf8')
-        const bodies = extractObjectBodies(source)
-
-        let fileCount = 0
-        for (const body of bodies) {
-            const parsed = parseObjectLiteral(body)
-            if (!parsed) {
-                console.warn(`[extract] Failed to parse object in ${fileName}`)
-                continue
-            }
-
-            const strain = normalizeStrain(parsed)
-            if (!strain) {
-                console.warn(`[extract] Failed to normalize strain in ${fileName}`)
-                continue
-            }
-
-            if (seenIds.has(strain.id)) {
-                console.warn(`[extract] Duplicate ID skipped: ${strain.id} (in ${fileName})`)
-                duplicateCount++
-                continue
-            }
-
-            seenIds.add(strain.id)
-            allStrains.push(strain)
-            fileCount++
-        }
-
+        const source = await fs.readFile(path.join(dir, fileName), 'utf8')
+        const fileCount = collectBodies(source, fileName, seenIds, strains, failures)
         console.log(`[extract]   ${fileName}: ${fileCount} strains`)
     }
 
-    // Sort alphabetically by id
-    allStrains.sort((a, b) => a.id.localeCompare(b.id))
+    const catalog = preserveProvenance(strains, state.strains)
+    catalog.sort((a, b) => a.id.localeCompare(b.id))
+    const decision = planCatalogWrite({
+        previousExists: state.exists,
+        previous: state.strains,
+        extracted: catalog,
+        failures,
+    })
+    if (!decision.write) throw refuseExtract(decision.findings)
 
-    // Write JSON
-    const json = JSON.stringify(allStrains, null, 2)
-    await fs.writeFile(outputPath, `${json}\n`, 'utf8')
-
-    console.log(`[extract] ----------------------------------------`)
-    console.log(`[extract] Total extracted: ${allStrains.length} unique strains`)
-    if (duplicateCount > 0) {
-        console.log(`[extract] Duplicates removed: ${duplicateCount}`)
+    if (state.exists) {
+        console.log('[extract] Catalog already matches. No write.')
+        return { written: false, count: catalog.length }
     }
-    console.log(`[extract] Written to: ${path.relative(repoRoot, outputPath)}`)
+
+    await fs.writeFile(catalogPath, catalogText(catalog), 'utf8')
+    console.log(`[extract] Total extracted: ${catalog.length} unique strains`)
+    console.log(`[extract] Written to: ${catalogPath}`)
+    return { written: true, count: catalog.length }
 }
 
-run().catch((err) => {
-    console.error('[extract] Fatal error:', err)
-    process.exit(1)
-})
+const run = () => runExtract({ strainsDir, outputPath })
+
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (invokedDirectly) {
+    run().catch((err) => {
+        console.error('[extract] Fatal error:', err)
+        process.exit(1)
+    })
+}

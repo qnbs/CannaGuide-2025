@@ -99,7 +99,9 @@ export const floweringDaysFromWeeks = (weeks?: unknown): number | undefined => {
 
 export const formatReportedPercent = (value: unknown, unknownLabel: string): string => {
     if (typeof value !== 'number' || !Number.isFinite(value)) return unknownLabel
-    return `${value.toFixed(1)}%`
+    const tenths = value.toFixed(1)
+    if (Number(tenths) === 0 && value !== 0) return `${value}%`
+    return `${tenths}%`
 }
 
 export const formatFloweringDays = (

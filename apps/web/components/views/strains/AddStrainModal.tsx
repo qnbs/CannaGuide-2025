@@ -193,6 +193,10 @@ const StrainFormBanner: React.FC<{
     )
 }
 
+const choiceValue = (current: string): string[] => (current === '' ? [] : [current])
+
+const nextChoice = (current: string, picked: string): string => (current === picked ? '' : picked)
+
 const GrowChoiceGrid: React.FC<{
     values: StrainFormValues
     onChange: (key: 'difficulty' | 'yield' | 'height', value: string) => void
@@ -258,10 +262,6 @@ type StrainFieldChange = <K extends keyof StrainFormValues>(
     key: K,
     value: StrainFormValues[K],
 ) => void
-
-const choiceValue = (current: string): string[] => (current === '' ? [] : [current])
-
-const nextChoice = (current: string, picked: string): string => (current === picked ? '' : picked)
 
 type StrainFieldErrors = Partial<Record<keyof StrainFormValues, string>>
 

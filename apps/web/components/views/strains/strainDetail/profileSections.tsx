@@ -280,10 +280,10 @@ export const FlavonoidProfileSection: React.FC<{ profile: FlavonoidProfile | und
     )
 }
 
-const ratioText = (ratio: number | undefined): string => {
-    if (ratio === undefined || Number.isNaN(ratio)) return 'N/A'
+const ratioText = (ratio: number | undefined, unknownLabel: string): string => {
     if (ratio === Number.POSITIVE_INFINITY) return 'Infinity:1'
-    return Number.isFinite(ratio) ? `${ratio.toFixed(1)}:1` : 'N/A'
+    if (ratio === undefined || !Number.isFinite(ratio)) return unknownLabel
+    return `${ratio.toFixed(1)}:1`
 }
 
 export const ChemovarSection: React.FC<{ profile: ChemovarProfile | undefined }> = ({
@@ -307,7 +307,7 @@ export const ChemovarSection: React.FC<{ profile: ChemovarProfile | undefined }>
                         {t('strainsView.strainDetail.chemovar.thcCbdRatio')}
                     </div>
                     <div className="text-sm font-semibold text-slate-200 mt-1">
-                        {ratioText(profile.thcCbdRatio)}
+                        {ratioText(profile.thcCbdRatio, t('common.unknown'))}
                     </div>
                 </div>
                 <div className="bg-slate-800 rounded-lg p-3">

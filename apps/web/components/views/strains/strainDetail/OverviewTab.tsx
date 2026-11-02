@@ -4,19 +4,13 @@ import type { Strain, CannabinoidName } from '@/types'
 import { InfoSection } from '@/components/common/InfoSection'
 import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { Speakable } from '@/components/common/Speakable'
+import { formatReportedPercent } from '@/components/views/strains/breeding/genetics'
 import { CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
-
-export const formatReportedPercent = (value: unknown): string | undefined => {
-    if (typeof value !== 'number' || !Number.isFinite(value)) return undefined
-    const tenths = value.toFixed(1)
-    if (Number(tenths) === 0 && value !== 0) return `${value}%`
-    return `${tenths}%`
-}
 
 const textOr = (value: string | undefined, fallback: string): string => value || fallback
 
 const percentLabel = (value: unknown, unknownLabel: string): string =>
-    formatReportedPercent(value) ?? unknownLabel
+    formatReportedPercent(value, unknownLabel)
 
 const cannabinoidLabel = (name: CannabinoidName): string => {
     const entry = CANNABINOID_DATABASE[name]

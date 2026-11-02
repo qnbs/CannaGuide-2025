@@ -18,8 +18,10 @@ describe('floweringDaysFromWeeks', () => {
 describe('reported genetics labels', () => {
     it('prints a reported percent, including zero, and unknown otherwise', () => {
         expect(formatReportedPercent(0, 'Unknown')).toBe('0.0%')
-        expect(formatReportedPercent(18.2, 'Unknown')).toBe('18.2%')
+        expect(formatReportedPercent(0.04, 'Unknown')).toBe('0.04%')
+        expect(formatReportedPercent(18.24, 'Unknown')).toBe('18.2%')
         expect(formatReportedPercent(undefined, 'Unknown')).toBe('Unknown')
+        expect(formatReportedPercent(Number.NaN, 'Unknown')).toBe('Unknown')
     })
 
     it('prints flowering days only when the week count was reported', () => {

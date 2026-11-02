@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { test } from 'node:test'
 
 const read = (path) => readFileSync(path, 'utf8')
@@ -51,18 +51,14 @@ const rules = readdirSync('.cursor/rules')
     .sort()
     .map((name) => parseRule(`.cursor/rules/${name}`))
 
-test('Cursor project MCP launches only the pinned Graphify script', () => {
-    const config = JSON.parse(read('.cursor/mcp.json'))
-    const servers = config.mcpServers
-    assert.deepEqual(Object.keys(servers), ['graphify'])
-    assert.equal(servers.graphify.command, 'node')
-    assert.deepEqual(servers.graphify.args, [
-        '${workspaceFolder}/scripts/graphify-mcp-launcher.mjs',
-    ])
-    assert.equal(JSON.stringify(config).includes('/home/'), false)
+test('Cursor does not configure Graphify; Claude Code keeps it', () => {
+    assert.equal(existsSync('.cursor/mcp.json'), false)
     const claude = JSON.parse(read('.mcp.json'))
     assert.ok(claude.mcpServers.graphify)
     assert.ok(claude.mcpServers.gitkraken)
+    const doctor = read('scripts/graphify-mcp-doctor.mjs')
+    assert.equal(doctor.includes('Cursor reads .cursor/mcp.json'), false)
+    assert.match(doctor, /Cursor does not run Graphify or codegraph/)
 })
 
 test('project rules have the expected scope and do not name a permanent writer', () => {
@@ -73,7 +69,6 @@ test('project rules have the expected scope and do not name a permanent writer',
             '.cursor/rules/10-web-typescript-state.mdc',
             '.cursor/rules/20-strains-evidence-data.mdc',
             '.cursor/rules/30-ci-security-deps.mdc',
-            '.cursor/rules/40-graphify-codegraph.mdc',
         ],
     )
     const governance = rules[0]
@@ -112,14 +107,12 @@ test('scoped rules match their files and skip unrelated ones', () => {
         ),
     )
     assert.ok(matches('.github/workflows/ci.yml').includes('.cursor/rules/30-ci-security-deps.mdc'))
-    assert.ok(
-        matches('scripts/codegraph.mjs').includes('.cursor/rules/40-graphify-codegraph.mdc'),
-    )
-    assert.ok(matches('.cursor/mcp.json').includes('.cursor/rules/40-graphify-codegraph.mdc'))
-    assert.equal(
-        matches('scripts/codegraph.mjs').includes('.cursor/rules/10-web-typescript-state.mdc'),
-        false,
-    )
+    assert.deepEqual(matches('scripts/codegraph.mjs'), [
+        '.cursor/rules/00-repository-governance.mdc',
+    ])
+    assert.deepEqual(matches('scripts/graphify-mcp-launcher.mjs'), [
+        '.cursor/rules/00-repository-governance.mdc',
+    ])
 })
 
 test('agent docs name the lease and the current stack', () => {
@@ -127,8 +120,9 @@ test('agent docs name the lease and the current stack', () => {
     assert.match(agents, /QNB-259/)
     assert.equal(agents.includes('currently Claude Code'), false)
     const guide = read('docs/GRAPHIFY-COMPLETE-GUIDE.md').split('\n').slice(0, 12).join('\n')
-    assert.match(guide, /Current setup/)
-    assert.equal(guide.includes('instead of Cursor'), false)
+    assert.match(guide, /Claude Code CLI/)
+    assert.match(guide, /Cursor does not run those tools/)
+    assert.equal(guide.includes('Cursor project MCP'), false)
     const copilot = read('.github/copilot-instructions.md')
     assert.match(copilot, /\*\*Version:\*\* 1\.11\.0/)
     assert.match(copilot, /Vite 8/)

@@ -2,13 +2,12 @@
 
 **Zielgruppe:** Menschen und **KI-Agenten**, die dieses Repository verstehen, Graphify betreiben oder **dieselbe Integrationsform in anderen Apps/Repositories** nachbauen wollen.
 
-> **Current setup (2026-11-02):** Cursor project MCP is `.cursor/mcp.json`. It starts `node` on
-> `${workspaceFolder}/scripts/graphify-mcp-launcher.mjs` (pins in `scripts/graphify-pins.mjs`).
-> Root `.mcp.json` stays the Claude Code entry and is not assumed to load in Cursor. Check the
-> launcher with `pnpm run graphify:mcp:doctor`. GitKraken is not in the Cursor project file.
+> **Current setup (2026-11-02):** Graphify and codegraph stay with Claude Code CLI in VS Code.
+> Claude reads root `.mcp.json`. Cursor does not run those tools and does not have a project
+> MCP file for them. A later graph refresh is that Claude session's work.
 >
-> **Historical:** Sections below that mention a retired `.cursor/` tree, `mdc:*` scripts, or a
-> bash-only MCP file describe the July 2026 setup. They are archive, not the current path.
+> **Historical:** Sections below that mention a retired `.cursor/` tree or `mdc:*` scripts
+> describe the July 2026 setup. They are archive, not a Cursor task.
 
 **Lesereihenfolge für Agenten (empfohlen):**
 

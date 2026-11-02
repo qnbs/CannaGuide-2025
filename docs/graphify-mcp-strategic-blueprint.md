@@ -2,8 +2,8 @@
 
 > **Note (archived / historical):** This blueprint planned an MDC-to-graph bridge, a rules
 > explorer, and starter templates. That bridge was not built. The body below stays archive.
-> The current Cursor project files are `.cursor/mcp.json` and `.cursor/rules/*.mdc`. Root
-> `.mcp.json` remains the Claude Code entry.
+> Graphify and codegraph stay with Claude Code CLI via root `.mcp.json`. Cursor does not
+> run them.
 
 ## Scope
 

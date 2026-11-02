@@ -8,7 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **docs(agents):** Cursor project MCP and five short project rules are tracked. The writer lease points at the owner's session and QNB-259 instead of a hard-coded agent name. Copilot's stack notes match package 1.11.0, Vite 8, and pnpm 11.19.0, and they describe Cloudflare Pages as the live GitHub Actions mirror.
+- **docs(agents):** Four short Cursor project rules are tracked for the writer lease, web state, strain evidence, and dependency floors. Graphify and codegraph stay with Claude Code CLI via root `.mcp.json`; Cursor does not run them. The writer lease points at the owner's session and QNB-259 instead of a hard-coded agent name. Copilot's stack notes match package 1.11.0, Vite 8, and pnpm 11.19.0, and they describe Cloudflare Pages as the live GitHub Actions mirror.
 
 ### Fixed
 

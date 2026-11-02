@@ -1,8 +1,0 @@
-{
-    "mcpServers": {
-        "graphify": {
-            "command": "node",
-            "args": ["${workspaceFolder}/scripts/graphify-mcp-launcher.mjs"]
-        }
-    }
-}

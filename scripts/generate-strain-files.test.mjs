@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -169,11 +170,11 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     for (const strain of strains) assert.ok(rendered.includes(`id: '${strain.id}',`), strain.id)
 
     const strainsDir = path.dirname(strainsPath)
-    const generatedPaths = first.map((file) => path.join(strainsDir, file.fileName))
-    const before = new Map(generatedPaths.map((filePath) => [filePath, readFileSync(filePath)]))
-    assert.ok(before.has(path.join(strainsDir, 'numeric.ts')))
-    assert.ok(before.has(path.join(strainsDir, 'a.ts')))
-    assert.ok(before.has(path.join(strainsDir, 'index.ts')))
+    const before = directoryManifest(strainsDir)
+    assert.match(before, /^a\.ts /m)
+    assert.match(before, /^index\.ts /m)
+    assert.match(before, /^numeric\.ts /m)
+    assert.match(before, /^strains\.json /m)
     const result = spawnSync(
         process.execPath,
         [path.join(repoRoot, 'scripts/generate-strain-files.mjs')],
@@ -181,14 +182,60 @@ test('the canonical catalog keeps its oracle and blocks a null rewrite', () => {
     )
     assert.equal(result.status, 1)
     assert.match(result.stderr, /Quarantine: 776/)
-    for (const [filePath, content] of before) {
-        assert.ok(readFileSync(filePath).equals(content), filePath)
+    assert.match(result.stderr, /\/\d+\/dataProvenance\/0\/sourceUrl id=/)
+    assert.equal(directoryManifest(strainsDir), before)
+    assert.equal(createHash('sha256').update(readFileSync(strainsPath)).digest('hex'), sha256)
+})
+
+const directoryManifest = (dir) =>
+    readdirSync(dir, { withFileTypes: true })
+        .sort((left, right) => left.name.localeCompare(right.name))
+        .map((entry) => {
+            if (!entry.isFile()) return `${entry.name}/`
+            const bytes = readFileSync(path.join(dir, entry.name))
+            return `${entry.name} ${createHash('sha256').update(bytes).digest('hex')}`
+        })
+        .join('\n')
+
+test('a changed or added catalog file turns the manifest red', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-nowrite-'))
+    try {
+        writeFileSync(path.join(dir, 'a.ts'), 'original')
+        writeFileSync(path.join(dir, 'strains.json'), 'oracle')
+        const before = directoryManifest(dir)
+        writeFileSync(path.join(dir, 'a.ts'), 'rewritten')
+        assert.notEqual(directoryManifest(dir), before)
+        writeFileSync(path.join(dir, 'a.ts'), 'original')
+        writeFileSync(path.join(dir, 'extra.ts'), 'new')
+        assert.notEqual(directoryManifest(dir), before)
+        rmSync(path.join(dir, 'extra.ts'))
+        assert.equal(directoryManifest(dir), before)
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
     }
 })
 
+const resolvePointer = (document, pointer) => {
+    let cursor = document
+    for (const token of pointer.split('/').slice(1)) {
+        const key = token.replaceAll('~1', '/').replaceAll('~0', '~')
+        cursor = Array.isArray(cursor) ? cursor[Number(key)] : cursor[key]
+    }
+    return cursor
+}
+
 test('null pointers are array indexes and sparse slots stay undefined', () => {
     const strains = [{ id: 'first', cbd: null }, { id: 'second' }]
-    assert.deepEqual(assessCatalog(strains).pointers, ['/0/cbd'])
+    const assessment = assessCatalog(strains)
+    assert.deepEqual(assessment.pointers, ['/0/cbd'])
+    assert.deepEqual(assessment.findings, [{ pointer: '/0/cbd', id: 'first' }])
+    assert.equal(resolvePointer(strains, assessment.pointers[0]), null)
+
+    const escaped = { id: 'esc/id' }
+    escaped['a/b~c'] = null
+    const escapedAssessment = assessCatalog([escaped])
+    assert.deepEqual(escapedAssessment.findings, [{ pointer: '/0/a~1b~0c', id: 'esc/id' }])
+    assert.equal(resolvePointer([escaped], escapedAssessment.pointers[0]), null)
     const sparse = []
     sparse.length = 2
     sparse[1] = 'Spice'

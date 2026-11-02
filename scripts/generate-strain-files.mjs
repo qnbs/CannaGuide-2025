@@ -235,12 +235,27 @@ export const countValueNodes = (value) => 1 + nestedNodeCount(value)
  * Explicit JSON null is representable in the serializer, but Strain.sourceUrl
  * is `string | undefined`. A null in the canonical file blocks the module write.
  */
-export const assessCatalog = (strains) => {
+const strainId = (strain) => (typeof strain?.id === 'string' ? strain.id : '<missing-id>')
+
+const collectFindings = (strains, index, findings) => {
     const pointers = []
+    collectNullPointers(strains[index], `/${index}`, pointers)
+    const id = strainId(strains[index])
+    for (const pointer of pointers) findings.push({ pointer, id })
+}
+
+/** Pointers are RFC 6901 paths into the strains array. The id stays a separate field. */
+export const assessCatalog = (strains) => {
+    const findings = []
     for (let index = 0; index < strains.length; index += 1) {
-        collectNullPointers(strains[index], `/${index}`, pointers)
+        collectFindings(strains, index, findings)
     }
-    return { admitted: pointers.length === 0, nullCount: pointers.length, pointers }
+    return {
+        admitted: findings.length === 0,
+        nullCount: findings.length,
+        pointers: findings.map((finding) => finding.pointer),
+        findings,
+    }
 }
 
 const EXPORT_NAMES = {
@@ -323,7 +338,9 @@ const reportQuarantine = (assessment) => {
     console.error(
         `[generate] Quarantine: ${assessment.nullCount} explicit JSON null values are not representable in Strain modules.`,
     )
-    for (const pointer of assessment.pointers.slice(0, 3)) console.error(`[generate]   ${pointer}`)
+    for (const finding of assessment.findings.slice(0, 3)) {
+        console.error(`[generate]   ${finding.pointer} id=${finding.id}`)
+    }
     console.error(
         '[generate] Strain fields are not typed as null. Catalog files were not modified.',
     )

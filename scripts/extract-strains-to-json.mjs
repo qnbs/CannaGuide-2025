@@ -263,14 +263,22 @@ export const normalizeStrain = (raw) => {
 // Main
 // -----------------------------------------------------------------------
 
-const readPreviousCatalog = async () => {
+const catalogArray = (text) => {
+    const parsed = JSON.parse(text)
+    if (Array.isArray(parsed)) return parsed
+    throw new Error('previous catalog must be a JSON array')
+}
+
+export const readCatalogFile = async (filePath) => {
     try {
-        const parsed = JSON.parse(await fs.readFile(outputPath, 'utf8'))
-        return Array.isArray(parsed) ? parsed : []
-    } catch {
-        return []
+        return catalogArray(await fs.readFile(filePath, 'utf8'))
+    } catch (error) {
+        if (error && error.code === 'ENOENT') return []
+        throw error
     }
 }
+
+const readPreviousCatalog = () => readCatalogFile(outputPath)
 
 const run = async () => {
     const previous = await readPreviousCatalog()

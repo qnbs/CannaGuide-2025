@@ -1,15 +1,10 @@
 import assert from 'node:assert/strict'
-import { createHash } from 'node:crypto'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import {
-    normalizeStrain,
-    parseObjectLiteral,
-    preserveProvenance,
-} from './extract-strains-to-json.mjs'
 import { formatStrain } from './generate-strain-files.mjs'
 
 const strainsPath = path.join(
@@ -22,7 +17,8 @@ const strainsPath = path.join(
     'strains.json',
 )
 const catalogBefore = readFileSync(strainsPath)
-const BASELINE_SHA256 = '90d9f688452094db0d0b3bbdb044e7c19271e12ffef04ed6723daea7abef6e27'
+const { normalizeStrain, parseObjectLiteral, preserveProvenance, readCatalogFile } =
+    await import('./extract-strains-to-json.mjs')
 
 const objectBody = (text) => {
     const start = text.indexOf('{')
@@ -33,9 +29,28 @@ const objectBody = (text) => {
 const provenance = [{ sourceUrl: null, labVerified: false }]
 
 test('importing the extractor leaves strains.json unchanged', () => {
-    const hash = createHash('sha256').update(catalogBefore).digest('hex')
-    assert.equal(hash, BASELINE_SHA256)
     assert.deepEqual(readFileSync(strainsPath), catalogBefore)
+})
+
+test('a missing catalog is empty and a broken catalog is rejected', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'extract-catalog-'))
+    try {
+        const missing = path.join(dir, 'absent.json')
+        assert.deepEqual(await readCatalogFile(missing), [])
+
+        const file = path.join(dir, 'strains.json')
+        writeFileSync(file, '[{"id":"a","dataProvenance":[{"sourceUrl":null}]}]\n')
+        const rows = await readCatalogFile(file)
+        assert.equal(rows[0].dataProvenance[0].sourceUrl, null)
+
+        writeFileSync(file, '{')
+        await assert.rejects(() => readCatalogFile(file), SyntaxError)
+        writeFileSync(file, '{}')
+        await assert.rejects(() => readCatalogFile(file), /JSON array/)
+        await assert.rejects(() => readCatalogFile(dir), { code: 'EISDIR' })
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
 })
 
 test('a parsed module keeps explicit null provenance', () => {

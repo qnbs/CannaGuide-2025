@@ -22,7 +22,7 @@
  *
  * Why it matters beyond size
  * --------------------------
- * `ort-wasm-simd-threaded.jsep.wasm` is 25.6 MiB. Cloudflare Pages rejects any
+ * `ort-wasm-simd-threaded.jsep.wasm` is 28.2 MiB. Cloudflare Pages rejects any
  * single file over 25 MiB, so while this shipped, that deploy could not succeed
  * at all -- it had been failing silently behind `continue-on-error` (see #488).
  *

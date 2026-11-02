@@ -168,6 +168,10 @@ pnpm run check:i18n
   is the whole stack. Warn when either count crosses the budget:
 
     ```bash
+    # Stacked pull: this pull, counted against its parent.
+    git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+    # Against origin/main. For a stacked pull this is the whole stack.
     git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
@@ -177,8 +181,10 @@ pnpm run check:i18n
   merge until that review is attached to the final head. Do not request a full bot review
   after every intermediate fix. Another full review only when the code changes again. A
   false positive that is refuted with evidence and resolved, with no code change, is
-  dispositioned and does not require another full review. The loop ends when every finding
-  from that review is fixed or refuted and 0 threads are unresolved. `REVIEW_UNAVAILABLE`
+  dispositioned and does not require another full review. Do not push while that head is
+  still being reviewed or tested. A new push makes the previous CI and review evidence
+  stale. The loop ends when every finding from that review is fixed or refuted and 0
+  threads are unresolved. `REVIEW_UNAVAILABLE`
   covers an unavailable, skipped, paused, rate-limited, or quota-skipped reviewer, and an
   expired trial. It stays blocking: it is not a green check and not a timeout waiver.
   Nitpicks and "outside diff range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.

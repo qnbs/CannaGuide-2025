@@ -2,7 +2,7 @@
 
 Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
 
-The loop is not "read the comments and reply". It ends only when a **fresh** review of the **current head** produces **zero new comments** _and_ **zero unresolved threads**. Do not request that full review after every intermediate fix. Section 5 says when one is due.
+The loop is not "read the comments and reply". It ends when the latest fresh review of the **current head** left no undispositioned finding and **zero unresolved threads**. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.
 
 ---
 
@@ -26,11 +26,15 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 - **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Count this pull against its remote base, not a stale local `main`:
 
     ```bash
+    # Stacked pull: this pull, counted against its parent.
+    git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+    # Against origin/main. For a stacked pull this is the whole stack.
     git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
-    For a stacked pull, repeat both commands with the parent branch (`origin/<parent>`) as the merge-base. That parent count is this pull. The `origin/main` count is the whole stack. Warn when either count crosses the budget.
+    The parent count is this pull. The `origin/main` count is the whole stack. Warn when either count crosses the budget. A pull that is not stacked uses only the `origin/main` pair.
 
 - **Commit and file budget.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception: 26 commits and 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`. Do not rewrite that history to look smaller.
 - i18n fans out hard (5 locales × N namespace files). A single copy change can cross the limit — split into stacked PRs (PR2's base = PR1's branch; GitHub retargets it automatically when PR1 merges).
@@ -90,7 +94,7 @@ gh api graphql -f query='mutation($t:ID!){
   resolveReviewThread(input:{threadId:$t}){ thread{ isResolved } } }' -F t='<THREAD_ID>'
 ```
 
-Cite the resolving commit SHA in every reply. A resolved thread with no explanation is not resolved, it is buried.
+Cite the resolving commit SHA in every reply that ships a fix. A refutation that changes no code cites the current head SHA. A resolved thread with no explanation is not resolved, it is buried.
 
 ---
 
@@ -103,9 +107,9 @@ Do not request a full bot review after every intermediate fix.
 3. Ship one fail-before / green-after fix for that group, in one signed commit. Do not cascade a push per comment.
 4. Request one fresh review of that final head:
 
-```bash
-gh pr comment <N> --body "@coderabbitai full review"
-```
+    ```bash
+    gh pr comment <N> --body "@coderabbitai full review"
+    ```
 
 5. Another full review only when the code changes again. A reply, a resolved thread, or a note that does not change the reviewed code does not need a new full review.
 
@@ -137,7 +141,7 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 - [ ] 0 unresolved review threads (verified by the Section 2 query, not by eyeballing the UI).
 - [ ] The latest fresh review of the current head left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.
 - [ ] That review is attached to the current head. `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) blocks the merge. It is not a green check and not a timeout waiver.
-- [ ] Every finding either fixed at the root or refuted with evidence, in-thread, citing a commit.
+- [ ] Every finding is either fixed at the root, with the reply citing the resolving commit, or refuted with evidence in-thread. A refutation that changes no code cites the current head SHA.
 - [ ] No new lint/type suppressions anywhere in the diff.
 - [ ] `✅ CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `✅ CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
 - [ ] `CHANGELOG.md` `[Unreleased]` updated.

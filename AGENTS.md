@@ -178,6 +178,10 @@ When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): fix the 
 larger PRs, so the loop never starts. Count this pull against its remote base. A local `main` may be stale or divergent. For a stacked pull, the `origin/<parent>` count is this pull and the `origin/main` count is the whole stack. Warn when either count crosses the budget:
 
 ```bash
+# Stacked pull: this pull, counted against its parent.
+git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+# Against origin/main. For a stacked pull this is the whole stack.
 git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
 git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
 ```

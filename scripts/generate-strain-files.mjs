@@ -5,16 +5,22 @@
  * and generates uniform TypeScript strain data files (a.ts-z.ts, numeric.ts)
  * plus index.ts.
  *
- * Usage: node scripts/generate-strain-files.mjs [--catalog-dir DIR]
+ * Usage: node scripts/generate-strain-files.mjs [--check]
+ *        node scripts/generate-strain-files.mjs --check --catalog-dir DIR
+ *        node scripts/generate-strain-files.mjs --catalog-dir DIR
+ *        node scripts/generate-strain-files.mjs --write-canonical
  *
  * dataProvenance.sourceUrl may be a string, null, or omitted. A null counts
  * only on an array entry. Any other JSON null stops the write before a
- * module changes. --catalog-dir writes that directory instead of
+ * module changes. No flag, and --check, render the modules in memory and
+ * write nothing. --check --catalog-dir checks that directory the same way.
+ * --catalog-dir writes a different directory. It refuses the checked-in
+ * catalog and a symlink to it. --write-canonical publishes
  * apps/web/data/strains. A publish failure restores the previous file.
  * If that restore fails, the private staging directory is kept.
  */
 
-import { constants as fsConstants } from 'node:fs'
+import { constants as fsConstants, statSync } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -282,8 +288,13 @@ export const assessCatalog = (strains) => {
     }
 }
 
-/** `--catalog-dir` selects a fixture. The default stays the checked-in catalog. */
+const equalsCatalogDir = (arg) => arg.startsWith('--catalog-dir=')
+
+/** `--catalog-dir` selects a fixture. The directory is the next argument. */
 export const resolveCatalogDir = (argv, fallback) => {
+    if (argv.some(equalsCatalogDir)) {
+        throw new Error('[generate] --catalog-dir takes the directory as the next argument')
+    }
     const index = argv.indexOf('--catalog-dir')
     if (index === -1) return fallback
     const dir = argv[index + 1]
@@ -291,6 +302,68 @@ export const resolveCatalogDir = (argv, fallback) => {
         throw new Error('[generate] --catalog-dir needs a directory')
     }
     return path.resolve(dir)
+}
+
+/**
+ * A missing fixture is not the checked-in catalog. Identity is the directory
+ * device and inode as exact integers, so a symlink or another spelling of
+ * the same directory is refused and is not opened for write.
+ */
+const sameDirectory = (left, right) =>
+    left.isDirectory() &&
+    right.isDirectory() &&
+    left.dev === right.dev &&
+    left.ino === right.ino
+
+const directoryIdentity = (dir) => statSync(dir, { bigint: true })
+
+const sameCheckedInCatalog = (dir, canonicalDir) => {
+    try {
+        return sameDirectory(directoryIdentity(dir), directoryIdentity(canonicalDir))
+    } catch (error) {
+        if (error && error.code === 'ENOENT') return false
+        throw error
+    }
+}
+
+const catalogFlags = (argv) => ({
+    check: argv.includes('--check'),
+    writeCanonical: argv.includes('--write-canonical'),
+    hasFixture: argv.some((arg) => arg === '--catalog-dir' || equalsCatalogDir(arg)),
+})
+
+const refuseMixedCatalogFlags = (flags) => {
+    if (flags.check && flags.writeCanonical) {
+        throw new Error('[generate] --check does not write')
+    }
+    if (flags.writeCanonical && flags.hasFixture) {
+        throw new Error('[generate] --write-canonical does not take --catalog-dir')
+    }
+}
+
+/**
+ * `--check --catalog-dir` reads that directory. A write refuses the checked-in
+ * catalog, including a symlink alias.
+ */
+const fixtureCatalogAction = (argv, canonicalDir, check) => {
+    const dir = resolveCatalogDir(argv, canonicalDir)
+    if (check) return { mode: 'check', dir }
+    if (sameCheckedInCatalog(dir, canonicalDir)) {
+        throw new Error('[generate] --catalog-dir cannot target the checked-in catalog')
+    }
+    return { mode: 'write', dir }
+}
+
+/**
+ * No flag and `--check` render the checked-in catalog and write nothing.
+ * `--write-canonical` is the only writer of that catalog.
+ */
+export const resolveCatalogAction = (argv, canonicalDir) => {
+    const flags = catalogFlags(argv)
+    refuseMixedCatalogFlags(flags)
+    if (flags.writeCanonical) return { mode: 'write', dir: canonicalDir }
+    if (flags.hasFixture) return fixtureCatalogAction(argv, canonicalDir, flags.check)
+    return { mode: 'check', dir: canonicalDir }
 }
 
 const EXPORT_NAMES = {
@@ -509,8 +582,8 @@ const writeCatalog = async (dir, files) => {
 }
 
 const run = async () => {
-    const dir = resolveCatalogDir(process.argv, strainsDir)
-    const raw = await fs.readFile(path.join(dir, 'strains.json'), 'utf8')
+    const action = resolveCatalogAction(process.argv, strainsDir)
+    const raw = await fs.readFile(path.join(action.dir, 'strains.json'), 'utf8')
     const strains = JSON.parse(raw)
     console.log(`[generate] Loaded ${strains.length} strains from strains.json`)
     const assessment = assessCatalog(strains)
@@ -519,7 +592,17 @@ const run = async () => {
         process.exitCode = 1
         return
     }
-    const total = await writeCatalog(dir, buildStrainFiles(strains))
+    const rendered = buildStrainFiles(strains)
+    if (action.mode === 'check') {
+        console.log(
+            `[generate] Check only: ${strains.length} strains, ${assessment.typedNullCount} typed sourceUrl nulls, ${rendered.length} modules`,
+        )
+        console.log(
+            '[generate] No files written. Pass --write-canonical to publish the checked-in catalog.',
+        )
+        return
+    }
+    const total = await writeCatalog(action.dir, rendered)
     console.log(`[generate] Total written: ${total} strains`)
 }
 

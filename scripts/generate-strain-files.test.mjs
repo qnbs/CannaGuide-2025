@@ -7,6 +7,7 @@ import {
     constants,
     fstatSync,
     mkdirSync,
+    existsSync,
     mkdtempSync,
     openSync,
     readFileSync,
@@ -27,6 +28,7 @@ import {
     countValueNodes,
     commitFiles,
     formatStrain,
+    resolveCatalogAction,
     resolveCatalogDir,
 } from './generate-strain-files.mjs'
 
@@ -315,6 +317,181 @@ const catalogOracle = () => {
         sha256: createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
     }
 }
+
+test('a catalog write is explicit and a bare run only checks', () => {
+    const canonical = path.dirname(strainsPath)
+    const fixture = path.join(tmpdir(), 'strain-fixture')
+    assert.deepEqual(resolveCatalogAction(['node', 'script'], canonical), {
+        mode: 'check',
+        dir: canonical,
+    })
+    assert.deepEqual(resolveCatalogAction(['node', 'script', '--check'], canonical), {
+        mode: 'check',
+        dir: canonical,
+    })
+    assert.deepEqual(
+        resolveCatalogAction(['node', 'script', '--catalog-dir', fixture], canonical),
+        { mode: 'write', dir: path.resolve(fixture) },
+    )
+    assert.deepEqual(
+        resolveCatalogAction(['node', 'script', '--check', '--catalog-dir', fixture], canonical),
+        { mode: 'check', dir: path.resolve(fixture) },
+    )
+    assert.throws(
+        () => resolveCatalogAction(['node', 'script', '--catalog-dir', canonical], canonical),
+        /--catalog-dir cannot target the checked-in catalog/,
+    )
+    assert.deepEqual(resolveCatalogAction(['node', 'script', '--write-canonical'], canonical), {
+        mode: 'write',
+        dir: canonical,
+    })
+    assert.throws(
+        () => resolveCatalogAction(['node', 'script', '--check', '--write-canonical'], canonical),
+        /--check does not write/,
+    )
+    assert.throws(
+        () =>
+            resolveCatalogAction(
+                ['node', 'script', '--write-canonical', '--catalog-dir', fixture],
+                canonical,
+            ),
+        /--write-canonical does not take --catalog-dir/,
+    )
+    assert.throws(
+        () => resolveCatalogAction(['node', 'script', `--catalog-dir=${fixture}`], canonical),
+        /takes the directory as the next argument/,
+    )
+    assert.throws(
+        () =>
+            resolveCatalogAction(
+                ['node', 'script', '--write-canonical', `--catalog-dir=${fixture}`],
+                canonical,
+            ),
+        /--write-canonical does not take --catalog-dir/,
+    )
+})
+
+test('a bare generator and --check leave the checked-in catalog unchanged', () => {
+    const before = catalogOracle()
+    const bare = spawnGenerate([])
+    assert.equal(bare.status, 0, bare.stderr)
+    assert.match(bare.stdout, /Check only:/)
+    assert.equal(bare.stdout.includes('Total written'), false)
+    const check = spawnGenerate(['--check'])
+    assert.equal(check.status, 0, check.stderr)
+    assert.match(check.stdout, /776 strains, 776 typed sourceUrl nulls, \d+ modules/)
+    const checkedDir = spawnGenerate(['--check', '--catalog-dir', before.strainsDir])
+    assert.equal(checkedDir.status, 0, checkedDir.stderr)
+    assert.match(checkedDir.stdout, /Check only:/)
+    assert.equal(checkedDir.stdout.includes('Total written'), false)
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
+
+test('a non-string strain name fails the in-memory render', () => {
+    assert.throws(() => buildStrainFiles([{ id: 'bad', name: 1 }]), TypeError)
+})
+
+test('--check renders a fixture and writes nothing when the name cannot render', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-bad-name-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(
+            path.join(dir, 'strains.json'),
+            `${JSON.stringify([{ id: 'bad', name: 1 }])}\n`,
+        )
+        const result = spawnGenerate(['--check', '--catalog-dir', dir])
+        assert.equal(result.status, 1)
+        assert.equal(result.stdout.includes('Check only:'), false)
+        assert.equal(result.stdout.includes('Total written'), false)
+        assert.equal(
+            readdirSync(dir).some((name) => name.endsWith('.ts')),
+            false,
+        )
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('--catalog-dir refuses the checked-in catalog and a symlink alias', () => {
+    const before = catalogOracle()
+    const direct = spawnGenerate(['--catalog-dir', before.strainsDir])
+    assert.equal(direct.status, 1)
+    assert.match(direct.stderr, /cannot target the checked-in catalog/)
+    const relative = spawnGenerate(['--catalog-dir', 'apps/web/data/strains'])
+    assert.equal(relative.status, 1)
+    assert.match(relative.stderr, /cannot target the checked-in catalog/)
+    const linkDir = mkdtempSync(path.join(tmpdir(), 'strain-alias-'))
+    const link = path.join(linkDir, 'alias')
+    symlinkSync(before.strainsDir, link)
+    try {
+        const aliased = spawnGenerate(['--catalog-dir', link])
+        assert.equal(aliased.status, 1)
+        assert.match(aliased.stderr, /cannot target the checked-in catalog/)
+        const checked = spawnGenerate(['--check', '--catalog-dir', link])
+        assert.equal(checked.status, 0, checked.stderr)
+        assert.match(checked.stdout, /Check only:/)
+        assert.equal(checked.stdout.includes('Total written'), false)
+    } finally {
+        rmSync(linkDir, { recursive: true, force: true })
+    }
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
+
+const flipBasenameCase = (dir) => {
+    const base = path.basename(dir)
+    const first = base.charAt(0) === base.charAt(0).toLowerCase()
+        ? base.charAt(0).toUpperCase()
+        : base.charAt(0).toLowerCase()
+    return path.join(path.dirname(dir), `${first}${base.slice(1)}`)
+}
+
+test('--catalog-dir=DIR does not publish the checked-in catalog', () => {
+    const before = catalogOracle()
+    const fixture = path.join(tmpdir(), 'strain-equals')
+    const mixed = spawnGenerate(['--write-canonical', `--catalog-dir=${fixture}`])
+    assert.equal(mixed.status, 1)
+    assert.match(mixed.stderr, /does not take --catalog-dir/)
+    assert.equal(mixed.stdout.includes('Total written'), false)
+    const alone = spawnGenerate([`--catalog-dir=${fixture}`])
+    assert.equal(alone.status, 1)
+    assert.match(alone.stderr, /takes the directory as the next argument/)
+    assert.equal(alone.stdout.includes('Total written'), false)
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
+
+const flippedCatalog = flipBasenameCase(path.dirname(strainsPath))
+
+test(
+    'another spelling of the checked-in catalog does not publish it',
+    {
+        skip: existsSync(flippedCatalog)
+            ? false
+            : 'this filesystem does not resolve another spelling of the catalog directory',
+    },
+    () => {
+        const before = catalogOracle()
+        assert.notEqual(flippedCatalog, before.strainsDir)
+        assert.equal(existsSync(flippedCatalog), true)
+        const result = spawnGenerate(['--catalog-dir', flippedCatalog])
+        assert.equal(result.status, 1, result.stderr)
+        assert.match(result.stderr, /cannot target the checked-in catalog/)
+        assert.equal(result.stdout.includes('Total written'), false)
+        const after = catalogOracle()
+        assert.equal(after.manifest, before.manifest)
+        assert.equal(after.sha256, BASELINE_SHA256)
+    },
+)
 
 test('the catalog directory flag resolves a fixture and rejects a missing path', () => {
     const fixture = path.join(tmpdir(), 'strain-fixture')

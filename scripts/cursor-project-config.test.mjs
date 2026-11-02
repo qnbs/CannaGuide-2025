@@ -88,13 +88,17 @@ test('project rules have the expected scope and do not name a permanent writer',
 test('scoped rules match their files and skip unrelated ones', () => {
     const matches = (file) => rules.filter((rule) => applies(rule, file)).map((rule) => rule.path)
     assert.deepEqual(matches('README.md'), ['.cursor/rules/00-repository-governance.mdc'])
-    assert.ok(matches('apps/web/stores/store.ts').includes('.cursor/rules/10-web-typescript-state.mdc'))
+    assert.ok(
+        matches('apps/web/stores/store.ts').includes('.cursor/rules/10-web-typescript-state.mdc'),
+    )
     assert.equal(
         matches('apps/web/stores/store.ts').includes('.cursor/rules/30-ci-security-deps.mdc'),
         false,
     )
     assert.ok(
-        matches('apps/web/data/strains/a.ts').includes('.cursor/rules/20-strains-evidence-data.mdc'),
+        matches('apps/web/data/strains/a.ts').includes(
+            '.cursor/rules/20-strains-evidence-data.mdc',
+        ),
     )
     assert.ok(
         matches('packages/ai-core/src/domain/strain.ts').includes(
@@ -119,6 +123,17 @@ test('agent-doc changes still run this file', () => {
     const ci = read('.github/workflows/ci.yml')
     const policy = ci.slice(ci.indexOf('\n    policy:'), ci.indexOf('\n    rust:'))
     assert.match(policy, /cursor-project-config\.test\.mjs/)
+})
+
+test('state and dependency rules match the code they describe', () => {
+    const state = read('.cursor/rules/10-web-typescript-state.mdc')
+    assert.match(state, /workerMetrics/)
+    assert.match(state, /useIotStore/)
+    assert.match(state, /AiDiagnosticsModal passes medical/)
+    assert.match(state, /LeafDiagnosisPanel does not/)
+    const deps = read('.cursor/rules/30-ci-security-deps.mdc')
+    assert.match(deps, /LEGACY_UNBOUNDED/)
+    assert.match(deps, /may only shrink/)
 })
 
 test('agent docs name the lease and the current stack', () => {

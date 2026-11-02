@@ -15,7 +15,7 @@
 import type { WorkerRequest } from '@/types/workerBus.types'
 import { workerOk, workerErr } from '@/types/workerBus.types'
 import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
-import type { TerpeneProfile, CannabinoidProfile, EffectTag, Strain } from '@/types'
+import type { Strain } from '@/types'
 import {
     findSimilarStrains,
     buildChemovarProfile,
@@ -24,42 +24,14 @@ import {
     analyzeEntourage,
 } from '@/services/terpeneService'
 import { hasReportedChemovarInput } from '@/services/strainSimulationProfile'
-
-// ---------------------------------------------------------------------------
-// Payload types
-// ---------------------------------------------------------------------------
-
-export interface FindSimilarPayload {
-    referenceProfile: TerpeneProfile
-    strains: Array<{ id: string; name: string; terpeneProfile: TerpeneProfile }>
-    limit?: number
-    minSimilarity?: number
-}
-
-export interface BuildChemovarPayload {
-    strain: Strain
-}
-
-export interface BatchChemovarPayload {
-    strains: Strain[]
-}
-
-export interface PredictBreedingPayload {
-    parentA: TerpeneProfile
-    parentB: TerpeneProfile
-    nameHash?: number
-}
-
-export interface ScoreEffectsPayload {
-    strains: Array<{ id: string; name: string; terpeneProfile: TerpeneProfile }>
-    desiredEffects: EffectTag[]
-    limit?: number
-}
-
-export interface AnalyzeEntouragePayload {
-    terpeneProfile: TerpeneProfile
-    cannabinoidProfile: CannabinoidProfile
-}
+import {
+    readAnalyzeEntourage,
+    readBatchChemovar,
+    readBuildChemovar,
+    readFindSimilar,
+    readPredictBreeding,
+    readScoreEffects,
+} from '@/workers/terpenePayload'
 
 // ---------------------------------------------------------------------------
 // Security: origin validation
@@ -84,13 +56,9 @@ const chemovarOrNull = (strain: Strain) =>
 
 const orNumber = (value: number | undefined, fallback: number): number => value ?? fallback
 
-const invalidSimilar = (request: FindSimilarPayload): boolean =>
-    !request?.referenceProfile || !Array.isArray(request.strains)
-
 const handleFindSimilar: WorkerHandler = (messageId, payload) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const request = payload as FindSimilarPayload
-    if (invalidSimilar(request)) {
+    const request = readFindSimilar(payload)
+    if (request === undefined) {
         rejectPayload(messageId, 'Invalid FIND_SIMILAR payload')
         return
     }
@@ -104,9 +72,8 @@ const handleFindSimilar: WorkerHandler = (messageId, payload) => {
 }
 
 const handleBuildChemovar: WorkerHandler = (messageId, payload) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const request = payload as BuildChemovarPayload
-    if (!request?.strain) {
+    const request = readBuildChemovar(payload)
+    if (request === undefined) {
         rejectPayload(messageId, 'Invalid BUILD_CHEMOVAR payload')
         return
     }
@@ -114,9 +81,8 @@ const handleBuildChemovar: WorkerHandler = (messageId, payload) => {
 }
 
 const handleBatchChemovar: WorkerHandler = (messageId, payload) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const request = payload as BatchChemovarPayload
-    if (!Array.isArray(request?.strains)) {
+    const request = readBatchChemovar(payload)
+    if (request === undefined) {
         rejectPayload(messageId, 'Invalid BATCH_CHEMOVAR payload')
         return
     }
@@ -133,9 +99,8 @@ const handleBatchChemovar: WorkerHandler = (messageId, payload) => {
 }
 
 const handlePredictBreeding: WorkerHandler = (messageId, payload) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const request = payload as PredictBreedingPayload
-    if (!request?.parentA || !request?.parentB) {
+    const request = readPredictBreeding(payload)
+    if (request === undefined) {
         rejectPayload(messageId, 'Invalid PREDICT_BREEDING payload')
         return
     }
@@ -147,13 +112,9 @@ const handlePredictBreeding: WorkerHandler = (messageId, payload) => {
     )
 }
 
-const invalidScore = (request: ScoreEffectsPayload): boolean =>
-    !Array.isArray(request?.strains) || !Array.isArray(request?.desiredEffects)
-
 const handleScoreEffects: WorkerHandler = (messageId, payload) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const request = payload as ScoreEffectsPayload
-    if (invalidScore(request)) {
+    const request = readScoreEffects(payload)
+    if (request === undefined) {
         rejectPayload(messageId, 'Invalid SCORE_EFFECTS payload')
         return
     }
@@ -169,9 +130,8 @@ const handleScoreEffects: WorkerHandler = (messageId, payload) => {
 }
 
 const handleAnalyzeEntourage: WorkerHandler = (messageId, payload) => {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    const request = payload as AnalyzeEntouragePayload
-    if (!request?.terpeneProfile || !request?.cannabinoidProfile) {
+    const request = readAnalyzeEntourage(payload)
+    if (request === undefined) {
         rejectPayload(messageId, 'Invalid ANALYZE_ENTOURAGE payload')
         return
     }
@@ -180,35 +140,21 @@ const handleAnalyzeEntourage: WorkerHandler = (messageId, payload) => {
     )
 }
 
-const WORKER_COMMANDS: readonly string[] = [
-    'FIND_SIMILAR',
-    'BUILD_CHEMOVAR',
-    'BATCH_CHEMOVAR',
-    'PREDICT_BREEDING',
-    'SCORE_EFFECTS',
-    'ANALYZE_ENTOURAGE',
-]
-
-const WORKER_HANDLERS: Record<string, WorkerHandler> = {
-    FIND_SIMILAR: handleFindSimilar,
-    BUILD_CHEMOVAR: handleBuildChemovar,
-    BATCH_CHEMOVAR: handleBatchChemovar,
-    PREDICT_BREEDING: handlePredictBreeding,
-    SCORE_EFFECTS: handleScoreEffects,
-    ANALYZE_ENTOURAGE: handleAnalyzeEntourage,
-}
+const WORKER_HANDLERS: ReadonlyMap<string, WorkerHandler> = new Map<string, WorkerHandler>([
+    ['FIND_SIMILAR', handleFindSimilar],
+    ['BUILD_CHEMOVAR', handleBuildChemovar],
+    ['BATCH_CHEMOVAR', handleBatchChemovar],
+    ['PREDICT_BREEDING', handlePredictBreeding],
+    ['SCORE_EFFECTS', handleScoreEffects],
+    ['ANALYZE_ENTOURAGE', handleAnalyzeEntourage],
+])
 
 const dispatchWorkerMessage = (messageId: string, type: string, payload: unknown): void => {
-    if (!WORKER_COMMANDS.includes(type)) {
+    const handler = WORKER_HANDLERS.get(type)
+    if (handler === undefined) {
         rejectPayload(messageId, `Unknown command: ${type}`)
         return
     }
-    if (!Object.prototype.hasOwnProperty.call(WORKER_HANDLERS, type)) {
-        rejectPayload(messageId, `Unknown command: ${type}`)
-        return
-    }
-    const handler = WORKER_HANDLERS[type]
-    if (handler === undefined) return
     handler(messageId, payload)
 }
 

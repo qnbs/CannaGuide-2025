@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { clampPreviewStat, finitePreviewResin, resinFromReportedThc } from './breedingArMetrics'
+import {
+    clampPreviewStat,
+    finitePreviewResin,
+    previewAxesFromStability,
+    resinFromReportedThc,
+} from './breedingArMetrics'
 
 const missingPercent = (): number | undefined => {
     const reported: { thc?: number } = {}
@@ -26,6 +31,23 @@ describe('finitePreviewResin', () => {
         expect(finitePreviewResin(0)).toBe(0)
         expect(finitePreviewResin(Number.NaN)).toBeUndefined()
         expect(finitePreviewResin(missingPercent())).toBeUndefined()
+    })
+})
+
+describe('previewAxesFromStability', () => {
+    it('keeps a reported score and does not treat a missing score as that score', () => {
+        expect(previewAxesFromStability(0)).toEqual({
+            vigor: 0,
+            resistance: 0,
+            stabilityKnown: true,
+        })
+        expect(previewAxesFromStability(60)).toEqual({
+            vigor: 6,
+            resistance: 5,
+            stabilityKnown: true,
+        })
+        expect(previewAxesFromStability(null).stabilityKnown).toBe(false)
+        expect(previewAxesFromStability(undefined).stabilityKnown).toBe(false)
     })
 })
 

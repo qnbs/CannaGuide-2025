@@ -3,22 +3,12 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { Strain } from '@/types'
-import { resinFromReportedThc } from './breedingArMetrics'
+import { previewAxesFromStability, resinFromReportedThc } from './breedingArMetrics'
 import type { BreedingLabState } from './useBreedingLab'
 
 const BreedingArPreview = lazy(() =>
     import('../BreedingArPreview').then((module) => ({ default: module.BreedingArPreview })),
 )
-
-const stabilityAxes = (
-    score: number | null | undefined,
-): { vigor: number; resistance: number } | null => {
-    if (typeof score !== 'number' || !Number.isFinite(score)) return null
-    return {
-        vigor: Math.round(score / 10),
-        resistance: Math.round(score / 12),
-    }
-}
 
 const aromaScore = (
     aromas: readonly string[] | undefined,
@@ -53,20 +43,22 @@ const SeedStabilityPreview: React.FC<{ state: BreedingLabState }> = ({ state }) 
     const { t } = useTranslation()
     const { seedResult, newStrainName, automatedGenetics } = state
     if (!seedResult) return null
-    const stability = stabilityAxes(automatedGenetics?.stabilityScore)
-    if (!stability) {
-        return <p className="text-center py-12 text-sm text-slate-300">{t('common.unknown')}</p>
-    }
+    const axes = previewAxesFromStability(automatedGenetics?.stabilityScore)
     return (
-        <Suspense fallback={<ArLoading />}>
-            <BreedingArPreview
-                label={previewLabel(newStrainName, seedResult.name)}
-                vigor={stability.vigor}
-                resin={resinFromReportedThc(seedResult.thc)}
-                aroma={aromaScore(seedResult.aromas, seedResult.dominantTerpenes)}
-                resistance={stability.resistance}
-            />
-        </Suspense>
+        <>
+            {axes.stabilityKnown ? null : (
+                <p className="text-center py-4 text-sm text-slate-300">{t('common.unknown')}</p>
+            )}
+            <Suspense fallback={<ArLoading />}>
+                <BreedingArPreview
+                    label={previewLabel(newStrainName, seedResult.name)}
+                    vigor={axes.vigor}
+                    resin={resinFromReportedThc(seedResult.thc)}
+                    aroma={aromaScore(seedResult.aromas, seedResult.dominantTerpenes)}
+                    resistance={axes.resistance}
+                />
+            </Suspense>
+        </>
     )
 }
 

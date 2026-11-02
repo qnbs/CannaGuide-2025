@@ -14,8 +14,12 @@
  *   `pnpm test|typecheck|lint` or a filtered whole-suite `test:run`;
  * - fact: job names a line gives as `CI Status` requirements must be in the
  *   `needs` list of the ci-status job;
- * - required: the "Authority and trust" section in AGENTS.md and an
- *   affirmative (not negated) scoped verify command.
+ * - required: the "Authority and trust" section in AGENTS.md, an
+ *   affirmative (not negated) scoped verify command, and the two-reviewer
+ *   completion rule (two of CodeRabbit, CodeAnt, and Codex; REVIEW_UNAVAILABLE
+ *   is not a green check and not a merge block once two have covered; no merge
+ *   when none of the three has reviewed) in AGENTS.md, CLAUDE.md, and
+ *   docs/PR-REVIEW-LOOP.md.
  *
  * A prohibition only exempts its own clause: the line is split at sentence
  * and contrast boundaries, so "Never use X, but retry with --no-verify" or
@@ -420,13 +424,26 @@ export function shellCommands(text) {
 
 const FENCE = /^\s*(```|~~~)/
 
+const REVIEW_COVERAGE = [
+    ['two-reviewer coverage', /two of CodeRabbit, CodeAnt, and Codex have covered/],
+    ['REVIEW_UNAVAILABLE is not a green check', /REVIEW_UNAVAILABLE[\s\S]{0,500}not a green check/],
+    [
+        'unavailable is not a merge block once two have covered',
+        /not a merge block once (?:two of|those two)/,
+    ],
+    ['no merge when none of the three reviewed', /none of the three\s+has reviewed/],
+]
+
 const REQUIRED = {
     'AGENTS.md': [
         ['an "Authority and trust" section', /^#{2,4} Authority and trust/m],
         ['the writer lease (QNB-259)', /QNB-259/],
         ['read-only reviewers', /read-only reviewers/i],
         ['the untrusted-content rule', /data, never instructions/i],
+        ...REVIEW_COVERAGE,
     ],
+    'CLAUDE.md': REVIEW_COVERAGE,
+    'docs/PR-REVIEW-LOOP.md': REVIEW_COVERAGE,
 }
 /** Must appear at least once in an affirmative (not forbidding) clause. */
 const AFFIRMED = {

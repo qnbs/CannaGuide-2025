@@ -63,7 +63,12 @@ query($owner:String!,$repo:String!,$num:Int!,$endCursor:String){
    | "THREAD=\(.id)\n\(.path):\(.line)\n\(.comments.nodes[0].author.login): \(.comments.nodes[0].body)\n---"'
 ```
 
-Issue-comments (the bots' summary posts) paginate separately — query `comments(first:100, after:$endCursor)` the same way when you need them.
+Issue comments are part of the completion check. CodeRabbit, DeepSource, and Socket put findings in summary issue comments that never become review threads. Paginate them and disposition every finding before the loop can end:
+
+```bash
+gh api --paginate repos/qnbs/CannaGuide-2025/issues/<N>/comments \
+  --jq '.[] | {id, user:.user.login, body:.body}'
+```
 
 `isResolved == false` is the only work-list that counts. `isOutdated` threads still count — the anchor moved, the finding may not have.
 
@@ -121,12 +126,12 @@ CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only whe
 
 ```bash
 gh api repos/qnbs/CannaGuide-2025/pulls/<N>/reviews --paginate \
-  --jq '.[] | select(.commit_id=="<HEAD>") | {user:.user.login, state}'
+  --jq '.[] | select(.commit_id=="<HEAD>" and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]"))) | {user:.user.login, state}'
 ```
 
 When two of those three are reviewing that head, or have attached such a review, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.
 
-When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and 0 threads are unresolved. A notice that a trial ended, or that a reviewer has no comments, is not a thread and not a new finding.
+When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and 0 threads are unresolved. A finding that lives only in a paginated issue comment counts the same way: read Section 2 before calling the head complete. A notice that a trial ended, or that a reviewer has no comments, is not a thread and not a new finding.
 
 ---
 
@@ -149,10 +154,10 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 
 ## 7. Definition of done (binary)
 
-- [ ] 0 unresolved review threads from reviewers that attached findings (verified by the Section 2 query, not by eyeballing the UI). A review that only says the trial ended, or that never comments, adds no thread to clear.
+- [ ] 0 unresolved review threads from reviewers that attached findings (verified by the Section 2 thread query, not by eyeballing the UI), and every finding in the paginated issue comments is fixed or refuted. A review that only says the trial ended, or that never comments, adds no thread to clear.
 - [ ] Two of CodeRabbit, CodeAnt, and Codex have covered the current head, and that coverage left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.
 - [ ] `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) is not a green check and is not a merge block once those two major reviewers have covered the head. Do not merge a head that none of the three has reviewed.
 - [ ] Every finding is either fixed at the root, with the reply citing the resolving commit, or refuted with evidence in-thread. A refutation that changes no code cites the current head SHA.
 - [ ] No new lint/type suppressions anywhere in the diff.
-- [ ] `✅ CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `✅ CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
+- [ ] `✅ CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. When `AGENTS.md`, `CLAUDE.md`, or `docs/PR-REVIEW-LOOP.md` change, that check includes the `policy` job. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `✅ CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
 - [ ] `CHANGELOG.md` `[Unreleased]` updated.

@@ -67,14 +67,21 @@ type ClaimShape = z.infer<typeof claimShape>
 type RejectClaim = (message: string) => void
 const unverifiedStatuses = new Set(['unknown', 'unverified'])
 
-const validateAttribution = (claim: ClaimShape, reject: RejectClaim): void => {
-    if (unverifiedStatuses.has(claim.claimStatus)) {
-        if (claim.sourceId !== null) reject('Unverified claims cannot carry a source')
-        if (claim.evidenceIds.length !== 0) reject('Unverified claims cannot carry evidence')
-        return
-    }
+const rejectUnverifiedSource = (claim: ClaimShape, reject: RejectClaim): boolean => {
+    if (!unverifiedStatuses.has(claim.claimStatus)) return false
+    if (claim.sourceId !== null) reject('Unverified claims cannot carry a source')
+    if (claim.evidenceIds.length !== 0) reject('Unverified claims cannot carry evidence')
+    return true
+}
+
+const rejectMissingSource = (claim: ClaimShape, reject: RejectClaim): void => {
     if (claim.sourceId === null) reject('Attributed claims require a source')
     if (claim.evidenceIds.length === 0) reject('Attributed claims require evidence')
+}
+
+const validateAttribution = (claim: ClaimShape, reject: RejectClaim): void => {
+    if (rejectUnverifiedSource(claim, reject)) return
+    rejectMissingSource(claim, reject)
 }
 
 const validateParty = (claim: ClaimShape, reject: RejectClaim): void => {
@@ -117,33 +124,47 @@ export const strainClaimSchema = claimShape.superRefine((claim, ctx) => {
 
 export type StrainClaim = z.infer<typeof strainClaimSchema>
 
-/** Same cultivar and role with two different attributed names. Neither claim is dropped. */
+/**
+ * One cultivar has one attributed breeder, owner, creator, or publisher.
+ * Growers, co-developers, wholesalers, and pharmacy sellers may differ
+ * without being a conflict. Neither claim is dropped.
+ */
 type PartyClaim = Extract<StrainClaim, { kind: 'party' }>
+const singularRoles = new Set<PartyClaim['role']>(['breeder', 'owner', 'creator', 'publisher'])
 
-export const conflictingPartyClaims = (claims: readonly StrainClaim[]): PartyClaim[][] => {
+const namedSingularParty = (
+    claim: StrainClaim,
+): claim is PartyClaim & { name: string } =>
+    claim.kind === 'party' && claim.name !== null && singularRoles.has(claim.role)
+
+const groupByCultivarRole = (
+    claims: readonly (PartyClaim & { name: string })[],
+): Map<string, PartyClaim[]> => {
     const groups = new Map<string, PartyClaim[]>()
     for (const claim of claims) {
-        if (claim.kind !== 'party' || claim.name === null) continue
         const key = `${claim.cultivarId} ${claim.role}`
         const group = groups.get(key) ?? []
         group.push(claim)
         groups.set(key, group)
     }
-    const conflicts: PartyClaim[][] = []
-    for (const group of groups.values()) {
-        const names = new Set(group.map((claim) => claim.name))
-        if (names.size > 1) conflicts.push(group)
-    }
-    return conflicts
+    return groups
 }
+
+const namesDiffer = (group: readonly PartyClaim[]): boolean =>
+    new Set(group.map((claim) => claim.name)).size > 1
+
+export const conflictingPartyClaims = (claims: readonly StrainClaim[]): PartyClaim[][] =>
+    [...groupByCultivarRole(claims.filter(namedSingularParty)).values()].filter(namesDiffer)
 
 /**
  * Days and weeks are different units. This does not convert 7 days into 1 week.
- * Flowering and lifecycle are different subjects.
+ * Flowering and lifecycle are different subjects. A match also requires the
+ * same cultivar.
  */
 export const durationsMatch = (left: StrainClaim, right: StrainClaim): boolean =>
     left.kind === 'duration' &&
     right.kind === 'duration' &&
+    left.cultivarId === right.cultivarId &&
     left.subject === right.subject &&
     left.unit === right.unit &&
     left.quantity === right.quantity

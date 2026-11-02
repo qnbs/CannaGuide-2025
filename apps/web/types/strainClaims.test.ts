@@ -20,11 +20,17 @@ const attributed = {
     rights: 'schema_only' as const,
 }
 
-const party = (name: string, source: string): StrainClaim =>
+const party = (
+    name: string,
+    source: string,
+    role: 'publisher' | 'breeder' | 'grower' = 'publisher',
+    id: string = cultivarId,
+): StrainClaim =>
     strainClaimSchema.parse({
         ...attributed,
+        cultivarId: id,
         kind: 'party',
-        role: 'publisher',
+        role,
         name,
         sourceId: `source:${source}`,
         evidenceIds: [`evidence:${source}`],
@@ -43,6 +49,19 @@ describe('non-chemical cultivar claims', () => {
         expect(breeder).toMatchObject({ role: 'breeder', name: null, claimStatus: 'unknown' })
         expect(conflictingPartyClaims([breeder, alpha, beta])).toEqual([[alpha, beta]])
         expect(conflictingPartyClaims([alpha, alpha])).toEqual([])
+        const otherRole = party('Other Breeder', 'other-breeder', 'breeder')
+        const otherCultivar = party('Gamma Seeds', 'gamma', 'publisher', 'cultivar_selection:synthetic-2')
+        const growers = [
+            party('Grower A', 'grower-a', 'grower'),
+            party('Grower B', 'grower-b', 'grower'),
+        ]
+        expect(conflictingPartyClaims([alpha, otherRole, otherCultivar, ...growers])).toEqual([])
+        expect(
+            conflictingPartyClaims([
+                party('Breeder A', 'breeder-a', 'breeder'),
+                party('Breeder B', 'breeder-b', 'breeder'),
+            ]),
+        ).toHaveLength(1)
     })
 
     it('rejects an attributed party with no name and an unverified party with a name', () => {
@@ -121,8 +140,19 @@ describe('non-chemical cultivar claims', () => {
             sourceId: 'source:weeks',
             evidenceIds: ['evidence:weeks'],
         })
+        const otherCultivar = strainClaimSchema.parse({
+            ...attributed,
+            cultivarId: 'cultivar_selection:synthetic-2',
+            kind: 'duration',
+            subject: 'flowering',
+            quantity: 45,
+            unit: 'days',
+            sourceId: 'source:other',
+            evidenceIds: ['evidence:other'],
+        })
         expect(durationsMatch(flowering, lifecycle)).toBe(false)
         expect(durationsMatch(sameDays, nineWeeks)).toBe(false)
+        expect(durationsMatch(flowering, otherCultivar)).toBe(false)
         expect(durationsMatch(flowering, flowering)).toBe(true)
     })
 

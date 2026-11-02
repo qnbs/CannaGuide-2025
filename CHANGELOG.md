@@ -8,7 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Added
 
-- **feat(strains):** Non-chemical cultivar claims are a separate schema from laboratory analyte facts. A party claim can name a breeder, owner, creator, publisher, co-developer, grower, wholesaler, or pharmacy seller, and an unknown breeder stays a null name. Two attributed publisher names for one cultivar both remain, and the conflict is reported without dropping either. Feminized and autoflower are independent form claims. A flowering duration in days is not the same claim as a lifecycle duration in weeks, and days are not converted into weeks. This change does not regenerate the checked-in catalog (776 ids, SHA256 `90d9f688452094db0d0b3bbdb044e7c19271e12ffef04ed6723daea7abef6e27`).
+- **feat(strains):** Non-chemical cultivar claims are a separate schema from laboratory analyte facts. A party claim can name a breeder, owner, creator, publisher, co-developer, grower, wholesaler, or pharmacy seller, and an unknown breeder stays a null name. Two attributed breeder, owner, creator, or publisher names for one cultivar both remain, and the conflict is reported without dropping either. Different roles, different cultivars, and several growers are not that conflict. Feminized and autoflower are independent form claims. A flowering duration in days is not the same claim as a lifecycle duration in weeks, days are not converted into weeks, and the same duration on another cultivar is a different claim. This change does not regenerate the checked-in catalog (776 ids, SHA256 `90d9f688452094db0d0b3bbdb044e7c19271e12ffef04ed6723daea7abef6e27`).
 
 ### Changed
 

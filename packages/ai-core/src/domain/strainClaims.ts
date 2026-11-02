@@ -156,11 +156,6 @@ const namesDiffer = (group: readonly PartyClaim[]): boolean =>
 export const conflictingPartyClaims = (claims: readonly StrainClaim[]): PartyClaim[][] =>
     [...groupByCultivarRole(claims.filter(namedSingularParty)).values()].filter(namesDiffer)
 
-/**
- * Days and weeks are different units. This does not convert 7 days into 1 week.
- * Flowering and lifecycle are different subjects. A match also requires the
- * same cultivar.
- */
 type DurationClaim = Extract<StrainClaim, { kind: 'duration' }>
 
 const isDuration = (claim: StrainClaim): claim is DurationClaim => claim.kind === 'duration'
@@ -171,5 +166,10 @@ const sameDuration = (left: DurationClaim, right: DurationClaim): boolean =>
     left.unit === right.unit &&
     left.quantity === right.quantity
 
+/**
+ * Days and weeks are different units. This does not convert 7 days into 1 week.
+ * Flowering and lifecycle are different subjects. A match also requires the
+ * same cultivar.
+ */
 export const durationsMatch = (left: StrainClaim, right: StrainClaim): boolean =>
     isDuration(left) && isDuration(right) && sameDuration(left, right)

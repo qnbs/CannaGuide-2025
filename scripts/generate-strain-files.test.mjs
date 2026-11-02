@@ -332,6 +332,14 @@ test('a catalog write is explicit and a bare run only checks', () => {
         resolveCatalogAction(['node', 'script', '--catalog-dir', fixture], canonical),
         { mode: 'write', dir: path.resolve(fixture) },
     )
+    assert.deepEqual(
+        resolveCatalogAction(['node', 'script', '--check', '--catalog-dir', fixture], canonical),
+        { mode: 'check', dir: path.resolve(fixture) },
+    )
+    assert.throws(
+        () => resolveCatalogAction(['node', 'script', '--catalog-dir', canonical], canonical),
+        /--catalog-dir cannot target the checked-in catalog/,
+    )
     assert.deepEqual(resolveCatalogAction(['node', 'script', '--write-canonical'], canonical), {
         mode: 'write',
         dir: canonical,
@@ -358,10 +366,68 @@ test('a bare generator and --check leave the checked-in catalog unchanged', () =
     assert.equal(bare.stdout.includes('Total written'), false)
     const check = spawnGenerate(['--check'])
     assert.equal(check.status, 0, check.stderr)
-    assert.match(check.stdout, /776 strains, 776 typed sourceUrl nulls/)
-    const refused = spawnGenerate(['--check', '--catalog-dir', before.strainsDir])
-    assert.equal(refused.status, 1)
-    assert.match(refused.stderr, /--check does not write/)
+    assert.match(check.stdout, /776 strains, 776 typed sourceUrl nulls, \d+ modules/)
+    const checkedDir = spawnGenerate(['--check', '--catalog-dir', before.strainsDir])
+    assert.equal(checkedDir.status, 0, checkedDir.stderr)
+    assert.match(checkedDir.stdout, /Check only:/)
+    assert.equal(checkedDir.stdout.includes('Total written'), false)
+    const after = catalogOracle()
+    assert.equal(after.manifest, before.manifest)
+    assert.equal(after.sha256, BASELINE_SHA256)
+})
+
+test('a non-string strain name fails the in-memory render', () => {
+    assert.throws(() => buildStrainFiles([{ id: 'bad', name: 1 }]), TypeError)
+})
+
+test('--check renders a fixture and writes nothing when the name cannot render', () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-bad-name-'))
+    const oracle = catalogOracle()
+    try {
+        writeFileSync(
+            path.join(dir, 'strains.json'),
+            `${JSON.stringify([{ id: 'bad', name: 1 }])}\n`,
+        )
+        const result = spawnGenerate(['--check', '--catalog-dir', dir])
+        assert.equal(result.status, 1)
+        assert.equal(result.stdout.includes('Check only:'), false)
+        assert.equal(result.stdout.includes('Total written'), false)
+        assert.equal(
+            readdirSync(dir).some((name) => name.endsWith('.ts')),
+            false,
+        )
+        assert.equal(directoryManifest(oracle.strainsDir), oracle.manifest)
+        assert.equal(
+            createHash('sha256').update(readFileSync(strainsPath)).digest('hex'),
+            BASELINE_SHA256,
+        )
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+})
+
+test('--catalog-dir refuses the checked-in catalog and a symlink alias', () => {
+    const before = catalogOracle()
+    const direct = spawnGenerate(['--catalog-dir', before.strainsDir])
+    assert.equal(direct.status, 1)
+    assert.match(direct.stderr, /cannot target the checked-in catalog/)
+    const relative = spawnGenerate(['--catalog-dir', 'apps/web/data/strains'])
+    assert.equal(relative.status, 1)
+    assert.match(relative.stderr, /cannot target the checked-in catalog/)
+    const linkDir = mkdtempSync(path.join(tmpdir(), 'strain-alias-'))
+    const link = path.join(linkDir, 'alias')
+    symlinkSync(before.strainsDir, link)
+    try {
+        const aliased = spawnGenerate(['--catalog-dir', link])
+        assert.equal(aliased.status, 1)
+        assert.match(aliased.stderr, /cannot target the checked-in catalog/)
+        const checked = spawnGenerate(['--check', '--catalog-dir', link])
+        assert.equal(checked.status, 0, checked.stderr)
+        assert.match(checked.stdout, /Check only:/)
+        assert.equal(checked.stdout.includes('Total written'), false)
+    } finally {
+        rmSync(linkDir, { recursive: true, force: true })
+    }
     const after = catalogOracle()
     assert.equal(after.manifest, before.manifest)
     assert.equal(after.sha256, BASELINE_SHA256)

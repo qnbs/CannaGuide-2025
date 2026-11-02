@@ -129,7 +129,7 @@ gh api repos/qnbs/CannaGuide-2025/pulls/<N>/reviews --paginate \
   | jq -s '[.[][] | select(.commit_id=="<HEAD>" and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")) and .state!="DISMISSED")] | group_by(.user.login) | map(last) | .[] | {user:.user.login, state}'
 ```
 
-Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no review whose `commit_id` is the current head, comment `@codex review` once on the pull. Do not send a second `@codex review` while that request has not attached a review. A review of an older commit does not cover the head. That comment is not a CodeRabbit full review.
+Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once on the pull. Two other reviewers do not replace that request. A `DISMISSED` review does not count. Do not send a second `@codex review` while that request has not attached a review on that head. A review of an older commit does not cover the head. That comment is not a CodeRabbit full review.
 
 When two of those three are reviewing that head, or have attached such a review, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.
 

@@ -18,8 +18,9 @@
  *   affirmative (not negated) scoped verify command, and the two-reviewer
  *   completion rule (two of CodeRabbit, CodeAnt, and Codex; REVIEW_UNAVAILABLE
  *   is not a green check and not a merge block once two have covered; no merge
- *   when none of the three has reviewed; `@codex review` when that head has no
- *   Codex review) in AGENTS.md, CLAUDE.md, and docs/PR-REVIEW-LOOP.md.
+ *   when none of the three has reviewed; comment `@codex review` when that head
+ *   has no non-dismissed Codex review) in AGENTS.md, CLAUDE.md, and
+ *   docs/PR-REVIEW-LOOP.md.
  *
  * A prohibition only exempts its own clause: the line is split at sentence
  * and contrast boundaries, so "Never use X, but retry with --no-verify" or
@@ -432,7 +433,10 @@ const REVIEW_COVERAGE = [
         /not a merge block once (?:two of|those two)/,
     ],
     ['no merge when none of the three reviewed', /none of the three\s+has reviewed/],
-    ['a Codex review request when none is on the head', /@codex review/],
+    [
+        'a Codex review request when none is on the head',
+        /has no non-dismissed review on that head,\s+comment `@codex review`/,
+    ],
 ]
 
 const REQUIRED = {

@@ -262,10 +262,9 @@ test('ci.yml routes agent files to the policy gate and judges it before the docs
     ]) {
         assert.ok(policy.test(file), `${file} does not reach the policy gate`)
     }
-    assert.ok(
-        !policy.test('README.md') && !policy.test('docs/ARCHITECTURE.md'),
-        'plain docs stay docs',
-    )
+    assert.equal(policy.test('docs/ARCHITECTURE.md'), true)
+    assert.equal(AGENT_FILES.includes('docs/ARCHITECTURE.md'), false)
+    assert.equal(policy.test('README.md'), false, 'README stays a plain doc')
 
     assert.match(ci, /needs: \[changes, build, test, verify, security, policy, rust, e2e\]/)
     assert.match(ci, /run: node scripts\/security\/check-agent-policy\.mjs/)

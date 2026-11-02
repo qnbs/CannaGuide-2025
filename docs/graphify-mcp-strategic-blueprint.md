@@ -1,10 +1,9 @@
 # Graphify/MCP Strategic Blueprint
 
-> **Note (archived / historical):** This blueprint planned MDC-based extensions around
-> `.cursor/rules/*.mdc` (MDC-to-graph bridge, rules explorer, MDC starter templates). With the move
-> to Claude Code CLI, `.cursor/` and all `mdc:*` scripts (including `export-mdc-metadata`,
-> `mdc:validate`) were removed; **the whole document is therefore obsolete** and is kept only as
-> historical context. The MCP servers are now configured in `.mcp.json`.
+> **Note (archived / historical):** This blueprint planned an MDC-to-graph bridge, a rules
+> explorer, and starter templates. That bridge was not built. The body below remains archived.
+> Graphify is configured in root `.mcp.json` for Claude Code. codegraph remains the CLI
+> `scripts/codegraph.mjs`. Cursor does not run either tool.
 
 ## Scope
 

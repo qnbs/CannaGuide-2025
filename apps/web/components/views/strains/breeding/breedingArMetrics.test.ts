@@ -47,7 +47,7 @@ describe('previewAxesFromStability', () => {
             stabilityKnown: true,
         })
         expect(previewAxesFromStability(null).stabilityKnown).toBe(false)
-        expect(previewAxesFromStability(undefined).stabilityKnown).toBe(false)
+        expect(previewAxesFromStability(missingPercent()).stabilityKnown).toBe(false)
     })
 })
 

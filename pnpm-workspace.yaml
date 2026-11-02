@@ -160,7 +160,6 @@ auditConfig:
     ignoreGhsas:
         - GHSA-jmr9-qjv8-65gv # extract-zip, patched 2.0.2 unpublished
         - GHSA-7pqw-9j4j-h8q3 # extract-zip, patched 2.0.2 unpublished
-        - GHSA-vfj7-8cjw-p6xm # braces, patched 3.0.4 unpublished
 
 patchedDependencies:
     '@socketsecurity/socket-patch@2.0.0': patches/@socketsecurity__socket-patch@2.0.0.patch

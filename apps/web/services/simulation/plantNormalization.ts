@@ -12,6 +12,15 @@ export function getPlantGeneticModifiers(plant: Plant): GeneticModifiers {
     return normalizeGeneticModifiers(plant.phenotypeModifiers ?? plant.strain.geneticModifiers)
 }
 
+/** Reported coefficients stay on the cultivar. A missing set is not filled with defaults. */
+const strainWithReportedModifiers = (strain: Plant['strain']): Plant['strain'] => {
+    if (!strain?.geneticModifiers) return { ...strain }
+    return {
+        ...strain,
+        geneticModifiers: normalizeGeneticModifiers(strain.geneticModifiers),
+    }
+}
+
 function normalizeEnvironment(plant: Plant): Plant['environment'] {
     return {
         internalTemperature: simFiniteOr(plant.environment?.internalTemperature, 24),
@@ -147,9 +156,8 @@ export function normalizePlant(plant: Plant): Plant {
             1000 *
             ((plant.equipment?.potType ?? 'Fabric') === 'Fabric' ? 0.28 : 0.35),
     )
-    const strainModifiers = normalizeGeneticModifiers(plant.strain?.geneticModifiers)
     const phenotypeModifiers = normalizeGeneticModifiers(
-        plant.phenotypeModifiers ?? strainModifiers,
+        plant.phenotypeModifiers ?? plant.strain?.geneticModifiers,
     )
 
     return {
@@ -179,10 +187,7 @@ export function normalizePlant(plant: Plant): Plant {
         harvestData: plant.harvestData ?? null,
         structuralModel: normalizeStructuralModel(plant),
         phenotypeModifiers,
-        strain: {
-            ...plant.strain,
-            geneticModifiers: strainModifiers,
-        },
+        strain: strainWithReportedModifiers(plant.strain),
         history: Array.isArray(plant.history) ? plant.history : [],
         cannabinoidProfile: normalizeCannabinoidProfile(plant),
         terpeneProfile:

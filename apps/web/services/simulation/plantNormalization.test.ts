@@ -81,6 +81,48 @@ describe('plantNormalization', () => {
         expect(normalizePlant(plant).equipment.floweringPolicy).toBeUndefined()
     })
 
+    it('does not invent genetic modifiers on a cultivar that reported none', () => {
+        const plant = sparsePlant()
+        const strain = { ...plant.strain }
+        delete (strain as { geneticModifiers?: unknown }).geneticModifiers
+        plant.strain = strain
+        const normalized = normalizePlant(plant)
+        expect(normalized.strain.geneticModifiers).toBeUndefined()
+        expect(normalized.phenotypeModifiers?.pestResistance).toEqual(expect.any(Number))
+        expect(plant.strain.geneticModifiers).toBeUndefined()
+    })
+
+    it('does not throw when a legacy plant has no strain object', () => {
+        const plant = sparsePlant()
+        delete (plant as { strain?: Plant['strain'] }).strain
+        const normalized = normalizePlant(plant)
+        expect(normalized.strain.geneticModifiers).toBeUndefined()
+    })
+
+    it('keeps an explicit phenotype modifier through normalization', () => {
+        const plant = sparsePlant()
+        const strain = { ...plant.strain }
+        delete (strain as { geneticModifiers?: unknown }).geneticModifiers
+        plant.strain = strain
+        plant.phenotypeModifiers = {
+            pestResistance: 2,
+            nutrientUptakeRate: 1,
+            stressTolerance: 1,
+            rue: 1,
+            vpdTolerance: { min: 0.3, max: 1.8 },
+            transpirationFactor: 1.2,
+            stomataSensitivity: 0.9,
+        }
+        const normalized = normalizePlant(plant)
+        expect(normalized.phenotypeModifiers?.pestResistance).toBe(2)
+        expect(normalized.strain.geneticModifiers).toBeUndefined()
+    })
+
+    it('keeps reported genetic modifiers on the cultivar', () => {
+        const normalized = normalizePlant(sparsePlant())
+        expect(normalized.strain.geneticModifiers?.pestResistance).toBe(1)
+    })
+
     it('getPlantGeneticModifiers prefers phenotypeModifiers', () => {
         const plant = normalizePlant(sparsePlant())
         plant.phenotypeModifiers = {

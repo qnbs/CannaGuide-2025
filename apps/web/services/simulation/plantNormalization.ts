@@ -150,7 +150,7 @@ function normalizeSimulationClock(plant: Plant): Plant['simulationClock'] {
 }
 
 const timestampOrNow = (value: number | undefined): number =>
-    Number.isFinite(value) ? value : Date.now()
+    typeof value === 'number' && Number.isFinite(value) ? value : Date.now()
 
 const listOrEmpty = <T>(value: T[] | undefined): T[] => (Array.isArray(value) ? value : [])
 

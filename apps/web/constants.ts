@@ -92,6 +92,11 @@ export const PWA_INSTALLED_KEY = 'cannaGuidePwaInstalled'
 export const REDUX_STATE_KEY = 'cannaguide-redux-storage'
 /** Copy of the stored snapshot taken at every start, before migration (stores/store.ts). */
 export const REDUX_STATE_BACKUP_KEY = `${REDUX_STATE_KEY}-backup`
+/**
+ * First snapshot that could not be hydrated, kept before the primary is removed
+ * and never replaced by a later one (services/snapshotQuarantine.ts, #666).
+ */
+export const REDUX_STATE_QUARANTINE_KEY = `${REDUX_STATE_KEY}-quarantine`
 /** Snapshot kept while safe recovery restores the backup (bootstrap/recovery.ts). */
 export const REDUX_STATE_ROLLBACK_KEY = `${REDUX_STATE_KEY}-recovery-rollback`
 export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion'

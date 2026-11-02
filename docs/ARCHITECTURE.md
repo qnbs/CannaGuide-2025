@@ -310,6 +310,14 @@ All user data lives in IndexedDB. The Service Worker uses Network-First for navi
     - Offline actions queue
     - Exponential backoff retry on write failures (3 retries, 500/1000/2000ms)
 
+**Persisted-state version contract** (`services/migration/migrateStateOrchestrator.ts`, GH #666):
+
+- Every start copies the stored snapshot to the `-backup` key before migration. The copy is replaced on the next start, so it is a one-start safety net, not an archive.
+- A snapshot carries `_sliceVersions`. A slice stored under a version other than `SLICE_SCHEMA_VERSIONS` (older or newer) is **kept**, not deleted. Only the transient `ui` slice may be dropped.
+- A kept slice goes through the same shape guards as a current one and is restamped with the current version on the next save (`bootstrap/persistence.ts`). There is no per-slice transform: the guards only add what is missing.
+- A kept slice that held data and holds none after the guards fails hydration (`TypeError`). `createAppStore` then tries the backup and, if that fails too, writes the original bytes once to the `-quarantine` key (credentials redacted, never replaced by a later snapshot) before it removes the primary. Recovering from the quarantine key is manual; there is no UI for it yet.
+- Not covered: a guard that drops only part of a slice, and an entity inside a kept slice that lacks a field its consumers read (for example a user strain without `name`). The only slice-version bump in the history is `simulation` 2 -> 3 (`e90756bc`, 2026-04-07).
+
 Additional databases: `CannaGuideSecureDB` (crypto keys), `CannaGuideTimeSeriesDB` (IoT sensors), `CannaGuideLocalAiCache` (inference), `CannaGuideImageGenCache` (generated images), `CannaGuideReminderDB` (SW reminders).
 
 ### CRDT Sync Layer (Yjs)

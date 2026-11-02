@@ -115,13 +115,47 @@ const validateSliceVersions = (state: PersistedState): SliceVersionReport => {
         const name = sliceName as VersionedSliceName
         const stored = persistedVersions[name]
         if (isVersionMismatch(stored, expectedVersion)) {
-            handleSliceMismatch(state, name, `stored: ${stored}, expected: ${expectedVersion}`, report)
+            handleSliceMismatch(
+                state,
+                name,
+                `stored: ${stored}, expected: ${expectedVersion}`,
+                report,
+            )
         }
     }
 
     state._sliceVersions = { ...SLICE_SCHEMA_VERSIONS }
 
     return report
+}
+
+/** True when the value holds anything beyond empty containers, '', 0, false and null. */
+const hasContent = (value: unknown): boolean => {
+    if (Array.isArray(value)) return value.some(hasContent)
+    if (typeof value === 'object' && value !== null) return Object.values(value).some(hasContent)
+    return typeof value === 'string' ? value.trim() !== '' : Boolean(value)
+}
+
+/**
+ * The shape guards replace anything that is not the shape they expect with an
+ * empty one. For a slice kept across a version mismatch that would be the same
+ * silent loss as the old delete, with the validator satisfied, so a slice that
+ * held data and holds none afterwards fails hydration instead. createAppStore
+ * catches the error, tries the backup and quarantines the original bytes.
+ */
+const assertRetainedSlicesKeptData = (
+    before: PersistedState,
+    after: PersistedState,
+    retained: readonly VersionedSliceName[],
+): void => {
+    for (const name of retained) {
+        const original = (before as Record<string, unknown>)[name]
+        if (hasContent(original) && !hasContent((after as Record<string, unknown>)[name])) {
+            throw new TypeError(
+                `Persisted ${name} held data under another schema version that no shape guard could keep; refusing to replace it with an empty slice.`,
+            )
+        }
+    }
 }
 
 /**
@@ -167,6 +201,11 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     for (const validate of shapeValidators) {
         validate(migratedState)
     }
+    assertRetainedSlicesKeptData(
+        snapshotBeforeMigration,
+        migratedState,
+        sliceVersionReport.retained,
+    )
 
     stripTransientState(migratedState)
 

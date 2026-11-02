@@ -183,3 +183,68 @@ describe('persisted snapshot hydration with a slice version mismatch', () => {
         )
     })
 })
+
+describe('migrateState content-loss guard for a retained slice', () => {
+    it('rejects a populated legacy-shaped slice that the shape guards would empty', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        // An array is not an entity adapter, so ensureUserStrainsShape would
+        // replace it with { ids: [], entities: {} } and the validator would
+        // see nothing wrong.
+        expect(() =>
+            migrateState({
+                version: 5,
+                _sliceVersions: { userStrains: 0 },
+                userStrains: [{ id: 'mine-1', name: 'My Cross' }],
+            } as never),
+        ).toThrow(/Persisted userStrains .* refusing to replace it with an empty slice/)
+    })
+
+    it('rejects a populated favorites slice in an unreadable shape', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        expect(() =>
+            migrateState({
+                version: 5,
+                _sliceVersions: { favorites: 0 },
+                favorites: { favoriteIds: 'strain-a,strain-b' },
+            } as never),
+        ).toThrow(/Persisted favorites/)
+    })
+
+    it('rejects a populated slice of a newer schema that the older guards would empty', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        // A rollback serves an older build a snapshot written by a newer one.
+        // Keeping the slice is only safe while the guards leave its data alone.
+        expect(() =>
+            migrateState({
+                version: 5,
+                _sliceVersions: { userStrains: SLICE_SCHEMA_VERSIONS.userStrains + 1 },
+                userStrains: { byId: { 'mine-1': { id: 'mine-1', name: 'My Cross' } } },
+            } as never),
+        ).toThrow(/Persisted userStrains/)
+    })
+
+    it('accepts a mismatched slice that held nothing, because nothing is lost', () => {
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+
+        const migrated = migrateState({
+            version: 5,
+            _sliceVersions: { userStrains: 0 },
+            userStrains: [],
+        } as never)
+
+        expect(migrated.userStrains).toEqual({ ids: [], entities: {} })
+    })
+
+    it('leaves a slice whose stored version matches to the shape guards as before', () => {
+        const migrated = migrateState({
+            version: 5,
+            _sliceVersions: { userStrains: SLICE_SCHEMA_VERSIONS.userStrains },
+            userStrains: [{ id: 'mine-1', name: 'My Cross' }],
+        } as never)
+
+        expect(migrated.userStrains).toEqual({ ids: [], entities: {} })
+    })
+})

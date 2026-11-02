@@ -38,6 +38,7 @@ import {
     removePrimaryPersistedSnapshot,
     tryRepairPrimaryPersistedSnapshot,
 } from '@/services/persistedStateService'
+import { quarantineUnreadableSnapshot } from '@/services/snapshotQuarantine'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -126,8 +127,9 @@ export const createAppStore = async (): Promise<AppStore> => {
         return hydratePersistedState(backupString)
     }
 
+    let persistedString: string | null | undefined
     try {
-        const persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
+        persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (persistedString) {
             console.debug('[Store] Hydrating state from IndexedDB.')
             // Save a backup snapshot before migration so data can be recovered if migration fails.
@@ -147,6 +149,9 @@ export const createAppStore = async (): Promise<AppStore> => {
         )
         preloadedState = await tryLoadBackupState()
         if (!preloadedState) {
+            // The startup backup is replaced on every start, so keep the original
+            // bytes once before the primary goes (#666).
+            await quarantineUnreadableSnapshot(persistedString)
             await removePrimaryPersistedSnapshot()
         }
     }

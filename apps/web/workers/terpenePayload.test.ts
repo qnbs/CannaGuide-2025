@@ -28,8 +28,8 @@ describe('terpene worker payload readers', () => {
             readFindSimilar({
                 referenceProfile: { Myrcene: 0.2 },
                 strains: [{ id: 's1', name: 'Named' }],
-            }),
-        ).toBeUndefined()
+            })?.strains,
+        ).toEqual([])
     })
 
     it('accepts a named cultivar with no reported chemistry', () => {
@@ -38,6 +38,28 @@ describe('terpene worker payload readers', () => {
         const single = readBuildChemovar({ strain: { id: 's1', name: 'Only a name', thc: 0 } })
         expect(single?.strain.thc).toBe(0)
         expect(readBuildChemovar({ strain: { id: 1, name: 'Named' } })).toBeUndefined()
+    })
+
+    it('skips a row with no profile and rejects a bad percent or unknown key', () => {
+        const similar = readFindSimilar({
+            referenceProfile: { Myrcene: 0.2 },
+            strains: [{ id: 'bare', name: 'No profile' }, named],
+        })
+        expect(similar?.strains.map((strain) => strain.id)).toEqual(['s1'])
+        expect(readFindSimilar({ referenceProfile: { Myrcene: -1 }, strains: [] })).toBeUndefined()
+        expect(
+            readFindSimilar({ referenceProfile: { Myrcene: 101 }, strains: [] }),
+        ).toBeUndefined()
+        expect(
+            readFindSimilar({ referenceProfile: { NotATerpene: 1 }, strains: [] }),
+        ).toBeUndefined()
+        expect(
+            readAnalyzeEntourage({
+                terpeneProfile: { Myrcene: 0.2 },
+                cannabinoidProfile: { NotACannabinoid: 1 },
+            }),
+        ).toBeUndefined()
+        expect(readScoreEffects({ strains: [{ id: 'bare', name: 'No profile' }], desiredEffects: ['Relaxing'] })?.strains).toEqual([])
     })
 
     it('rejects a non-finite limit and an unknown effect tag', () => {

@@ -10,6 +10,10 @@
  */
 
 import type { CannabinoidProfile, EffectTag, Strain, TerpeneProfile } from '@/types'
+import { ALL_TERPENE_NAMES, CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
+
+const TERPENE_NAMES: ReadonlySet<string> = new Set(ALL_TERPENE_NAMES)
+const CANNABINOID_NAMES: ReadonlySet<string> = new Set(Object.keys(CANNABINOID_DATABASE))
 
 export interface NamedTerpeneStrain {
     id: string
@@ -78,14 +82,21 @@ const optionalFinite = (record: Record<string, unknown>, key: string): boolean =
     return value === undefined || isFiniteNumber(value)
 }
 
-/** Every present value is a finite number. Key names are checked by the caller. */
-const isFiniteProfile = (value: unknown): boolean =>
-    isRecord(value) && Object.values(value).every(isFiniteNumber)
+/** A reported percent: finite, and inside 0 through 100. */
+const isPercentAmount = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100
 
-/** A terpene map: every present value is a finite number. */
-export const isPercentProfile = (value: unknown): value is TerpeneProfile => isFiniteProfile(value)
+/** Known compound names only, each with a percent in range. */
+const isAllowlistedProfile = (value: unknown, names: ReadonlySet<string>): boolean =>
+    isRecord(value) &&
+    Object.entries(value).every(([key, amount]) => names.has(key) && isPercentAmount(amount))
 
-const isCannabinoidProfile = (value: unknown): value is CannabinoidProfile => isFiniteProfile(value)
+/** A terpene map: known names, each value from 0 through 100. */
+export const isPercentProfile = (value: unknown): value is TerpeneProfile =>
+    isAllowlistedProfile(value, TERPENE_NAMES)
+
+const isCannabinoidProfile = (value: unknown): value is CannabinoidProfile =>
+    isAllowlistedProfile(value, CANNABINOID_NAMES)
 
 const isStringList = (value: unknown): value is string[] =>
     Array.isArray(value) && value.every((item) => typeof item === 'string')
@@ -93,11 +104,27 @@ const isStringList = (value: unknown): value is string[] =>
 const isEffectTag = (value: unknown): value is EffectTag =>
     typeof value === 'string' && EFFECT_TAGS.has(value)
 
-const isNamedTerpeneStrain = (value: unknown): value is NamedTerpeneStrain =>
-    isRecord(value) &&
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    isPercentProfile(value.terpeneProfile)
+/**
+ * Keep rows that have a valid profile. A row with no profile is unknown and
+ * is skipped. A null row, a bad id, or a profile that fails the allowlist
+ * rejects the whole request.
+ */
+const readNamedStrains = (values: unknown[]): NamedTerpeneStrain[] | undefined => {
+    const accepted: NamedTerpeneStrain[] = []
+    for (const value of values) {
+        if (!isRecord(value) || typeof value.id !== 'string' || typeof value.name !== 'string') {
+            return undefined
+        }
+        if (value.terpeneProfile === undefined) continue
+        if (!isPercentProfile(value.terpeneProfile)) return undefined
+        accepted.push({
+            id: value.id,
+            name: value.name,
+            terpeneProfile: value.terpeneProfile,
+        })
+    }
+    return accepted
+}
 
 /**
  * Identity plus the nested fields the chemovar builder reads.
@@ -131,7 +158,7 @@ const finiteAt = (record: Record<string, unknown>, key: string): number | undefi
 export const readFindSimilar = (payload: unknown): FindSimilarPayload | undefined => {
     if (!isRecord(payload) || !isPercentProfile(payload.referenceProfile)) return undefined
     if (!Array.isArray(payload.strains)) return undefined
-    const strains = collect(payload.strains, isNamedTerpeneStrain)
+    const strains = readNamedStrains(payload.strains)
     if (strains === undefined) return undefined
     if (!optionalFinite(payload, 'limit') || !optionalFinite(payload, 'minSimilarity')) {
         return undefined
@@ -173,7 +200,7 @@ export const readPredictBreeding = (payload: unknown): PredictBreedingPayload | 
 export const readScoreEffects = (payload: unknown): ScoreEffectsPayload | undefined => {
     if (!isRecord(payload)) return undefined
     if (!Array.isArray(payload.strains) || !Array.isArray(payload.desiredEffects)) return undefined
-    const strains = collect(payload.strains, isNamedTerpeneStrain)
+    const strains = readNamedStrains(payload.strains)
     const desiredEffects = collect(payload.desiredEffects, isEffectTag)
     if (strains === undefined || desiredEffects === undefined) return undefined
     if (!optionalFinite(payload, 'limit')) return undefined

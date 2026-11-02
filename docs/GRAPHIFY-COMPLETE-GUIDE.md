@@ -69,7 +69,7 @@
 | **PyPI `graphifyy`**               | Python-Paket; enthält u. a. `python -m graphify.serve` für MCP.                                                                         |
 | **PyPI `mcp`**                     | Python MCP SDK — wird für den stdio-Server **zusätzlich** zu `graphifyy` benötigt (`ImportError`, falls fehlend).                       |
 | **`uv`**                           | Empfohlener Paket-/Runtime-Runner: isolierte Umgebung ohne globales `pip`-Gemisch.                                                      |
-| **Cursor `.cursor/mcp.json`**      | Startet den MCP-Server-Prozess (stdio) für die IDE.                                                                                     |
+| **Claude Code `.mcp.json`**        | Startet Graphify fuer Claude Code CLI. Cursor hat keine Projekt-MCP-Datei.                                                              |
 | **Launcher-Shellscript**           | Einheitlicher Eintragspunkt: prüft `uv` und `graph.json`, ruft `uv run … graphify.serve` auf.                                           |
 | **`pnpm run graphify:mcp:doctor`** | Projektscript: validiert Pfade, `uv`, Imports — **ohne** dass Cursor laufen muss.                                                       |
 
@@ -138,25 +138,21 @@ Monorepo mit u. a. `apps/web`, `packages/*`. Graphify umfasst den gesamten Cor
 
 **Relevante Dateien und Skripte:**
 
-| Pfad                                   | Zweck                                            |
-| -------------------------------------- | ------------------------------------------------ |
-| `graphify-out/graph.json`              | Graph für MCP und Visualisierung                 |
-| `graphify-out/GRAPH_REPORT.md`         | Agenten-Einstieg                                 |
-| `graphify-out/graph.html`              | Graph-Exploration                                |
-| `.gitignore` → `graphify-out/cache/`   | Cache ausschließen                               |
-| `.cursor/mcp.json`                     | MCP-Server `graphify` für Cursor                 |
-| `cursor_settings.json`                 | Gleicher MCP-Block + `projectContext` (Referenz) |
-| `scripts/graphify-mcp-stdio.sh`        | MCP-Launcher (Preflight + `uv run … serve`)      |
-| `scripts/graphify-mcp-doctor.mjs`      | Diagnose                                         |
-| `package.json` → `graphify:mcp:doctor` | `pnpm run graphify:mcp:doctor`                   |
+| Pfad                                   | Zweck                                        |
+| -------------------------------------- | -------------------------------------------- |
+| `graphify-out/graph.json`              | Graph für MCP und Visualisierung             |
+| `graphify-out/GRAPH_REPORT.md`         | Agenten-Einstieg                             |
+| `graphify-out/graph.html`              | Graph-Exploration                            |
+| `.gitignore` → `graphify-out/cache/`   | Cache ausschließen                           |
+| `.mcp.json`                            | Claude Code MCP: Graphify und GitKraken      |
+| `scripts/codegraph.mjs`                | codegraph CLI, kein MCP-Server               |
+| `scripts/graphify-mcp-stdio.sh`        | Historischer Launcher (Preflight + `uv run`) |
+| `scripts/graphify-mcp-doctor.mjs`      | Diagnose                                     |
+| `package.json` → `graphify:mcp:doctor` | `pnpm run graphify:mcp:doctor`               |
 
-**Cursor-Regeln (Auszug):**
+**Cursor project rules:** `.cursor/rules/*.mdc`. This repository has no `.cursor/mcp.json`.
 
-- `.cursor/index.mdc` — Kurzverweis MCP + Doctor
-- `.cursor/rules/850-mcp-and-prd.mdc` — Graphify-Prozedur + Doctor
-- `.cursor/rules/860-architecture-query-mode.mdc` — bei Bedarf `graphify update` vor Pfadanalyse
-
-**Globale Teamregel (CLAUDE.md / Workspace):** Nach Session mit Codeänderungen **`graphify update .`** ausführen, um den Graph aktuell zu halten.
+A graph refresh belongs to a later Claude Code CLI session. It is not a step on every code change.
 
 ---
 
@@ -182,6 +178,8 @@ graphify explain "<Begriff>"
 
 ## 7. Cursor und MCP (stdio-Server)
 
+> **Historical (July 2026):** This section describes the retired Cursor `.cursor/mcp.json` setup. It is not the current repository path. Claude Code reads root `.mcp.json`. Sections 11 and 12 are portability templates, not the current CannaGuide setup.
+
 ### 7.1 Funktionsweise
 
 Cursor startet einen **Unterprozess**, der MCP über **stdin/stdout** spricht. Der Graphify-Server lädt **`graph.json`** beim Start und exponiert **Tools** (siehe [§10](#10-mcp-tool-referenz-graphifyserve)).
@@ -190,7 +188,7 @@ Cursor startet einen **Unterprozess**, der MCP über **stdin/stdout** spricht. D
 
 In `.cursor/mcp.json` wird `"cwd": "${workspaceFolder}"` gesetzt. Der geöffnete Workspace-Ordner **muss das Repository-Root** sein (damit `scripts/graphify-mcp-stdio.sh` und `graphify-out/graph.json` relative Pfade korrekt auflösen).
 
-### 7.3 Konfiguration in diesem Repo
+### 7.3 Retired Cursor configuration
 
 Der Server-Key heißt **`graphify`**. Start über **`bash`** und Repo-Script — nicht über ein nicht existentes Binary `graphify-mcp` auf dem PATH.
 
@@ -262,6 +260,8 @@ Der Server registriert u. a. folgende Tools (Namen stabil aus der Graphify-Imp
 
 ## 11. Nachbau in einem anderen Repository (Checkliste)
 
+This checklist is for another repository. This repository uses root `.mcp.json` for Claude Code and does not use `.cursor/mcp.json`.
+
 Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unterstützung / Konfiguration):
 
 1. **Graphify CLI installieren** und im Zielrepo `graphify update .` erfolgreich ausführen.
@@ -278,6 +278,8 @@ Allgemein auf **beliebige** Codebasen anwendbar (Sprachen gemäß Graphify-Unter
 ---
 
 ## 12. Templates zum Kopieren
+
+Portability templates. Not the current CannaGuide MCP file.
 
 ### 12.1 `.cursor/mcp.json` (Linux/macOS mit Bash)
 

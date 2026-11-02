@@ -56,7 +56,7 @@ export const dataProvenanceSchema = z.object({
     externalId: z.string().max(256).optional(),
     labVerified: z.boolean().default(false),
     confidence: z.number().min(0).max(1).default(0.5),
-    sourceUrl: z.string().url().max(2048).optional(),
+    sourceUrl: z.string().url().max(2048).nullable().optional(),
     dataVersion: z.string().max(64).optional(),
 })
 

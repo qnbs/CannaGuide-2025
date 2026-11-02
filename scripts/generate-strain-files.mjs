@@ -377,25 +377,65 @@ const reportQuarantine = (assessment) => {
     console.error('[generate] Catalog files were not modified.')
 }
 
-let temporarySerial = 0
+const catalogFileName = (name) => {
+    if (typeof name !== 'string' || path.basename(name) !== name || name === '' || name === '.' || name === '..') {
+        throw new Error('[generate] Unsafe catalog file name')
+    }
+    return name
+}
 
-/** Write beside the target, then rename. A failed write leaves the previous file. */
-export const replaceFile = async (target, content) => {
-    temporarySerial += 1
-    const temporary = `${target}.${process.pid}.${temporarySerial}.tmp`
+const targetState = async (target) => {
     try {
-        await fs.writeFile(temporary, content, 'utf8')
-        await fs.rename(temporary, target)
+        const stat = await fs.lstat(target)
+        if (stat.isDirectory()) {
+            throw new Error(`[generate] Refusing to replace a directory: ${path.basename(target)}`)
+        }
+        return { exists: true, mode: stat.isFile() ? stat.mode : null }
     } catch (error) {
-        await fs.rm(temporary, { force: true })
+        if (error.code === 'ENOENT') return { exists: false, mode: null }
         throw error
     }
 }
 
+/**
+ * Stage every module in a private directory, then publish them together.
+ * A later failure restores the files already published. The temp directory
+ * is created with mkdtemp, and each staged file is opened with wx.
+ */
+export const commitFiles = async (dir, files) => {
+    const staging = await fs.mkdtemp(path.join(dir, '.strain-stage-'))
+    const published = []
+    try {
+        for (const file of files) {
+            const name = catalogFileName(file.fileName)
+            await fs.writeFile(path.join(staging, name), file.content, { encoding: 'utf8', flag: 'wx' })
+        }
+        for (const file of files) {
+            const name = catalogFileName(file.fileName)
+            const target = path.join(dir, name)
+            const staged = path.join(staging, name)
+            const backup = path.join(staging, `${name}.previous`)
+            const state = await targetState(target)
+            if (state.exists) await fs.rename(target, backup)
+            await fs.rename(staged, target)
+            if (state.mode !== null) await fs.chmod(target, state.mode)
+            published.push({ target, backup, hadTarget: state.exists })
+        }
+    } catch (error) {
+        for (const item of published.reverse()) {
+            await fs.rm(item.target, { force: true })
+            if (item.hadTarget) await fs.rename(item.backup, item.target)
+        }
+        throw error
+    } finally {
+        await fs.rm(staging, { recursive: true, force: true })
+    }
+}
+
 const writeCatalog = async (dir, files) => {
+    await commitFiles(dir, files)
     let total = 0
     for (const file of files) {
-        await replaceFile(path.join(dir, file.fileName), file.content)
         total += file.count
         const label = file.count > 0 ? `${file.count} strains` : 'generated'
         console.log(`[generate]   ${file.fileName}: ${label}`)

@@ -1,7 +1,18 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+    chmodSync,
+    lstatSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    readdirSync,
+    rmSync,
+    statSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
@@ -11,8 +22,8 @@ import {
     assessCatalog,
     buildStrainFiles,
     countValueNodes,
+    commitFiles,
     formatStrain,
-    replaceFile,
     resolveCatalogDir,
 } from './generate-strain-files.mjs'
 
@@ -399,7 +410,9 @@ test('the full 776 catalog trial writes only in the requested directory', () => 
         for (const strain of strains) assert.ok(written.includes(`id: '${strain.id}',`), strain.id)
         assert.equal(readFileSync(path.join(dir, 'sentinel.ts'), 'utf8'), 'keep')
         assert.equal(
-            readdirSync(dir).some((name) => name.endsWith('.tmp')),
+            readdirSync(dir).some(
+                (name) => name.endsWith('.tmp') || name.startsWith('.strain-stage-'),
+            ),
             false,
         )
         assert.equal(
@@ -416,25 +429,44 @@ test('the full 776 catalog trial writes only in the requested directory', () => 
     }
 })
 
-test('a failed module replace leaves the previous file and no temp file', async () => {
-    const dir = mkdtempSync(path.join(tmpdir(), 'strain-replace-'))
+test('a catalog commit preserves mode, rolls back, and does not follow a symlink', async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'strain-commit-'))
     try {
         const target = path.join(dir, 'a.ts')
         writeFileSync(target, 'original')
-        await replaceFile(target, 'next')
+        chmodSync(target, 0o644)
+        const outside = path.join(dir, 'outside.txt')
+        writeFileSync(outside, 'safe')
+        symlinkSync(outside, path.join(dir, `a.ts.${process.pid}.1.tmp`))
+        await commitFiles(dir, [{ fileName: 'a.ts', content: 'next' }])
         assert.equal(readFileSync(target, 'utf8'), 'next')
+        assert.equal(statSync(target).mode & 0o777, 0o644)
+        assert.equal(readFileSync(outside, 'utf8'), 'safe')
         assert.equal(
-            readdirSync(dir).some((name) => name.endsWith('.tmp')),
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
             false,
         )
 
-        rmSync(target)
-        mkdirSync(target)
-        writeFileSync(path.join(target, 'keep'), 'x')
-        await assert.rejects(replaceFile(target, 'truncated'))
-        assert.equal(readFileSync(path.join(target, 'keep'), 'utf8'), 'x')
+        const linked = path.join(dir, 'linked.ts')
+        symlinkSync(outside, linked)
+        await commitFiles(dir, [{ fileName: 'linked.ts', content: 'local' }])
+        assert.equal(lstatSync(linked).isSymbolicLink(), false)
+        assert.equal(readFileSync(linked, 'utf8'), 'local')
+        assert.equal(readFileSync(outside, 'utf8'), 'safe')
+
+        writeFileSync(target, 'original-a')
+        mkdirSync(path.join(dir, 'b.ts'))
+        writeFileSync(path.join(dir, 'b.ts', 'keep'), 'x')
+        await assert.rejects(
+            commitFiles(dir, [
+                { fileName: 'a.ts', content: 'new-a' },
+                { fileName: 'b.ts', content: 'new-b' },
+            ]),
+        )
+        assert.equal(readFileSync(target, 'utf8'), 'original-a')
+        assert.equal(readFileSync(path.join(dir, 'b.ts', 'keep'), 'utf8'), 'x')
         assert.equal(
-            readdirSync(dir).some((name) => name.endsWith('.tmp')),
+            readdirSync(dir).some((name) => name.startsWith('.strain-stage-')),
             false,
         )
     } finally {

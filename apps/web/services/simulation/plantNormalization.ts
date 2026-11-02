@@ -149,7 +149,8 @@ function normalizeSimulationClock(plant: Plant): Plant['simulationClock'] {
     }
 }
 
-export function normalizePlant(plant: Plant): Plant {
+/** Reported cultivar coefficients stay on the strain. A missing set is not filled here. */
+export const normalizePlant = (plant: Plant): Plant => {
     const waterCapacity = Math.max(
         1,
         (plant.equipment?.potSize ?? 11) *

@@ -263,6 +263,12 @@ test('the two-reviewer rule is required in the agent docs', () => {
         problems.some((p) => p.startsWith('docs/PR-REVIEW-LOOP.md: missing two-reviewer coverage')),
         problems.join('; '),
     )
+    assert.ok(
+        problems.some((p) =>
+            p.startsWith('docs/PR-REVIEW-LOOP.md: missing REVIEW_UNAVAILABLE is not a green check'),
+        ),
+        problems.join('; '),
+    )
 })
 
 test('a missing authority section or verify command fails', () => {

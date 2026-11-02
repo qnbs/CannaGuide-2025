@@ -18,6 +18,7 @@ exclude_patterns = [
 test_patterns = [
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/*.test.mjs",
     "**/tests/**",
     "**/*.e2e.ts",
     "**/*.ct.tsx",
@@ -35,7 +36,6 @@ enabled = true
 dialect = "typescript"
 # The repo is "type": "module". commonjs parsing rejects the ESM entrypoints.
 style_guide = "airbnb"
-ecma_version = "2020"
 module_system = "es-modules"
 track_test_doc_coverage = false
 cyclomatic_complexity_threshold = "low"

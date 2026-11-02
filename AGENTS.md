@@ -172,11 +172,11 @@ Implementation PRs are **Ready for review** (`draft=false`) once the first revie
 
 When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): fix the valid ones. Do not leave valid review items for a follow-up unless the user explicitly defers them.
 
-**One correction wave per head.** After a push, wait until CI and the reviewers that actually run have finished on that exact SHA. Collect every finding, then push one consolidated fix. Do not cascade tiny pushes while the current head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor so the rule passes honestly. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded limits, not a clean review.
+**One stable-head correction.** Do not request a full bot review after every intermediate fix. Collect findings on one stable head, group them by root cause, and ship one fail-before/green-after fix. Then request one fresh review of that final head. Another full review only when the code changes again. Do not push while that head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable`. Refactor so the rule passes honestly. An unavailable reviewer is `REVIEW_UNAVAILABLE` and stays blocking. It is not a green check and not a timeout waiver. Sourcery quota skips, a paused CodeRabbit review, and CodeRabbit skips on a non-default base are `REVIEW_UNAVAILABLE`, not a clean review. Follow `docs/PR-REVIEW-LOOP.md`.
 
-**Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
-larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch
-— a local `main` may be stale or divergent, the same trap the verify scripts already avoid:
+**Keep every PR under ~100 changed files.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits, 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); do not rewrite that history. Review bots silently skip inline comments on
+larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch.
+A local `main` may be stale or divergent, the same trap the verify scripts already avoid:
 
 ```bash
 git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l

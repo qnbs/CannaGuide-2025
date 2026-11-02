@@ -2,7 +2,7 @@
 
 Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
 
-The loop is not "read the comments and reply". It ends only when a **fresh** review produces **zero new comments** _and_ **zero unresolved threads**.
+The loop is not "read the comments and reply". It ends only when a **fresh** review of the **current head** produces **zero new comments** _and_ **zero unresolved threads**. Do not request that full review after every intermediate fix. Section 5 says when one is due.
 
 ---
 
@@ -23,7 +23,8 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 
 ## 1. Before pushing: keep the PR reviewable
 
-- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Check with `git diff --name-only main...HEAD | wc -l`.
+- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Check with `git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l`.
+- **Commit and file budget.** Count commits and the file command above against the merge-base with `origin/main`. Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception: 26 commits and 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`. Do not rewrite that history to look smaller.
 - i18n fans out hard (5 locales × N namespace files). A single copy change can cross the limit — split into stacked PRs (PR2's base = PR1's branch; GitHub retargets it automatically when PR1 merges).
 - One concern per PR. A mixed PR gets mixed findings and cannot be reverted cleanly.
 
@@ -85,20 +86,24 @@ Cite the resolving commit SHA in every reply. A resolved thread with no explanat
 
 ---
 
-## 5. Re-trigger — the loop does not stop after one pass
+## 5. One fresh review of a stable head
 
-A fresh review routinely raises **new** findings caused by your own fixes (a "wave"). After each push:
+Do not request a full bot review after every intermediate fix.
+
+1. Let the reviewers that start on their own finish on one stable head. Do not push while that head is still being reviewed or tested.
+2. Collect every finding on that head, including nitpicks and outside-diff-range comments. Group them by root cause.
+3. Ship one fail-before / green-after fix for that group, in one signed commit. Do not cascade a push per comment.
+4. Request one fresh review of that final head:
 
 ```bash
 gh pr comment <N> --body "@coderabbitai full review"
 ```
 
-Then go back to **step 2**. Repeat until **both**:
+5. Another full review only when the code changes again. A reply, a resolved thread, or a note that does not change the reviewed code does not need a new full review.
 
-- a fresh review yields **0 new comments**, and
-- **0 threads** are unresolved.
+An unavailable reviewer is `REVIEW_UNAVAILABLE`. It stays blocking. It is not a green check and not a timeout waiver. A skipped check, a paused review, a quota skip, an expired trial, or a full-review request that never attaches a review object to the current head is `REVIEW_UNAVAILABLE`. Do not merge that head. Do not send a second full-review request while the same request is still unanswered and the check stays paused.
 
-Never declare a PR done while comments are still arriving.
+Go back to **step 2** only when that fresh review returns new findings. The loop ends when a fresh review of the current head yields **0 new comments** and **0 unresolved threads**. Never declare a PR done while comments are still arriving.
 
 ---
 
@@ -122,8 +127,9 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 ## 7. Definition of done (binary)
 
 - [ ] 0 unresolved review threads (verified by the step-2 query, not by eyeballing the UI).
-- [ ] A fresh review pass produced 0 new comments.
+- [ ] A fresh review of the current head produced 0 new comments.
+- [ ] That review is attached to the current head. `REVIEW_UNAVAILABLE` (paused, skipped, quota, expired trial, or a request with no review object) blocks the merge. It is not a green check and not a timeout waiver.
 - [ ] Every finding either fixed at the root or refuted with evidence, in-thread, citing a commit.
 - [ ] No new lint/type suppressions anywhere in the diff.
-- [ ] All required checks green, evidenced by run URL.
+- [ ] All required checks green, evidenced by run URL. On a code change this still includes CodeQL, Socket, GitGuardian, DeepSource, unit tests, and both Chromium E2E shards. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
 - [ ] `CHANGELOG.md` `[Unreleased]` updated.

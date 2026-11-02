@@ -159,18 +159,24 @@ pnpm run check:i18n
 ## Pull requests
 
 - **Keep every PR under ~100 changed files.** CodeRabbit and similar bots silently skip
-  inline review on larger PRs, so the review loop never starts. Count against the
-  merge-base with the **remote** branch -- a local `main` can be stale or divergent, which
-  is the same trap the verify scripts already avoid:
+  inline review on larger PRs, so the review loop never starts. Warn around 8 commits or
+  50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before
+  15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits,
+  89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); do not rewrite that history.
+  Count against the merge-base with the **remote** branch -- a local `main` can be stale
+  or divergent, which is the same trap the verify scripts already avoid:
 
     ```bash
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
-- **Work the review loop until it is quiescent:** fetch unresolved threads, fix or refute
-  each with evidence, reply citing the commit, resolve, push, re-trigger the bot. Repeat
-  until a fresh review yields **0 new comments and 0 unresolved threads**. A fix routinely
-  raises the next wave -- treat nitpicks and "outside diff range" comments as in scope.
+- **Review one stable head.** Collect findings, group them by root cause, and ship one
+  fail-before/green-after fix. Then request one fresh review of that final head. Do not
+  request a full bot review after every intermediate fix. Another full review only when
+  the code changes again. The loop ends when that fresh review yields **0 new comments
+  and 0 unresolved threads**. An unavailable reviewer is `REVIEW_UNAVAILABLE` and stays
+  blocking: it is not a green check and not a timeout waiver. Nitpicks and "outside diff
+  range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.
 - **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so

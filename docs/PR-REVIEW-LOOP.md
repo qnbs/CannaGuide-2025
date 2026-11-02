@@ -122,11 +122,11 @@ Do not request a full bot review after every intermediate fix.
 
 `REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or a full-review request never attaches a review object to the current head. It is not a green check. It is not, by itself, a merge block.
 
-CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:
+CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once, keeping that login's newest review. `unique_by` would keep the oldest. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:
 
 ```bash
 gh api repos/qnbs/CannaGuide-2025/pulls/<N>/reviews --paginate \
-  | jq -s '[.[][] | select(.commit_id=="<HEAD>" and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")) and .state!="DISMISSED")] | unique_by(.user.login) | .[] | {user:.user.login, state}'
+  | jq -s '[.[][] | select(.commit_id=="<HEAD>" and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")) and .state!="DISMISSED")] | group_by(.user.login) | map(last) | .[] | {user:.user.login, state}'
 ```
 
 When two of those three are reviewing that head, or have attached such a review, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.

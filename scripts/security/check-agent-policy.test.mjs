@@ -241,11 +241,12 @@ test('a CI Status requirement must name jobs ci-status actually needs', () => {
 })
 
 test('the two-reviewer rule is required in the agent docs', () => {
+    const agents = SOUND_AGENTS.replace(
+        'two of CodeRabbit, CodeAnt, and Codex have covered',
+        'a single reviewer has looked',
+    ).replace('REVIEW_UNAVAILABLE is not a green check', 'REVIEW_UNAVAILABLE is a green check')
     const problems = problemsOf({
-        'AGENTS.md': SOUND_AGENTS.replace(
-            'two of CodeRabbit, CodeAnt, and Codex have covered',
-            'a single reviewer has looked',
-        ),
+        'AGENTS.md': agents,
         'docs/PR-REVIEW-LOOP.md': 'The loop ends when CI is green.',
     })
     assert.ok(
@@ -253,11 +254,13 @@ test('the two-reviewer rule is required in the agent docs', () => {
         problems.join('; '),
     )
     assert.ok(
-        problems.some((p) => p.startsWith('docs/PR-REVIEW-LOOP.md: missing two-reviewer coverage')),
+        problems.some((p) =>
+            p.startsWith('AGENTS.md: missing REVIEW_UNAVAILABLE is not a green check'),
+        ),
         problems.join('; '),
     )
     assert.ok(
-        problems.some((p) => p.includes('not a green check')),
+        problems.some((p) => p.startsWith('docs/PR-REVIEW-LOOP.md: missing two-reviewer coverage')),
         problems.join('; '),
     )
 })

@@ -78,9 +78,14 @@ const optionalFinite = (record: Record<string, unknown>, key: string): boolean =
     return value === undefined || isFiniteNumber(value)
 }
 
-/** A terpene or cannabinoid map: every present value is a finite number. */
-export const isPercentProfile = (value: unknown): value is TerpeneProfile =>
+/** Every present value is a finite number. Key names are checked by the caller. */
+const isFiniteProfile = (value: unknown): boolean =>
     isRecord(value) && Object.values(value).every(isFiniteNumber)
+
+/** A terpene map: every present value is a finite number. */
+export const isPercentProfile = (value: unknown): value is TerpeneProfile => isFiniteProfile(value)
+
+const isCannabinoidProfile = (value: unknown): value is CannabinoidProfile => isFiniteProfile(value)
 
 const isStringList = (value: unknown): value is string[] =>
     Array.isArray(value) && value.every((item) => typeof item === 'string')
@@ -104,7 +109,7 @@ const isWorkerStrain = (value: unknown): value is Strain => {
     if (typeof value.id !== 'string' || typeof value.name !== 'string') return false
     if (value.type !== undefined && typeof value.type !== 'string') return false
     if (value.terpeneProfile !== undefined && !isPercentProfile(value.terpeneProfile)) return false
-    if (value.cannabinoidProfile !== undefined && !isPercentProfile(value.cannabinoidProfile)) {
+    if (value.cannabinoidProfile !== undefined && !isCannabinoidProfile(value.cannabinoidProfile)) {
         return false
     }
     if (value.dominantTerpenes !== undefined && !isStringList(value.dominantTerpenes)) return false
@@ -179,7 +184,7 @@ export const readScoreEffects = (payload: unknown): ScoreEffectsPayload | undefi
 export const readAnalyzeEntourage = (payload: unknown): AnalyzeEntouragePayload | undefined => {
     if (!isRecord(payload)) return undefined
     if (!isPercentProfile(payload.terpeneProfile)) return undefined
-    if (!isPercentProfile(payload.cannabinoidProfile)) return undefined
+    if (!isCannabinoidProfile(payload.cannabinoidProfile)) return undefined
     return {
         terpeneProfile: payload.terpeneProfile,
         cannabinoidProfile: payload.cannabinoidProfile,

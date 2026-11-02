@@ -6,6 +6,9 @@
  * plus index.ts.
  *
  * Usage: node scripts/generate-strain-files.mjs
+ *
+ * Explicit null stays in the serializer. The canonical write stops, without
+ * editing the catalog, while Strain cannot represent those nulls.
  */
 
 import fs from 'node:fs/promises'
@@ -49,11 +52,15 @@ const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/
 const SAFE_KEY = /^[A-Za-z0-9_$. -]+$/
 const QUOTED_IDENTIFIER = new Set(['__proto__', 'constructor', 'prototype'])
 
+const isBareIdentifier = (text) =>
+    SAFE_KEY.test(text) && IDENTIFIER.test(text) && !QUOTED_IDENTIFIER.has(text)
+
 const emitKey = (key) => {
-    if (!SAFE_KEY.test(key)) return null
-    if (key === '__proto__') return "['__proto__']"
-    if (QUOTED_IDENTIFIER.has(key) || !IDENTIFIER.test(key)) return `'${escapeStr(key)}'`
-    return key
+    const text = String(key)
+    if (text === '__proto__') return "['__proto__']"
+    if (isBareIdentifier(text)) return text
+    if (SAFE_KEY.test(text)) return `'${escapeStr(text)}'`
+    return `['${escapeStr(text)}']`
 }
 
 const ORDERED_FIELDS = [
@@ -78,89 +85,154 @@ const ORDERED_FIELDS = [
     'lineage',
 ]
 
-const formatValue = (value, indent) => {
+const formatPrimitive = (value) => {
+    if (value === null) return 'null'
     if (typeof value === 'string') return `'${escapeStr(value)}'`
     if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+    return undefined
+}
+
+const formatValue = (value, indent) => {
+    const primitive = formatPrimitive(value)
+    if (primitive !== undefined) return primitive
     if (Array.isArray(value)) return formatArray(value, indent)
-    if (value && typeof value === 'object') return formatObject(value, indent)
+    if (typeof value === 'object') return formatObject(value, indent)
     return 'undefined'
 }
 
-const formatArray = (value, indent) => {
-    const items = value.filter((item) => item !== null && item !== undefined)
-    const simple = items.every((item) => typeof item === 'string' || typeof item === 'number')
-    const inline = simple ? items.map((item) => formatValue(item, indent)).join(', ') : ''
-    if (simple && inline.length < 80) return `[${inline}]`
+const isScalarItem = (item) =>
+    typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
+
+const isInlineItem = (item) => item === null || item === undefined || isScalarItem(item)
+
+const formatArrayLines = (value, indent) => {
     const inner = ' '.repeat(indent + 4)
     const lines = ['[']
-    for (const item of items) lines.push(`${inner}${formatValue(item, indent + 4)},`)
+    for (const item of value) lines.push(`${inner}${formatValue(item, indent + 4)},`)
     lines.push(`${' '.repeat(indent)}]`)
     return lines.join('\n')
 }
 
+const formatArray = (value, indent) => {
+    const simple = value.every(isInlineItem)
+    const inline = simple ? value.map((item) => formatValue(item, indent)).join(', ') : ''
+    if (simple && inline.length < 80) return `[${inline}]`
+    return formatArrayLines(value, indent)
+}
+
+const typeFieldLiteral = (value) => {
+    if (value === null) return 'null'
+    if (typeof value !== 'string' || !Object.hasOwn(TYPE_ENUM, value)) return undefined
+    return TYPE_ENUM[value]
+}
+
+const fieldLiteral = (key, value) => {
+    if (key === 'type') return typeFieldLiteral(value)
+    return formatValue(value, 8)
+}
+
+const pushField = (lines, written, key, value) => {
+    if (value === undefined || written.has(key)) return
+    const literal = fieldLiteral(key, value)
+    if (literal === undefined) return
+    const emittedKey = key === 'type' ? 'type' : emitKey(key)
+    lines.push(`        ${emittedKey}: ${literal},`)
+    written.add(key)
+}
+
 /**
  * Format a strain object as a createStrainObject({...}) call.
- * Uses consistent single-quote TS style matching project conventions.
- * Missing type stays omitted. Explicit 0 and false stay. Extra nested
- * fields are kept so a later generate does not drop provenance.
+ * Missing stays omitted. Explicit null, 0 and false stay. Unknown type
+ * strings stay omitted. Nested keys are escaped and never executed.
  */
 export const formatStrain = (strain) => {
     const lines = ['    createStrainObject({']
     const written = new Set()
-    const addField = (key, value) => {
-        if (value === undefined || value === null || written.has(key)) return
-        const emittedKey = emitKey(key)
-        if (!emittedKey) return
-        if (key === 'type') {
-            const enumName = Object.hasOwn(TYPE_ENUM, value) ? TYPE_ENUM[value] : undefined
-            if (!enumName) return
-            lines.push(`        type: ${enumName},`)
-            written.add(key)
-            return
-        }
-        lines.push(`        ${emittedKey}: ${formatValue(value, 8)},`)
-        written.add(key)
-    }
-
-    for (const key of ORDERED_FIELDS) addField(key, strain[key])
-    for (const key of Object.keys(strain)) addField(key, strain[key])
-
+    for (const key of ORDERED_FIELDS) pushField(lines, written, key, strain[key])
+    for (const key of Object.keys(strain)) pushField(lines, written, key, strain[key])
     lines.push('    }),')
     return lines.join('\n')
 }
 
-const formatObject = (obj, indent) => {
+const definedEntries = (obj) => Object.entries(obj).filter(([, value]) => value !== undefined)
+
+const isSimpleValue = (value) =>
+    typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+
+const keyedEntries = (entries) => entries.map(([key, value]) => [emitKey(key), value])
+
+const formatObjectInline = (entries, indent) => {
+    const parts = entries.map(([key, value]) => `${key}: ${formatValue(value, indent)}`)
+    return `{ ${parts.join(', ')} }`
+}
+
+const formatObjectLines = (entries, indent) => {
     const pad = ' '.repeat(indent)
     const innerPad = ' '.repeat(indent + 4)
-    const entries = Object.entries(obj).filter(([, value]) => value !== undefined && value !== null)
-    const allSimple = entries.every(
-        ([, value]) =>
-            typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean',
-    )
-    const safeEntries = entries.flatMap(([key, value]) => {
-        const emittedKey = emitKey(key)
-        return emittedKey ? [[emittedKey, value]] : []
-    })
-    if (allSimple && safeEntries.length > 0 && safeEntries.length <= 3) {
-        const parts = safeEntries.map(([key, value]) => `${key}: ${formatValue(value, indent)}`)
-        return `{ ${parts.join(', ')} }`
-    }
     const lines = ['{']
-    for (const [key, value] of safeEntries) {
+    for (const [key, value] of entries) {
         lines.push(`${innerPad}${key}: ${formatValue(value, indent + 4)},`)
     }
     lines.push(`${pad}}`)
     return lines.join('\n')
 }
 
-/**
- * Get the letter bucket for a strain name.
- */
-const getBucket = (name) => {
+const formatObject = (obj, indent) => {
+    const entries = keyedEntries(definedEntries(obj))
+    const allSimple = entries.every(([, value]) => isSimpleValue(value))
+    if (allSimple && entries.length > 0 && entries.length <= 3) {
+        return formatObjectInline(entries, indent)
+    }
+    return formatObjectLines(entries, indent)
+}
+
+const bucketOf = (name) => {
     const first = name.charAt(0).toLowerCase()
     if (/[0-9]/.test(first)) return 'numeric'
     if (/[a-z]/.test(first)) return first
-    return 'numeric' // fallback
+    return 'numeric'
+}
+
+const pointerToken = (segment) => String(segment).replaceAll('~', '~0').replaceAll('/', '~1')
+
+const collectNullPointers = (value, pointer, out) => {
+    if (value === null) {
+        out.push(pointer)
+        return
+    }
+    if (Array.isArray(value)) {
+        value.forEach((item, index) => collectNullPointers(item, `${pointer}/${index}`, out))
+        return
+    }
+    if (typeof value === 'object') {
+        for (const key of Object.keys(value)) {
+            collectNullPointers(value[key], `${pointer}/${pointerToken(key)}`, out)
+        }
+    }
+}
+
+const nestedNodeCount = (value) => {
+    if (Array.isArray(value)) return value.reduce((sum, item) => sum + countValueNodes(item), 0)
+    if (value !== null && typeof value === 'object') {
+        return Object.keys(value).reduce((sum, key) => sum + countValueNodes(value[key]), 0)
+    }
+    return 0
+}
+
+/** Every JSON value, including containers and null. The root array is included. */
+export const countValueNodes = (value) => 1 + nestedNodeCount(value)
+
+/**
+ * Explicit JSON null is representable in the serializer, but Strain.sourceUrl
+ * is `string | undefined`. A null in the canonical file blocks the module write.
+ */
+export const assessCatalog = (strains) => {
+    const pointers = []
+    for (const strain of strains) {
+        const id = typeof strain?.id === 'string' ? strain.id : '<missing-id>'
+        collectNullPointers(strain, `/${pointerToken(id)}`, pointers)
+    }
+    return { admitted: pointers.length === 0, nullCount: pointers.length, pointers }
 }
 
 const EXPORT_NAMES = {
@@ -193,67 +265,85 @@ const EXPORT_NAMES = {
     z: 'strainsZ',
 }
 
-// -----------------------------------------------------------------------
-// Main
-// -----------------------------------------------------------------------
+const compareBuckets = (left, right) => {
+    if (left === 'numeric') return -1
+    if (right === 'numeric') return 1
+    return left.localeCompare(right)
+}
+
+const groupStrains = (strains) => {
+    const buckets = new Map()
+    for (const strain of strains) {
+        const bucket = bucketOf(strain.name)
+        const list = buckets.get(bucket)
+        if (list) list.push(strain)
+        else buckets.set(bucket, [strain])
+    }
+    for (const list of buckets.values()) list.sort((a, b) => a.name.localeCompare(b.name))
+    return buckets
+}
+
+const knownBucket = (key) => {
+    if (EXPORT_NAMES[key]) return true
+    console.warn(`[generate] Unknown bucket: ${key}`)
+    return false
+}
+
+const renderBucket = (key, list) => {
+    const exportName = EXPORT_NAMES[key]
+    const content = [
+        HEADER,
+        '',
+        `export const ${exportName}: Strain[] = [`,
+        list.map(formatStrain).join('\n'),
+        ']',
+        '',
+    ].join('\n')
+    return { fileName: `${key}.ts`, content, count: list.length }
+}
+
+/** In-memory modules. Does not touch the catalog on disk. */
+export const buildStrainFiles = (strains) => {
+    const buckets = groupStrains(strains)
+    const keys = [...buckets.keys()].sort(compareBuckets).filter(knownBucket)
+    const files = keys.map((key) => renderBucket(key, buckets.get(key)))
+    files.push({ fileName: 'index.ts', content: generateIndex(keys), count: 0 })
+    return files
+}
+
+const reportQuarantine = (assessment) => {
+    console.error(
+        `[generate] Quarantine: ${assessment.nullCount} explicit JSON null values are not representable in Strain modules.`,
+    )
+    for (const pointer of assessment.pointers.slice(0, 3)) console.error(`[generate]   ${pointer}`)
+    console.error(
+        '[generate] Strain fields are not typed as null. Catalog files were not modified.',
+    )
+}
+
+const writeCatalog = async (files) => {
+    let total = 0
+    for (const file of files) {
+        await fs.writeFile(path.join(strainsDir, file.fileName), file.content, 'utf8')
+        total += file.count
+        const label = file.count > 0 ? `${file.count} strains` : 'generated'
+        console.log(`[generate]   ${file.fileName}: ${label}`)
+    }
+    return total
+}
 
 const run = async () => {
     const raw = await fs.readFile(jsonPath, 'utf8')
     const strains = JSON.parse(raw)
     console.log(`[generate] Loaded ${strains.length} strains from strains.json`)
-
-    // Bucket strains by first letter
-    const buckets = new Map()
-    for (const strain of strains) {
-        const bucket = getBucket(strain.name)
-        if (!buckets.has(bucket)) buckets.set(bucket, [])
-        buckets.get(bucket).push(strain)
+    const assessment = assessCatalog(strains)
+    if (!assessment.admitted) {
+        reportQuarantine(assessment)
+        process.exitCode = 1
+        return
     }
-
-    // Sort within each bucket by name
-    for (const [, list] of buckets) {
-        list.sort((a, b) => a.name.localeCompare(b.name))
-    }
-
-    // Generate strain files
-    let totalWritten = 0
-    const bucketKeys = [...buckets.keys()].sort((a, b) => {
-        if (a === 'numeric') return -1
-        if (b === 'numeric') return 1
-        return a.localeCompare(b)
-    })
-
-    for (const key of bucketKeys) {
-        const list = buckets.get(key)
-        const exportName = EXPORT_NAMES[key]
-        if (!exportName) {
-            console.warn(`[generate] Unknown bucket: ${key}`)
-            continue
-        }
-
-        const strainBlocks = list.map(formatStrain)
-        const content = [
-            HEADER,
-            '',
-            `export const ${exportName}: Strain[] = [`,
-            strainBlocks.join('\n'),
-            ']',
-            '',
-        ].join('\n')
-
-        const filePath = path.join(strainsDir, `${key}.ts`)
-        await fs.writeFile(filePath, content, 'utf8')
-        totalWritten += list.length
-        console.log(`[generate]   ${key}.ts: ${list.length} strains`)
-    }
-
-    // Generate index.ts
-    const indexContent = generateIndex(bucketKeys)
-    await fs.writeFile(path.join(strainsDir, 'index.ts'), indexContent, 'utf8')
-    console.log(`[generate]   index.ts: generated`)
-
-    console.log(`[generate] ----------------------------------------`)
-    console.log(`[generate] Total written: ${totalWritten} strains in ${bucketKeys.length} files`)
+    const total = await writeCatalog(buildStrainFiles(strains))
+    console.log(`[generate] Total written: ${total} strains`)
 }
 
 const generateIndex = (bucketKeys) => {

@@ -149,53 +149,77 @@ function normalizeSimulationClock(plant: Plant): Plant['simulationClock'] {
     }
 }
 
-/** Reported cultivar coefficients stay on the strain. A missing set is not filled here. */
-export const normalizePlant = (plant: Plant): Plant => {
-    const waterCapacity = Math.max(
-        1,
-        (plant.equipment?.potSize ?? 11) *
-            1000 *
-            ((plant.equipment?.potType ?? 'Fabric') === 'Fabric' ? 0.28 : 0.35),
-    )
-    const phenotypeModifiers = normalizeGeneticModifiers(
-        plant.phenotypeModifiers ?? plant.strain?.geneticModifiers,
-    )
+const timestampOrNow = (value: number | undefined): number =>
+    Number.isFinite(value) ? value : Date.now()
 
-    return {
-        ...plant,
-        mediumType: plant.mediumType ?? 'Soil',
-        createdAt: Number.isFinite(plant.createdAt) ? plant.createdAt : Date.now(),
-        lastUpdated: Number.isFinite(plant.lastUpdated) ? plant.lastUpdated : Date.now(),
-        age: Number.isFinite(plant.age) ? plant.age : 0,
-        health: simClamp(Number.isFinite(plant.health) ? plant.health : 100, 0, 100),
-        stressLevel: simClamp(Number.isFinite(plant.stressLevel) ? plant.stressLevel : 0, 0, 100),
-        height: Number.isFinite(plant.height) ? plant.height : 0,
-        biomass: {
-            total: Number.isFinite(plant.biomass?.total) ? plant.biomass.total : 0.01,
-            stem: Number.isFinite(plant.biomass?.stem) ? plant.biomass.stem : 0.01,
-            leaves: Number.isFinite(plant.biomass?.leaves) ? plant.biomass.leaves : 0,
-            flowers: Number.isFinite(plant.biomass?.flowers) ? plant.biomass.flowers : 0,
-        },
-        leafAreaIndex: Number.isFinite(plant.leafAreaIndex) ? plant.leafAreaIndex : 0.01,
-        environment: normalizeEnvironment(plant),
-        medium: normalizeMedium(plant, waterCapacity),
-        nutrientPool: normalizeNutrientPool(plant),
-        rootSystem: normalizeRootSystem(plant),
-        equipment: normalizeEquipment(plant),
-        problems: Array.isArray(plant.problems) ? plant.problems : [],
-        journal: Array.isArray(plant.journal) ? plant.journal : [],
-        tasks: Array.isArray(plant.tasks) ? plant.tasks : [],
-        harvestData: plant.harvestData ?? null,
-        structuralModel: normalizeStructuralModel(plant),
-        phenotypeModifiers,
-        strain: strainWithReportedModifiers(plant.strain),
-        history: Array.isArray(plant.history) ? plant.history : [],
-        cannabinoidProfile: normalizeCannabinoidProfile(plant),
-        terpeneProfile:
-            plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
-                ? plant.terpeneProfile
-                : {},
-        stressCounters: normalizeStressCounters(plant),
-        simulationClock: normalizeSimulationClock(plant),
-    }
-}
+const listOrEmpty = <T>(value: T[] | undefined): T[] => (Array.isArray(value) ? value : [])
+
+const potLiters = (plant: Plant): number => plant.equipment?.potSize ?? 11
+
+const substrateFactor = (plant: Plant): number =>
+    (plant.equipment?.potType ?? 'Fabric') === 'Fabric' ? 0.28 : 0.35
+
+const waterCapacityOf = (plant: Plant): number =>
+    Math.max(1, potLiters(plant) * 1000 * substrateFactor(plant))
+
+const normalizeBiomass = (plant: Plant): Plant['biomass'] => ({
+    total: finiteOr(plant.biomass?.total, 0.01),
+    stem: finiteOr(plant.biomass?.stem, 0.01),
+    leaves: finiteOr(plant.biomass?.leaves, 0),
+    flowers: finiteOr(plant.biomass?.flowers, 0),
+})
+
+const normalizeIdentity = (
+    plant: Plant,
+): Pick<
+    Plant,
+    | 'mediumType'
+    | 'createdAt'
+    | 'lastUpdated'
+    | 'age'
+    | 'health'
+    | 'stressLevel'
+    | 'height'
+    | 'leafAreaIndex'
+> => ({
+    mediumType: plant.mediumType ?? 'Soil',
+    createdAt: timestampOrNow(plant.createdAt),
+    lastUpdated: timestampOrNow(plant.lastUpdated),
+    age: finiteOr(plant.age, 0),
+    health: simClamp(finiteOr(plant.health, 100), 0, 100),
+    stressLevel: simClamp(finiteOr(plant.stressLevel, 0), 0, 100),
+    height: finiteOr(plant.height, 0),
+    leafAreaIndex: finiteOr(plant.leafAreaIndex, 0.01),
+})
+
+const reportedPhenotype = (plant: Plant): GeneticModifiers =>
+    normalizeGeneticModifiers(plant.phenotypeModifiers ?? plant.strain?.geneticModifiers)
+
+const terpeneProfileOf = (plant: Plant): Plant['terpeneProfile'] =>
+    plant.terpeneProfile && typeof plant.terpeneProfile === 'object' ? plant.terpeneProfile : {}
+
+const harvestDataOf = (plant: Plant): Plant['harvestData'] => plant.harvestData ?? null
+
+/** Reported cultivar coefficients stay on the strain. A missing set is not filled here. */
+export const normalizePlant = (plant: Plant): Plant => ({
+    ...plant,
+    ...normalizeIdentity(plant),
+    biomass: normalizeBiomass(plant),
+    environment: normalizeEnvironment(plant),
+    medium: normalizeMedium(plant, waterCapacityOf(plant)),
+    nutrientPool: normalizeNutrientPool(plant),
+    rootSystem: normalizeRootSystem(plant),
+    equipment: normalizeEquipment(plant),
+    problems: listOrEmpty(plant.problems),
+    journal: listOrEmpty(plant.journal),
+    tasks: listOrEmpty(plant.tasks),
+    harvestData: harvestDataOf(plant),
+    structuralModel: normalizeStructuralModel(plant),
+    phenotypeModifiers: reportedPhenotype(plant),
+    strain: strainWithReportedModifiers(plant.strain),
+    history: listOrEmpty(plant.history),
+    cannabinoidProfile: normalizeCannabinoidProfile(plant),
+    terpeneProfile: terpeneProfileOf(plant),
+    stressCounters: normalizeStressCounters(plant),
+    simulationClock: normalizeSimulationClock(plant),
+})

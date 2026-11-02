@@ -148,6 +148,22 @@ describe('dataProvenanceSchema', () => {
         expect(rejected.success).toBe(false)
     })
 
+    it('rejects an explicit undefined source URL and still allows omission', () => {
+        const omitted = dataProvenanceSchema.safeParse({
+            provider: 'community',
+            fetchedAt: '2024-06-15T10:30:00Z',
+        })
+        expect(omitted.success).toBe(true)
+        if (omitted.success) expect(omitted.data).not.toHaveProperty('sourceUrl')
+
+        const rejected = dataProvenanceSchema.safeParse({
+            provider: 'community',
+            fetchedAt: '2024-06-15T10:30:00Z',
+            sourceUrl: undefined,
+        })
+        expect(rejected.success).toBe(false)
+    })
+
     it('rejects confidence > 1', () => {
         const result = dataProvenanceSchema.safeParse({
             provider: 'otreeba',

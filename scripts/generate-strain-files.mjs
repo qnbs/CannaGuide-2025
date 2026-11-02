@@ -10,9 +10,11 @@
  * dataProvenance.sourceUrl may be a string, null, or omitted. A null counts
  * only on an array entry. Any other JSON null stops the write before a
  * module changes. --catalog-dir writes that directory instead of
- * apps/web/data/strains.
+ * apps/web/data/strains. A publish failure restores the previous file.
+ * If that restore fails, the private staging directory is kept.
  */
 
+import { constants as fsConstants } from 'node:fs'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -384,51 +386,104 @@ const catalogFileName = (name) => {
     return name
 }
 
-const targetState = async (target) => {
+const openNoFollow = (filePath) =>
+    fs.open(filePath, fsConstants.O_RDONLY | fsConstants.O_NOFOLLOW)
+
+const inspectNoFollow = async (filePath) => {
+    let handle
     try {
-        const stat = await fs.lstat(target)
-        if (stat.isDirectory()) {
-            throw new Error(`[generate] Refusing to replace a directory: ${path.basename(target)}`)
-        }
-        return { exists: true, mode: stat.isFile() ? stat.mode : null }
+        handle = await openNoFollow(filePath)
     } catch (error) {
-        if (error.code === 'ENOENT') return { exists: false, mode: null }
+        if (error.code === 'ELOOP') return { isDirectory: false, isFile: false, mode: null }
         throw error
     }
+    try {
+        const stat = await handle.stat()
+        return {
+            isDirectory: stat.isDirectory(),
+            isFile: stat.isFile(),
+            mode: stat.isFile() ? stat.mode & 0o777 : null,
+        }
+    } finally {
+        await handle.close()
+    }
+}
+
+const chmodNoFollow = async (filePath, mode) => {
+    const handle = await openNoFollow(filePath)
+    try {
+        await handle.chmod(mode & 0o777)
+    } finally {
+        await handle.close()
+    }
+}
+
+const fsOps = {
+    rename: (from, to) => fs.rename(from, to),
+    rm: (target, options) => fs.rm(target, options),
+    writeFile: (filePath, content, options) => fs.writeFile(filePath, content, options),
+    mkdtemp: (prefix) => fs.mkdtemp(prefix),
+    chmodNoFollow,
+    inspectNoFollow,
 }
 
 /**
  * Stage every module in a private directory, then publish them together.
- * A later failure restores the files already published. The temp directory
- * is created with mkdtemp, and each staged file is opened with wx.
+ * The previous file is moved aside and its mode is applied to the staged
+ * inode before that inode is published. A later failure restores files
+ * already moved. If a restore itself fails, the staging directory stays
+ * so the backup can be recovered. The temp directory comes from mkdtemp,
+ * and each staged file is opened with wx.
  */
-export const commitFiles = async (dir, files) => {
-    const staging = await fs.mkdtemp(path.join(dir, '.strain-stage-'))
+export const commitFiles = async (dir, files, ops = {}) => {
+    const io = { ...fsOps, ...ops }
+    const staging = await io.mkdtemp(path.join(dir, '.strain-stage-'))
     const published = []
+    let keepStaging = false
     try {
         for (const file of files) {
             const name = catalogFileName(file.fileName)
-            await fs.writeFile(path.join(staging, name), file.content, { encoding: 'utf8', flag: 'wx' })
+            await io.writeFile(path.join(staging, name), file.content, { encoding: 'utf8', flag: 'wx' })
         }
         for (const file of files) {
             const name = catalogFileName(file.fileName)
             const target = path.join(dir, name)
             const staged = path.join(staging, name)
             const backup = path.join(staging, `${name}.previous`)
-            const state = await targetState(target)
-            if (state.exists) await fs.rename(target, backup)
-            await fs.rename(staged, target)
-            if (state.mode !== null) await fs.chmod(target, state.mode)
-            published.push({ target, backup, hadTarget: state.exists })
+            const item = { target, backup, backedUp: false, published: false }
+            published.push(item)
+            try {
+                await io.rename(target, backup)
+                item.backedUp = true
+            } catch (error) {
+                if (error.code !== 'ENOENT') throw error
+            }
+            if (item.backedUp) {
+                const moved = await io.inspectNoFollow(backup)
+                if (moved.isDirectory) {
+                    throw new Error(`[generate] Refusing to replace a directory: ${name}`)
+                }
+                if (moved.isFile) await io.chmodNoFollow(staged, moved.mode)
+            }
+            await io.rename(staged, target)
+            item.published = true
         }
     } catch (error) {
         for (const item of published.reverse()) {
-            await fs.rm(item.target, { force: true })
-            if (item.hadTarget) await fs.rename(item.backup, item.target)
+            try {
+                if (item.published) await io.rm(item.target, { force: true })
+                if (item.backedUp) await io.rename(item.backup, item.target)
+            } catch (restoreError) {
+                keepStaging = true
+                const code = restoreError && restoreError.code ? restoreError.code : 'unknown'
+                console.error(
+                    `[generate] Rollback failed for ${path.basename(item.target)} (${code}); backup kept in ${staging}`,
+                )
+            }
         }
         throw error
     } finally {
-        await fs.rm(staging, { recursive: true, force: true })
+        if (!keepStaging) await io.rm(staging, { recursive: true, force: true })
     }
 }
 

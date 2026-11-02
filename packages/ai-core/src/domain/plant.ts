@@ -44,7 +44,7 @@ export interface GrowSetup {
     potType: PotType
     medium: 'Soil' | 'Coco' | 'Hydro' | 'Aeroponics'
     /** Grower choice used only when the cultivar reported no flowering mode. */
-    floweringPolicy?: FloweringType | undefined
+    floweringPolicy?: FloweringType
 }
 
 export interface PlantEnvironment {
@@ -80,7 +80,7 @@ export interface PlantEquipment {
     circulationFan: { isOn: boolean }
     potSize: number
     potType: PotType
-    floweringPolicy?: FloweringType | undefined
+    floweringPolicy?: FloweringType
 }
 
 export interface PlantStructuralModel {

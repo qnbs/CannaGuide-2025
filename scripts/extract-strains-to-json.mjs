@@ -10,7 +10,7 @@
 
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -79,7 +79,7 @@ const extractObjectBodies = (source) => {
  * single-quoted strings (including apostrophes), trailing commas,
  * StrainType.X enums, nested objects/arrays, multi-line strings.
  */
-const parseObjectLiteral = (objStr) => {
+export const parseObjectLiteral = (objStr) => {
     // Tokenize character by character to correctly handle strings
     const tokens = []
     let i = 0
@@ -175,7 +175,31 @@ const parseObjectLiteral = (objStr) => {
  * Normalize a parsed strain object: ensure consistent field names
  * and strip any runtime-only fields.
  */
-const normalizeStrain = (raw) => {
+const copyProvenance = (strain, raw) => {
+    if (!Object.hasOwn(raw, 'dataProvenance')) return
+    strain.dataProvenance = structuredClone(raw.dataProvenance)
+}
+
+const priorProvenance = (previous) => {
+    const prior = new Map()
+    for (const strain of previous) {
+        if (!strain || !Object.hasOwn(strain, 'dataProvenance')) continue
+        prior.set(strain.id, strain.dataProvenance)
+    }
+    return prior
+}
+
+const attachPriorProvenance = (strain, prior) => {
+    if (Object.hasOwn(strain, 'dataProvenance') || !prior.has(strain.id)) return strain
+    return { ...strain, dataProvenance: structuredClone(prior.get(strain.id)) }
+}
+
+export const preserveProvenance = (extracted, previous) => {
+    const prior = priorProvenance(previous)
+    return extracted.map((strain) => attachPriorProvenance(strain, prior))
+}
+
+export const normalizeStrain = (raw) => {
     if (!raw || !raw.id || !raw.name) return null
 
     const strain = {
@@ -231,6 +255,7 @@ const normalizeStrain = (raw) => {
         strain.lineage = raw.lineage
     }
 
+    copyProvenance(strain, raw)
     return strain
 }
 
@@ -238,7 +263,17 @@ const normalizeStrain = (raw) => {
 // Main
 // -----------------------------------------------------------------------
 
+const readPreviousCatalog = async () => {
+    try {
+        const parsed = JSON.parse(await fs.readFile(outputPath, 'utf8'))
+        return Array.isArray(parsed) ? parsed : []
+    } catch {
+        return []
+    }
+}
+
 const run = async () => {
+    const previous = await readPreviousCatalog()
     const files = (await fs.readdir(strainsDir))
         .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
         .sort()
@@ -282,22 +317,25 @@ const run = async () => {
         console.log(`[extract]   ${fileName}: ${fileCount} strains`)
     }
 
-    // Sort alphabetically by id
-    allStrains.sort((a, b) => a.id.localeCompare(b.id))
+    const catalog = preserveProvenance(allStrains, previous)
+    catalog.sort((a, b) => a.id.localeCompare(b.id))
 
     // Write JSON
-    const json = JSON.stringify(allStrains, null, 2)
+    const json = JSON.stringify(catalog, null, 2)
     await fs.writeFile(outputPath, `${json}\n`, 'utf8')
 
     console.log(`[extract] ----------------------------------------`)
-    console.log(`[extract] Total extracted: ${allStrains.length} unique strains`)
+    console.log(`[extract] Total extracted: ${catalog.length} unique strains`)
     if (duplicateCount > 0) {
         console.log(`[extract] Duplicates removed: ${duplicateCount}`)
     }
     console.log(`[extract] Written to: ${path.relative(repoRoot, outputPath)}`)
 }
 
-run().catch((err) => {
-    console.error('[extract] Fatal error:', err)
-    process.exit(1)
-})
+const invokedDirectly = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href
+if (invokedDirectly) {
+    run().catch((err) => {
+        console.error('[extract] Fatal error:', err)
+        process.exit(1)
+    })
+}

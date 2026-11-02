@@ -18,6 +18,7 @@ export const common = {
     none: 'Ninguno',
     growDeleted: 'Grow eliminado.',
     outOfStock: 'Agotado',
+    unknown: 'Desconocido',
     name: 'Nombre',
     type: 'Tipo',
     typeDetails: 'Detalles del tipo',

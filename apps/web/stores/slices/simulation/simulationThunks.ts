@@ -1,12 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import {
-    Plant,
-    GrowSetup,
-    JournalEntry,
-    Task,
-    JournalEntryType,
-} from '@/types'
+import { Plant, JournalEntry, Task, JournalEntryType } from '@/types'
 import { plantSimulationService, vpdService } from '@/services/plantSimulationService'
+import { equipmentWithPolicy } from '@/services/simulation/floweringMode'
 import { RootState } from '../../store'
 import { getUISnapshot } from '../../useUIStore'
 import { getT } from '@/i18n'
@@ -75,17 +70,20 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 return
             }
 
-            const normalizedSetup: GrowSetup = {
-                lightType: validation.data.lightType ?? 'LED',
-                lightWattage: validation.data.lightWattage ?? 300,
-                lightHours: validation.data.lightHours,
-                ventilation: validation.data.ventilation ?? 'medium',
-                hasCirculationFan: validation.data.hasCirculationFan ?? true,
-                potSize: validation.data.potSize,
-                potType: validation.data.potType ?? 'Fabric',
-                medium: validation.data.medium,
-                dynamicLighting: validation.data.dynamicLighting ?? false,
-            }
+            const normalizedSetup = equipmentWithPolicy(
+                {
+                    lightType: validation.data.lightType ?? 'LED',
+                    lightWattage: validation.data.lightWattage ?? 300,
+                    lightHours: validation.data.lightHours,
+                    ventilation: validation.data.ventilation ?? 'medium',
+                    hasCirculationFan: validation.data.hasCirculationFan ?? true,
+                    potSize: validation.data.potSize,
+                    potType: validation.data.potType ?? 'Fabric',
+                    medium: validation.data.medium,
+                    dynamicLighting: validation.data.dynamicLighting ?? false,
+                },
+                validation.data.floweringPolicy,
+            )
 
             const newPlant = plantSimulationService.createPlant(
                 strain,

@@ -17,6 +17,7 @@ export const common = {
     loadingGeneric: 'Laden...',
     growDeleted: 'Grow verwijderd.',
     outOfStock: 'Niet op voorraad',
+    unknown: 'Onbekend',
     name: 'Naam',
     type: 'Type',
     typeDetails: 'Type details',

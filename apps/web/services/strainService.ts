@@ -10,11 +10,17 @@ export type { StrainCatalogVersion } from '@/data/strainCatalogVersion'
 
 type StrainModule = Record<string, unknown>
 
-const DEFAULT_AGRONOMIC = {
-    difficulty: 'Medium',
-    yield: 'Medium',
-    height: 'Medium',
-} as const
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+const hasStrainIdentity = (value: Record<string, unknown>): boolean =>
+    'id' in value && 'name' in value
+
+const isStrainList = (value: unknown): value is Strain[] => {
+    if (!Array.isArray(value) || value.length === 0) return false
+    const first: unknown = value[0]
+    return isRecord(first) && hasStrainIdentity(first)
+}
 
 const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
     const seenIds = new Set<string>()
@@ -66,18 +72,7 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
                 (result): result is PromiseFulfilledResult<StrainModule> =>
                     result.status === 'fulfilled',
             )
-            .flatMap((result) =>
-                Object.values(result.value).filter(
-                    (value): value is Strain[] =>
-                        Array.isArray(value) &&
-                        value.length > 0 &&
-                        typeof value[0] === 'object' &&
-                        value[0] !== null &&
-                        'id' in value[0] &&
-                        'name' in value[0] &&
-                        'type' in value[0],
-                ),
-            )
+            .flatMap((result) => Object.values(result.value).filter(isStrainList))
 
         strainsDataCache = normalizeStrainCatalog(allStrains.flat() as Partial<Strain>[])
         loadPromise = null
@@ -85,6 +80,54 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
     })()
 
     return loadPromise
+}
+
+const sharedNames = (left: string[] | undefined, right: string[] | undefined): number =>
+    (left ?? []).filter((name) => (right ?? []).includes(name)).length
+
+const bothNumbers = (left: unknown, right: unknown): boolean =>
+    typeof left === 'number' && typeof right === 'number'
+
+const sameReportedLevel = (left: string | undefined, right: string | undefined): boolean =>
+    left !== undefined && left === right
+
+const typeSimilarity = (left: Strain, right: Strain): number =>
+    left.type !== undefined && left.type === right.type ? 20 : 0
+
+const measurementGap = (left: number, right: number, weight: number): number =>
+    weight - Math.abs(left - right)
+
+const chemistrySimilarity = (left: Strain, right: Strain): number => {
+    const thc = bothNumbers(left.thc, right.thc) ? measurementGap(left.thc, right.thc, 15) : 0
+    const cbd = bothNumbers(left.cbd, right.cbd) ? measurementGap(left.cbd, right.cbd, 10) : 0
+    return thc + cbd
+}
+
+const listSimilarity = (left: Strain, right: Strain): number =>
+    sharedNames(left.aromas, right.aromas) * 5 +
+    sharedNames(left.dominantTerpenes, right.dominantTerpenes) * 10
+
+const difficultyOf = (strain: Strain): string | undefined => strain.agronomic?.difficulty
+
+const yieldOf = (strain: Strain): string | undefined => strain.agronomic?.yield
+
+const heightOf = (strain: Strain): string | undefined => strain.agronomic?.height
+
+const agronomySimilarity = (left: Strain, right: Strain): number => {
+    const difficulty = sameReportedLevel(difficultyOf(left), difficultyOf(right)) ? 5 : 0
+    const yieldLevel = sameReportedLevel(yieldOf(left), yieldOf(right)) ? 3 : 0
+    const height = sameReportedLevel(heightOf(left), heightOf(right)) ? 2 : 0
+    return difficulty + yieldLevel + height
+}
+
+export const scoreStrainSimilarity = (left: Strain, right: Strain): number => {
+    if (left.id === right.id) return -1
+    return (
+        typeSimilarity(left, right) +
+        chemistrySimilarity(left, right) +
+        listSimilarity(left, right) +
+        agronomySimilarity(left, right)
+    )
 }
 
 class StrainService {
@@ -146,40 +189,10 @@ class StrainService {
             await this.init()
         }
 
-        const calculateSimilarity = (s1: Strain, s2: Strain): number => {
-            let score = 0
-            if (s1.id === s2.id) return -1 // Exclude self
-            const s1Agronomic = s1.agronomic ?? DEFAULT_AGRONOMIC
-            const s2Agronomic = s2.agronomic ?? DEFAULT_AGRONOMIC
-
-            // Type
-            if (s1.type === s2.type) score += 20
-
-            // THC/CBD closeness
-            score += 15 - Math.abs(s1.thc - s2.thc)
-            score += 10 - Math.abs(s1.cbd - s2.cbd)
-
-            // Aroma/Terpene overlap
-            const aromaIntersection = (s1.aromas ?? []).filter((a) => (s2.aromas ?? []).includes(a))
-            score += aromaIntersection.length * 5
-
-            const terpeneIntersection = (s1.dominantTerpenes ?? []).filter((t) =>
-                (s2.dominantTerpenes ?? []).includes(t),
-            )
-            score += terpeneIntersection.length * 10
-
-            // Agronomics
-            if (s1Agronomic.difficulty === s2Agronomic.difficulty) score += 5
-            if (s1Agronomic.yield === s2Agronomic.yield) score += 3
-            if (s1Agronomic.height === s2Agronomic.height) score += 2
-
-            return score
-        }
-
         return this.allStrains
             .map((strain) => ({
                 strain,
-                score: calculateSimilarity(currentStrain, strain),
+                score: scoreStrainSimilarity(currentStrain, strain),
             }))
             .toSorted((a, b) => b.score - a.score)
             .slice(0, count)

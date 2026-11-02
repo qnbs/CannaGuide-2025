@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { PlantStage, StrainType } from '@/types'
 import type { Plant } from '@/types'
-import {
-    getPlantGeneticModifiers,
-    normalizePlant,
-} from '@/services/simulation/plantNormalization'
+import { getPlantGeneticModifiers, normalizePlant } from '@/services/simulation/plantNormalization'
 
 const sparsePlant = (): Plant =>
     ({
@@ -58,6 +55,30 @@ describe('plantNormalization', () => {
         expect(Number.isFinite(normalized.environment.internalTemperature)).toBe(true)
         expect(normalized.equipment.light.type).toBe('LED')
         expect(normalized.equipment.light.wattage).toBeGreaterThanOrEqual(10)
+    })
+
+    it('keeps a chosen flowering policy without inventing a cultivar mode', () => {
+        const plant = sparsePlant()
+        const strain = { ...plant.strain }
+        delete (strain as { floweringType?: string }).floweringType
+        plant.strain = strain
+        plant.equipment = {
+            ...plant.equipment,
+            floweringPolicy: 'Autoflower',
+        }
+        const normalized = normalizePlant(plant)
+        expect(normalized.equipment.floweringPolicy).toBe('Autoflower')
+        expect(normalized.strain.floweringType).toBeUndefined()
+        expect(plant.strain.floweringType).toBeUndefined()
+    })
+
+    it('drops a flowering policy that is not a real mode', () => {
+        const plant = sparsePlant()
+        plant.equipment = {
+            ...plant.equipment,
+            floweringPolicy: 'Weekly' as 'Autoflower',
+        }
+        expect(normalizePlant(plant).equipment.floweringPolicy).toBeUndefined()
     })
 
     it('getPlantGeneticModifiers prefers phenotypeModifiers', () => {

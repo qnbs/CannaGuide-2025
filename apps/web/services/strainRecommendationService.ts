@@ -109,38 +109,45 @@ const weightedScore = (parts: Array<[number, number]>): number => {
 // Sub-scorers
 // ---------------------------------------------------------------------------
 
-const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number => {
-    let thcScore = 0.8 // neutral if no preference
-    let cbdScore = 0.8
+const finitePercent = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
-    if (ctx.targetThcRange !== undefined) {
-        const { min, max } = ctx.targetThcRange
-        const thc = strain.thc
-        if (thc >= min && thc <= max) {
-            thcScore = 1.0
-        } else {
-            const dist = thc < min ? min - thc : thc - max
-            // 5 % tolerance window before score drops to 0
-            thcScore = clamp01(1 - dist / 5)
-        }
-    }
-
-    if (ctx.targetCbdMin !== undefined) {
-        const cbd = strain.cbd
-        if (cbd >= ctx.targetCbdMin) {
-            cbdScore = 1.0
-        } else {
-            cbdScore = clamp01(cbd / Math.max(ctx.targetCbdMin, 0.1))
-        }
-    }
-
-    return thcScore * 0.7 + cbdScore * 0.3
+const scoreWindow = (value: number, min: number, max: number): number => {
+    if (value >= min && value <= max) return 1
+    const dist = value < min ? min - value : value - max
+    // 5 % tolerance window before score drops to 0
+    return clamp01(1 - dist / 5)
 }
+
+/** Below a one-step miss (0.6) so a blank fact does not outrank a reported near-match. */
+const UNKNOWN_TARGET_SCORE = 0.5
+
+const scoreThcTarget = (strain: Strain, ctx: RecommendationContext): number => {
+    const range = ctx.targetThcRange
+    if (range === undefined) return 0.8
+    const thc = finitePercent(strain.thc)
+    if (thc === undefined) return UNKNOWN_TARGET_SCORE
+    return scoreWindow(thc, range.min, range.max)
+}
+
+const scoreCbdFloor = (strain: Strain, ctx: RecommendationContext): number => {
+    const minimum = ctx.targetCbdMin
+    if (minimum === undefined) return 0.8
+    const cbd = finitePercent(strain.cbd)
+    if (cbd === undefined) return UNKNOWN_TARGET_SCORE
+    if (cbd >= minimum) return 1
+    return clamp01(cbd / Math.max(minimum, 0.1))
+}
+
+const scoreCannabinoid = (strain: Strain, ctx: RecommendationContext): number =>
+    scoreThcTarget(strain, ctx) * 0.7 + scoreCbdFloor(strain, ctx) * 0.3
 
 const scoreDifficulty = (strain: Strain, ctx: RecommendationContext): number => {
     if (ctx.preferredDifficulty === undefined) return 0.8
+    const difficulty = strain.agronomic?.difficulty
+    if (difficulty === undefined) return UNKNOWN_TARGET_SCORE
     const preferred = DIFFICULTY_SCORES[ctx.preferredDifficulty] ?? 2
-    const actual = DIFFICULTY_SCORES[strain.agronomic.difficulty] ?? 2
+    const actual = DIFFICULTY_SCORES[difficulty] ?? 2
     const diff = Math.abs(preferred - actual)
     // 0 diff = 1.0, 1 diff = 0.6, 2 diff = 0.2
     return clamp01(1 - diff * 0.4)
@@ -198,12 +205,13 @@ const scoreDataQuality = (strain: Strain): number => {
 }
 
 const scoreBonus = (strain: Strain): number => {
+    const difficulty = strain.agronomic?.difficulty
     // Low-effort bonus: Easy + Autoflower is beginner-friendly
-    if (strain.agronomic.difficulty === 'Easy' && strain.floweringType === 'Autoflower') {
+    if (difficulty === 'Easy' && strain.floweringType === 'Autoflower') {
         return 0.9
     }
     // Moderate bonus for easy strains
-    if (strain.agronomic.difficulty === 'Easy') return 0.7
+    if (difficulty === 'Easy') return 0.7
     return 0.5
 }
 

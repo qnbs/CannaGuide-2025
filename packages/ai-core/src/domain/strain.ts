@@ -69,17 +69,7 @@ export type DetailedTerpeneProfile = Partial<Record<TerpeneName, TerpeneProfileE
 
 /** Scientifically recognised cannabis cannabinoids */
 export type CannabinoidName =
-    | 'THC'
-    | 'CBD'
-    | 'CBG'
-    | 'CBN'
-    | 'THCV'
-    | 'CBC'
-    | 'CBDV'
-    | 'THCA'
-    | 'CBDA'
-    | 'CBGA'
-    | 'Delta8THC'
+    'THC' | 'CBD' | 'CBG' | 'CBN' | 'THCV' | 'CBC' | 'CBDV' | 'THCA' | 'CBDA' | 'CBGA' | 'Delta8THC'
 
 /** Cannabinoid percentage profile */
 export type CannabinoidProfile = Partial<Record<CannabinoidName, number>>
@@ -168,8 +158,8 @@ export interface ChemovarProfile {
     totalTerpenePercent: number
     /** Total cannabinoid content percentage */
     totalCannabinoidPercent: number
-    /** THC:CBD ratio (Infinity if CBD is 0) */
-    thcCbdRatio: number
+    /** THC:CBD ratio when both majors were reported. Infinity if CBD is 0. */
+    thcCbdRatio?: number
     /** Detailed terpene profile with lab statistics */
     detailedTerpeneProfile: DetailedTerpeneProfile
     /** Detailed cannabinoid profile with lab statistics */
@@ -197,10 +187,16 @@ export type StrainApiProvider =
     | 'kushy'
     | 'community'
 
+/**
+ * Provenance source. `local` is the bundled catalog, not a callable API,
+ * so it stays off the provider registry.
+ */
+export type StrainProvenanceProvider = StrainApiProvider | 'local'
+
 /** Data provenance -- tracks where strain data originated */
 export interface DataProvenance {
     /** Which API/source provided this data */
-    provider: StrainApiProvider
+    provider: StrainProvenanceProvider
     /** When this data was fetched/imported (ISO timestamp) */
     fetchedAt: string
     /** Provider-specific external ID */
@@ -369,15 +365,15 @@ export interface Strain {
     floweringTimeRange?: string | undefined
     description?: string | undefined
     agronomic: {
-        difficulty: DifficultyLevel
-        yield: YieldLevel
-        height: HeightLevel
+        difficulty?: DifficultyLevel
+        yield?: YieldLevel
+        height?: HeightLevel
         yieldDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
         heightDetails?: { indoor?: string | undefined; outdoor?: string | undefined } | undefined
     }
     aromas?: string[] | undefined
     dominantTerpenes?: string[] | undefined
-    /** Quantitative terpene profile (% dry-weight). Derived from dominantTerpenes if not set. */
+    /** Quantitative terpene profile (% dry-weight), only when a source supplied it. */
     terpeneProfile?: TerpeneProfile | undefined
     /** Full cannabinoid profile beyond THC/CBD */
     cannabinoidProfile?: CannabinoidProfile | undefined
@@ -393,6 +389,8 @@ export interface Strain {
     medicalInfo?: MedicalInfo | undefined
     /** Data provenance records from external sources */
     dataProvenance?: DataProvenance[] | undefined
+    /** Reported seed form, when a source supplied one. */
+    seedForm?: string
     /** Data quality assessment */
     dataQuality?: DataQualityScore | undefined
     geneticModifiers: GeneticModifiers

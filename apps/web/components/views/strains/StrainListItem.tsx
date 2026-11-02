@@ -5,6 +5,13 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { Button } from '@/components/common/Button'
 import { initiateGrowFromStrainList } from '@/stores/useUIStore'
+import {
+    favoriteActionLabel,
+    formatFloweringWeeks,
+    reportedName,
+    reportedNumber,
+    reportedStrainType,
+} from './reportedStrainFacts'
 
 interface StrainListItemProps {
     strain: Strain
@@ -30,13 +37,76 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-primary-400',
 }
 
-const getSafeStrainType = (type: string | undefined): StrainType => {
-    if (type === StrainType.Sativa || type === StrainType.Indica || type === StrainType.Hybrid) {
-        return type
-    }
+const cardClassName = (isSelected: boolean): string =>
+    `relative bg-slate-800/60 rounded-lg transition-all duration-200 ring-1 ring-inset ring-white/20 ${isSelected ? 'bg-primary-900/30 ring-2 !ring-primary-500' : 'hover:bg-slate-700/50'}`
 
-    return StrainType.Hybrid
-}
+const favoriteClassName = (isFavorite: boolean): string =>
+    `transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`
+
+const UserStrainMark: React.FC<{ visible: boolean }> = ({ visible }) =>
+    visible ? (
+        <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />
+    ) : null
+
+const percentText = (value: string, unknown: string): string =>
+    value === unknown ? unknown : `${value}%`
+
+const PercentCell: React.FC<{ value: string; unknown: string; title: string }> = ({
+    value,
+    unknown,
+    title,
+}) => (
+    <div
+        className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
+        title={title}
+    >
+        <span>{percentText(value, unknown)}</span>
+    </div>
+)
+
+const TypeGlyph: React.FC<{ type: StrainType | undefined }> = ({ type }) => (
+    <div className={`w-8 h-8 flex-shrink-0 ${type ? typeClasses[type] : 'text-slate-400'}`}>
+        {type ? typeIcons[type] : <PhosphorIcons.Question className="w-full h-full" />}
+    </div>
+)
+
+const NameCell: React.FC<{
+    visible: boolean
+    name: string
+    mobileLine: string
+}> = ({ visible, name, mobileLine }) => (
+    <div className="flex-grow min-w-0">
+        <div className="flex items-center gap-2">
+            <UserStrainMark visible={visible} />
+            <p className="font-bold text-slate-100 truncate">{name}</p>
+        </div>
+        <p className="text-xs text-slate-400 mt-1 sm:hidden">{mobileLine}</p>
+    </div>
+)
+
+const ListActions: React.FC<{
+    growLabel: string
+    favoriteLabel: string
+    isFavorite: boolean
+    onGrow: (event: React.MouseEvent<HTMLButtonElement>) => void
+    onFavorite: (event: React.MouseEvent<HTMLButtonElement>) => void
+}> = ({ growLabel, favoriteLabel, isFavorite, onGrow, onFavorite }) => (
+    <div className="flex items-center gap-1.5 ml-auto pointer-events-auto">
+        <Button variant="ghost" size="icon" onClick={onGrow} aria-label={growLabel}>
+            <PhosphorIcons.Plant className="w-5 h-5 text-primary-300" />
+        </Button>
+        <Button
+            variant="ghost"
+            size="icon"
+            className={favoriteClassName(isFavorite)}
+            onClick={onFavorite}
+            title={favoriteLabel}
+            aria-label={favoriteLabel}
+        >
+            <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
+        </Button>
+    </div>
+)
 
 export const StrainListItem: React.FC<StrainListItemProps> = memo(
     ({
@@ -50,35 +120,28 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
         onToggleFavorite,
     }) => {
         const { t } = useTranslation()
-
-        const safeType = getSafeStrainType(strain.type)
-        const TypeIcon = typeIcons[safeType]
-        const safeName =
-            typeof strain.name === 'string' && strain.name.trim() !== ''
-                ? strain.name
-                : t('plantsView.unknownStrain')
-        const safeThc =
-            typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
-        const safeCbd =
-            typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
-        const safeFloweringTime =
-            typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
-                ? strain.floweringTime
-                : 0
-
-        const handleActionClick = (e: React.MouseEvent, action: () => void) => {
-            e.stopPropagation()
-            action()
-        }
-
+        const safeType = reportedStrainType(strain.type)
+        const unknown = t('common.unknown')
+        const safeName = reportedName(strain.name, t('plantsView.unknownStrain'))
+        const safeThc = reportedNumber(strain.thc, 1, unknown)
+        const safeCbd = reportedNumber(strain.cbd, 1, unknown)
+        const safeFloweringTime = formatFloweringWeeks(
+            strain.floweringTimeRange,
+            strain.floweringTime,
+            t('common.units.weeks'),
+            unknown,
+        )
         const handleSelect = useCallback(() => {
             onSelect(strain)
         }, [onSelect, strain])
-        const cardClassName = `relative bg-slate-800/60 rounded-lg transition-all duration-200 ring-1 ring-inset ring-white/20 ${isSelected ? 'bg-primary-900/30 ring-2 !ring-primary-500' : 'hover:bg-slate-700/50'}`
-        const favoriteButtonClassName = `transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`
+        const favoriteLabel = favoriteActionLabel(
+            isFavorite,
+            t('strainsView.accessibility.removeFromFavorites', { name: safeName }),
+            t('strainsView.accessibility.addToFavorites', { name: safeName }),
+        )
 
         return (
-            <div style={style} className={cardClassName}>
+            <div style={style} className={cardClassName(isSelected)}>
                 <button
                     type="button"
                     onClick={handleSelect}
@@ -87,107 +150,46 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     aria-pressed={isSelected}
                 />
                 <div className="relative z-20 p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4 rounded-lg pointer-events-none">
-                    {/* Checkbox */}
                     <div className="pointer-events-auto">
                         <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => onToggleSelection(strain.id)}
-                            onClick={(e) => e.stopPropagation()}
-                            onKeyDown={(e) => e.stopPropagation()}
+                            onClick={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
                             className="custom-checkbox flex-shrink-0"
                             aria-label={t('strainsView.accessibility.selectStrain', {
                                 name: safeName,
                             })}
                         />
                     </div>
-
-                    {/* Type Icon */}
-                    <div className={`w-8 h-8 flex-shrink-0 ${typeClasses[safeType]}`}>
-                        {TypeIcon}
-                    </div>
-
-                    {/* Name & Main Stats */}
-                    <div className="flex-grow min-w-0">
-                        <div className="flex items-center gap-2">
-                            {isUserStrain && (
-                                <PhosphorIcons.Star
-                                    weight="fill"
-                                    className="w-4 h-4 text-amber-400 flex-shrink-0"
-                                />
-                            )}
-                            <p className="font-bold text-slate-100 truncate">{safeName}</p>
-                        </div>
-                        <p className="text-xs text-slate-400 mt-1 sm:hidden">
-                            {safeThc.toFixed(1)}% THC | {safeFloweringTime}{' '}
-                            {t('common.units.weeks')}
-                        </p>
-                    </div>
-
-                    {/* Desktop stats */}
-                    <div
-                        className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
-                        title="THC"
-                    >
-                        <span>{safeThc.toFixed(1)}%</span>
-                    </div>
-                    <div
-                        className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
-                        title="CBD"
-                    >
-                        <span>{safeCbd.toFixed(1)}%</span>
-                    </div>
+                    <TypeGlyph type={safeType} />
+                    <NameCell
+                        visible={isUserStrain}
+                        name={safeName}
+                        mobileLine={`${percentText(safeThc, unknown)} THC | ${safeFloweringTime}`}
+                    />
+                    <PercentCell value={safeThc} unknown={unknown} title="THC" />
+                    <PercentCell value={safeCbd} unknown={unknown} title="CBD" />
                     <div
                         className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
                         title={t('strainsView.table.flowering')}
                     >
-                        <span>{strain.floweringTimeRange || safeFloweringTime}</span>
+                        <span>{safeFloweringTime}</span>
                     </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-1.5 ml-auto pointer-events-auto">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                                handleActionClick(e, () => initiateGrowFromStrainList(strain))
-                            }
-                            aria-label={t('strainsView.startGrowing')}
-                        >
-                            <PhosphorIcons.Plant className="w-5 h-5 text-primary-300" />
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className={favoriteButtonClassName}
-                            onClick={(e: React.MouseEvent<HTMLButtonElement>) =>
-                                handleActionClick(e, () => onToggleFavorite(strain.id))
-                            }
-                            title={
-                                isFavorite
-                                    ? t('strainsView.accessibility.removeFromFavorites', {
-                                          name: safeName,
-                                      })
-                                    : t('strainsView.accessibility.addToFavorites', {
-                                          name: safeName,
-                                      })
-                            }
-                            aria-label={
-                                isFavorite
-                                    ? t('strainsView.accessibility.removeFromFavorites', {
-                                          name: safeName,
-                                      })
-                                    : t('strainsView.accessibility.addToFavorites', {
-                                          name: safeName,
-                                      })
-                            }
-                        >
-                            <PhosphorIcons.Heart
-                                weight={isFavorite ? 'fill' : 'regular'}
-                                className="w-5 h-5"
-                            />
-                        </Button>
-                    </div>
+                    <ListActions
+                        growLabel={t('strainsView.startGrowing')}
+                        favoriteLabel={favoriteLabel}
+                        isFavorite={isFavorite}
+                        onGrow={(event) => {
+                            event.stopPropagation()
+                            initiateGrowFromStrainList(strain)
+                        }}
+                        onFavorite={(event) => {
+                            event.stopPropagation()
+                            onToggleFavorite(strain.id)
+                        }}
+                    />
                 </div>
             </div>
         )

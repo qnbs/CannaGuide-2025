@@ -1,27 +1,23 @@
-import {
-    Plant,
-    PlantStage,
-    HarvestData,
-    JournalEntry,
-    JournalEntryType,
-} from '@/types'
+import { Plant, PlantStage, HarvestData, JournalEntry, JournalEntryType } from '@/types'
 import { PLANT_STAGE_DETAILS } from '@/services/simulation/plantStageDetails'
 import {
     getSimulationProfileCurve,
     type SimulationSettings,
 } from '@/services/simulation/simulationProfiles'
-import { simClamp } from '@/services/simulation/simulationMath'
+import { simClamp, simIsFiniteNumber } from '@/services/simulation/simulationMath'
 
-export function createInitialHarvestData(plant: Plant): HarvestData {
+export const createInitialHarvestData = (plant: Plant): HarvestData => {
     const wetWeight = Math.max(12, Number((plant.biomass.flowers * 5.5).toFixed(1)))
     const targetDryRatio = simClamp(0.2 + (plant.health / 100) * 0.05, 0.18, 0.28)
     const dryWeight = Number((wetWeight * targetDryRatio).toFixed(1))
+    const thcWasReported = simIsFiniteNumber(plant.strain.thc)
+    const reportedThc = thcWasReported ? plant.strain.thc : 0
     const thc = simClamp(
-        plant.strain.thc * 0.78 + plant.health * 0.04 - plant.stressLevel * 0.02,
-        4,
-        plant.strain.thc * 1.05,
+        reportedThc * 0.78 + plant.health * 0.04 - plant.stressLevel * 0.02,
+        reportedThc > 0 ? 4 : 0,
+        reportedThc > 0 ? reportedThc * 1.05 : 0,
     )
-    const cbn = simClamp(thc * 0.015, 0.05, 0.8)
+    const cbn = reportedThc > 0 ? simClamp(thc * 0.015, 0.05, 0.8) : 0
     return {
         wetWeight,
         dryWeight,
@@ -41,13 +37,12 @@ export function createInitialHarvestData(plant: Plant): HarvestData {
     }
 }
 
-export function computePostHarvestQuality(
+export const computePostHarvestQuality = (
     harvestData: HarvestData,
     simulationSettings?: SimulationSettings | undefined,
-): number {
+): number => {
     const profilePrecision = getSimulationProfileCurve(simulationSettings).postHarvestPrecision
-    const humiditySweetSpot =
-        Math.max(0, 12 - Math.abs(harvestData.jarHumidity - 61) * 3.5) * 2.1
+    const humiditySweetSpot = Math.max(0, 12 - Math.abs(harvestData.jarHumidity - 61) * 3.5) * 2.1
     const chlorophyllScore = Math.max(0, 100 - harvestData.chlorophyllPercent)
     const terpeneScore = harvestData.terpeneRetentionPercent
     const moldPenalty = harvestData.moldRiskPercent * 1.2

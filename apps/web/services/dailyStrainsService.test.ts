@@ -5,6 +5,7 @@ import {
     generateDailyPicks,
     buildUserProfile,
     rankStrainsByRelevance,
+    parseAIStrainResponse,
     resolveDiscoveredToStrain,
 } from '@/services/dailyStrainsService'
 import type { DiscoveredStrain } from '@/services/dailyStrainsService'
@@ -96,8 +97,8 @@ describe('dailyStrainsService', () => {
         it('returns neutral profile for empty array', () => {
             const profile = buildUserProfile([])
             expect(profile.strainCount).toBe(0)
-            expect(profile.avgThc).toBe(15)
-            expect(profile.avgCbd).toBe(0.5)
+            expect(profile.avgThc).toBeUndefined()
+            expect(profile.avgCbd).toBeUndefined()
         })
 
         it('computes averages correctly', () => {
@@ -110,6 +111,13 @@ describe('dailyStrainsService', () => {
             expect(profile.avgCbd).toBe(1)
             expect(profile.preferredTypes['Indica']).toBe(1)
             expect(profile.preferredTypes['Sativa']).toBe(1)
+        })
+
+        it('leaves an unreported THC out of the average', () => {
+            const profile = buildUserProfile([{ thc: 20 }, {}])
+            expect(profile.strainCount).toBe(2)
+            expect(profile.avgThc).toBe(20)
+            expect(profile.avgCbd).toBeUndefined()
         })
     })
 
@@ -144,6 +152,16 @@ describe('dailyStrainsService', () => {
             expect(ranked[0]!.relevanceScore).toBeGreaterThan(ranked[1]!.relevanceScore)
         })
 
+        it('does not invent a THC preference when the library omitted it', () => {
+            const profile = buildUserProfile([{ type: 'Indica' }])
+            const ranked = rankStrainsByRelevance(
+                [makeStrain({ id: 'far', type: 'Sativa', thc: 15, cbd: 0.5 })],
+                profile,
+            )
+            expect(profile.avgThc).toBeUndefined()
+            expect(ranked[0]!.relevanceScore).toBe(50)
+        })
+
         it('gives neutral score when no user data', () => {
             const profile = buildUserProfile([])
             const strains = [makeStrain({ id: 'a' })]
@@ -159,9 +177,7 @@ describe('dailyStrainsService', () => {
             const strain = resolveDiscoveredToStrain(pick)
             expect(strain.id).toBe(pick.id)
             expect(strain.name).toBe(pick.name)
-            // Catalog strains have agronomic and geneticModifiers
-            expect(strain.agronomic).toBeDefined()
-            expect(strain.geneticModifiers).toBeDefined()
+            expect(strain.geneticModifiers).toBeUndefined()
             expect(strain.floweringTime).toBeGreaterThan(0)
         })
 
@@ -187,9 +203,36 @@ describe('dailyStrainsService', () => {
             expect(strain.floweringType).toBe('Autoflower')
             expect(strain.thc).toBe(22)
             expect(strain.cbd).toBe(1.5)
-            expect(strain.agronomic).toBeDefined()
-            expect(strain.geneticModifiers).toBeDefined()
+            expect(strain.agronomic).toBeUndefined()
+            expect(strain.geneticModifiers).toBeUndefined()
             expect(strain.lineage?.breeder).toBe('Test Breeder')
+        })
+
+        it('leaves unreported AI fields unknown, including an explicit zero', () => {
+            const [parsed] = parseAIStrainResponse(
+                '[{"name":"Bare AI","thc":0,"description":"noted"}]',
+            )
+            expect(parsed?.type).toBeUndefined()
+            expect(parsed?.floweringType).toBeUndefined()
+            expect(parsed?.thc).toBe(0)
+            expect(parsed?.cbd).toBeUndefined()
+            expect(parsed?.breeder).toBeUndefined()
+            const [negative] = parseAIStrainResponse('[{"name":"Negative","thc":-1,"cbd":"nope"}]')
+            expect(negative?.thc).toBeUndefined()
+            expect(negative?.cbd).toBeUndefined()
+            if (!parsed) throw new Error('parser returned nothing')
+            const strain = resolveDiscoveredToStrain(parsed)
+            expect(strain.type).toBeUndefined()
+            expect(strain.floweringType).toBeUndefined()
+            expect(strain.thc).toBe(0)
+            expect(strain.cbd).toBeUndefined()
+            expect(strain.lineage).toBeUndefined()
+            const [placeholder] = parseAIStrainResponse(
+                '[{"name":"Placeholder","breeder":"Unknown"}]',
+            )
+            expect(placeholder?.breeder).toBeUndefined()
+            if (!placeholder) throw new Error('parser returned nothing')
+            expect(resolveDiscoveredToStrain(placeholder).lineage).toBeUndefined()
         })
 
         it('handles missing breeder gracefully', () => {

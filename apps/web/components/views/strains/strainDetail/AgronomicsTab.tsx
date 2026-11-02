@@ -5,46 +5,74 @@ import { InfoSection } from '@/components/common/InfoSection'
 import { AttributeDisplay } from '@/components/common/AttributeDisplay'
 import { DifficultyMeter } from './strainDetailShared'
 
+const textOrEmpty = (value: string | undefined): string => value ?? ''
+
+const yieldIndoorOf = (strain: Strain): string =>
+    textOrEmpty(strain.agronomic?.yieldDetails?.indoor)
+
+const yieldOutdoorOf = (strain: Strain): string =>
+    textOrEmpty(strain.agronomic?.yieldDetails?.outdoor)
+
+const heightIndoorOf = (strain: Strain): string =>
+    textOrEmpty(strain.agronomic?.heightDetails?.indoor)
+
+const heightOutdoorOf = (strain: Strain): string =>
+    textOrEmpty(strain.agronomic?.heightDetails?.outdoor)
+
+const floweringWeeks = (strain: Strain): string => {
+    if (strain.floweringTimeRange) return strain.floweringTimeRange
+    if (typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)) {
+        return String(strain.floweringTime)
+    }
+    return ''
+}
+
+const shown = (value: string, unknown: string): string => value || unknown
+
 export const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation()
+    const unknown = t('common.unknown')
+    const weeks = t('common.units.weeks')
     const yieldIndoor = t(`strainsData.${strain.id}.yieldDetails.indoor`, {
-        defaultValue: strain.agronomic?.yieldDetails?.indoor ?? '',
+        defaultValue: yieldIndoorOf(strain),
     })
     const yieldOutdoor = t(`strainsData.${strain.id}.yieldDetails.outdoor`, {
-        defaultValue: strain.agronomic?.yieldDetails?.outdoor ?? '',
+        defaultValue: yieldOutdoorOf(strain),
     })
     const heightIndoor = t(`strainsData.${strain.id}.heightDetails.indoor`, {
-        defaultValue: strain.agronomic?.heightDetails?.indoor ?? '',
+        defaultValue: heightIndoorOf(strain),
     })
     const heightOutdoor = t(`strainsData.${strain.id}.heightDetails.outdoor`, {
-        defaultValue: strain.agronomic?.heightDetails?.outdoor ?? '',
+        defaultValue: heightOutdoorOf(strain),
     })
+    const difficulty = strain.agronomic?.difficulty
+    const flowering = floweringWeeks(strain)
     return (
         <InfoSection title={t('strainsView.strainModal.agronomicData')}>
             <div className="space-y-2">
                 <AttributeDisplay
                     label={t('strainsView.strainModal.difficulty')}
-                    value={<DifficultyMeter difficulty={strain.agronomic?.difficulty ?? 'Medium'} />}
+                    value={difficulty ? <DifficultyMeter difficulty={difficulty} /> : unknown}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.yieldIndoor')}
-                    value={yieldIndoor}
+                    value={shown(yieldIndoor, unknown)}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.yieldOutdoor')}
-                    value={yieldOutdoor}
+                    value={shown(yieldOutdoor, unknown)}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.heightIndoor')}
-                    value={heightIndoor}
+                    value={shown(heightIndoor, unknown)}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.heightOutdoor')}
-                    value={heightOutdoor}
+                    value={shown(heightOutdoor, unknown)}
                 />
                 <AttributeDisplay
                     label={t('strainsView.strainModal.floweringTime')}
-                    value={`${strain.floweringTimeRange || strain.floweringTime} ${t('common.units.weeks')}`}
+                    value={flowering ? `${flowering} ${weeks}` : unknown}
                 />
             </div>
         </InfoSection>

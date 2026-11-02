@@ -51,6 +51,28 @@ describe('postHarvestSimulation', () => {
         expect(data.cannabinoidProfile.thc).toBeGreaterThan(0)
     })
 
+    it('stores 0 for an unreported cultivar THC and does not apply the CBN floor', () => {
+        const strain = { ...testStrain }
+        Reflect.deleteProperty(strain, 'thc')
+        const plant = plantSimulationService.createPlant(strain, testSetup, 'Unknown THC')
+        const data = createInitialHarvestData(plant)
+        expect(testStrain.thc).toBe(18)
+        expect(Number.isFinite(data.cannabinoidProfile.thc)).toBe(true)
+        expect(data.cannabinoidProfile.thc).toBe(0)
+        expect(data.cannabinoidProfile.cbn).toBe(0)
+    })
+
+    it('does not apply the CBN floor when cultivar THC is reported as zero', () => {
+        const plant = plantSimulationService.createPlant(
+            { ...testStrain, thc: 0 },
+            testSetup,
+            'Zero THC',
+        )
+        const data = createInitialHarvestData(plant)
+        expect(data.cannabinoidProfile.thc).toBe(0)
+        expect(data.cannabinoidProfile.cbn).toBe(0)
+    })
+
     it('isPostHarvestActionAllowed respects stage gates', () => {
         expect(isPostHarvestActionAllowed(PlantStage.Harvest, 'dry')).toBe(true)
         expect(isPostHarvestActionAllowed(PlantStage.Vegetative, 'dry')).toBe(false)

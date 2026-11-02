@@ -7,6 +7,8 @@ import {
     buildFilename,
     createPdfDoc,
     formatDate,
+    harvestPercentText,
+    reportedPercentText,
     truncate,
 } from './pdfTypes'
 
@@ -64,8 +66,8 @@ export async function generateGrowReport(
         ['Age (days)', String(plant.age)],
         ['Health', `${Math.round(plant.health)}%`],
         ['Type', plant.strain.type],
-        ['THC', `${plant.strain.thc}%`],
-        ['CBD', `${plant.strain.cbd}%`],
+        ['THC', reportedPercentText(plant.strain.thc)],
+        ['CBD', reportedPercentText(plant.strain.cbd)],
     ]
 
     doc.autoTable({
@@ -138,7 +140,7 @@ export async function generateGrowReport(
             ['Wet Weight', `${hd.wetWeight} g`],
             ['Dry Weight', `${hd.dryWeight} g`],
             ['Final Quality', `${Math.round(hd.finalQuality)}%`],
-            ['THC at Harvest', `${hd.cannabinoidProfile.thc.toFixed(1)}%`],
+            ['THC at Harvest', harvestPercentText(plant.strain.thc, hd.cannabinoidProfile.thc)],
         ]
 
         doc.autoTable({

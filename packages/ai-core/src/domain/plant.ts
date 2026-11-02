@@ -13,6 +13,7 @@ import type {
     PotType,
     TrainingType,
     AmendmentType,
+    FloweringType,
 } from './enums'
 import type { Strain, GeneticModifiers } from './strain'
 
@@ -42,6 +43,8 @@ export interface GrowSetup {
     potSize: number
     potType: PotType
     medium: 'Soil' | 'Coco' | 'Hydro' | 'Aeroponics'
+    /** Grower choice used only when the cultivar reported no flowering mode. */
+    floweringPolicy?: FloweringType
 }
 
 export interface PlantEnvironment {
@@ -77,6 +80,7 @@ export interface PlantEquipment {
     circulationFan: { isOn: boolean }
     potSize: number
     potType: PotType
+    floweringPolicy?: FloweringType
 }
 
 export interface PlantStructuralModel {

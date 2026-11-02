@@ -3,6 +3,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { StrainType, type Strain } from '@/types'
 import {
     StrainComparisonView,
+    reportedTerpenes,
     normalizeTHC,
     normalizeCBD,
     normalizeFloweringTime,
@@ -194,6 +195,20 @@ describe('StrainComparisonView', () => {
 // Normalization utility tests
 // ---------------------------------------------------------------------------
 
+describe('reportedTerpenes', () => {
+    it('renders a dash when terpenes are missing, including null', () => {
+        expect(reportedTerpenes()).toBe('--')
+        expect(reportedTerpenes(null)).toBe('--')
+        expect(reportedTerpenes([])).toBe('--')
+    })
+
+    it('keeps the first three reported terpenes', () => {
+        expect(reportedTerpenes(['Myrcene', 'Limonene', 'Caryophyllene', 'Pinene'])).toBe(
+            'Myrcene, Limonene, Caryophyllene',
+        )
+    })
+})
+
 describe('normalizeTHC', () => {
     it('normalizes 35% THC to 100', () => {
         expect(normalizeTHC(35)).toBe(100)
@@ -210,6 +225,10 @@ describe('normalizeTHC', () => {
     it('caps values above 35% at 100', () => {
         expect(normalizeTHC(50)).toBe(100)
     })
+
+    it('leaves an unreported THC off the chart', () => {
+        expect(normalizeTHC()).toBeNull()
+    })
 })
 
 describe('normalizeCBD', () => {
@@ -223,12 +242,16 @@ describe('normalizeCBD', () => {
 })
 
 describe('normalizeFloweringTime', () => {
-    it('normalizes 56 days (fastest) to 100', () => {
-        expect(normalizeFloweringTime(56)).toBe(100)
+    it('normalizes 8 weeks (fastest) to 100', () => {
+        expect(normalizeFloweringTime(8)).toBe(100)
     })
 
-    it('normalizes 112 days (slowest) to 0', () => {
-        expect(normalizeFloweringTime(112)).toBe(0)
+    it('normalizes 16 weeks (slowest) to 0', () => {
+        expect(normalizeFloweringTime(16)).toBe(0)
+    })
+
+    it('keeps a typical 9-week flowering off the top of the axis', () => {
+        expect(normalizeFloweringTime(9)).toBe(88)
     })
 })
 
@@ -243,5 +266,9 @@ describe('yieldLevelToScore', () => {
 
     it('High yields 90', () => {
         expect(yieldLevelToScore('High')).toBe(90)
+    })
+
+    it('leaves an unreported yield off the chart', () => {
+        expect(yieldLevelToScore()).toBeNull()
     })
 })

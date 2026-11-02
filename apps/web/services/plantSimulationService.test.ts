@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import {
-    plantSimulationService,
-    PLANT_STAGE_DETAILS,
-} from '@/services/plantSimulationService'
+import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService'
+import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 import { PlantStage, StrainType, type Strain, type GrowSetup } from '@/types'
 
 const testStrain: Strain = {
@@ -75,12 +73,41 @@ describe('plantSimulationService', () => {
         expect(plant.id).toBeTruthy()
     })
 
+    it('uses a simulation profile when the catalog strain has no genetic modifiers', () => {
+        const { geneticModifiers: _ignored, ...withoutModifiers } = testStrain
+        const plant = plantSimulationService.createPlant(
+            withoutModifiers as Strain,
+            testSetup,
+            'Simulated Plant',
+        )
+        const simulated = simulateStrainProfile(withoutModifiers)
+        expect(plant.phenotypeModifiers?.pestResistance).toBe(
+            simulated.geneticModifiers.pestResistance,
+        )
+        expect(withoutModifiers).not.toHaveProperty('geneticModifiers')
+    })
+
     it('creates plant with correct equipment setup', () => {
         const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Equip Plant')
         expect(plant.equipment.light.wattage).toBe(300)
         expect(plant.equipment.light.lightHours).toBe(18)
         expect(plant.equipment.light.type).toBe('LED')
         expect(plant.equipment.circulationFan.isOn).toBe(true)
+        expect(plant.equipment.floweringPolicy).toBeUndefined()
+    })
+
+    it('copies a flowering policy onto the grow and leaves the cultivar unchanged', () => {
+        const strain = { ...testStrain }
+        delete (strain as { floweringType?: string }).floweringType
+        const plant = plantSimulationService.createPlant(
+            strain,
+            { ...testSetup, floweringPolicy: 'Autoflower' },
+            'Policy Plant',
+        )
+        expect(plant.equipment.floweringPolicy).toBe('Autoflower')
+        expect(strain.floweringType).toBeUndefined()
+        expect(plant.strain).not.toBe(strain)
+        expect(plant.strain.floweringType).toBeUndefined()
     })
 
     it('creates plant with correct medium', () => {

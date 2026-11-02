@@ -63,6 +63,15 @@ describe('userStrainsSlice', () => {
         expect(strain?.name).toBe('Updated Name')
     })
 
+    it('updateUserStrain replaces the record, so an omitted measurement is cleared', () => {
+        let state = userStrainsReducer(undefined, addUserStrain(makeStrain('s1', 'Original')))
+        const cleared = makeStrain('s1', 'Original')
+        Reflect.deleteProperty(cleared, 'thc')
+        state = userStrainsReducer(state, updateUserStrain(cleared))
+        expect(selectors.selectById(state, 's1')?.thc).toBeUndefined()
+        expect(selectors.selectById(state, 's1')?.cbd).toBe(1)
+    })
+
     it('updateUserStrain on non-existent id is a no-op', () => {
         let state = userStrainsReducer(undefined, addUserStrain(makeStrain('s1')))
         state = userStrainsReducer(state, updateUserStrain(makeStrain('nonexistent', 'Ghost')))

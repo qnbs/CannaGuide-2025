@@ -78,8 +78,18 @@ export const buildStylePalette = (style: Exclude<ImageStyle, 'random'>): StylePa
 }
 
 export const DIFFICULTY_VAL: Record<string, number> = { Easy: 30, Medium: 60, Hard: 95 }
-export const YIELD_VAL: Record<string, number> = { Low: 25, Medium: 55, High: 90 }
-export const HEIGHT_VAL: Record<string, number> = { Short: 25, Medium: 55, Tall: 90 }
+export const YIELD_VAL: Record<string, number> = {
+    Low: 25,
+    Medium: 55,
+    High: 90,
+    'Very High': 90,
+}
+export const HEIGHT_VAL: Record<string, number> = {
+    Short: 25,
+    Medium: 55,
+    Tall: 90,
+    'Very Tall': 90,
+}
 
 export const TERPENE_COLORS: Record<string, string> = {
     myrcene: '#86efac',

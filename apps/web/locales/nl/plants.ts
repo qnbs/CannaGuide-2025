@@ -541,6 +541,15 @@ export const plantsView = {
         photoperiodInfo:
             'Fotoperiodieke planten hebben een 12/12 lichtschema nodig om de bloei te starten.',
         autoflowerInfo: 'Voor autoflowers wordt een 18/6 of 24/0 cyclus aanbevolen.',
+        floweringModeTitle: 'Bloeimodus',
+        floweringModePrompt:
+            'Deze cultivar heeft geen opgegeven bloeimodus. Kies er een voor deze kweek. Het cultivarbestand blijft ongewijzigd.',
+        unknownFloweringInfo:
+            'Kies Fotoperiodiek of Autoflower voordat je start. Een 24/0-cyclus is pas beschikbaar nadat je Autoflower kiest.',
+        floweringModes: {
+            photoperiod: 'Fotoperiodiek',
+            autoflower: 'Autoflower',
+        },
         environmentTitle: 'Omgeving',
         exhaustFanPower: 'Afzuigvermogen',
         circulationFan: 'Circulatieventilator',

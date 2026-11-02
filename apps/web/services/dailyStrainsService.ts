@@ -10,7 +10,7 @@
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { allStrainsData } from '@/data/strains/index'
 import { createStrainObject } from '@/services/strainFactory'
-import type { Strain, StrainType } from '@/types'
+import { StrainType, type Strain } from '@/types'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -19,20 +19,20 @@ import type { Strain, StrainType } from '@/types'
 export interface DiscoveredStrain {
     id: string
     name: string
-    breeder: string
-    type: string
-    floweringType: string
-    thc: number
-    cbd: number
+    breeder?: string
+    type?: string
+    floweringType?: string
+    thc?: number
+    cbd?: number
     description: string
     genetics: string
     source: 'daily-pick' | 'ai-lookup' | 'local-catalog'
     sourceUrl: string
     discoveredAt: string
     /** Why this strain was picked today */
-    pickReason?: string | undefined
+    pickReason?: string
     /** Category tag for diversity rotation */
-    pickCategory?: string | undefined
+    pickCategory?: string
 }
 
 export interface DailyStrainsFeed {
@@ -56,8 +56,8 @@ export interface ScoredStrain extends DiscoveredStrain {
 export interface UserStrainProfile {
     strainCount: number
     preferredTypes: Record<string, number>
-    avgThc: number
-    avgCbd: number
+    avgThc?: number
+    avgCbd?: number
 }
 
 // ---------------------------------------------------------------------------
@@ -115,24 +115,24 @@ export function getTodayKey(): string {
 // Category filters
 // ---------------------------------------------------------------------------
 
-function matchesCategory(strain: Strain, category: PickCategory): boolean {
-    switch (category) {
-        case 'high-thc':
-            return strain.thc >= 20
-        case 'balanced-cbd':
-            return strain.cbd >= 1
-        case 'autoflower':
-            return strain.floweringType === 'Autoflower'
-        case 'classic-indica':
-            return strain.type === 'Indica' && strain.floweringType === 'Photoperiod'
-        case 'classic-sativa':
-            return strain.type === 'Sativa' && strain.floweringType === 'Photoperiod'
-        case 'beginner-friendly':
-            return strain.agronomic.difficulty === 'Easy'
-        case 'terpene-rich':
-            return (strain.dominantTerpenes?.length ?? 0) >= 2
-    }
+const finiteAtLeast = (value: unknown, minimum: number): boolean =>
+    typeof value === 'number' && value >= minimum
+
+const photoperiodType = (strain: Strain, type: string): boolean =>
+    strain.type === type && strain.floweringType === 'Photoperiod'
+
+const CATEGORY_MATCHERS: Record<PickCategory, (strain: Strain) => boolean> = {
+    'high-thc': (strain) => finiteAtLeast(strain.thc, 20),
+    'balanced-cbd': (strain) => finiteAtLeast(strain.cbd, 1),
+    autoflower: (strain) => strain.floweringType === 'Autoflower',
+    'classic-indica': (strain) => photoperiodType(strain, 'Indica'),
+    'classic-sativa': (strain) => photoperiodType(strain, 'Sativa'),
+    'beginner-friendly': (strain) => strain.agronomic?.difficulty === 'Easy',
+    'terpene-rich': (strain) => (strain.dominantTerpenes?.length ?? 0) >= 2,
 }
+
+const matchesCategory = (strain: Strain, category: PickCategory): boolean =>
+    CATEGORY_MATCHERS[category](strain)
 
 function getPickReason(category: PickCategory): string {
     switch (category) {
@@ -294,6 +294,93 @@ function dismissStrainId(id: string): void {
 // AI-powered strain search
 // ---------------------------------------------------------------------------
 
+const finiteOrUndefined = (value: number): number | undefined =>
+    Number.isFinite(value) && value >= 0 ? value : undefined
+
+const parseReportedPercent = (value: unknown): number | undefined => {
+    if (typeof value === 'number') return finiteOrUndefined(value)
+    if (typeof value !== 'string' || value.trim() === '') return undefined
+    return finiteOrUndefined(Number.parseFloat(value))
+}
+
+const reportedTypeName = (value: unknown): string | undefined => {
+    const raw = String(value ?? '').toLowerCase()
+    if (raw.includes('indica')) return 'Indica'
+    if (raw.includes('sativa')) return 'Sativa'
+    if (raw.includes('hybrid')) return 'Hybrid'
+    return undefined
+}
+
+const reportedFloweringName = (value: unknown): string | undefined => {
+    const raw = String(value ?? '')
+    if (raw === 'Autoflower') return 'Autoflower'
+    if (raw === 'Photoperiod') return 'Photoperiod'
+    return undefined
+}
+
+const attachAiFacts = (discovered: DiscoveredStrain, item: Record<string, unknown>): void => {
+    const type = reportedTypeName(item.type)
+    const floweringType = reportedFloweringName(item.floweringType)
+    const thc = parseReportedPercent(item.thc)
+    const cbd = parseReportedPercent(item.cbd)
+    if (type) discovered.type = type
+    if (floweringType) discovered.floweringType = floweringType
+    if (thc !== undefined) discovered.thc = thc
+    if (cbd !== undefined) discovered.cbd = cbd
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null
+
+const slugId = (name: string): string =>
+    `ai-${name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+$/, '')}`
+
+const reportedText = (item: Record<string, unknown>, key: string): string => {
+    const value = item[key]
+    return typeof value === 'string' ? value.trim() : ''
+}
+
+const discoveredFromAiItem = (item: unknown): DiscoveredStrain | undefined => {
+    if (!isRecord(item)) return undefined
+    const name = reportedText(item, 'name')
+    if (!name) return undefined
+    const discovered: DiscoveredStrain = {
+        id: slugId(name),
+        name,
+        description: reportedText(item, 'description').slice(0, 300),
+        genetics: reportedText(item, 'genetics'),
+        source: 'ai-lookup',
+        sourceUrl: '',
+        discoveredAt: new Date().toISOString(),
+    }
+    const breeder = reportedText(item, 'breeder')
+    if (breeder && breeder.toLowerCase() !== 'unknown') discovered.breeder = breeder
+    attachAiFacts(discovered, item)
+    return discovered
+}
+
+const strainsFromAiJson = (json: string): DiscoveredStrain[] => {
+    try {
+        const parsed: unknown = JSON.parse(json)
+        if (!Array.isArray(parsed)) return []
+        return parsed.flatMap((item: unknown) => {
+            const discovered = discoveredFromAiItem(item)
+            return discovered ? [discovered] : []
+        })
+    } catch {
+        return []
+    }
+}
+
+export const parseAIStrainResponse = (text: string): DiscoveredStrain[] => {
+    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
+    if (!jsonMatch) return []
+    return strainsFromAiJson(jsonMatch)
+}
+
 export async function searchStrainsWithAI(query: string): Promise<DiscoveredStrain[]> {
     if (!query || query.length < 2) return []
 
@@ -382,57 +469,6 @@ function buildStrainLookupPrompt(query: string, lang: string): string {
               'Only real, verified strains. No fabricated data.'
 }
 
-function parseAIStrainResponse(text: string): DiscoveredStrain[] {
-    const results: DiscoveredStrain[] = []
-    const jsonMatch = text.match(/\[[\s\S]*?\]/)?.[0]
-    if (!jsonMatch) return results
-
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- JSON parse boundary
-        const parsed = JSON.parse(jsonMatch) as Array<Record<string, unknown>>
-        if (!Array.isArray(parsed)) return results
-
-        for (const item of parsed) {
-            if (!item || typeof item !== 'object') continue
-            const name = String(item.name ?? '').trim()
-            if (!name) continue
-
-            const id = `ai-${name
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/-+$/, '')}`
-            const rawType = String(item.type ?? '').toLowerCase()
-            const type = rawType.includes('indica')
-                ? 'Indica'
-                : rawType.includes('sativa')
-                  ? 'Sativa'
-                  : 'Hybrid'
-
-            results.push({
-                id,
-                name,
-                breeder: String(item.breeder ?? 'Unknown'),
-                type,
-                floweringType:
-                    String(item.floweringType ?? '') === 'Autoflower'
-                        ? 'Autoflower'
-                        : 'Photoperiod',
-                thc: parseFloat(String(item.thc ?? 0)) || 0,
-                cbd: parseFloat(String(item.cbd ?? 0)) || 0,
-                description: String(item.description ?? '').slice(0, 300),
-                genetics: String(item.genetics ?? ''),
-                source: 'ai-lookup',
-                sourceUrl: '',
-                discoveredAt: new Date().toISOString(),
-            })
-        }
-    } catch {
-        // JSON parse failed
-    }
-
-    return results
-}
-
 // ---------------------------------------------------------------------------
 // Recommendation scoring
 // ---------------------------------------------------------------------------
@@ -440,52 +476,71 @@ function parseAIStrainResponse(text: string): DiscoveredStrain[] {
 /**
  * Build a preference profile from the user's library strains.
  */
-export function buildUserProfile(
-    strains: Array<{ type?: string; thc?: number; cbd?: number }>,
-): UserStrainProfile {
-    const preferredTypes: Record<string, number> = {}
-    let thcSum = 0
-    let cbdSum = 0
+const finiteAverage = (values: Array<number | undefined>): number | undefined => {
+    let total = 0
     let count = 0
-
-    for (const s of strains) {
-        if (s.type) {
-            preferredTypes[s.type] = (preferredTypes[s.type] ?? 0) + 1
-        }
-        thcSum += s.thc ?? 0
-        cbdSum += s.cbd ?? 0
-        count++
+    for (const value of values) {
+        if (typeof value !== 'number' || !Number.isFinite(value)) continue
+        total += value
+        count += 1
     }
-
-    return {
-        preferredTypes,
-        avgThc: count > 0 ? thcSum / count : 15,
-        avgCbd: count > 0 ? cbdSum / count : 0.5,
-        strainCount: count,
-    }
+    if (count === 0) return undefined
+    return total / count
 }
 
-function scoreStrain(strain: DiscoveredStrain, profile: UserStrainProfile): number {
+const attachAverage = (
+    profile: UserStrainProfile,
+    key: 'avgThc' | 'avgCbd',
+    value: number | undefined,
+) => {
+    if (value !== undefined) profile[key] = value
+}
+
+export const buildUserProfile = (
+    strains: Array<{ type?: string; thc?: number; cbd?: number }>,
+): UserStrainProfile => {
+    const preferredTypes: Record<string, number> = {}
+    for (const strain of strains) {
+        if (!strain.type) continue
+        preferredTypes[strain.type] = (preferredTypes[strain.type] ?? 0) + 1
+    }
+
+    const profile: UserStrainProfile = {
+        preferredTypes,
+        strainCount: strains.length,
+    }
+    attachAverage(profile, 'avgThc', finiteAverage(strains.map((strain) => strain.thc)))
+    attachAverage(profile, 'avgCbd', finiteAverage(strains.map((strain) => strain.cbd)))
+    return profile
+}
+
+const typeBonus = (strain: DiscoveredStrain, profile: UserStrainProfile): number => {
+    const totalTyped = Object.values(profile.preferredTypes).reduce((sum, count) => sum + count, 0)
+    if (totalTyped <= 0 || !strain.type) return 0
+    return ((profile.preferredTypes[strain.type] ?? 0) / totalTyped) * 25
+}
+
+const scaledGap = (value: number, average: number, weight: number, scale: number): number =>
+    Math.max(0, weight - Math.abs(value - average) * scale)
+
+const closenessBonus = (
+    value: number | undefined,
+    average: number | undefined,
+    weight: number,
+    scale: number,
+): number => {
+    if (value === undefined || average === undefined) return 0
+    if (value <= 0 || average <= 0) return 0
+    return scaledGap(value, average, weight, scale)
+}
+
+const scoreStrain = (strain: DiscoveredStrain, profile: UserStrainProfile): number => {
     if (profile.strainCount === 0) return 50
-
-    let score = 50
-
-    const totalTyped = Object.values(profile.preferredTypes).reduce((a, b) => a + b, 0)
-    if (totalTyped > 0) {
-        const typeRatio = (profile.preferredTypes[strain.type] ?? 0) / totalTyped
-        score += typeRatio * 25
-    }
-
-    if (strain.thc > 0 && profile.avgThc > 0) {
-        const thcDiff = Math.abs(strain.thc - profile.avgThc)
-        score += Math.max(0, 15 - thcDiff)
-    }
-
-    if (strain.cbd > 0 && profile.avgCbd > 0) {
-        const cbdDiff = Math.abs(strain.cbd - profile.avgCbd)
-        score += Math.max(0, 10 - cbdDiff * 5)
-    }
-
+    const score =
+        50 +
+        typeBonus(strain, profile) +
+        closenessBonus(strain.thc, profile.avgThc, 15, 1) +
+        closenessBonus(strain.cbd, profile.avgCbd, 10, 5)
     return Math.min(100, Math.max(0, Math.round(score)))
 }
 
@@ -571,33 +626,46 @@ export const dailyStrainsService = {
 // DiscoveredStrain -> Strain conversion
 // ---------------------------------------------------------------------------
 
+const recognizedType = (value: string | undefined): StrainType | undefined => {
+    if (value === StrainType.Indica) return StrainType.Indica
+    if (value === StrainType.Sativa) return StrainType.Sativa
+    if (value === StrainType.Hybrid) return StrainType.Hybrid
+    return undefined
+}
+
+const recognizedFlowering = (value: string | undefined): Strain['floweringType'] | undefined =>
+    value === 'Autoflower' || value === 'Photoperiod' ? value : undefined
+
+const attachAiMeasurements = (partial: Partial<Strain>, discovered: DiscoveredStrain): void => {
+    const type = recognizedType(discovered.type)
+    const floweringType = recognizedFlowering(discovered.floweringType)
+    if (type) partial.type = type
+    if (floweringType) partial.floweringType = floweringType
+    if (typeof discovered.thc === 'number') partial.thc = discovered.thc
+    if (typeof discovered.cbd === 'number') partial.cbd = discovered.cbd
+}
+
+const attachAiText = (partial: Partial<Strain>, discovered: DiscoveredStrain): void => {
+    if (discovered.description) partial.description = discovered.description
+    if (discovered.genetics) partial.genetics = discovered.genetics
+    if (discovered.breeder) partial.lineage = { parents: [], breeder: discovered.breeder }
+}
+
+const aiLookupPartial = (discovered: DiscoveredStrain): Partial<Strain> => {
+    const partial: Partial<Strain> = { id: discovered.id, name: discovered.name }
+    attachAiMeasurements(partial, discovered)
+    attachAiText(partial, discovered)
+    return partial
+}
+
 /**
  * Resolve a DiscoveredStrain to a full Strain object.
  *
- * - For daily-pick and local-catalog sources, look up the original from
- *   allStrainsData (has all fields including agronomics, terpenes, etc.).
- * - For ai-lookup sources, build a Strain via createStrainObject with
- *   sensible defaults for the fields the AI did not provide.
+ * Daily picks come from the catalog. An AI lookup copies only the fields
+ * the model actually reported.
  */
-export function resolveDiscoveredToStrain(discovered: DiscoveredStrain): Strain {
-    // Try direct catalog lookup first (daily-pick and local-catalog share IDs)
+export const resolveDiscoveredToStrain = (discovered: DiscoveredStrain): Strain => {
     const catalogMatch = allStrainsData.find((s) => s.id === discovered.id)
-    if (catalogMatch) {
-        return catalogMatch
-    }
-
-    // AI-lookup or unknown source -- build from partial data via factory
-    return createStrainObject({
-        id: discovered.id,
-        name: discovered.name,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated upstream
-        type: discovered.type as StrainType,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- validated upstream
-        floweringType: discovered.floweringType as Strain['floweringType'],
-        thc: discovered.thc,
-        cbd: discovered.cbd,
-        description: discovered.description || undefined,
-        genetics: discovered.genetics || undefined,
-        lineage: discovered.breeder ? { parents: [], breeder: discovered.breeder } : undefined,
-    })
+    if (catalogMatch) return catalogMatch
+    return createStrainObject(aiLookupPartial(discovered))
 }

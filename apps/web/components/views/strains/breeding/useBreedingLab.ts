@@ -9,23 +9,17 @@ import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
 import { workerBus } from '@/services/workerBus'
 import { createStrainObject } from '@/services/strainFactory'
 import { compareText } from '../compareText'
-import {
-    GENERATIONS,
-    getSafeText,
-    type Generation,
-    type Trait,
-    type TraitKey,
-} from './genetics'
+import { GENERATIONS, getSafeText, type Generation, type Trait, type TraitKey } from './genetics'
 
 export type LabTab = 'genetics' | 'seeds' | 'ar'
 
 type Phenotype = { vigor: number; resin: number; aroma: number; resistance: number }
 
 type AutomatedGenetics = {
-    thc: number
-    cbd: number
-    floweringWeeks: number
-    stabilityScore: number
+    thc: number | null
+    cbd: number | null
+    floweringWeeks: number | null
+    stabilityScore: number | null
 } | null
 
 /**

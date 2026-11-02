@@ -9,9 +9,9 @@ import {
     GENERATIONS,
     inferGenotype,
     getSafeText,
-    getSafeNumericValue,
     getSafeStringArray,
-    floweringDaysFromWeeks,
+    formatReportedPercent,
+    formatFloweringDays,
 } from './genetics'
 import type { BreedingLabState } from './useBreedingLab'
 
@@ -60,7 +60,8 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                             </span>
                             <span className="text-muted">|</span>
                             <span className="text-primary-300">
-                                THC {getSafeNumericValue(geneticsParentA.thc, 0).toFixed(1)}%
+                                THC{' '}
+                                {formatReportedPercent(geneticsParentA.thc, t('common.unknown'))}
                             </span>
                         </div>
                     )}
@@ -82,7 +83,8 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                             </span>
                             <span className="text-muted">|</span>
                             <span className="text-primary-300">
-                                THC {getSafeNumericValue(geneticsParentB.thc, 0).toFixed(1)}%
+                                THC{' '}
+                                {formatReportedPercent(geneticsParentB.thc, t('common.unknown'))}
                             </span>
                         </div>
                     )}
@@ -192,15 +194,25 @@ export const BreedingGeneticsTab: React.FC<{ state: BreedingLabState }> = ({ sta
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.thc'),
-                                    value: `${getSafeNumericValue(geneticsOffspring.thc, 0).toFixed(1)}%`,
+                                    value: formatReportedPercent(
+                                        geneticsOffspring.thc,
+                                        t('common.unknown'),
+                                    ),
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.cbd'),
-                                    value: `${getSafeNumericValue(geneticsOffspring.cbd, 0).toFixed(1)}%`,
+                                    value: formatReportedPercent(
+                                        geneticsOffspring.cbd,
+                                        t('common.unknown'),
+                                    ),
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.flowering'),
-                                    value: `${floweringDaysFromWeeks(geneticsOffspring.floweringTime)} ${t('common.units.days')}`,
+                                    value: formatFloweringDays(
+                                        geneticsOffspring.floweringTime,
+                                        t('common.unknown'),
+                                        t('common.units.days'),
+                                    ),
                                 },
                                 {
                                     label: t('strainsView.breedingLab.summary.height'),

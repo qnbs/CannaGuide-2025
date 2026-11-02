@@ -13,6 +13,11 @@ interface PostHarvestTabProps {
     plant: Plant
 }
 
+const reportedPercent = (source: unknown, value: number, unknownLabel: string): string => {
+    if (typeof source === 'number' && Number.isFinite(source)) return `${value.toFixed(2)}%`
+    return unknownLabel
+}
+
 type WarningTone = 'good' | 'warn' | 'critical'
 
 type ProcessWarning = {
@@ -463,7 +468,11 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                     <div className="text-center">
                         <p className="text-sm font-semibold text-slate-300">THC</p>
                         <p className="text-2xl font-bold text-amber-400">
-                            {harvestData.cannabinoidProfile.thc.toFixed(2)}%
+                            {reportedPercent(
+                                plant.strain.thc,
+                                harvestData.cannabinoidProfile.thc,
+                                t('common.unknown'),
+                            )}
                         </p>
                     </div>
                     <div className="text-center">
@@ -471,7 +480,11 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = memo(({ plant }) =>
                             {t('plantsView.postHarvest.cbn')}
                         </p>
                         <p className="text-2xl font-bold text-indigo-400">
-                            {harvestData.cannabinoidProfile.cbn.toFixed(2)}%
+                            {reportedPercent(
+                                plant.strain.thc,
+                                harvestData.cannabinoidProfile.cbn,
+                                t('common.unknown'),
+                            )}
                         </p>
                     </div>
                     <div className="text-center">

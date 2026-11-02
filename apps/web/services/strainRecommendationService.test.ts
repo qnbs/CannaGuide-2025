@@ -61,6 +61,31 @@ describe('scoreStrain', () => {
         expect(inRange.score).toBeGreaterThan(outOfRange.score)
     })
 
+    it('does not turn a missing THC value into NaN', () => {
+        const ctx: RecommendationContext = { targetThcRange: { min: 16, max: 22 } }
+        const missingThc = makeStrain()
+        Reflect.deleteProperty(missingThc, 'thc')
+        const result = scoreStrain(missingThc, ctx)
+        expect(Number.isFinite(result.score)).toBe(true)
+        const nearMiss = scoreStrain(makeStrain({ thc: 24 }), ctx)
+        expect(result.breakdown.cannabinoid).toBeLessThan(nearMiss.breakdown.cannabinoid)
+        expect(result.score).toBeLessThan(nearMiss.score)
+    })
+
+    it('ranks an unknown difficulty below a reported near-match', () => {
+        const ctx: RecommendationContext = { preferredDifficulty: 'Easy' }
+        const unknown = makeStrain()
+        Reflect.deleteProperty(unknown, 'agronomic')
+        const oneStep = scoreStrain(
+            makeStrain({
+                agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
+            } as Partial<Strain>),
+            ctx,
+        )
+        const blank = scoreStrain(unknown, ctx)
+        expect(blank.breakdown.difficulty).toBeLessThan(oneStep.breakdown.difficulty)
+    })
+
     it('scores higher when CBD meets target minimum', () => {
         const ctx: RecommendationContext = { targetCbdMin: 1 }
         const meetsCbd = scoreStrain(makeStrain({ cbd: 2 }), ctx)

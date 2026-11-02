@@ -132,6 +132,12 @@ describe('generateCannabinoidProfile', () => {
         expect(profile.CBD).toBe(2)
     })
 
+    it('keeps a reported zero for CBG and THCV', () => {
+        const profile = generateCannabinoidProfile(20, 1, 0, 0)
+        expect(profile.CBG).toBe(0)
+        expect(profile.THCV).toBe(0)
+    })
+
     it('generates minor cannabinoids', () => {
         const profile = generateCannabinoidProfile(20, 2, undefined, undefined, 100)
         expect(profile.CBG).toBeGreaterThan(0)
@@ -160,7 +166,11 @@ describe('toDetailedTerpeneProfile', () => {
     })
 
     it('rejects invalid property names to prevent prototype pollution', () => {
-        const malicious = { __proto__: 1.0, constructor: 2.0, Myrcene: 0.5 } as unknown as TerpeneProfile
+        const malicious = {
+            __proto__: 1.0,
+            constructor: 2.0,
+            Myrcene: 0.5,
+        } as unknown as TerpeneProfile
         const detailed = toDetailedTerpeneProfile(malicious)
         expect(detailed.Myrcene?.percent).toBe(0.5)
         expect(Object.keys(detailed)).not.toContain('__proto__')
@@ -220,6 +230,7 @@ describe('buildChemovarProfile', () => {
     it('builds a complete profile', () => {
         const strain = makeStrain()
         const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
 
         expect(profile.chemovarType).toBe('Type I')
         expect(profile.totalTerpenePercent).toBeGreaterThan(0)
@@ -230,9 +241,39 @@ describe('buildChemovarProfile', () => {
         expect(profile.lastUpdated).toBeDefined()
     })
 
+    it('classifies Type IV from a top-level CBG when the profile omits it', () => {
+        const strain = makeStrain({
+            thc: 0.5,
+            cbd: 0.5,
+            cbg: 5,
+            cannabinoidProfile: { THC: 0.5, CBD: 0.5 },
+        })
+        const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
+        expect(profile.chemovarType).toBe('Type IV')
+        expect(profile.detailedCannabinoidProfile.CBG?.percent).toBe(5)
+        expect(profile.totalCannabinoidPercent).toBeGreaterThan(0)
+    })
+
+    it('keeps a top-level CBG in an otherwise empty cannabinoid profile', () => {
+        const strain = makeStrain({ cbg: 5, cannabinoidProfile: {} })
+        Reflect.deleteProperty(strain, 'thc')
+        Reflect.deleteProperty(strain, 'cbd')
+        const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
+        expect(profile.chemovarType).toBe('Type IV')
+        expect(profile.detailedCannabinoidProfile.CBG?.percent).toBe(5)
+        expect(profile.detailedCannabinoidProfile.THC).toBeUndefined()
+        expect(profile.detailedCannabinoidProfile.CBD).toBeUndefined()
+        expect(profile.totalCannabinoidPercent).toBe(5)
+        expect(profile.thcCbdRatio).toBeUndefined()
+        expect(JSON.stringify(profile)).not.toContain('"thcCbdRatio"')
+    })
+
     it('uses existing terpene profile if available', () => {
         const strain = makeStrain({ terpeneProfile: { Myrcene: 1.0 } })
         const profile = buildChemovarProfile(strain)
+        if (!profile) throw new Error('expected a chemovar profile')
         expect(profile.detailedTerpeneProfile.Myrcene?.percent).toBe(1.0)
         expect(profile.dataQuality).toBeGreaterThanOrEqual(0.6)
     })

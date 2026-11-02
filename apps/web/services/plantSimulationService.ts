@@ -18,6 +18,8 @@ import {
     createInitialHarvestData,
 } from '@/services/simulation/postHarvestSimulation'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
+import { equipmentWithPolicy } from '@/services/simulation/floweringMode'
+import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 import {
     getCorrectedRh,
     getEnvironmentalInstabilityCurve,
@@ -83,10 +85,7 @@ class PlantSimulationService {
         const altitudeM = getSimulationAltitude(simulationSettings)
         const lightAbsorption =
             1 -
-            Math.exp(
-                -getSimulationLightExtinctionCoefficient(simulationSettings) *
-                    p.leafAreaIndex,
-            )
+            Math.exp(-getSimulationLightExtinctionCoefficient(simulationSettings) * p.leafAreaIndex)
         const nutrientAvailability =
             (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) *
             getSimulationNutrientConversionEfficiency(simulationSettings)
@@ -125,8 +124,7 @@ class PlantSimulationService {
             {
                 id: 'pestPressure',
                 value: `${getPestPressureMultiplier(simulationSettings).toFixed(2)}x`,
-                tone:
-                    getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
+                tone: getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
                 context: {
                     profile: profileCurve.pestPressure.toFixed(2),
                 },
@@ -162,8 +160,7 @@ class PlantSimulationService {
                 stomataSensitivity: getSimulationStomataSensitivity(p, simulationSettings),
             },
             stress: {
-                environmentalInstability:
-                    getEnvironmentalInstabilityCurve(simulationSettings),
+                environmentalInstability: getEnvironmentalInstabilityCurve(simulationSettings),
                 nutrientSensitivityCurve: getNutrientSensitivityCurve(simulationSettings),
                 pestPressureCurve: getPestPressureCurve(simulationSettings),
                 accumulatedSubdayHours: p.simulationClock.accumulatedDayMs / 3600000,
@@ -239,30 +236,36 @@ class PlantSimulationService {
             },
             nutrientPool: { nitrogen: 5, phosphorus: 5, potassium: 5 },
             rootSystem: { health: 100, rootMass: 0.01 },
-            equipment: {
-                light: {
-                    type: setup.lightType,
-                    wattage: setup.lightWattage,
-                    isOn: true,
-                    lightHours: setup.lightHours,
+            equipment: equipmentWithPolicy(
+                {
+                    light: {
+                        type: setup.lightType,
+                        wattage: setup.lightWattage,
+                        isOn: true,
+                        lightHours: setup.lightHours,
+                    },
+                    exhaustFan: {
+                        power: setup.ventilation,
+                        isOn: true,
+                    },
+                    circulationFan: {
+                        isOn: setup.hasCirculationFan,
+                    },
+                    potSize: setup.potSize,
+                    potType: setup.potType,
                 },
-                exhaustFan: {
-                    power: setup.ventilation,
-                    isOn: true,
-                },
-                circulationFan: {
-                    isOn: setup.hasCirculationFan,
-                },
-                potSize: setup.potSize,
-                potType: setup.potType,
-            },
+                setup.floweringPolicy,
+            ),
             problems: [],
             journal: [],
             tasks: [],
             harvestData: null,
             structuralModel: { branches: 1, nodes: 1 },
-            // Copy strain defaults as starting phenotype; can be tuned per-plant via training or amendments
-            phenotypeModifiers: { ...strain.geneticModifiers },
+            // Sourced coefficients stay on the plant. A catalog record without them
+            // still gets a named simulation, and that simulation is not written back.
+            phenotypeModifiers: strain.geneticModifiers
+                ? { ...strain.geneticModifiers }
+                : { ...simulateStrainProfile(strain).geneticModifiers },
             history: [
                 {
                     day: 0,

@@ -1,11 +1,6 @@
 import type { Strain } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
-import {
-    APP_VERSION,
-    SLICE_SCHEMA_VERSIONS,
-    DEFAULT_GROW_ID,
-    DEFAULT_GROW_NAME,
-} from '@/constants'
+import { APP_VERSION, SLICE_SCHEMA_VERSIONS, DEFAULT_GROW_ID, DEFAULT_GROW_NAME } from '@/constants'
 import type { PersistedState } from '@/services/migration/migrationTypes'
 import { deepMergeSettings } from '@/services/migration/settingsMerge'
 
@@ -57,14 +52,12 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
 
     const migratedState: PersistedState = state
 
-    if (migratedState.simulation?.plants?.entities) {
-        for (const id in migratedState.simulation.plants.entities) {
-            const plant = migratedState.simulation.plants.entities[id] as unknown as
-                | Record<string, unknown>
-                | undefined
-            if (plant && !plant.mediumType) {
-                plant.mediumType = 'Soil'
-            }
+    const plantEntities = migratedState.simulation?.plants?.entities
+    if (plantEntities) {
+        for (const id of Object.keys(plantEntities)) {
+            const plant = plantEntities[id as keyof typeof plantEntities] as unknown as
+                Record<string, unknown> | undefined
+            if (plant && !plant.mediumType) plant.mediumType = 'Soil'
         }
     }
 
@@ -86,21 +79,21 @@ export const mergeStrainCatalogForUpdate = (
     const mergeStrainEntry = (legacy: Strain, strain: Strain): Strain => ({
         ...legacy,
         ...strain,
-        agronomic: {
-            ...(legacy.agronomic ?? {}),
-            ...(strain.agronomic ?? {}),
-        },
-        geneticModifiers: {
-            ...(legacy.geneticModifiers ?? {}),
-            ...(strain.geneticModifiers ?? {}),
-            vpdTolerance: {
-                ...(legacy.geneticModifiers?.vpdTolerance ?? {}),
-                ...(strain.geneticModifiers?.vpdTolerance ?? {}),
-            },
-        },
+        // Bundled catalog facts win, including an absent measurement. A cached
+        // synthetic profile or default agronomy must not fill that hole.
+        agronomic: strain.agronomic,
+        geneticModifiers: strain.geneticModifiers,
+        terpeneProfile: strain.terpeneProfile,
+        cannabinoidProfile: strain.cannabinoidProfile,
+        flavonoidProfile: strain.flavonoidProfile,
+        chemovarProfile: strain.chemovarProfile,
+        thc: strain.thc,
+        cbd: strain.cbd,
+        floweringTime: strain.floweringTime,
+        type: strain.type,
+        floweringType: strain.floweringType,
         aromas: strain.aromas ?? legacy.aromas,
         dominantTerpenes: strain.dominantTerpenes ?? legacy.dominantTerpenes,
-        terpeneProfile: strain.terpeneProfile ?? legacy.terpeneProfile,
     })
 
     legacyStrains.forEach((strain) => {

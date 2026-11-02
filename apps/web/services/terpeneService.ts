@@ -1,13 +1,4 @@
-/**
- * Terpene & Chemovar Analysis Service
- *
- * Provides classification, similarity computation, effect prediction,
- * and profile enrichment for cannabis strains. All computations are
- * pure functions suitable for main-thread or worker-thread execution.
- *
- * Heavy batch operations (similarity search across 700+ strains) should
- * be dispatched to the terpene worker via WorkerBus.
- */
+/** Terpene and chemovar analysis. Batch similarity search goes through the terpene worker. */
 
 import type {
     TerpeneName,
@@ -24,12 +15,15 @@ import type {
     TerpeneSimilarityResult,
     Strain,
 } from '@/types'
+import { ALL_TERPENE_NAMES, TERPENE_EFFECTS, CANNABINOID_DATABASE } from '@/data/terpeneDatabase'
 import {
-    TERPENE_DATABASE,
-    ALL_TERPENE_NAMES,
-    TERPENE_EFFECTS,
-    CANNABINOID_DATABASE,
-} from '@/data/terpeneDatabase'
+    PRESENCE_THRESHOLD,
+    generateCannabinoidProfile,
+    generateTerpeneProfile,
+    resolveTerpeneName,
+} from '@/services/terpeneGeneration'
+
+export { generateCannabinoidProfile, generateTerpeneProfile, resolveTerpeneName }
 
 // Allowlists for safe dynamic property access (prevents prototype pollution -- CodeQL js/remote-property-injection)
 const VALID_TERPENE_NAMES: ReadonlySet<string> = new Set(ALL_TERPENE_NAMES)
@@ -39,55 +33,9 @@ const VALID_CANNABINOID_NAMES: ReadonlySet<string> = new Set(Object.keys(CANNABI
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Minimum percent threshold to consider a terpene "present" */
-const PRESENCE_THRESHOLD = 0.01
-
 /** Variance thresholds for stability rating */
 const VARIANCE_HIGH_THRESHOLD = 0.15
 const VARIANCE_MEDIUM_THRESHOLD = 0.4
-
-/** Dominant terpene strings to TerpeneName mapping for fuzzy resolution */
-const TERPENE_ALIASES: Record<string, TerpeneName> = {
-    'beta-caryophyllene': 'Caryophyllene',
-    'b-caryophyllene': 'Caryophyllene',
-    'beta-pinene': 'Pinene',
-    'alpha-pinene': 'Pinene',
-    'a-pinene': 'Pinene',
-    'beta-myrcene': 'Myrcene',
-    'b-myrcene': 'Myrcene',
-    'd-limonene': 'Limonene',
-    'alpha-bisabolol': 'Bisabolol',
-    'a-bisabolol': 'Bisabolol',
-    'alpha-humulene': 'Humulene',
-    'a-humulene': 'Humulene',
-    'trans-nerolidol': 'Nerolidol',
-    'beta-ocimene': 'Ocimene',
-    'alpha-terpineol': 'Terpineol',
-    '1,8-cineole': 'Eucalyptol',
-    cineole: 'Eucalyptol',
-    'delta-3-carene': 'Carene',
-    'alpha-phellandrene': 'Phellandrene',
-    'trans-farnesene': 'Farnesene',
-    'beta-farnesene': 'Farnesene',
-}
-
-// ---------------------------------------------------------------------------
-// Terpene name resolution
-// ---------------------------------------------------------------------------
-
-/**
- * Resolve a terpene string (possibly aliased) to a canonical TerpeneName.
- * Returns undefined if unrecognised.
- */
-export const resolveTerpeneName = (raw: string): TerpeneName | undefined => {
-    if (!raw) return undefined
-    const lower = raw.trim().toLowerCase()
-    // Direct match (case-insensitive)
-    const direct = ALL_TERPENE_NAMES.find((n) => n.toLowerCase() === lower)
-    if (direct) return direct
-    // Alias match
-    return TERPENE_ALIASES[lower]
-}
 
 // ---------------------------------------------------------------------------
 // Chemovar classification
@@ -114,121 +62,6 @@ export const classifyChemovar = (thc: number, cbd: number, cbg?: number): Chemov
     if (ratio > 5) return 'Type I'
     if (ratio >= 1) return 'Type II'
     return 'Type III'
-}
-
-// ---------------------------------------------------------------------------
-// Terpene profile generation from dominantTerpenes + strain metadata
-// ---------------------------------------------------------------------------
-
-/**
- * Generate a realistic terpene profile from dominant terpene names + strain type.
- * Uses deterministic hashing so the same strain always gets the same profile.
- */
-export const generateTerpeneProfile = (
-    dominantTerpenes: string[],
-    nameHash: number,
-    strainType: string,
-): TerpeneProfile => {
-    const profile: TerpeneProfile = {}
-
-    // Resolve dominant terpenes
-    const resolved = dominantTerpenes
-        .map(resolveTerpeneName)
-        .filter((n): n is TerpeneName => n !== undefined)
-
-    // Assign primary terpenes (higher concentrations)
-    for (let i = 0; i < resolved.length; i++) {
-        const terpene = resolved[i]
-        if (!terpene) continue
-        const ref = TERPENE_DATABASE[terpene]
-        const range = ref.typicalRange.max - ref.typicalRange.min
-        // Deterministic position within range, decreasing by dominance order
-        const factor = Math.max(0.3, 1 - i * 0.2)
-        const hashVariation = ((nameHash * (i + 7) * 31) % 100) / 100
-        const percent = ref.typicalRange.min + range * factor * (0.5 + hashVariation * 0.5)
-        profile[terpene] = Math.round(percent * 1000) / 1000
-    }
-
-    // Add trace terpenes based on strain type
-    const isIndica = strainType.toLowerCase().includes('indica')
-    const isSativa = strainType.toLowerCase().includes('sativa')
-
-    // Add 2-4 secondary terpenes at trace levels
-    const secondaryCount = 2 + (nameHash % 3)
-    let added = 0
-    for (const terp of ALL_TERPENE_NAMES) {
-        if (added >= secondaryCount) break
-        if (profile[terp] !== undefined) continue
-
-        // Indica bias: more Myrcene, Linalool, Caryophyllene
-        // Sativa bias: more Limonene, Pinene, Terpinolene
-        const indicaBias = ['Myrcene', 'Linalool', 'Caryophyllene', 'Humulene', 'Bisabolol']
-        const sativaBias = ['Limonene', 'Pinene', 'Terpinolene', 'Ocimene', 'Guaiol']
-
-        const preferredSet = isIndica ? indicaBias : isSativa ? sativaBias : ALL_TERPENE_NAMES
-        if (!preferredSet.includes(terp) && added < 2) continue
-
-        const ref = TERPENE_DATABASE[terp]
-        const hashVal = ((nameHash * (added + 13) * 37) % 100) / 100
-        const percent =
-            ref.typicalRange.min + (ref.averagePercent - ref.typicalRange.min) * hashVal * 0.5
-        if (percent >= PRESENCE_THRESHOLD) {
-            profile[terp] = Math.round(percent * 1000) / 1000
-            added++
-        }
-    }
-
-    return profile
-}
-
-// ---------------------------------------------------------------------------
-// Cannabinoid profile generation
-// ---------------------------------------------------------------------------
-
-/**
- * Generate a cannabinoid profile from THC/CBD base values.
- * Minor cannabinoids are estimated deterministically.
- */
-export const generateCannabinoidProfile = (
-    thc: number,
-    cbd: number,
-    cbg?: number,
-    thcv?: number,
-    nameHash?: number,
-): CannabinoidProfile => {
-    const hash = nameHash ?? 0
-    const profile: CannabinoidProfile = {
-        THC: thc,
-        CBD: cbd,
-    }
-
-    if (cbg !== undefined && cbg > 0) {
-        profile.CBG = cbg
-    } else {
-        // CBG typically 0.1-1.5% -- precursor, inversely related to THC+CBD maturity
-        profile.CBG = Math.round((0.1 + ((hash * 7) % 140) / 100) * 100) / 100
-    }
-
-    if (thcv !== undefined && thcv > 0) {
-        profile.THCV = thcv
-    } else if (thc > 15) {
-        // THCV more common in high-THC strains, typically 0.1-0.5%
-        profile.THCV = Math.round((0.05 + ((hash * 11) % 45) / 100) * 100) / 100
-    }
-
-    // CBC: typically 0.05-0.3%, common across most strains
-    profile.CBC = Math.round((0.05 + ((hash * 13) % 25) / 100) * 100) / 100
-
-    // CBN: degradation product, typically trace
-    if (thc > 10) {
-        profile.CBN = Math.round((0.01 + ((hash * 17) % 15) / 100) * 100) / 100
-    }
-
-    // Acid forms (pre-decarboxylation) -- estimated from active forms
-    profile.THCA = Math.round(thc * 1.122 * 100) / 100 // THCA:THC molar conversion
-    profile.CBDA = Math.round(cbd * 1.142 * 100) / 100 // CBDA:CBD molar conversion
-
-    return profile
 }
 
 // ---------------------------------------------------------------------------
@@ -297,13 +130,7 @@ export const toDetailedCannabinoidProfile = (
 // Effect prediction (entourage effect analysis)
 // ---------------------------------------------------------------------------
 
-/**
- * Predict therapeutic/consumer effects from terpene + cannabinoid profiles
- * using the entourage effect model.
- *
- * Scores each effect by summing weighted contributions from all compounds.
- * Returns effects sorted by confidence (highest first).
- */
+/** Score entourage effects from terpene and cannabinoid weights, highest confidence first. */
 export const predictEffects = (
     terpeneProfile: TerpeneProfile,
     cannabinoidProfile?: CannabinoidProfile,
@@ -346,65 +173,117 @@ export const predictEffects = (
 // Full chemovar profile builder
 // ---------------------------------------------------------------------------
 
-/**
- * Build a complete ChemovarProfile for a strain.
- * Uses existing data where available, generates estimates where not.
- */
-export const buildChemovarProfile = (strain: Strain): ChemovarProfile => {
-    const nameHash = strain.name.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+const finiteCannabinoid = (value: unknown): number | undefined =>
+    typeof value === 'number' && Number.isFinite(value) ? value : undefined
 
-    // Terpene profile: use existing or generate
-    const terpeneProfile: TerpeneProfile =
-        strain.terpeneProfile ??
-        generateTerpeneProfile(strain.dominantTerpenes ?? [], nameHash, strain.type)
+const cannabinoidRatio = (thc: number | undefined, cbd: number | undefined): number => {
+    if (thc === undefined || cbd === undefined) return Number.NaN
+    if (cbd > 0) return Math.round((thc / cbd) * 100) / 100
+    return thc > 0 ? Number.POSITIVE_INFINITY : 0
+}
 
-    // Cannabinoid profile: use existing or generate
-    const cannabinoidProfile: CannabinoidProfile =
-        strain.cannabinoidProfile ??
-        generateCannabinoidProfile(strain.thc, strain.cbd, strain.cbg, strain.thcv, nameHash)
+const majorBelowCbg = (cbg: number, major: number | undefined): boolean =>
+    major === undefined || cbg > major
 
-    // Sum totals
-    const totalTerpenePercent =
-        Math.round(Object.values(terpeneProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /
-        1000
+export const isTypeIv = (
+    thc: number | undefined,
+    cbd: number | undefined,
+    cbg: number | undefined,
+): boolean => cbg !== undefined && cbg > 2 && majorBelowCbg(cbg, thc) && majorBelowCbg(cbg, cbd)
 
-    const totalCannabinoidPercent =
-        Math.round(Object.values(cannabinoidProfile).reduce((sum, v) => sum + (v ?? 0), 0) * 1000) /
-        1000
+const classifiedType = (
+    thc: number | undefined,
+    cbd: number | undefined,
+    profileCbg: number | undefined,
+    topLevelCbg: unknown,
+): ChemovarType | undefined => {
+    const cbg = finiteCannabinoid(topLevelCbg) ?? profileCbg
+    if (isTypeIv(thc, cbd, cbg)) return 'Type IV'
+    if (thc === undefined || cbd === undefined) return undefined
+    return classifyChemovar(thc, cbd, cbg)
+}
 
-    const chemovarType = classifyChemovar(strain.thc, strain.cbd, cannabinoidProfile.CBG)
+const copyCannabinoids = (
+    strain: Strain,
+    thc: number | undefined,
+    cbd: number | undefined,
+): CannabinoidProfile => {
+    const profile: CannabinoidProfile = { ...(strain.cannabinoidProfile ?? {}) }
+    const reported = {
+        THC: thc,
+        CBD: cbd,
+        CBG: finiteCannabinoid(strain.cbg),
+        THCV: finiteCannabinoid(strain.thcv),
+    }
+    for (const key of ['THC', 'CBD', 'CBG', 'THCV'] as const) {
+        const value = reported[key]
+        if (profile[key] === undefined && value !== undefined) profile[key] = value
+    }
+    return profile
+}
+const measuredMajor = (direct: unknown, fromProfile: number | undefined): number | undefined =>
+    finiteCannabinoid(direct) ?? fromProfile
 
-    const thcCbdRatio =
-        strain.cbd > 0
-            ? Math.round((strain.thc / strain.cbd) * 100) / 100
-            : strain.thc > 0
-              ? Infinity
-              : 0
+const strainTypeText = (type: unknown): string => (typeof type === 'string' ? type : '')
 
-    const predictedEffects = predictEffects(terpeneProfile, cannabinoidProfile)
+const listedTerpenes = (names: string[] | undefined): string[] => names ?? []
 
-    // Data quality: 1.0 if we have real lab data, lower if estimated
-    const hasRealTerpenes = strain.terpeneProfile !== undefined
-    const hasRealCannabinoids = strain.cannabinoidProfile !== undefined
-    const hasDominantTerpenes = (strain.dominantTerpenes?.length ?? 0) > 0
-    const dataQuality =
-        hasRealTerpenes && hasRealCannabinoids
-            ? 0.9
-            : hasRealTerpenes || hasRealCannabinoids
-              ? 0.6
-              : hasDominantTerpenes
-                ? 0.4
-                : 0.2
+const chemovarTerpenes = (strain: Strain, nameHash: number): TerpeneProfile => {
+    if (strain.terpeneProfile) return strain.terpeneProfile
+    return generateTerpeneProfile(
+        listedTerpenes(strain.dominantTerpenes),
+        nameHash,
+        strainTypeText(strain.type),
+    )
+}
 
+const roundedTotal = (values: Array<number | undefined>): number => {
+    let total = 0
+    for (const value of values) total += value ?? 0
+    return Math.round(total * 1000) / 1000
+}
+
+const bothReported = (strain: Strain): boolean =>
+    strain.terpeneProfile !== undefined && strain.cannabinoidProfile !== undefined
+
+const eitherReported = (strain: Strain): boolean =>
+    strain.terpeneProfile !== undefined || strain.cannabinoidProfile !== undefined
+
+const hasDominantNames = (strain: Strain): boolean => (strain.dominantTerpenes?.length ?? 0) > 0
+
+const qualityScore = (strain: Strain): number => {
+    if (bothReported(strain)) return 0.9
+    if (eitherReported(strain)) return 0.6
+    if (hasDominantNames(strain)) return 0.4
+    return 0.2
+}
+
+/** Type IV when reported CBG beats the majors. A missing major is not treated as zero. */
+export const buildChemovarProfile = (strain: Strain): ChemovarProfile | undefined => {
+    const nameHash = strain.name
+        .split('')
+        .reduce((acc, character) => acc + character.charCodeAt(0), 0)
+    const measuredThc = measuredMajor(strain.thc, finiteCannabinoid(strain.cannabinoidProfile?.THC))
+    const measuredCbd = measuredMajor(strain.cbd, finiteCannabinoid(strain.cannabinoidProfile?.CBD))
+    const terpeneProfile = chemovarTerpenes(strain, nameHash)
+    const cannabinoidProfile = copyCannabinoids(strain, measuredThc, measuredCbd)
+    const chemovarType = classifiedType(
+        measuredThc,
+        measuredCbd,
+        cannabinoidProfile.CBG,
+        strain.cbg,
+    )
+    if (chemovarType === undefined) return undefined
+    const ratio = cannabinoidRatio(measuredThc, measuredCbd)
     return {
         chemovarType,
-        totalTerpenePercent,
-        totalCannabinoidPercent,
-        thcCbdRatio,
+        totalTerpenePercent: roundedTotal(Object.values(terpeneProfile)),
+        totalCannabinoidPercent: roundedTotal(Object.values(cannabinoidProfile)),
+        ...(Number.isNaN(ratio) ? {} : { thcCbdRatio: ratio }),
         detailedTerpeneProfile: toDetailedTerpeneProfile(terpeneProfile, 0),
         detailedCannabinoidProfile: toDetailedCannabinoidProfile(cannabinoidProfile, 0),
-        predictedEffects,
-        dataQuality,
+        predictedEffects: predictEffects(terpeneProfile, cannabinoidProfile),
+        dataQuality: qualityScore(strain),
         lastUpdated: new Date().toISOString(),
     }
 }

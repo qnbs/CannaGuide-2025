@@ -1,8 +1,11 @@
 import type { TFunction } from 'i18next'
-import type { Strain, AdvancedFilterState } from '@/types'
+import type { Strain, AdvancedFilterState, DifficultyLevel, YieldLevel, HeightLevel } from '@/types'
 import { StrainViewTab } from '@/types'
 import { INITIAL_ADVANCED_FILTERS } from '@/constants'
 import { compareText } from '@/components/views/strains/compareText'
+import { getSafeStrainType, measurementInRange } from '@/hooks/strainFilterSort'
+
+export { getSafeStrainType, measurementInRange }
 
 export const DEFAULT_AGRONOMIC = {
     difficulty: 'Medium',
@@ -19,26 +22,18 @@ export const getSafeStringArray = (value: unknown): string[] =>
 export const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback
 
-export const getSafeStrainType = (value: unknown): string =>
-    typeof value === 'string' ? value : 'Hybrid'
+const isFiniteNumber = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value)
+
+const isFinitePair = (range: unknown): range is [number, number] => {
+    if (!Array.isArray(range) || range.length !== 2) return false
+    return isFiniteNumber(range[0]) && isFiniteNumber(range[1])
+}
 
 export const getRangeValue = (
     range: [number, number] | undefined,
     fallback: [number, number],
-): [number, number] => {
-    if (
-        Array.isArray(range) &&
-        range.length === 2 &&
-        typeof range[0] === 'number' &&
-        Number.isFinite(range[0]) &&
-        typeof range[1] === 'number' &&
-        Number.isFinite(range[1])
-    ) {
-        return range
-    }
-
-    return fallback
-}
+): [number, number] => (isFinitePair(range) ? range : fallback)
 
 export const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? DEFAULT_AGRONOMIC
 
@@ -59,6 +54,108 @@ export const getExportSourceTranslationKey = (
     return 'strainsView.exportModal.sources.all_other'
 }
 
+const matchesSearchTerm = (strain: Strain, searchTerm: string): boolean => {
+    const query = searchTerm.toLowerCase()
+    const haystack = [
+        getSafeText(strain.name, 'Unknown Strain'),
+        getSafeStrainType(strain.type),
+        getSafeText(strain.genetics, ''),
+        ...getSafeStringArray(strain.aromas),
+        ...getSafeStringArray(strain.dominantTerpenes),
+    ]
+    return haystack.some((entry) => entry.toLowerCase().includes(query))
+}
+
+const matchesLetter = (name: string, letterFilter: string): boolean => {
+    if (letterFilter === '#') return /^\d/.test(name)
+    return name.toLowerCase().startsWith(letterFilter.toLowerCase())
+}
+
+const namedLetter = (letterFilter: string | null): string | undefined => {
+    if (letterFilter === null || letterFilter === '') return undefined
+    return letterFilter
+}
+
+const applyLetterFilter = (strains: Strain[], letterFilter: string | null): Strain[] => {
+    const letter = namedLetter(letterFilter)
+    if (letter === undefined) return strains
+    return strains.filter((strain) => matchesLetter(getSafeText(strain.name, ''), letter))
+}
+
+const applyTextFilters = (
+    strains: Strain[],
+    searchTerm: string,
+    showFavoritesOnly: boolean,
+    typeFilter: string[],
+    letterFilter: string | null,
+    favoriteIds: Set<string>,
+): Strain[] => {
+    let next = strains
+    if (searchTerm !== '') {
+        next = next.filter((strain) => matchesSearchTerm(strain, searchTerm))
+    }
+    if (showFavoritesOnly) {
+        next = next.filter((strain) => favoriteIds.has(strain.id))
+    }
+    if (typeFilter.length > 0) {
+        next = next.filter((strain) => typeFilter.includes(strain.type))
+    }
+    return applyLetterFilter(next, letterFilter)
+}
+
+const levelSelected = <T extends string>(selected: ReadonlySet<T>, value: T | undefined): boolean =>
+    selected.size === 0 || (value !== undefined && selected.has(value))
+
+const tokenSelected = (selected: ReadonlySet<string>, values: readonly string[]): boolean =>
+    selected.size === 0 || values.some((value) => selected.has(value))
+
+const chemistryInRange = (
+    strain: Strain,
+    thcRange: [number, number],
+    cbdRange: [number, number],
+    floweringRange: [number, number],
+): boolean =>
+    measurementInRange(strain.thc, thcRange, INITIAL_ADVANCED_FILTERS.thcRange) &&
+    measurementInRange(strain.cbd, cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange) &&
+    measurementInRange(
+        strain.floweringTime,
+        floweringRange,
+        INITIAL_ADVANCED_FILTERS.floweringRange,
+    )
+
+const agronomySelected = (
+    strain: Strain,
+    difficulties: ReadonlySet<DifficultyLevel>,
+    yields: ReadonlySet<YieldLevel>,
+    heights: ReadonlySet<HeightLevel>,
+): boolean =>
+    levelSelected(difficulties, strain.agronomic?.difficulty) &&
+    levelSelected(yields, strain.agronomic?.yield) &&
+    levelSelected(heights, strain.agronomic?.height)
+
+const tokensSelected = (
+    strain: Strain,
+    aromas: ReadonlySet<string>,
+    terpenes: ReadonlySet<string>,
+): boolean =>
+    tokenSelected(aromas, getSafeStringArray(strain.aromas)) &&
+    tokenSelected(terpenes, getSafeStringArray(strain.dominantTerpenes))
+
+const passesDrawerFilters = (
+    strain: Strain,
+    thcRange: [number, number],
+    cbdRange: [number, number],
+    floweringRange: [number, number],
+    difficulties: ReadonlySet<DifficultyLevel>,
+    yields: ReadonlySet<YieldLevel>,
+    heights: ReadonlySet<HeightLevel>,
+    aromas: ReadonlySet<string>,
+    terpenes: ReadonlySet<string>,
+): boolean =>
+    chemistryInRange(strain, thcRange, cbdRange, floweringRange) &&
+    agronomySelected(strain, difficulties, yields, heights) &&
+    tokensSelected(strain, aromas, terpenes)
+
 export const computeDrawerFilterCount = (
     strainsForCurrentTab: Strain[],
     {
@@ -77,68 +174,38 @@ export const computeDrawerFilterCount = (
         tempFilterState: AdvancedFilterState
     },
 ): number => {
-    let strains = [...strainsForCurrentTab]
     const thcRange = getRangeValue(tempFilterState.thcRange, INITIAL_ADVANCED_FILTERS.thcRange)
     const cbdRange = getRangeValue(tempFilterState.cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange)
     const floweringRange = getRangeValue(
         tempFilterState.floweringRange,
         INITIAL_ADVANCED_FILTERS.floweringRange,
     )
-
-    if (searchTerm) {
-        const lowerCaseSearch = searchTerm.toLowerCase()
-        strains = strains.filter(
-            (s) =>
-                getSafeText(s.name, 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
-                getSafeStrainType(s.type).toLowerCase().includes(lowerCaseSearch) ||
-                getSafeStringArray(s.aromas).some((a) =>
-                    a.toLowerCase().includes(lowerCaseSearch),
-                ) ||
-                getSafeStringArray(s.dominantTerpenes).some((t) =>
-                    t.toLowerCase().includes(lowerCaseSearch),
-                ) ||
-                getSafeText(s.genetics, '').toLowerCase().includes(lowerCaseSearch),
-        )
-    }
-    if (showFavoritesOnly) {
-        strains = strains.filter((s) => favoriteIds.has(s.id))
-    }
-    if (typeFilter.length > 0) {
-        strains = strains.filter((s) => typeFilter.includes(s.type))
-    }
-    if (letterFilter) {
-        if (letterFilter === '#') {
-            strains = strains.filter((s) => /^\d/.test(getSafeText(s.name, '')))
-        } else {
-            strains = strains.filter((s) =>
-                getSafeText(s.name, '').toLowerCase().startsWith(letterFilter.toLowerCase()),
-            )
-        }
-    }
-
+    const narrowed = applyTextFilters(
+        strainsForCurrentTab,
+        searchTerm,
+        showFavoritesOnly,
+        typeFilter,
+        letterFilter,
+        favoriteIds,
+    )
     const difficulties = new Set(tempFilterState.selectedDifficulties)
     const yields = new Set(tempFilterState.selectedYields)
     const heights = new Set(tempFilterState.selectedHeights)
     const aromas = new Set(tempFilterState.selectedAromas)
     const terpenes = new Set(tempFilterState.selectedTerpenes)
-
-    strains = strains.filter(
-        (s) =>
-            getSafeNumericValue(s.thc, 0) >= thcRange[0] &&
-            getSafeNumericValue(s.thc, 0) <= thcRange[1] &&
-            getSafeNumericValue(s.cbd, 0) >= cbdRange[0] &&
-            getSafeNumericValue(s.cbd, 0) <= cbdRange[1] &&
-            getSafeNumericValue(s.floweringTime, 0) >= floweringRange[0] &&
-            getSafeNumericValue(s.floweringTime, 0) <= floweringRange[1] &&
-            (difficulties.size === 0 || difficulties.has(getSafeAgronomic(s).difficulty)) &&
-            (yields.size === 0 || yields.has(getSafeAgronomic(s).yield)) &&
-            (heights.size === 0 || heights.has(getSafeAgronomic(s).height)) &&
-            (aromas.size === 0 || getSafeStringArray(s.aromas).some((a) => aromas.has(a))) &&
-            (terpenes.size === 0 ||
-                getSafeStringArray(s.dominantTerpenes).some((t) => terpenes.has(t))),
-    )
-
-    return strains.length
+    return narrowed.filter((strain) =>
+        passesDrawerFilters(
+            strain,
+            thcRange,
+            cbdRange,
+            floweringRange,
+            difficulties,
+            yields,
+            heights,
+            aromas,
+            terpenes,
+        ),
+    ).length
 }
 
 export const computeStrainsForCurrentTab = (

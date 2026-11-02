@@ -1,4 +1,10 @@
 import type { Plant } from '@/types'
+import { getT } from '@/i18n'
+
+const unknownLabel = (): string => getT()('common.unknown')
+
+const reportedNumber = (source: unknown): number | undefined =>
+    typeof source === 'number' && Number.isFinite(source) ? source : undefined
 
 export type JsPDFWithAutoTable = {
     addPage: () => void
@@ -30,6 +36,19 @@ export const SEVERITY_COLORS: Record<string, [number, number, number]> = {
     mild: [255, 193, 7],
     moderate: [255, 152, 0],
     severe: [244, 67, 54],
+}
+
+/** Cultivar percentages keep the reported precision. A missing source stays unknown. */
+export const reportedPercentText = (source?: unknown): string => {
+    const value = reportedNumber(source)
+    if (value === undefined) return unknownLabel()
+    return `${value}%`
+}
+
+/** Harvest estimates print one decimal. They stay unknown when the cultivar source is missing. */
+export const harvestPercentText = (source: unknown, value: number): string => {
+    if (reportedNumber(source) === undefined) return unknownLabel()
+    return `${value.toFixed(1)}%`
 }
 
 export function formatDate(timestamp: number): string {

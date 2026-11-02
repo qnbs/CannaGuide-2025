@@ -55,7 +55,8 @@ const userStrainsSlice = createSlice({
     reducers: {
         addUserStrain: userStrainsAdapter.addOne,
         updateUserStrain: (state, action: PayloadAction<Strain>) => {
-            userStrainsAdapter.updateOne(state, { id: action.payload.id, changes: action.payload })
+            if (!state.entities[action.payload.id]) return
+            userStrainsAdapter.setOne(state, action.payload)
         },
         deleteUserStrain: userStrainsAdapter.removeOne,
         deleteMultipleUserStrains: (state, action: PayloadAction<string[]>) => {

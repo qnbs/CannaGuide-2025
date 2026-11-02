@@ -133,6 +133,16 @@ describe('plantToYMap / yMapToPlant', () => {
         expect(deserialized!.stressCounters).toEqual(plant.stressCounters)
     })
 
+    it('keeps the plant when the flowering policy is not a known mode', () => {
+        const plant = makePlant()
+        const serialized = plantToYMap(plant)
+        const equipment = JSON.parse(String(serialized['equipment'])) as Record<string, unknown>
+        equipment['floweringPolicy'] = 'Weekly'
+        serialized['equipment'] = JSON.stringify(equipment)
+
+        expect(yMapToPlant(serialized)).not.toBeNull()
+    })
+
     it('preserves Unix timestamps correctly', () => {
         const plant = makePlant({ createdAt: 1700000000001, lastUpdated: 1700000000002 })
         const serialized = plantToYMap(plant)

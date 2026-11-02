@@ -2,7 +2,7 @@
 
 Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
 
-The loop is not "read the comments and reply". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head** and that coverage left no undispositioned finding and **zero unresolved threads** from those reviews. A reviewer that is expired, skipped, or silent does not add a block once those two are covered. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.
+The loop is not "read the comments and reply". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head**, that coverage left no undispositioned finding, and **zero unresolved threads** remain from any reviewer that attached a finding. A reviewer that is expired, skipped, or silent does not add a thread or a block once those two are covered. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.
 
 ---
 
@@ -10,7 +10,9 @@ The loop is not "read the comments and reply". It ends when two of CodeRabbit, C
 
 | Reviewer                                                              | Surface                                                                                                       | Where findings appear                             |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **CodeRabbit**                                                        | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
+| **CodeRabbit** (`coderabbitai[bot]`)                                  | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
+| **CodeAnt** (`codeant-ai[bot]`)                                       | correctness and maintainability                                                                               | inline review threads                             |
+| **Codex** (`chatgpt-codex-connector[bot]`)                            | correctness                                                                                                   | review on the pull                                |
 | **DeepSource**                                                        | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR                                                         | check run + issue-comment                         |
 | **Socket Security**                                                   | dependency supply-chain alerts                                                                                | check run + PR alerts comment                     |
 | **GitGuardian**                                                       | secret scanning                                                                                               | check run                                         |
@@ -115,9 +117,16 @@ Do not request a full bot review after every intermediate fix.
 
 `REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or a full-review request never attaches a review object to the current head. It is not a green check. It is not, by itself, a merge block.
 
-CodeRabbit, CodeAnt, and Codex are the major reviewers. When two of them are reviewing the current head, or have attached a review to it, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.
+CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head and its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`:
 
-When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, every finding from the two major reviews is fixed or refuted, and 0 threads from those reviews are unresolved. A notice that a trial ended, or that a reviewer has no comments, is not a new finding.
+```bash
+gh api repos/qnbs/CannaGuide-2025/pulls/<N>/reviews --paginate \
+  --jq '.[] | select(.commit_id=="<HEAD>") | {user:.user.login, state}'
+```
+
+When two of those three are reviewing that head, or have attached such a review, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.
+
+When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and 0 threads are unresolved. A notice that a trial ended, or that a reviewer has no comments, is not a thread and not a new finding.
 
 ---
 

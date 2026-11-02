@@ -183,8 +183,8 @@ pnpm run check:i18n
   false positive that is refuted with evidence and resolved, with no code change, is
   dispositioned and does not require another full review. Do not push while that head is
   still being reviewed or tested. A new push makes the previous CI and review evidence
-  stale. The loop ends when every finding from those two reviews is fixed or refuted and 0
-  threads from those reviews are unresolved. `REVIEW_UNAVAILABLE` means a reviewer is
+  stale. The loop ends when two of those reviewers have covered the head, every
+  attached finding is fixed or refuted, and 0 threads are unresolved. `REVIEW_UNAVAILABLE` means a reviewer is
   skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a
   review. It is not a green check, and it is not a merge block once two of CodeRabbit,
   CodeAnt, and Codex have covered that head. Do not merge a head that none of the three

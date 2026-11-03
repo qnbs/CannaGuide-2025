@@ -21,10 +21,15 @@ const reloadSoon = (): void => {
     window.setTimeout(() => window.location.reload(), 3500)
 }
 
-const exportFailureMessage = (result: BackupExportResult, t: Translate): string =>
-    result.errorCode === 'imagesUnreadable'
-        ? String(t('settingsView.zipBackup.exportImagesError'))
-        : String(t('settingsView.zipBackup.exportError'))
+const exportFailureMessage = (result: BackupExportResult, t: Translate): string => {
+    if (result.errorCode === 'imagesUnreadable') {
+        return String(t('settingsView.zipBackup.exportImagesError'))
+    }
+    if (result.errorCode === 'archivedJournalUnreadable') {
+        return String(t('settingsView.zipBackup.exportArchivedJournalError'))
+    }
+    return String(t('settingsView.zipBackup.exportError'))
+}
 
 const exportZip = async (t: Translate): Promise<void> => {
     const result = await backupService.exportBackup()

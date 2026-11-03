@@ -1229,6 +1229,8 @@ export const settingsView = {
         exportError: 'No se pudo crear la copia ZIP.',
         exportImagesError:
             'No se pudieron leer tus fotos, asi que no se creo ninguna copia ZIP; tus datos no han cambiado. Cierra otras pestanas de CannaGuide o reinicia la app e intentalo de nuevo.',
+        exportArchivedJournalError:
+            'No se pudieron leer tus entradas archivadas del diario, asi que no se creo ninguna copia ZIP; tus datos no han cambiado. Cierra otras pestanas de CannaGuide o reinicia la app e intentalo de nuevo.',
         includePhotos: 'Incluir fotos',
         photoCount_one: '{{count}} foto',
         photoCount_other: '{{count}} fotos',

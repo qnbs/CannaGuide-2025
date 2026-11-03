@@ -1,5 +1,6 @@
 /** Why an export produced no archive, where the UI can say more than "failed". */
-export type BackupExportErrorCode = 'imagesUnreadable' | 'imageNameNotRestorable'
+export type BackupExportErrorCode =
+    'imagesUnreadable' | 'imageNameNotRestorable' | 'archivedJournalUnreadable'
 
 export interface BackupMetadata {
     version: string
@@ -7,6 +8,8 @@ export interface BackupMetadata {
     appVersion: string
     plantCount: number
     imageCount: number
+    /** Archived journal entries in `archived-journal.json`; absent when there are none (#667). */
+    archivedJournalEntryCount?: number
 }
 
 export interface BackupExportResult {

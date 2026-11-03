@@ -1214,6 +1214,8 @@ export const settingsView = {
         exportError: 'ZIP-Backup konnte nicht erstellt werden.',
         exportImagesError:
             'Deine Fotos konnten nicht gelesen werden, daher wurde kein ZIP-Backup erstellt -- deine Daten sind unveraendert. Schliesse andere CannaGuide-Tabs oder starte die App neu und versuche es erneut.',
+        exportArchivedJournalError:
+            'Deine archivierten Tagebucheintraege konnten nicht gelesen werden, daher wurde kein ZIP-Backup erstellt -- deine Daten sind unveraendert. Schliesse andere CannaGuide-Tabs oder starte die App neu und versuche es erneut.',
         includePhotos: 'Fotos einschliessen',
         photoCount_one: '{{count}} Foto',
         photoCount_other: '{{count}} Fotos',

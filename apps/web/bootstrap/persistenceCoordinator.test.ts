@@ -144,3 +144,68 @@ describe('persistenceCoordinator', () => {
         }
     })
 })
+
+describe('stopPersistenceForOwnershipLoss (GH #669)', () => {
+    let stopCoordinator: typeof import('./persistenceCoordinator')
+
+    beforeEach(async () => {
+        vi.resetModules()
+        localStorage.clear()
+        stopCoordinator = await import('./persistenceCoordinator')
+    })
+
+    it('skips every write that has not started, for good', async () => {
+        await stopCoordinator.stopPersistenceForOwnershipLoss()
+        const skipped = vi.fn(() => Promise.resolve())
+
+        await expect(stopCoordinator.schedulePersistenceWrite(skipped)).resolves.toBe(false)
+        await expect(stopCoordinator.schedulePersistenceWrite(skipped)).resolves.toBe(false)
+        expect(skipped).not.toHaveBeenCalled()
+    })
+
+    it('waits for a write that had already started', async () => {
+        let finishWrite: (() => void) | undefined
+        const writeBlocked = new Promise<void>((resolve) => {
+            finishWrite = resolve
+        })
+        const started = vi.fn()
+        const active = stopCoordinator.schedulePersistenceWrite(async () => {
+            started()
+            await writeBlocked
+        })
+        await vi.waitFor(() => expect(started).toHaveBeenCalledOnce())
+
+        let drained = false
+        const stopping = stopCoordinator.stopPersistenceForOwnershipLoss().then(() => {
+            drained = true
+        })
+        await Promise.resolve()
+        expect(drained).toBe(false)
+
+        finishWrite?.()
+        await stopping
+        await expect(active).resolves.toBe(true)
+        expect(drained).toBe(true)
+    })
+
+    it('skips a write that was queued before the stop and queues none after it', async () => {
+        const queued = vi.fn(() => Promise.resolve())
+        const beforeStop = vi.fn(() => Promise.resolve())
+        const first = stopCoordinator.schedulePersistenceWrite(beforeStop)
+
+        await stopCoordinator.stopPersistenceForOwnershipLoss()
+        await expect(first).resolves.toBe(false)
+        expect(beforeStop).not.toHaveBeenCalled()
+
+        await expect(stopCoordinator.schedulePersistenceWrite(queued)).resolves.toBe(false)
+        expect(queued).not.toHaveBeenCalled()
+    })
+
+    it('leaves safe recovery available on the error screen', async () => {
+        await stopCoordinator.stopPersistenceForOwnershipLoss()
+
+        const resume = await stopCoordinator.suspendPersistenceForRecovery()
+
+        expect(resume).not.toBeNull()
+    })
+})

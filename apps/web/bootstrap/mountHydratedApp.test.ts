@@ -1,13 +1,38 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
+import { renderError, renderOtherTabNotice } from './render'
+import { hydrateApplicationStores } from './store'
+import { registerRecoveryListeners } from './recovery'
+import {
+    claimWriterRole,
+    releaseWriterRole,
+    waitForWriterRole,
+    watchForCacheRestore,
+    type WriterRole,
+} from './writerOwnership'
+import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
 
 vi.mock('@/i18n', () => ({ i18nPromise: Promise.resolve() }))
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
-vi.mock('./render', () => ({ renderError: vi.fn() }))
+vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn() }))
+vi.mock('./writerOwnership', () => ({
+    claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
+    waitForWriterRole: vi.fn(),
+    releaseWriterRole: vi.fn(() => {
+        order.push('release')
+    }),
+    watchForCacheRestore: vi.fn(() => vi.fn()),
+}))
+vi.mock('./persistenceCoordinator', () => ({
+    stopPersistenceForOwnershipLoss: vi.fn(() => {
+        order.push('stop')
+        return Promise.resolve()
+    }),
+}))
 vi.mock('./store', () => ({ hydrateApplicationStores: vi.fn(async () => ({ hydratedStore: {} })) }))
 vi.mock('./crdt', () => ({ initializeCrdtLayer: vi.fn() }))
 vi.mock('./postHydration', () => ({
@@ -70,4 +95,102 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
         await mountHydratedApp()
         expect(order).toEqual(['sync', 'services'])
     })
+})
+
+describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        order.length = 0
+    })
+
+    it('shows the notice and starts no store, recovery handler or save', async () => {
+        vi.mocked(claimWriterRole).mockResolvedValueOnce('reader')
+
+        await mountHydratedApp()
+
+        expect(renderOtherTabNotice).toHaveBeenCalledOnce()
+        expect(hydrateApplicationStores).not.toHaveBeenCalled()
+        expect(registerRecoveryListeners).not.toHaveBeenCalled()
+        expect(order).toEqual([])
+    })
+
+    it('reloads the reader once the writer has closed', async () => {
+        vi.mocked(claimWriterRole).mockResolvedValueOnce('reader')
+        const reload = vi.fn()
+        vi.stubGlobal('location', { reload })
+
+        await mountHydratedApp()
+        const reloadReader = vi.mocked(renderOtherTabNotice).mock.calls[0]?.[0]
+        const onAvailable = vi.mocked(waitForWriterRole).mock.calls[0]?.[0]
+        reloadReader?.()
+        onAvailable?.()
+
+        expect(reload).toHaveBeenCalledTimes(2)
+        vi.unstubAllGlobals()
+    })
+
+    it.each(['writer', 'unsupported'] as const)('starts normally as %s', async (role) => {
+        vi.mocked(claimWriterRole).mockResolvedValueOnce(role)
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+
+        expect(renderOtherTabNotice).not.toHaveBeenCalled()
+        expect(order).toEqual(['sync', 'services'])
+    })
+
+    it('gives the writer role up when the start fails, so other tabs are not blocked', async () => {
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new Error('hydration failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await mountHydratedApp()
+
+        expect(releaseWriterRole).toHaveBeenCalledOnce()
+        expect(renderError).toHaveBeenCalledOnce()
+    })
+
+    it('stops saving before it hands the role on, so a stale tab cannot overwrite the next', async () => {
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new Error('hydration failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await mountHydratedApp()
+
+        expect(order).toEqual(['stop', 'release'])
+    })
+
+    it('stops watching for a cache restore once the start has failed', async () => {
+        const stopWatching = vi.fn()
+        vi.mocked(watchForCacheRestore).mockReturnValueOnce(stopWatching)
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new Error('hydration failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await mountHydratedApp()
+
+        expect(stopWatching).toHaveBeenCalledOnce()
+    })
+
+    it('starts over when a writer tab is restored from the back/forward cache', async () => {
+        const reload = vi.fn()
+        vi.stubGlobal('location', { reload })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+        const onRestore = vi.mocked(watchForCacheRestore).mock.calls[0]?.[0]
+        onRestore?.()
+
+        expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(reload).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
+    })
+
+    it.each(['reader', 'unsupported'] as const)(
+        'does not watch for a cache restore as %s',
+        async (role) => {
+            vi.mocked(claimWriterRole).mockResolvedValueOnce(role)
+
+            await mountHydratedApp()
+
+            expect(watchForCacheRestore).not.toHaveBeenCalled()
+        },
+    )
 })

@@ -67,6 +67,12 @@ export const common = {
         italic: 'Cursief',
         list: 'Lijst',
     },
+    otherTab: {
+        title: 'Geopend in een ander tabblad',
+        description:
+            'CannaGuide is al geopend in een ander tabblad of venster. Slechts een van de twee kan je gegevens opslaan, dus dit tabblad is gepauzeerd zodat ze elkaar niet overschrijven. Sluit het andere tabblad en dit laadt zichzelf opnieuw, of laad het handmatig opnieuw.',
+        reload: 'Opnieuw laden',
+    },
     errorBoundary: {
         title: 'Er is iets misgegaan.',
         description:

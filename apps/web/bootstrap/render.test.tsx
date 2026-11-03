@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
     getT: vi.fn(() => (key: string) => {
         if (key === 'common.errorBoundary.safeRecovery') return 'Try Safe Recovery'
+        if (key === 'common.otherTab.reload') return 'Reload this tab'
         if (key === 'common.errorBoundary.safeRecoveryDescription') {
             return 'Restore the last validated backup.'
         }
@@ -23,6 +24,7 @@ vi.mock('@/components/common/ErrorBoundary', () => ({
 }))
 
 let renderError: typeof import('./render').renderError
+let renderOtherTabNotice: typeof import('./render').renderOtherTabNotice
 
 describe('renderError', () => {
     beforeEach(async () => {
@@ -44,5 +46,27 @@ describe('renderError', () => {
         expect(screen.getByText('Restore the last validated backup.')).toBeInTheDocument()
         expect(recoveryHandler).toHaveBeenCalledOnce()
         globalThis.removeEventListener('cannaguide-safe-recovery-request', recoveryHandler)
+    })
+})
+
+describe('renderOtherTabNotice', () => {
+    beforeEach(async () => {
+        vi.resetModules()
+        ;({ renderOtherTabNotice } = await import('./render'))
+    })
+
+    it('explains the pause and lets the user reload', () => {
+        document.body.innerHTML = '<div id="root"></div>'
+        const reload = vi.fn()
+
+        act(() => {
+            renderOtherTabNotice(reload)
+        })
+
+        const notice = screen.getByRole('alert')
+        expect(notice).toHaveTextContent('common.otherTab.title')
+        expect(notice).toHaveTextContent('common.otherTab.description')
+        fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
+        expect(reload).toHaveBeenCalledOnce()
     })
 })

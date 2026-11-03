@@ -4,6 +4,9 @@ const PERSISTENCE_LOCK_NAME = 'cannaguide.persisted-state'
 const RECOVERY_EPOCH_KEY = 'cannaguide.recoveryEpoch'
 
 let persistenceSuspended = false
+// Set for good when this page no longer owns the saved data (GH #669). Unlike
+// the recovery suspension it is never resumed.
+let persistenceStopped = false
 let activeWrite: Promise<void> = Promise.resolve()
 
 type RecoveryEpoch = { available: true; value: string | null } | { available: false }
@@ -94,17 +97,20 @@ if (typeof window !== 'undefined') {
     })
 }
 
+const persistenceBlocked = (): boolean =>
+    persistenceSuspended || persistenceStopped || recoveryEpochChanged()
+
 /** Serialize writes and skip any write that has not started when recovery begins. */
 export const schedulePersistenceWrite = async (write: () => Promise<void>): Promise<boolean> => {
-    if (persistenceSuspended || recoveryEpochChanged()) return false
+    if (persistenceBlocked()) return false
 
     let completed = false
     const scheduledWrite = activeWrite.then(async () => {
-        if (persistenceSuspended || recoveryEpochChanged()) return
+        if (persistenceBlocked()) return
         await runWithSharedPersistenceLock(async () => {
             // Re-check after acquiring the cross-tab lock. Recovery may have
             // committed a new epoch while this write was queued.
-            if (persistenceSuspended || recoveryEpochChanged()) return
+            if (persistenceBlocked()) return
             await write()
             completed = true
         })
@@ -130,4 +136,16 @@ export const suspendPersistenceForRecovery = async (): Promise<ResumePersistence
         resumed = true
         persistenceSuspended = false
     }
+}
+
+/**
+ * This page must not save any more because another tab may own the data now
+ * (the writer role was given up after a failed start, or the page came back
+ * from the back/forward cache without the lock). New and queued writes are
+ * skipped at once; the returned promise settles when a write that had already
+ * started is done. Safe recovery stays available.
+ */
+export const stopPersistenceForOwnershipLoss = async (): Promise<void> => {
+    persistenceStopped = true
+    await activeWrite
 }

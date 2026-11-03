@@ -229,6 +229,12 @@ export const common = {
         next: 'Next Page',
         title: 'Pagination',
     },
+    otherTab: {
+        title: 'Open in another tab',
+        description:
+            'CannaGuide is already open in another tab or window. Only one can save your data, so this one is paused to keep both from overwriting each other. Close the other tab and this one reloads itself, or reload it manually.',
+        reload: 'Reload',
+    },
     errorBoundary: {
         title: 'Something went wrong.',
         description:

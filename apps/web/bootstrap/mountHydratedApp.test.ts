@@ -4,7 +4,7 @@ import { mountHydratedApp } from './mountHydratedApp'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
-import { runPostHydrationServices } from './postHydration'
+import { applyLocalOnlyPrivacy, runPostHydrationServices } from './postHydration'
 import { registerRecoveryListeners } from './recovery'
 import {
     claimWriterRole,
@@ -45,6 +45,7 @@ vi.mock('./postHydration', () => ({
     runPostHydrationServices: vi.fn(() => {
         order.push('services')
     }),
+    applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
 }))
 vi.mock('./secrets', () => ({
     migrateLegacySecrets: vi.fn(),
@@ -230,6 +231,8 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(renderStaleTabNotice).toHaveBeenCalledOnce()
         expect(runPostHydrationServices).not.toHaveBeenCalled()
+        // The privacy setting still reaches Sentry on the stale page.
+        expect(applyLocalOnlyPrivacy).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
     })
 
@@ -239,5 +242,6 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         await mountHydratedApp()
 
         expect(runPostHydrationServices).toHaveBeenCalledOnce()
+        expect(applyLocalOnlyPrivacy).not.toHaveBeenCalled()
     })
 })

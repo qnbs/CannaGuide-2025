@@ -41,9 +41,10 @@ export const replacePrimaryPersistedSnapshot = async (
     continueSaving = false,
 ): Promise<boolean> => {
     const migratedSnapshot = migratePersistedSnapshot(snapshot)
-    return schedulePersistenceWrite(async () => {
+    const replaced = await schedulePersistenceWrite(async () => {
         await replaceSnapshot(migratedSnapshot, continueSaving)
     })
+    return replaced
 }
 
 /** Replace a snapshot and any dependent stores while stale persistence is fenced. */

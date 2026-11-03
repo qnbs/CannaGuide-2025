@@ -9,10 +9,13 @@ import { ttsService } from '@/services/ttsService'
 import { Sentry } from '@/services/sentryService'
 import type { FlushPersistedState } from './persistence'
 
-export const runPostHydrationServices = async (
-    hydratedStore: AppStore,
-    flushPersistedState?: FlushPersistedState,
-): Promise<void> => {
+/**
+ * Applies the local-only privacy setting. Runs first in runPostHydrationServices,
+ * and on its own on a page that was refused as stale (bootstrap/mountHydratedApp.ts):
+ * Sentry starts before hydration, so a local-only user's page must switch it off
+ * even when none of the other services start.
+ */
+export const applyLocalOnlyPrivacy = async (hydratedStore: AppStore): Promise<void> => {
     // FIRST, before any service that can reach the network.
     //
     // localOnlyModeService keeps its state in a module variable initialised to
@@ -35,6 +38,13 @@ export const runPostHydrationServices = async (
         const { disableSentry } = await import('@/services/sentryService')
         disableSentry()
     }
+}
+
+export const runPostHydrationServices = async (
+    hydratedStore: AppStore,
+    flushPersistedState?: FlushPersistedState,
+): Promise<void> => {
+    await applyLocalOnlyPrivacy(hydratedStore)
 
     await strainService.init()
     hydratedStore.dispatch(initializeSimulation())

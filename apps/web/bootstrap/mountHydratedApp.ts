@@ -12,7 +12,7 @@ import {
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
-import { runPostHydrationServices } from './postHydration'
+import { applyLocalOnlyPrivacy, runPostHydrationServices } from './postHydration'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 
 /**
@@ -62,12 +62,17 @@ const handleStaleSnapshot = (): void => {
     renderStaleTabNotice(() => globalThis.location.reload())
 }
 
-// A page that was refused as stale is only a notice now: nothing may start on it.
+// A page that was refused as stale is only a notice now: no service starts on it,
+// except the privacy setting, which also has to reach Sentry.
 const runServicesUnlessStale = async (
     store: AppStore,
     flushPersistedState: FlushPersistedState,
 ): Promise<void> => {
-    if (!staleSnapshotHandled) await runPostHydrationServices(store, flushPersistedState)
+    if (staleSnapshotHandled) {
+        await applyLocalOnlyPrivacy(store)
+        return
+    }
+    await runPostHydrationServices(store, flushPersistedState)
 }
 
 const moveLegacySecrets = async (store: AppStore): Promise<boolean> => {

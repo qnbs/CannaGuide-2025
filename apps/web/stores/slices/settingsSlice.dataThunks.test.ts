@@ -9,7 +9,7 @@ vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { removeItem: vi.fn(async () => undefined) },
 }))
 vi.mock('@/bootstrap/persistenceCoordinator', () => ({
-    stopPersistenceForOwnershipLoss: vi.fn(async () => undefined),
+    stopPersistenceForOwnershipLoss: vi.fn(() => Promise.resolve()),
 }))
 vi.mock('@/services/persistedStateService', () => ({
     removePrimaryPersistedSnapshot: vi.fn(async () => true),

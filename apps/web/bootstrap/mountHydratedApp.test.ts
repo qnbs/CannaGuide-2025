@@ -3,6 +3,7 @@ import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
+import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
@@ -47,6 +48,7 @@ vi.mock('./postHydration', () => ({
         order.push('services')
     }),
 }))
+vi.mock('@/stores/snapshotRevision', () => ({ setStaleSnapshotHandler: vi.fn() }))
 vi.mock('./localOnlyPrivacy', () => ({
     applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
 }))
@@ -246,5 +248,19 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(runPostHydrationServices).toHaveBeenCalledOnce()
         expect(applyLocalOnlyPrivacy).not.toHaveBeenCalled()
+    })
+
+    it('registers the stale handler for writes that have no caller to handle them', async () => {
+        vi.stubGlobal('location', { reload: vi.fn() })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+        await mountHydratedApp()
+        const handler = vi.mocked(setStaleSnapshotHandler).mock.calls[0]?.[0]
+        order.length = 0
+
+        handler?.()
+
+        expect(order).toEqual(['stop', 'release'])
+        expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
     })
 })

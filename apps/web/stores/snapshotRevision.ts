@@ -16,6 +16,16 @@ import { indexedDBStorage } from './indexedDBStorage'
 /** undefined: the check is off for this page; otherwise the token this page last saw or wrote. */
 let knownRevision: string | undefined
 
+let onStaleSnapshot: (() => void) | undefined
+
+/**
+ * The page's reaction to a refused write that has no caller to handle it (the
+ * start registers it): stop saving, give the writer role up, ask for a reload.
+ */
+export const setStaleSnapshotHandler = (handler: (() => void) | undefined): void => {
+    onStaleSnapshot = handler
+}
+
 export class StaleSnapshotError extends Error {
     constructor() {
         super('The saved state was changed by another tab or window since this page loaded.')
@@ -127,5 +137,8 @@ export const updateSnapshot = async (
         expected,
         newRevision(),
     )
-    if (!applied) throw new StaleSnapshotError()
+    if (!applied) {
+        onStaleSnapshot?.()
+        throw new StaleSnapshotError()
+    }
 }

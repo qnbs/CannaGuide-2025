@@ -233,13 +233,40 @@ describe('snapshot revision (GH #669)', () => {
         await expect(updating.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved in between')
     })
 
-    it('leaves the snapshot alone when the update has nothing to change', async () => {
+    it('leaves the snapshot and the revision alone when the update has nothing to change', async () => {
         const tab = await openTab()
         await tab.revision.rememberStoredRevision()
+        await tab.revision.writeSnapshot('kept')
+        const revisionBefore = await tab.storage.getItem(REDUX_STATE_REVISION_KEY)
 
         await tab.revision.updateSnapshot(() => null)
 
-        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('kept')
+        await expect(tab.storage.getItem(REDUX_STATE_REVISION_KEY)).resolves.toBe(revisionBefore)
+    })
+
+    it('tells the page when an update is refused, so it can stop and ask for a reload', async () => {
+        const updating = await openTab()
+        const other = await openTab()
+        const onStale = vi.fn()
+        updating.revision.setStaleSnapshotHandler(onStale)
+        await updating.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+        await other.revision.writeSnapshot('saved by the other tab')
+
+        await expect(
+            updating.revision.updateSnapshot((current) => `${current}+x`),
+        ).resolves.toBeUndefined()
+        expect(onStale).not.toHaveBeenCalled()
+        await other.revision.rememberStoredRevision()
+
+        await expect(
+            updating.revision.updateSnapshot(async (current) => {
+                await other.revision.writeSnapshot('saved in between')
+                return `${current}+y`
+            }),
+        ).rejects.toMatchObject({ name: 'StaleSnapshotError' })
+        expect(onStale).toHaveBeenCalledOnce()
     })
 
     it('saves as before when no revision was loaded, and writes no revision', async () => {

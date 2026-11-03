@@ -1,4 +1,5 @@
 import type { AppStore } from '@/stores/store'
+import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
 import { i18nPromise } from '@/i18n'
 import { registerRecoveryListeners } from './recovery'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
@@ -121,6 +122,7 @@ const showStartupError = async (error: unknown): Promise<void> => {
 
 export const mountHydratedApp = async (): Promise<void> => {
     staleSnapshotHandled = false
+    setStaleSnapshotHandler(handleStaleSnapshot)
     try {
         if (!(await takeWriterRole())) return
 

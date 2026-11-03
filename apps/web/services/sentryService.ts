@@ -61,7 +61,11 @@ export const initSentry = (): void => {
     const version = readRunningBuildVersion()
     _initPromise = import('@sentry/react').then((mod) => {
         // Local-only mode may have switched Sentry off while the SDK was loading.
-        if (_sentryDisabledByLocalOnly) return
+        // Forget the pending init too, or enableSentry() could never start it again.
+        if (_sentryDisabledByLocalOnly) {
+            _initPromise = null
+            return
+        }
         _sentry = mod
         mod.init({
             dsn,

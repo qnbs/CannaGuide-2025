@@ -14,8 +14,6 @@ const loadService = () => {
     return import('./sentryService')
 }
 
-const afterSdkImport = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
-
 describe('Sentry disabled while the SDK is still loading', () => {
     beforeEach(() => {
         vi.clearAllMocks()
@@ -31,7 +29,7 @@ describe('Sentry disabled while the SDK is still loading', () => {
         const service = await loadService()
 
         service.initSentry()
-        await afterSdkImport()
+        await service.Sentry.ready
 
         expect(sdk.init).toHaveBeenCalledOnce()
     })
@@ -40,9 +38,23 @@ describe('Sentry disabled while the SDK is still loading', () => {
         const service = await loadService()
 
         service.initSentry()
+        const loading = service.Sentry.ready
         service.disableSentry()
-        await afterSdkImport()
+        await loading
 
         expect(sdk.init).not.toHaveBeenCalled()
+    })
+
+    it('can be enabled again after it was skipped while loading', async () => {
+        const service = await loadService()
+        service.initSentry()
+        const loading = service.Sentry.ready
+        service.disableSentry()
+        await loading
+
+        service.enableSentry()
+        await service.Sentry.ready
+
+        expect(sdk.init).toHaveBeenCalledOnce()
     })
 })

@@ -31,11 +31,12 @@ vi.mock('@/stores/indexedDBStorage', () => ({
             value: string | null,
             revisionName: string,
             next: string,
+            _expected: string | null,
         ) => {
             if (value === null) db.data.delete(name)
             else db.data.set(name, value)
             db.data.set(revisionName, next)
-            return Promise.resolve()
+            return Promise.resolve(true)
         },
         setItemIfRevision: (
             name: string,

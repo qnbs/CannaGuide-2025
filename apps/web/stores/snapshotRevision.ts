@@ -105,19 +105,24 @@ export const replaceSnapshot = async (
     continueSaving = false,
 ): Promise<void> => {
     const next = newRevision()
-    await indexedDBStorage.replaceItemRotatingRevision(
+    const wasCurrent = await indexedDBStorage.replaceItemRotatingRevision(
         REDUX_STATE_KEY,
         serializedState,
         REDUX_STATE_REVISION_KEY,
         next,
+        knownRevision ?? null,
     )
-    // The token was just written, so storing it works: a page that started without
-    // the check (its revision could not be read) starts checking from here on, after
-    // the repair at start as well as after a rolled-back safe recovery.
-    if (continueSaving) knownRevision = next
-    // A page that runs without the check would otherwise save the old state over the
-    // replacement on its way out: arm the check with a token that never matches.
-    else knownRevision ??= newRevision()
+    if (continueSaving && (knownRevision === undefined || wasCurrent)) {
+        // The token was just written, so storing it works: a page that started
+        // without the check (its revision could not be read) starts checking from
+        // here on. A page that was up to date follows. A page that was already
+        // stale does not, or its old state could overwrite the newer save it missed.
+        knownRevision = next
+    } else {
+        // A page that runs without the check would otherwise save the old state over
+        // the replacement on its way out: arm the check with a token that never matches.
+        knownRevision ??= newRevision()
+    }
 }
 
 /**

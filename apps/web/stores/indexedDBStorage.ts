@@ -153,22 +153,33 @@ const putIfRevision = async (
  * revision, in one transaction, whatever the stored revision is. For deliberate
  * replacements (import, restore, repair, reset): a tab that still holds the
  * old revision is then refused at its next save instead of overwriting them.
+ * Resolves to whether the stored revision was `expected` before the replacement,
+ * so a caller can tell whether its page was up to date.
  */
 const replaceRotatingRevision = async (
     name: string,
     value: string | null,
     revisionName: string,
     next: string,
-): Promise<void> => {
+    expected: string | null,
+): Promise<boolean> => {
     const conn = await openDB()
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<boolean>((resolve, reject) => {
         const transaction = conn.transaction(STORE_NAME, 'readwrite')
         const store = transaction.objectStore(STORE_NAME)
-        if (value === null) store.delete(name)
-        else store.put(value, name)
-        store.put(next, revisionName)
+        let wasCurrent = false
 
-        transaction.oncomplete = () => resolve()
+        const read = store.get(revisionName)
+        read.onsuccess = () => {
+            const stored: unknown = read.result
+            wasCurrent = (typeof stored === 'string' && stored !== '' ? stored : null) === expected
+            if (value === null) store.delete(name)
+            else store.put(value, name)
+            store.put(next, revisionName)
+        }
+        read.onerror = () => reject(read.error)
+
+        transaction.oncomplete = () => resolve(wasCurrent)
         transaction.onerror = () => reject(transaction.error)
         transaction.onabort = () => reject(transaction.error ?? new Error('Transaction aborted'))
     })

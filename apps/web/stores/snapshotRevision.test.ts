@@ -186,6 +186,21 @@ describe('snapshot revision (GH #669)', () => {
         await expect(other.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved by the other tab')
     })
 
+    it('does not let a page that is already stale adopt the token of a replacement it keeps running after', async () => {
+        const stale = await openTab()
+        const other = await openTab()
+        await stale.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+        await other.revision.writeSnapshot('newer save of the other tab')
+
+        await stale.revision.replaceSnapshot('rolled back', true)
+
+        await expect(stale.revision.writeSnapshot('old state')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(stale.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('rolled back')
+    })
+
     it('arms the check after a replacement on a page that started without it', async () => {
         const tab = await openTab()
         vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))

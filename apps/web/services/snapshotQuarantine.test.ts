@@ -3,22 +3,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const mocks = vi.hoisted(() => ({
     schedule: vi.fn(),
     runExclusive: vi.fn(),
-    removePrimary: vi.fn(),
     getItem: vi.fn(),
     setItem: vi.fn(),
+    removeItem: vi.fn(),
 }))
 
 vi.mock('@/bootstrap/persistenceCoordinator', () => ({
     schedulePersistenceWrite: mocks.schedule,
     runWithExclusiveRecoveryLock: mocks.runExclusive,
 }))
-vi.mock('@/services/persistedStateService', () => ({
-    removePrimaryPersistedSnapshot: mocks.removePrimary,
-}))
 vi.mock('@/stores/indexedDBStorage', () => ({
-    indexedDBStorage: { getItem: mocks.getItem, setItem: mocks.setItem },
+    indexedDBStorage: {
+        getItem: mocks.getItem,
+        setItem: mocks.setItem,
+        removeItem: mocks.removeItem,
+    },
 }))
-vi.mock('@/constants', () => ({ REDUX_STATE_QUARANTINE_KEY: 'quarantine' }))
+vi.mock('@/constants', () => ({
+    REDUX_STATE_KEY: 'primary',
+    REDUX_STATE_QUARANTINE_KEY: 'quarantine',
+}))
 
 import {
     discardUnreadablePrimarySnapshot,
@@ -48,7 +52,6 @@ describe('quarantineUnreadableSnapshot', () => {
             await write()
             return true
         })
-        mocks.removePrimary.mockResolvedValue(true)
     })
 
     it('stores the first unreadable snapshot and reads it back', async () => {
@@ -153,32 +156,73 @@ describe('discardUnreadablePrimarySnapshot', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
+        vi.spyOn(console, 'debug').mockImplementation(() => undefined)
         mocks.runExclusive.mockImplementation((operation: () => Promise<unknown>) => operation())
-        mocks.removePrimary.mockResolvedValue(true)
+        mocks.removeItem.mockImplementation(() => Promise.resolve())
     })
 
-    it('removes the primary once the snapshot is quarantined', async () => {
-        useMemoryStorage()
+    it('quarantines, then removes the primary that still holds the failed snapshot', async () => {
+        const stored = useMemoryStorage({ primary: '{"version":5}' })
 
         await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(true)
 
-        expect(mocks.removePrimary).toHaveBeenCalledTimes(1)
+        expect(stored.quarantine).toBe('{"version":5}')
+        expect(mocks.removeItem).toHaveBeenCalledWith('primary')
+    })
+
+    it('does all of it in a single exclusive section', async () => {
+        useMemoryStorage({ primary: '{"version":5}' })
+
+        await discardUnreadablePrimarySnapshot('{"version":5}')
+
+        expect(mocks.runExclusive).toHaveBeenCalledTimes(1)
+    })
+
+    it('keeps a primary that another tab saved since the snapshot failed', async () => {
+        useMemoryStorage({ primary: '{"version":5,"newer":true}' })
+
+        await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(false)
+
+        expect(mocks.removeItem).not.toHaveBeenCalled()
     })
 
     it('keeps the primary when the quarantine could not be written', async () => {
-        mocks.getItem.mockResolvedValue(null)
+        mocks.getItem.mockImplementation((key: string) =>
+            Promise.resolve(key === 'primary' ? '{"version":5}' : null),
+        )
         mocks.setItem.mockRejectedValue(new Error('QuotaExceededError'))
 
         await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(false)
 
-        expect(mocks.removePrimary).not.toHaveBeenCalled()
+        expect(mocks.removeItem).not.toHaveBeenCalled()
     })
 
     it('still removes the primary when an earlier snapshot already holds the key', async () => {
-        useMemoryStorage({ quarantine: '{"first":true}' })
+        useMemoryStorage({ primary: '{"second":true}', quarantine: '{"first":true}' })
 
         await expect(discardUnreadablePrimarySnapshot('{"second":true}')).resolves.toBe(true)
 
-        expect(mocks.removePrimary).toHaveBeenCalledTimes(1)
+        expect(mocks.removeItem).toHaveBeenCalledWith('primary')
+    })
+
+    it('keeps the primary when there is no snapshot that proves what it holds', async () => {
+        await expect(discardUnreadablePrimarySnapshot(null)).resolves.toBe(false)
+        await expect(discardUnreadablePrimarySnapshot()).resolves.toBe(false)
+
+        expect(mocks.runExclusive).not.toHaveBeenCalled()
+        expect(mocks.removeItem).not.toHaveBeenCalled()
+    })
+
+    it('uses the shared write path where the exclusive lock is unavailable', async () => {
+        useMemoryStorage({ primary: '{"version":5}' })
+        mocks.runExclusive.mockResolvedValue(null)
+        mocks.schedule.mockImplementation(async (write: () => Promise<void>) => {
+            await write()
+            return true
+        })
+
+        await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(true)
+
+        expect(mocks.schedule).toHaveBeenCalledTimes(1)
     })
 })

@@ -298,7 +298,13 @@ export const common = {
             'Zugangsdaten werden über unverschlüsseltes ws:// gesendet. Verwende stattdessen wss://.',
         connectionRestored: 'MQTT-Verbindung wiederhergestellt.',
         connectionLost: 'MQTT-Verbindung unterbrochen.',
-        payloadInvalid: 'Eine Sensornachricht wurde abgelehnt: {{detail}}',
+        payloadInvalid: 'Eine Sensornachricht wurde abgelehnt ({{detail}}).',
+        payloadKind: {
+            temperature: 'Temperaturwert',
+            humidity: 'Luftfeuchtewert',
+            ph: 'pH-Wert',
+            env: 'Umgebungswerte',
+        },
     },
     communityShare: {
         invalidGistUrl: 'Ungültige Gist-URL oder ID.',

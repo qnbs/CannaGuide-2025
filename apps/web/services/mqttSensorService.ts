@@ -63,6 +63,16 @@ export interface IoTEvent {
     timestamp: number
 }
 
+type SensorPayloadKind = 'temperature' | 'humidity' | 'ph' | 'env'
+
+/** Explicit keys (not built from the kind), so the i18n usage check can see them. */
+const PAYLOAD_KIND_KEYS: Readonly<Record<SensorPayloadKind, string>> = {
+    temperature: 'common.mqtt.payloadKind.temperature',
+    humidity: 'common.mqtt.payloadKind.humidity',
+    ph: 'common.mqtt.payloadKind.ph',
+    env: 'common.mqtt.payloadKind.env',
+}
+
 const DEFAULT_CONFIG: MqttSensorConfig = {
     brokerUrl: 'wss://localhost:9001',
     topicPrefix: 'cannaguide/sensors',
@@ -424,7 +434,7 @@ class MqttSensorService {
             case 'temperature': {
                 const parsed = singleValuePayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('temperature payload invalid')
+                    this.trackValidationError('temperature')
                     return
                 }
                 this.partialTemp = temperatureSchema.safeParse(parsed.data.value).success
@@ -435,7 +445,7 @@ class MqttSensorService {
             case 'humidity': {
                 const parsed = singleValuePayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('humidity payload invalid')
+                    this.trackValidationError('humidity')
                     return
                 }
                 this.partialHumidity = humiditySchema.safeParse(parsed.data.value).success
@@ -446,7 +456,7 @@ class MqttSensorService {
             case 'ph': {
                 const parsed = singleValuePayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('ph payload invalid')
+                    this.trackValidationError('ph')
                     return
                 }
                 this.partialPh = phSchema.safeParse(parsed.data.value).success
@@ -458,7 +468,7 @@ class MqttSensorService {
                 // Combined payload -- validate & emit immediately
                 const parsed = envPayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('env payload invalid')
+                    this.trackValidationError('env')
                     return
                 }
                 const temp = temperatureSchema.safeParse(parsed.data.temperature).success
@@ -508,7 +518,8 @@ class MqttSensorService {
         }
     }
 
-    private trackValidationError(detail: string): void {
+    private trackValidationError(kind: SensorPayloadKind): void {
+        const detail = String(getT()(PAYLOAD_KIND_KEYS[kind]))
         this.telemetry.validationErrors += 1
         this.emitEvent({
             type: 'validation_error',

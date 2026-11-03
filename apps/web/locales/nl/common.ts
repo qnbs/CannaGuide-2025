@@ -98,7 +98,13 @@ export const common = {
             'Inloggegevens worden via onversleuteld ws:// verzonden. Gebruik in plaats daarvan wss://.',
         connectionRestored: 'MQTT-verbinding hersteld.',
         connectionLost: 'MQTT-verbinding verbroken.',
-        payloadInvalid: 'Een sensorbericht is geweigerd: {{detail}}',
+        payloadInvalid: 'Een sensorbericht is geweigerd ({{detail}}).',
+        payloadKind: {
+            temperature: 'temperatuurwaarde',
+            humidity: 'vochtigheidswaarde',
+            ph: 'pH-waarde',
+            env: 'omgevingswaarden',
+        },
     },
     errorBoundary: {
         title: 'Er is iets misgegaan.',

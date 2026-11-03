@@ -100,7 +100,13 @@ export const common = {
             'Las credenciales se env\u00EDan por ws:// sin cifrar. Usa wss:// en su lugar.',
         connectionRestored: 'Conexi\u00F3n MQTT restablecida.',
         connectionLost: 'Conexi\u00F3n MQTT perdida.',
-        payloadInvalid: 'Se rechaz\u00F3 un mensaje del sensor: {{detail}}',
+        payloadInvalid: 'Se rechaz\u00F3 un mensaje del sensor ({{detail}}).',
+        payloadKind: {
+            temperature: 'valor de temperatura',
+            humidity: 'valor de humedad',
+            ph: 'valor de pH',
+            env: 'valores ambientales',
+        },
     },
     errorBoundary: {
         title: 'Algo salio mal.',

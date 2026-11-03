@@ -293,7 +293,13 @@ export const common = {
         insecureCredentials: 'Credentials are sent over unencrypted ws://. Use wss:// instead.',
         connectionRestored: 'MQTT connection restored.',
         connectionLost: 'MQTT connection lost.',
-        payloadInvalid: 'A sensor message was rejected: {{detail}}',
+        payloadInvalid: 'A sensor message was rejected ({{detail}}).',
+        payloadKind: {
+            temperature: 'temperature reading',
+            humidity: 'humidity reading',
+            ph: 'pH reading',
+            env: 'environment readings',
+        },
     },
     communityShare: {
         invalidGistUrl: 'Invalid gist URL or ID.',

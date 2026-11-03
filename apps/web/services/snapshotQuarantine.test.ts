@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
     getItem: vi.fn(),
     setItem: vi.fn(),
     removeItem: vi.fn(),
+    replaceArgs: vi.fn(),
 }))
 
 vi.mock('@/bootstrap/persistenceCoordinator', () => ({
@@ -22,7 +23,10 @@ vi.mock('@/stores/indexedDBStorage', () => ({
 // The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
 // stands for the removal of the primary.
 vi.mock('@/stores/snapshotRevision', () => ({
-    replaceSnapshot: () => mocks.removeItem('primary'),
+    replaceSnapshot: (value: string | null, continueSaving?: boolean) => {
+        mocks.replaceArgs(value, continueSaving)
+        return mocks.removeItem('primary')
+    },
 }))
 vi.mock('@/constants', () => ({
     REDUX_STATE_KEY: 'primary',
@@ -173,6 +177,8 @@ describe('discardUnreadablePrimarySnapshot', () => {
 
         expect(stored.quarantine).toBe('{"version":5}')
         expect(mocks.removeItem).toHaveBeenCalledWith('primary')
+        // The page keeps running after the quarantine, so it follows the new revision.
+        expect(mocks.replaceArgs).toHaveBeenCalledWith(null, true)
     })
 
     it('does all of it in a single exclusive section', async () => {

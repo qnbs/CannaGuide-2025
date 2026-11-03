@@ -33,6 +33,9 @@ vi.mock('@/stores/indexedDBStorage', () => ({
             next: string,
             _expected: string | null,
         ) => {
+            if (db.failSet.has(name) || db.failSet.has(revisionName)) {
+                return Promise.reject(new Error('QuotaExceededError'))
+            }
             if (value === null) db.data.delete(name)
             else db.data.set(name, value)
             db.data.set(revisionName, next)

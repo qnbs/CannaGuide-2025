@@ -63,10 +63,11 @@ describe('resetAllData (#711 review)', () => {
     it('stops this page saving before a slice reset reloads it (#669)', async () => {
         vi.mocked(updatePrimaryPersistedSnapshot).mockResolvedValueOnce(true)
 
-        const result = await resetSliceData('notes')(vi.fn(), () => ({}), undefined)
+        const result = await resetSliceData('notes')(vi.fn(), () => ({}), null)
 
         expect(result.meta.requestStatus).toBe('fulfilled')
         expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(reload).toHaveBeenCalledOnce()
         expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
             reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
         )

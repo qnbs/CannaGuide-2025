@@ -117,4 +117,26 @@ describe('mqttSensorService in Local-Only Mode (GH #683)', () => {
 
         expect(mqtt.connect).not.toHaveBeenCalled()
     })
+
+    it('ignores a stale resume that arrives while the mode is on again', () => {
+        mqttSensorService.configure({ brokerUrl: 'wss://broker.hivemq.cloud:8884/mqtt' })
+        mqttSensorService.connect()
+        setLocalOnlyMode(true)
+        mqttSensorService.enforceLocalOnlyMode()
+        vi.mocked(mqtt.connect).mockClear()
+
+        mqttSensorService.resumeAfterLocalOnlyMode()
+
+        expect(mqtt.connect).not.toHaveBeenCalled()
+        expect(mqttSensorService.getConnectionState()).toBe('error')
+    })
+
+    it('ignores a stale enforce that arrives after the mode is off again', () => {
+        mqttSensorService.configure({ brokerUrl: 'wss://broker.hivemq.cloud:8884/mqtt' })
+        mqttSensorService.connect()
+
+        mqttSensorService.enforceLocalOnlyMode()
+
+        expect(mockClient.end).not.toHaveBeenCalled()
+    })
 })

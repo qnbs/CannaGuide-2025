@@ -105,4 +105,46 @@ describe('mqttClientService in Local-Only Mode (GH #683)', () => {
 
         expect(connect).not.toHaveBeenCalled()
     })
+
+    it('ignores a stale resume that arrives while the mode is on again', async () => {
+        const { setLocalOnlyMode, useIotStore, mqttClientService } = await load()
+        start(useIotStore, 'wss://broker.hivemq.cloud:8884/mqtt')
+        setLocalOnlyMode(true)
+        mqttClientService.enforceLocalOnlyMode()
+        connect.mockClear()
+
+        // OFF -> ON in quick succession; the OFF run resumes after ON is back.
+        mqttClientService.resumeAfterLocalOnlyMode()
+
+        expect(connect).not.toHaveBeenCalled()
+        expect(useIotStore.getState().connectionStatus).toBe('error')
+    })
+
+    it('ignores a stale enforce that arrives after the mode is off again', async () => {
+        const { useIotStore, mqttClientService } = await load()
+        start(useIotStore, 'wss://broker.hivemq.cloud:8884/mqtt')
+
+        mqttClientService.enforceLocalOnlyMode()
+
+        expect(mockClient.end).not.toHaveBeenCalled()
+    })
+
+    it('does not let a pending reconnect reach an internet broker once the mode is on', async () => {
+        vi.useFakeTimers()
+        try {
+            const { setLocalOnlyMode, useIotStore } = await load()
+            start(useIotStore, 'wss://broker.hivemq.cloud:8884/mqtt')
+            const onClose = mockClient.on.mock.calls.find(([event]) => event === 'close')?.[1] as
+                (() => void) | undefined
+            onClose?.()
+            connect.mockClear()
+
+            setLocalOnlyMode(true)
+            await vi.advanceTimersByTimeAsync(120_000)
+
+            expect(connect).not.toHaveBeenCalled()
+        } finally {
+            vi.useRealTimers()
+        }
+    })
 })

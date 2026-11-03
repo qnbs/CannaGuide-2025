@@ -70,12 +70,17 @@ const syncSentry = async (localOnly: boolean): Promise<void> => {
 const syncLocalOnlyMode = async (enabled: boolean) => {
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     setLocalOnlyMode(enabled)
-    try {
-        await syncSentry(enabled)
-    } finally {
-        // The privacy step must not depend on Sentry: a failing Sentry import or
-        // call must not leave a public MQTT broker connected.
-        await applyLocalOnlyModeToMqtt(enabled)
+    // Both steps run at once: the MQTT shutdown neither waits for the Sentry
+    // import nor fails with it, and the reverse. A stale run after a quick
+    // toggle is harmless, because both services read the live mode.
+    const results = await Promise.allSettled([
+        applyLocalOnlyModeToMqtt(enabled),
+        syncSentry(enabled),
+    ])
+    for (const result of results) {
+        if (result.status === 'rejected') {
+            console.error('[Privacy] Could not apply Local-Only Mode:', result.reason)
+        }
     }
 }
 

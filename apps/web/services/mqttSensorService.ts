@@ -65,12 +65,12 @@ export interface IoTEvent {
 
 type SensorPayloadKind = 'temperature' | 'humidity' | 'ph' | 'env'
 
-/** Explicit keys (not built from the kind), so the i18n usage check can see them. */
-const PAYLOAD_KIND_KEYS: Readonly<Record<SensorPayloadKind, string>> = {
-    temperature: 'common.mqtt.payloadKind.temperature',
-    humidity: 'common.mqtt.payloadKind.humidity',
-    ph: 'common.mqtt.payloadKind.ph',
-    env: 'common.mqtt.payloadKind.env',
+/** One getT() call with a fixed key string per kind, so the i18n usage check sees every key. */
+const PAYLOAD_KIND_LABELS: Readonly<Record<SensorPayloadKind, () => string>> = {
+    temperature: () => String(getT()('common.mqtt.payloadKind.temperature')),
+    humidity: () => String(getT()('common.mqtt.payloadKind.humidity')),
+    ph: () => String(getT()('common.mqtt.payloadKind.ph')),
+    env: () => String(getT()('common.mqtt.payloadKind.env')),
 }
 
 const DEFAULT_CONFIG: MqttSensorConfig = {
@@ -519,7 +519,7 @@ class MqttSensorService {
     }
 
     private trackValidationError(kind: SensorPayloadKind): void {
-        const detail = String(getT()(PAYLOAD_KIND_KEYS[kind]))
+        const detail = PAYLOAD_KIND_LABELS[kind]()
         this.telemetry.validationErrors += 1
         this.emitEvent({
             type: 'validation_error',

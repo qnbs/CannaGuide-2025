@@ -140,7 +140,7 @@ const notifyIfRateLimited = async (error: unknown): Promise<string> => {
     const { useUIStore } = await import('@/stores/useUIStore')
     const { getT } = await import('@/i18n')
     useUIStore.getState().addNotification({
-        message: getT()('common.ai.rateLimited', { seconds }),
+        message: getT()('ai.error.rateLimited', { seconds }),
         type: 'error',
     })
     return msg

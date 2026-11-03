@@ -69,11 +69,17 @@ async function findSourceFiles(dir) {
     return results
 }
 
-/** Extract all t('...') key references from source content. */
-function extractTKeys(content) {
+/**
+ * Extract all static key references from source content: `t('key')` in React
+ * code, and the two forms used outside it, `getT()('key')` and a translator
+ * stored as `translate` (`const translate = getT()`). Before, only `t(` was
+ * seen, so keys passed to `getT()(...)` were never checked: one of them,
+ * `common.ai.rateLimited`, did not exist.
+ */
+export function extractTKeys(content) {
     const keys = new Set()
-    // Match t('key'), t("key"), t(`key`)
-    const staticPattern = /\bt\(\s*['"`]([^'"`\n${}]+)['"`]/g
+    // Match t('key'), getT()('key'), translate('key'), with ', " or `
+    const staticPattern = /(?:\bt|\bgetT\(\)|\btranslate)\(\s*['"`]([^'"`\n${}]+)['"`]/g
     let match
     while ((match = staticPattern.exec(content)) !== null) {
         keys.add(match[1])

@@ -102,7 +102,8 @@ describe('egress gate', () => {
         vi.stubGlobal('fetch', fetchSpy)
         setLocalOnlyMode(true)
 
-        await egressFetch('./version.json', { cache: 'no-store' })
+        // A caller asking to follow redirects is overridden, too.
+        await egressFetch('./version.json', { cache: 'no-store', redirect: 'follow' })
 
         expect(fetchSpy).toHaveBeenCalledWith('./version.json', {
             cache: 'no-store',

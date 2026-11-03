@@ -97,6 +97,14 @@ vi.mock('@/services/sentryService', () => ({
     enableSentry: vi.fn(),
 }))
 
+vi.mock('@/services/mqttClientService', () => ({
+    mqttClientService: { enforceLocalOnlyMode: vi.fn(), resumeAfterLocalOnlyMode: vi.fn() },
+}))
+
+vi.mock('@/services/mqttSensorService', () => ({
+    mqttSensorService: { enforceLocalOnlyMode: vi.fn(), resumeAfterLocalOnlyMode: vi.fn() },
+}))
+
 vi.mock('@/services/local-ai', async (importOriginal) => {
     const actual = await importOriginal<Record<string, unknown>>()
     return {
@@ -274,6 +282,45 @@ describe('listenerMiddleware', () => {
             await vi.waitFor(() => {
                 expect(setLocalOnlyMode).toHaveBeenCalledWith(true)
                 expect(disableSentry).toHaveBeenCalled()
+            })
+        })
+
+        it('closes blocked MQTT connections when local-only mode is enabled (GH #683)', async () => {
+            const { mqttClientService } = await import('@/services/mqttClientService')
+            const { mqttSensorService } = await import('@/services/mqttSensorService')
+
+            store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
+
+            await vi.waitFor(() => {
+                expect(mqttClientService.enforceLocalOnlyMode).toHaveBeenCalled()
+                expect(mqttSensorService.enforceLocalOnlyMode).toHaveBeenCalled()
+            })
+        })
+
+        it('still closes blocked MQTT connections when the Sentry step fails', async () => {
+            const { disableSentry } = await import('@/services/sentryService')
+            const { mqttSensorService } = await import('@/services/mqttSensorService')
+            vi.mocked(disableSentry).mockImplementationOnce(() => {
+                throw new Error('sentry unavailable')
+            })
+            vi.mocked(mqttSensorService.enforceLocalOnlyMode).mockClear()
+
+            store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
+
+            await vi.waitFor(() => {
+                expect(mqttSensorService.enforceLocalOnlyMode).toHaveBeenCalled()
+            })
+        })
+
+        it('reopens paused MQTT connections when local-only mode is disabled', async () => {
+            const { mqttClientService } = await import('@/services/mqttClientService')
+            const { mqttSensorService } = await import('@/services/mqttSensorService')
+
+            store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: false }))
+
+            await vi.waitFor(() => {
+                expect(mqttClientService.resumeAfterLocalOnlyMode).toHaveBeenCalled()
+                expect(mqttSensorService.resumeAfterLocalOnlyMode).toHaveBeenCalled()
             })
         })
 

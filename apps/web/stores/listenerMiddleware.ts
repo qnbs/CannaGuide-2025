@@ -61,17 +61,22 @@ const applyLocalOnlyModeToMqtt = async (enabled: boolean): Promise<void> => {
     }
 }
 
+const syncSentry = async (localOnly: boolean): Promise<void> => {
+    const { disableSentry, enableSentry } = await import('@/services/sentryService')
+    if (localOnly) disableSentry()
+    else enableSentry()
+}
+
 const syncLocalOnlyMode = async (enabled: boolean) => {
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     setLocalOnlyMode(enabled)
-    if (enabled) {
-        const { disableSentry } = await import('@/services/sentryService')
-        disableSentry()
-    } else {
-        const { enableSentry } = await import('@/services/sentryService')
-        enableSentry()
+    try {
+        await syncSentry(enabled)
+    } finally {
+        // The privacy step must not depend on Sentry: a failing Sentry import or
+        // call must not leave a public MQTT broker connected.
+        await applyLocalOnlyModeToMqtt(enabled)
     }
-    await applyLocalOnlyModeToMqtt(enabled)
 }
 
 /**

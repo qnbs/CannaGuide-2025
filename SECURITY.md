@@ -157,8 +157,8 @@ On **2026-10-24**, the prepared correction lockfile passed production audits at 
 and low thresholds with zero reported advisories. The complete audit still failed on
 Zod 3 (high) and postcss-selector-parser 6 (moderate). Zod 3 occurs in Socket patch tooling
 and Chromium BiDi, whose shipped mapper also bundles Zod code. An external dependency
-override alone cannot replace those bytes. The existing extract-zip/braces exceptions
-remain unchanged and expire on **2026-11-15**. See [the current checkpoint](docs/toolchain-update.md#current-head-ci-and-follow-up-evidence--2026-10-24)
+override alone cannot replace those bytes. The extract-zip exceptions were renewed on
+**2026-11-04** until **2026-12-15** (see below). See [the current checkpoint](docs/toolchain-update.md#current-head-ci-and-follow-up-evidence--2026-10-24)
 for the boundary between local proof, CI qualification and deployment.
 
 On **2026-10-26**, the postcss-selector-parser 6 finding was remediated with the
@@ -166,6 +166,16 @@ On **2026-10-26**, the postcss-selector-parser 6 finding was remediated with the
 `scripts/security/postcss-selector-parser.test.mjs` pins the resolved version through
 the real Typography consumer and checks flat-selector parse time against a same-size
 benign control. Zod 3 remains open.
+
+On **2026-11-04**, the two dev-only extract-zip exceptions (GHSA-jmr9-qjv8-65gv,
+GHSA-7pqw-9j4j-h8q3) were renewed until **2026-12-15** after a fresh analysis. npm still has
+no extract-zip 2.0.2. The only path that drops extract-zip, `@lhci/cli` 0.16.0 -> Lighthouse
+13.6.0 -> `puppeteer-core` 25.16.0 (the latest release), pins `chromium-bidi@157.0.8090-0`,
+whose bundled mapper embeds Zod 4.6.5, below the GHSA-mrhx-c7xc-m3w5 floor of 4.6.6. The
+existing `chromium-bidi@14.0.0` patch does not apply to that version, so the bump would trade
+two dev-only findings for an unpatched bundled one. extract-zip runs only in the CI Lighthouse
+job. Recheck triggers: extract-zip 2.0.2 published, or a `puppeteer-core` release past the
+24-hour quarantine with a `chromium-bidi` that embeds Zod 4.6.6 or newer.
 
 After merging an override, confirm in GitHub **Security → Dependabot** that the related alert moves to **resolved** (or dismiss with justification if a false positive).
 

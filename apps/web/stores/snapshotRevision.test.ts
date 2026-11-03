@@ -445,9 +445,9 @@ describe('snapshot revision (GH #669)', () => {
             name: 'UnverifiedSnapshotError',
         })
         tab.revision.setUncheckedWritePermit(() => false)
-        await expect(tab.revision.writeSnapshot('unchecked')).rejects.toBeInstanceOf(
-            tab.revision.StaleSnapshotError,
-        )
+        const refusal = tab.revision.writeSnapshot('unchecked')
+        await expect(refusal).rejects.toBeInstanceOf(tab.revision.StaleSnapshotError)
+        await expect(refusal).rejects.toMatchObject({ name: 'UnverifiedSnapshotError' })
 
         await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('from another tab')
     })

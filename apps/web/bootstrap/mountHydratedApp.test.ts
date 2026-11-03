@@ -214,9 +214,12 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         await mountHydratedApp()
         const onRestore = vi.mocked(watchForCacheRestore).mock.calls[0]?.[0]
+        order.length = 0
         onRestore?.()
 
         expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        // No longer the writer before the reload, so no unchecked write is permitted.
+        expect(order).toEqual(['stop', 'release'])
         expect(reload).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
     })

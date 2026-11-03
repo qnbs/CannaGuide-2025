@@ -45,6 +45,9 @@ let stopWatchingCacheRestore: (() => void) | undefined
 const leaveRestoredPage = (): void => {
     // Stopping is synchronous; the promise only reports that a started write is done.
     stopPersistenceForOwnershipLoss().catch(() => undefined)
+    // The browser may already have dropped the lock; drop the hold too, so the
+    // page no longer counts as the writer (holdsWriterRole) until the reload.
+    releaseWriterRole()
     globalThis.location.reload()
 }
 

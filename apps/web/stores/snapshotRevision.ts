@@ -166,11 +166,9 @@ export const replaceSnapshot = async (
  * A replacement for the start, after which this page goes on running: it applies
  * only while no other tab has saved since this page read the revision, and then
  * the page follows the new revision. A page that runs without the check replaces
- * unconditionally and starts checking, but only while it holds the writer lock;
- * without it nothing is replaced. Resolves to whether it was applied.
+ * unconditionally and starts checking.
  */
-const replaceIfCurrent = async (serializedState: string | null): Promise<boolean> => {
-    if (knownRevision === undefined && !mayWriteUnchecked()) return false
+const replaceRotatingIfCurrent = async (serializedState: string | null): Promise<boolean> => {
     const next = newRevision()
     const applied = await indexedDBStorage.replaceItemRotatingRevision(
         REDUX_STATE_KEY,
@@ -184,6 +182,17 @@ const replaceIfCurrent = async (serializedState: string | null): Promise<boolean
     knownRevision = next
     return true
 }
+
+/** Whether this page may write: with the revision check, or without it under the writer lock. */
+const mayWriteAtAll = (): boolean => knownRevision !== undefined || mayWriteUnchecked()
+
+/**
+ * replaceRotatingIfCurrent, but a page without the check replaces only while it
+ * holds the writer lock; without it nothing is replaced. Resolves to whether it
+ * was applied.
+ */
+const replaceIfCurrent = (serializedState: string | null): Promise<boolean> =>
+    mayWriteAtAll() ? replaceRotatingIfCurrent(serializedState) : Promise.resolve(false)
 
 /**
  * The repair at start: replaces an unreadable primary with the backup, but only

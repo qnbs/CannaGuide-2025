@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppStore } from '@/stores/store'
-import { StaleSnapshotError, writeSnapshot } from '@/stores/snapshotRevision'
+import {
+    StaleSnapshotError,
+    UnverifiedSnapshotError,
+    writeSnapshot,
+} from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 
 vi.mock('./persistenceCoordinator', () => ({
@@ -18,10 +22,11 @@ vi.mock('@/stores/useUIStore', () => ({ getUISnapshot: () => ({}) }))
 vi.mock('@/services/settingsSecretStores', () => ({
     pendingLegacySecretPaths: vi.fn(() => []),
 }))
-vi.mock('@/stores/snapshotRevision', () => ({
-    StaleSnapshotError: class StaleSnapshotError extends Error {},
-    writeSnapshot: vi.fn(),
-}))
+vi.mock('@/stores/snapshotRevision', () => {
+    class StaleSnapshotError extends Error {}
+    class UnverifiedSnapshotError extends StaleSnapshotError {}
+    return { StaleSnapshotError, UnverifiedSnapshotError, writeSnapshot: vi.fn() }
+})
 
 const store = (): AppStore =>
     ({
@@ -56,6 +61,17 @@ describe('a save refused because another tab saved (GH #669)', () => {
 
         expect(saved).toBe(false)
         expect(onStale).toHaveBeenCalledOnce()
+    })
+
+    it('hands the refusal itself to the caller, so it can tell an unverified page apart', async () => {
+        const refusal = new UnverifiedSnapshotError()
+        vi.mocked(writeSnapshot).mockRejectedValueOnce(refusal)
+        const onStale = vi.fn()
+
+        const saved = await setupPersistedStateSync(store(), onStale)()
+
+        expect(saved).toBe(false)
+        expect(onStale).toHaveBeenCalledExactlyOnceWith(refusal)
     })
 
     it('does not report an ordinary failure as stale', async () => {

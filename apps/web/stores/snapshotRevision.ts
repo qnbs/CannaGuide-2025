@@ -87,19 +87,6 @@ export const writeSnapshot = async (serializedState: string): Promise<void> => {
     knownRevision = next
 }
 
-/**
- * A deliberate replacement of the saved snapshot (null: removal): import,
- * restore, repair, safe recovery, Reset all data. It does not check the
- * revision, because the user asked for it, but it stores a new one, so every
- * other tab that still holds the old one is refused at its next save instead of
- * overwriting it.
- *
- * This page is refused at its next save too, unless `continueSaving` is set.
- * That is what a replacement followed by a reload needs: the `pagehide` save of
- * the old page must not write the old state over the new one. Only callers after
- * which this page goes on running pass it: the repair at start and the rollback
- * of a failed safe recovery.
- */
 /** Whether this page takes the new token: only if it was up to date, or ran without the check. */
 const followsReplacement = (continueSaving: boolean, wasCurrent: boolean): boolean =>
     continueSaving && (knownRevision === undefined || wasCurrent)
@@ -113,6 +100,19 @@ const followsReplacement = (continueSaving: boolean, wasCurrent: boolean): boole
 const nextKnownRevision = (follows: boolean, next: string): string =>
     follows ? next : (knownRevision ?? newRevision())
 
+/**
+ * A deliberate replacement of the saved snapshot (null: removal): import,
+ * restore, safe recovery, Reset all data. It does not check the
+ * revision, because the user asked for it, but it stores a new one, so every
+ * other tab that still holds the old one is refused at its next save instead of
+ * overwriting it.
+ *
+ * This page is refused at its next save too, unless `continueSaving` is set.
+ * That is what a replacement followed by a reload needs: the `pagehide` save of
+ * the old page must not write the old state over the new one. Only callers after
+ * which this page goes on running pass it: the rollback of a failed safe
+ * recovery and the startup quarantine. (The repair at start is repairSnapshot.)
+ */
 export const replaceSnapshot = async (
     serializedState: string | null,
     continueSaving = false,

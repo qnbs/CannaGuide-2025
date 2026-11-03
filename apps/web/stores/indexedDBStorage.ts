@@ -110,6 +110,16 @@ export const releaseIndexedDBStorageAfterErase = (): void => {
     dbEraseHold = false
 }
 
+/** The token in a stored value, or null when there is none. */
+const revisionOf = (stored: unknown): string | null =>
+    typeof stored === 'string' && stored !== '' ? stored : null
+
+/** Puts `value` under `name`, or deletes `name` when the value is null. */
+const putOrDelete = (store: IDBObjectStore, name: string, value: string | null): void => {
+    if (value === null) store.delete(name)
+    else store.put(value, name)
+}
+
 /**
  * Writes `value` under `name` and `next` under `revisionName`, but only while
  * the stored revision is still `expected` (null: none stored; a page
@@ -133,9 +143,7 @@ const putIfRevision = async (
 
         const read = store.get(revisionName)
         read.onsuccess = () => {
-            const stored: unknown = read.result
-            const current = typeof stored === 'string' && stored !== '' ? stored : null
-            if (current !== expected) return
+            if (revisionOf(read.result) !== expected) return
             store.put(value, name)
             store.put(next, revisionName)
             applied = true
@@ -173,11 +181,9 @@ const replaceRotatingRevision = async (
 
         const read = store.get(revisionName)
         read.onsuccess = () => {
-            const stored: unknown = read.result
-            wasCurrent = (typeof stored === 'string' && stored !== '' ? stored : null) === expected
+            wasCurrent = revisionOf(read.result) === expected
             if (onlyIfExpected && !wasCurrent) return
-            if (value === null) store.delete(name)
-            else store.put(value, name)
+            putOrDelete(store, name, value)
             store.put(next, revisionName)
         }
         read.onerror = () => reject(read.error)

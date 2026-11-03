@@ -1,12 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const db = vi.hoisted(() => ({
-    data: new Map<string, string>(),
-    reads: [] as string[],
-    beforeRead: new Map<string, () => void>(),
-    failGet: new Set<string>(),
-    failSet: new Set<string>(),
-}))
+const db = vi.hoisted(() => {
+    const data = new Map<string, string>()
+    const failSet = new Set<string>()
+    return {
+        data,
+        reads: [] as string[],
+        beforeRead: new Map<string, () => void>(),
+        failGet: new Set<string>(),
+        failSet,
+        writeFails: (...names: string[]) => names.some((name) => failSet.has(name)),
+        isCurrent: (revisionName: string, expected: string | null) =>
+            (data.get(revisionName) ?? null) === expected,
+        put: (name: string, value: string | null) => {
+            if (value === null) data.delete(name)
+            else data.set(name, value)
+        },
+    }
+})
 
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: {
@@ -34,13 +45,12 @@ vi.mock('@/stores/indexedDBStorage', () => ({
             expected: string | null,
             onlyIfExpected = false,
         ) => {
-            if (db.failSet.has(name) || db.failSet.has(revisionName)) {
+            if (db.writeFails(name, revisionName)) {
                 return Promise.reject(new Error('QuotaExceededError'))
             }
-            const wasCurrent = (db.data.get(revisionName) ?? null) === expected
+            const wasCurrent = db.isCurrent(revisionName, expected)
             if (onlyIfExpected && !wasCurrent) return Promise.resolve(false)
-            if (value === null) db.data.delete(name)
-            else db.data.set(name, value)
+            db.put(name, value)
             db.data.set(revisionName, next)
             return Promise.resolve(wasCurrent)
         },
@@ -51,11 +61,11 @@ vi.mock('@/stores/indexedDBStorage', () => ({
             expected: string | null,
             next: string,
         ) => {
-            if (db.failSet.has(name) || db.failSet.has(revisionName)) {
+            if (db.writeFails(name, revisionName)) {
                 return Promise.reject(new Error('QuotaExceededError'))
             }
-            if ((db.data.get(revisionName) ?? null) !== expected) return Promise.resolve(false)
-            db.data.set(name, value)
+            if (!db.isCurrent(revisionName, expected)) return Promise.resolve(false)
+            db.put(name, value)
             db.data.set(revisionName, next)
             return Promise.resolve(true)
         },

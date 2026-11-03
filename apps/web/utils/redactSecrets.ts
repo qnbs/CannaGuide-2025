@@ -98,7 +98,7 @@ export function redactSnapshotSecrets(
  * wherever the text has one. A corrupt snapshot is exactly the text that cannot
  * be parsed, and a copy of it must not keep a key in plain text.
  */
-export function scrubSecretsInText(text: string): string {
+export const scrubSecretsInText = (text: string): string => {
     return SECRET_FIELDS.reduce(
         (scrubbed, [, field]) =>
             scrubbed.replace(

@@ -154,7 +154,8 @@ const putIfRevision = async (
  * replacements (import, restore, repair, reset): a tab that still holds the
  * old revision is then refused at its next save instead of overwriting them.
  * Resolves to whether the stored revision was `expected` before the replacement,
- * so a caller can tell whether its page was up to date.
+ * so a caller can tell whether its page was up to date. With `onlyIfExpected`, a
+ * stored revision other than `expected` leaves everything untouched.
  */
 const replaceRotatingRevision = async (
     name: string,
@@ -162,6 +163,7 @@ const replaceRotatingRevision = async (
     revisionName: string,
     next: string,
     expected: string | null,
+    onlyIfExpected = false,
 ): Promise<boolean> => {
     const conn = await openDB()
     return new Promise<boolean>((resolve, reject) => {
@@ -173,6 +175,7 @@ const replaceRotatingRevision = async (
         read.onsuccess = () => {
             const stored: unknown = read.result
             wasCurrent = (typeof stored === 'string' && stored !== '' ? stored : null) === expected
+            if (onlyIfExpected && !wasCurrent) return
             if (value === null) store.delete(name)
             else store.put(value, name)
             store.put(next, revisionName)

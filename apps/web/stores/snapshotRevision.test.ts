@@ -201,6 +201,51 @@ describe('snapshot revision (GH #669)', () => {
         await expect(stale.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('rolled back')
     })
 
+    it('repairs while the page is current and goes on saving', async () => {
+        const tab = await openTab()
+        await tab.revision.rememberStoredRevision()
+
+        await tab.revision.repairSnapshot('repaired from the backup')
+        await tab.revision.writeSnapshot('saved after the repair')
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved after the repair')
+    })
+
+    it('refuses to repair over a save another tab made since the page started', async () => {
+        const repairing = await openTab()
+        const other = await openTab()
+        await repairing.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+        await other.revision.writeSnapshot('valid save of the other tab')
+
+        await expect(repairing.revision.repairSnapshot('older backup')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(repairing.storage.getItem(REDUX_STATE_KEY)).resolves.toBe(
+            'valid save of the other tab',
+        )
+        await expect(repairing.revision.writeSnapshot('empty start')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+    })
+
+    it('repairs unconditionally on a page that started without the check, then checks', async () => {
+        const tab = await openTab()
+        const other = await openTab()
+        vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await tab.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+
+        await tab.revision.repairSnapshot('repaired')
+        await other.revision.rememberStoredRevision()
+        await other.revision.writeSnapshot('saved by the other tab')
+
+        await expect(tab.revision.writeSnapshot('older state')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved by the other tab')
+    })
+
     it('arms the check after a replacement on a page that started without it', async () => {
         const tab = await openTab()
         vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))

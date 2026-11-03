@@ -129,6 +129,28 @@ export const replaceSnapshot = async (
 }
 
 /**
+ * The repair at start: replaces an unreadable primary with the backup, but only
+ * while no other tab has saved since this page read the revision; otherwise it
+ * throws StaleSnapshotError and writes nothing, and the caller starts without
+ * the repair (its first save is then refused and the page asks for a reload).
+ * This page goes on running, so it follows the new revision. A page that runs
+ * without the check repairs unconditionally and starts checking.
+ */
+export const repairSnapshot = async (serializedState: string): Promise<void> => {
+    const next = newRevision()
+    const applied = await indexedDBStorage.replaceItemRotatingRevision(
+        REDUX_STATE_KEY,
+        serializedState,
+        REDUX_STATE_REVISION_KEY,
+        next,
+        knownRevision ?? null,
+        knownRevision !== undefined,
+    )
+    if (!applied && knownRevision !== undefined) throw new StaleSnapshotError()
+    knownRevision = next
+}
+
+/**
  * Read-modify-write of the saved snapshot that fails instead of overwriting a
  * save made in between: the revision is read before the snapshot, and the write
  * only goes through while it is still the stored one (null from `update`: leave

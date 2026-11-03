@@ -5,7 +5,7 @@ import {
     suspendPersistenceForRecovery,
 } from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
-import { replaceSnapshot, updateSnapshot } from '@/stores/snapshotRevision'
+import { repairSnapshot, replaceSnapshot, updateSnapshot } from '@/stores/snapshotRevision'
 
 export interface RecoverySnapshotReplacementResult {
     success: boolean
@@ -40,7 +40,10 @@ export const replacePrimaryPersistedSnapshot = async (
 ): Promise<boolean> => {
     const migratedSnapshot = migratePersistedSnapshot(snapshot)
     const replaced = await schedulePersistenceWrite(async () => {
-        await replaceSnapshot(migratedSnapshot, continueSaving)
+        // The repair at start keeps this page running and must not replace a save another
+        // tab made since the page read the revision; the other callers reload.
+        if (continueSaving) await repairSnapshot(migratedSnapshot)
+        else await replaceSnapshot(migratedSnapshot)
     })
     return replaced
 }

@@ -33,9 +33,13 @@ vi.mock('@/stores/snapshotRevision', () => ({
         const updated = update(await mocks.getItem('primary'))
         if (updated !== null) await mocks.setItem('primary', updated)
     },
-    replaceSnapshot: (value: string | null, continueSaving?: boolean) => {
-        mocks.continueSaving(continueSaving)
+    replaceSnapshot: (value: string | null) => {
+        mocks.continueSaving(false)
         return value === null ? mocks.removeItem('primary') : mocks.setItem('primary', value)
+    },
+    repairSnapshot: (value: string) => {
+        mocks.continueSaving(true)
+        return mocks.setItem('primary', value)
     },
 }))
 vi.mock('@/services/migration/persistedSnapshot', () => ({

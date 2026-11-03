@@ -8,6 +8,8 @@ export interface BackupMetadata {
     appVersion: string
     plantCount: number
     imageCount: number
+    /** Archived journal entries in `archived-journal.json`; absent when there are none (#667). */
+    archivedJournalEntryCount?: number
 }
 
 export interface BackupExportResult {

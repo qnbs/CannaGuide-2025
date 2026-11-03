@@ -19,7 +19,9 @@ import { BACKUP_IMPORT_LIMITS } from '@/services/backupImportLimits'
 import {
     ARCHIVED_JOURNAL_FILENAME,
     type ArchivedJournal,
+    archivedEntriesOf,
     readArchivedJournalForExport,
+    serializeArchivedJournal,
 } from '@/services/backupArchivedJournal'
 import {
     IMAGES_DIR,
@@ -181,13 +183,17 @@ const buildExportArchive = async (stateString: string): Promise<BackupExportResu
     // backup would silently lose them (#667).
     const archivedJournal = await readExportArchivedJournal()
     if (isExportFailure(archivedJournal)) return archivedJournal
-    if (archivedJournal) zip.file(ARCHIVED_JOURNAL_FILENAME, JSON.stringify(archivedJournal))
+    if (archivedJournal)
+        zip.file(ARCHIVED_JOURNAL_FILENAME, serializeArchivedJournal(archivedJournal))
     const metadata: BackupMetadata = {
         version: '1.0',
         exportedAt: Date.now(),
         appVersion: '1.6.0',
         plantCount: plantCountFromState(stateString),
         imageCount,
+        ...(archivedJournal
+            ? { archivedJournalEntryCount: archivedEntriesOf(archivedJournal).length }
+            : {}),
     }
     zip.file(METADATA_FILENAME, JSON.stringify(metadata, null, 2))
     const blob = await zip.generateAsync({

@@ -8,6 +8,7 @@ import {
     ARCHIVED_JOURNAL_FILENAME,
     type ArchivedJournal,
     archivedEntriesOf,
+    assertArchivedJournalComplete,
     combineDependentWrites,
     createArchivedJournalRestoreWrite,
     parseArchivedJournal,
@@ -619,6 +620,7 @@ const commitBackupRestore = async (
 ): Promise<BackupImportResult> => {
     const imported = await collectImportedImages(zip, limits, budget)
     const archivedJournal = await readBackupArchivedJournal(zip, limits, budget)
+    assertArchivedJournalComplete(metadata?.archivedJournalEntryCount, archivedJournal)
     tally.rejectedImageIds = imported.rejectedImageIds
     tally.unidentifiedRejectedImageCount = imported.unidentifiedRejectedImageCount
     tally.rejectedInlineImageCount =

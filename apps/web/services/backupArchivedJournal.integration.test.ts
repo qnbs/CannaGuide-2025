@@ -187,15 +187,20 @@ const VALID_PNG_DATA_URL =
 const decodeImageMock = vi.fn()
 
 const ARCHIVE_ENTRY = 'archived-journal.json'
+const META_ENTRY = 'backup-meta.json'
 const STATE = JSON.stringify({
     simulation: { plants: { ids: ['p1'], entities: { p1: { id: 'p1' } } } },
 })
 
-const archivedEntry = (id: string, details: Record<string, unknown> = {}) => ({
+const archivedEntry = (
+    id: string,
+    details: Record<string, unknown> = {},
+    notes = `note ${id}`,
+) => ({
     id,
     timestamp: 1,
     type: 'OBSERVATION',
-    notes: `note ${id}`,
+    notes,
     details,
 })
 
@@ -203,6 +208,23 @@ const archive = () => ({
     p1: [archivedEntry('old-1'), archivedEntry('old-2', { imageId: 'photo-a' })],
     p2: [archivedEntry('old-3')],
 })
+
+/** The archive file as the export writes it. */
+const archiveFile = (journals: unknown, version = 1): string =>
+    JSON.stringify({ version, journals })
+
+/** The metadata entry of a backup that declares this many archived entries. */
+const metaDeclaring = (archivedJournalEntryCount: number): string =>
+    JSON.stringify({
+        version: '1.0',
+        exportedAt: 1,
+        appVersion: '1.6.0',
+        plantCount: 1,
+        imageCount: 0,
+        archivedJournalEntryCount,
+    })
+
+const storedArchive = (): Promise<unknown> => metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)
 
 describe('archived plant journals in the ZIP backup (#667)', () => {
     beforeEach(async () => {
@@ -222,14 +244,18 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
     })
 
     describe('export', () => {
-        it('writes the archived entries into the ZIP', async () => {
+        it('writes the archived entries into a versioned file and declares their number', async () => {
             await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, archive())
             vi.mocked(indexedDBStorage.getItem).mockResolvedValue(STATE)
 
             const result = await backupService.exportBackup()
 
             expect(result.success).toBe(true)
-            expect(JSON.parse(String(mocks.zipEntries.get(ARCHIVE_ENTRY)))).toEqual(archive())
+            expect(JSON.parse(String(mocks.zipEntries.get(ARCHIVE_ENTRY)))).toEqual({
+                version: 1,
+                journals: archive(),
+            })
+            expect(result.metadata?.archivedJournalEntryCount).toBe(3)
         })
 
         it('writes no archive entry when no journal was ever archived', async () => {
@@ -239,6 +265,7 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
 
             expect(result.success).toBe(true)
             expect(mocks.zipEntries.has(ARCHIVE_ENTRY)).toBe(false)
+            expect(result.metadata).not.toHaveProperty('archivedJournalEntryCount')
         })
 
         it('writes no archive entry for an archive without entries', async () => {
@@ -263,6 +290,18 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
                 errorCode: 'archivedJournalUnreadable',
             })
         })
+
+        it('does not log the journal text when it refuses', async () => {
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
+                p1: [{ id: 'secret-id', notes: 'private diary text' }, 'broken'],
+            })
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(STATE)
+            const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            await backupService.exportBackup()
+
+            expect(JSON.stringify(logged.mock.calls)).not.toContain('private diary text')
+        })
     })
 
     describe('import', () => {
@@ -270,36 +309,61 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             const result = await importMockBackup(
                 { version: 6 },
                 {},
-                {
-                    [ARCHIVE_ENTRY]: JSON.stringify({ p1: [archivedEntry('old-1')] }),
-                },
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }) },
             )
 
             expect(result).toMatchObject({ success: true, reloadRequired: true })
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
-                p1: [archivedEntry('old-1')],
+            expect(await storedArchive()).toEqual({ p1: [archivedEntry('old-1')] })
+        })
+
+        it('adds the backup entries to the archive that is there and keeps the rest', async () => {
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
+                other: [archivedEntry('x')],
+                p1: [archivedEntry('old-0')],
+            })
+
+            await importMockBackup(
+                { version: 6 },
+                {},
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }) },
+            )
+
+            expect(await storedArchive()).toEqual({
+                other: [archivedEntry('x')],
+                p1: [archivedEntry('old-0'), archivedEntry('old-1')],
             })
         })
 
-        it('replaces the archive that was there, because the restore replaces the state', async () => {
+        it('keeps the stored entry when the backup has one with the same id', async () => {
             await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
-                other: [archivedEntry('x')],
+                p1: [archivedEntry('old-1', {}, 'stored text')],
             })
 
             await importMockBackup(
                 { version: 6 },
                 {},
                 {
-                    [ARCHIVE_ENTRY]: JSON.stringify({ p1: [archivedEntry('old-1')] }),
+                    [ARCHIVE_ENTRY]: archiveFile({
+                        p1: [archivedEntry('old-1', {}, 'backup text'), archivedEntry('old-2')],
+                    }),
                 },
             )
 
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
-                p1: [archivedEntry('old-1')],
+            expect(await storedArchive()).toEqual({
+                p1: [archivedEntry('old-1', {}, 'stored text'), archivedEntry('old-2')],
             })
         })
 
-        it('leaves the archive alone when the backup carries none', async () => {
+        it('does not duplicate entries when the same backup is restored twice', async () => {
+            const entries = { [ARCHIVE_ENTRY]: archiveFile(archive()) }
+
+            await importMockBackup({ version: 6 }, {}, entries)
+            await importMockBackup({ version: 6 }, {}, entries)
+
+            expect(await storedArchive()).toEqual(archive())
+        })
+
+        it('leaves the archive alone when the backup carries none (an older backup)', async () => {
             await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
                 p9: [archivedEntry('keep')],
             })
@@ -307,9 +371,7 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             const result = await importMockBackup({ version: 6 })
 
             expect(result.success).toBe(true)
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
-                p9: [archivedEntry('keep')],
-            })
+            expect(await storedArchive()).toEqual({ p9: [archivedEntry('keep')] })
         })
 
         it('refuses a corrupt archive before anything is written', async () => {
@@ -327,9 +389,21 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             expect(result.success).toBe(false)
             expect(result.error).toContain('corrupt archived journal')
             expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
-                p9: [archivedEntry('keep')],
-            })
+            expect(await storedArchive()).toEqual({ p9: [archivedEntry('keep')] })
+        })
+
+        it('does not repeat the journal text in the error it reports', async () => {
+            const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [ARCHIVE_ENTRY]: '{"version":1,"journals":{"p1":[{"notes":"private diary text"' },
+            )
+
+            expect(result.success).toBe(false)
+            expect(String(result.error)).not.toContain('private diary text')
+            expect(JSON.stringify(logged.mock.calls)).not.toContain('private diary text')
         })
 
         it('refuses an archive whose entries are not objects', async () => {
@@ -338,13 +412,99 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             const result = await importMockBackup(
                 { version: 6 },
                 {},
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: ['text'] }) },
+            )
+
+            expect(result.success).toBe(false)
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+        })
+
+        it('refuses an archive of a version it does not know', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }, 99) },
+            )
+
+            expect(result.success).toBe(false)
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+        })
+
+        it('refuses a backup that declares archived entries but has no archive file', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [META_ENTRY]: metaDeclaring(3) },
+            )
+
+            expect(result.success).toBe(false)
+            expect(result.error).toContain('missing or incomplete')
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+        })
+
+        it('refuses a backup whose archive holds fewer entries than it declares', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
                 {
-                    [ARCHIVE_ENTRY]: JSON.stringify({ p1: ['text'] }),
+                    [META_ENTRY]: metaDeclaring(3),
+                    [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }),
                 },
             )
 
             expect(result.success).toBe(false)
             expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+        })
+
+        it('accepts a backup whose archive holds as many entries as it declares', async () => {
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [META_ENTRY]: metaDeclaring(3), [ARCHIVE_ENTRY]: archiveFile(archive()) },
+            )
+
+            expect(result.success).toBe(true)
+        })
+
+        it('refuses to merge into a stored archive it cannot read', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, { p1: 'garbage' })
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }) },
+            )
+
+            expect(result.success).toBe(false)
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+            expect(await storedArchive()).toEqual({ p1: 'garbage' })
+        })
+
+        it('fails the restore without replacing the state when the archive cannot be stored', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
+                p9: [archivedEntry('keep')],
+            })
+            vi.spyOn(metadataStore, 'setMetadata').mockRejectedValueOnce(
+                new Error('QuotaExceededError'),
+            )
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }) },
+            )
+
+            expect(result.success).toBe(false)
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+            expect(await storedArchive()).toEqual({ p9: [archivedEntry('keep')] })
         })
 
         it('puts the previous archive back when the snapshot cannot be replaced', async () => {
@@ -356,15 +516,11 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             const result = await importMockBackup(
                 { version: 6 },
                 {},
-                {
-                    [ARCHIVE_ENTRY]: JSON.stringify({ p1: [archivedEntry('old-1')] }),
-                },
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }) },
             )
 
             expect(result.success).toBe(false)
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
-                p9: [archivedEntry('keep')],
-            })
+            expect(await storedArchive()).toEqual({ p9: [archivedEntry('keep')] })
         })
 
         it('removes the archive again when there was none before and the restore fails', async () => {
@@ -373,12 +529,10 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             await importMockBackup(
                 { version: 6 },
                 {},
-                {
-                    [ARCHIVE_ENTRY]: JSON.stringify({ p1: [archivedEntry('old-1')] }),
-                },
+                { [ARCHIVE_ENTRY]: archiveFile({ p1: [archivedEntry('old-1')] }) },
             )
 
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toBeUndefined()
+            expect(await storedArchive()).toBeUndefined()
         })
 
         it('drops the photo id of a rejected photo from archived entries', async () => {
@@ -386,7 +540,7 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
                 { version: 6 },
                 { 'photo-bad': { id: 'photo-bad', data: 'not-an-image', createdAt: 1 } },
                 {
-                    [ARCHIVE_ENTRY]: JSON.stringify({
+                    [ARCHIVE_ENTRY]: archiveFile({
                         p1: [archivedEntry('old-1', { imageId: 'photo-bad' })],
                     }),
                 },
@@ -394,9 +548,7 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
 
             expect(result.success).toBe(true)
             expect(result.rejectedImageCount).toBeGreaterThan(0)
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
-                p1: [archivedEntry('old-1', {})],
-            })
+            expect(await storedArchive()).toEqual({ p1: [archivedEntry('old-1', {})] })
         })
 
         it('keeps the photo id of a photo that was restored', async () => {
@@ -404,14 +556,14 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
                 { version: 6 },
                 { 'photo-a': { id: 'photo-a', data: VALID_PNG_DATA_URL, createdAt: 1 } },
                 {
-                    [ARCHIVE_ENTRY]: JSON.stringify({
+                    [ARCHIVE_ENTRY]: archiveFile({
                         p1: [archivedEntry('old-2', { imageId: 'photo-a' })],
                     }),
                 },
             )
 
             expect(result.success).toBe(true)
-            expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual({
+            expect(await storedArchive()).toEqual({
                 p1: [archivedEntry('old-2', { imageId: 'photo-a' })],
             })
         })
@@ -420,12 +572,18 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
     it('exports what it imports: an archive survives a round trip', async () => {
         await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, archive())
         vi.mocked(indexedDBStorage.getItem).mockResolvedValue(STATE)
-        await backupService.exportBackup()
-        const exported = String(mocks.zipEntries.get(ARCHIVE_ENTRY))
+        const exported = await backupService.exportBackup()
+        const file = String(mocks.zipEntries.get(ARCHIVE_ENTRY))
+        const meta = JSON.stringify(exported.metadata)
 
         await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {})
-        await importMockBackup({ version: 6 }, {}, { [ARCHIVE_ENTRY]: exported })
+        const result = await importMockBackup(
+            { version: 6 },
+            {},
+            { [ARCHIVE_ENTRY]: file, [META_ENTRY]: meta },
+        )
 
-        expect(await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)).toEqual(archive())
+        expect(result.success).toBe(true)
+        expect(await storedArchive()).toEqual(archive())
     })
 })

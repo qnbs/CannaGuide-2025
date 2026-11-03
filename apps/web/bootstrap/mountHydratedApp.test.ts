@@ -25,7 +25,7 @@ vi.mock('./writerOwnership', () => ({
     releaseWriterRole: vi.fn(() => {
         order.push('release')
     }),
-    watchForCacheRestore: vi.fn(),
+    watchForCacheRestore: vi.fn(() => vi.fn()),
 }))
 vi.mock('./persistenceCoordinator', () => ({
     stopPersistenceForOwnershipLoss: vi.fn(() => {
@@ -156,6 +156,17 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         await mountHydratedApp()
 
         expect(order).toEqual(['stop', 'release'])
+    })
+
+    it('stops watching for a cache restore once the start has failed', async () => {
+        const stopWatching = vi.fn()
+        vi.mocked(watchForCacheRestore).mockReturnValueOnce(stopWatching)
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new Error('hydration failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await mountHydratedApp()
+
+        expect(stopWatching).toHaveBeenCalledOnce()
     })
 
     it('starts over when a writer tab is restored from the back/forward cache', async () => {

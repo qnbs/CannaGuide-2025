@@ -188,12 +188,14 @@ describe('stopPersistenceForOwnershipLoss (GH #669)', () => {
         expect(drained).toBe(true)
     })
 
-    it('does not queue a write behind the stop', async () => {
+    it('skips a write that was queued before the stop and queues none after it', async () => {
         const queued = vi.fn(() => Promise.resolve())
-        const first = stopCoordinator.schedulePersistenceWrite(() => Promise.resolve())
+        const beforeStop = vi.fn(() => Promise.resolve())
+        const first = stopCoordinator.schedulePersistenceWrite(beforeStop)
 
         await stopCoordinator.stopPersistenceForOwnershipLoss()
-        await first
+        await expect(first).resolves.toBe(false)
+        expect(beforeStop).not.toHaveBeenCalled()
 
         await expect(stopCoordinator.schedulePersistenceWrite(queued)).resolves.toBe(false)
         expect(queued).not.toHaveBeenCalled()

@@ -25,6 +25,8 @@ const showOtherTabNotice = (): void => {
     waitForWriterRole(reload)
 }
 
+let stopWatchingCacheRestore: (() => void) | undefined
+
 /** A page restored from the back/forward cache may have lost the writer lock: start over. */
 const leaveRestoredPage = (): void => {
     // Stopping is synchronous; the promise only reports that a started write is done.
@@ -40,7 +42,7 @@ const takeWriterRole = async (): Promise<boolean> => {
         showOtherTabNotice()
         return false
     }
-    if (role === 'writer') watchForCacheRestore(leaveRestoredPage)
+    if (role === 'writer') stopWatchingCacheRestore = watchForCacheRestore(leaveRestoredPage)
     return true
 }
 
@@ -78,6 +80,8 @@ const saveAfterSecretsMoved = async (flushPersistedState: FlushPersistedState): 
 // writer's edits with this tab's stale state.
 const showStartupError = async (error: unknown): Promise<void> => {
     console.error('Failed to initialize the application:', error)
+    // The error page keeps its safe-recovery button if it comes back from the cache.
+    stopWatchingCacheRestore?.()
     await stopPersistenceForOwnershipLoss()
     releaseWriterRole()
     renderError(

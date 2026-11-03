@@ -300,16 +300,26 @@ describe('listenerMiddleware', () => {
         it('still closes blocked MQTT connections when the Sentry step fails', async () => {
             const { disableSentry } = await import('@/services/sentryService')
             const { mqttSensorService } = await import('@/services/mqttSensorService')
+            vi.mocked(disableSentry).mockClear()
             vi.mocked(disableSentry).mockImplementationOnce(() => {
                 throw new Error('sentry unavailable')
             })
             vi.mocked(mqttSensorService.enforceLocalOnlyMode).mockClear()
+            const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
             store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
 
             await vi.waitFor(() => {
+                // The injected failure did happen in this dispatch, and was reported...
+                expect(disableSentry).toHaveBeenCalledOnce()
+                expect(logged).toHaveBeenCalledWith(
+                    '[Privacy] Could not apply Local-Only Mode:',
+                    expect.objectContaining({ message: 'sentry unavailable' }),
+                )
+                // ...and the MQTT step ran anyway.
                 expect(mqttSensorService.enforceLocalOnlyMode).toHaveBeenCalled()
             })
+            logged.mockRestore()
         })
 
         it('reopens paused MQTT connections when local-only mode is disabled', async () => {

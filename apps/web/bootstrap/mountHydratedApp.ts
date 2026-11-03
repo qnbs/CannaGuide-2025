@@ -27,7 +27,8 @@ const showOtherTabNotice = (): void => {
 
 /** A page restored from the back/forward cache may have lost the writer lock: start over. */
 const leaveRestoredPage = (): void => {
-    void stopPersistenceForOwnershipLoss()
+    // Stopping is synchronous; the promise only reports that a started write is done.
+    stopPersistenceForOwnershipLoss().catch(() => undefined)
     globalThis.location.reload()
 }
 

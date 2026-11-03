@@ -126,7 +126,7 @@ describe('scrubSecretsInText on a value cut off by truncation', () => {
     })
 
     it('blanks a key that ends in a lone backslash', () => {
-        const cut = '{"cloudTtsApiKey":"sk_canary_0000' + String.fromCharCode(92)
+        const cut = `{"cloudTtsApiKey":"sk_canary_0000\\`
         expect(scrubSecretsInText(cut)).not.toContain('sk_canary')
     })
 })

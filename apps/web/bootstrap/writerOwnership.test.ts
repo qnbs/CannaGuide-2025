@@ -22,7 +22,7 @@ const createLockManager = () => {
             new Promise<unknown>((resolve, reject) => {
                 const start = () => {
                     held = true
-                    void Promise.resolve(callback({})).then(resolve, reject)
+                    Promise.resolve(callback({})).then(resolve, reject)
                 }
                 if (!held) {
                     start()
@@ -39,7 +39,7 @@ const createLockManager = () => {
     }
 }
 
-const stubLocks = (locks: unknown) => {
+const stubLocks = (locks?: unknown) => {
     vi.stubGlobal('navigator', { locks })
 }
 
@@ -78,7 +78,7 @@ describe('claimWriterRole', () => {
     })
 
     it('reports that ownership cannot be decided without Web Locks', async () => {
-        stubLocks(undefined)
+        stubLocks()
 
         await expect(claimWriterRole(10)).resolves.toBe('unsupported')
     })
@@ -125,7 +125,7 @@ describe('waitForWriterRole', () => {
     })
 
     it('does nothing without Web Locks', () => {
-        stubLocks(undefined)
+        stubLocks()
         const onAvailable = vi.fn()
 
         expect(() => waitForWriterRole(onAvailable)()).not.toThrow()

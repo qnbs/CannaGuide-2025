@@ -60,17 +60,17 @@ export const renderError = (error: Error): void => {
  * tab already owns the saved data, and a second copy would overwrite its edits.
  */
 export const renderOtherTabNotice = (reload: () => void): void => {
-    const t = getT()
+    const translate = getT()
     getAppRoot().render(
         <main role="alert" style={{ padding: '2rem', textAlign: 'center', color: '#e2e8f0' }}>
-            <h1>{String(t('common.otherTab.title'))}</h1>
-            <p className="text-slate-300">{String(t('common.otherTab.description'))}</p>
+            <h1>{String(translate('common.otherTab.title'))}</h1>
+            <p className="text-slate-300">{String(translate('common.otherTab.description'))}</p>
             <button
                 type="button"
                 onClick={reload}
                 className="mt-3 rounded-md bg-amber-500 px-4 py-2.5 font-bold text-slate-900"
             >
-                {String(t('common.otherTab.reload'))}
+                {String(translate('common.otherTab.reload'))}
             </button>
         </main>,
     )

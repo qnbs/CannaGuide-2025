@@ -4,7 +4,7 @@ import { mountHydratedApp } from './mountHydratedApp'
 import { renderOtherTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
 import { registerRecoveryListeners } from './recovery'
-import { claimWriterRole, waitForWriterRole } from './writerOwnership'
+import { claimWriterRole, waitForWriterRole, type WriterRole } from './writerOwnership'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
@@ -13,7 +13,7 @@ vi.mock('@/i18n', () => ({ i18nPromise: Promise.resolve() }))
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
 vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn() }))
 vi.mock('./writerOwnership', () => ({
-    claimWriterRole: vi.fn(async () => 'writer'),
+    claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
     waitForWriterRole: vi.fn(),
 }))
 vi.mock('./store', () => ({ hydrateApplicationStores: vi.fn(async () => ({ hydratedStore: {} })) }))

@@ -55,11 +55,11 @@ describe('renderOtherTabNotice', () => {
         ;({ renderOtherTabNotice } = await import('./render'))
     })
 
-    it('explains the pause and lets the user reload', async () => {
+    it('explains the pause and lets the user reload', () => {
         document.body.innerHTML = '<div id="root"></div>'
         const reload = vi.fn()
 
-        await act(async () => {
+        act(() => {
             renderOtherTabNotice(reload)
         })
 

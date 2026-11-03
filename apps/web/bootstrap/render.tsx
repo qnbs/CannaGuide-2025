@@ -104,6 +104,17 @@ export const renderStaleTabNotice = (reload: () => void): void => {
     )
 }
 
+/** This page cannot check for other tabs' saves and holds no writer lock (GH #669). */
+export const renderUnverifiedTabNotice = (reload: () => void): void => {
+    const translate = getT()
+    renderTabNotice(
+        String(translate('common.unverifiedTab.title')),
+        String(translate('common.unverifiedTab.description')),
+        String(translate('common.staleTab.reload')),
+        reload,
+    )
+}
+
 export const renderAppWithStore = (store: AppStore): void => {
     getAppRoot().render(
         <React.StrictMode>

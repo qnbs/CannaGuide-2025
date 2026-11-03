@@ -3,6 +3,7 @@ import type { AppStore } from '@/stores/store'
 import { REDUX_STATE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
+import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 
 // A synthetic canary, never a real key (#654).
@@ -54,7 +55,12 @@ const savedSnapshot = (): string => {
 }
 
 describe('persisted settings snapshot (#654)', () => {
-    beforeEach(() => vi.clearAllMocks())
+    beforeEach(() => {
+        vi.clearAllMocks()
+        // These tests save without a revision, as the writer-lock holder may; the
+        // revision check itself is covered in stores/snapshotRevision.test.ts.
+        setUncheckedWritePermit(() => true)
+    })
 
     it('never writes the Cloud TTS key', async () => {
         const flush = setupPersistedStateSync(storeWithKey())

@@ -1,12 +1,23 @@
 import type { AppStore } from '@/stores/store'
-import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
+import {
+    isRevisionChecked,
+    setStaleSnapshotHandler,
+    setUncheckedWritePermit,
+    UnverifiedSnapshotError,
+} from '@/stores/snapshotRevision'
 import { i18nPromise } from '@/i18n'
 import { disableSentry } from '@/services/sentryService'
 import { registerRecoveryListeners } from './recovery'
-import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
+import {
+    renderError,
+    renderOtherTabNotice,
+    renderStaleTabNotice,
+    renderUnverifiedTabNotice,
+} from './render'
 import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 import {
     claimWriterRole,
+    holdsWriterRole,
     releaseWriterRole,
     waitForWriterRole,
     watchForCacheRestore,
@@ -52,11 +63,10 @@ const takeWriterRole = async (): Promise<boolean> => {
 let staleSnapshotHandled = false
 
 /**
- * A save was refused because another tab saved newer data. This page's state is
- * out of date: stop saving, give the role up so the next page can take it, and
- * ask for a reload instead of showing data that is not the saved one.
+ * Stop saving, give the role up so the next page can take it, and show
+ * `renderNotice` with a reload instead of data that may not be the saved one.
  */
-const handleStaleSnapshot = (): void => {
+const stopAsStale = (renderNotice: (reload: () => void) => void): void => {
     if (staleSnapshotHandled) return
     staleSnapshotHandled = true
     // The settings this page holds may be older than the ones another tab saved
@@ -66,7 +76,31 @@ const handleStaleSnapshot = (): void => {
     stopWatchingCacheRestore?.()
     stopPersistenceForOwnershipLoss().catch(() => undefined)
     releaseWriterRole()
-    renderStaleTabNotice(() => globalThis.location.reload())
+    renderNotice(() => globalThis.location.reload())
+}
+
+/** A save was refused because another tab saved newer data: this page is out of date. */
+const handleStaleSnapshot = (): void => stopAsStale(renderStaleTabNotice)
+
+/** A save was refused, or would be, because this page cannot check for other tabs' saves. */
+const handleUnverifiedSnapshot = (): void => stopAsStale(renderUnverifiedTabNotice)
+
+const handleRefusedSave = (refusal: Error): void => {
+    if (refusal instanceof UnverifiedSnapshotError) handleUnverifiedSnapshot()
+    else handleStaleSnapshot()
+}
+
+/**
+ * A page that could not read or store the revision has no check against other
+ * tabs' saves; only the writer lock can stand in for it. Without that lock (no
+ * Web Locks, or the request failed) the page stops here, before the first edit,
+ * rather than at its first save, which would lose that edit. (GH #669)
+ * @returns whether the page may go on.
+ */
+const mayStartSaving = (): boolean => {
+    if (isRevisionChecked() || holdsWriterRole()) return true
+    handleUnverifiedSnapshot()
+    return false
 }
 
 // A page that was refused as stale is only a notice now: no service starts on it,
@@ -128,6 +162,7 @@ const showStartupError = async (error: unknown): Promise<void> => {
 export const mountHydratedApp = async (): Promise<void> => {
     staleSnapshotHandled = false
     setStaleSnapshotHandler(handleStaleSnapshot)
+    setUncheckedWritePermit(holdsWriterRole)
     try {
         if (!(await takeWriterRole())) return
 
@@ -136,10 +171,11 @@ export const mountHydratedApp = async (): Promise<void> => {
         await i18nPromise
 
         const { hydratedStore } = await hydrateApplicationStores()
+        if (!mayStartSaving()) return
         const secretsMoved = await moveLegacySecrets(hydratedStore)
         await startCrdtLayer(hydratedStore)
 
-        const flushPersistedState = setupPersistedStateSync(hydratedStore, handleStaleSnapshot)
+        const flushPersistedState = setupPersistedStateSync(hydratedStore, handleRefusedSave)
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState)
     } catch (error) {

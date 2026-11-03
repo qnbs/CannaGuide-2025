@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
     claimWriterRole,
+    holdsWriterRole,
     releaseWriterRole,
     waitForWriterRole,
     watchForCacheRestore,
@@ -121,6 +122,53 @@ describe('releaseWriterRole', () => {
 
     it('does nothing when this page holds no role', () => {
         expect(() => releaseWriterRole()).not.toThrow()
+    })
+})
+
+describe('holdsWriterRole', () => {
+    beforeEach(() => {
+        // Earlier tests may leave this module holding a role; start without one.
+        releaseWriterRole()
+    })
+
+    afterEach(() => {
+        releaseWriterRole()
+        vi.unstubAllGlobals()
+    })
+
+    it('is true only while this page holds the lock', async () => {
+        stubLocks(createLockManager())
+        expect(holdsWriterRole()).toBe(false)
+
+        await claimWriterRole(10)
+        expect(holdsWriterRole()).toBe(true)
+
+        releaseWriterRole()
+        expect(holdsWriterRole()).toBe(false)
+    })
+
+    it.each([
+        ['without Web Locks', undefined],
+        ['when the browser refuses the lock', { request: () => Promise.reject(new Error('no')) }],
+    ])('is false %s', async (_case, locks) => {
+        stubLocks(locks)
+
+        await claimWriterRole(10)
+
+        expect(holdsWriterRole()).toBe(false)
+    })
+
+    it('is false for a reader', async () => {
+        const locks = createLockManager()
+        stubLocks(locks)
+        // Another tab holds the lock until it closes, which it never does here.
+        locks
+            .request('cannaguide.persisted-state.writer', {}, () => new Promise(() => undefined))
+            .catch(() => undefined)
+
+        await expect(claimWriterRole(10)).resolves.toBe('reader')
+        expect(holdsWriterRole()).toBe(false)
+        expect(locks.isHeld()).toBe(true)
     })
 })
 

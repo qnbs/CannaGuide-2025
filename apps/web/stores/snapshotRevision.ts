@@ -33,6 +33,34 @@ export class StaleSnapshotError extends Error {
     }
 }
 
+/**
+ * A refused write of a page that runs without the revision check and cannot
+ * prove it is the only one saving. Handled like a stale save: nothing was written.
+ */
+export class UnverifiedSnapshotError extends StaleSnapshotError {
+    constructor() {
+        super()
+        this.message =
+            'The saved state has no revision this page could read, and this page does not hold the writer lock.'
+        this.name = 'UnverifiedSnapshotError'
+    }
+}
+
+/** Whether a write without the revision check is allowed; closed until the start registers a check. */
+let mayWriteUnchecked: () => boolean = () => false
+
+/**
+ * Registers the proof that this page is the only one saving (the writer lock,
+ * bootstrap/writerOwnership.ts). Without the revision check, a write goes
+ * through only while it returns true; without a registered proof, never.
+ */
+export const setUncheckedWritePermit = (permit: (() => boolean) | undefined): void => {
+    mayWriteUnchecked = permit ?? (() => false)
+}
+
+/** Whether this page saves with the revision check (it could read or store a revision). */
+export const isRevisionChecked = (): boolean => knownRevision !== undefined
+
 const newRevision = (): string =>
     Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
         byte.toString(16).padStart(2, '0'),
@@ -50,7 +78,9 @@ const newRevision = (): string =>
  * the later write wins and the other page is refused at its first save.
  *
  * A revision that cannot be read or stored leaves the check off for this page
- * instead of stopping the start.
+ * instead of stopping the start. Such a page may only save while it holds the
+ * writer lock (setUncheckedWritePermit); otherwise the start stops it before
+ * the first edit (bootstrap/mountHydratedApp.ts).
  */
 export const rememberStoredRevision = async (): Promise<void> => {
     try {
@@ -68,9 +98,13 @@ export const rememberStoredRevision = async (): Promise<void> => {
     }
 }
 
-/** Saves the snapshot; throws StaleSnapshotError when another tab saved since. */
+/**
+ * Saves the snapshot; throws StaleSnapshotError when another tab saved since, and
+ * UnverifiedSnapshotError when the check is off and this page holds no writer lock.
+ */
 export const writeSnapshot = async (serializedState: string): Promise<void> => {
     if (knownRevision === undefined) {
+        if (!mayWriteUnchecked()) throw new UnverifiedSnapshotError()
         await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState)
         return
     }
@@ -132,9 +166,11 @@ export const replaceSnapshot = async (
  * A replacement for the start, after which this page goes on running: it applies
  * only while no other tab has saved since this page read the revision, and then
  * the page follows the new revision. A page that runs without the check replaces
- * unconditionally and starts checking. Resolves to whether it was applied.
+ * unconditionally and starts checking, but only while it holds the writer lock;
+ * without it nothing is replaced. Resolves to whether it was applied.
  */
 const replaceIfCurrent = async (serializedState: string | null): Promise<boolean> => {
+    if (knownRevision === undefined && !mayWriteUnchecked()) return false
     const next = newRevision()
     const applied = await indexedDBStorage.replaceItemRotatingRevision(
         REDUX_STATE_KEY,

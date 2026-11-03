@@ -42,6 +42,13 @@ const holdUntilReleased = (): Promise<void> =>
     })
 
 /**
+ * Whether this page holds the writer lock right now. Only a page that holds it
+ * may save without the revision check (stores/snapshotRevision.ts): the lock is
+ * then the only proof that no other tab saves at the same time.
+ */
+export const holdsWriterRole = (): boolean => giveUpHeldRole !== undefined
+
+/**
  * Gives the writer role up while the page stays open. A tab whose start failed
  * calls it, so it does not keep every other tab behind the reader notice while
  * it shows an error.

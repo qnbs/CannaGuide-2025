@@ -79,6 +79,11 @@ export const common = {
             'De opgeslagen gegevens zijn gewijzigd door een ander tabblad of venster nadat dit tabblad was geladen. Deze pagina is verouderd en slaat niet meer op, zodat die nieuwere gegevens veilig blijven. Laad opnieuw om met de laatste gegevens verder te gaan. Wijzigingen die je in dit tabblad sinds het laden hebt gemaakt, zijn niet opgeslagen en gaan verloren bij het opnieuw laden.',
         reload: 'Opnieuw laden',
     },
+    unverifiedTab: {
+        title: 'Opslaan gepauzeerd',
+        description:
+            'Deze pagina kon niet controleren of zij het enige tabblad of venster is dat je gegevens opslaat. Daarom slaat zij niet op, zodat nieuwere gegevens uit een ander tabblad of venster veilig blijven. Sluit andere CannaGuide-tabbladen en -vensters en laad daarna opnieuw om het opnieuw te proberen. Je opgeslagen gegevens zijn niet gewijzigd.',
+    },
     errorBoundary: {
         title: 'Er is iets misgegaan.',
         description:

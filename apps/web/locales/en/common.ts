@@ -241,6 +241,11 @@ export const common = {
             'The saved data was changed by another tab or window after this one loaded, so this page is out of date and has stopped saving to keep that newer data safe. Reload to continue with the latest data. Edits made in this tab since it loaded are not saved and are lost when you reload.',
         reload: 'Reload',
     },
+    unverifiedTab: {
+        title: 'Saving is paused',
+        description:
+            'This page could not confirm that it is the only tab or window saving your data, so it does not save, to keep newer data from another tab or window safe. Close other CannaGuide tabs and windows, then reload to try again. Your saved data has not been changed.',
+    },
     errorBoundary: {
         title: 'Something went wrong.',
         description:

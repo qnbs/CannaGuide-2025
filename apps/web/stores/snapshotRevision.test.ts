@@ -230,11 +230,12 @@ describe('snapshot revision (GH #669)', () => {
         })
     })
 
-    it('repairs unconditionally on a page that started without the check, then checks', async () => {
+    it('repairs unconditionally on a writer page that started without the check, then checks', async () => {
         const tab = await openTab()
         const other = await openTab()
         vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
         await tab.revision.rememberStoredRevision()
+        tab.revision.setUncheckedWritePermit(() => true)
         await other.revision.rememberStoredRevision()
 
         await tab.revision.repairSnapshot('repaired')
@@ -400,8 +401,9 @@ describe('snapshot revision (GH #669)', () => {
         expect(onStale).toHaveBeenCalledOnce()
     })
 
-    it('saves as before when no revision was loaded, and writes no revision', async () => {
+    it('saves as before on the writer page when no revision was loaded, and writes no revision', async () => {
         const tab = await openTab()
+        tab.revision.setUncheckedWritePermit(() => true)
 
         await tab.revision.writeSnapshot('without a revision')
 
@@ -414,9 +416,14 @@ describe('snapshot revision (GH #669)', () => {
         vi.spyOn(tab.storage, 'setItem').mockRejectedValueOnce(new Error('QuotaExceededError'))
 
         await expect(tab.revision.rememberStoredRevision()).resolves.toBeUndefined()
-        await tab.revision.writeSnapshot('saved anyway')
+        expect(tab.revision.isRevisionChecked()).toBe(false)
+        await expect(tab.revision.writeSnapshot('not without the lock')).rejects.toMatchObject({
+            name: 'UnverifiedSnapshotError',
+        })
 
-        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved anyway')
+        tab.revision.setUncheckedWritePermit(() => true)
+        await tab.revision.writeSnapshot('saved under the lock')
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved under the lock')
     })
 
     it('does not stop the start when the revision cannot be read', async () => {
@@ -424,8 +431,50 @@ describe('snapshot revision (GH #669)', () => {
         vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
 
         await expect(tab.revision.rememberStoredRevision()).resolves.toBeUndefined()
-        await tab.revision.writeSnapshot('saved anyway')
+        expect(tab.revision.isRevisionChecked()).toBe(false)
+    })
 
-        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved anyway')
+    it('refuses a save without the check unless this page holds the writer lock', async () => {
+        const other = await openTab()
+        await other.storage.setItem(REDUX_STATE_KEY, 'from another tab')
+        const tab = await openTab()
+        vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await tab.revision.rememberStoredRevision()
+
+        await expect(tab.revision.writeSnapshot('unchecked')).rejects.toMatchObject({
+            name: 'UnverifiedSnapshotError',
+        })
+        tab.revision.setUncheckedWritePermit(() => false)
+        await expect(tab.revision.writeSnapshot('unchecked')).rejects.toBeInstanceOf(
+            tab.revision.StaleSnapshotError,
+        )
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('from another tab')
+    })
+
+    it('saves without the check while this page holds the writer lock', async () => {
+        const tab = await openTab()
+        vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await tab.revision.rememberStoredRevision()
+        tab.revision.setUncheckedWritePermit(() => true)
+
+        await tab.revision.writeSnapshot('saved under the lock')
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved under the lock')
+    })
+
+    it('neither repairs nor removes the snapshot at start without the check or the lock', async () => {
+        const other = await openTab()
+        await other.storage.setItem(REDUX_STATE_KEY, 'from another tab')
+        const tab = await openTab()
+        vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await tab.revision.rememberStoredRevision()
+
+        await expect(tab.revision.repairSnapshot('backup')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(tab.revision.removeSnapshotIfCurrent()).resolves.toBe(false)
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('from another tab')
     })
 })

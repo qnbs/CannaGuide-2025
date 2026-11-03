@@ -90,6 +90,18 @@ export const common = {
         blockedByLocalOnly:
             "Le mode local uniquement bloque cette connexion : {{destination}} n'est ni sur cet appareil ni sur votre r\u00E9seau local.",
     },
+    mqtt: {
+        notConnected: "Le broker MQTT n'est pas connect\u00E9.",
+        invalidBrokerUrl: 'URL du broker non valide. Utilisez ws:// ou wss://.',
+        credentialsNeedWss:
+            'Un identifiant ou un mot de passe exige une connexion chiffr\u00E9e wss://. ws:// non chiffr\u00E9 avec identifiants est bloqu\u00E9.',
+        connectionFailed: 'La connexion a \u00E9chou\u00E9.',
+        insecureCredentials:
+            'Les identifiants sont envoy\u00E9s via ws:// non chiffr\u00E9. Utilisez plut\u00F4t wss://.',
+        connectionRestored: 'Connexion MQTT r\u00E9tablie.',
+        connectionLost: 'Connexion MQTT perdue.',
+        payloadInvalid: 'Un message du capteur a \u00E9t\u00E9 rejet\u00E9 : {{detail}}',
+    },
     errorBoundary: {
         title: 'Une erreur est survenue.',
         description: "Une erreur inattendue s'est produite. Veuillez recharger l'application.",

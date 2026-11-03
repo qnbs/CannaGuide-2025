@@ -286,6 +286,14 @@ export const common = {
     },
     mqtt: {
         notConnected: 'MQTT broker is not connected.',
+        invalidBrokerUrl: 'Invalid broker URL. Use ws:// or wss://.',
+        credentialsNeedWss:
+            'A username or password needs an encrypted wss:// connection. Plain ws:// with credentials is blocked.',
+        connectionFailed: 'Connection failed.',
+        insecureCredentials: 'Credentials are sent over unencrypted ws://. Use wss:// instead.',
+        connectionRestored: 'MQTT connection restored.',
+        connectionLost: 'MQTT connection lost.',
+        payloadInvalid: 'A sensor message was rejected: {{detail}}',
     },
     communityShare: {
         invalidGistUrl: 'Invalid gist URL or ID.',

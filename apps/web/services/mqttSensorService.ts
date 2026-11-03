@@ -193,7 +193,7 @@ class MqttSensorService {
         if (this.isInsecureWithCredentials()) {
             this.emitEvent({
                 type: 'wss_warning',
-                message: 'Credentials sent over unencrypted ws:// -- use wss:// for security',
+                message: String(getT()('common.mqtt.insecureCredentials')),
                 timestamp: Date.now(),
             })
         }
@@ -239,7 +239,7 @@ class MqttSensorService {
             if (this.telemetry.reconnectAttempts > 0) {
                 this.emitEvent({
                     type: 'connection_restored',
-                    message: 'MQTT connection restored',
+                    message: String(getT()('common.mqtt.connectionRestored')),
                     timestamp: Date.now(),
                 })
             }
@@ -262,7 +262,7 @@ class MqttSensorService {
             if (this.connectionState === 'connected') {
                 this.emitEvent({
                     type: 'connection_lost',
-                    message: 'MQTT connection lost',
+                    message: String(getT()('common.mqtt.connectionLost')),
                     timestamp: Date.now(),
                 })
             }
@@ -512,7 +512,7 @@ class MqttSensorService {
         this.telemetry.validationErrors += 1
         this.emitEvent({
             type: 'validation_error',
-            message: `Sensor payload validation failed: ${detail}`,
+            message: String(getT()('common.mqtt.payloadInvalid', { detail })),
             timestamp: Date.now(),
         })
     }

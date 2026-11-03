@@ -100,7 +100,9 @@ class MqttClientService {
 
         const { brokerUrl, username, password, topicPrefix } = useIotStore.getState()
         if (!isValidBrokerUrl(brokerUrl)) {
-            useIotStore.getState().setConnectionStatus('error', 'Invalid broker URL')
+            useIotStore
+                .getState()
+                .setConnectionStatus('error', String(getT()('common.mqtt.invalidBrokerUrl')))
             return
         }
 
@@ -113,10 +115,7 @@ class MqttClientService {
             if (parsed.protocol === 'ws:' && (username || password)) {
                 useIotStore
                     .getState()
-                    .setConnectionStatus(
-                        'error',
-                        'Credentials require wss:// (encrypted). Plain ws:// with credentials is blocked for security.',
-                    )
+                    .setConnectionStatus('error', String(getT()('common.mqtt.credentialsNeedWss')))
                 console.debug('[MQTT] BLOCKED: credentials over unencrypted ws:// -- use wss://')
                 return
             }
@@ -138,7 +137,8 @@ class MqttClientService {
             this.client = mqtt.connect(brokerUrl, opts)
             this.connectedBrokerUrl = brokerUrl
         } catch (err) {
-            const msg = err instanceof Error ? err.message : 'Connection failed'
+            const msg =
+                err instanceof Error ? err.message : String(getT()('common.mqtt.connectionFailed'))
             useIotStore.getState().setConnectionStatus('error', msg)
             return
         }

@@ -88,6 +88,18 @@ export const common = {
         blockedByLocalOnly:
             'De alleen-lokaal-modus blokkeert deze verbinding: {{destination}} staat niet op dit apparaat en niet in je lokale netwerk.',
     },
+    mqtt: {
+        notConnected: 'MQTT-broker is niet verbonden.',
+        invalidBrokerUrl: 'Ongeldige broker-URL. Gebruik ws:// of wss://.',
+        credentialsNeedWss:
+            'Een gebruikersnaam of wachtwoord vereist een versleutelde wss://-verbinding. Onversleuteld ws:// met inloggegevens is geblokkeerd.',
+        connectionFailed: 'Verbinding mislukt.',
+        insecureCredentials:
+            'Inloggegevens worden via onversleuteld ws:// verzonden. Gebruik in plaats daarvan wss://.',
+        connectionRestored: 'MQTT-verbinding hersteld.',
+        connectionLost: 'MQTT-verbinding verbroken.',
+        payloadInvalid: 'Een sensorbericht is geweigerd: {{detail}}',
+    },
     errorBoundary: {
         title: 'Er is iets misgegaan.',
         description:

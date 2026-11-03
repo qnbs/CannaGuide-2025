@@ -90,6 +90,18 @@ export const common = {
         blockedByLocalOnly:
             'El Modo Solo Local bloquea esta conexi\u00F3n: {{destination}} no est\u00E1 en este dispositivo ni en tu red local.',
     },
+    mqtt: {
+        notConnected: 'El broker MQTT no est\u00E1 conectado.',
+        invalidBrokerUrl: 'URL del broker no v\u00E1lida. Usa ws:// o wss://.',
+        credentialsNeedWss:
+            'Un usuario o contrase\u00F1a requiere una conexi\u00F3n cifrada wss://. ws:// sin cifrar con credenciales est\u00E1 bloqueado.',
+        connectionFailed: 'La conexi\u00F3n ha fallado.',
+        insecureCredentials:
+            'Las credenciales se env\u00EDan por ws:// sin cifrar. Usa wss:// en su lugar.',
+        connectionRestored: 'Conexi\u00F3n MQTT restablecida.',
+        connectionLost: 'Conexi\u00F3n MQTT perdida.',
+        payloadInvalid: 'Se rechaz\u00F3 un mensaje del sensor: {{detail}}',
+    },
     errorBoundary: {
         title: 'Algo salio mal.',
         description: 'Ocurrio un error inesperado. Por favor, intenta recargar la aplicacion.',

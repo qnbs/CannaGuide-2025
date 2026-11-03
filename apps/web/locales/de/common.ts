@@ -290,6 +290,15 @@ export const common = {
     },
     mqtt: {
         notConnected: 'MQTT-Broker ist nicht verbunden.',
+        invalidBrokerUrl: 'Ungültige Broker-URL. Verwende ws:// oder wss://.',
+        credentialsNeedWss:
+            'Benutzername oder Passwort brauchen eine verschlüsselte wss://-Verbindung. Unverschlüsseltes ws:// mit Zugangsdaten ist blockiert.',
+        connectionFailed: 'Verbindung fehlgeschlagen.',
+        insecureCredentials:
+            'Zugangsdaten werden über unverschlüsseltes ws:// gesendet. Verwende stattdessen wss://.',
+        connectionRestored: 'MQTT-Verbindung wiederhergestellt.',
+        connectionLost: 'MQTT-Verbindung unterbrochen.',
+        payloadInvalid: 'Eine Sensornachricht wurde abgelehnt: {{detail}}',
     },
     communityShare: {
         invalidGistUrl: 'Ungültige Gist-URL oder ID.',

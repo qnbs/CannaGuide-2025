@@ -1,6 +1,7 @@
 import type { AppStore } from '@/stores/store'
 import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
 import { i18nPromise } from '@/i18n'
+import { disableSentry } from '@/services/sentryService'
 import { registerRecoveryListeners } from './recovery'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
@@ -58,6 +59,10 @@ let staleSnapshotHandled = false
 const handleStaleSnapshot = (): void => {
     if (staleSnapshotHandled) return
     staleSnapshotHandled = true
+    // The settings this page holds may be older than the ones another tab saved
+    // (local-only mode may have been switched on there), and the page is only a
+    // notice until the reload: no error reports from it.
+    disableSentry()
     stopWatchingCacheRestore?.()
     stopPersistenceForOwnershipLoss().catch(() => undefined)
     releaseWriterRole()

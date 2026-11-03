@@ -3,6 +3,7 @@ import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
+import { disableSentry } from '@/services/sentryService'
 import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
@@ -49,6 +50,7 @@ vi.mock('./postHydration', () => ({
     }),
 }))
 vi.mock('@/stores/snapshotRevision', () => ({ setStaleSnapshotHandler: vi.fn() }))
+vi.mock('@/services/sentryService', () => ({ disableSentry: vi.fn() }))
 vi.mock('./localOnlyPrivacy', () => ({
     applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
 }))
@@ -261,6 +263,8 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(order).toEqual(['stop', 'release'])
         expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        // The stale page may hold older settings than another tab: no error reports.
+        expect(disableSentry).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
     })
 })

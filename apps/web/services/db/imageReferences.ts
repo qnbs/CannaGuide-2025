@@ -1,4 +1,4 @@
-import { REDUX_STATE_KEY } from '@/constants'
+import { REDUX_STATE_KEY, REDUX_STATE_QUARANTINE_KEY } from '@/constants'
 import { getReduxSnapshot } from '@/services/uiStateBridge'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { metadataStore } from './metadataStore'
@@ -49,6 +49,21 @@ export const addSimulationImageIds = (simulation: unknown, referenced: Set<strin
 }
 
 /**
+ * The quarantined snapshot (services/snapshotQuarantine.ts) is kept because it
+ * could not be hydrated, so it is often not valid JSON and cannot be parsed
+ * like the others. Its `imageId` values are read from the text instead; a
+ * superset is safe, because an image kept too long costs space and one pruned
+ * too early costs the user's photo.
+ */
+const addQuarantinedImageIds = async (referenced: Set<string>): Promise<void> => {
+    const quarantined = await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)
+    if (quarantined === null) return
+    for (const match of quarantined.matchAll(/"imageId"\s*:\s*"((?:[^"\\]|\\.)*)"/g)) {
+        if (match[1]) referenced.add(match[1])
+    }
+}
+
+/**
  * Every image ID that any copy of the journal references: this tab's live state,
  * the persisted primary and backup snapshots, and archived journal entries.
  *
@@ -71,6 +86,8 @@ export const collectReferencedImageIds = async (): Promise<Set<string>> => {
         }
         addSimulationImageIds(parsed.simulation, referenced)
     }
+
+    await addQuarantinedImageIds(referenced)
 
     const archive = await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)
     if (archive !== undefined) {

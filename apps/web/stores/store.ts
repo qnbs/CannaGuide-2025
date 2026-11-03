@@ -34,11 +34,8 @@ import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
-import {
-    removePrimaryPersistedSnapshot,
-    tryRepairPrimaryPersistedSnapshot,
-} from '@/services/persistedStateService'
-import { quarantineUnreadableSnapshot } from '@/services/snapshotQuarantine'
+import { tryRepairPrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { discardUnreadablePrimarySnapshot } from '@/services/snapshotQuarantine'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -149,10 +146,9 @@ export const createAppStore = async (): Promise<AppStore> => {
         )
         preloadedState = await tryLoadBackupState()
         if (!preloadedState) {
-            // The startup backup is replaced on every start, so keep the original
-            // bytes once before the primary goes (#666).
-            await quarantineUnreadableSnapshot(persistedString)
-            await removePrimaryPersistedSnapshot()
+            // The startup backup is replaced on every start, so the original bytes
+            // are quarantined first, and the primary stays if that fails (#666).
+            await discardUnreadablePrimarySnapshot(persistedString)
         }
     }
 

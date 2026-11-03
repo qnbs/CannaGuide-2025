@@ -311,8 +311,15 @@ class MqttSensorService {
         )
     }
 
+    /**
+     * Stops the connection. A call from outside is the user's choice, so it also
+     * ends a Local-Only pause: switching the mode off must not reconnect then.
+     * enforceLocalOnlyMode and a refused connect() set the pause again after
+     * calling this.
+     */
     disconnect(): void {
         this.intentionalDisconnect = true
+        this.pausedByLocalOnly = false
         if (this.connectTimeoutHandle) {
             clearTimeout(this.connectTimeoutHandle)
             this.connectTimeoutHandle = null

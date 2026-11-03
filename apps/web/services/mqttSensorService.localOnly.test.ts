@@ -102,4 +102,19 @@ describe('mqttSensorService in Local-Only Mode (GH #683)', () => {
 
         expect(mqtt.connect).not.toHaveBeenCalled()
     })
+
+    it('does not reconnect on switch-off after the user disconnected while the mode was on', () => {
+        mqttSensorService.configure({ brokerUrl: 'wss://broker.hivemq.cloud:8884/mqtt' })
+        mqttSensorService.connect()
+        setLocalOnlyMode(true)
+        mqttSensorService.enforceLocalOnlyMode()
+        // An explicit stop by the user, after the privacy pause.
+        mqttSensorService.disconnect()
+        vi.mocked(mqtt.connect).mockClear()
+
+        setLocalOnlyMode(false)
+        mqttSensorService.resumeAfterLocalOnlyMode()
+
+        expect(mqtt.connect).not.toHaveBeenCalled()
+    })
 })

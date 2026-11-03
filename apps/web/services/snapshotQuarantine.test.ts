@@ -43,9 +43,7 @@ describe('quarantineUnreadableSnapshot', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
-        mocks.runExclusive.mockImplementation(async (operation: () => Promise<unknown>) =>
-            operation(),
-        )
+        mocks.runExclusive.mockImplementation((operation: () => Promise<unknown>) => operation())
         mocks.schedule.mockImplementation(async (write: () => Promise<void>) => {
             await write()
             return true
@@ -155,9 +153,7 @@ describe('discardUnreadablePrimarySnapshot', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
-        mocks.runExclusive.mockImplementation(async (operation: () => Promise<unknown>) =>
-            operation(),
-        )
+        mocks.runExclusive.mockImplementation((operation: () => Promise<unknown>) => operation())
         mocks.removePrimary.mockResolvedValue(true)
     })
 

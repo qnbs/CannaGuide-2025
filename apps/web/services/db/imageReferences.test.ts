@@ -30,9 +30,8 @@ const useStorage = (stored: Record<string, string>): void => {
 
 describe('collectReferencedImageIds', () => {
     beforeEach(() => {
+        // No live simulation and no archived journals: the mocks return undefined.
         vi.clearAllMocks()
-        mocks.getReduxSnapshot.mockReturnValue(undefined)
-        mocks.getMetadata.mockResolvedValue(undefined)
     })
 
     it('collects the image ids of the primary snapshot', async () => {

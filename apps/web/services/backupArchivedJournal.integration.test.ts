@@ -291,6 +291,23 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             })
         })
 
+        it.each([
+            ['a Date', () => new Date(0)],
+            ['a Map', () => new Map([['p1', [{ id: 'a' }]]])],
+            ['an entry that is a Date', () => ({ p1: [new Date(0)] })],
+        ])('creates no backup when the stored archive is %s', async (_label, make) => {
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, make())
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(STATE)
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            const result = await backupService.exportBackup()
+
+            expect(result).toMatchObject({
+                success: false,
+                errorCode: 'archivedJournalUnreadable',
+            })
+        })
+
         it('does not log the journal text when it refuses', async () => {
             await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
                 p1: [{ id: 'secret-id', notes: 'private diary text' }, 'broken'],
@@ -459,6 +476,28 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             )
 
             expect(result.success).toBe(false)
+            expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+        })
+
+        it('refuses a backup whose declared count is damaged, with or without the file', async () => {
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+            const damaged = JSON.stringify({
+                version: '1.0',
+                exportedAt: 1,
+                appVersion: '1.6.0',
+                plantCount: 1,
+                imageCount: 0,
+                archivedJournalEntryCount: 'three',
+            })
+
+            const result = await importMockBackup(
+                { version: 6 },
+                {},
+                { [META_ENTRY]: damaged, [ARCHIVE_ENTRY]: archiveFile(archive()) },
+            )
+
+            expect(result.success).toBe(false)
+            expect(result.error).toContain('not valid')
             expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
         })
 

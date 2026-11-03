@@ -22,8 +22,12 @@ export const ARCHIVED_JOURNAL_FORMAT_VERSION = 1
 /** Plant id -> the journal entries that were archived for that plant. */
 export type ArchivedJournal = Record<string, unknown[]>
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-    typeof value === 'object' && value !== null && !Array.isArray(value)
+/** A plain object, as JSON and a structured clone of one produce; not a Date, Map or class instance. */
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+    const prototype: unknown = Object.getPrototypeOf(value)
+    return prototype === Object.prototype || prototype === null
+}
 
 const isEntryList = (value: unknown): value is unknown[] =>
     Array.isArray(value) && value.every(isRecord)
@@ -31,14 +35,16 @@ const isEntryList = (value: unknown): value is unknown[] =>
 /** The archive as a plain map, or a TypeError naming what is wrong with it. */
 const toArchivedJournal = (value: unknown): ArchivedJournal => {
     if (!isRecord(value)) throw new TypeError('Archived journal must be an object.')
-    const archive: ArchivedJournal = {}
+    const pairs: [string, unknown[]][] = []
     for (const [plantId, entries] of Object.entries(value)) {
         if (!isEntryList(entries)) {
             throw new TypeError('Archived journal for a plant must be a list of entries.')
         }
-        archive[plantId] = entries
+        pairs.push([plantId, entries])
     }
-    return archive
+    // fromEntries defines own properties; assigning archive["__proto__"] would
+    // change the prototype and silently drop that plant's journal.
+    return Object.fromEntries(pairs)
 }
 
 /** Every archived entry, for the caller that cleans up photo references. */
@@ -79,13 +85,24 @@ export const parseArchivedJournal = (raw: string): ArchivedJournal => {
 /**
  * A backup that says it holds archived entries must hold exactly that many. A
  * truncated or edited ZIP would otherwise restore without them and report
- * success. Backups made before the archive was exported declare nothing.
+ * success, and so would a declared zero next to a file that holds entries. A
+ * backup made before the archive was exported declares nothing, so an absent
+ * number passes; a number that is present but not a count (a string, a
+ * negative, a fraction, null) is a damaged declaration and refuses the import,
+ * rather than being read as "nothing declared".
  */
 export const assertArchivedJournalComplete = (
     declaredEntryCount: unknown,
-    archive: ArchivedJournal | undefined,
+    archive?: ArchivedJournal,
 ): void => {
-    if (typeof declaredEntryCount !== 'number' || declaredEntryCount <= 0) return
+    if (declaredEntryCount === undefined) return
+    if (
+        typeof declaredEntryCount !== 'number' ||
+        !Number.isSafeInteger(declaredEntryCount) ||
+        declaredEntryCount < 0
+    ) {
+        throw new Error('Invalid backup: the archived journal count is not valid')
+    }
     const actual = archive ? archivedEntriesOf(archive).length : 0
     if (actual !== declaredEntryCount) {
         throw new Error('Invalid backup: archived journal is missing or incomplete')
@@ -94,6 +111,44 @@ export const assertArchivedJournalComplete = (
 
 const entryKey = (entry: unknown): string =>
     isRecord(entry) && typeof entry.id === 'string' ? `id:${entry.id}` : JSON.stringify(entry)
+
+const timeOf = (entry: unknown): number =>
+    isRecord(entry) && typeof entry.timestamp === 'number' && Number.isFinite(entry.timestamp)
+        ? entry.timestamp
+        : Number.POSITIVE_INFINITY
+
+/** Oldest first; an entry without a usable timestamp keeps its place after the dated ones. */
+const byTime = (entries: readonly unknown[]): unknown[] =>
+    [...entries].sort((left, right) => {
+        const leftTime = timeOf(left)
+        const rightTime = timeOf(right)
+        if (leftTime === rightTime) return 0
+        return leftTime < rightTime ? -1 : 1
+    })
+
+/** The entries of `incoming` that `stored` does not hold yet, each only once. */
+const newEntries = (stored: readonly unknown[], incoming: readonly unknown[]): unknown[] => {
+    const known = new Set(stored.map(entryKey))
+    return incoming.filter((entry) => {
+        const key = entryKey(entry)
+        if (known.has(key)) return false
+        known.add(key)
+        return true
+    })
+}
+
+/**
+ * Entries are kept oldest first, because the app trims a plant's archive from
+ * the front (services/db/simulationPersistence.ts keeps the last 1200). Adding
+ * older entries after newer ones would let the next trim drop the newer ones.
+ * When the backup adds nothing, the stored list stays exactly as it was.
+ */
+const mergePlantEntries = (stored: unknown[], incoming: unknown[]): unknown[] => {
+    const added = newEntries(stored, incoming)
+    if (added.length === 0) return stored
+    // A plant with nothing stored takes the backup's list in the order it has.
+    return stored.length === 0 ? added : byTime([...stored, ...added])
+}
 
 /**
  * The stored archive first, then what the backup adds: an entry whose id is
@@ -104,17 +159,12 @@ export const mergeArchivedJournals = (
     existing: ArchivedJournal,
     incoming: ArchivedJournal,
 ): ArchivedJournal => {
-    const merged: ArchivedJournal = {}
-    for (const [plantId, entries] of Object.entries(existing)) merged[plantId] = [...entries]
+    const merged = new Map<string, unknown[]>()
+    for (const [plantId, entries] of Object.entries(existing)) merged.set(plantId, [...entries])
     for (const [plantId, entries] of Object.entries(incoming)) {
-        const target = merged[plantId] ?? []
-        const known = new Set(target.map(entryKey))
-        for (const entry of entries) {
-            if (!known.has(entryKey(entry))) target.push(entry)
-        }
-        merged[plantId] = target
+        merged.set(plantId, mergePlantEntries(merged.get(plantId) ?? [], entries))
     }
-    return merged
+    return Object.fromEntries(merged)
 }
 
 const sameArchive = (left: unknown, right: unknown): boolean =>

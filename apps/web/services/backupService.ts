@@ -163,6 +163,21 @@ const readExportArchivedJournal = async (): Promise<
 const isExportFailure = (value: unknown): value is BackupExportResult =>
     isRecord(value) && typeof value.success === 'boolean' && 'blob' in value
 
+/**
+ * Older journal entries live outside the Redux snapshot; without them the backup
+ * would silently lose them (#667). Adds them to the ZIP and returns the metadata
+ * that declares their number, or the failure when they cannot be read.
+ */
+const addArchivedJournal = async (
+    zip: JSZip,
+): Promise<Pick<BackupMetadata, 'archivedJournalEntryCount'> | BackupExportResult> => {
+    const archivedJournal = await readExportArchivedJournal()
+    if (isExportFailure(archivedJournal)) return archivedJournal
+    if (!archivedJournal) return {}
+    zip.file(ARCHIVED_JOURNAL_FILENAME, serializeArchivedJournal(archivedJournal))
+    return { archivedJournalEntryCount: archivedEntriesOf(archivedJournal).length }
+}
+
 const buildExportArchive = async (stateString: string): Promise<BackupExportResult> => {
     const zip = new JSZip()
     // A legacy plaintext Cloud TTS key never leaves in a backup (#654).
@@ -179,21 +194,15 @@ const buildExportArchive = async (stateString: string): Promise<BackupExportResu
             'imageNameNotRestorable',
         )
     }
-    // Older journal entries live outside the Redux snapshot; without them the
-    // backup would silently lose them (#667).
-    const archivedJournal = await readExportArchivedJournal()
-    if (isExportFailure(archivedJournal)) return archivedJournal
-    if (archivedJournal)
-        zip.file(ARCHIVED_JOURNAL_FILENAME, serializeArchivedJournal(archivedJournal))
+    const archived = await addArchivedJournal(zip)
+    if (isExportFailure(archived)) return archived
     const metadata: BackupMetadata = {
         version: '1.0',
         exportedAt: Date.now(),
         appVersion: '1.6.0',
         plantCount: plantCountFromState(stateString),
         imageCount,
-        ...(archivedJournal
-            ? { archivedJournalEntryCount: archivedEntriesOf(archivedJournal).length }
-            : {}),
+        ...archived,
     }
     zip.file(METADATA_FILENAME, JSON.stringify(metadata, null, 2))
     const blob = await zip.generateAsync({

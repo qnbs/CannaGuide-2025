@@ -51,13 +51,39 @@ describe('parseArchivedJournal', () => {
 })
 
 describe('assertArchivedJournalComplete', () => {
-    it.each([
-        ['an older backup that declares nothing', undefined],
-        ['a declared zero', 0],
-        ['a declaration that is not a number', 'many'],
-    ])('lets through %s', (_label, declared) => {
-        expect(() => assertArchivedJournalComplete(declared, undefined)).not.toThrow()
+    it('lets an older backup through that declares nothing, with or without a file', () => {
+        expect(() => assertArchivedJournalComplete(undefined)).not.toThrow()
+        expect(() => assertArchivedJournalComplete(undefined, { p1: [{ id: 'a' }] })).not.toThrow()
     })
+
+    it('accepts a declared zero next to no archive or an archive without entries', () => {
+        expect(() => assertArchivedJournalComplete(0)).not.toThrow()
+        expect(() => assertArchivedJournalComplete(0, { p1: [] })).not.toThrow()
+    })
+
+    it('refuses a declared zero next to a file that holds entries', () => {
+        expect(() => assertArchivedJournalComplete(0, { p1: [{ id: 'a' }] })).toThrow(
+            'missing or incomplete',
+        )
+    })
+
+    it.each([
+        ['a string', 'many'],
+        ['a numeric string', '3'],
+        ['a negative number', -1],
+        ['a fraction', 1.5],
+        ['NaN', Number.NaN],
+        ['Infinity', Number.POSITIVE_INFINITY],
+        ['null', null],
+        ['an object', { count: 3 }],
+    ])(
+        'refuses a declaration that is %s, instead of reading it as nothing declared',
+        (_l, declared) => {
+            expect(() => assertArchivedJournalComplete(declared, { p1: [{ id: 'a' }] })).toThrow(
+                'not valid',
+            )
+        },
+    )
 
     it('accepts an archive with exactly the declared number of entries', () => {
         expect(() =>
@@ -66,7 +92,7 @@ describe('assertArchivedJournalComplete', () => {
     })
 
     it('refuses a declared archive that is missing', () => {
-        expect(() => assertArchivedJournalComplete(3, undefined)).toThrow('missing or incomplete')
+        expect(() => assertArchivedJournalComplete(3)).toThrow('missing or incomplete')
     })
 
     it('refuses an archive with fewer or more entries than declared', () => {
@@ -196,5 +222,111 @@ describe('combineDependentWrites', () => {
         ])
 
         await expect(combined?.apply()).rejects.toThrow('b apply')
+
+        // The undo of "a" was tried, although it failed; "b" never applied.
+        expect(log).toEqual(['apply a', 'apply b', 'revert a'])
+    })
+})
+
+describe('mergeArchivedJournals keeps entries oldest first', () => {
+    const at = (id: string, timestamp: number) => ({ id, timestamp })
+
+    it('places older backup entries before newer stored ones', () => {
+        const merged = mergeArchivedJournals(
+            { p1: [at('new-1', 100), at('new-2', 101)] },
+            { p1: [at('old-1', 1), at('old-2', 2)] },
+        )
+
+        expect(merged.p1?.map((entry) => (entry as { id: string }).id)).toEqual([
+            'old-1',
+            'old-2',
+            'new-1',
+            'new-2',
+        ])
+    })
+
+    it('lets the next trim from the front drop the oldest entries, not the newer stored ones', () => {
+        // services/db/simulationPersistence.ts appends and keeps the last N.
+        const keepLast = 3
+        const merged = mergeArchivedJournals(
+            { p1: [at('new-1', 100), at('new-2', 101)] },
+            { p1: [at('old-1', 1), at('old-2', 2)] },
+        )
+
+        const afterTrim = [...(merged.p1 ?? []), at('newest', 200)].slice(-keepLast)
+
+        expect(afterTrim.map((entry) => (entry as { id: string }).id)).toEqual([
+            'new-1',
+            'new-2',
+            'newest',
+        ])
+    })
+
+    it('leaves the stored list exactly as it is when the backup adds nothing', () => {
+        const stored = [at('b', 5), at('a', 1)]
+
+        const merged = mergeArchivedJournals({ p1: stored }, { p1: [at('a', 1)] })
+
+        expect(merged.p1).toEqual([at('b', 5), at('a', 1)])
+    })
+
+    it('keeps entries without a usable timestamp after the dated ones, in their order', () => {
+        const merged = mergeArchivedJournals(
+            { p1: [at('dated', 50)] },
+            { p1: [{ id: 'no-time-1' }, at('older', 10), { id: 'no-time-2', timestamp: 'x' }] },
+        )
+
+        expect(merged.p1?.map((entry) => (entry as { id: string }).id)).toEqual([
+            'older',
+            'dated',
+            'no-time-1',
+            'no-time-2',
+        ])
+    })
+
+    it('adds an entry that appears twice in the backup only once', () => {
+        const merged = mergeArchivedJournals({}, { p1: [at('a', 1), at('a', 1), at('b', 2)] })
+
+        expect(merged.p1).toEqual([at('a', 1), at('b', 2)])
+    })
+})
+
+describe('a plant id that is also an object property name', () => {
+    const journalsWithProtoKey = () =>
+        parseArchivedJournal(
+            '{"version":1,"journals":{"__proto__":[{"id":"a"}],"p1":[{"id":"b"}]}}',
+        )
+
+    it('is kept as an own entry when the file is parsed', () => {
+        const archive = journalsWithProtoKey()
+
+        expect(Object.keys(archive).sort()).toEqual(['__proto__', 'p1'])
+        expect(Object.getPrototypeOf(archive)).toBe(Object.prototype)
+        expect(Object.getOwnPropertyDescriptor(archive, '__proto__')?.value).toEqual([{ id: 'a' }])
+    })
+
+    it('is kept through a merge, from either side', () => {
+        const stored = journalsWithProtoKey()
+
+        const merged = mergeArchivedJournals(
+            stored,
+            parseArchivedJournal(
+                '{"version":1,"journals":{"__proto__":[{"id":"c"}],"constructor":[{"id":"d"}]}}',
+            ),
+        )
+
+        expect(Object.getOwnPropertyDescriptor(merged, '__proto__')?.value).toEqual([
+            { id: 'a' },
+            { id: 'c' },
+        ])
+        expect(Object.getOwnPropertyDescriptor(merged, 'constructor')?.value).toEqual([{ id: 'd' }])
+        expect(Object.getPrototypeOf(merged)).toBe(Object.prototype)
+    })
+
+    it('does not touch Object.prototype', () => {
+        mergeArchivedJournals({}, journalsWithProtoKey())
+
+        expect(({} as Record<string, unknown>)['id']).toBeUndefined()
+        expect(Object.keys(Object.prototype)).toEqual([])
     })
 })

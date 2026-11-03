@@ -31,7 +31,7 @@ const isMissingKeyOrNetworkBlock = (error: unknown): boolean => {
     )
 }
 
-export function shouldUseLocalFallback(error: unknown): boolean {
+export const shouldUseLocalFallback = (error: unknown): boolean => {
     const offline = typeof navigator !== 'undefined' && navigator.onLine === false
     if (offline) return true
 

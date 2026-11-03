@@ -92,6 +92,12 @@ describe('mqttSensorService in Local-Only Mode (GH #683)', () => {
     })
 
     it('does not connect on switch-off when the mode never refused it', () => {
+        // A normal connection the mode never touched, set up in this test itself.
+        mqttSensorService.configure({ brokerUrl: 'ws://192.168.1.20:9001' })
+        mqttSensorService.connect()
+        mqttSensorService.disconnect()
+        vi.mocked(mqtt.connect).mockClear()
+
         mqttSensorService.resumeAfterLocalOnlyMode()
 
         expect(mqtt.connect).not.toHaveBeenCalled()

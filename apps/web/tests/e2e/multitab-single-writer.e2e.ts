@@ -11,6 +11,30 @@ const OTHER_TAB_NOTICE = /another tab|anderen Tab|otra pesta\u00f1a|autre onglet
 const STALE_TAB_NOTICE =
     /changed in another tab|in einem anderen tab ge\u00e4ndert|cambiado en otra pesta\u00f1a|modifi\u00e9 dans un autre onglet|gewijzigd in een ander tabblad/iu
 
+const REVISION_KEY = 'cannaguide-redux-storage-revision'
+
+const readStoredRevision = (page: Page): Promise<string | null> =>
+    page.evaluate(
+        (key) =>
+            new Promise<string | null>((resolve, reject) => {
+                const open = indexedDB.open('CannaGuideStateDB')
+                open.onerror = () => reject(open.error)
+                open.onsuccess = () => {
+                    const db = open.result
+                    const read = db
+                        .transaction('zustand_state')
+                        .objectStore('zustand_state')
+                        .get(key)
+                    read.onerror = () => reject(read.error)
+                    read.onsuccess = () => {
+                        db.close()
+                        resolve(typeof read.result === 'string' ? read.result : null)
+                    }
+                }
+            }),
+        REVISION_KEY,
+    )
+
 const staleNoticeCount = (page: Page) =>
     page.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE }).count()
 
@@ -66,5 +90,19 @@ test.describe('Single writer tab (GH #669)', () => {
                 { timeout: 60_000 },
             )
             .toBeGreaterThan(0)
+
+        // The refused tab must have written nothing. With the other tab closed, any
+        // change of the stored revision after this point would be its doing.
+        const refused = (await staleNoticeCount(first)) > 0 ? first : second
+        const writer = refused === first ? second : first
+        await writer.close()
+        await refused.waitForTimeout(1_500)
+        const before = await readStoredRevision(refused)
+        expect(before).not.toBeNull()
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            await refused.evaluate(() => window.dispatchEvent(new Event('pagehide')))
+        }
+        await refused.waitForTimeout(1_500)
+        expect(await readStoredRevision(refused)).toBe(before)
     })
 })

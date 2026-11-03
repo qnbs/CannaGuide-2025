@@ -96,8 +96,9 @@ export const writeSnapshot = async (serializedState: string): Promise<void> => {
  *
  * This page is refused at its next save too, unless `continueSaving` is set.
  * That is what a replacement followed by a reload needs: the `pagehide` save of
- * the old page must not write the old state over the new one. Only the repair at
- * start, after which this page goes on running, passes it.
+ * the old page must not write the old state over the new one. Only callers after
+ * which this page goes on running pass it: the repair at start and the rollback
+ * of a failed safe recovery.
  */
 export const replaceSnapshot = async (
     serializedState: string | null,
@@ -111,7 +112,8 @@ export const replaceSnapshot = async (
         next,
     )
     // The token was just written, so storing it works: a page that started without
-    // the check (its revision could not be read) starts checking from here on.
+    // the check (its revision could not be read) starts checking from here on, after
+    // the repair at start as well as after a rolled-back safe recovery.
     if (continueSaving) knownRevision = next
 }
 

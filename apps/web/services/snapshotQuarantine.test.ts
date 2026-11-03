@@ -19,6 +19,11 @@ vi.mock('@/stores/indexedDBStorage', () => ({
         removeItem: mocks.removeItem,
     },
 }))
+// The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
+// stands for the removal of the primary.
+vi.mock('@/stores/snapshotRevision', () => ({
+    replaceSnapshot: () => mocks.removeItem('primary'),
+}))
 vi.mock('@/constants', () => ({
     REDUX_STATE_KEY: 'primary',
     REDUX_STATE_QUARANTINE_KEY: 'quarantine',

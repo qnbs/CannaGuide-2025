@@ -186,6 +186,33 @@ describe('snapshot revision (GH #669)', () => {
         await expect(other.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved by the other tab')
     })
 
+    it('arms the check after a replacement on a page that started without it', async () => {
+        const tab = await openTab()
+        vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await tab.revision.rememberStoredRevision()
+
+        await tab.revision.replaceSnapshot('imported')
+
+        await expect(tab.revision.writeSnapshot('old state saved on reload')).rejects.toMatchObject(
+            { name: 'StaleSnapshotError' },
+        )
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('imported')
+    })
+
+    it('arms the check after an update on a page that started without it', async () => {
+        const tab = await openTab()
+        await tab.storage.setItem(REDUX_STATE_KEY, 'before')
+        vi.spyOn(tab.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await tab.revision.rememberStoredRevision()
+
+        await tab.revision.updateSnapshot((current) => `${current}+updated`)
+
+        await expect(tab.revision.writeSnapshot('old state saved on reload')).rejects.toMatchObject(
+            { name: 'StaleSnapshotError' },
+        )
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('before+updated')
+    })
+
     it('refuses the other tab after the snapshot was removed through replaceSnapshot', async () => {
         const removing = await openTab()
         const other = await openTab()

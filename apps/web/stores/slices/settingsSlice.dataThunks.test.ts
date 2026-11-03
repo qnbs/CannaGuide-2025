@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice'
+import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { stopPersistenceForOwnershipLoss } from '@/bootstrap/persistenceCoordinator'
-import { removePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import {
+    removePrimaryPersistedSnapshot,
+    updatePrimaryPersistedSnapshot,
+} from '@/services/persistedStateService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 
 vi.mock('@/stores/indexedDBStorage', () => ({
@@ -55,6 +58,18 @@ describe('resetAllData (#711 review)', () => {
             reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
         )
         expect(reload).toHaveBeenCalled()
+    })
+
+    it('stops this page saving before a slice reset reloads it (#669)', async () => {
+        vi.mocked(updatePrimaryPersistedSnapshot).mockResolvedValueOnce(true)
+
+        const result = await resetSliceData('notes')(vi.fn(), () => ({}), undefined)
+
+        expect(result.meta.requestStatus).toBe('fulfilled')
+        expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
+            reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
     })
 
     it('keeps every copy when safe recovery blocks the reset', async () => {

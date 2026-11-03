@@ -285,6 +285,8 @@ export const resetSliceData = createAsyncThunk<void, VersionedSliceName>(
             delete state[sliceName]
         })
         if (!stateUpdated) throw new Error('Slice reset was blocked by safe recovery.')
+        // Without this the pagehide save of the reload could write the slice back.
+        await stopPersistenceForOwnershipLoss()
         window.location.reload()
     },
 )

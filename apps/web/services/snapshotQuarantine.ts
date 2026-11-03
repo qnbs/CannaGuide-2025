@@ -4,6 +4,7 @@ import {
 } from '@/bootstrap/persistenceCoordinator'
 import { REDUX_STATE_KEY, REDUX_STATE_QUARANTINE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { replaceSnapshot } from '@/stores/snapshotRevision'
 import { redactSnapshotSecrets, scrubSecretsInText } from '@/utils/redactSecrets'
 
 /**
@@ -102,7 +103,10 @@ export const discardUnreadablePrimarySnapshot = async (
                 console.debug('[Store] Keeping the primary snapshot: it changed since it failed.')
                 return
             }
-            await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+            // Through replaceSnapshot so another tab that still holds the old
+            // revision cannot save its state back over the removal (#669). This page
+            // goes on running, so it follows the new revision.
+            await replaceSnapshot(null, true)
             removed = true
         })
     } catch (error) {

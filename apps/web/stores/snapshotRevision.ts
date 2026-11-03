@@ -115,6 +115,9 @@ export const replaceSnapshot = async (
     // the check (its revision could not be read) starts checking from here on, after
     // the repair at start as well as after a rolled-back safe recovery.
     if (continueSaving) knownRevision = next
+    // A page that runs without the check would otherwise save the old state over the
+    // replacement on its way out: arm the check with a token that never matches.
+    else knownRevision ??= newRevision()
 }
 
 /**
@@ -143,4 +146,6 @@ export const updateSnapshot = async (
         onStaleSnapshot?.()
         throw new StaleSnapshotError()
     }
+    // Same as in replaceSnapshot: the page reloads and must not save over this update.
+    knownRevision ??= newRevision()
 }

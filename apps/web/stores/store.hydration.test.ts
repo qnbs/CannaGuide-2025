@@ -26,6 +26,17 @@ vi.mock('@/stores/indexedDBStorage', () => ({
             db.data.delete(key)
             return Promise.resolve()
         },
+        replaceItemRotatingRevision: (
+            name: string,
+            value: string | null,
+            revisionName: string,
+            next: string,
+        ) => {
+            if (value === null) db.data.delete(name)
+            else db.data.set(name, value)
+            db.data.set(revisionName, next)
+            return Promise.resolve()
+        },
         setItemIfRevision: (
             name: string,
             value: string,

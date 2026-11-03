@@ -9,7 +9,7 @@ const sdk = vi.hoisted(() => ({
 
 vi.mock('@sentry/react', () => sdk)
 
-const loadService = async () => {
+const loadService = () => {
     vi.resetModules()
     return import('./sentryService')
 }

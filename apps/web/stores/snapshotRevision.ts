@@ -102,3 +102,28 @@ export const replaceSnapshot = async (
     )
     if (continueSaving && knownRevision !== undefined) knownRevision = next
 }
+
+/**
+ * Read-modify-write of the saved snapshot that fails instead of overwriting a
+ * save made in between: the revision is read before the snapshot, and the write
+ * only goes through while it is still the stored one (null from `update`: leave
+ * the snapshot as it is). Like replaceSnapshot, it is meant for callers that
+ * reload afterwards, so this page does not follow the new revision.
+ */
+export const updateSnapshot = async (
+    update: (current: string | null) => string | null | Promise<string | null>,
+): Promise<void> => {
+    const expected = await indexedDBStorage.getItem(REDUX_STATE_REVISION_KEY)
+    const current = await indexedDBStorage.getItem(REDUX_STATE_KEY)
+    const updated = await update(current)
+    if (updated === null) return
+
+    const applied = await indexedDBStorage.setItemIfRevision(
+        REDUX_STATE_KEY,
+        updated,
+        REDUX_STATE_REVISION_KEY,
+        expected,
+        newRevision(),
+    )
+    if (!applied) throw new StaleSnapshotError()
+}

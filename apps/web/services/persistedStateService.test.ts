@@ -29,6 +29,10 @@ vi.mock('@/stores/indexedDBStorage', () => ({
 // The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
 // stands for the primary write.
 vi.mock('@/stores/snapshotRevision', () => ({
+    updateSnapshot: async (update: (current: string | null) => string | null) => {
+        const updated = update(await mocks.getItem('primary'))
+        if (updated !== null) await mocks.setItem('primary', updated)
+    },
     replaceSnapshot: (value: string | null, continueSaving?: boolean) => {
         mocks.continueSaving(continueSaving)
         return value === null ? mocks.removeItem('primary') : mocks.setItem('primary', value)

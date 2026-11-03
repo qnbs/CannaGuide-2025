@@ -185,6 +185,48 @@ describe('snapshot revision (GH #669)', () => {
         await expect(removing.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
     })
 
+    it('updates the snapshot and refuses the other tab afterwards', async () => {
+        const updating = await openTab()
+        const other = await openTab()
+        await updating.revision.rememberStoredRevision()
+        await updating.revision.writeSnapshot('before')
+        await other.revision.rememberStoredRevision()
+
+        await updating.revision.updateSnapshot((current) => `${current}+updated`)
+
+        await expect(updating.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('before+updated')
+        await expect(other.revision.writeSnapshot('old state')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+    })
+
+    it('refuses an update when another tab saved between its read and its write', async () => {
+        const updating = await openTab()
+        const other = await openTab()
+        await updating.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+        await updating.revision.writeSnapshot('before')
+        await other.revision.rememberStoredRevision()
+
+        await expect(
+            updating.revision.updateSnapshot(async (current) => {
+                await other.revision.writeSnapshot('saved in between')
+                return `${current}+updated`
+            }),
+        ).rejects.toMatchObject({ name: 'StaleSnapshotError' })
+
+        await expect(updating.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved in between')
+    })
+
+    it('leaves the snapshot alone when the update has nothing to change', async () => {
+        const tab = await openTab()
+        await tab.revision.rememberStoredRevision()
+
+        await tab.revision.updateSnapshot(() => null)
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
+    })
+
     it('saves as before when no revision was loaded, and writes no revision', async () => {
         const tab = await openTab()
 

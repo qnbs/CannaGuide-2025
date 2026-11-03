@@ -1,4 +1,3 @@
-import { REDUX_STATE_KEY } from '@/constants'
 import {
     commitRecoveryEpoch,
     runWithExclusiveRecoveryLock,
@@ -6,8 +5,7 @@ import {
     suspendPersistenceForRecovery,
 } from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
-import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { replaceSnapshot } from '@/stores/snapshotRevision'
+import { replaceSnapshot, updateSnapshot } from '@/stores/snapshotRevision'
 
 export interface RecoverySnapshotReplacementResult {
     success: boolean
@@ -126,23 +124,28 @@ export const removePrimaryPersistedSnapshot = async (): Promise<boolean> => {
     return removed
 }
 
-/** Read-modify-write the primary snapshot while holding the shared persistence lock. */
+/**
+ * Read-modify-write the primary snapshot while holding the shared persistence lock.
+ * A save by another tab between the read and the write makes it throw
+ * StaleSnapshotError instead of overwriting that save.
+ */
 export const updatePrimaryPersistedSnapshot = async (
     update: (state: Record<string, unknown>) => void,
 ): Promise<boolean> => {
     const updated = await schedulePersistenceWrite(async () => {
-        const snapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-        if (!snapshot) return
+        await updateSnapshot((snapshot) => {
+            if (!snapshot) return null
 
-        const state: unknown = JSON.parse(snapshot)
-        if (!isRecord(state)) {
-            throw new TypeError('Persisted state must be an object.')
-        }
-        // Apply the narrow repair to the raw top-level snapshot first. This lets
-        // a caller remove the corrupt slice that would otherwise make canonical
-        // migration fail before the repair callback could run.
-        update(state)
-        await replaceSnapshot(migratePersistedSnapshot(JSON.stringify(state)))
+            const state: unknown = JSON.parse(snapshot)
+            if (!isRecord(state)) {
+                throw new TypeError('Persisted state must be an object.')
+            }
+            // Apply the narrow repair to the raw top-level snapshot first. This lets
+            // a caller remove the corrupt slice that would otherwise make canonical
+            // migration fail before the repair callback could run.
+            update(state)
+            return migratePersistedSnapshot(JSON.stringify(state))
+        })
     })
     return updated
 }

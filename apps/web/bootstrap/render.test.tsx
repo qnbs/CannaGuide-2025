@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
     getT: vi.fn(() => (key: string) => {
         if (key === 'common.errorBoundary.safeRecovery') return 'Try Safe Recovery'
         if (key === 'common.otherTab.reload') return 'Reload this tab'
+        if (key === 'common.staleTab.reload') return 'Reload this tab'
         if (key === 'common.errorBoundary.safeRecoveryDescription') {
             return 'Restore the last validated backup.'
         }
@@ -25,6 +26,7 @@ vi.mock('@/components/common/ErrorBoundary', () => ({
 
 let renderError: typeof import('./render').renderError
 let renderOtherTabNotice: typeof import('./render').renderOtherTabNotice
+let renderStaleTabNotice: typeof import('./render').renderStaleTabNotice
 
 describe('renderError', () => {
     beforeEach(async () => {
@@ -66,6 +68,28 @@ describe('renderOtherTabNotice', () => {
         const notice = screen.getByRole('alert')
         expect(notice).toHaveTextContent('common.otherTab.title')
         expect(notice).toHaveTextContent('common.otherTab.description')
+        fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
+        expect(reload).toHaveBeenCalledOnce()
+    })
+})
+
+describe('renderStaleTabNotice', () => {
+    beforeEach(async () => {
+        vi.resetModules()
+        ;({ renderStaleTabNotice } = await import('./render'))
+    })
+
+    it('says the page is out of date and lets the user reload', () => {
+        document.body.innerHTML = '<div id="root"></div>'
+        const reload = vi.fn()
+
+        act(() => {
+            renderStaleTabNotice(reload)
+        })
+
+        const notice = screen.getByRole('alert')
+        expect(notice).toHaveTextContent('common.staleTab.title')
+        expect(notice).toHaveTextContent('common.staleTab.description')
         fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
         expect(reload).toHaveBeenCalledOnce()
     })

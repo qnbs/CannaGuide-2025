@@ -6,6 +6,7 @@ import {
     GEMINI_API_KEY_STORAGE_KEY,
     REDUX_STATE_BACKUP_KEY,
     REDUX_STATE_QUARANTINE_KEY,
+    REDUX_STATE_REVISION_KEY,
     REDUX_STATE_ROLLBACK_KEY,
     VersionedSliceName,
 } from '@/constants'
@@ -262,6 +263,9 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     await indexedDBStorage.removeItem(REDUX_STATE_BACKUP_KEY)
     await indexedDBStorage.removeItem(REDUX_STATE_ROLLBACK_KEY)
     await indexedDBStorage.removeItem(REDUX_STATE_QUARANTINE_KEY)
+    // Another open tab must find its revision gone, so it cannot save its old
+    // state back over the reset (#669).
+    await indexedDBStorage.removeItem(REDUX_STATE_REVISION_KEY)
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
     await cloudTtsKeyService.clearApiKey()

@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
-import { renderError, renderOtherTabNotice } from './render'
+import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
+import { setupPersistedStateSync } from './persistence'
 import { registerRecoveryListeners } from './recovery'
 import {
     claimWriterRole,
@@ -18,7 +19,11 @@ const order: string[] = []
 
 vi.mock('@/i18n', () => ({ i18nPromise: Promise.resolve() }))
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
-vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn() }))
+vi.mock('./render', () => ({
+    renderError: vi.fn(),
+    renderOtherTabNotice: vi.fn(),
+    renderStaleTabNotice: vi.fn(),
+}))
 vi.mock('./writerOwnership', () => ({
     claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
     waitForWriterRole: vi.fn(),
@@ -193,4 +198,22 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
             expect(watchForCacheRestore).not.toHaveBeenCalled()
         },
     )
+
+    it('stops saving, gives the role up and asks for a reload when a save is refused as stale', async () => {
+        const reload = vi.fn()
+        vi.stubGlobal('location', { reload })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+        await mountHydratedApp()
+        const onStale = vi.mocked(setupPersistedStateSync).mock.calls[0]?.[1]
+        order.length = 0
+
+        onStale?.()
+        onStale?.()
+
+        expect(order).toEqual(['stop', 'release'])
+        expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        vi.mocked(renderStaleTabNotice).mock.calls[0]?.[0]()
+        expect(reload).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
+    })
 })

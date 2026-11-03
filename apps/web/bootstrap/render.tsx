@@ -55,24 +55,52 @@ export const renderError = (error: Error): void => {
     )
 }
 
+const renderTabNotice = (
+    title: string,
+    description: string,
+    reloadLabel: string,
+    reload: () => void,
+): void => {
+    getAppRoot().render(
+        <main role="alert" style={{ padding: '2rem', textAlign: 'center', color: '#e2e8f0' }}>
+            <h1>{title}</h1>
+            <p className="text-slate-300">{description}</p>
+            <button
+                type="button"
+                onClick={reload}
+                className="mt-3 rounded-md bg-amber-500 px-4 py-2.5 font-bold text-slate-900"
+            >
+                {reloadLabel}
+            </button>
+        </main>,
+    )
+}
+
 /**
  * Shown instead of the app in a tab that is not the writer (GH #669): another
  * tab already owns the saved data, and a second copy would overwrite its edits.
  */
 export const renderOtherTabNotice = (reload: () => void): void => {
     const translate = getT()
-    getAppRoot().render(
-        <main role="alert" style={{ padding: '2rem', textAlign: 'center', color: '#e2e8f0' }}>
-            <h1>{String(translate('common.otherTab.title'))}</h1>
-            <p className="text-slate-300">{String(translate('common.otherTab.description'))}</p>
-            <button
-                type="button"
-                onClick={reload}
-                className="mt-3 rounded-md bg-amber-500 px-4 py-2.5 font-bold text-slate-900"
-            >
-                {String(translate('common.otherTab.reload'))}
-            </button>
-        </main>,
+    renderTabNotice(
+        String(translate('common.otherTab.title')),
+        String(translate('common.otherTab.description')),
+        String(translate('common.otherTab.reload')),
+        reload,
+    )
+}
+
+/**
+ * Shown instead of the app when a save was refused because another tab saved
+ * newer data since this page loaded (GH #669). Nothing of this page was written.
+ */
+export const renderStaleTabNotice = (reload: () => void): void => {
+    const translate = getT()
+    renderTabNotice(
+        String(translate('common.staleTab.title')),
+        String(translate('common.staleTab.description')),
+        String(translate('common.staleTab.reload')),
+        reload,
     )
 }
 

@@ -110,7 +110,49 @@ export const releaseIndexedDBStorageAfterErase = (): void => {
     dbEraseHold = false
 }
 
-export const indexedDBStorage: StateStorage = {
+/**
+ * Writes `value` under `name` and `next` under `revisionName`, but only while
+ * the stored revision is still `expected` (null: none stored). Reading the
+ * revision and both writes are one readwrite transaction, which IndexedDB
+ * serializes across tabs, so of two overlapping saves exactly one is applied.
+ * Resolves to whether it was applied.
+ */
+const putIfRevision = async (
+    name: string,
+    value: string,
+    revisionName: string,
+    expected: string | null,
+    next: string,
+): Promise<boolean> => {
+    const conn = await openDB()
+    return new Promise<boolean>((resolve, reject) => {
+        const transaction = conn.transaction(STORE_NAME, 'readwrite')
+        const store = transaction.objectStore(STORE_NAME)
+        let applied = false
+
+        const read = store.get(revisionName)
+        read.onsuccess = () => {
+            const stored: unknown = read.result
+            const current = typeof stored === 'string' && stored !== '' ? stored : null
+            if (current !== expected) return
+            store.put(value, name)
+            store.put(next, revisionName)
+            applied = true
+        }
+        read.onerror = () => reject(read.error)
+
+        transaction.oncomplete = () => resolve(applied)
+        transaction.onerror = () => reject(transaction.error)
+        transaction.onabort = () => reject(transaction.error ?? new Error('Transaction aborted'))
+    })
+}
+
+export type RevisionedStateStorage = StateStorage & {
+    setItemIfRevision: typeof putIfRevision
+}
+
+export const indexedDBStorage: RevisionedStateStorage = {
+    setItemIfRevision: putIfRevision,
     getItem: async (name: string): Promise<string | null> => {
         const result = await performTx('readonly', (store) => store.get(name))
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- IDB returns unknown

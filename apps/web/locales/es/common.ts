@@ -75,6 +75,12 @@ export const common = {
             'CannaGuide ya est\u00E1 abierto en otra pesta\u00F1a o ventana. Solo una puede guardar tus datos, as\u00ED que esta queda en pausa para que no se sobrescriban entre s\u00ED. Cierra la otra pesta\u00F1a y esta se recargar\u00E1 sola, o rec\u00E1rgala manualmente.',
         reload: 'Recargar',
     },
+    staleTab: {
+        title: 'Cambiado en otra pesta\u00F1a',
+        description:
+            'Los datos guardados se cambiaron en otra pesta\u00F1a o ventana despu\u00E9s de cargar esta, as\u00ED que esta p\u00E1gina est\u00E1 desactualizada y ha dejado de guardar para proteger esos datos m\u00E1s recientes. Recarga para continuar con los datos m\u00E1s recientes.',
+        reload: 'Recargar',
+    },
     errorBoundary: {
         title: 'Algo salio mal.',
         description: 'Ocurrio un error inesperado. Por favor, intenta recargar la aplicacion.',

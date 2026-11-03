@@ -29,6 +29,7 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
+import { rememberStoredRevision } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
@@ -126,6 +127,10 @@ export const createAppStore = async (): Promise<AppStore> => {
             return undefined
         }
     }
+
+    // Before the snapshot, so a save by another tab in between makes this tab's
+    // first save stale rather than letting it overwrite that save (#669).
+    await rememberStoredRevision()
 
     let persistedString: string | null | undefined
     try {

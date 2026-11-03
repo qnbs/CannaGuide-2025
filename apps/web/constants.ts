@@ -97,6 +97,11 @@ export const REDUX_STATE_BACKUP_KEY = `${REDUX_STATE_KEY}-backup`
  * and never replaced by a later one (services/snapshotQuarantine.ts, #666).
  */
 export const REDUX_STATE_QUARANTINE_KEY = `${REDUX_STATE_KEY}-quarantine`
+/**
+ * Token that changes with every saved snapshot. A tab saves only while the stored
+ * token is still the one it loaded or wrote last (stores/snapshotRevision.ts, #669).
+ */
+export const REDUX_STATE_REVISION_KEY = `${REDUX_STATE_KEY}-revision`
 /** Snapshot kept while safe recovery restores the backup (bootstrap/recovery.ts). */
 export const REDUX_STATE_ROLLBACK_KEY = `${REDUX_STATE_KEY}-recovery-rollback`
 export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion'

@@ -73,6 +73,12 @@ export const common = {
             'CannaGuide is al geopend in een ander tabblad of venster. Slechts een van de twee kan je gegevens opslaan, dus dit tabblad is gepauzeerd zodat ze elkaar niet overschrijven. Sluit het andere tabblad en dit laadt zichzelf opnieuw, of laad het handmatig opnieuw.',
         reload: 'Opnieuw laden',
     },
+    staleTab: {
+        title: 'Gewijzigd in een ander tabblad',
+        description:
+            'De opgeslagen gegevens zijn gewijzigd door een ander tabblad of venster nadat dit tabblad was geladen. Deze pagina is verouderd en slaat niet meer op, zodat die nieuwere gegevens veilig blijven. Laad opnieuw om met de laatste gegevens verder te gaan.',
+        reload: 'Opnieuw laden',
+    },
     errorBoundary: {
         title: 'Er is iets misgegaan.',
         description:

@@ -1,7 +1,7 @@
 import type { AppStore, RootState } from '@/stores/store'
 import { getUISnapshot } from '@/stores/useUIStore'
-import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from '@/constants'
+import { StaleSnapshotError, writeSnapshot } from '@/stores/snapshotRevision'
+import { SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
@@ -10,7 +10,15 @@ import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
 
-export const setupPersistedStateSync = (hydratedStore: AppStore): FlushPersistedState => {
+/**
+ * @param onStaleSnapshot called when a save is refused because another tab saved
+ * since this page loaded (stores/snapshotRevision.ts, GH #669). The caller must
+ * stop saving and tell the user; nothing was written.
+ */
+export const setupPersistedStateSync = (
+    hydratedStore: AppStore,
+    onStaleSnapshot?: () => void,
+): FlushPersistedState => {
     const saveState = async () => {
         try {
             return await schedulePersistenceWrite(async () => {
@@ -65,9 +73,14 @@ export const setupPersistedStateSync = (hydratedStore: AppStore): FlushPersisted
                     },
                 }
                 const serializedState = JSON.stringify(stateToSave)
-                await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState)
+                await writeSnapshot(serializedState)
             })
         } catch (e) {
+            if (e instanceof StaleSnapshotError) {
+                console.warn('[Persistence] Not saved:', e.message)
+                onStaleSnapshot?.()
+                return false
+            }
             console.error('[Persistence] Failed to save state:', e)
             return false
         }

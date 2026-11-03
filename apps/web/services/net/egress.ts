@@ -90,6 +90,9 @@ const isPrivateHost = (host: string): boolean =>
 
 const appOrigin = (): string | undefined => globalThis.location?.origin
 
+/** Lower case, without the root dot of a fully qualified name (`broker.local.`). */
+const normalizeHost = (hostname: string): string => hostname.toLowerCase().replace(/\.$/u, '')
+
 const parse = (destination: string | URL): URL | undefined => {
     try {
         return new URL(destination, appOrigin())
@@ -103,7 +106,7 @@ export const classifyDestination = (destination: string | URL): DestinationKind 
     if (!url) return 'public'
     if (INLINE_PROTOCOLS.has(url.protocol)) return 'inline'
     if (url.origin === appOrigin()) return 'same-origin'
-    return isPrivateHost(url.hostname.toLowerCase()) ? 'private-network' : 'public'
+    return isPrivateHost(normalizeHost(url.hostname)) ? 'private-network' : 'public'
 }
 
 const ALWAYS_ALLOWED: ReadonlySet<DestinationKind> = new Set(['inline', 'same-origin'])
@@ -127,7 +130,11 @@ export const assertEgressAllowed = (
     if (!isEgressAllowed(destination, options)) throw new EgressBlockedError(destination)
 }
 
-/** `fetch` behind the gate: rejects with EgressBlockedError instead of sending. */
+/**
+ * `fetch` behind the gate: rejects with EgressBlockedError instead of sending.
+ * The gate sees only the first URL, so in Local-Only Mode a redirect is refused
+ * (`redirect: 'error'`) rather than followed to a host it never checked.
+ */
 export const egressFetch = (
     destination: string | URL,
     init?: RequestInit,
@@ -136,5 +143,5 @@ export const egressFetch = (
     if (!isEgressAllowed(destination, options)) {
         return Promise.reject(new EgressBlockedError(destination))
     }
-    return fetch(destination, init)
+    return fetch(destination, isLocalOnlyMode() ? { ...init, redirect: 'error' } : init)
 }

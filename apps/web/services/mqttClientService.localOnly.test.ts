@@ -73,10 +73,36 @@ describe('mqttClientService in Local-Only Mode (GH #683)', () => {
     it('keeps an open connection to a LAN broker when the mode is switched on', async () => {
         const { setLocalOnlyMode, useIotStore, mqttClientService } = await load()
         start(useIotStore, 'wss://broker.local:9001')
+        expect(connect).toHaveBeenCalledOnce()
 
         setLocalOnlyMode(true)
         mqttClientService.enforceLocalOnlyMode()
 
         expect(mockClient.end).not.toHaveBeenCalled()
+    })
+
+    it('reconnects when the mode is switched off again, without being re-enabled by hand', async () => {
+        const { setLocalOnlyMode, useIotStore, mqttClientService } = await load()
+        start(useIotStore, 'wss://broker.hivemq.cloud:8884/mqtt')
+        setLocalOnlyMode(true)
+        mqttClientService.enforceLocalOnlyMode()
+        connect.mockClear()
+
+        setLocalOnlyMode(false)
+        mqttClientService.resumeAfterLocalOnlyMode()
+
+        expect(connect).toHaveBeenCalledOnce()
+    })
+
+    it('does not reconnect after the mode is switched off when IoT was disabled meanwhile', async () => {
+        const { setLocalOnlyMode, useIotStore, mqttClientService } = await load()
+        setLocalOnlyMode(true)
+        start(useIotStore, 'wss://broker.hivemq.cloud:8884/mqtt')
+        useIotStore.getState().setEnabled(false)
+
+        setLocalOnlyMode(false)
+        mqttClientService.resumeAfterLocalOnlyMode()
+
+        expect(connect).not.toHaveBeenCalled()
     })
 })

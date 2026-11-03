@@ -55,6 +55,10 @@ class MqttClientService {
     private currentReconnectMs = INITIAL_RECONNECT_MS
     private reconnectHandle: ReturnType<typeof setTimeout> | null = null
     private intentionalDisconnect = false
+    /** The broker URL the open client was created with (it can differ from the store). */
+    private connectedBrokerUrl: string | null = null
+    /** True while Local-Only Mode refused or closed this connection (resumeAfterLocalOnlyMode). */
+    private pausedByLocalOnly = false
 
     /** Bootstrap the service. Call once after store creation. */
     init(store: AppStore): void {
@@ -101,6 +105,7 @@ class MqttClientService {
         }
 
         if (this.refuseBlockedBroker(brokerUrl)) return
+        this.pausedByLocalOnly = false
 
         // WSS enforcement: block credentials over unencrypted ws://
         try {
@@ -131,6 +136,7 @@ class MqttClientService {
 
         try {
             this.client = mqtt.connect(brokerUrl, opts)
+            this.connectedBrokerUrl = brokerUrl
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Connection failed'
             useIotStore.getState().setConnectionStatus('error', msg)
@@ -190,6 +196,7 @@ class MqttClientService {
      */
     private refuseBlockedBroker(brokerUrl: string): boolean {
         if (isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return false
+        this.pausedByLocalOnly = true
         const { destination } = new EgressBlockedError(brokerUrl)
         useIotStore
             .getState()
@@ -200,12 +207,26 @@ class MqttClientService {
         return true
     }
 
+    /** The broker the open client was created for, when the gate now refuses it. */
+    private blockedConnectionUrl(): string | null {
+        const url = this.client ? this.connectedBrokerUrl : null
+        return url !== null && !isEgressAllowed(url, { allowPrivateNetwork: true }) ? url : null
+    }
+
     /** Local-Only Mode was switched on: close a connection to a broker it blocks. */
     enforceLocalOnlyMode(): void {
-        const { brokerUrl } = useIotStore.getState()
-        if (!this.client || isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return
+        const blocked = this.blockedConnectionUrl()
+        if (blocked === null) return
         this.disconnect()
-        this.refuseBlockedBroker(brokerUrl)
+        this.refuseBlockedBroker(blocked)
+    }
+
+    /** Local-Only Mode was switched off: reopen a connection it refused or closed. */
+    resumeAfterLocalOnlyMode(): void {
+        if (!this.pausedByLocalOnly) return
+        this.pausedByLocalOnly = false
+        const { isEnabled, brokerUrl } = useIotStore.getState()
+        if (isEnabled && brokerUrl) this.connect()
     }
 
     private disconnect(): void {
@@ -226,6 +247,7 @@ class MqttClientService {
             }
             this.client.end(true)
             this.client = null
+            this.connectedBrokerUrl = null
         }
     }
 

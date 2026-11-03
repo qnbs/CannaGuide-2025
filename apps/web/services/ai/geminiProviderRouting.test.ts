@@ -4,6 +4,7 @@ import {
     isAlternateProvider,
     shouldUseLocalFallback,
 } from '@/services/ai/geminiProviderRouting'
+import { EgressBlockedError } from '@/services/net/egress'
 
 const mocks = vi.hoisted(() => {
     const reservation = {
@@ -77,6 +78,13 @@ describe('geminiProviderRouting', () => {
     it('shouldUseLocalFallback for missing API key when local AI is ready', () => {
         mocks.isReady.mockReturnValue(true)
         expect(shouldUseLocalFallback(new Error('ai.error.missingApiKey'))).toBe(true)
+    })
+
+    it('shouldUseLocalFallback when Local-Only Mode refused the request and local AI is ready', () => {
+        mocks.isReady.mockReturnValue(true)
+        expect(shouldUseLocalFallback(new EgressBlockedError('https://api.openai.com/v1'))).toBe(
+            true,
+        )
     })
 
     it('shouldUseLocalFallback returns false when local AI is not ready', () => {

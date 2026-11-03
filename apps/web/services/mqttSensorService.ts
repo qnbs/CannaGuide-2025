@@ -111,6 +111,10 @@ class MqttSensorService {
     private currentReconnectMs = INITIAL_RECONNECT_MS
     private reconnectHandle: ReturnType<typeof setTimeout> | null = null
     private intentionalDisconnect = false
+    /** The broker URL the open client was created with (configure() can change the config). */
+    private connectedBrokerUrl: string | null = null
+    /** True while Local-Only Mode refused or closed this connection (resumeAfterLocalOnlyMode). */
+    private pausedByLocalOnly = false
 
     // --- Telemetry ---
     private telemetry: MqttTelemetryMetrics = { ...INITIAL_TELEMETRY }
@@ -182,6 +186,7 @@ class MqttSensorService {
         this.intentionalDisconnect = false
         this.currentReconnectMs = INITIAL_RECONNECT_MS
         if (this.refuseBlockedBroker()) return
+        this.pausedByLocalOnly = false
         this.setConnectionState('connecting')
 
         // WSS warning
@@ -217,6 +222,7 @@ class MqttSensorService {
             clean: true,
             clientId: `cannaguide_${Date.now().toString(36)}`,
         })
+        this.connectedBrokerUrl = brokerUrl
 
         this.client.on('connect', () => {
             if (this.connectTimeoutHandle) {
@@ -267,14 +273,13 @@ class MqttSensorService {
         })
     }
 
-    /** Schedule a reconnect with exponential backoff. */
     /**
      * Local-Only Mode: a broker on the user's LAN is fine, one on the internet is
      * not. Reports the refusal and returns true when the broker is blocked.
      */
-    private refuseBlockedBroker(): boolean {
-        const { brokerUrl } = this.config
+    private refuseBlockedBroker(brokerUrl: string = this.config.brokerUrl): boolean {
         if (isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return false
+        this.pausedByLocalOnly = true
         const { destination } = new EgressBlockedError(brokerUrl)
         this.setConnectionState('error')
         this.emitEvent({
@@ -285,6 +290,7 @@ class MqttSensorService {
         return true
     }
 
+    /** Schedule a reconnect with exponential backoff. */
     private scheduleReconnect(): void {
         if (this.intentionalDisconnect || this.reconnectHandle) return
         this.telemetry.reconnectAttempts += 1
@@ -319,6 +325,7 @@ class MqttSensorService {
             this.client.end(true)
             this.client = null
         }
+        this.connectedBrokerUrl = null
         this.connectedSince = null
         this.setConnectionState('disconnected')
         this.partialTemp = null
@@ -326,13 +333,25 @@ class MqttSensorService {
         this.partialPh = null
     }
 
+    /** The broker the open client was created for, when the gate now refuses it. */
+    private blockedConnectionUrl(): string | null {
+        const url = this.client ? this.connectedBrokerUrl : null
+        return url !== null && !isEgressAllowed(url, { allowPrivateNetwork: true }) ? url : null
+    }
+
     /** Local-Only Mode was switched on: close a connection to a broker it blocks. */
     enforceLocalOnlyMode(): void {
-        if (!this.client || isEgressAllowed(this.config.brokerUrl, { allowPrivateNetwork: true })) {
-            return
-        }
+        const blocked = this.blockedConnectionUrl()
+        if (blocked === null) return
         this.disconnect()
-        this.refuseBlockedBroker()
+        this.refuseBlockedBroker(blocked)
+    }
+
+    /** Local-Only Mode was switched off: reopen a connection it refused or closed. */
+    resumeAfterLocalOnlyMode(): void {
+        if (!this.pausedByLocalOnly) return
+        this.pausedByLocalOnly = false
+        this.connect()
     }
 
     /** Fully dispose the service -- clears all callbacks and disconnects. */

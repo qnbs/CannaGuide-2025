@@ -13,6 +13,7 @@ import type { Language } from '@/types'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 import { localAiPreloadService } from '@/services/local-ai'
+import { EgressBlockedError } from '@/services/net/egress'
 
 export const getLocalAiService = async () => {
     const module = await import('@/services/local-ai')
@@ -21,16 +22,22 @@ export const getLocalAiService = async () => {
 
 export type LocalAiService = Awaited<ReturnType<typeof getLocalAiService>>
 
+/** No key, no network, or Local-Only Mode refused the request (services/net/egress.ts). */
+const isMissingKeyOrNetworkBlock = (error: unknown): boolean => {
+    if (error instanceof EgressBlockedError) return true
+    return (
+        error instanceof Error &&
+        (error.message === 'ai.error.missingApiKey' || error.message.includes('NetworkError'))
+    )
+}
+
 export function shouldUseLocalFallback(error: unknown): boolean {
     const offline = typeof navigator !== 'undefined' && navigator.onLine === false
     if (offline) return true
 
     if (!localAiPreloadService.isReady()) return false
 
-    return (
-        error instanceof Error &&
-        (error.message === 'ai.error.missingApiKey' || error.message.includes('NetworkError'))
-    )
+    return isMissingKeyOrNetworkBlock(error)
 }
 
 export function getActiveProvider(): AiProvider {

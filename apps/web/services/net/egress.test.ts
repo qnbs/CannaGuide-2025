@@ -23,6 +23,8 @@ describe('classifyDestination', () => {
         ['ws://localhost:9001', 'private-network'],
         ['ws://broker.local:9001', 'private-network'],
         ['ws://broker.home.arpa', 'private-network'],
+        ['ws://broker.local.:9001', 'private-network'],
+        ['ws://LOCALHOST.:9001', 'private-network'],
         ['ws://[::1]:9001', 'private-network'],
         ['ws://[fd12:3456::1]:9001', 'private-network'],
         ['ws://[fe80::1]:9001', 'private-network'],
@@ -93,6 +95,19 @@ describe('egress gate', () => {
             EgressBlockedError,
         )
         expect(fetchSpy).not.toHaveBeenCalled()
+    })
+
+    it('egressFetch refuses redirects in Local-Only Mode, so a redirect cannot leave the gate', async () => {
+        const fetchSpy = vi.fn().mockResolvedValue(new Response('ok'))
+        vi.stubGlobal('fetch', fetchSpy)
+        setLocalOnlyMode(true)
+
+        await egressFetch('./version.json', { cache: 'no-store' })
+
+        expect(fetchSpy).toHaveBeenCalledWith('./version.json', {
+            cache: 'no-store',
+            redirect: 'error',
+        })
     })
 
     it('egressFetch sends normally when allowed', async () => {

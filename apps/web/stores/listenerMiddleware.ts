@@ -46,14 +46,19 @@ const syncAiMode = async (mode: AiMode) => {
     setAiMode(mode)
 }
 
-/** An open connection to a broker outside the LAN must not outlive the switch. */
-const closeBlockedMqttConnections = async (): Promise<void> => {
+/**
+ * Switching the mode on closes an open connection to a broker outside the LAN;
+ * switching it off reopens the connections the mode refused or closed.
+ */
+const applyLocalOnlyModeToMqtt = async (enabled: boolean): Promise<void> => {
     const [{ mqttClientService }, { mqttSensorService }] = await Promise.all([
         import('@/services/mqttClientService'),
         import('@/services/mqttSensorService'),
     ])
-    mqttClientService.enforceLocalOnlyMode()
-    mqttSensorService.enforceLocalOnlyMode()
+    for (const service of [mqttClientService, mqttSensorService]) {
+        if (enabled) service.enforceLocalOnlyMode()
+        else service.resumeAfterLocalOnlyMode()
+    }
 }
 
 const syncLocalOnlyMode = async (enabled: boolean) => {
@@ -62,11 +67,11 @@ const syncLocalOnlyMode = async (enabled: boolean) => {
     if (enabled) {
         const { disableSentry } = await import('@/services/sentryService')
         disableSentry()
-        await closeBlockedMqttConnections()
     } else {
         const { enableSentry } = await import('@/services/sentryService')
         enableSentry()
     }
+    await applyLocalOnlyModeToMqtt(enabled)
 }
 
 /**

@@ -245,6 +245,11 @@ export const common = {
             'Die gespeicherten Daten wurden von einem anderen Tab oder Fenster geändert, nachdem dieses geladen wurde. Diese Seite ist veraltet und speichert nicht mehr, damit die neueren Daten erhalten bleiben. Lade neu, um mit den aktuellen Daten weiterzumachen. Änderungen, die du in diesem Tab seit dem Laden gemacht hast, wurden nicht gespeichert und gehen beim Neuladen verloren.',
         reload: 'Neu laden',
     },
+    unverifiedTab: {
+        title: 'Speichern angehalten',
+        description:
+            'Diese Seite konnte nicht prüfen, ob sie als einziger Tab oder einziges Fenster deine Daten speichert. Sie speichert deshalb nicht, damit neuere Daten aus einem anderen Tab oder Fenster erhalten bleiben. Schließe andere CannaGuide-Tabs und -Fenster und lade dann neu, um es erneut zu versuchen. Deine gespeicherten Daten wurden nicht verändert.',
+    },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
         description:

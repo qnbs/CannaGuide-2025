@@ -27,6 +27,7 @@ vi.mock('@/components/common/ErrorBoundary', () => ({
 let renderError: typeof import('./render').renderError
 let renderOtherTabNotice: typeof import('./render').renderOtherTabNotice
 let renderStaleTabNotice: typeof import('./render').renderStaleTabNotice
+let renderUnverifiedTabNotice: typeof import('./render').renderUnverifiedTabNotice
 
 describe('renderError', () => {
     beforeEach(async () => {
@@ -90,6 +91,29 @@ describe('renderStaleTabNotice', () => {
         const notice = screen.getByRole('alert')
         expect(notice).toHaveTextContent('common.staleTab.title')
         expect(notice).toHaveTextContent('common.staleTab.description')
+        fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
+        expect(reload).toHaveBeenCalledOnce()
+    })
+})
+
+describe('renderUnverifiedTabNotice', () => {
+    beforeEach(async () => {
+        vi.resetModules()
+        ;({ renderUnverifiedTabNotice } = await import('./render'))
+    })
+
+    it('says saving is paused, not that another tab changed the data, and lets the user reload', () => {
+        document.body.innerHTML = '<div id="root"></div>'
+        const reload = vi.fn()
+
+        act(() => {
+            renderUnverifiedTabNotice(reload)
+        })
+
+        const notice = screen.getByRole('alert')
+        expect(notice).toHaveTextContent('common.unverifiedTab.title')
+        expect(notice).toHaveTextContent('common.unverifiedTab.description')
+        expect(notice).not.toHaveTextContent('common.staleTab.title')
         fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
         expect(reload).toHaveBeenCalledOnce()
     })

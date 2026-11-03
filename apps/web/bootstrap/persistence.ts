@@ -11,13 +11,14 @@ import { schedulePersistenceWrite } from './persistenceCoordinator'
 export type FlushPersistedState = () => Promise<boolean>
 
 /**
- * @param onStaleSnapshot called when a save is refused because another tab saved
- * since this page loaded (stores/snapshotRevision.ts, GH #669). The caller must
- * stop saving and tell the user; nothing was written.
+ * @param onStaleSnapshot called with the refusal when a save is refused because
+ * another tab saved since this page loaded, or because this page cannot check
+ * that (UnverifiedSnapshotError; stores/snapshotRevision.ts, GH #669). The
+ * caller must stop saving and tell the user; nothing was written.
  */
 export const setupPersistedStateSync = (
     hydratedStore: AppStore,
-    onStaleSnapshot?: () => void,
+    onStaleSnapshot?: (refusal: StaleSnapshotError) => void,
 ): FlushPersistedState => {
     const saveState = async () => {
         try {
@@ -78,7 +79,7 @@ export const setupPersistedStateSync = (
         } catch (e) {
             if (e instanceof StaleSnapshotError) {
                 console.warn('[Persistence] Not saved:', e.message)
-                onStaleSnapshot?.()
+                onStaleSnapshot?.(e)
                 return false
             }
             console.error('[Persistence] Failed to save state:', e)

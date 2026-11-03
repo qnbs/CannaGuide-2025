@@ -1,16 +1,28 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
-import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
+import {
+    renderError,
+    renderOtherTabNotice,
+    renderStaleTabNotice,
+    renderUnverifiedTabNotice,
+} from './render'
 import { hydrateApplicationStores } from './store'
 import { disableSentry } from '@/services/sentryService'
-import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
+import {
+    isRevisionChecked,
+    setStaleSnapshotHandler,
+    setUncheckedWritePermit,
+    StaleSnapshotError,
+    UnverifiedSnapshotError,
+} from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
 import { registerRecoveryListeners } from './recovery'
 import {
     claimWriterRole,
+    holdsWriterRole,
     releaseWriterRole,
     waitForWriterRole,
     watchForCacheRestore,
@@ -27,9 +39,11 @@ vi.mock('./render', () => ({
     renderError: vi.fn(),
     renderOtherTabNotice: vi.fn(),
     renderStaleTabNotice: vi.fn(),
+    renderUnverifiedTabNotice: vi.fn(),
 }))
 vi.mock('./writerOwnership', () => ({
     claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
+    holdsWriterRole: vi.fn(() => true),
     waitForWriterRole: vi.fn(),
     releaseWriterRole: vi.fn(() => {
         order.push('release')
@@ -49,7 +63,17 @@ vi.mock('./postHydration', () => ({
         order.push('services')
     }),
 }))
-vi.mock('@/stores/snapshotRevision', () => ({ setStaleSnapshotHandler: vi.fn() }))
+vi.mock('@/stores/snapshotRevision', () => {
+    class StaleSnapshotError extends Error {}
+    class UnverifiedSnapshotError extends StaleSnapshotError {}
+    return {
+        isRevisionChecked: vi.fn(() => true),
+        setStaleSnapshotHandler: vi.fn(),
+        setUncheckedWritePermit: vi.fn(),
+        StaleSnapshotError,
+        UnverifiedSnapshotError,
+    }
+})
 vi.mock('@/services/sentryService', () => ({ disableSentry: vi.fn() }))
 vi.mock('./localOnlyPrivacy', () => ({
     applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
@@ -190,9 +214,12 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         await mountHydratedApp()
         const onRestore = vi.mocked(watchForCacheRestore).mock.calls[0]?.[0]
+        order.length = 0
         onRestore?.()
 
         expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        // No longer the writer before the reload, so no unchecked write is permitted.
+        expect(order).toEqual(['stop', 'release'])
         expect(reload).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
     })
@@ -216,8 +243,8 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         const onStale = vi.mocked(setupPersistedStateSync).mock.calls[0]?.[1]
         order.length = 0
 
-        onStale?.()
-        onStale?.()
+        onStale?.(new StaleSnapshotError())
+        onStale?.(new StaleSnapshotError())
 
         expect(order).toEqual(['stop', 'release'])
         expect(renderStaleTabNotice).toHaveBeenCalledOnce()
@@ -230,7 +257,7 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         vi.stubGlobal('location', { reload: vi.fn() })
         vi.mocked(migrateLegacySecrets).mockResolvedValue(true)
         vi.mocked(setupPersistedStateSync).mockImplementationOnce((_store, onStale) => () => {
-            onStale?.()
+            onStale?.(new StaleSnapshotError())
             return Promise.resolve(false)
         })
 
@@ -266,5 +293,58 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         // The stale page may hold older settings than another tab: no error reports.
         expect(disableSentry).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
+    })
+})
+
+describe('mountHydratedApp without a revision check (GH #669)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        order.length = 0
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+        vi.stubGlobal('location', { reload: vi.fn() })
+    })
+
+    afterEach(() => vi.unstubAllGlobals())
+
+    it('registers the writer lock as the only permit for writes without the check', async () => {
+        await mountHydratedApp()
+
+        expect(setUncheckedWritePermit).toHaveBeenCalledWith(holdsWriterRole)
+    })
+
+    it('stops before the first edit when it holds no writer lock either', async () => {
+        vi.mocked(isRevisionChecked).mockReturnValueOnce(false)
+        vi.mocked(holdsWriterRole).mockReturnValueOnce(false)
+
+        await mountHydratedApp()
+
+        expect(renderUnverifiedTabNotice).toHaveBeenCalledOnce()
+        expect(renderStaleTabNotice).not.toHaveBeenCalled()
+        expect(setupPersistedStateSync).not.toHaveBeenCalled()
+        expect(runPostHydrationServices).not.toHaveBeenCalled()
+        expect(order).toEqual(['stop', 'release'])
+        expect(disableSentry).toHaveBeenCalledOnce()
+    })
+
+    it('starts normally while it holds the writer lock', async () => {
+        vi.mocked(isRevisionChecked).mockReturnValueOnce(false)
+        vi.mocked(holdsWriterRole).mockReturnValueOnce(true)
+
+        await mountHydratedApp()
+
+        expect(renderUnverifiedTabNotice).not.toHaveBeenCalled()
+        expect(order).toEqual(['sync', 'services'])
+    })
+
+    it('shows the unverified notice, not the stale one, for a save refused for lack of a check', async () => {
+        await mountHydratedApp()
+        const onRefused = vi.mocked(setupPersistedStateSync).mock.calls[0]?.[1]
+        order.length = 0
+
+        onRefused?.(new UnverifiedSnapshotError())
+
+        expect(order).toEqual(['stop', 'release'])
+        expect(renderUnverifiedTabNotice).toHaveBeenCalledOnce()
+        expect(renderStaleTabNotice).not.toHaveBeenCalled()
     })
 })

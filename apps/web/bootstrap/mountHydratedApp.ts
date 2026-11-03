@@ -12,7 +12,8 @@ import {
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
-import { applyLocalOnlyPrivacy, runPostHydrationServices } from './postHydration'
+import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
+import { runPostHydrationServices } from './postHydration'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 
 /**

@@ -4,7 +4,8 @@ import { mountHydratedApp } from './mountHydratedApp'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
-import { applyLocalOnlyPrivacy, runPostHydrationServices } from './postHydration'
+import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
+import { runPostHydrationServices } from './postHydration'
 import { registerRecoveryListeners } from './recovery'
 import {
     claimWriterRole,
@@ -45,6 +46,8 @@ vi.mock('./postHydration', () => ({
     runPostHydrationServices: vi.fn(() => {
         order.push('services')
     }),
+}))
+vi.mock('./localOnlyPrivacy', () => ({
     applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
 }))
 vi.mock('./secrets', () => ({

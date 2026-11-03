@@ -100,7 +100,11 @@ export const triggerSafeRecovery = async (
                     try {
                         // This page keeps running after a rolled-back recovery, so it
                         // follows the new revision and its next save is not refused.
-                        await replaceSnapshot(originalSnapshot, true)
+                        if (originalSnapshot === null) {
+                            await replaceSnapshot(null, true)
+                        } else {
+                            await replaceSnapshot(originalSnapshot, true)
+                        }
                         rollbackSucceeded = true
                     } catch (rollbackError) {
                         console.error(

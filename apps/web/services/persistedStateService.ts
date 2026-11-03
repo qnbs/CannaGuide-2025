@@ -119,16 +119,18 @@ export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promi
 }
 
 /** Remove the primary snapshot without racing recovery or another writer. */
-export const removePrimaryPersistedSnapshot = async (): Promise<boolean> =>
-    schedulePersistenceWrite(async () => {
+export const removePrimaryPersistedSnapshot = async (): Promise<boolean> => {
+    const removed = await schedulePersistenceWrite(async () => {
         await replaceSnapshot(null)
     })
+    return removed
+}
 
 /** Read-modify-write the primary snapshot while holding the shared persistence lock. */
 export const updatePrimaryPersistedSnapshot = async (
     update: (state: Record<string, unknown>) => void,
-): Promise<boolean> =>
-    schedulePersistenceWrite(async () => {
+): Promise<boolean> => {
+    const updated = await schedulePersistenceWrite(async () => {
         const snapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (!snapshot) return
 
@@ -142,3 +144,5 @@ export const updatePrimaryPersistedSnapshot = async (
         update(state)
         await replaceSnapshot(migratePersistedSnapshot(JSON.stringify(state)))
     })
+    return updated
+}

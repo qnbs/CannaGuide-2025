@@ -63,7 +63,9 @@ describe('renderOtherTabNotice', () => {
             renderOtherTabNotice(reload)
         })
 
-        expect(screen.getByRole('alert')).toHaveTextContent('common.otherTab.title')
+        const notice = screen.getByRole('alert')
+        expect(notice).toHaveTextContent('common.otherTab.title')
+        expect(notice).toHaveTextContent('common.otherTab.description')
         fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
         expect(reload).toHaveBeenCalledOnce()
     })

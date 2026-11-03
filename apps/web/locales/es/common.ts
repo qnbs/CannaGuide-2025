@@ -72,7 +72,7 @@ export const common = {
     otherTab: {
         title: 'Abierto en otra pestaña',
         description:
-            'CannaGuide ya está abierto en otra pestaña o ventana. Solo una puede guardar tus datos, asi que esta queda en pausa para que no se sobrescriban entre si. Cierra la otra pestaña y esta se recargará sola, o recárgala manualmente.',
+            'CannaGuide ya está abierto en otra pestaña o ventana. Solo una puede guardar tus datos, así que esta queda en pausa para que no se sobrescriban entre sí. Cierra la otra pestaña y esta se recargará sola, o recárgala manualmente.',
         reload: 'Recargar',
     },
     errorBoundary: {

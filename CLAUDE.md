@@ -286,7 +286,7 @@ them (`docs/DEVOPS-GATES.md` is the full inventory):
   **adding a workflow means bumping the count in ~6 README spots** (EN + DE badges, header,
   both stat lines, the table) or CI goes red on a change that looks unrelated.
 - **`check:a11y-ratchet`** (CI `quality` only -- runs its own AST-only ESLint, so it is light):
-  jsx-a11y warnings may not exceed `.a11y-baseline.json` (currently 83). Fixing warnings lets
+  jsx-a11y warnings may not exceed `.a11y-baseline.json` (currently 79). Fixing warnings lets
   you _lower_ it with `node scripts/check-a11y-ratchet.mjs --update` in the same PR; never raise
   it. Rules stay `warn` -- this is a count ceiling, not a flip-to-error.
 

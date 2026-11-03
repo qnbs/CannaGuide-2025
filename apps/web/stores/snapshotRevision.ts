@@ -100,7 +100,9 @@ export const replaceSnapshot = async (
         REDUX_STATE_REVISION_KEY,
         next,
     )
-    if (continueSaving && knownRevision !== undefined) knownRevision = next
+    // The token was just written, so storing it works: a page that started without
+    // the check (its revision could not be read) starts checking from here on.
+    if (continueSaving) knownRevision = next
 }
 
 /**

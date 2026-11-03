@@ -171,6 +171,21 @@ describe('snapshot revision (GH #669)', () => {
         await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved after the repair')
     })
 
+    it('starts checking after a repair that wrote a token, even if the first read failed', async () => {
+        const repairing = await openTab()
+        const other = await openTab()
+        vi.spyOn(repairing.storage, 'getItem').mockRejectedValueOnce(new Error('read failed'))
+        await repairing.revision.rememberStoredRevision()
+        await repairing.revision.replaceSnapshot('repaired', true)
+        await other.revision.rememberStoredRevision()
+        await other.revision.writeSnapshot('saved by the other tab')
+
+        await expect(repairing.revision.writeSnapshot('older state')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(other.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved by the other tab')
+    })
+
     it('refuses the other tab after the snapshot was removed through replaceSnapshot', async () => {
         const removing = await openTab()
         const other = await openTab()

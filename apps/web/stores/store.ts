@@ -34,10 +34,8 @@ import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
-import {
-    removePrimaryPersistedSnapshot,
-    tryRepairPrimaryPersistedSnapshot,
-} from '@/services/persistedStateService'
+import { tryRepairPrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { discardUnreadablePrimarySnapshot } from '@/services/snapshotQuarantine'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -112,22 +110,26 @@ export const createAppStore = async (): Promise<AppStore> => {
     }
 
     const tryLoadBackupState = async (): Promise<Partial<RootState> | undefined> => {
-        const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
-        if (!backupString) {
+        try {
+            const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
+            if (!backupString) {
+                return undefined
+            }
+
+            console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
+            const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
+            return repaired ? hydratePersistedState(backupString) : undefined
+        } catch (backupError) {
+            // A backup that cannot be read must not stop the start: the primary still
+            // has to be quarantined before anything else touches it (#666).
+            console.debug('[Store] Could not recover state from the backup:', backupError)
             return undefined
         }
-
-        console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
-        const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
-        if (!repaired) {
-            return undefined
-        }
-
-        return hydratePersistedState(backupString)
     }
 
+    let persistedString: string | null | undefined
     try {
-        const persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
+        persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (persistedString) {
             console.debug('[Store] Hydrating state from IndexedDB.')
             // Save a backup snapshot before migration so data can be recovered if migration fails.
@@ -147,7 +149,9 @@ export const createAppStore = async (): Promise<AppStore> => {
         )
         preloadedState = await tryLoadBackupState()
         if (!preloadedState) {
-            await removePrimaryPersistedSnapshot()
+            // The startup backup is replaced on every start, so the original bytes
+            // are quarantined first, and the primary stays if that fails (#666).
+            await discardUnreadablePrimarySnapshot(persistedString)
         }
     }
 

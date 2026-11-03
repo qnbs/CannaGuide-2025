@@ -33,7 +33,7 @@ describe('resetAllData (#711 review)', () => {
         })
     })
 
-    it('deletes the startup backup and the recovery rollback with the snapshot', async () => {
+    it('deletes the startup backup, the rollback and the quarantine with the snapshot', async () => {
         const result = await runReset()
         expect(result.meta.requestStatus).toBe('fulfilled')
         const removed = vi.mocked(indexedDBStorage.removeItem).mock.calls.map(([key]) => key)
@@ -41,6 +41,7 @@ describe('resetAllData (#711 review)', () => {
             expect.arrayContaining([
                 'cannaguide-redux-storage-backup',
                 'cannaguide-redux-storage-recovery-rollback',
+                'cannaguide-redux-storage-quarantine',
                 'geminiApiKey',
             ]),
         )

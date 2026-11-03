@@ -5,6 +5,7 @@ import { RootState } from '../store'
 import {
     GEMINI_API_KEY_STORAGE_KEY,
     REDUX_STATE_BACKUP_KEY,
+    REDUX_STATE_QUARANTINE_KEY,
     REDUX_STATE_ROLLBACK_KEY,
     VersionedSliceName,
 } from '@/constants'
@@ -256,8 +257,11 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     if (!stateRemoved) throw new Error('State reset was blocked by safe recovery.')
     // The startup and recovery copies hold the same data -- including a legacy
     // plaintext key still waiting to migrate -- so they go too (#711 review).
+    // So does the quarantined copy of a snapshot that could not be hydrated (#666):
+    // "reset all data" must not leave the user's old data behind.
     await indexedDBStorage.removeItem(REDUX_STATE_BACKUP_KEY)
     await indexedDBStorage.removeItem(REDUX_STATE_ROLLBACK_KEY)
+    await indexedDBStorage.removeItem(REDUX_STATE_QUARANTINE_KEY)
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
     await cloudTtsKeyService.clearApiKey()

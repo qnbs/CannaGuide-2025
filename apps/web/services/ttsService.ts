@@ -1,5 +1,6 @@
 import { TTSSettings, Language, ITTSProvider } from '@/types'
-import { cloudTtsService } from '@/services/cloudTtsService'
+import { CLOUD_TTS_ORIGIN, cloudTtsService } from '@/services/cloudTtsService'
+import { isEgressAllowed } from '@/services/net/egress'
 import { speakNatural } from '@/services/speakNaturalService'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 
@@ -44,8 +45,13 @@ class TTSService implements ITTSProvider {
         // Apply text normalization for better TTS output
         const normalizedText = speakNatural(text, lang)
 
-        // Route to Cloud TTS if enabled and available
-        if (settings.cloudTtsEnabled && cloudTtsService.isSupported()) {
+        // Route to Cloud TTS if enabled and available; Local-Only Mode keeps the
+        // text on the device and uses the browser's voices instead.
+        if (
+            settings.cloudTtsEnabled &&
+            cloudTtsService.isSupported() &&
+            isEgressAllowed(CLOUD_TTS_ORIGIN)
+        ) {
             voiceTelemetryService.recordVoiceEvent('ttsPlayed', { provider: 'elevenlabs' })
             cloudTtsService.speak(normalizedText, lang, onEnd, settings)
             return

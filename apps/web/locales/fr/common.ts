@@ -86,6 +86,10 @@ export const common = {
         description:
             "Cette page n'a pas pu confirmer qu'elle est le seul onglet ou la seule fen\u00EAtre \u00E0 enregistrer vos donn\u00E9es : elle n'enregistre donc pas, pour pr\u00E9server les donn\u00E9es plus r\u00E9centes d'un autre onglet ou d'une autre fen\u00EAtre. Fermez les autres onglets et fen\u00EAtres CannaGuide, puis rechargez pour r\u00E9essayer. Vos donn\u00E9es enregistr\u00E9es n'ont pas \u00E9t\u00E9 modifi\u00E9es.",
     },
+    egress: {
+        blockedByLocalOnly:
+            "Le mode local uniquement bloque cette connexion : {{destination}} n'est ni sur cet appareil ni sur votre r\u00E9seau local.",
+    },
     errorBoundary: {
         title: 'Une erreur est survenue.',
         description: "Une erreur inattendue s'est produite. Veuillez recharger l'application.",

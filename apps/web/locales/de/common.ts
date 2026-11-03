@@ -250,6 +250,10 @@ export const common = {
         description:
             'Diese Seite konnte nicht prüfen, ob sie als einziger Tab oder einziges Fenster deine Daten speichert. Sie speichert deshalb nicht, damit neuere Daten aus einem anderen Tab oder Fenster erhalten bleiben. Schließe andere CannaGuide-Tabs und -Fenster und lade dann neu, um es erneut zu versuchen. Deine gespeicherten Daten wurden nicht verändert.',
     },
+    egress: {
+        blockedByLocalOnly:
+            'Der Nur-Lokal-Modus blockiert diese Verbindung: {{destination}} liegt weder auf diesem Gerät noch in deinem lokalen Netzwerk.',
+    },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
         description:

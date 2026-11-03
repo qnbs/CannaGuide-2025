@@ -84,6 +84,10 @@ export const common = {
         description:
             'Deze pagina kon niet controleren of zij het enige tabblad of venster is dat je gegevens opslaat. Daarom slaat zij niet op, zodat nieuwere gegevens uit een ander tabblad of venster veilig blijven. Sluit andere CannaGuide-tabbladen en -vensters en laad daarna opnieuw om het opnieuw te proberen. Je opgeslagen gegevens zijn niet gewijzigd.',
     },
+    egress: {
+        blockedByLocalOnly:
+            'De alleen-lokaal-modus blokkeert deze verbinding: {{destination}} staat niet op dit apparaat en niet in je lokale netwerk.',
+    },
     errorBoundary: {
         title: 'Er is iets misgegaan.',
         description:

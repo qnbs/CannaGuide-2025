@@ -86,6 +86,10 @@ export const common = {
         description:
             'Esta p\u00E1gina no pudo confirmar que es la \u00FAnica pesta\u00F1a o ventana que guarda tus datos, as\u00ED que no guarda, para proteger los datos m\u00E1s recientes de otra pesta\u00F1a o ventana. Cierra las dem\u00E1s pesta\u00F1as y ventanas de CannaGuide y recarga para intentarlo de nuevo. Tus datos guardados no se han modificado.',
     },
+    egress: {
+        blockedByLocalOnly:
+            'El Modo Solo Local bloquea esta conexi\u00F3n: {{destination}} no est\u00E1 en este dispositivo ni en tu red local.',
+    },
     errorBoundary: {
         title: 'Algo salio mal.',
         description: 'Ocurrio un error inesperado. Por favor, intenta recargar la aplicacion.',

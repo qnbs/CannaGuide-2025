@@ -34,7 +34,12 @@ export type SensorSource = 'mqtt' | 'bluetooth' | 'http'
 /** IoT event surfaced to UI for toast notifications. */
 export interface IoTToastEvent {
     id: string
-    type: 'connection_lost' | 'connection_restored' | 'validation_error' | 'wss_warning'
+    type:
+        | 'connection_lost'
+        | 'connection_restored'
+        | 'validation_error'
+        | 'wss_warning'
+        | 'egress_blocked'
     message: string
     timestamp: number
 }
@@ -86,60 +91,60 @@ let toastIdCounter = 0
 export const sensorStore = createStore<SensorState>()(
     devtools(
         subscribeWithSelector((set) => ({
-        currentReading: null,
-        history: [],
-        connectionState: 'disconnected',
-        activeSource: null,
-        telemetry: { ...INITIAL_TELEMETRY },
-        toastEvents: [],
+            currentReading: null,
+            history: [],
+            connectionState: 'disconnected',
+            activeSource: null,
+            telemetry: { ...INITIAL_TELEMETRY },
+            toastEvents: [],
 
-        pushReading: (reading, source) =>
-            set((state) => {
-                const next = [...state.history, reading]
-                // FIFO: drop oldest entries when buffer exceeds max
-                if (next.length > MAX_HISTORY_LENGTH) {
-                    next.splice(0, next.length - MAX_HISTORY_LENGTH)
-                }
-                return {
-                    currentReading: reading,
-                    history: next,
-                    activeSource: source,
-                }
-            }),
+            pushReading: (reading, source) =>
+                set((state) => {
+                    const next = [...state.history, reading]
+                    // FIFO: drop oldest entries when buffer exceeds max
+                    if (next.length > MAX_HISTORY_LENGTH) {
+                        next.splice(0, next.length - MAX_HISTORY_LENGTH)
+                    }
+                    return {
+                        currentReading: reading,
+                        history: next,
+                        activeSource: source,
+                    }
+                }),
 
-        setConnectionState: (connectionState) => set({ connectionState }),
+            setConnectionState: (connectionState) => set({ connectionState }),
 
-        setTelemetry: (telemetry) => set({ telemetry }),
+            setTelemetry: (telemetry) => set({ telemetry }),
 
-        pushToastEvent: (event) =>
-            set((state) => {
-                toastIdCounter += 1
-                const toast: IoTToastEvent = {
-                    ...event,
-                    id: `iot_toast_${toastIdCounter}`,
-                }
-                const next = [...state.toastEvents, toast]
-                if (next.length > MAX_TOAST_EVENTS) {
-                    next.splice(0, next.length - MAX_TOAST_EVENTS)
-                }
-                return { toastEvents: next }
-            }),
+            pushToastEvent: (event) =>
+                set((state) => {
+                    toastIdCounter += 1
+                    const toast: IoTToastEvent = {
+                        ...event,
+                        id: `iot_toast_${toastIdCounter}`,
+                    }
+                    const next = [...state.toastEvents, toast]
+                    if (next.length > MAX_TOAST_EVENTS) {
+                        next.splice(0, next.length - MAX_TOAST_EVENTS)
+                    }
+                    return { toastEvents: next }
+                }),
 
-        dismissToast: (id) =>
-            set((state) => ({
-                toastEvents: state.toastEvents.filter((t) => t.id !== id),
-            })),
+            dismissToast: (id) =>
+                set((state) => ({
+                    toastEvents: state.toastEvents.filter((t) => t.id !== id),
+                })),
 
-        reset: () =>
-            set({
-                currentReading: null,
-                history: [],
-                connectionState: 'disconnected',
-                activeSource: null,
-                telemetry: { ...INITIAL_TELEMETRY },
-                toastEvents: [],
-            }),
-    })),
+            reset: () =>
+                set({
+                    currentReading: null,
+                    history: [],
+                    connectionState: 'disconnected',
+                    activeSource: null,
+                    telemetry: { ...INITIAL_TELEMETRY },
+                    toastEvents: [],
+                }),
+        })),
         { name: 'sensor', enabled: import.meta.env.DEV },
     ),
 )

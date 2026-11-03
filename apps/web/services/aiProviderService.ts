@@ -14,6 +14,7 @@ import {
 } from '@cannaguide/ai-core'
 import type { AiProvider, AiProviderConfig, AiProviderKeyMetadata } from '@cannaguide/ai-core'
 import { aiRateLimiter, type MonthlyBudgetReservation } from '@/services/aiRateLimiter'
+import { egressFetch } from '@/services/net/egress'
 
 // Re-export types for existing local consumers
 export type { AiProvider, AiProviderConfig, AiProviderKeyMetadata }
@@ -221,7 +222,7 @@ async function callOpenAiCompatible(
         body.response_format = { type: 'json_object' }
     }
 
-    const response = await fetch(`${baseUrl}/chat/completions`, {
+    const response = await egressFetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -282,7 +283,7 @@ async function callAnthropic(
     maxTokens: number,
     reservation: MonthlyBudgetReservation,
 ): Promise<string> {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await egressFetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

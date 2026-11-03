@@ -10,6 +10,10 @@ import * as Sentry from '@sentry/browser'
 import type { ITTSProvider, Language, TTSSettings } from '@/types'
 import { CLOUD_TTS_MAX_CHARS, CLOUD_TTS_TIMEOUT_MS, CLOUD_TTS_RATE_LIMIT } from '@/constants'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { egressFetch } from '@/services/net/egress'
+
+/** The ElevenLabs API origin; Local-Only Mode refuses it (services/net/egress.ts). */
+export const CLOUD_TTS_ORIGIN = 'https://api.elevenlabs.io'
 
 /** Default ElevenLabs voice IDs per language. */
 const DEFAULT_VOICE_IDS: Record<Language, string> = {
@@ -130,8 +134,8 @@ class CloudTtsService implements ITTSProvider {
 
             recordRequest()
 
-            const response = await fetch(
-                `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
+            const response = await egressFetch(
+                `${CLOUD_TTS_ORIGIN}/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
                 {
                     method: 'POST',
                     headers: {

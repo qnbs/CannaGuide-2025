@@ -246,6 +246,10 @@ export const common = {
         description:
             'This page could not confirm that it is the only tab or window saving your data, so it does not save, to keep newer data from another tab or window safe. Close other CannaGuide tabs and windows, then reload to try again. Your saved data has not been changed.',
     },
+    egress: {
+        blockedByLocalOnly:
+            'Local-Only Mode blocks this connection: {{destination}} is not on this device or your local network.',
+    },
     errorBoundary: {
         title: 'Something went wrong.',
         description:

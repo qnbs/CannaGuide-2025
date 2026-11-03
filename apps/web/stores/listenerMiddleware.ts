@@ -46,12 +46,23 @@ const syncAiMode = async (mode: AiMode) => {
     setAiMode(mode)
 }
 
+/** An open connection to a broker outside the LAN must not outlive the switch. */
+const closeBlockedMqttConnections = async (): Promise<void> => {
+    const [{ mqttClientService }, { mqttSensorService }] = await Promise.all([
+        import('@/services/mqttClientService'),
+        import('@/services/mqttSensorService'),
+    ])
+    mqttClientService.enforceLocalOnlyMode()
+    mqttSensorService.enforceLocalOnlyMode()
+}
+
 const syncLocalOnlyMode = async (enabled: boolean) => {
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     setLocalOnlyMode(enabled)
     if (enabled) {
         const { disableSentry } = await import('@/services/sentryService')
         disableSentry()
+        await closeBlockedMqttConnections()
     } else {
         const { enableSentry } = await import('@/services/sentryService')
         enableSentry()
@@ -206,7 +217,9 @@ export const initVoiceCommandSubscription = (
                     : null
 
                 if (!plant) {
-                    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.noPlantContext'))
+                    getUISnapshot().setVoiceStatusMessage(
+                        t('common.voiceControl.errors.noPlantContext'),
+                    )
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
                     return
                 }
@@ -230,7 +243,9 @@ export const initVoiceCommandSubscription = (
                     getUISnapshot().setVoiceStatusMessage(response.content)
                 } catch (error) {
                     console.debug('Voice assistant response failed:', error)
-                    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.assistantFailed'))
+                    getUISnapshot().setVoiceStatusMessage(
+                        t('common.voiceControl.errors.assistantFailed'),
+                    )
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 5000)
                 }
 

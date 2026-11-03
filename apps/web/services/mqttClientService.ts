@@ -1,5 +1,7 @@
 import mqtt from 'mqtt'
 import type { MqttClient, IClientOptions } from 'mqtt'
+import { getT } from '@/i18n'
+import { EgressBlockedError, isEgressAllowed } from '@/services/net/egress'
 import { useIotStore } from '@/stores/useIotStore'
 import { addJournalEntry } from '@/stores/slices/simulationSlice'
 import { JournalEntryType } from '@/types'
@@ -98,6 +100,8 @@ class MqttClientService {
             return
         }
 
+        if (this.refuseBlockedBroker(brokerUrl)) return
+
         // WSS enforcement: block credentials over unencrypted ws://
         try {
             const parsed = new URL(brokerUrl)
@@ -177,6 +181,31 @@ class MqttClientService {
             this.currentReconnectMs * BACKOFF_MULTIPLIER,
             MAX_RECONNECT_MS,
         )
+    }
+
+    /**
+     * Local-Only Mode: a broker on the user's LAN is fine, one on the internet is
+     * not (services/net/egress.ts). Reports the refusal and returns true when the
+     * broker is blocked.
+     */
+    private refuseBlockedBroker(brokerUrl: string): boolean {
+        if (isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return false
+        const { destination } = new EgressBlockedError(brokerUrl)
+        useIotStore
+            .getState()
+            .setConnectionStatus(
+                'error',
+                String(getT()('common.egress.blockedByLocalOnly', { destination })),
+            )
+        return true
+    }
+
+    /** Local-Only Mode was switched on: close a connection to a broker it blocks. */
+    enforceLocalOnlyMode(): void {
+        const { brokerUrl } = useIotStore.getState()
+        if (!this.client || isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return
+        this.disconnect()
+        this.refuseBlockedBroker(brokerUrl)
     }
 
     private disconnect(): void {

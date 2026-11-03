@@ -399,19 +399,21 @@ Nutrient plugins integrate with `nutrientPlannerSlice` via `applyPluginSchedule`
 
 ## Security Model
 
-| Measure          | Implementation                                                       |
-| ---------------- | -------------------------------------------------------------------- |
-| XSS Prevention   | DOMPurify v3 on all `dangerouslySetInnerHTML`                        |
-| External Links   | `rel="noopener noreferrer"` enforced                                 |
-| API Key Storage  | AES-256-GCM encryption at rest (cryptoService.ts)                    |
-| Image Privacy    | EXIF/GPS stripping before AI transmission                            |
-| Prompt Injection | 30+ regex patterns block injection attempts                          |
-| CSP              | Hardened across 3 paths (`'self' 'unsafe-inline' 'wasm-unsafe-eval') |
-| Local-Only Mode  | All outbound services check `isLocalOnlyMode()`                      |
-| Randomness       | `secureRandom()` via Web Crypto (no Math.random)                     |
-| GDPR             | Full data export (Art. 20) + erasure (Art. 17) via privacyService.ts |
-| CI Security      | Semgrep, Gitleaks, Grype, Trojan-source, pnpm audit, Snyk            |
-| Fuzzing          | ClusterFuzzLite on PRs                                               |
+| Measure          | Implementation                                                                                |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| XSS Prevention   | DOMPurify v3 on all `dangerouslySetInnerHTML`                                                 |
+| External Links   | `rel="noopener noreferrer"` enforced                                                          |
+| API Key Storage  | AES-256-GCM encryption at rest (cryptoService.ts)                                             |
+| Image Privacy    | EXIF/GPS stripping before AI transmission                                                     |
+| Prompt Injection | 30+ regex patterns block injection attempts                                                   |
+| CSP              | Hardened across 3 paths (`'self' 'unsafe-inline' 'wasm-unsafe-eval')                          |
+| Local-Only Mode  | Egress gate `services/net/egress.ts` (see below), plus per-service `isLocalOnlyMode()` checks |
+| Randomness       | `secureRandom()` via Web Crypto (no Math.random)                                              |
+| GDPR             | Full data export (Art. 20) + erasure (Art. 17) via privacyService.ts                          |
+| CI Security      | Semgrep, Gitleaks, Grype, Trojan-source, pnpm audit, Snyk                                     |
+| Fuzzing          | ClusterFuzzLite on PRs                                                                        |
+
+**Local-Only Mode egress gate** (`services/net/egress.ts`, GH #683, #700, #717, #655): a destination is `inline` (data:, blob:), `same-origin` (the app's own host), `private-network` (loopback, 10/8, 172.16/12, 192.168/16, 169.254/16, IPv6 `::1`, `fc00::/7`, `fe80::/10`, host names ending in `.local`, `.home.arpa` or `.localhost`) or `public` (everything else, including a URL that cannot be parsed and a host name that only resolves to a LAN address). While the mode is on, `inline` and `same-origin` pass, `private-network` passes only for callers that opt in (`allowPrivateNetwork`), and `public` is refused with `EgressBlockedError`, which names only the origin (never credentials, path or query). Product contract (owner-approved 2026-11-03): **MQTT may reach a broker on the user's own LAN but nothing on the internet**; both MQTT clients (`mqttClientService`, `mqttSensorService`) check before `mqtt.connect` and report `common.egress.blockedByLocalOnly`, and switching the mode on closes an open connection to a broker the gate refuses (`enforceLocalOnlyMode`, from `stores/listenerMiddleware.ts`). ElevenLabs TTS is skipped in favour of the browser's voices (`ttsService`), and `cloudTtsService` / `aiProviderService` send through `egressFetch`. **Not covered yet:** the Gemini SDK's own network calls (cloud AI is still blocked one level up, by the routing in `localRoutingService`), on-demand WebLLM / transformers.js / image-model downloads that the libraries start themselves, Web Speech recognition (the browser vendor may process audio in its cloud), the browser's own speech-synthesis voices that a vendor may render remotely, and a lint gate against raw `fetch` / `WebSocket` / `mqtt.connect` outside this module. Those follow in separate changes.
 
 ---
 

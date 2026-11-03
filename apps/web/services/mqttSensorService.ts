@@ -1,6 +1,7 @@
 import mqtt from 'mqtt'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
+import { EgressBlockedError, isEgressAllowed } from '@/services/net/egress'
 import { sensorStore } from '@/stores/sensorStore'
 import {
     singleValuePayloadSchema,
@@ -52,7 +53,12 @@ export type ConnectionStateCallback = (state: MqttConnectionState) => void
 export type IoTEventCallback = (event: IoTEvent) => void
 
 export interface IoTEvent {
-    type: 'connection_lost' | 'connection_restored' | 'validation_error' | 'wss_warning'
+    type:
+        | 'connection_lost'
+        | 'connection_restored'
+        | 'validation_error'
+        | 'wss_warning'
+        | 'egress_blocked'
     message: string
     timestamp: number
 }
@@ -175,6 +181,7 @@ class MqttSensorService {
 
         this.intentionalDisconnect = false
         this.currentReconnectMs = INITIAL_RECONNECT_MS
+        if (this.refuseBlockedBroker()) return
         this.setConnectionState('connecting')
 
         // WSS warning
@@ -261,6 +268,23 @@ class MqttSensorService {
     }
 
     /** Schedule a reconnect with exponential backoff. */
+    /**
+     * Local-Only Mode: a broker on the user's LAN is fine, one on the internet is
+     * not. Reports the refusal and returns true when the broker is blocked.
+     */
+    private refuseBlockedBroker(): boolean {
+        const { brokerUrl } = this.config
+        if (isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return false
+        const { destination } = new EgressBlockedError(brokerUrl)
+        this.setConnectionState('error')
+        this.emitEvent({
+            type: 'egress_blocked',
+            message: String(getT()('common.egress.blockedByLocalOnly', { destination })),
+            timestamp: Date.now(),
+        })
+        return true
+    }
+
     private scheduleReconnect(): void {
         if (this.intentionalDisconnect || this.reconnectHandle) return
         this.telemetry.reconnectAttempts += 1
@@ -300,6 +324,15 @@ class MqttSensorService {
         this.partialTemp = null
         this.partialHumidity = null
         this.partialPh = null
+    }
+
+    /** Local-Only Mode was switched on: close a connection to a broker it blocks. */
+    enforceLocalOnlyMode(): void {
+        if (!this.client || isEgressAllowed(this.config.brokerUrl, { allowPrivateNetwork: true })) {
+            return
+        }
+        this.disconnect()
+        this.refuseBlockedBroker()
     }
 
     /** Fully dispose the service -- clears all callbacks and disconnects. */

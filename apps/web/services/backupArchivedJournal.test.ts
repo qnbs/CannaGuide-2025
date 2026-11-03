@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
+import type { JournalEntry } from '@/types'
+
 import {
     archivedEntriesOf,
     assertArchivedJournalComplete,
@@ -44,6 +46,9 @@ describe('parseArchivedJournal', () => {
         ['missing journals', '{"version":1}'],
         ['a plant whose entries are not a list', '{"version":1,"journals":{"p1":"x"}}'],
         ['an entry that is not an object', '{"version":1,"journals":{"p1":[1]}}'],
+        ['an empty object as an entry', '{"version":1,"journals":{"p1":[{}]}}'],
+        ['an entry without an id', '{"version":1,"journals":{"p1":[{"notes":"x"}]}}'],
+        ['an entry whose id is not a string', '{"version":1,"journals":{"p1":[{"id":5}]}}'],
         ['an entry that is null', '{"version":1,"journals":{"p1":[null]}}'],
     ])('rejects %s', (_label, raw) => {
         expect(() => parseArchivedJournal(raw)).toThrow()
@@ -52,8 +57,16 @@ describe('parseArchivedJournal', () => {
 
 describe('assertArchivedJournalComplete', () => {
     it('lets an older backup through that declares nothing, with or without a file', () => {
-        expect(() => assertArchivedJournalComplete(undefined)).not.toThrow()
-        expect(() => assertArchivedJournalComplete(undefined, { p1: [{ id: 'a' }] })).not.toThrow()
+        const olderBackup: { archivedJournalEntryCount?: number } = {}
+
+        expect(() =>
+            assertArchivedJournalComplete(olderBackup.archivedJournalEntryCount),
+        ).not.toThrow()
+        expect(() =>
+            assertArchivedJournalComplete(olderBackup.archivedJournalEntryCount, {
+                p1: [{ id: 'a' }],
+            }),
+        ).not.toThrow()
     })
 
     it('accepts a declared zero next to no archive or an archive without entries', () => {
@@ -126,7 +139,7 @@ describe('mergeArchivedJournals', () => {
 
     it('does not add the same entry twice, with or without an id', () => {
         const withId = { id: 'a' }
-        const withoutId = { notes: 'no id', timestamp: 5 }
+        const withoutId = { notes: 'no id', createdAt: 5 }
         const once = mergeArchivedJournals({}, { p1: [withId, withoutId] })
         const twice = mergeArchivedJournals(once, { p1: [withId, { ...withoutId }] })
 
@@ -229,7 +242,12 @@ describe('combineDependentWrites', () => {
 })
 
 describe('mergeArchivedJournals keeps entries oldest first', () => {
-    const at = (id: string, timestamp: number) => ({ id, timestamp })
+    // Typed with the real entry type, so a renamed field breaks the typecheck
+    // instead of leaving the ordering tests passing on a field nothing writes.
+    const at = (id: string, createdAt: number): Pick<JournalEntry, 'id' | 'createdAt'> => ({
+        id,
+        createdAt,
+    })
 
     it('places older backup entries before newer stored ones', () => {
         const merged = mergeArchivedJournals(
@@ -270,10 +288,10 @@ describe('mergeArchivedJournals keeps entries oldest first', () => {
         expect(merged.p1).toEqual([at('b', 5), at('a', 1)])
     })
 
-    it('keeps entries without a usable timestamp after the dated ones, in their order', () => {
+    it('keeps entries without a usable createdAt after the dated ones, in their order', () => {
         const merged = mergeArchivedJournals(
             { p1: [at('dated', 50)] },
-            { p1: [{ id: 'no-time-1' }, at('older', 10), { id: 'no-time-2', timestamp: 'x' }] },
+            { p1: [{ id: 'no-time-1' }, at('older', 10), { id: 'no-time-2', createdAt: 'x' }] },
         )
 
         expect(merged.p1?.map((entry) => (entry as { id: string }).id)).toEqual([

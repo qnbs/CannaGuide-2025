@@ -29,8 +29,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
     return prototype === Object.prototype || prototype === null
 }
 
+/** A journal entry is a plain object with the string id every `JournalEntry` has. */
+const isEntry = (value: unknown): boolean => isRecord(value) && typeof value.id === 'string'
+
 const isEntryList = (value: unknown): value is unknown[] =>
-    Array.isArray(value) && value.every(isRecord)
+    Array.isArray(value) && value.every(isEntry)
 
 /** The archive as a plain map, or a TypeError naming what is wrong with it. */
 const toArchivedJournal = (value: unknown): ArchivedJournal => {
@@ -91,20 +94,18 @@ export const parseArchivedJournal = (raw: string): ArchivedJournal => {
  * negative, a fraction, null) is a damaged declaration and refuses the import,
  * rather than being read as "nothing declared".
  */
+const isDeclaredCount = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+
 export const assertArchivedJournalComplete = (
     declaredEntryCount: unknown,
-    archive?: ArchivedJournal,
+    archive: ArchivedJournal = {},
 ): void => {
     if (declaredEntryCount === undefined) return
-    if (
-        typeof declaredEntryCount !== 'number' ||
-        !Number.isSafeInteger(declaredEntryCount) ||
-        declaredEntryCount < 0
-    ) {
+    if (!isDeclaredCount(declaredEntryCount)) {
         throw new Error('Invalid backup: the archived journal count is not valid')
     }
-    const actual = archive ? archivedEntriesOf(archive).length : 0
-    if (actual !== declaredEntryCount) {
+    if (archivedEntriesOf(archive).length !== declaredEntryCount) {
         throw new Error('Invalid backup: archived journal is missing or incomplete')
     }
 }
@@ -112,12 +113,13 @@ export const assertArchivedJournalComplete = (
 const entryKey = (entry: unknown): string =>
     isRecord(entry) && typeof entry.id === 'string' ? `id:${entry.id}` : JSON.stringify(entry)
 
+/** `JournalEntry.createdAt` (packages/ai-core/src/domain/plant.ts); infinite when it is unusable. */
 const timeOf = (entry: unknown): number =>
-    isRecord(entry) && typeof entry.timestamp === 'number' && Number.isFinite(entry.timestamp)
-        ? entry.timestamp
+    isRecord(entry) && typeof entry.createdAt === 'number' && Number.isFinite(entry.createdAt)
+        ? entry.createdAt
         : Number.POSITIVE_INFINITY
 
-/** Oldest first; an entry without a usable timestamp keeps its place after the dated ones. */
+/** Oldest first; an entry without a usable createdAt keeps its place after the dated ones. */
 const byTime = (entries: readonly unknown[]): unknown[] =>
     [...entries].sort((left, right) => {
         const leftTime = timeOf(left)

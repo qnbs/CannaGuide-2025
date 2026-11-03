@@ -198,7 +198,7 @@ const archivedEntry = (
     notes = `note ${id}`,
 ) => ({
     id,
-    timestamp: 1,
+    createdAt: 1,
     type: 'OBSERVATION',
     notes,
     details,

@@ -100,6 +100,19 @@ export const writeSnapshot = async (serializedState: string): Promise<void> => {
  * which this page goes on running pass it: the repair at start and the rollback
  * of a failed safe recovery.
  */
+/** Whether this page takes the new token: only if it was up to date, or ran without the check. */
+const followsReplacement = (continueSaving: boolean, wasCurrent: boolean): boolean =>
+    continueSaving && (knownRevision === undefined || wasCurrent)
+
+/**
+ * The token this page expects after a replacement. A page that does not follow
+ * keeps its own, which no longer matches, so its next save is refused; one that
+ * ran without the check is armed with a token that never matches, or it would
+ * save the old state over the replacement on its way out.
+ */
+const nextKnownRevision = (follows: boolean, next: string): string =>
+    follows ? next : (knownRevision ?? newRevision())
+
 export const replaceSnapshot = async (
     serializedState: string | null,
     continueSaving = false,
@@ -112,17 +125,7 @@ export const replaceSnapshot = async (
         next,
         knownRevision ?? null,
     )
-    if (continueSaving && (knownRevision === undefined || wasCurrent)) {
-        // The token was just written, so storing it works: a page that started
-        // without the check (its revision could not be read) starts checking from
-        // here on. A page that was up to date follows. A page that was already
-        // stale does not, or its old state could overwrite the newer save it missed.
-        knownRevision = next
-    } else {
-        // A page that runs without the check would otherwise save the old state over
-        // the replacement on its way out: arm the check with a token that never matches.
-        knownRevision ??= newRevision()
-    }
+    knownRevision = nextKnownRevision(followsReplacement(continueSaving, wasCurrent), next)
 }
 
 /**

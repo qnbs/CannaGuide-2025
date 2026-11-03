@@ -233,6 +233,12 @@ export const common = {
         next: 'Nächste Seite',
         title: 'Seitennavigation',
     },
+    otherTab: {
+        title: 'In einem anderen Tab geöffnet',
+        description:
+            'CannaGuide ist bereits in einem anderen Tab oder Fenster geöffnet. Nur eines kann deine Daten speichern; dieses ist angehalten, damit sich beide nicht gegenseitig überschreiben. Schließe den anderen Tab, dann lädt sich dieser selbst neu, oder lade ihn manuell neu.',
+        reload: 'Neu laden',
+    },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
         description:

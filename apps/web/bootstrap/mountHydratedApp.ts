@@ -1,14 +1,31 @@
 import { i18nPromise } from '@/i18n'
 import { registerRecoveryListeners } from './recovery'
-import { renderError } from './render'
+import { renderError, renderOtherTabNotice } from './render'
+import { claimWriterRole, waitForWriterRole } from './writerOwnership'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { runPostHydrationServices } from './postHydration'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 
+/**
+ * A reader tab never starts the store, so nothing in it can save: it shows why
+ * and reloads itself once the writer tab has closed.
+ */
+const showOtherTabNotice = (): void => {
+    const reload = () => globalThis.location.reload()
+    renderOtherTabNotice(reload)
+    waitForWriterRole(reload)
+}
+
 export const mountHydratedApp = async (): Promise<void> => {
     try {
+        if ((await claimWriterRole()) === 'reader') {
+            await i18nPromise
+            showOtherTabNotice()
+            return
+        }
+
         registerRecoveryListeners()
 
         await i18nPromise

@@ -1,13 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
+import { renderOtherTabNotice } from './render'
+import { hydrateApplicationStores } from './store'
+import { registerRecoveryListeners } from './recovery'
+import { claimWriterRole, waitForWriterRole } from './writerOwnership'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
 
 vi.mock('@/i18n', () => ({ i18nPromise: Promise.resolve() }))
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
-vi.mock('./render', () => ({ renderError: vi.fn() }))
+vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn() }))
+vi.mock('./writerOwnership', () => ({
+    claimWriterRole: vi.fn(async () => 'writer'),
+    waitForWriterRole: vi.fn(),
+}))
 vi.mock('./store', () => ({ hydrateApplicationStores: vi.fn(async () => ({ hydratedStore: {} })) }))
 vi.mock('./crdt', () => ({ initializeCrdtLayer: vi.fn() }))
 vi.mock('./postHydration', () => ({
@@ -68,6 +76,49 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
         vi.mocked(migrateLegacySecrets).mockRejectedValue(new Error('crypto unavailable'))
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
         await mountHydratedApp()
+        expect(order).toEqual(['sync', 'services'])
+    })
+})
+
+describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        order.length = 0
+    })
+
+    it('shows the notice and starts no store, recovery handler or save', async () => {
+        vi.mocked(claimWriterRole).mockResolvedValueOnce('reader')
+
+        await mountHydratedApp()
+
+        expect(renderOtherTabNotice).toHaveBeenCalledOnce()
+        expect(hydrateApplicationStores).not.toHaveBeenCalled()
+        expect(registerRecoveryListeners).not.toHaveBeenCalled()
+        expect(order).toEqual([])
+    })
+
+    it('reloads the reader once the writer has closed', async () => {
+        vi.mocked(claimWriterRole).mockResolvedValueOnce('reader')
+        const reload = vi.fn()
+        vi.stubGlobal('location', { reload })
+
+        await mountHydratedApp()
+        const reloadReader = vi.mocked(renderOtherTabNotice).mock.calls[0]?.[0]
+        const onAvailable = vi.mocked(waitForWriterRole).mock.calls[0]?.[0]
+        reloadReader?.()
+        onAvailable?.()
+
+        expect(reload).toHaveBeenCalledTimes(2)
+        vi.unstubAllGlobals()
+    })
+
+    it.each(['writer', 'unsupported'] as const)('starts normally as %s', async (role) => {
+        vi.mocked(claimWriterRole).mockResolvedValueOnce(role)
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+
+        expect(renderOtherTabNotice).not.toHaveBeenCalled()
         expect(order).toEqual(['sync', 'services'])
     })
 })

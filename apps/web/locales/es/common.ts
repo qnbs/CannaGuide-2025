@@ -69,6 +69,12 @@ export const common = {
         italic: 'Cursiva',
         list: 'Lista',
     },
+    otherTab: {
+        title: 'Abierto en otra pestaña',
+        description:
+            'CannaGuide ya está abierto en otra pestaña o ventana. Solo una puede guardar tus datos, asi que esta queda en pausa para que no se sobrescriban entre si. Cierra la otra pestaña y esta se recargará sola, o recárgala manualmente.',
+        reload: 'Recargar',
+    },
     errorBoundary: {
         title: 'Algo salio mal.',
         description: 'Ocurrio un error inesperado. Por favor, intenta recargar la aplicacion.',

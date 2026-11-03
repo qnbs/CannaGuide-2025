@@ -1,0 +1,134 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { claimWriterRole, waitForWriterRole } from './writerOwnership'
+
+type LockCallback = (lock: object) => unknown
+
+/**
+ * One origin's lock manager shared by every simulated tab. A lock is held until
+ * its callback settles or `closeHolder` simulates the holding tab going away;
+ * waiters are served in order and can be aborted, as the Web Locks API does.
+ */
+const createLockManager = () => {
+    let held = false
+    const queue: (() => void)[] = []
+    const grantNext = () => queue.shift()?.()
+    return {
+        closeHolder: () => {
+            held = false
+            grantNext()
+        },
+        isHeld: () => held,
+        request: (_name: string, options: { signal?: AbortSignal }, callback: LockCallback) =>
+            new Promise<unknown>((resolve, reject) => {
+                const start = () => {
+                    held = true
+                    void Promise.resolve(callback({})).then(resolve, reject)
+                }
+                if (!held) {
+                    start()
+                    return
+                }
+                queue.push(start)
+                options.signal?.addEventListener('abort', () => {
+                    const index = queue.indexOf(start)
+                    if (index === -1) return
+                    queue.splice(index, 1)
+                    reject(new DOMException('The request was aborted.', 'AbortError'))
+                })
+            }),
+    }
+}
+
+const stubLocks = (locks: unknown) => {
+    vi.stubGlobal('navigator', { locks })
+}
+
+describe('claimWriterRole', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals()
+    })
+
+    it('makes the first tab the writer and a second tab a reader', async () => {
+        stubLocks(createLockManager())
+
+        await expect(claimWriterRole(10)).resolves.toBe('writer')
+        await expect(claimWriterRole(10)).resolves.toBe('reader')
+    })
+
+    it('waits briefly, so a reload does not lose the role to the page it replaces', async () => {
+        const locks = createLockManager()
+        stubLocks(locks)
+        await claimWriterRole(10)
+
+        const reloaded = claimWriterRole(500)
+        locks.closeHolder()
+
+        await expect(reloaded).resolves.toBe('writer')
+    })
+
+    it('does not stay queued behind the writer once it has given up', async () => {
+        const locks = createLockManager()
+        stubLocks(locks)
+        await claimWriterRole(10)
+        await expect(claimWriterRole(10)).resolves.toBe('reader')
+
+        locks.closeHolder()
+
+        expect(locks.isHeld()).toBe(false)
+    })
+
+    it('reports that ownership cannot be decided without Web Locks', async () => {
+        stubLocks(undefined)
+
+        await expect(claimWriterRole(10)).resolves.toBe('unsupported')
+    })
+
+    it('treats a lock request the browser refuses as unsupported, not as a reader', async () => {
+        stubLocks({
+            request: () => Promise.reject(new DOMException('Not allowed.', 'SecurityError')),
+        })
+
+        await expect(claimWriterRole(10)).resolves.toBe('unsupported')
+    })
+})
+
+describe('waitForWriterRole', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals()
+    })
+
+    it('calls back once when the writer goes away', async () => {
+        const locks = createLockManager()
+        stubLocks(locks)
+        await claimWriterRole(10)
+        const onAvailable = vi.fn()
+
+        waitForWriterRole(onAvailable)
+        expect(onAvailable).not.toHaveBeenCalled()
+
+        locks.closeHolder()
+        await vi.waitFor(() => expect(onAvailable).toHaveBeenCalledOnce())
+    })
+
+    it('stops waiting when cancelled', async () => {
+        const locks = createLockManager()
+        stubLocks(locks)
+        await claimWriterRole(10)
+        const onAvailable = vi.fn()
+
+        const cancel = waitForWriterRole(onAvailable)
+        cancel()
+        locks.closeHolder()
+        await Promise.resolve()
+
+        expect(onAvailable).not.toHaveBeenCalled()
+    })
+
+    it('does nothing without Web Locks', () => {
+        stubLocks(undefined)
+        const onAvailable = vi.fn()
+
+        expect(() => waitForWriterRole(onAvailable)()).not.toThrow()
+        expect(onAvailable).not.toHaveBeenCalled()
+    })
+})

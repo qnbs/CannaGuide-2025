@@ -69,6 +69,12 @@ export const common = {
         italic: 'Italique',
         list: 'Liste',
     },
+    otherTab: {
+        title: 'Ouvert dans un autre onglet',
+        description:
+            "CannaGuide est déjà ouvert dans un autre onglet ou une autre fenêtre. Un seul peut enregistrer vos données ; celui-ci est donc en pause pour éviter qu'ils s'écrasent mutuellement. Fermez l'autre onglet et celui-ci se rechargera tout seul, ou rechargez-le manuellement.",
+        reload: 'Recharger',
+    },
     errorBoundary: {
         title: 'Une erreur est survenue.',
         description: "Une erreur inattendue s'est produite. Veuillez recharger l'application.",

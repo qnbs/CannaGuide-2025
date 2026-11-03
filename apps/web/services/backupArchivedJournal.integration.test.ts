@@ -308,6 +308,23 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             })
         })
 
+        it('creates no backup when a stored entry list has a hole', async () => {
+            // Index 1 is never assigned, so the list has a hole there.
+            const withHole: unknown[] = []
+            withHole[0] = archivedEntry('a')
+            withHole[2] = archivedEntry('b')
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, { p1: withHole })
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(STATE)
+            vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+            const result = await backupService.exportBackup()
+
+            expect(result).toMatchObject({
+                success: false,
+                errorCode: 'archivedJournalUnreadable',
+            })
+        })
+
         it('does not log the journal text when it refuses', async () => {
             await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
                 p1: [{ id: 'secret-id', notes: 'private diary text' }, 'broken'],

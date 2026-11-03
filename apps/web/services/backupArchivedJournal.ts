@@ -32,8 +32,11 @@ const isRecord = (value: unknown): value is Record<string, unknown> => {
 /** A journal entry is a plain object with the string id every `JournalEntry` has. */
 const isEntry = (value: unknown): boolean => isRecord(value) && typeof value.id === 'string'
 
+// Array.from turns a hole into undefined, which `every` would otherwise skip: a
+// sparse array survives a structured clone, becomes null in the ZIP, and the import
+// refuses it.
 const isEntryList = (value: unknown): value is unknown[] =>
-    Array.isArray(value) && value.every(isEntry)
+    Array.isArray(value) && Array.from(value).every(isEntry)
 
 /** The archive as a plain map, or a TypeError naming what is wrong with it. */
 const toArchivedJournal = (value: unknown): ArchivedJournal => {

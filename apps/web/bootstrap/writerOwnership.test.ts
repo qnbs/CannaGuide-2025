@@ -104,6 +104,8 @@ describe('claimWriterRole', () => {
 
 describe('releaseWriterRole', () => {
     afterEach(() => {
+        // The module keeps the hold of the last claim; do not hand it to the next test.
+        releaseWriterRole()
         vi.unstubAllGlobals()
     })
 

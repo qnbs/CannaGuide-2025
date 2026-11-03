@@ -88,3 +88,17 @@ export const waitForWriterRole = (onAvailable: () => void): (() => void) => {
         .catch(() => undefined)
     return () => controller.abort()
 }
+
+/**
+ * Some browsers (WebKit) drop a page's locks when they put it in the back/forward
+ * cache and bring the page back unchanged, so it would still believe it is the
+ * writer. `onRestore` runs when the page is restored from that cache. The
+ * returned function removes the listener.
+ */
+export const watchForCacheRestore = (onRestore: () => void): (() => void) => {
+    const listener = (event: PageTransitionEvent) => {
+        if (event.persisted) onRestore()
+    }
+    window.addEventListener('pageshow', listener)
+    return () => window.removeEventListener('pageshow', listener)
+}

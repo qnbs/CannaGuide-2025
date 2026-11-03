@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { claimWriterRole, releaseWriterRole, waitForWriterRole } from './writerOwnership'
+import {
+    claimWriterRole,
+    releaseWriterRole,
+    waitForWriterRole,
+    watchForCacheRestore,
+} from './writerOwnership'
 
 type LockCallback = (lock: object) => unknown
 
@@ -155,5 +160,31 @@ describe('waitForWriterRole', () => {
 
         expect(() => waitForWriterRole(onAvailable)()).not.toThrow()
         expect(onAvailable).not.toHaveBeenCalled()
+    })
+})
+
+describe('watchForCacheRestore', () => {
+    const showPage = (persisted: boolean) =>
+        window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted }))
+
+    it('calls back only when the page comes back from the back/forward cache', () => {
+        const onRestore = vi.fn()
+        const stop = watchForCacheRestore(onRestore)
+
+        showPage(false)
+        expect(onRestore).not.toHaveBeenCalled()
+
+        showPage(true)
+        expect(onRestore).toHaveBeenCalledOnce()
+        stop()
+    })
+
+    it('stops calling back once removed', () => {
+        const onRestore = vi.fn()
+        watchForCacheRestore(onRestore)()
+
+        showPage(true)
+
+        expect(onRestore).not.toHaveBeenCalled()
     })
 })

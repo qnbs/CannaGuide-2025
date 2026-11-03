@@ -2,7 +2,13 @@ import type { AppStore } from '@/stores/store'
 import { i18nPromise } from '@/i18n'
 import { registerRecoveryListeners } from './recovery'
 import { renderError, renderOtherTabNotice } from './render'
-import { claimWriterRole, releaseWriterRole, waitForWriterRole } from './writerOwnership'
+import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
+import {
+    claimWriterRole,
+    releaseWriterRole,
+    waitForWriterRole,
+    watchForCacheRestore,
+} from './writerOwnership'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
@@ -17,6 +23,24 @@ const showOtherTabNotice = (): void => {
     const reload = () => globalThis.location.reload()
     renderOtherTabNotice(reload)
     waitForWriterRole(reload)
+}
+
+/** A page restored from the back/forward cache may have lost the writer lock: start over. */
+const leaveRestoredPage = (): void => {
+    void stopPersistenceForOwnershipLoss()
+    globalThis.location.reload()
+}
+
+/** @returns whether this tab may go on to start the app. */
+const takeWriterRole = async (): Promise<boolean> => {
+    const role = await claimWriterRole()
+    if (role === 'reader') {
+        await i18nPromise
+        showOtherTabNotice()
+        return false
+    }
+    if (role === 'writer') watchForCacheRestore(leaveRestoredPage)
+    return true
 }
 
 const moveLegacySecrets = async (store: AppStore): Promise<boolean> => {
@@ -48,8 +72,12 @@ const saveAfterSecretsMoved = async (flushPersistedState: FlushPersistedState): 
     }
 }
 
-const showStartupError = (error: unknown): void => {
+// Stop saving before the role is handed on: a failure after the save was set up
+// leaves its subscription and timers running, and they would overwrite the next
+// writer's edits with this tab's stale state.
+const showStartupError = async (error: unknown): Promise<void> => {
     console.error('Failed to initialize the application:', error)
+    await stopPersistenceForOwnershipLoss()
     releaseWriterRole()
     renderError(
         error instanceof Error ? error : new Error('An unknown error occurred during startup.'),
@@ -58,11 +86,7 @@ const showStartupError = (error: unknown): void => {
 
 export const mountHydratedApp = async (): Promise<void> => {
     try {
-        if ((await claimWriterRole()) === 'reader') {
-            await i18nPromise
-            showOtherTabNotice()
-            return
-        }
+        if (!(await takeWriterRole())) return
 
         registerRecoveryListeners()
 
@@ -76,6 +100,6 @@ export const mountHydratedApp = async (): Promise<void> => {
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runPostHydrationServices(hydratedStore, flushPersistedState)
     } catch (error) {
-        showStartupError(error)
+        await showStartupError(error)
     }
 }

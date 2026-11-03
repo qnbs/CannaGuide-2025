@@ -72,7 +72,7 @@ export const common = {
     otherTab: {
         title: 'Ouvert dans un autre onglet',
         description:
-            "CannaGuide est déjà ouvert dans un autre onglet ou une autre fenêtre. Un seul peut enregistrer vos données ; celui-ci est donc en pause pour éviter qu'ils s'écrasent mutuellement. Fermez l'autre onglet et celui-ci se rechargera tout seul, ou rechargez-le manuellement.",
+            "CannaGuide est d\u00E9j\u00E0 ouvert dans un autre onglet ou une autre fen\u00EAtre. Un seul peut enregistrer vos donn\u00E9es ; celui-ci est donc en pause pour \u00E9viter qu'ils s'\u00E9crasent mutuellement. Fermez l'autre onglet et celui-ci se rechargera tout seul, ou rechargez-le manuellement.",
         reload: 'Recharger',
     },
     errorBoundary: {

@@ -8,8 +8,10 @@ import {
     claimWriterRole,
     releaseWriterRole,
     waitForWriterRole,
+    watchForCacheRestore,
     type WriterRole,
 } from './writerOwnership'
+import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
@@ -20,7 +22,16 @@ vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn()
 vi.mock('./writerOwnership', () => ({
     claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
     waitForWriterRole: vi.fn(),
-    releaseWriterRole: vi.fn(),
+    releaseWriterRole: vi.fn(() => {
+        order.push('release')
+    }),
+    watchForCacheRestore: vi.fn(),
+}))
+vi.mock('./persistenceCoordinator', () => ({
+    stopPersistenceForOwnershipLoss: vi.fn(() => {
+        order.push('stop')
+        return Promise.resolve()
+    }),
 }))
 vi.mock('./store', () => ({ hydrateApplicationStores: vi.fn(async () => ({ hydratedStore: {} })) }))
 vi.mock('./crdt', () => ({ initializeCrdtLayer: vi.fn() }))
@@ -137,4 +148,38 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         expect(releaseWriterRole).toHaveBeenCalledOnce()
         expect(renderError).toHaveBeenCalledOnce()
     })
+
+    it('stops saving before it hands the role on, so a stale tab cannot overwrite the next', async () => {
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new Error('hydration failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await mountHydratedApp()
+
+        expect(order).toEqual(['stop', 'release'])
+    })
+
+    it('starts over when a writer tab is restored from the back/forward cache', async () => {
+        const reload = vi.fn()
+        vi.stubGlobal('location', { reload })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+        const onRestore = vi.mocked(watchForCacheRestore).mock.calls[0]?.[0]
+        onRestore?.()
+
+        expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(reload).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
+    })
+
+    it.each(['reader', 'unsupported'] as const)(
+        'does not watch for a cache restore as %s',
+        async (role) => {
+            vi.mocked(claimWriterRole).mockResolvedValueOnce(role)
+
+            await mountHydratedApp()
+
+            expect(watchForCacheRestore).not.toHaveBeenCalled()
+        },
+    )
 })

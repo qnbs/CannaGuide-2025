@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
     getItem: vi.fn(),
     setItem: vi.fn(),
     removeItem: vi.fn(),
+    continueSaving: vi.fn(),
     migrate: vi.fn((snapshot: string) => `migrated:${snapshot}`),
     suspendPersistence: vi.fn(),
     resumePersistence: vi.fn(),
@@ -23,6 +24,14 @@ vi.mock('@/stores/indexedDBStorage', () => ({
         getItem: mocks.getItem,
         setItem: mocks.setItem,
         removeItem: mocks.removeItem,
+    },
+}))
+// The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
+// stands for the primary write.
+vi.mock('@/stores/snapshotRevision', () => ({
+    replaceSnapshot: (value: string | null, continueSaving?: boolean) => {
+        mocks.continueSaving(continueSaving)
+        return value === null ? mocks.removeItem('primary') : mocks.setItem('primary', value)
     },
 }))
 vi.mock('@/services/migration/persistedSnapshot', () => ({
@@ -50,6 +59,22 @@ describe('persistedStateService', () => {
 
         await expect(replacePrimaryPersistedSnapshot('{"version":1}')).resolves.toBe(true)
         expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated:{"version":1}')
+    })
+
+    it('does not keep this page saving after a replacement the caller reloads for', async () => {
+        const { replacePrimaryPersistedSnapshot } = await import('./persistedStateService')
+
+        await replacePrimaryPersistedSnapshot('{"version":1}')
+
+        expect(mocks.continueSaving).toHaveBeenCalledWith(false)
+    })
+
+    it('keeps this page saving after the repair at start, which does not reload', async () => {
+        const { tryRepairPrimaryPersistedSnapshot } = await import('./persistedStateService')
+
+        await expect(tryRepairPrimaryPersistedSnapshot('{"version":1}')).resolves.toBe(true)
+
+        expect(mocks.continueSaving).toHaveBeenCalledWith(true)
     })
 
     const createDependentWrite = (applyError?: Error) => {

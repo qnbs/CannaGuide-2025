@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { stopPersistenceForOwnershipLoss } from '@/bootstrap/persistenceCoordinator'
 import { removePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { removeItem: vi.fn(async () => undefined) },
+}))
+vi.mock('@/bootstrap/persistenceCoordinator', () => ({
+    stopPersistenceForOwnershipLoss: vi.fn(async () => undefined),
 }))
 vi.mock('@/services/persistedStateService', () => ({
     removePrimaryPersistedSnapshot: vi.fn(async () => true),
@@ -33,7 +37,7 @@ describe('resetAllData (#711 review)', () => {
         })
     })
 
-    it('deletes the startup backup, the rollback, the quarantine and the revision with the snapshot', async () => {
+    it('deletes the startup backup, the rollback and the quarantine with the snapshot', async () => {
         const result = await runReset()
         expect(result.meta.requestStatus).toBe('fulfilled')
         const removed = vi.mocked(indexedDBStorage.removeItem).mock.calls.map(([key]) => key)
@@ -42,11 +46,14 @@ describe('resetAllData (#711 review)', () => {
                 'cannaguide-redux-storage-backup',
                 'cannaguide-redux-storage-recovery-rollback',
                 'cannaguide-redux-storage-quarantine',
-                'cannaguide-redux-storage-revision',
                 'geminiApiKey',
             ]),
         )
         expect(porcupineKeyService.clearApiKey).toHaveBeenCalled()
+        expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
+            reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
         expect(reload).toHaveBeenCalled()
     })
 
@@ -55,6 +62,7 @@ describe('resetAllData (#711 review)', () => {
         const result = await runReset()
         expect(result.meta.requestStatus).toBe('rejected')
         expect(indexedDBStorage.removeItem).not.toHaveBeenCalled()
+        expect(stopPersistenceForOwnershipLoss).not.toHaveBeenCalled()
         expect(reload).not.toHaveBeenCalled()
     })
 })

@@ -7,6 +7,7 @@ import {
 } from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { replaceSnapshot } from '@/stores/snapshotRevision'
 
 export interface RecoverySnapshotReplacementResult {
     success: boolean
@@ -31,11 +32,17 @@ export interface DependentStoreWrite {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
-/** Validate, migrate, and atomically replace the primary Redux snapshot. */
-export const replacePrimaryPersistedSnapshot = async (snapshot: string): Promise<boolean> => {
+/**
+ * Validate, migrate, and atomically replace the primary Redux snapshot. Callers
+ * reload afterwards, except the repair at start (`continueSaving`).
+ */
+export const replacePrimaryPersistedSnapshot = async (
+    snapshot: string,
+    continueSaving = false,
+): Promise<boolean> => {
     const migratedSnapshot = migratePersistedSnapshot(snapshot)
     return schedulePersistenceWrite(async () => {
-        await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
+        await replaceSnapshot(migratedSnapshot, continueSaving)
     })
 }
 
@@ -58,7 +65,7 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
             try {
                 await dependentWrite?.apply()
                 dependentApplied = true
-                await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
+                await replaceSnapshot(migratedSnapshot)
                 primaryReplaced = true
                 if (!commitRecoveryEpoch()) {
                     throw new Error('Could not commit the cross-tab restore fence.')
@@ -99,7 +106,7 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
 /** Repair a corrupt primary from backup without treating a fenced/failed write as success. */
 export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promise<boolean> => {
     try {
-        const repaired = await replacePrimaryPersistedSnapshot(snapshot)
+        const repaired = await replacePrimaryPersistedSnapshot(snapshot, true)
         if (!repaired) {
             console.debug('[Store] Primary snapshot repair was fenced by recovery.')
         }
@@ -113,7 +120,7 @@ export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promi
 /** Remove the primary snapshot without racing recovery or another writer. */
 export const removePrimaryPersistedSnapshot = async (): Promise<boolean> =>
     schedulePersistenceWrite(async () => {
-        await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+        await replaceSnapshot(null)
     })
 
 /** Read-modify-write the primary snapshot while holding the shared persistence lock. */
@@ -132,8 +139,5 @@ export const updatePrimaryPersistedSnapshot = async (
         // a caller remove the corrupt slice that would otherwise make canonical
         // migration fail before the repair callback could run.
         update(state)
-        await indexedDBStorage.setItem(
-            REDUX_STATE_KEY,
-            migratePersistedSnapshot(JSON.stringify(state)),
-        )
+        await replaceSnapshot(migratePersistedSnapshot(JSON.stringify(state)))
     })

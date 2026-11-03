@@ -4,6 +4,7 @@ import { mountHydratedApp } from './mountHydratedApp'
 import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync } from './persistence'
+import { runPostHydrationServices } from './postHydration'
 import { registerRecoveryListeners } from './recovery'
 import {
     claimWriterRole,
@@ -215,5 +216,28 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         vi.mocked(renderStaleTabNotice).mock.calls[0]?.[0]()
         expect(reload).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
+    })
+
+    it('starts no services on a page whose save was refused as stale', async () => {
+        vi.stubGlobal('location', { reload: vi.fn() })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(true)
+        vi.mocked(setupPersistedStateSync).mockImplementationOnce((_store, onStale) => () => {
+            onStale?.()
+            return Promise.resolve(false)
+        })
+
+        await mountHydratedApp()
+
+        expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        expect(runPostHydrationServices).not.toHaveBeenCalled()
+        vi.unstubAllGlobals()
+    })
+
+    it('starts the services again on the next start after a stale one', async () => {
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+
+        expect(runPostHydrationServices).toHaveBeenCalledOnce()
     })
 })

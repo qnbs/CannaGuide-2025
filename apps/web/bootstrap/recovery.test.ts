@@ -16,6 +16,15 @@ vi.mock('@/stores/indexedDBStorage', () => ({
     },
 }))
 
+// The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
+// stands for the primary write, in the order the protocol needs.
+vi.mock('@/stores/snapshotRevision', () => ({
+    replaceSnapshot: (value: string | null) =>
+        value === null
+            ? mocks.removeItem('test-state-key')
+            : mocks.setItem('test-state-key', value),
+}))
+
 vi.mock('@/constants', () => ({
     REDUX_STATE_KEY: 'test-state-key',
     REDUX_STATE_BACKUP_KEY: 'test-state-key-backup',

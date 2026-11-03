@@ -6,7 +6,6 @@ import {
     GEMINI_API_KEY_STORAGE_KEY,
     REDUX_STATE_BACKUP_KEY,
     REDUX_STATE_QUARANTINE_KEY,
-    REDUX_STATE_REVISION_KEY,
     REDUX_STATE_ROLLBACK_KEY,
     VersionedSliceName,
 } from '@/constants'
@@ -14,6 +13,7 @@ import { aiProviderService } from '@/services/aiProviderService'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { redactSettingsSecrets } from '@/utils/redactSecrets'
+import { stopPersistenceForOwnershipLoss } from '@/bootstrap/persistenceCoordinator'
 import {
     removePrimaryPersistedSnapshot,
     updatePrimaryPersistedSnapshot,
@@ -263,13 +263,12 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     await indexedDBStorage.removeItem(REDUX_STATE_BACKUP_KEY)
     await indexedDBStorage.removeItem(REDUX_STATE_ROLLBACK_KEY)
     await indexedDBStorage.removeItem(REDUX_STATE_QUARANTINE_KEY)
-    // Another open tab must find its revision gone, so it cannot save its old
-    // state back over the reset (#669).
-    await indexedDBStorage.removeItem(REDUX_STATE_REVISION_KEY)
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     await aiProviderService.clearAllProviderApiKeys()
     await cloudTtsKeyService.clearApiKey()
     await porcupineKeyService.clearApiKey()
+    // Without this the pagehide save of the reload could write the old state back.
+    await stopPersistenceForOwnershipLoss()
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })

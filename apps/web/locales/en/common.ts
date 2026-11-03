@@ -238,7 +238,7 @@ export const common = {
     staleTab: {
         title: 'Changed in another tab',
         description:
-            'The saved data was changed by another tab or window after this one loaded, so this page is out of date and has stopped saving to keep that newer data safe. Reload to continue with the latest data.',
+            'The saved data was changed by another tab or window after this one loaded, so this page is out of date and has stopped saving to keep that newer data safe. Reload to continue with the latest data. Edits made in this tab since it loaded are not saved and are lost when you reload.',
         reload: 'Reload',
     },
     errorBoundary: {

@@ -76,7 +76,7 @@ export const common = {
     staleTab: {
         title: 'Gewijzigd in een ander tabblad',
         description:
-            'De opgeslagen gegevens zijn gewijzigd door een ander tabblad of venster nadat dit tabblad was geladen. Deze pagina is verouderd en slaat niet meer op, zodat die nieuwere gegevens veilig blijven. Laad opnieuw om met de laatste gegevens verder te gaan.',
+            'De opgeslagen gegevens zijn gewijzigd door een ander tabblad of venster nadat dit tabblad was geladen. Deze pagina is verouderd en slaat niet meer op, zodat die nieuwere gegevens veilig blijven. Laad opnieuw om met de laatste gegevens verder te gaan. Wijzigingen die je in dit tabblad sinds het laden hebt gemaakt, zijn niet opgeslagen en gaan verloren bij het opnieuw laden.',
         reload: 'Opnieuw laden',
     },
     errorBoundary: {

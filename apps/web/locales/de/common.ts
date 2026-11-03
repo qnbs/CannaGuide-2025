@@ -242,7 +242,7 @@ export const common = {
     staleTab: {
         title: 'In einem anderen Tab geändert',
         description:
-            'Die gespeicherten Daten wurden von einem anderen Tab oder Fenster geändert, nachdem dieses geladen wurde. Diese Seite ist veraltet und speichert nicht mehr, damit die neueren Daten erhalten bleiben. Lade neu, um mit den aktuellen Daten weiterzumachen.',
+            'Die gespeicherten Daten wurden von einem anderen Tab oder Fenster geändert, nachdem dieses geladen wurde. Diese Seite ist veraltet und speichert nicht mehr, damit die neueren Daten erhalten bleiben. Lade neu, um mit den aktuellen Daten weiterzumachen. Änderungen, die du in diesem Tab seit dem Laden gemacht hast, wurden nicht gespeichert und gehen beim Neuladen verloren.',
         reload: 'Neu laden',
     },
     errorBoundary: {

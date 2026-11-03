@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const db = vi.hoisted(() => ({
     data: new Map<string, string>(),
     reads: [] as string[],
+    beforeRead: new Map<string, () => void>(),
     failGet: new Set<string>(),
     failSet: new Set<string>(),
 }))
@@ -11,6 +12,7 @@ vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: {
         getItem: (key: string) => {
             db.reads.push(key)
+            db.beforeRead.get(key)?.()
             return db.failGet.has(key)
                 ? Promise.reject(new Error('read failed'))
                 : Promise.resolve(db.data.get(key) ?? null)
@@ -31,6 +33,9 @@ vi.mock('@/stores/indexedDBStorage', () => ({
             expected: string | null,
             next: string,
         ) => {
+            if (db.failSet.has(name) || db.failSet.has(revisionName)) {
+                return Promise.reject(new Error('QuotaExceededError'))
+            }
             if ((db.data.get(revisionName) ?? null) !== expected) return Promise.resolve(false)
             db.data.set(name, value)
             db.data.set(revisionName, next)
@@ -125,6 +130,7 @@ describe('createAppStore with a persisted slice of another schema version', () =
     beforeEach(() => {
         db.data.clear()
         db.reads.length = 0
+        db.beforeRead.clear()
         db.failGet.clear()
         db.failSet.clear()
         vi.spyOn(console, 'warn').mockImplementation(() => undefined)
@@ -191,7 +197,23 @@ describe('createAppStore with a persisted slice of another schema version', () =
         expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
     })
 
-    it('reads the revision before the snapshot, so a save in between makes this tab stale', async () => {
+    it('refuses the first save when another tab saved between the revision and the snapshot read', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.beforeRead.set(REDUX_STATE_KEY, () => {
+            db.beforeRead.clear()
+            db.data.set(REDUX_STATE_REVISION_KEY, 'saved-by-another-tab-in-between')
+        })
+        const store = await createAppStore()
+        const onStale = vi.fn()
+        const save = setupPersistedStateSync(store, onStale)
+
+        await expect(save()).resolves.toBe(false)
+
+        expect(onStale).toHaveBeenCalledOnce()
+        expect(db.data.get(REDUX_STATE_REVISION_KEY)).toBe('saved-by-another-tab-in-between')
+    })
+
+    it('reads the revision before the snapshot', async () => {
         db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
 
         await createAppStore()

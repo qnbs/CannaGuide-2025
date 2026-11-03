@@ -54,14 +54,17 @@ test.describe('Single writer tab (GH #669)', () => {
         await bootFreshAppWithLegalGates(second, baseURL)
 
         // Both tabs save when they are hidden or closed; the one that loaded the
-        // older revision has to be told to reload.
-        await first.evaluate(() => window.dispatchEvent(new Event('pagehide')))
-        await second.evaluate(() => window.dispatchEvent(new Event('pagehide')))
-
+        // older revision has to be told to reload. The event is sent again on every
+        // poll, because a tab only listens once its start has finished.
         await expect
-            .poll(async () => (await staleNoticeCount(first)) + (await staleNoticeCount(second)), {
-                timeout: 60_000,
-            })
+            .poll(
+                async () => {
+                    await first.evaluate(() => window.dispatchEvent(new Event('pagehide')))
+                    await second.evaluate(() => window.dispatchEvent(new Event('pagehide')))
+                    return (await staleNoticeCount(first)) + (await staleNoticeCount(second))
+                },
+                { timeout: 60_000 },
+            )
             .toBeGreaterThan(0)
     })
 })

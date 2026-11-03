@@ -62,6 +62,14 @@ const handleStaleSnapshot = (): void => {
     renderStaleTabNotice(() => globalThis.location.reload())
 }
 
+// A page that was refused as stale is only a notice now: nothing may start on it.
+const runServicesUnlessStale = async (
+    store: AppStore,
+    flushPersistedState: FlushPersistedState,
+): Promise<void> => {
+    if (!staleSnapshotHandled) await runPostHydrationServices(store, flushPersistedState)
+}
+
 const moveLegacySecrets = async (store: AppStore): Promise<boolean> => {
     try {
         return await migrateLegacySecrets(store)
@@ -106,6 +114,7 @@ const showStartupError = async (error: unknown): Promise<void> => {
 }
 
 export const mountHydratedApp = async (): Promise<void> => {
+    staleSnapshotHandled = false
     try {
         if (!(await takeWriterRole())) return
 
@@ -119,7 +128,7 @@ export const mountHydratedApp = async (): Promise<void> => {
 
         const flushPersistedState = setupPersistedStateSync(hydratedStore, handleStaleSnapshot)
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
-        await runPostHydrationServices(hydratedStore, flushPersistedState)
+        await runServicesUnlessStale(hydratedStore, flushPersistedState)
     } catch (error) {
         await showStartupError(error)
     }

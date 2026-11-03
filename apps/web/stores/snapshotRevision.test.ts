@@ -112,6 +112,79 @@ describe('snapshot revision (GH #669)', () => {
         await expect(first.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
     })
 
+    it('stores a token of its own when none exists, so "no token" is never expected', async () => {
+        const tab = await openTab()
+
+        await tab.revision.rememberStoredRevision()
+
+        await expect(tab.storage.getItem(REDUX_STATE_REVISION_KEY)).resolves.not.toBeNull()
+    })
+
+    it('refuses a tab that saved nothing yet when the data and the token are erased', async () => {
+        const first = await openTab()
+        const second = await openTab()
+        await first.revision.rememberStoredRevision()
+        await second.revision.rememberStoredRevision()
+
+        await first.storage.removeItem(REDUX_STATE_KEY)
+        await first.storage.removeItem(REDUX_STATE_REVISION_KEY)
+
+        await expect(second.revision.writeSnapshot('after the erase')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(first.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
+    })
+
+    it('refuses the other tab after a deliberate replacement, such as an import', async () => {
+        const importing = await openTab()
+        const other = await openTab()
+        await importing.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+
+        await importing.revision.replaceSnapshot('imported')
+
+        await expect(
+            other.revision.writeSnapshot('old state of the other tab'),
+        ).rejects.toMatchObject({ name: 'StaleSnapshotError' })
+        await expect(importing.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('imported')
+    })
+
+    it('refuses the replacing tab too, so its pagehide save cannot undo the replacement', async () => {
+        const tab = await openTab()
+        await tab.revision.rememberStoredRevision()
+
+        await tab.revision.replaceSnapshot('imported')
+
+        await expect(tab.revision.writeSnapshot('old state saved on reload')).rejects.toMatchObject(
+            { name: 'StaleSnapshotError' },
+        )
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('imported')
+    })
+
+    it('lets the replacing tab go on saving when it keeps running after the replacement', async () => {
+        const tab = await openTab()
+        await tab.revision.rememberStoredRevision()
+
+        await tab.revision.replaceSnapshot('repaired', true)
+        await tab.revision.writeSnapshot('saved after the repair')
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved after the repair')
+    })
+
+    it('refuses the other tab after the snapshot was removed through replaceSnapshot', async () => {
+        const removing = await openTab()
+        const other = await openTab()
+        await removing.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+
+        await removing.revision.replaceSnapshot(null)
+
+        await expect(other.revision.writeSnapshot('written back')).rejects.toMatchObject({
+            name: 'StaleSnapshotError',
+        })
+        await expect(removing.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
+    })
+
     it('saves as before when no revision was loaded, and writes no revision', async () => {
         const tab = await openTab()
 
@@ -119,6 +192,16 @@ describe('snapshot revision (GH #669)', () => {
 
         await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('without a revision')
         await expect(tab.storage.getItem(REDUX_STATE_REVISION_KEY)).resolves.toBeNull()
+    })
+
+    it('does not stop the start when a token cannot be stored', async () => {
+        const tab = await openTab()
+        vi.spyOn(tab.storage, 'setItem').mockRejectedValueOnce(new Error('QuotaExceededError'))
+
+        await expect(tab.revision.rememberStoredRevision()).resolves.toBeUndefined()
+        await tab.revision.writeSnapshot('saved anyway')
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved anyway')
     })
 
     it('does not stop the start when the revision cannot be read', async () => {

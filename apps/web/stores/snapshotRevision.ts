@@ -13,8 +13,8 @@ import { indexedDBStorage } from './indexedDBStorage'
  * and without Web Locks.
  */
 
-/** undefined: no revision was loaded (nothing is checked); null: none was stored yet. */
-let knownRevision: string | null | undefined
+/** undefined: the check is off for this page; otherwise the token this page last saw or wrote. */
+let knownRevision: string | undefined
 
 export class StaleSnapshotError extends Error {
     constructor() {
@@ -31,16 +31,30 @@ const newRevision = (): string =>
 /**
  * Remembers the stored revision. Call it before the snapshot is read: if another
  * tab saves in between, this tab holds an older token than the snapshot it
- * loaded, and its first save is refused, which is the safe way round. A revision
- * that cannot be read leaves the check off for this page instead of stopping the
- * start.
+ * loaded, and its first save is refused, which is the safe way round.
+ *
+ * A page that finds no token stores one of its own at once. "No token" is then
+ * never the value a save expects, so a tab that is open when the data is erased
+ * (which also erases the token) is refused instead of passing the check against
+ * the empty store. Two pages that start at the same moment both store a token;
+ * the later write wins and the other page is refused at its first save.
+ *
+ * A revision that cannot be read or stored leaves the check off for this page
+ * instead of stopping the start.
  */
 export const rememberStoredRevision = async (): Promise<void> => {
     try {
-        knownRevision = await indexedDBStorage.getItem(REDUX_STATE_REVISION_KEY)
+        const stored = await indexedDBStorage.getItem(REDUX_STATE_REVISION_KEY)
+        if (stored !== null) {
+            knownRevision = stored
+            return
+        }
+        const claimed = newRevision()
+        await indexedDBStorage.setItem(REDUX_STATE_REVISION_KEY, claimed)
+        knownRevision = claimed
     } catch (error) {
         knownRevision = undefined
-        console.debug('[Store] Could not read the snapshot revision:', error)
+        console.debug('[Store] Could not read or store the snapshot revision:', error)
     }
 }
 
@@ -61,4 +75,30 @@ export const writeSnapshot = async (serializedState: string): Promise<void> => {
     )
     if (!applied) throw new StaleSnapshotError()
     knownRevision = next
+}
+
+/**
+ * A deliberate replacement of the saved snapshot (null: removal): import,
+ * restore, repair, safe recovery, Reset all data. It does not check the
+ * revision, because the user asked for it, but it stores a new one, so every
+ * other tab that still holds the old one is refused at its next save instead of
+ * overwriting it.
+ *
+ * This page is refused at its next save too, unless `continueSaving` is set.
+ * That is what a replacement followed by a reload needs: the `pagehide` save of
+ * the old page must not write the old state over the new one. Only the repair at
+ * start, after which this page goes on running, passes it.
+ */
+export const replaceSnapshot = async (
+    serializedState: string | null,
+    continueSaving = false,
+): Promise<void> => {
+    const next = newRevision()
+    await indexedDBStorage.replaceItemRotatingRevision(
+        REDUX_STATE_KEY,
+        serializedState,
+        REDUX_STATE_REVISION_KEY,
+        next,
+    )
+    if (continueSaving && knownRevision !== undefined) knownRevision = next
 }

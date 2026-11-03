@@ -69,7 +69,7 @@ describe('a save refused because another tab saved (GH #669)', () => {
     })
 
     it('saves normally when the revision is current', async () => {
-        vi.mocked(writeSnapshot).mockResolvedValueOnce(undefined)
+        vi.mocked(writeSnapshot).mockResolvedValueOnce()
         const onStale = vi.fn()
 
         await expect(setupPersistedStateSync(store(), onStale)()).resolves.toBe(true)

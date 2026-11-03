@@ -33,6 +33,24 @@ const isAbort = (error: unknown): boolean =>
 /** A lock callback that never returns keeps the lock until the page is destroyed. */
 const holdUntilPageIsGone = (): Promise<void> => new Promise<void>(() => undefined)
 
+let giveUpHeldRole: (() => void) | undefined
+
+/** The writer's hold: ends with the page, or earlier through `releaseWriterRole`. */
+const holdUntilReleased = (): Promise<void> =>
+    new Promise<void>((resolve) => {
+        giveUpHeldRole = resolve
+    })
+
+/**
+ * Gives the writer role up while the page stays open. A tab whose start failed
+ * calls it, so it does not keep every other tab behind the reader notice while
+ * it shows an error.
+ */
+export const releaseWriterRole = (): void => {
+    giveUpHeldRole?.()
+    giveUpHeldRole = undefined
+}
+
 export const claimWriterRole = (patienceMs: number = CLAIM_PATIENCE_MS): Promise<WriterRole> => {
     const locks = getLocks()
     if (!locks) return Promise.resolve('unsupported')
@@ -44,7 +62,7 @@ export const claimWriterRole = (patienceMs: number = CLAIM_PATIENCE_MS): Promise
             .request(WRITER_LOCK_NAME, { signal: controller.signal }, () => {
                 clearTimeout(giveUp)
                 resolve('writer')
-                return holdUntilPageIsGone()
+                return holdUntilReleased()
             })
             .catch((error: unknown) => {
                 clearTimeout(giveUp)

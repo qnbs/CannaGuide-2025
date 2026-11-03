@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { claimWriterRole, waitForWriterRole } from './writerOwnership'
+import { claimWriterRole, releaseWriterRole, waitForWriterRole } from './writerOwnership'
 
 type LockCallback = (lock: object) => unknown
 
@@ -22,7 +22,12 @@ const createLockManager = () => {
             new Promise<unknown>((resolve, reject) => {
                 const start = () => {
                     held = true
-                    Promise.resolve(callback({})).then(resolve, reject)
+                    Promise.resolve(callback({}))
+                        .then(resolve, reject)
+                        .then(() => {
+                            held = false
+                            grantNext()
+                        })
                 }
                 if (!held) {
                     start()
@@ -89,6 +94,26 @@ describe('claimWriterRole', () => {
         })
 
         await expect(claimWriterRole(10)).resolves.toBe('unsupported')
+    })
+})
+
+describe('releaseWriterRole', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals()
+    })
+
+    it('hands the role to the next tab while this page stays open', async () => {
+        stubLocks(createLockManager())
+        await claimWriterRole(10)
+        await expect(claimWriterRole(10)).resolves.toBe('reader')
+
+        releaseWriterRole()
+
+        await expect(claimWriterRole(10)).resolves.toBe('writer')
+    })
+
+    it('does nothing when this page holds no role', () => {
+        expect(() => releaseWriterRole()).not.toThrow()
     })
 })
 

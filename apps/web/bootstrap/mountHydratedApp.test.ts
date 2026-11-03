@@ -1,10 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
-import { renderOtherTabNotice } from './render'
+import { renderError, renderOtherTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
 import { registerRecoveryListeners } from './recovery'
-import { claimWriterRole, waitForWriterRole, type WriterRole } from './writerOwnership'
+import {
+    claimWriterRole,
+    releaseWriterRole,
+    waitForWriterRole,
+    type WriterRole,
+} from './writerOwnership'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
@@ -15,6 +20,7 @@ vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn()
 vi.mock('./writerOwnership', () => ({
     claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
     waitForWriterRole: vi.fn(),
+    releaseWriterRole: vi.fn(),
 }))
 vi.mock('./store', () => ({ hydrateApplicationStores: vi.fn(async () => ({ hydratedStore: {} })) }))
 vi.mock('./crdt', () => ({ initializeCrdtLayer: vi.fn() }))
@@ -120,5 +126,15 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(renderOtherTabNotice).not.toHaveBeenCalled()
         expect(order).toEqual(['sync', 'services'])
+    })
+
+    it('gives the writer role up when the start fails, so other tabs are not blocked', async () => {
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new Error('hydration failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await mountHydratedApp()
+
+        expect(releaseWriterRole).toHaveBeenCalledOnce()
+        expect(renderError).toHaveBeenCalledOnce()
     })
 })

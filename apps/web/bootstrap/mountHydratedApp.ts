@@ -2,7 +2,7 @@ import type { AppStore } from '@/stores/store'
 import { i18nPromise } from '@/i18n'
 import { registerRecoveryListeners } from './recovery'
 import { renderError, renderOtherTabNotice } from './render'
-import { claimWriterRole, waitForWriterRole } from './writerOwnership'
+import { claimWriterRole, releaseWriterRole, waitForWriterRole } from './writerOwnership'
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
@@ -50,6 +50,7 @@ const saveAfterSecretsMoved = async (flushPersistedState: FlushPersistedState): 
 
 const showStartupError = (error: unknown): void => {
     console.error('Failed to initialize the application:', error)
+    releaseWriterRole()
     renderError(
         error instanceof Error ? error : new Error('An unknown error occurred during startup.'),
     )

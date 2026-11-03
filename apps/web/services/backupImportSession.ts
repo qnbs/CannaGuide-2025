@@ -4,6 +4,14 @@ import {
     type DependentStoreWrite,
     replacePrimaryPersistedSnapshotForRecovery,
 } from '@/services/persistedStateService'
+import {
+    ARCHIVED_JOURNAL_FILENAME,
+    type ArchivedJournal,
+    archivedEntriesOf,
+    combineDependentWrites,
+    createArchivedJournalRestoreWrite,
+    parseArchivedJournal,
+} from '@/services/backupArchivedJournal'
 import { getT } from '@/i18n'
 import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 import {
@@ -514,6 +522,40 @@ const readBackupMetadata = async (
     }
 }
 
+/**
+ * The archived plant journals of the backup (GH #667), or undefined for a backup
+ * that has none (older ones, or a journal that never outgrew the retention
+ * limit). A corrupt entry refuses the whole import before anything is written:
+ * restoring everything but the journal would drop data without saying so.
+ */
+const readBackupArchivedJournal = async (
+    zip: JSZip,
+    limits: Readonly<BackupImportLimits>,
+    budget: { remaining: number },
+): Promise<ArchivedJournal | undefined> => {
+    const file = zip.file(ARCHIVED_JOURNAL_FILENAME)
+    if (!file) return undefined
+    const raw = await readEntryText(file, limits.maxStateBytes, budget)
+    try {
+        return parseArchivedJournal(raw)
+    } catch (error) {
+        throw new Error('Invalid backup: corrupt archived journal', { cause: error })
+    }
+}
+
+/** Archived entries refer to photos like live ones; drop what the import rejected. */
+const sanitizeArchivedJournal = async (
+    archive: ArchivedJournal | undefined,
+    rejectedImageIds: ReadonlySet<string>,
+): Promise<number> => {
+    if (!archive) return 0
+    let rejectedInlineImageCount = 0
+    for (const entry of archivedEntriesOf(archive)) {
+        rejectedInlineImageCount += await sanitizeJournalEntry(entry, rejectedImageIds)
+    }
+    return rejectedInlineImageCount
+}
+
 const imageWritePlan = async (
     images: StoredImageData[],
 ): Promise<{ imageDb: IDBDatabase | undefined; imagesToWrite: StoredImageData[] }> => {
@@ -576,16 +618,19 @@ const commitBackupRestore = async (
     tally: ImportTally,
 ): Promise<BackupImportResult> => {
     const imported = await collectImportedImages(zip, limits, budget)
+    const archivedJournal = await readBackupArchivedJournal(zip, limits, budget)
     tally.rejectedImageIds = imported.rejectedImageIds
     tally.unidentifiedRejectedImageCount = imported.unidentifiedRejectedImageCount
-    tally.rejectedInlineImageCount = await sanitizeImportedStateImageReferences(
-        parsedState,
-        tally.rejectedImageIds,
-    )
+    tally.rejectedInlineImageCount =
+        (await sanitizeImportedStateImageReferences(parsedState, tally.rejectedImageIds)) +
+        (await sanitizeArchivedJournal(archivedJournal, tally.rejectedImageIds))
     const prepared = await imageWritePlan(imported.images)
     const restoreResult = await replacePrimaryPersistedSnapshotForRecovery(
         JSON.stringify(parsedState),
-        dependentImageWrite(prepared.imageDb, prepared.imagesToWrite),
+        combineDependentWrites([
+            dependentImageWrite(prepared.imageDb, prepared.imagesToWrite),
+            archivedJournal ? createArchivedJournalRestoreWrite(archivedJournal) : undefined,
+        ]),
     )
     return restoreOutcome(restoreResult, metadata, rejectedTotal(tally))
 }

@@ -1236,6 +1236,8 @@ export const settingsView = {
         exportError: 'Impossible de creer la sauvegarde ZIP.',
         exportImagesError:
             "Vos photos n'ont pas pu etre lues, aucune sauvegarde ZIP n'a donc ete creee ; vos donnees sont inchangees. Fermez les autres onglets CannaGuide ou redemarrez l'application, puis reessayez.",
+        exportArchivedJournalError:
+            "Vos entrees de journal archivees n'ont pas pu etre lues, aucune sauvegarde ZIP n'a donc ete creee ; vos donnees sont inchangees. Fermez les autres onglets CannaGuide ou redemarrez l'application, puis reessayez.",
         includePhotos: 'Inclure les photos',
         photoCount_one: '{{count}} photo',
         photoCount_other: '{{count}} photos',

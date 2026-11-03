@@ -1,5 +1,6 @@
 /** Why an export produced no archive, where the UI can say more than "failed". */
-export type BackupExportErrorCode = 'imagesUnreadable' | 'imageNameNotRestorable'
+export type BackupExportErrorCode =
+    'imagesUnreadable' | 'imageNameNotRestorable' | 'archivedJournalUnreadable'
 
 export interface BackupMetadata {
     version: string

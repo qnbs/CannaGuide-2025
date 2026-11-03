@@ -17,6 +17,11 @@ import { redactSnapshotSecrets } from '@/utils/redactSecrets'
 import type { BackupImportLimits } from '@/services/backupImportLimits'
 import { BACKUP_IMPORT_LIMITS } from '@/services/backupImportLimits'
 import {
+    ARCHIVED_JOURNAL_FILENAME,
+    type ArchivedJournal,
+    readArchivedJournalForExport,
+} from '@/services/backupArchivedJournal'
+import {
     IMAGES_DIR,
     METADATA_FILENAME,
     STATE_FILENAME,
@@ -136,6 +141,26 @@ const readExportImages = async (): Promise<unknown[] | BackupExportResult> => {
     }
 }
 
+const readExportArchivedJournal = async (): Promise<
+    ArchivedJournal | undefined | BackupExportResult
+> => {
+    try {
+        return await readArchivedJournalForExport()
+    } catch (error) {
+        console.error(
+            '[backupService] Archived journal could not be read; no backup created:',
+            error instanceof Error ? error.message : error,
+        )
+        return failedExport(
+            'Archived journal entries could not be read',
+            'archivedJournalUnreadable',
+        )
+    }
+}
+
+const isExportFailure = (value: unknown): value is BackupExportResult =>
+    isRecord(value) && typeof value.success === 'boolean' && 'blob' in value
+
 const buildExportArchive = async (stateString: string): Promise<BackupExportResult> => {
     const zip = new JSZip()
     // A legacy plaintext Cloud TTS key never leaves in a backup (#654).
@@ -152,6 +177,11 @@ const buildExportArchive = async (stateString: string): Promise<BackupExportResu
             'imageNameNotRestorable',
         )
     }
+    // Older journal entries live outside the Redux snapshot; without them the
+    // backup would silently lose them (#667).
+    const archivedJournal = await readExportArchivedJournal()
+    if (isExportFailure(archivedJournal)) return archivedJournal
+    if (archivedJournal) zip.file(ARCHIVED_JOURNAL_FILENAME, JSON.stringify(archivedJournal))
     const metadata: BackupMetadata = {
         version: '1.0',
         exportedAt: Date.now(),

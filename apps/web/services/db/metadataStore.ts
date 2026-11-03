@@ -16,4 +16,8 @@ export const metadataStore = {
         const item: MetadataItem<T> = { key, value }
         await performTx<IDBValidKey>(METADATA_STORE, 'readwrite', (store) => store.put(item))
     },
+
+    async deleteMetadata(key: string): Promise<void> {
+        await performTx<undefined>(METADATA_STORE, 'readwrite', (store) => store.delete(key))
+    },
 }

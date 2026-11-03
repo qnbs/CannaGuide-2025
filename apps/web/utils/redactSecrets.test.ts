@@ -115,3 +115,18 @@ describe('scrubSecretsInText', () => {
         expect(scrubSecretsInText(text)).toBe(text)
     })
 })
+
+describe('scrubSecretsInText on a value cut off by truncation', () => {
+    it('blanks a key whose closing quote is missing', () => {
+        const cut = '{"version":5,"settings":{"settings":{"tts":{"cloudTtsApiKey":"sk_canary_0000'
+        const scrubbed = scrubSecretsInText(cut)
+        expect(scrubbed).not.toContain('sk_canary')
+        expect(scrubbed).toContain('"cloudTtsApiKey":null')
+        expect(scrubbed).toContain('"version":5')
+    })
+
+    it('blanks a key that ends in a lone backslash', () => {
+        const cut = '{"cloudTtsApiKey":"sk_canary_0000' + String.fromCharCode(92)
+        expect(scrubSecretsInText(cut)).not.toContain('sk_canary')
+    })
+})

@@ -64,6 +64,12 @@ describe('collectReferencedImageIds', () => {
         )
     })
 
+    it('keeps a photo whose image id is the last thing in the quarantined text', async () => {
+        useStorage({ [REDUX_STATE_QUARANTINE_KEY]: '{"details":{"imageId":"img-cut-off' })
+
+        await expect(collectReferencedImageIds()).resolves.toEqual(new Set(['img-cut-off']))
+    })
+
     it('adds nothing when there is no quarantine or it names no image', async () => {
         useStorage({ [REDUX_STATE_QUARANTINE_KEY]: '{"version":5' })
 

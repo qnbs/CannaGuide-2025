@@ -95,14 +95,15 @@ export function redactSnapshotSecrets(
 /**
  * For text that may not be valid JSON, where `redactSnapshotSecrets` has to
  * return the input as it is: blanks the string after each secret field name,
- * wherever the text has one. A corrupt snapshot is exactly the text that cannot
- * be parsed, and a copy of it must not keep a key in plain text.
+ * wherever the text has one; a value that the text ends in the middle of is
+ * blanked too. A corrupt snapshot is exactly the text that cannot be parsed, and
+ * a copy of it must not keep a key in plain text.
  */
 export const scrubSecretsInText = (text: string): string => {
     return SECRET_FIELDS.reduce(
         (scrubbed, [, field]) =>
             scrubbed.replace(
-                new RegExp(`("${field}"\\s*:\\s*)"(?:[^"\\\\]|\\\\.)*"`, 'g'),
+                new RegExp(`("${field}"\\s*:\\s*)"(?:[^"\\\\]|\\\\.)*\\\\?(?:"|$)`, 'g'),
                 '$1null',
             ),
         text,

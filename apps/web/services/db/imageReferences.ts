@@ -58,7 +58,7 @@ export const addSimulationImageIds = (simulation: unknown, referenced: Set<strin
 const addQuarantinedImageIds = async (referenced: Set<string>): Promise<void> => {
     const quarantined = await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)
     if (quarantined === null) return
-    for (const match of quarantined.matchAll(/"imageId"\s*:\s*"((?:[^"\\]|\\.)*)"/g)) {
+    for (const match of quarantined.matchAll(/"imageId"\s*:\s*"((?:[^"\\]|\\.)*)\\?(?:"|$)/g)) {
         if (match[1]) referenced.add(match[1])
     }
 }

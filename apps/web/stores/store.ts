@@ -110,18 +110,21 @@ export const createAppStore = async (): Promise<AppStore> => {
     }
 
     const tryLoadBackupState = async (): Promise<Partial<RootState> | undefined> => {
-        const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
-        if (!backupString) {
+        try {
+            const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
+            if (!backupString) {
+                return undefined
+            }
+
+            console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
+            const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
+            return repaired ? hydratePersistedState(backupString) : undefined
+        } catch (backupError) {
+            // A backup that cannot be read must not stop the start: the primary still
+            // has to be quarantined before anything else touches it (#666).
+            console.debug('[Store] Could not recover state from the backup:', backupError)
             return undefined
         }
-
-        console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
-        const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
-        if (!repaired) {
-            return undefined
-        }
-
-        return hydratePersistedState(backupString)
     }
 
     let persistedString: string | null | undefined

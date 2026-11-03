@@ -250,6 +250,10 @@ export const common = {
         description:
             'Diese Seite konnte nicht prüfen, ob sie als einziger Tab oder einziges Fenster deine Daten speichert. Sie speichert deshalb nicht, damit neuere Daten aus einem anderen Tab oder Fenster erhalten bleiben. Schließe andere CannaGuide-Tabs und -Fenster und lade dann neu, um es erneut zu versuchen. Deine gespeicherten Daten wurden nicht verändert.',
     },
+    egress: {
+        blockedByLocalOnly:
+            'Der Nur-Lokal-Modus blockiert diese Verbindung: {{destination}} liegt weder auf diesem Gerät noch in deinem lokalen Netzwerk.',
+    },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
         description:
@@ -286,6 +290,21 @@ export const common = {
     },
     mqtt: {
         notConnected: 'MQTT-Broker ist nicht verbunden.',
+        invalidBrokerUrl: 'Ungültige Broker-URL. Verwende ws:// oder wss://.',
+        credentialsNeedWss:
+            'Benutzername oder Passwort brauchen eine verschlüsselte wss://-Verbindung. Unverschlüsseltes ws:// mit Zugangsdaten ist blockiert.',
+        connectionFailed: 'Verbindung fehlgeschlagen.',
+        insecureCredentials:
+            'Zugangsdaten werden über unverschlüsseltes ws:// gesendet. Verwende stattdessen wss://.',
+        connectionRestored: 'MQTT-Verbindung wiederhergestellt.',
+        connectionLost: 'MQTT-Verbindung unterbrochen.',
+        payloadInvalid: 'Eine Sensornachricht wurde abgelehnt ({{detail}}).',
+        payloadKind: {
+            temperature: 'Temperaturwert',
+            humidity: 'Luftfeuchtewert',
+            ph: 'pH-Wert',
+            env: 'Umgebungswerte',
+        },
     },
     communityShare: {
         invalidGistUrl: 'Ungültige Gist-URL oder ID.',

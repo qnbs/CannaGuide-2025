@@ -46,15 +46,41 @@ const syncAiMode = async (mode: AiMode) => {
     setAiMode(mode)
 }
 
+/**
+ * Switching the mode on closes an open connection to a broker outside the LAN;
+ * switching it off reopens the connections the mode refused or closed.
+ */
+const applyLocalOnlyModeToMqtt = async (enabled: boolean): Promise<void> => {
+    const [{ mqttClientService }, { mqttSensorService }] = await Promise.all([
+        import('@/services/mqttClientService'),
+        import('@/services/mqttSensorService'),
+    ])
+    for (const service of [mqttClientService, mqttSensorService]) {
+        if (enabled) service.enforceLocalOnlyMode()
+        else service.resumeAfterLocalOnlyMode()
+    }
+}
+
+const syncSentry = async (localOnly: boolean): Promise<void> => {
+    const { disableSentry, enableSentry } = await import('@/services/sentryService')
+    if (localOnly) disableSentry()
+    else enableSentry()
+}
+
 const syncLocalOnlyMode = async (enabled: boolean) => {
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     setLocalOnlyMode(enabled)
-    if (enabled) {
-        const { disableSentry } = await import('@/services/sentryService')
-        disableSentry()
-    } else {
-        const { enableSentry } = await import('@/services/sentryService')
-        enableSentry()
+    // Both steps run at once: the MQTT shutdown neither waits for the Sentry
+    // import nor fails with it, and the reverse. A stale run after a quick
+    // toggle is harmless, because both services read the live mode.
+    const results = await Promise.allSettled([
+        applyLocalOnlyModeToMqtt(enabled),
+        syncSentry(enabled),
+    ])
+    for (const result of results) {
+        if (result.status === 'rejected') {
+            console.error('[Privacy] Could not apply Local-Only Mode:', result.reason)
+        }
     }
 }
 
@@ -206,7 +232,9 @@ export const initVoiceCommandSubscription = (
                     : null
 
                 if (!plant) {
-                    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.noPlantContext'))
+                    getUISnapshot().setVoiceStatusMessage(
+                        t('common.voiceControl.errors.noPlantContext'),
+                    )
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 4000)
                     return
                 }
@@ -230,7 +258,9 @@ export const initVoiceCommandSubscription = (
                     getUISnapshot().setVoiceStatusMessage(response.content)
                 } catch (error) {
                     console.debug('Voice assistant response failed:', error)
-                    getUISnapshot().setVoiceStatusMessage(t('common.voiceControl.errors.assistantFailed'))
+                    getUISnapshot().setVoiceStatusMessage(
+                        t('common.voiceControl.errors.assistantFailed'),
+                    )
                     setTimeout(() => getUISnapshot().setVoiceStatusMessage(null), 5000)
                 }
 

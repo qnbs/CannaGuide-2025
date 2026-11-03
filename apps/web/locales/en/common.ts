@@ -246,6 +246,10 @@ export const common = {
         description:
             'This page could not confirm that it is the only tab or window saving your data, so it does not save, to keep newer data from another tab or window safe. Close other CannaGuide tabs and windows, then reload to try again. Your saved data has not been changed.',
     },
+    egress: {
+        blockedByLocalOnly:
+            'Local-Only Mode blocks this connection: {{destination}} is not on this device or your local network.',
+    },
     errorBoundary: {
         title: 'Something went wrong.',
         description:
@@ -282,6 +286,20 @@ export const common = {
     },
     mqtt: {
         notConnected: 'MQTT broker is not connected.',
+        invalidBrokerUrl: 'Invalid broker URL. Use ws:// or wss://.',
+        credentialsNeedWss:
+            'A username or password needs an encrypted wss:// connection. Plain ws:// with credentials is blocked.',
+        connectionFailed: 'Connection failed.',
+        insecureCredentials: 'Credentials are sent over unencrypted ws://. Use wss:// instead.',
+        connectionRestored: 'MQTT connection restored.',
+        connectionLost: 'MQTT connection lost.',
+        payloadInvalid: 'A sensor message was rejected ({{detail}}).',
+        payloadKind: {
+            temperature: 'temperature reading',
+            humidity: 'humidity reading',
+            ph: 'pH reading',
+            env: 'environment readings',
+        },
     },
     communityShare: {
         invalidGistUrl: 'Invalid gist URL or ID.',

@@ -10,6 +10,10 @@ import * as Sentry from '@sentry/browser'
 import type { ITTSProvider, Language, TTSSettings } from '@/types'
 import { CLOUD_TTS_MAX_CHARS, CLOUD_TTS_TIMEOUT_MS, CLOUD_TTS_RATE_LIMIT } from '@/constants'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
+import { egressFetch } from '@/services/net/egress'
+
+/** The ElevenLabs API origin; Local-Only Mode refuses it (services/net/egress.ts). */
+export const CLOUD_TTS_ORIGIN = 'https://api.elevenlabs.io'
 
 /** Default ElevenLabs voice IDs per language. */
 const DEFAULT_VOICE_IDS: Record<Language, string> = {
@@ -113,6 +117,7 @@ class CloudTtsService implements ITTSProvider {
         const truncatedText =
             text.length > CLOUD_TTS_MAX_CHARS ? text.slice(0, CLOUD_TTS_MAX_CHARS) : text
 
+        let timeoutId: ReturnType<typeof setTimeout> | undefined
         try {
             // Decrypt API key in-memory (never persisted in plain text)
             const apiKey = await cloudTtsKeyService.getApiKey()
@@ -124,14 +129,16 @@ class CloudTtsService implements ITTSProvider {
 
             const voiceId = this.selectedVoiceId ?? DEFAULT_VOICE_IDS[lang] ?? DEFAULT_VOICE_IDS.en
 
-            // Setup abort controller with timeout
-            activeAbortController = new AbortController()
-            const timeoutId = setTimeout(() => activeAbortController?.abort(), CLOUD_TTS_TIMEOUT_MS)
+            // Setup abort controller with timeout. The timer belongs to this
+            // request's controller, so it can never abort a later request.
+            const controller = new AbortController()
+            activeAbortController = controller
+            timeoutId = setTimeout(() => controller.abort(), CLOUD_TTS_TIMEOUT_MS)
 
             recordRequest()
 
-            const response = await fetch(
-                `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
+            const response = await egressFetch(
+                `${CLOUD_TTS_ORIGIN}/v1/text-to-speech/${encodeURIComponent(voiceId)}`,
                 {
                     method: 'POST',
                     headers: {
@@ -146,11 +153,9 @@ class CloudTtsService implements ITTSProvider {
                             similarity_boost: 0.75,
                         },
                     }),
-                    signal: activeAbortController.signal,
+                    signal: controller.signal,
                 },
             )
-
-            clearTimeout(timeoutId)
 
             if (!response.ok) {
                 console.debug(`[CloudTTS] API error: ${String(response.status)}`)
@@ -187,6 +192,9 @@ class CloudTtsService implements ITTSProvider {
             void activeAudioContext?.close()
             activeAudioContext = null
             onEnd()
+        } finally {
+            // Also on a refused or failed request, not only after a response.
+            clearTimeout(timeoutId)
         }
     }
 }

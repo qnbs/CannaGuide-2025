@@ -13,6 +13,7 @@ import type { Language } from '@/types'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 import { localAiPreloadService } from '@/services/local-ai'
+import { EgressBlockedError } from '@/services/net/egress'
 
 export const getLocalAiService = async () => {
     const module = await import('@/services/local-ai')
@@ -21,33 +22,39 @@ export const getLocalAiService = async () => {
 
 export type LocalAiService = Awaited<ReturnType<typeof getLocalAiService>>
 
-export function shouldUseLocalFallback(error: unknown): boolean {
-    const offline = typeof navigator !== 'undefined' && navigator.onLine === false
-    if (offline) return true
-
-    if (!localAiPreloadService.isReady()) return false
-
+/** No key, no network, or Local-Only Mode refused the request (services/net/egress.ts). */
+const isMissingKeyOrNetworkBlock = (error: unknown): boolean => {
+    if (error instanceof EgressBlockedError) return true
     return (
         error instanceof Error &&
         (error.message === 'ai.error.missingApiKey' || error.message.includes('NetworkError'))
     )
 }
 
-export function getActiveProvider(): AiProvider {
+export const shouldUseLocalFallback = (error: unknown): boolean => {
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false
+    if (offline) return true
+
+    if (!localAiPreloadService.isReady()) return false
+
+    return isMissingKeyOrNetworkBlock(error)
+}
+
+export const getActiveProvider = (): AiProvider => {
     return aiProviderService.getActiveProviderId()
 }
 
-export function isAlternateProvider(): boolean {
+export const isAlternateProvider = (): boolean => {
     return getActiveProvider() !== 'gemini'
 }
 
-export async function generateViaAlternateProvider(
+export const generateViaAlternateProvider = async (
     endpoint: string,
     systemPrompt: string,
     userPrompt: string,
     jsonMode: boolean,
     maxTokens: number,
-): Promise<string> {
+): Promise<string> => {
     const reservation = aiRateLimiter.acquireSlot(endpoint)
     const provider = getActiveProvider()
     return aiProviderService.generateTextWithProvider(
@@ -60,11 +67,11 @@ export async function generateViaAlternateProvider(
     )
 }
 
-export async function generateGeminiPlainText(
+export const generateGeminiPlainText = async (
     prompt: string,
     lang: Language,
     endpoint = 'generateText',
-): Promise<string> {
+): Promise<string> => {
     try {
         const reservation = aiRateLimiter.acquireSlot(endpoint)
         const ai = await createGeminiClient()
@@ -89,11 +96,11 @@ export async function generateGeminiPlainText(
     }
 }
 
-export async function generateTextWithProviderRouting(
+export const generateTextWithProviderRouting = async (
     prompt: string,
     lang: Language,
     endpoint = 'generateText',
-): Promise<string> {
+): Promise<string> => {
     if (isAlternateProvider()) {
         return generateViaAlternateProvider(
             endpoint,
@@ -106,10 +113,10 @@ export async function generateTextWithProviderRouting(
     return generateGeminiPlainText(prompt, lang, endpoint)
 }
 
-export async function runWithLocalFallback<T>(
+export const runWithLocalFallback = async <T>(
     task: () => Promise<T>,
     fallbackTask: (localAiService: LocalAiService) => Promise<T>,
-): Promise<T> {
+): Promise<T> => {
     try {
         return await task()
     } catch (error) {

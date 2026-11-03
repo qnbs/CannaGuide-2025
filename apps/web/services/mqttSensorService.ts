@@ -1,6 +1,7 @@
 import mqtt from 'mqtt'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
+import { EgressBlockedError, isEgressAllowed } from '@/services/net/egress'
 import { sensorStore } from '@/stores/sensorStore'
 import {
     singleValuePayloadSchema,
@@ -52,9 +53,24 @@ export type ConnectionStateCallback = (state: MqttConnectionState) => void
 export type IoTEventCallback = (event: IoTEvent) => void
 
 export interface IoTEvent {
-    type: 'connection_lost' | 'connection_restored' | 'validation_error' | 'wss_warning'
+    type:
+        | 'connection_lost'
+        | 'connection_restored'
+        | 'validation_error'
+        | 'wss_warning'
+        | 'egress_blocked'
     message: string
     timestamp: number
+}
+
+type SensorPayloadKind = 'temperature' | 'humidity' | 'ph' | 'env'
+
+/** One getT() call with a fixed key string per kind, so the i18n usage check sees every key. */
+const PAYLOAD_KIND_LABELS: Readonly<Record<SensorPayloadKind, () => string>> = {
+    temperature: () => String(getT()('common.mqtt.payloadKind.temperature')),
+    humidity: () => String(getT()('common.mqtt.payloadKind.humidity')),
+    ph: () => String(getT()('common.mqtt.payloadKind.ph')),
+    env: () => String(getT()('common.mqtt.payloadKind.env')),
 }
 
 const DEFAULT_CONFIG: MqttSensorConfig = {
@@ -105,6 +121,10 @@ class MqttSensorService {
     private currentReconnectMs = INITIAL_RECONNECT_MS
     private reconnectHandle: ReturnType<typeof setTimeout> | null = null
     private intentionalDisconnect = false
+    /** The broker URL the open client was created with (configure() can change the config). */
+    private connectedBrokerUrl: string | null = null
+    /** True while Local-Only Mode refused or closed this connection (resumeAfterLocalOnlyMode). */
+    private pausedByLocalOnly = false
 
     // --- Telemetry ---
     private telemetry: MqttTelemetryMetrics = { ...INITIAL_TELEMETRY }
@@ -175,13 +195,15 @@ class MqttSensorService {
 
         this.intentionalDisconnect = false
         this.currentReconnectMs = INITIAL_RECONNECT_MS
+        if (this.refuseBlockedBroker()) return
+        this.pausedByLocalOnly = false
         this.setConnectionState('connecting')
 
         // WSS warning
         if (this.isInsecureWithCredentials()) {
             this.emitEvent({
                 type: 'wss_warning',
-                message: 'Credentials sent over unencrypted ws:// -- use wss:// for security',
+                message: String(getT()('common.mqtt.insecureCredentials')),
                 timestamp: Date.now(),
             })
         }
@@ -210,6 +232,7 @@ class MqttSensorService {
             clean: true,
             clientId: `cannaguide_${Date.now().toString(36)}`,
         })
+        this.connectedBrokerUrl = brokerUrl
 
         this.client.on('connect', () => {
             if (this.connectTimeoutHandle) {
@@ -226,7 +249,7 @@ class MqttSensorService {
             if (this.telemetry.reconnectAttempts > 0) {
                 this.emitEvent({
                     type: 'connection_restored',
-                    message: 'MQTT connection restored',
+                    message: String(getT()('common.mqtt.connectionRestored')),
                     timestamp: Date.now(),
                 })
             }
@@ -249,7 +272,7 @@ class MqttSensorService {
             if (this.connectionState === 'connected') {
                 this.emitEvent({
                     type: 'connection_lost',
-                    message: 'MQTT connection lost',
+                    message: String(getT()('common.mqtt.connectionLost')),
                     timestamp: Date.now(),
                 })
             }
@@ -258,6 +281,23 @@ class MqttSensorService {
                 this.scheduleReconnect()
             }
         })
+    }
+
+    /**
+     * Local-Only Mode: a broker on the user's LAN is fine, one on the internet is
+     * not. Reports the refusal and returns true when the broker is blocked.
+     */
+    private refuseBlockedBroker(brokerUrl: string = this.config.brokerUrl): boolean {
+        if (isEgressAllowed(brokerUrl, { allowPrivateNetwork: true })) return false
+        this.pausedByLocalOnly = true
+        const { destination } = new EgressBlockedError(brokerUrl)
+        this.setConnectionState('error')
+        this.emitEvent({
+            type: 'egress_blocked',
+            message: String(getT()('common.egress.blockedByLocalOnly', { destination })),
+            timestamp: Date.now(),
+        })
+        return true
     }
 
     /** Schedule a reconnect with exponential backoff. */
@@ -281,8 +321,15 @@ class MqttSensorService {
         )
     }
 
+    /**
+     * Stops the connection. A call from outside is the user's choice, so it also
+     * ends a Local-Only pause: switching the mode off must not reconnect then.
+     * enforceLocalOnlyMode and a refused connect() set the pause again after
+     * calling this.
+     */
     disconnect(): void {
         this.intentionalDisconnect = true
+        this.pausedByLocalOnly = false
         if (this.connectTimeoutHandle) {
             clearTimeout(this.connectTimeoutHandle)
             this.connectTimeoutHandle = null
@@ -295,11 +342,33 @@ class MqttSensorService {
             this.client.end(true)
             this.client = null
         }
+        this.connectedBrokerUrl = null
         this.connectedSince = null
         this.setConnectionState('disconnected')
         this.partialTemp = null
         this.partialHumidity = null
         this.partialPh = null
+    }
+
+    /** The broker the open client was created for, when the gate now refuses it. */
+    private blockedConnectionUrl(): string | null {
+        const url = this.client ? this.connectedBrokerUrl : null
+        return url !== null && !isEgressAllowed(url, { allowPrivateNetwork: true }) ? url : null
+    }
+
+    /** Local-Only Mode was switched on: close a connection to a broker it blocks. */
+    enforceLocalOnlyMode(): void {
+        const blocked = this.blockedConnectionUrl()
+        if (blocked === null) return
+        this.disconnect()
+        this.refuseBlockedBroker(blocked)
+    }
+
+    /** Local-Only Mode was switched off: reopen a connection it refused or closed. */
+    resumeAfterLocalOnlyMode(): void {
+        if (!this.pausedByLocalOnly) return
+        this.pausedByLocalOnly = false
+        this.connect()
     }
 
     /** Fully dispose the service -- clears all callbacks and disconnects. */
@@ -365,7 +434,7 @@ class MqttSensorService {
             case 'temperature': {
                 const parsed = singleValuePayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('temperature payload invalid')
+                    this.trackValidationError('temperature')
                     return
                 }
                 this.partialTemp = temperatureSchema.safeParse(parsed.data.value).success
@@ -376,7 +445,7 @@ class MqttSensorService {
             case 'humidity': {
                 const parsed = singleValuePayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('humidity payload invalid')
+                    this.trackValidationError('humidity')
                     return
                 }
                 this.partialHumidity = humiditySchema.safeParse(parsed.data.value).success
@@ -387,7 +456,7 @@ class MqttSensorService {
             case 'ph': {
                 const parsed = singleValuePayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('ph payload invalid')
+                    this.trackValidationError('ph')
                     return
                 }
                 this.partialPh = phSchema.safeParse(parsed.data.value).success
@@ -399,7 +468,7 @@ class MqttSensorService {
                 // Combined payload -- validate & emit immediately
                 const parsed = envPayloadSchema.safeParse(data)
                 if (!parsed.success) {
-                    this.trackValidationError('env payload invalid')
+                    this.trackValidationError('env')
                     return
                 }
                 const temp = temperatureSchema.safeParse(parsed.data.temperature).success
@@ -449,11 +518,12 @@ class MqttSensorService {
         }
     }
 
-    private trackValidationError(detail: string): void {
+    private trackValidationError(kind: SensorPayloadKind): void {
+        const detail = PAYLOAD_KIND_LABELS[kind]()
         this.telemetry.validationErrors += 1
         this.emitEvent({
             type: 'validation_error',
-            message: `Sensor payload validation failed: ${detail}`,
+            message: String(getT()('common.mqtt.payloadInvalid', { detail })),
             timestamp: Date.now(),
         })
     }

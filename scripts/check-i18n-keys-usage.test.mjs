@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { resolveKey } from './check-i18n-keys-usage.mjs'
+import { extractTKeys, resolveKey } from './check-i18n-keys-usage.mjs'
 
 const locale = new Set([
     'common.save',
@@ -40,4 +40,28 @@ test('a plural key needs both English forms, _one and _other (#647 review)', () 
     const half = new Set(['seedVault.items_one', 'seedVault.rows_other'])
     assert.equal(resolveKey('seedVault.items', half), false)
     assert.equal(resolveKey('seedVault.rows', half), false)
+})
+
+test('extractTKeys sees t(), getT()() and a stored translate()', () => {
+    const source = [
+        "t('common.save')",
+        "getT()('common.mqtt.connectionLost', { x: 1 })",
+        'const translate = getT(); translate("common.staleTab.title")',
+        'getT()(`common.egress.blockedByLocalOnly`)',
+    ].join('\n')
+
+    assert.deepEqual([...extractTKeys(source)].sort(), [
+        'common.egress.blockedByLocalOnly',
+        'common.mqtt.connectionLost',
+        'common.save',
+        'common.staleTab.title',
+    ])
+})
+
+test('extractTKeys ignores dynamic keys and look-alike names', () => {
+    const source = ['t(`common.${name}`)', "format('common.save')", "restart('common.undo')"].join(
+        '\n',
+    )
+
+    assert.deepEqual([...extractTKeys(source)], [])
 })

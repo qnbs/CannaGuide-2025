@@ -86,6 +86,28 @@ export const common = {
         description:
             "Cette page n'a pas pu confirmer qu'elle est le seul onglet ou la seule fen\u00EAtre \u00E0 enregistrer vos donn\u00E9es : elle n'enregistre donc pas, pour pr\u00E9server les donn\u00E9es plus r\u00E9centes d'un autre onglet ou d'une autre fen\u00EAtre. Fermez les autres onglets et fen\u00EAtres CannaGuide, puis rechargez pour r\u00E9essayer. Vos donn\u00E9es enregistr\u00E9es n'ont pas \u00E9t\u00E9 modifi\u00E9es.",
     },
+    egress: {
+        blockedByLocalOnly:
+            "Le mode local uniquement bloque cette connexion : {{destination}} n'est ni sur cet appareil ni sur votre r\u00E9seau local.",
+    },
+    mqtt: {
+        notConnected: "Le broker MQTT n'est pas connect\u00E9.",
+        invalidBrokerUrl: 'URL du broker non valide. Utilisez ws:// ou wss://.',
+        credentialsNeedWss:
+            'Un identifiant ou un mot de passe exige une connexion chiffr\u00E9e wss://. Une connexion ws:// non chiffr\u00E9e avec des identifiants est bloqu\u00E9e.',
+        connectionFailed: 'La connexion a \u00E9chou\u00E9.',
+        insecureCredentials:
+            'Les identifiants sont envoy\u00E9s via une connexion ws:// non chiffr\u00E9e. Utilisez plut\u00F4t wss://.',
+        connectionRestored: 'Connexion MQTT r\u00E9tablie.',
+        connectionLost: 'Connexion MQTT perdue.',
+        payloadInvalid: 'Un message du capteur a \u00E9t\u00E9 rejet\u00E9 ({{detail}}).',
+        payloadKind: {
+            temperature: 'valeur de temp\u00E9rature',
+            humidity: "valeur d'humidit\u00E9",
+            ph: 'valeur de pH',
+            env: 'valeurs ambiantes',
+        },
+    },
     errorBoundary: {
         title: 'Une erreur est survenue.',
         description: "Une erreur inattendue s'est produite. Veuillez recharger l'application.",

@@ -206,6 +206,7 @@ describe('snapshot revision (GH #669)', () => {
         await tab.revision.rememberStoredRevision()
 
         await tab.revision.repairSnapshot('repaired from the backup')
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('repaired from the backup')
         await tab.revision.writeSnapshot('saved after the repair')
 
         await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved after the repair')
@@ -244,6 +245,32 @@ describe('snapshot revision (GH #669)', () => {
             name: 'StaleSnapshotError',
         })
         await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('saved by the other tab')
+    })
+
+    it('removes the primary while the page is current and goes on saving', async () => {
+        const tab = await openTab()
+        await tab.revision.rememberStoredRevision()
+        await tab.revision.writeSnapshot('unreadable')
+
+        await expect(tab.revision.removeSnapshotIfCurrent()).resolves.toBe(true)
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBeNull()
+        await tab.revision.writeSnapshot('fresh start')
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe('fresh start')
+    })
+
+    it('keeps a save another tab made since the page started when it would remove the primary', async () => {
+        const tab = await openTab()
+        const other = await openTab()
+        await tab.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+        await other.revision.writeSnapshot('valid save of the other tab')
+
+        await expect(tab.revision.removeSnapshotIfCurrent()).resolves.toBe(false)
+
+        await expect(tab.storage.getItem(REDUX_STATE_KEY)).resolves.toBe(
+            'valid save of the other tab',
+        )
     })
 
     it('arms the check after a replacement on a page that started without it', async () => {

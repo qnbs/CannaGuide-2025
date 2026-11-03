@@ -129,14 +129,12 @@ export const replaceSnapshot = async (
 }
 
 /**
- * The repair at start: replaces an unreadable primary with the backup, but only
- * while no other tab has saved since this page read the revision; otherwise it
- * throws StaleSnapshotError and writes nothing, and the caller starts without
- * the repair (its first save is then refused and the page asks for a reload).
- * This page goes on running, so it follows the new revision. A page that runs
- * without the check repairs unconditionally and starts checking.
+ * A replacement for the start, after which this page goes on running: it applies
+ * only while no other tab has saved since this page read the revision, and then
+ * the page follows the new revision. A page that runs without the check replaces
+ * unconditionally and starts checking. Resolves to whether it was applied.
  */
-export const repairSnapshot = async (serializedState: string): Promise<void> => {
+const replaceIfCurrent = async (serializedState: string | null): Promise<boolean> => {
     const next = newRevision()
     const applied = await indexedDBStorage.replaceItemRotatingRevision(
         REDUX_STATE_KEY,
@@ -146,9 +144,26 @@ export const repairSnapshot = async (serializedState: string): Promise<void> => 
         knownRevision ?? null,
         knownRevision !== undefined,
     )
-    if (!applied && knownRevision !== undefined) throw new StaleSnapshotError()
+    if (!applied && knownRevision !== undefined) return false
     knownRevision = next
+    return true
 }
+
+/**
+ * The repair at start: replaces an unreadable primary with the backup, but only
+ * while no other tab has saved since this page read the revision; otherwise it
+ * throws StaleSnapshotError and writes nothing, and the caller starts without
+ * the repair (its first save is then refused and the page asks for a reload).
+ */
+export const repairSnapshot = async (serializedState: string): Promise<void> => {
+    if (!(await replaceIfCurrent(serializedState))) throw new StaleSnapshotError()
+}
+
+/**
+ * The quarantine at start removes the unreadable primary the same way: only while
+ * no other tab has saved since. Resolves to whether the primary was removed.
+ */
+export const removeSnapshotIfCurrent = (): Promise<boolean> => replaceIfCurrent(null)
 
 /**
  * Read-modify-write of the saved snapshot that fails instead of overwriting a

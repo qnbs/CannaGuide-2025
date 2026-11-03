@@ -1,7 +1,9 @@
 import type { AppStore } from '@/stores/store'
+import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
 import { i18nPromise } from '@/i18n'
+import { disableSentry } from '@/services/sentryService'
 import { registerRecoveryListeners } from './recovery'
-import { renderError, renderOtherTabNotice } from './render'
+import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 import {
     claimWriterRole,
@@ -12,6 +14,7 @@ import {
 import { hydrateApplicationStores } from './store'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
+import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 
@@ -44,6 +47,39 @@ const takeWriterRole = async (): Promise<boolean> => {
     }
     if (role === 'writer') stopWatchingCacheRestore = watchForCacheRestore(leaveRestoredPage)
     return true
+}
+
+let staleSnapshotHandled = false
+
+/**
+ * A save was refused because another tab saved newer data. This page's state is
+ * out of date: stop saving, give the role up so the next page can take it, and
+ * ask for a reload instead of showing data that is not the saved one.
+ */
+const handleStaleSnapshot = (): void => {
+    if (staleSnapshotHandled) return
+    staleSnapshotHandled = true
+    // The settings this page holds may be older than the ones another tab saved
+    // (local-only mode may have been switched on there), and the page is only a
+    // notice until the reload: no error reports from it.
+    disableSentry()
+    stopWatchingCacheRestore?.()
+    stopPersistenceForOwnershipLoss().catch(() => undefined)
+    releaseWriterRole()
+    renderStaleTabNotice(() => globalThis.location.reload())
+}
+
+// A page that was refused as stale is only a notice now: no service starts on it,
+// except the privacy setting, which also has to reach Sentry.
+const runServicesUnlessStale = async (
+    store: AppStore,
+    flushPersistedState: FlushPersistedState,
+): Promise<void> => {
+    if (staleSnapshotHandled) {
+        await applyLocalOnlyPrivacy(store)
+        return
+    }
+    await runPostHydrationServices(store, flushPersistedState)
 }
 
 const moveLegacySecrets = async (store: AppStore): Promise<boolean> => {
@@ -90,6 +126,8 @@ const showStartupError = async (error: unknown): Promise<void> => {
 }
 
 export const mountHydratedApp = async (): Promise<void> => {
+    staleSnapshotHandled = false
+    setStaleSnapshotHandler(handleStaleSnapshot)
     try {
         if (!(await takeWriterRole())) return
 
@@ -101,9 +139,9 @@ export const mountHydratedApp = async (): Promise<void> => {
         const secretsMoved = await moveLegacySecrets(hydratedStore)
         await startCrdtLayer(hydratedStore)
 
-        const flushPersistedState = setupPersistedStateSync(hydratedStore)
+        const flushPersistedState = setupPersistedStateSync(hydratedStore, handleStaleSnapshot)
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
-        await runPostHydrationServices(hydratedStore, flushPersistedState)
+        await runServicesUnlessStale(hydratedStore, flushPersistedState)
     } catch (error) {
         await showStartupError(error)
     }

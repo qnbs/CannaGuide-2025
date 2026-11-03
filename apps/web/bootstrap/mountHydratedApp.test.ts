@@ -1,8 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
-import { renderError, renderOtherTabNotice } from './render'
+import { renderError, renderOtherTabNotice, renderStaleTabNotice } from './render'
 import { hydrateApplicationStores } from './store'
+import { disableSentry } from '@/services/sentryService'
+import { setStaleSnapshotHandler } from '@/stores/snapshotRevision'
+import { setupPersistedStateSync } from './persistence'
+import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
+import { runPostHydrationServices } from './postHydration'
 import { registerRecoveryListeners } from './recovery'
 import {
     claimWriterRole,
@@ -18,7 +23,11 @@ const order: string[] = []
 
 vi.mock('@/i18n', () => ({ i18nPromise: Promise.resolve() }))
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
-vi.mock('./render', () => ({ renderError: vi.fn(), renderOtherTabNotice: vi.fn() }))
+vi.mock('./render', () => ({
+    renderError: vi.fn(),
+    renderOtherTabNotice: vi.fn(),
+    renderStaleTabNotice: vi.fn(),
+}))
 vi.mock('./writerOwnership', () => ({
     claimWriterRole: vi.fn((): Promise<WriterRole> => Promise.resolve('writer')),
     waitForWriterRole: vi.fn(),
@@ -39,6 +48,11 @@ vi.mock('./postHydration', () => ({
     runPostHydrationServices: vi.fn(() => {
         order.push('services')
     }),
+}))
+vi.mock('@/stores/snapshotRevision', () => ({ setStaleSnapshotHandler: vi.fn() }))
+vi.mock('@/services/sentryService', () => ({ disableSentry: vi.fn() }))
+vi.mock('./localOnlyPrivacy', () => ({
+    applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
 }))
 vi.mock('./secrets', () => ({
     migrateLegacySecrets: vi.fn(),
@@ -193,4 +207,64 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
             expect(watchForCacheRestore).not.toHaveBeenCalled()
         },
     )
+
+    it('stops saving, gives the role up and asks for a reload when a save is refused as stale', async () => {
+        const reload = vi.fn()
+        vi.stubGlobal('location', { reload })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+        await mountHydratedApp()
+        const onStale = vi.mocked(setupPersistedStateSync).mock.calls[0]?.[1]
+        order.length = 0
+
+        onStale?.()
+        onStale?.()
+
+        expect(order).toEqual(['stop', 'release'])
+        expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        vi.mocked(renderStaleTabNotice).mock.calls[0]?.[0]()
+        expect(reload).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
+    })
+
+    it('starts no services on a page whose save was refused as stale', async () => {
+        vi.stubGlobal('location', { reload: vi.fn() })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(true)
+        vi.mocked(setupPersistedStateSync).mockImplementationOnce((_store, onStale) => () => {
+            onStale?.()
+            return Promise.resolve(false)
+        })
+
+        await mountHydratedApp()
+
+        expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        expect(runPostHydrationServices).not.toHaveBeenCalled()
+        // The privacy setting still reaches Sentry on the stale page.
+        expect(applyLocalOnlyPrivacy).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
+    })
+
+    it('starts the services again on the next start after a stale one', async () => {
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+
+        expect(runPostHydrationServices).toHaveBeenCalledOnce()
+        expect(applyLocalOnlyPrivacy).not.toHaveBeenCalled()
+    })
+
+    it('registers the stale handler for writes that have no caller to handle them', async () => {
+        vi.stubGlobal('location', { reload: vi.fn() })
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+        await mountHydratedApp()
+        const handler = vi.mocked(setStaleSnapshotHandler).mock.calls[0]?.[0]
+        order.length = 0
+
+        handler?.()
+
+        expect(order).toEqual(['stop', 'release'])
+        expect(renderStaleTabNotice).toHaveBeenCalledOnce()
+        // The stale page may hold older settings than another tab: no error reports.
+        expect(disableSentry).toHaveBeenCalledOnce()
+        vi.unstubAllGlobals()
+    })
 })

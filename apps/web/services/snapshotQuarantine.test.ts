@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
     getItem: vi.fn(),
     setItem: vi.fn(),
     removeItem: vi.fn(),
+    removalApplies: vi.fn(() => true),
 }))
 
 vi.mock('@/bootstrap/persistenceCoordinator', () => ({
@@ -17,6 +18,15 @@ vi.mock('@/stores/indexedDBStorage', () => ({
         getItem: mocks.getItem,
         setItem: mocks.setItem,
         removeItem: mocks.removeItem,
+    },
+}))
+// The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
+// stands for the removal of the primary.
+vi.mock('@/stores/snapshotRevision', () => ({
+    removeSnapshotIfCurrent: () => {
+        const applies = mocks.removalApplies()
+        if (applies) mocks.removeItem('primary')
+        return Promise.resolve(applies)
     },
 }))
 vi.mock('@/constants', () => ({
@@ -203,6 +213,15 @@ describe('discardUnreadablePrimarySnapshot', () => {
         await expect(discardUnreadablePrimarySnapshot('{"second":true}')).resolves.toBe(true)
 
         expect(mocks.removeItem).toHaveBeenCalledWith('primary')
+    })
+
+    it('keeps the primary when another tab saved since the page read the revision', async () => {
+        useMemoryStorage({ primary: '{"version":5}' })
+        mocks.removalApplies.mockReturnValueOnce(false)
+
+        await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(false)
+
+        expect(mocks.removeItem).not.toHaveBeenCalled()
     })
 
     it('keeps the primary when there is no snapshot that proves what it holds', async () => {

@@ -13,6 +13,7 @@ import { aiProviderService } from '@/services/aiProviderService'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { redactSettingsSecrets } from '@/utils/redactSecrets'
+import { stopPersistenceForOwnershipLoss } from '@/bootstrap/persistenceCoordinator'
 import {
     removePrimaryPersistedSnapshot,
     updatePrimaryPersistedSnapshot,
@@ -266,6 +267,8 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     await aiProviderService.clearAllProviderApiKeys()
     await cloudTtsKeyService.clearApiKey()
     await porcupineKeyService.clearApiKey()
+    // Without this the pagehide save of the reload could write the old state back.
+    await stopPersistenceForOwnershipLoss()
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })
@@ -282,6 +285,8 @@ export const resetSliceData = createAsyncThunk<void, VersionedSliceName>(
             delete state[sliceName]
         })
         if (!stateUpdated) throw new Error('Slice reset was blocked by safe recovery.')
+        // Without this the pagehide save of the reload could write the slice back.
+        await stopPersistenceForOwnershipLoss()
         window.location.reload()
     },
 )

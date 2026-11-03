@@ -239,6 +239,12 @@ export const common = {
             'CannaGuide ist bereits in einem anderen Tab oder Fenster geöffnet. Nur eines kann deine Daten speichern; dieses ist angehalten, damit sich beide nicht gegenseitig überschreiben. Schließe den anderen Tab, dann lädt sich dieser selbst neu, oder lade ihn manuell neu.',
         reload: 'Neu laden',
     },
+    staleTab: {
+        title: 'In einem anderen Tab geändert',
+        description:
+            'Die gespeicherten Daten wurden von einem anderen Tab oder Fenster geändert, nachdem dieses geladen wurde. Diese Seite ist veraltet und speichert nicht mehr, damit die neueren Daten erhalten bleiben. Lade neu, um mit den aktuellen Daten weiterzumachen. Änderungen, die du in diesem Tab seit dem Laden gemacht hast, wurden nicht gespeichert und gehen beim Neuladen verloren.',
+        reload: 'Neu laden',
+    },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
         description:

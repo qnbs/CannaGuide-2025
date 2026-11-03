@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
     getItem: vi.fn(),
     setItem: vi.fn(),
     removeItem: vi.fn(),
+    continueSaving: vi.fn(),
     captureException: vi.fn(),
     migrateSnapshot: vi.fn(),
 }))
@@ -13,6 +14,17 @@ vi.mock('@/stores/indexedDBStorage', () => ({
         getItem: mocks.getItem,
         setItem: mocks.setItem,
         removeItem: mocks.removeItem,
+    },
+}))
+
+// The real replaceSnapshot is tested in stores/snapshotRevision.test.ts; here it
+// stands for the primary write, in the order the protocol needs.
+vi.mock('@/stores/snapshotRevision', () => ({
+    replaceSnapshot: (value: string | null, continueSaving?: boolean) => {
+        mocks.continueSaving(continueSaving)
+        return value === null
+            ? mocks.removeItem('test-state-key')
+            : mocks.setItem('test-state-key', value)
     },
 }))
 
@@ -145,6 +157,9 @@ describe('triggerSafeRecovery', () => {
 
         expect(mocks.setItem).toHaveBeenNthCalledWith(2, PRIMARY_KEY, backup)
         expect(mocks.setItem).toHaveBeenNthCalledWith(3, PRIMARY_KEY, primary)
+        // The restore itself ends in a reload and does not follow the new revision;
+        // the rollback keeps this page running, so it does.
+        expect(mocks.continueSaving.mock.calls).toEqual([[undefined], [true]])
         expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBeNull()
     })
 

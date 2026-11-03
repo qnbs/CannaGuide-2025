@@ -1,4 +1,5 @@
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { replaceSnapshot } from '@/stores/snapshotRevision'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY, REDUX_STATE_ROLLBACK_KEY } from '@/constants'
 import { Sentry } from '@/services/sentryService'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
@@ -80,7 +81,7 @@ export const triggerSafeRecovery = async (
                 }
 
                 primarySnapshotChanged = true
-                await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedBackupSnapshot)
+                await replaceSnapshot(migratedBackupSnapshot)
                 const restoredSnapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
                 if (restoredSnapshot !== migratedBackupSnapshot) {
                     throw new Error('Backup snapshot verification failed after restore.')
@@ -97,10 +98,12 @@ export const triggerSafeRecovery = async (
                 let rollbackSucceeded = !primarySnapshotChanged
                 if (primarySnapshotChanged) {
                     try {
+                        // This page keeps running after a rolled-back recovery, so it
+                        // follows the new revision and its next save is not refused.
                         if (originalSnapshot === null) {
-                            await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+                            await replaceSnapshot(null, true)
                         } else {
-                            await indexedDBStorage.setItem(REDUX_STATE_KEY, originalSnapshot)
+                            await replaceSnapshot(originalSnapshot, true)
                         }
                         rollbackSucceeded = true
                     } catch (rollbackError) {

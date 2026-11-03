@@ -110,7 +110,98 @@ export const releaseIndexedDBStorageAfterErase = (): void => {
     dbEraseHold = false
 }
 
-export const indexedDBStorage: StateStorage = {
+/** The token in a stored value, or null when there is none. */
+const revisionOf = (stored: unknown): string | null =>
+    typeof stored === 'string' && stored !== '' ? stored : null
+
+/** Puts `value` under `name`, or deletes `name` when the value is null. */
+const putOrDelete = (store: IDBObjectStore, name: string, value: string | null): void => {
+    if (value === null) store.delete(name)
+    else store.put(value, name)
+}
+
+/**
+ * Writes `value` under `name` and `next` under `revisionName`, but only while
+ * the stored revision is still `expected` (null: none stored; a page
+ * never expects that, see stores/snapshotRevision.ts). Reading the
+ * revision and both writes are one readwrite transaction, which IndexedDB
+ * serializes across tabs, so of two overlapping saves exactly one is applied.
+ * Resolves to whether it was applied.
+ */
+const putIfRevision = async (
+    name: string,
+    value: string,
+    revisionName: string,
+    expected: string | null,
+    next: string,
+): Promise<boolean> => {
+    const conn = await openDB()
+    return new Promise<boolean>((resolve, reject) => {
+        const transaction = conn.transaction(STORE_NAME, 'readwrite')
+        const store = transaction.objectStore(STORE_NAME)
+        let applied = false
+
+        const read = store.get(revisionName)
+        read.onsuccess = () => {
+            if (revisionOf(read.result) !== expected) return
+            store.put(value, name)
+            store.put(next, revisionName)
+            applied = true
+        }
+        read.onerror = () => reject(read.error)
+
+        transaction.oncomplete = () => resolve(applied)
+        transaction.onerror = () => reject(transaction.error)
+        transaction.onabort = () => reject(transaction.error ?? new Error('Transaction aborted'))
+    })
+}
+
+/**
+ * Replaces `name` with `value` (null: removes it) and stores `next` as the new
+ * revision, in one transaction, whatever the stored revision is. For deliberate
+ * replacements (import, restore, repair, reset): a tab that still holds the
+ * old revision is then refused at its next save instead of overwriting them.
+ * Resolves to whether the stored revision was `expected` before the replacement,
+ * so a caller can tell whether its page was up to date. With `onlyIfExpected`, a
+ * stored revision other than `expected` leaves everything untouched.
+ */
+const replaceRotatingRevision = async (
+    name: string,
+    value: string | null,
+    revisionName: string,
+    next: string,
+    expected: string | null,
+    onlyIfExpected = false,
+): Promise<boolean> => {
+    const conn = await openDB()
+    return new Promise<boolean>((resolve, reject) => {
+        const transaction = conn.transaction(STORE_NAME, 'readwrite')
+        const store = transaction.objectStore(STORE_NAME)
+        let wasCurrent = false
+
+        const read = store.get(revisionName)
+        read.onsuccess = () => {
+            wasCurrent = revisionOf(read.result) === expected
+            if (onlyIfExpected && !wasCurrent) return
+            putOrDelete(store, name, value)
+            store.put(next, revisionName)
+        }
+        read.onerror = () => reject(read.error)
+
+        transaction.oncomplete = () => resolve(wasCurrent)
+        transaction.onerror = () => reject(transaction.error)
+        transaction.onabort = () => reject(transaction.error ?? new Error('Transaction aborted'))
+    })
+}
+
+export type RevisionedStateStorage = StateStorage & {
+    setItemIfRevision: typeof putIfRevision
+    replaceItemRotatingRevision: typeof replaceRotatingRevision
+}
+
+export const indexedDBStorage: RevisionedStateStorage = {
+    setItemIfRevision: putIfRevision,
+    replaceItemRotatingRevision: replaceRotatingRevision,
     getItem: async (name: string): Promise<string | null> => {
         const result = await performTx('readonly', (store) => store.get(name))
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- IDB returns unknown

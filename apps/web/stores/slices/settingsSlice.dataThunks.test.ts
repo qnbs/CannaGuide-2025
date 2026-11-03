@@ -1,11 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice'
+import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { removePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { stopPersistenceForOwnershipLoss } from '@/bootstrap/persistenceCoordinator'
+import {
+    removePrimaryPersistedSnapshot,
+    updatePrimaryPersistedSnapshot,
+} from '@/services/persistedStateService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { removeItem: vi.fn(async () => undefined) },
+}))
+vi.mock('@/bootstrap/persistenceCoordinator', () => ({
+    stopPersistenceForOwnershipLoss: vi.fn(() => Promise.resolve()),
 }))
 vi.mock('@/services/persistedStateService', () => ({
     removePrimaryPersistedSnapshot: vi.fn(async () => true),
@@ -46,7 +53,24 @@ describe('resetAllData (#711 review)', () => {
             ]),
         )
         expect(porcupineKeyService.clearApiKey).toHaveBeenCalled()
+        expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
+            reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
         expect(reload).toHaveBeenCalled()
+    })
+
+    it('stops this page saving before a slice reset reloads it (#669)', async () => {
+        vi.mocked(updatePrimaryPersistedSnapshot).mockResolvedValueOnce(true)
+
+        const result = await resetSliceData('notes')(vi.fn(), () => ({}), null)
+
+        expect(result.meta.requestStatus).toBe('fulfilled')
+        expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(reload).toHaveBeenCalledOnce()
+        expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
+            reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
     })
 
     it('keeps every copy when safe recovery blocks the reset', async () => {
@@ -54,6 +78,7 @@ describe('resetAllData (#711 review)', () => {
         const result = await runReset()
         expect(result.meta.requestStatus).toBe('rejected')
         expect(indexedDBStorage.removeItem).not.toHaveBeenCalled()
+        expect(stopPersistenceForOwnershipLoss).not.toHaveBeenCalled()
         expect(reload).not.toHaveBeenCalled()
     })
 })

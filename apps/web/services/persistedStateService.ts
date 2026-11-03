@@ -1,4 +1,3 @@
-import { REDUX_STATE_KEY } from '@/constants'
 import {
     commitRecoveryEpoch,
     runWithExclusiveRecoveryLock,
@@ -6,7 +5,7 @@ import {
     suspendPersistenceForRecovery,
 } from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
-import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { repairSnapshot, replaceSnapshot, updateSnapshot } from '@/stores/snapshotRevision'
 
 export interface RecoverySnapshotReplacementResult {
     success: boolean
@@ -31,12 +30,22 @@ export interface DependentStoreWrite {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
-/** Validate, migrate, and atomically replace the primary Redux snapshot. */
-export const replacePrimaryPersistedSnapshot = async (snapshot: string): Promise<boolean> => {
+/**
+ * Validate, migrate, and atomically replace the primary Redux snapshot. Callers
+ * reload afterwards, except the repair at start (`continueSaving`).
+ */
+export const replacePrimaryPersistedSnapshot = async (
+    snapshot: string,
+    continueSaving = false,
+): Promise<boolean> => {
     const migratedSnapshot = migratePersistedSnapshot(snapshot)
-    return schedulePersistenceWrite(async () => {
-        await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
+    const replaced = await schedulePersistenceWrite(async () => {
+        // The repair at start keeps this page running and must not replace a save another
+        // tab made since the page read the revision; the other callers reload.
+        if (continueSaving) await repairSnapshot(migratedSnapshot)
+        else await replaceSnapshot(migratedSnapshot)
     })
+    return replaced
 }
 
 /** Replace a snapshot and any dependent stores while stale persistence is fenced. */
@@ -58,7 +67,7 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
             try {
                 await dependentWrite?.apply()
                 dependentApplied = true
-                await indexedDBStorage.setItem(REDUX_STATE_KEY, migratedSnapshot)
+                await replaceSnapshot(migratedSnapshot)
                 primaryReplaced = true
                 if (!commitRecoveryEpoch()) {
                     throw new Error('Could not commit the cross-tab restore fence.')
@@ -99,7 +108,7 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
 /** Repair a corrupt primary from backup without treating a fenced/failed write as success. */
 export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promise<boolean> => {
     try {
-        const repaired = await replacePrimaryPersistedSnapshot(snapshot)
+        const repaired = await replacePrimaryPersistedSnapshot(snapshot, true)
         if (!repaired) {
             console.debug('[Store] Primary snapshot repair was fenced by recovery.')
         }
@@ -111,29 +120,35 @@ export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promi
 }
 
 /** Remove the primary snapshot without racing recovery or another writer. */
-export const removePrimaryPersistedSnapshot = async (): Promise<boolean> =>
-    schedulePersistenceWrite(async () => {
-        await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+export const removePrimaryPersistedSnapshot = async (): Promise<boolean> => {
+    const removed = await schedulePersistenceWrite(async () => {
+        await replaceSnapshot(null)
     })
+    return removed
+}
 
-/** Read-modify-write the primary snapshot while holding the shared persistence lock. */
+/**
+ * Read-modify-write the primary snapshot while holding the shared persistence lock.
+ * A save by another tab between the read and the write makes it throw
+ * StaleSnapshotError instead of overwriting that save.
+ */
 export const updatePrimaryPersistedSnapshot = async (
     update: (state: Record<string, unknown>) => void,
-): Promise<boolean> =>
-    schedulePersistenceWrite(async () => {
-        const snapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-        if (!snapshot) return
+): Promise<boolean> => {
+    const updated = await schedulePersistenceWrite(async () => {
+        await updateSnapshot((snapshot) => {
+            if (!snapshot) return null
 
-        const state: unknown = JSON.parse(snapshot)
-        if (!isRecord(state)) {
-            throw new TypeError('Persisted state must be an object.')
-        }
-        // Apply the narrow repair to the raw top-level snapshot first. This lets
-        // a caller remove the corrupt slice that would otherwise make canonical
-        // migration fail before the repair callback could run.
-        update(state)
-        await indexedDBStorage.setItem(
-            REDUX_STATE_KEY,
-            migratePersistedSnapshot(JSON.stringify(state)),
-        )
+            const state: unknown = JSON.parse(snapshot)
+            if (!isRecord(state)) {
+                throw new TypeError('Persisted state must be an object.')
+            }
+            // Apply the narrow repair to the raw top-level snapshot first. This lets
+            // a caller remove the corrupt slice that would otherwise make canonical
+            // migration fail before the repair callback could run.
+            update(state)
+            return migratePersistedSnapshot(JSON.stringify(state))
+        })
     })
+    return updated
+}

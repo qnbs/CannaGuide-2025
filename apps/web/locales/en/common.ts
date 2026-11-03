@@ -235,6 +235,12 @@ export const common = {
             'CannaGuide is already open in another tab or window. Only one can save your data, so this one is paused to keep both from overwriting each other. Close the other tab and this one reloads itself, or reload it manually.',
         reload: 'Reload',
     },
+    staleTab: {
+        title: 'Changed in another tab',
+        description:
+            'The saved data was changed by another tab or window after this one loaded, so this page is out of date and has stopped saving to keep that newer data safe. Reload to continue with the latest data. Edits made in this tab since it loaded are not saved and are lost when you reload.',
+        reload: 'Reload',
+    },
     errorBoundary: {
         title: 'Something went wrong.',
         description:

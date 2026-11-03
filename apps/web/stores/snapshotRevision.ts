@@ -178,7 +178,15 @@ export const updateSnapshot = async (
     const expected = await indexedDBStorage.getItem(REDUX_STATE_REVISION_KEY)
     const current = await indexedDBStorage.getItem(REDUX_STATE_KEY)
     const updated = await update(current)
-    if (updated === null) return
+    if (updated === null) {
+        // Nothing to write, but a save another tab made meanwhile means the caller's
+        // answer ('nothing to change') is out of date: do not report success.
+        if ((await indexedDBStorage.getItem(REDUX_STATE_REVISION_KEY)) !== expected) {
+            onStaleSnapshot?.()
+            throw new StaleSnapshotError()
+        }
+        return
+    }
 
     const applied = await indexedDBStorage.setItemIfRevision(
         REDUX_STATE_KEY,

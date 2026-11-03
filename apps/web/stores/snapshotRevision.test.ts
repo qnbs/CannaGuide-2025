@@ -359,6 +359,23 @@ describe('snapshot revision (GH #669)', () => {
         await expect(tab.storage.getItem(REDUX_STATE_REVISION_KEY)).resolves.toBe(revisionBefore)
     })
 
+    it('does not report success for an update with nothing to change when another tab saved meanwhile', async () => {
+        const updating = await openTab()
+        const other = await openTab()
+        const onStale = vi.fn()
+        updating.revision.setStaleSnapshotHandler(onStale)
+        await updating.revision.rememberStoredRevision()
+        await other.revision.rememberStoredRevision()
+
+        await expect(
+            updating.revision.updateSnapshot(async () => {
+                await other.revision.writeSnapshot('saved in between')
+                return null
+            }),
+        ).rejects.toMatchObject({ name: 'StaleSnapshotError' })
+        expect(onStale).toHaveBeenCalledOnce()
+    })
+
     it('tells the page when an update is refused, so it can stop and ask for a reload', async () => {
         const updating = await openTab()
         const other = await openTab()

@@ -48,6 +48,8 @@ export const settingsView = {
         saveError: 'API-Key konnte nicht gespeichert werden.',
         testError:
             'API-Key-Prüfung fehlgeschlagen. Bitte prüfe Gültigkeit und Berechtigungen des Keys.',
+        testBlockedLocalOnly:
+            'Der Nur-Lokal-Modus ist aktiv, deshalb wird der Schlüsseltest nicht gesendet. Deaktiviere den Nur-Lokal-Modus, um den Schlüssel zu testen.',
         clearError: 'API-Key konnte nicht entfernt werden.',
         usageToday:
             'Heute: {{requests}} Anfragen, ~{{tokens}} Token geschätzt, {{remaining}} Anfragen verbleibend (pro Minute).',

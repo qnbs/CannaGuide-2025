@@ -1,6 +1,7 @@
 import { GEMINI_API_KEY_STORAGE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { encrypt, decrypt, isEncryptedPayload, ensureEncrypted } from '@/services/cryptoService'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 const GEMINI_API_KEY_PATTERN = /^AIza[0-9A-Za-z_-]{20,}$/
 const GEMINI_API_KEY_METADATA_KEY = 'cg.gemini.apiKey.meta.v1'
@@ -105,6 +106,11 @@ export const apiKeyService = {
         const normalized = normalizeApiKey(apiKey)
         if (!this.isValidApiKeyFormat(normalized)) {
             throw new Error('settingsView.security.invalid')
+        }
+        // The Gemini SDK sends its own requests, outside the egress gate
+        // (services/net/egress.ts): refuse here, before it is even loaded.
+        if (isLocalOnlyMode()) {
+            throw new Error('settingsView.security.testBlockedLocalOnly')
         }
 
         try {

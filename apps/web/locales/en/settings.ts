@@ -45,6 +45,8 @@ export const settingsView = {
         loadError: 'Could not load API key status.',
         saveError: 'Could not save API key.',
         testError: 'API key validation failed. Please check key validity and permissions.',
+        testBlockedLocalOnly:
+            'Local-Only Mode is on, so the key test is not sent. Turn Local-Only Mode off to test the key.',
         clearError: 'Could not remove API key.',
         usageToday:
             'Today: {{requests}} requests, ~{{tokens}} tokens estimated, {{remaining}} requests remaining (per minute).',

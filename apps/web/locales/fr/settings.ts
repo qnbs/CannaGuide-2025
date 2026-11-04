@@ -49,6 +49,8 @@ export const settingsView = {
         saveError: "Impossible d'enregistrer la cle API.",
         testError:
             'La validation de la cle API a echoue. Veuillez verifier la validite et les permissions de la cle.',
+        testBlockedLocalOnly:
+            "Le mode local uniquement est actif : le test de la cl\u00E9 n'est donc pas envoy\u00E9. D\u00E9sactivez le mode local uniquement pour tester la cl\u00E9.",
         clearError: 'Impossible de supprimer la cle API.',
         usageToday:
             "Aujourd'hui : {{requests}} requetes, ~{{tokens}} tokens estimes, {{remaining}} requetes restantes (par minute).",

@@ -47,6 +47,8 @@ export const settingsView = {
         saveError: 'Kon de API-sleutel niet opslaan.',
         testError:
             'Validatie van de API-sleutel mislukt. Controleer de geldigheid en machtigingen.',
+        testBlockedLocalOnly:
+            'De alleen-lokaal-modus staat aan, dus de sleuteltest wordt niet verstuurd. Zet de alleen-lokaal-modus uit om de sleutel te testen.',
         clearError: 'Kon de API-sleutel niet verwijderen.',
         usageToday:
             'Vandaag: {{requests}} verzoeken, ~{{tokens}} tokens geschat, {{remaining}} verzoeken resterend (per minuut).',

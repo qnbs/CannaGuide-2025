@@ -49,6 +49,8 @@ export const settingsView = {
         saveError: 'No se pudo guardar la clave API.',
         testError:
             'La validacion de la clave API fallo. Por favor verifica la validez y los permisos de la clave.',
+        testBlockedLocalOnly:
+            'El Modo Solo Local est\u00E1 activo, as\u00ED que la prueba de la clave no se env\u00EDa. Desactiva el Modo Solo Local para probar la clave.',
         clearError: 'No se pudo eliminar la clave API.',
         usageToday:
             'Hoy: {{requests}} solicitudes, ~{{tokens}} tokens estimados, {{remaining}} solicitudes restantes (por minuto).',

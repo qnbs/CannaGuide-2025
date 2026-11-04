@@ -241,7 +241,9 @@ const raisedByOrder = (now, before) => {
  * as many findings as at the base, they are the same functions in the same
  * order, so each is compared with its counterpart -- two `render` methods, or
  * two inline callbacks, cannot cancel each other out. When the number changed,
- * a function was added or removed, and only the values can be compared.
+ * a function was added or removed, and only the values can be compared: a
+ * function that got worse can then pair with a removed one's higher value and
+ * go unreported. That is a known limit of this partial check, not a gate.
  */
 const raisedInGroup = (now, before) =>
     now.length === before.length ? raisedByOrder(now, before) : raisedByValue(now, before)
@@ -284,17 +286,34 @@ const lintText = async (linter, text, file) => {
 export const baselinePath = (entry) =>
     isSkippedPath(entry.basePath) && !isSkippedPath(entry.file) ? null : entry.basePath
 
-/** The file at the merge base, or an empty text when it is new there. */
-const baseText = (base, file) => {
-    if (file === null) return ''
+const gitQuiet = (args) =>
+    execFileSync('git', args, {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+    })
+
+const existsAtBase = (base, file) => {
     try {
-        return execFileSync('git', ['show', `${base}:${file}`], {
-            cwd: repoRoot,
-            encoding: 'utf8',
-            stdio: ['ignore', 'pipe', 'ignore'],
-        })
+        gitQuiet(['cat-file', '-e', `${base}:${file}`])
+        return true
     } catch {
-        return ''
+        return false
+    }
+}
+
+/**
+ * The file at the merge base, or an empty text when it is new there. A file
+ * that exists at the base but cannot be read (an object missing from a partial
+ * clone) is an error: reading it as new would report all its findings as
+ * introduced.
+ */
+const baseText = (base, file) => {
+    if (file === null || !existsAtBase(base, file)) return ''
+    try {
+        return gitQuiet(['show', `${base}:${file}`])
+    } catch {
+        throw new Error(`cannot read ${file} at the merge base: fetch the missing objects`)
     }
 }
 

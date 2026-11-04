@@ -12,6 +12,41 @@ import {
     type ArchivedJournalMap,
 } from './types'
 
+/**
+ * Adds to a plant's archive only the entries it does not hold yet, by id,
+ * oldest first, within the cap (GH #668).
+ *
+ * Every save trims only the copy it writes: the store keeps the full journal,
+ * so the next save hands over the same overflow again. Appending it each time
+ * filled the archive with copies, and the cap then pushed distinct older
+ * entries out. Merging by id makes repeated saves of the same state a no-op.
+ */
+/** The entries of `incoming` the archive does not hold yet, by id. */
+const newEntries = (
+    current: readonly JournalEntry[],
+    incoming: readonly JournalEntry[],
+): JournalEntry[] => {
+    const known = new Set(current.map((entry) => entry.id))
+    return incoming.filter((entry) => !known.has(entry.id))
+}
+
+/** The archive with this save's new overflow merged in, or null when nothing is new. */
+const mergeArchive = (
+    existing: ArchivedJournalMap,
+    archivedByPlant: ArchivedJournalMap,
+): ArchivedJournalMap | null => {
+    const merged: ArchivedJournalMap = { ...existing }
+    let changed = false
+    for (const [plantId, entries] of Object.entries(archivedByPlant)) {
+        const current = merged[plantId] ?? []
+        const added = newEntries(current, entries)
+        if (added.length === 0) continue
+        changed = true
+        merged[plantId] = [...current, ...added].slice(-MAX_ARCHIVED_LOGS_PER_PLANT)
+    }
+    return changed ? merged : null
+}
+
 export const simulationPersistence = {
     async optimizeSimulationForPersistence(
         simulationState: SimulationState,
@@ -53,15 +88,11 @@ export const simulationPersistence = {
             const existingArchive =
                 (await metadataStore.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ??
                 {}
-            const mergedArchive: ArchivedJournalMap = { ...existingArchive }
-
-            Object.entries(archivedByPlant).forEach(([plantId, entries]) => {
-                const current = mergedArchive[plantId] ?? []
-                const combined = [...current, ...entries]
-                mergedArchive[plantId] = combined.slice(-MAX_ARCHIVED_LOGS_PER_PLANT)
-            })
-
-            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, mergedArchive)
+            const mergedArchive = mergeArchive(existingArchive, archivedByPlant)
+            // The same overflow as last time: nothing to write.
+            if (mergedArchive) {
+                await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, mergedArchive)
+            }
         }
 
         if (!hasChanges) {

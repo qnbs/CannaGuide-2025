@@ -98,8 +98,6 @@ export const HydroMonitorView: React.FC = memo(() => {
                     label={t('equipmentView.hydroMonitoring.gauges.readings')}
                     value={readings.length > 0 ? readings.length : undefined}
                     unit="#"
-                    min={0}
-                    max={168}
                     decimals={0}
                 />
             </div>

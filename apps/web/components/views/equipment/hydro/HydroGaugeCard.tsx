@@ -5,15 +5,27 @@ export interface HydroGaugeCardProps {
     label: string
     value: number | undefined
     unit: string
-    min: number
-    max: number
+    /** The healthy range; a plain count (the number of readings) has none. */
+    min?: number
+    max?: number
     decimals?: number | undefined
+}
+
+type GaugeStatus = 'ok' | 'low' | 'high' | 'unknown'
+
+/** Low or high only against a range; a value without one is just shown. */
+const statusOf = (value: number | undefined, min?: number, max?: number): GaugeStatus => {
+    if (value === undefined) return 'unknown'
+    if (min !== undefined && value < min) return 'low'
+    if (max !== undefined && value > max) return 'high'
+    return 'ok'
 }
 
 export const HydroGaugeCard: React.FC<HydroGaugeCardProps> = memo(
     ({ label, value, unit, min, max, decimals = 1 }) => {
-        const status =
-            value === undefined ? 'unknown' : value < min ? 'low' : value > max ? 'high' : 'ok'
+        const status = statusOf(value, min, max)
+        const range =
+            min !== undefined && max !== undefined ? ` (${String(min)}-${String(max)})` : ''
 
         const colorMap = {
             ok: 'ring-emerald-400/30 bg-emerald-500/10',
@@ -41,7 +53,8 @@ export const HydroGaugeCard: React.FC<HydroGaugeCardProps> = memo(
                     {value !== undefined ? value.toFixed(decimals) : '--'}
                 </p>
                 <p className="text-xs text-muted">
-                    {unit} ({min}-{max})
+                    {unit}
+                    {range}
                 </p>
             </div>
         )

@@ -143,7 +143,10 @@ function readingsToInput(readings: HydroReading[]): Float32Array {
 function detectTrend(readings: HydroReading[]): HydroForecastTrend {
     if (readings.length < MIN_READINGS) return 'stable'
 
-    const sorted = [...readings].sort((a, b) => a.timestamp - b.timestamp)
+    // The current trend is about the latest readings, the same window the model
+    // sees: the whole history is kept now (GH #686), and months-old values in the
+    // first half would otherwise turn a stable recent series into a "trend".
+    const sorted = [...readings].sort((a, b) => a.timestamp - b.timestamp).slice(-WINDOW)
     const half = Math.floor(sorted.length / 2)
 
     const firstHalf = sorted.slice(0, half)

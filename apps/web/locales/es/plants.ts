@@ -972,11 +972,11 @@ export const plantsView = {
         selectMedium: 'Seleccionar medio de cultivo',
         alreadyScheduled: 'Las tareas de esta fase ya est\u00E1n en el planificador.',
         plannerFull:
-            'Algunas tareas generadas no se a\u00F1adieron: solo se a\u00F1aden mientras el planificador tiene menos de {{max}} tareas abiertas, y las tareas abiertas nunca se eliminan para hacer sitio. Completa o elimina tareas para hacer sitio.',
+            'Algunas tareas generadas no se a\u00F1adieron: solo se a\u00F1aden mientras el planificador tiene menos de {{max}} tareas, y nunca se elimina ninguna tarea para hacer sitio. Elimina las tareas que ya no necesites y vuelve a planificar.',
         otherSchedule_one:
-            'No se a\u00F1adi\u00F3 nada: {{count}} tarea abierta de esta fase proviene de otro plan. Elim\u00EDnala y vuelve a planificar.',
+            'No se a\u00F1adi\u00F3 nada: {{count}} tarea abierta de esta fase proviene de otro plan o de uno anterior. Elim\u00EDnala y vuelve a planificar.',
         otherSchedule_other:
-            'No se a\u00F1adi\u00F3 nada: {{count}} tareas abiertas de esta fase provienen de otro plan. Elim\u00EDnalas y vuelve a planificar.',
+            'No se a\u00F1adi\u00F3 nada: {{count}} tareas abiertas de esta fase provienen de otro plan o de uno anterior. Elim\u00EDnalas y vuelve a planificar.',
         stageStartUnknown:
             'El inicio de esta fase no se registr\u00F3, as\u00ED que las tareas se planifican a partir de hoy.',
     },

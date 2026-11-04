@@ -4,9 +4,7 @@ import type { GrowPlannerState, PlannerTask } from '@/types'
 
 import {
     MAX_TASKS,
-    evictionsFor,
     planNewTasks,
-    withoutOldestCompleted,
     type GeneratedTasks,
     type GeneratedTasksPlan,
 } from './growPlannerPlan'
@@ -30,11 +28,8 @@ const growPlannerSlice = createSlice({
     initialState,
     reducers: {
         addPlannerTask(state, action: PayloadAction<PlannerTask>) {
-            // A task added by hand is always kept; at most one completed task makes room.
-            state.tasks = withoutOldestCompleted(
-                [...state.tasks, action.payload],
-                evictionsFor(state.tasks.length, 1),
-            )
+            // A task added by hand is always kept, and nothing is removed for it.
+            state.tasks.push(action.payload)
         },
         completePlannerTask(state, action: PayloadAction<{ taskId: string; completedAt: number }>) {
             const task = state.tasks.find((t) => t.id === action.payload.taskId)

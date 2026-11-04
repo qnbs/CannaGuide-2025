@@ -46,24 +46,22 @@ describe('growPlanner task cap and generated tasks (GH #659)', () => {
         expect(ids(twice.tasks)).toEqual(ids(batch.tasks))
     })
 
-    it('makes room by removing the longest-completed tasks, never an open one', () => {
+    it('never removes a completed task to make room; it refuses what does not fit', () => {
         const done = tasks(10, 'done-').map((t, index) => ({ ...t, completedAt: 100 + index }))
-        const open = tasks(MAX_TASKS - 10, 'open-')
+        const open = tasks(MAX_TASKS - 12, 'open-')
+        const existing = [...done, ...open]
 
         const next = growPlannerReducer(
-            withTasks([...done, ...open]),
-            bulkAddTasks(generated(tasks(3, 'new-'))),
+            withTasks(existing),
+            bulkAddTasks(generated(tasks(5, 'new-'))),
         )
 
-        const result = ids(next.tasks)
-        expect(result).toHaveLength(MAX_TASKS)
-        expect(result.filter((id) => id.startsWith('open-'))).toHaveLength(MAX_TASKS - 10)
-        // The three that completed first made room for the three new tasks.
-        expect(result.filter((id) => id.startsWith('done-'))).toEqual(ids(done.slice(3)))
-        expect(result.filter((id) => id.startsWith('new-'))).toHaveLength(3)
+        // 498 tasks: two new ones fit, the other three are refused.
+        expect(next.tasks.slice(0, existing.length)).toEqual(existing)
+        expect(ids(next.tasks.slice(existing.length))).toEqual(['new-0', 'new-1'])
     })
 
-    describe.each([498, 500, 502, 510])('with %i open tasks and 3 completed', (openCount) => {
+    describe.each([495, 500, 502, 510])('with %i open tasks and 3 completed', (openCount) => {
         const done = tasks(3, 'done-').map((t, index) => ({ ...t, completedAt: 10 + index }))
         const open = tasks(openCount, 'open-')
         const existing = [...done, ...open]
@@ -71,49 +69,39 @@ describe('growPlanner task cap and generated tasks (GH #659)', () => {
         it.each([0, 2, 4])('and %i new generated tasks', (freshCount) => {
             const plan = planNewTasks(existing, generated(tasks(freshCount, 'new-')))
 
-            const expectedAdded = Math.min(freshCount, Math.max(MAX_TASKS - openCount, 0))
+            const room = Math.max(MAX_TASKS - existing.length, 0)
+            const expectedAdded = Math.min(freshCount, room)
             expect(plan.added).toBe(expectedAdded)
             expect(plan.refusedForCap).toBe(freshCount - expectedAdded)
-            // No open task is ever removed.
-            expect(ids(plan.next)).toEqual(expect.arrayContaining(ids(open)))
-            // At most one completed task makes room per task added.
-            const doneKept = plan.next.filter(({ id }) => id.startsWith('done-')).length
-            expect(3 - doneKept).toBeLessThanOrEqual(plan.added)
+            // Nothing is ever removed: every existing task, open or completed, stays.
+            expect(plan.next.slice(0, existing.length)).toEqual(existing)
             if (plan.added === 0) {
-                // Nothing added: nothing changes, completed history included.
                 expect(plan.next).toBe(existing)
             }
         })
     })
 
-    it('keeps every open task when one is added by hand to a full planner', () => {
-        const open = tasks(MAX_TASKS, 'open-')
-
-        const next = growPlannerReducer(withTasks(open), addPlannerTask(task('manual')))
-
-        expect(next.tasks).toHaveLength(MAX_TASKS + 1)
-        expect(next.tasks.at(-1)?.id).toBe('manual')
-    })
-
-    it('removes one completed task, not all, when a task is added to a planner above the cap', () => {
+    it('keeps every task when one is added by hand to a full planner', () => {
         const done = tasks(20, 'done-', { completedAt: 1 })
-        const existing = [...done, ...tasks(MAX_TASKS - 10, 'open-')]
+        const existing = [...done, ...tasks(MAX_TASKS, 'open-')]
 
         const next = growPlannerReducer(withTasks(existing), addPlannerTask(task('manual')))
 
-        expect(next.tasks).toHaveLength(existing.length)
-        expect(next.tasks.some(({ id }) => id === 'manual')).toBe(true)
-        expect(next.tasks.filter(({ id }) => id.startsWith('done-'))).toHaveLength(19)
+        expect(next.tasks).toHaveLength(existing.length + 1)
+        expect(next.tasks.slice(0, existing.length)).toEqual(existing)
+        expect(next.tasks.at(-1)?.id).toBe('manual')
     })
 
-    it('never removes an open task that shares its id with a completed one', () => {
-        const open = tasks(MAX_TASKS - 1, 'open-')
+    it('keeps both rows when an open and a completed task share an id', () => {
         const twin = task('open-0', { completedAt: 1 })
+        const existing = [twin, ...tasks(MAX_TASKS, 'open-')]
 
-        const next = growPlannerReducer(withTasks([twin, ...open]), addPlannerTask(task('manual')))
+        const next = growPlannerReducer(withTasks(existing), addPlannerTask(task('manual')))
 
-        expect(next.tasks.filter(({ completedAt }) => completedAt == null)).toHaveLength(MAX_TASKS)
-        expect(next.tasks).not.toContain(twin)
+        expect(next.tasks).toContainEqual(twin)
+        expect(next.tasks.filter(({ completedAt }) => completedAt == null)).toHaveLength(
+            MAX_TASKS + 1,
+        )
     })
 
     it('reports what was added, already there and refused', () => {
@@ -304,7 +292,7 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         )
     })
 
-    it('does not join an edited row of a later run to an earlier one', () => {
+    it('keeps a later run apart from an earlier one; unrecognised, it blocks the stage', () => {
         const runs = [
             legacyWater,
             // A second press 5 s later; its only row has edited notes.
@@ -316,8 +304,9 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         ]
 
         expect(planNewTasks(runs, generated(fresh))).toMatchObject({
-            added: 2,
+            added: 0,
             alreadyScheduled: 1,
+            fromOtherSchedule: 1,
         })
     })
 
@@ -342,7 +331,11 @@ describe('tasks generated with the old random ids (GH #659)', () => {
             }),
         ]
 
-        expect(planNewTasks(otherStage, generated(fresh))).toMatchObject({ added: 3 })
+        // The stage began after that run.
+        expect(planNewTasks(otherStage, generated(fresh, SCOPE, 1_725_000_000_000))).toMatchObject({
+            added: 3,
+            fromOtherSchedule: 0,
+        })
     })
 
     describe('Seed and Seedling share the template steps', () => {
@@ -412,6 +405,36 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         const plan = planNewTasks([stable], generated([next], `auto-${digitPlant}-SEEDLING-`))
 
         expect(plan).toMatchObject({ added: 1, alreadyScheduled: 0 })
+    })
+
+    it('blocks the stage when an old run of this stage matches none of the new tasks', () => {
+        // Another template's old run, made in this stage: nothing in it matches.
+        const otherTemplate = [
+            task('auto-1730000000000-1-dddddddd', {
+                type: 'defoliate',
+                notes: 'X',
+                scheduledAt: 9,
+            }),
+            task('auto-1730000000001-2-eeeeeeee', { type: 'photo', notes: 'Y', scheduledAt: 9 }),
+        ]
+
+        const plan = planNewTasks(otherTemplate, generated(fresh))
+
+        expect(plan).toMatchObject({ added: 0, fromOtherSchedule: 2 })
+        expect(plan.next).toBe(otherTemplate)
+    })
+
+    it('does not block for an unrecognised old run of another plant or an earlier stage', () => {
+        const otherPlant = task('auto-1730000000000-1-dddddddd', {
+            plantId: 'p2',
+            type: 'defoliate',
+            notes: 'X',
+        })
+        const earlier = task('auto-1720000000000-1-ffffffff', { type: 'photo', notes: 'Y' })
+
+        expect(
+            planNewTasks([otherPlant, earlier], generated(fresh, SCOPE, 1_725_000_000_000)),
+        ).toMatchObject({ added: 3, fromOtherSchedule: 0 })
     })
 
     it('treats completed old rows as scheduled, like completed stable-id tasks', () => {

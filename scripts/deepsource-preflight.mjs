@@ -293,10 +293,14 @@ const gitQuiet = (args) =>
         stdio: ['ignore', 'pipe', 'ignore'],
     })
 
+/**
+ * Whether the base tree has the path. `ls-tree` reads only the tree, so it
+ * answers even when the blob itself is missing (a partial clone); `cat-file -e`
+ * would report a missing object as a missing path.
+ */
 const existsAtBase = (base, file) => {
     try {
-        gitQuiet(['cat-file', '-e', `${base}:${file}`])
-        return true
+        return gitQuiet(['ls-tree', '-z', base, '--', file]).length > 0
     } catch {
         return false
     }

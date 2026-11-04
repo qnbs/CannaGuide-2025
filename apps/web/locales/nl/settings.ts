@@ -697,7 +697,7 @@ export const settingsView = {
         growImportError:
             'Import mislukt. Controleer of het een geldig kweek-exportbestand (v2.0) is.',
         growImportLimit:
-            'Import geweigerd: je hebt al het maximum van {{max}} grows. Verwijder eerst een grow.',
+            'Import geweigerd: je hebt al het maximum van {{max}} kweken. Verwijder eerst een kweek.',
         growImportAlreadyPresent:
             'Import geweigerd: de planten uit dit bestand staan al in de app.',
         growImportPlantLimit:

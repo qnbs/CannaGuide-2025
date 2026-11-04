@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
+    state: {
+        simulation: {
+            plants: { entities: {}, ids: [] as string[] },
+            plantSlots: [null, null, null] as (string | null)[],
+        },
+        grows: {
+            activeGrowId: 'default-grow',
+            grows: { entities: {}, ids: [] as string[] },
+        },
+    },
     dispatch: vi.fn(),
     addNotification: vi.fn(),
     replacePrimaryPersistedSnapshot: vi.fn(),
@@ -10,17 +20,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/stores/store', () => ({
     useAppDispatch: () => mocks.dispatch,
-    useAppSelector: (selector: (state: unknown) => unknown) =>
-        selector({
-            simulation: {
-                plants: { entities: {}, ids: [] },
-                plantSlots: [null, null, null],
-            },
-            grows: {
-                activeGrowId: 'default-grow',
-                grows: { entities: {}, ids: [] },
-            },
-        }),
+    useAppSelector: (selector: (state: unknown) => unknown) => selector(mocks.state),
 }))
 
 vi.mock('react-i18next', () => ({
@@ -69,7 +69,16 @@ describe('useDataManagementActions', () => {
     beforeEach(async () => {
         vi.clearAllMocks()
         vi.resetModules()
-        mocks.dispatch.mockReturnValue({ unwrap: vi.fn().mockResolvedValue(undefined) })
+        mocks.state.grows.grows.ids = []
+        // Thunks run against the mocked state, like the real thunk middleware.
+        mocks.dispatch.mockImplementation((action: unknown) =>
+            typeof action === 'function'
+                ? (action as (d: unknown, g: () => unknown) => unknown)(
+                      mocks.dispatch,
+                      () => mocks.state,
+                  )
+                : { unwrap: vi.fn().mockResolvedValue(undefined) },
+        )
         mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
         ;({ useDataManagementActions } = await import('./useDataManagementActions'))
     })
@@ -256,8 +265,12 @@ describe('useDataManagementActions', () => {
             await waitFor(() => expect(mocks.addNotification).toHaveBeenCalled())
         }
 
-        const dispatchedTypes = (): string[] =>
-            mocks.dispatch.mock.calls.map(([action]) => (action as { type: string }).type)
+        const dispatchedActions = (): { type: string; payload: unknown }[] =>
+            mocks.dispatch.mock.calls
+                .map(([action]) => action as { type?: string; payload?: unknown })
+                .filter((action) => typeof action.type === 'string')
+                .map((action) => ({ type: String(action.type), payload: action.payload }))
+        const dispatchedTypes = (): string[] => dispatchedActions().map(({ type }) => type)
 
         it('adds the grow and every plant, then reports success', async () => {
             await importFile(await growFile(2))
@@ -280,6 +293,24 @@ describe('useDataManagementActions', () => {
                 type: 'error',
                 message: 'settingsView.data.growImportPlantLimit',
             })
+            expect(mocks.addNotification).not.toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'success' }),
+            )
+        })
+
+        it('gives the grow a new id in a profile that already has the default grow', async () => {
+            mocks.state.grows.grows.ids = ['default-grow']
+
+            await importFile(await growFile(2))
+
+            const [growAction, ...plantActions] = dispatchedActions()
+            const growId = (growAction?.payload as { id: string }).id
+            expect(growId).not.toBe('default-grow')
+            expect(
+                plantActions.map(
+                    ({ payload }) => (payload as { plant: { growId: string } }).plant.growId,
+                ),
+            ).toEqual([growId, growId])
         })
     })
 })

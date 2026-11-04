@@ -2,6 +2,9 @@ import { z } from 'zod'
 import { MAX_GROWS } from '@/constants'
 import { PlantStage, type Grow, type Plant } from '@/types'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
+import { addGrow } from '@/stores/slices/growsSlice'
+import { addPlant } from '@/stores/slices/simulationSlice'
+import type { AppDispatch, RootState } from '@/stores/store'
 
 /**
  * Per-grow JSON import (GH #674).
@@ -50,16 +53,23 @@ const isNonEmptyString = (value: unknown): value is string =>
 const hasCultivarIdentity = (strain: unknown): boolean =>
     isRecord(strain) && isNonEmptyString(strain.id) && isNonEmptyString(strain.name)
 
-/** The fields placing and simulating a plant relies on; nested state is repaired by normalizePlant. */
+/** Absent, or a list of objects: `[null]` would survive normalizePlant and crash the plant view. */
+const isRecordListOrAbsent = (value: unknown): boolean =>
+    value === undefined || (Array.isArray(value) && value.every(isRecord))
+
+const PLANT_LISTS = ['tasks', 'problems', 'journal', 'history'] as const
+
+/** What placing and simulating a plant relies on; nested state is repaired by normalizePlant. */
+const PLANT_CHECKS: readonly ((plant: Record<string, unknown>) => boolean)[] = [
+    (plant) => isNonEmptyString(plant.id) && isNonEmptyString(plant.name),
+    (plant) => typeof plant.stage === 'string' && PLANT_STAGES.has(plant.stage),
+    (plant) => hasCultivarIdentity(plant.strain),
+    (plant) => Number.isFinite(plant.createdAt) && Number.isFinite(plant.lastUpdated),
+    (plant) => PLANT_LISTS.every((key) => isRecordListOrAbsent(plant[key])),
+]
+
 const isImportablePlant = (value: unknown): value is Plant =>
-    isRecord(value) &&
-    isNonEmptyString(value.id) &&
-    isNonEmptyString(value.name) &&
-    typeof value.stage === 'string' &&
-    PLANT_STAGES.has(value.stage) &&
-    hasCultivarIdentity(value.strain) &&
-    Number.isFinite(value.createdAt) &&
-    Number.isFinite(value.lastUpdated)
+    isRecord(value) && PLANT_CHECKS.every((check) => check(value))
 
 const growSchema = z.object({
     id: z.string().trim().min(1),
@@ -77,16 +87,16 @@ const exportSchema = z.object({
     plants: z.array(z.custom<Plant>(isImportablePlant)),
 })
 
-const toGrow = (grow: z.infer<typeof growSchema>, now: number): Grow => ({
-    id: grow.id,
+const toGrow = (grow: z.infer<typeof growSchema>, id: string, now: number): Grow => ({
+    id,
     name: grow.name,
     isActive: grow.isActive ?? true,
     createdAt: now,
     updatedAt: now,
-    ...(grow.description === undefined ? {} : { description: grow.description }),
-    ...(grow.color === undefined ? {} : { color: grow.color }),
-    ...(grow.emoji === undefined ? {} : { emoji: grow.emoji }),
-    ...(grow.archived === undefined ? {} : { archived: grow.archived }),
+    description: grow.description,
+    color: grow.color,
+    emoji: grow.emoji,
+    archived: grow.archived,
 })
 
 const freeSlotIndexes = (slots: readonly (string | null)[]): number[] =>
@@ -100,6 +110,20 @@ export interface GrowImportOptions {
 
 const defaultGrowId = (): string => `grow-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`
 
+const hasDuplicateIds = (plants: readonly Plant[]): boolean =>
+    new Set(plants.map((plant) => plant.id)).size !== plants.length
+
+/** Why the import cannot go ahead against this store, or null when it can. */
+const refusalFor = (
+    plants: readonly Plant[],
+    target: GrowImportTarget,
+): GrowImportRefusal | null => {
+    if (hasDuplicateIds(plants)) return 'invalid'
+    if (target.growIds.length >= MAX_GROWS) return 'growLimit'
+    if (plants.some((plant) => target.plantIds.includes(plant.id))) return 'alreadyPresent'
+    return plants.length > freeSlotIndexes(target.plantSlots).length ? 'plantLimit' : null
+}
+
 /** Decides a per-grow import against the current store; never changes anything. */
 export const planGrowImport = (
     raw: unknown,
@@ -109,19 +133,41 @@ export const planGrowImport = (
     const parsed = exportSchema.safeParse(raw)
     if (!parsed.success) return { ok: false, reason: 'invalid' }
     const { grow, plants } = parsed.data
-    if (target.growIds.length >= MAX_GROWS) return { ok: false, reason: 'growLimit' }
-    if (plants.some((plant) => target.plantIds.includes(plant.id))) {
-        return { ok: false, reason: 'alreadyPresent' }
-    }
-
-    const freeSlots = freeSlotIndexes(target.plantSlots)
-    if (plants.length > freeSlots.length) return { ok: false, reason: 'plantLimit' }
+    const refusal = refusalFor(plants, target)
+    if (refusal) return { ok: false, reason: refusal }
 
     const growId = target.growIds.includes(grow.id) ? newGrowId() : grow.id
     // Pair each plant with one of the free slots; there are at least as many.
-    const placements = freeSlots.slice(0, plants.length).flatMap((slotIndex, index) => {
-        const plant = plants[index]
-        return plant ? [{ plant: normalizePlant({ ...plant, growId }), slotIndex }] : []
-    })
-    return { ok: true, grow: toGrow({ ...grow, id: growId }, now), plants: placements }
+    const placements = freeSlotIndexes(target.plantSlots)
+        .slice(0, plants.length)
+        .flatMap((slotIndex, index) => {
+            const plant = plants[index]
+            return plant ? [{ plant: normalizePlant({ ...plant, growId }), slotIndex }] : []
+        })
+    return { ok: true, grow: toGrow(grow, growId, now), plants: placements }
 }
+
+/**
+ * Plans the import against the store as it is now and, if it is accepted,
+ * commits it in the same synchronous step. Reading the state here, not at the
+ * render that started the file read, keeps a change in between (another
+ * import, a new grow) from reusing slots or a grow id that are no longer free.
+ */
+export const importGrowFile =
+    (raw: unknown, options?: GrowImportOptions) =>
+    (dispatch: AppDispatch, getState: () => RootState): GrowImportPlan => {
+        const { grows, simulation } = getState()
+        const plan = planGrowImport(
+            raw,
+            {
+                growIds: grows.grows.ids,
+                plantIds: simulation.plants.ids,
+                plantSlots: simulation.plantSlots,
+            },
+            options,
+        )
+        if (!plan.ok) return plan
+        dispatch(addGrow(plan.grow))
+        for (const placement of plan.plants) dispatch(addPlant(placement))
+        return plan
+    }

@@ -1,3 +1,4 @@
+import 'fake-indexeddb/auto'
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_GROW_ID } from '@/constants'
 import growsReducer, { addGrow } from '@/stores/slices/growsSlice'
@@ -5,7 +6,8 @@ import simulationReducer, { addPlant } from '@/stores/slices/simulationSlice'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import { StrainType } from '@/types'
 import type { GrowSetup, Plant, Strain } from '@/types'
-import { planGrowImport, type GrowImportTarget } from './growImport'
+import { createAppStoreSync } from '@/stores/store'
+import { importGrowFile, planGrowImport, type GrowImportTarget } from './growImport'
 
 const strain = {
     id: 'strain-import-test',
@@ -122,6 +124,15 @@ describe('planGrowImport (GH #674)', () => {
             'a plant with an unknown stage',
             exportOf([{ ...plant('p1'), stage: 'BLOOMING' } as unknown as Plant]),
         ],
+        ['two plants with the same id', exportOf([plant('p1'), plant('p1')])],
+        [
+            'a task list with a null entry',
+            exportOf([{ ...plant('p1'), tasks: [null] } as unknown as Plant]),
+        ],
+        [
+            'a problem list with a null entry',
+            exportOf([{ ...plant('p1'), problems: [null] } as unknown as Plant]),
+        ],
     ])('refuses %s as invalid', (_case, raw) => {
         expect(planGrowImport(raw, freshProfile, options)).toEqual({ ok: false, reason: 'invalid' })
     })
@@ -137,6 +148,22 @@ describe('planGrowImport (GH #674)', () => {
 
         expect(grows.grows.ids).toEqual([DEFAULT_GROW_ID, 'grow-new'])
         expect(simulation.plants.ids).toEqual(['p1', 'p2'])
+        expect(simulation.plantSlots).toEqual(['p1', 'p2', null])
+    })
+
+    it('importGrowFile plans against the store as it is when the file is read', () => {
+        const store = createAppStoreSync()
+
+        const first = store.dispatch(importGrowFile(exportOf([plant('p1'), plant('p2')]), options))
+        // A second file read later sees the slots the first one took.
+        const second = store.dispatch(
+            importGrowFile(exportOf([plant('q1'), plant('q2')], 'grow-other'), options),
+        )
+
+        expect(first.ok).toBe(true)
+        expect(second).toEqual({ ok: false, reason: 'plantLimit' })
+        const { grows, simulation } = store.getState()
+        expect(grows.grows.ids).toEqual([DEFAULT_GROW_ID, 'grow-new'])
         expect(simulation.plantSlots).toEqual(['p1', 'p2', null])
     })
 })

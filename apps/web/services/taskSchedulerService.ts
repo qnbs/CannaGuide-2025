@@ -15,6 +15,7 @@ import {
 } from '@/types'
 import { findBestTemplate, type ScheduleStep } from '@/data/growScheduleTemplates'
 import { findBrandSchedule } from '@/data/nutrientBrands'
+import { recordedStageStart } from '@/services/simulation/stageStart'
 import type { NutrientWeek } from '@/services/pluginService'
 
 // ---------------------------------------------------------------------------
@@ -35,6 +36,12 @@ export interface TaskSchedulerResult {
     tasks: PlannerTask[]
     templateUsed: string | null
     brandUsed: string | null
+    /**
+     * The id prefix every generated task of this plant and stage shares. An open
+     * task under it that this run does not produce comes from another schedule
+     * (another template, brand or template version).
+     */
+    scope: string
 }
 
 // ---------------------------------------------------------------------------
@@ -108,19 +115,15 @@ const nutrientWeeksToTasks = (
 const isStageChangeTo = (details: unknown, stage: PlantStage): boolean =>
     typeof details === 'object' && details !== null && 'to' in details && details.to === stage
 
-/**
- * When the plant entered its current stage, to lay the schedule out from there
- * instead of from the moment Auto Schedule is pressed (GH #659): its creation
- * for the first stage; otherwise the simulation's stage-change journal entry
- * for that stage. That entry can be missing (stage-change logging off, or the
- * entry moved to the archive); then `now` is used, as before this change, rather
- * than the creation date, which would lay a later stage out weeks too early.
- */
-export const currentStageStartedAt = (
-    plant: Pick<Plant, 'stage' | 'createdAt' | 'journal'>,
-    now: number = Date.now(),
-): number => {
-    if (plant.stage === PlantStage.Seed) return plant.createdAt
+export interface CurrentStageStart {
+    /** When the schedule for the current stage starts. */
+    at: number
+    /** False when the stage start was not recorded and `at` is only today. */
+    known: boolean
+}
+
+/** When the simulation's stage-change journal entry says the stage began. */
+const journaledStageStart = (plant: Pick<Plant, 'stage' | 'journal'>): number | undefined => {
     const entered = plant.journal
         .filter(
             (entry) =>
@@ -128,7 +131,28 @@ export const currentStageStartedAt = (
                 isStageChangeTo(entry.details, plant.stage),
         )
         .reduce((latest, entry) => Math.max(latest, entry.createdAt), Number.NEGATIVE_INFINITY)
-    return Number.isFinite(entered) ? entered : now
+    return Number.isFinite(entered) ? entered : undefined
+}
+
+/** A plant in its first stage has been in it since it was created. */
+const firstStageStart = (plant: Pick<Plant, 'stage' | 'createdAt'>): number | undefined =>
+    plant.stage === PlantStage.Seed ? plant.createdAt : undefined
+
+/**
+ * When the plant entered its current stage, to lay the schedule out from there
+ * instead of from the moment Auto Schedule is pressed (GH #659). In order: the
+ * stage start the simulation recorded on the plant; the plant's creation for its
+ * first stage; the stage-change journal entry, for plants saved before the start
+ * was recorded. When none of them exists the start is unknown: the schedule then
+ * starts today, and `known: false` lets the caller say so instead of presenting
+ * today as the stage start.
+ */
+export const currentStageStart = (
+    plant: Pick<Plant, 'stage' | 'stageStart' | 'createdAt' | 'journal'>,
+    now: number = Date.now(),
+): CurrentStageStart => {
+    const at = recordedStageStart(plant) ?? firstStageStart(plant) ?? journaledStageStart(plant)
+    return at === undefined ? { at: now, known: false } : { at, known: true }
 }
 
 /** Which template steps and which brand-schedule label belong to a plant stage. */
@@ -193,13 +217,17 @@ export const taskSchedulerService = {
      * Generate tasks for a plant based on its strain, stage, and optional
      * nutrient brand schedule.
      *
-     * Returns an array of PlannerTask objects ready for dispatch to the
-     * growPlannerSlice via bulkAddTasks.
+     * Returns the tasks and their scope, ready for `addGeneratedTasks`.
      */
     generateTasks(input: TaskSchedulerInput): TaskSchedulerResult {
         const base = templateTasks(input)
         const feed = brandTasks(input)
         const tasks = [...base.tasks, ...feed.tasks].sort((a, b) => a.scheduledAt - b.scheduledAt)
-        return { tasks, templateUsed: base.used, brandUsed: feed.used }
+        return {
+            tasks,
+            templateUsed: base.used,
+            brandUsed: feed.used,
+            scope: autoTaskId(input.plantId, input.currentStage, ''),
+        }
     },
 }

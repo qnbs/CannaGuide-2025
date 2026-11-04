@@ -976,6 +976,12 @@ export const plantsView = {
         alreadyScheduled:
             'Les t\u00E2ches de cette phase sont d\u00E9j\u00E0 dans le planificateur.',
         plannerFull:
-            "Certaines t\u00E2ches g\u00E9n\u00E9r\u00E9es n'ont pas \u00E9t\u00E9 ajout\u00E9es : les t\u00E2ches g\u00E9n\u00E9r\u00E9es ne remplissent le planificateur que jusqu'\u00E0 {{max}} t\u00E2ches, et les t\u00E2ches ouvertes ne sont jamais supprim\u00E9es pour faire de la place. Terminez ou supprimez des t\u00E2ches pour faire de la place.",
+            "Certaines t\u00E2ches g\u00E9n\u00E9r\u00E9es n'ont pas \u00E9t\u00E9 ajout\u00E9es : elles ne sont ajout\u00E9es que tant que le planificateur compte moins de {{max}} t\u00E2ches ouvertes, et les t\u00E2ches ouvertes ne sont jamais supprim\u00E9es pour faire de la place. Terminez ou supprimez des t\u00E2ches pour faire de la place.",
+        otherSchedule_one:
+            "Rien n'a \u00E9t\u00E9 ajout\u00E9 : {{count}} t\u00E2che ouverte de cette phase provient d'un autre planning. Supprimez-la, puis planifiez \u00E0 nouveau.",
+        otherSchedule_other:
+            "Rien n'a \u00E9t\u00E9 ajout\u00E9 : {{count}} t\u00E2ches ouvertes de cette phase proviennent d'un autre planning. Supprimez-les, puis planifiez \u00E0 nouveau.",
+        stageStartUnknown:
+            "Le d\u00E9but de cette phase n'a pas \u00E9t\u00E9 enregistr\u00E9, les t\u00E2ches sont donc planifi\u00E9es \u00E0 partir d'aujourd'hui.",
     },
 }

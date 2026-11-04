@@ -99,6 +99,18 @@ export interface PlantSimulationClock {
     accumulatedDayMs: number
 }
 
+/**
+ * When the plant entered a stage, in milliseconds since the epoch. The time is
+ * the simulated day boundary at which the stage changed, so a catch-up after the
+ * app was closed records when the change happened, not when the catch-up ran.
+ * The stage is kept with it: the time only describes the plant while it is still
+ * in that stage.
+ */
+export interface PlantStageStart {
+    stage: PlantStage
+    at: number
+}
+
 // ---------------------------------------------------------------------------
 // Journal entry details (discriminated union)
 // ---------------------------------------------------------------------------
@@ -265,4 +277,6 @@ export interface Plant {
     terpeneProfile: Record<string, number>
     stressCounters: PlantStressCounters
     simulationClock: PlantSimulationClock
+    /** Missing on plants saved before the stage start was recorded (GH #659). */
+    stageStart?: PlantStageStart
 }

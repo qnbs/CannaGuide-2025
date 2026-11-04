@@ -2,89 +2,16 @@ import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import type { GrowPlannerState, PlannerTask } from '@/types'
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+import {
+    MAX_TASKS,
+    evictionsFor,
+    planNewTasks,
+    withoutOldestCompleted,
+    type GeneratedTasks,
+    type GeneratedTasksPlan,
+} from './growPlannerPlan'
 
-export const MAX_TASKS = 500
-
-/**
- * Makes room within MAX_TASKS by removing the longest-completed tasks only. An
- * open task, generated or added by hand, is never removed to make room (GH
- * #659): the old FIFO cut dropped the oldest tasks whatever their state.
- */
-const withoutOldestCompleted = (tasks: PlannerTask[]): PlannerTask[] => {
-    const excess = tasks.length - MAX_TASKS
-    if (excess <= 0) return tasks
-    const removable = tasks
-        .filter((task) => task.completedAt != null)
-        .sort((left, right) => (left.completedAt ?? 0) - (right.completedAt ?? 0))
-        .slice(0, excess)
-    const removed = new Set(removable.map((task) => task.id))
-    return tasks.filter((task) => !removed.has(task.id))
-}
-
-/** Generated before stable ids existed (GH #659): `auto-<time>-<counter>-<uuid>`. */
-const LEGACY_AUTO_ID = /^auto-\d+-\d+-/u
-
-const taskKey = (task: PlannerTask): string => `${task.plantId}|${task.type}|${task.notes ?? ''}`
-
-/** Open tasks generated with the old random ids, by what they are. */
-const legacyOpenKeys = (tasks: readonly PlannerTask[]): Set<string> =>
-    new Set(
-        tasks
-            .filter((task) => task.completedAt == null && LEGACY_AUTO_ID.test(task.id))
-            .map(taskKey),
-    )
-
-const uniqueById = (tasks: readonly PlannerTask[]): PlannerTask[] => {
-    const seen = new Set<string>()
-    const unique: PlannerTask[] = []
-    for (const task of tasks) {
-        if (seen.has(task.id)) continue
-        seen.add(task.id)
-        unique.push(task)
-    }
-    return unique
-}
-
-export interface GeneratedTasksPlan {
-    next: PlannerTask[]
-    added: number
-    alreadyScheduled: number
-    refusedForCap: number
-}
-
-/**
- * What adding generated tasks does to the planner. A task counts as already
- * scheduled when its id is there, or when an open task generated before stable
- * ids has the same plant, type and notes. With nothing new, nothing changes,
- * not even the completed tasks. Room is made by removing the longest-completed
- * tasks only; the new tasks that still do not fit are left out, latest first.
- */
-export const planNewTasks = (
-    tasks: PlannerTask[],
-    incoming: readonly PlannerTask[],
-): GeneratedTasksPlan => {
-    const known = new Set(tasks.map((task) => task.id))
-    const legacy = legacyOpenKeys(tasks)
-    const isScheduled = (task: PlannerTask) => known.has(task.id) || legacy.has(taskKey(task))
-    const unique = uniqueById(incoming)
-    const fresh = unique.filter((task) => !isScheduled(task))
-    const alreadyScheduled = unique.length - fresh.length
-    if (fresh.length === 0) return { next: tasks, added: 0, alreadyScheduled, refusedForCap: 0 }
-
-    const trimmed = withoutOldestCompleted([...tasks, ...fresh])
-    // Manual additions may already exceed the cap: then no new task fits at all.
-    const refusedForCap = Math.min(Math.max(trimmed.length - MAX_TASKS, 0), fresh.length)
-    const refused = new Set(fresh.slice(fresh.length - refusedForCap).map((task) => task.id))
-    return {
-        next: trimmed.filter((task) => !refused.has(task.id)),
-        added: fresh.length - refusedForCap,
-        alreadyScheduled,
-        refusedForCap,
-    }
-}
+export { MAX_TASKS, planNewTasks, type GeneratedTasks, type GeneratedTasksPlan }
 
 // ---------------------------------------------------------------------------
 // Initial state
@@ -103,8 +30,11 @@ const growPlannerSlice = createSlice({
     initialState,
     reducers: {
         addPlannerTask(state, action: PayloadAction<PlannerTask>) {
-            // A task added by hand is always kept; only completed tasks make room.
-            state.tasks = withoutOldestCompleted([...state.tasks, action.payload])
+            // A task added by hand is always kept; at most one completed task makes room.
+            state.tasks = withoutOldestCompleted(
+                [...state.tasks, action.payload],
+                evictionsFor(state.tasks.length, 1),
+            )
         },
         completePlannerTask(state, action: PayloadAction<{ taskId: string; completedAt: number }>) {
             const task = state.tasks.find((t) => t.id === action.payload.taskId)
@@ -134,7 +64,7 @@ const growPlannerSlice = createSlice({
         clearTasksForPlant(state, action: PayloadAction<string>) {
             state.tasks = state.tasks.filter((t) => t.plantId !== action.payload)
         },
-        bulkAddTasks(state, action: PayloadAction<PlannerTask[]>) {
+        bulkAddTasks(state, action: PayloadAction<GeneratedTasks>) {
             state.tasks = planNewTasks(state.tasks, action.payload).next
         },
     },
@@ -157,17 +87,19 @@ type AddGeneratedTasksThunk = (
     getState: () => RootState,
 ) => AutoScheduleOutcome
 
-/** Adds generated tasks and reports how many were new, already there, or did not fit. */
+/** Adds generated tasks and reports what was added, already there, or left out. */
 export const addGeneratedTasks =
-    (tasks: PlannerTask[]): AddGeneratedTasksThunk =>
+    (generated: GeneratedTasks): AddGeneratedTasksThunk =>
     (dispatch, getState) => {
         // The same pure decision the reducer makes, so the counts match what it stores.
-        const { added, alreadyScheduled, refusedForCap } = planNewTasks(
-            getState().growPlanner.tasks,
-            tasks,
-        )
-        dispatch(bulkAddTasks(tasks))
-        return { added, alreadyScheduled, refusedForCap }
+        const plan = planNewTasks(getState().growPlanner.tasks, generated)
+        dispatch(bulkAddTasks(generated))
+        return {
+            added: plan.added,
+            alreadyScheduled: plan.alreadyScheduled,
+            refusedForCap: plan.refusedForCap,
+            fromOtherSchedule: plan.fromOtherSchedule,
+        }
     }
 
 // ---------------------------------------------------------------------------

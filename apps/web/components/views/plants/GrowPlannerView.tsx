@@ -15,8 +15,9 @@ import {
 import { selectPlantById } from '@/stores/selectors'
 import { secureRandom } from '@/utils/random'
 import {
-    currentStageStartedAt,
+    currentStageStart,
     taskSchedulerService,
+    type CurrentStageStart,
     type TaskSchedulerInput,
 } from '@/services/taskSchedulerService'
 import { getUISnapshot } from '@/stores/useUIStore'
@@ -56,33 +57,66 @@ const schedulerMediumOf = (medium: string | undefined): SchedulerMedium | undefi
     isSchedulerMedium(medium) ? medium : undefined
 
 /** The scheduler input for a plant: its cultivar, stage, stage start and medium. */
-const autoScheduleInput = (plantId: string, plant: Plant): TaskSchedulerInput => ({
+const autoScheduleInput = (
+    plantId: string,
+    plant: Plant,
+    stageStart: CurrentStageStart,
+): TaskSchedulerInput => ({
     plantId,
     strainType: plant.strain?.type ?? 'Hybrid',
     floweringType: plant.strain?.floweringType ?? 'Photoperiod',
     currentStage: plant.stage,
-    stageStartDate: currentStageStartedAt(plant),
+    stageStartDate: stageStart.at,
     medium: schedulerMediumOf(plant.mediumType),
 })
 
 type Translate = ReturnType<typeof useTranslation>['t']
 
-/** Tells the user what Auto Schedule added, found already there, or could not fit. */
-const notifyAutoScheduleOutcome = (outcome: AutoScheduleOutcome, t: Translate): void => {
+interface AutoScheduleReport extends AutoScheduleOutcome {
+    stageStartKnown: boolean
+}
+
+interface AutoScheduleNotice {
+    applies: (report: AutoScheduleReport) => boolean
+    type: 'success' | 'info' | 'error'
+    message: (report: AutoScheduleReport, t: Translate) => string
+}
+
+/** What Auto Schedule tells the user, in this order; every notice that applies is shown. */
+const AUTO_SCHEDULE_NOTICES: readonly AutoScheduleNotice[] = [
+    {
+        applies: (report) => report.added > 0,
+        type: 'success',
+        message: (report, t) => t('plantsView.autoScheduler.generated', { count: report.added }),
+    },
+    {
+        applies: (report) => report.added > 0 && !report.stageStartKnown,
+        type: 'info',
+        message: (_report, t) => t('plantsView.autoScheduler.stageStartUnknown'),
+    },
+    {
+        applies: (report) => report.added + report.refusedForCap + report.fromOtherSchedule === 0,
+        type: 'info',
+        message: (_report, t) => t('plantsView.autoScheduler.alreadyScheduled'),
+    },
+    {
+        applies: (report) => report.fromOtherSchedule > 0,
+        type: 'error',
+        message: (report, t) =>
+            t('plantsView.autoScheduler.otherSchedule', { count: report.fromOtherSchedule }),
+    },
+    {
+        applies: (report) => report.refusedForCap > 0,
+        type: 'error',
+        message: (_report, t) => t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
+    },
+]
+
+/** Tells the user what Auto Schedule added, found already there, or left out, and why. */
+const notifyAutoScheduleOutcome = (report: AutoScheduleReport, t: Translate): void => {
     const notify = getUISnapshot().addNotification
-    if (outcome.added > 0) {
-        notify({
-            type: 'success',
-            message: t('plantsView.autoScheduler.generated', { count: outcome.added }),
-        })
-    } else if (outcome.refusedForCap === 0) {
-        notify({ type: 'info', message: t('plantsView.autoScheduler.alreadyScheduled') })
-    }
-    if (outcome.refusedForCap > 0) {
-        notify({
-            type: 'error',
-            message: t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
-        })
+    for (const notice of AUTO_SCHEDULE_NOTICES.filter(({ applies }) => applies(report))) {
+        notify({ type: notice.type, message: notice.message(report, t) })
     }
 }
 
@@ -191,9 +225,13 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
 
     const handleAutoSchedule = useCallback(() => {
         if (!plantId || !plant) return
-        const result = taskSchedulerService.generateTasks(autoScheduleInput(plantId, plant))
+        const stageStart = currentStageStart(plant)
+        const result = taskSchedulerService.generateTasks(
+            autoScheduleInput(plantId, plant, stageStart),
+        )
         if (result.tasks.length === 0) return
-        notifyAutoScheduleOutcome(dispatch(addGeneratedTasks(result.tasks)), t)
+        const outcome = dispatch(addGeneratedTasks({ tasks: result.tasks, scope: result.scope }))
+        notifyAutoScheduleOutcome({ ...outcome, stageStartKnown: stageStart.known }, t)
     }, [dispatch, plantId, plant, t])
 
     const navigateCalendar = useCallback(

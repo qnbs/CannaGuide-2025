@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { currentStageStartedAt, taskSchedulerService } from './taskSchedulerService'
+import { currentStageStart, taskSchedulerService } from './taskSchedulerService'
 import type { TaskSchedulerInput } from './taskSchedulerService'
 import { JournalEntryType, PlantStage } from '@/types'
 import type { JournalEntry } from '@/types'
@@ -117,12 +117,12 @@ describe('taskSchedulerService', () => {
             } as unknown as JournalEntry
 
             expect(
-                currentStageStartedAt({
+                currentStageStart({
                     stage: PlantStage.Vegetative,
                     createdAt: 1_000,
                     journal: [stageChange],
                 }),
-            ).toBe(5_000)
+            ).toEqual({ at: 5_000, known: true })
         })
 
         it('gives brand feeding tasks the same ids on every run', () => {
@@ -139,13 +139,13 @@ describe('taskSchedulerService', () => {
             expect(feed(taskSchedulerService.generateTasks(input))).toEqual(first)
         })
 
-        it('uses now for a later stage whose stage-change entry is missing, not the creation date', () => {
+        it('reports an unknown start for a later stage without a record, not the creation date', () => {
             expect(
-                currentStageStartedAt(
+                currentStageStart(
                     { stage: PlantStage.Flowering, createdAt: 1_000, journal: [] },
                     9_000,
                 ),
-            ).toBe(9_000)
+            ).toEqual({ at: 9_000, known: false })
         })
 
         it('names the template in the id, so another template is not taken for this one', () => {
@@ -161,8 +161,8 @@ describe('taskSchedulerService', () => {
 
         it('uses the plant creation for its first stage', () => {
             expect(
-                currentStageStartedAt({ stage: PlantStage.Seed, createdAt: 1_000, journal: [] }),
-            ).toBe(1_000)
+                currentStageStart({ stage: PlantStage.Seed, createdAt: 1_000, journal: [] }),
+            ).toEqual({ at: 1_000, known: true })
         })
     })
 })

@@ -1013,6 +1013,12 @@ export const plantsView = {
         selectMedium: 'Select grow medium',
         alreadyScheduled: 'The tasks for this stage are already in the planner.',
         plannerFull:
-            'Some generated tasks were not added: generated tasks fill the planner only up to {{max}} tasks, and open tasks are never removed to make room. Complete or remove tasks to make room.',
+            'Some generated tasks were not added: they are added only while the planner has fewer than {{max}} open tasks, and open tasks are never removed to make room. Complete or remove tasks to make room.',
+        otherSchedule_one:
+            'Nothing was added: {{count}} open task of this stage comes from another schedule. Remove it, then schedule again.',
+        otherSchedule_other:
+            'Nothing was added: {{count}} open tasks of this stage come from another schedule. Remove them, then schedule again.',
+        stageStartUnknown:
+            'The start of this stage was not recorded, so the tasks are scheduled from today.',
     },
 }

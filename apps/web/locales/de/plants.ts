@@ -1040,6 +1040,12 @@ export const plantsView = {
         selectMedium: 'Anbaumedium waehlen',
         alreadyScheduled: 'Die Aufgaben für diese Phase stehen bereits im Planer.',
         plannerFull:
-            'Einige erzeugte Aufgaben wurden nicht hinzugefügt: Erzeugte Aufgaben füllen den Planer nur bis {{max}} Aufgaben, und offene Aufgaben werden nie entfernt, um Platz zu schaffen. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
+            'Einige erzeugte Aufgaben wurden nicht hinzugefügt: Sie werden nur hinzugefügt, solange der Planer weniger als {{max}} offene Aufgaben hat, und offene Aufgaben werden nie entfernt, um Platz zu schaffen. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
+        otherSchedule_one:
+            'Nichts wurde hinzugefügt: {{count}} offene Aufgabe dieser Phase stammt aus einem anderen Plan. Entferne sie und plane dann erneut.',
+        otherSchedule_other:
+            'Nichts wurde hinzugefügt: {{count}} offene Aufgaben dieser Phase stammen aus einem anderen Plan. Entferne sie und plane dann erneut.',
+        stageStartUnknown:
+            'Der Beginn dieser Phase wurde nicht aufgezeichnet, deshalb sind die Aufgaben ab heute geplant.',
     },
 }

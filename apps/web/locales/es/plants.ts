@@ -979,5 +979,7 @@ export const plantsView = {
             'No se a\u00F1adi\u00F3 nada: {{count}} tareas abiertas de esta fase provienen de otro plan o de uno anterior. Elim\u00EDnalas y vuelve a planificar.',
         stageStartUnknown:
             'El inicio de esta fase no se registr\u00F3, as\u00ED que las tareas se planifican a partir de hoy.',
+        noScheduleForStage:
+            'No hay un plan para esta fase, as\u00ED que no se a\u00F1adieron tareas.',
     },
 }

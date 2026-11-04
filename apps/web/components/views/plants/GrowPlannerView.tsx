@@ -85,11 +85,9 @@ const AUTO_SCHEDULE_NOTICES: readonly AutoScheduleNotice[] = [
     },
 ]
 
-const notifyNoStrain = (t: Translate): void => {
-    getUISnapshot().addNotification({
-        type: 'info',
-        message: t('plantsView.autoScheduler.noStrain'),
-    })
+/** Why Auto Schedule added nothing before it got to the planner. */
+const notifyInfo = (message: string): void => {
+    getUISnapshot().addNotification({ type: 'info', message })
 }
 
 /** Tells the user what Auto Schedule added, found already there, or left out, and why. */
@@ -208,11 +206,14 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
         const stageStart = currentStageStart(plant)
         const input = autoScheduleInput(plantId, plant, stageStart)
         if (!input) {
-            notifyNoStrain(t)
+            notifyInfo(t('plantsView.autoScheduler.noStrain'))
             return
         }
         const result = taskSchedulerService.generateTasks(input)
-        if (result.tasks.length === 0) return
+        if (result.tasks.length === 0) {
+            notifyInfo(t('plantsView.autoScheduler.noScheduleForStage'))
+            return
+        }
         const outcome = dispatch(
             addGeneratedTasks({
                 tasks: result.tasks,

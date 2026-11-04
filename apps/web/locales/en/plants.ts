@@ -1020,5 +1020,6 @@ export const plantsView = {
             'Nothing was added: {{count}} open tasks of this stage come from another or an earlier schedule. Remove them, then schedule again.',
         stageStartUnknown:
             'The start of this stage was not recorded, so the tasks are scheduled from today.',
+        noScheduleForStage: 'There is no schedule for this stage, so no tasks were added.',
     },
 }

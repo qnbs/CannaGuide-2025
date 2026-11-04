@@ -964,5 +964,6 @@ export const plantsView = {
             'Er is niets toegevoegd: {{count}} open taken van deze fase komen uit een ander of eerder schema. Verwijder ze en plan daarna opnieuw.',
         stageStartUnknown:
             'Het begin van deze fase is niet vastgelegd, dus de taken worden vanaf vandaag gepland.',
+        noScheduleForStage: 'Er is geen schema voor deze fase, dus er zijn geen taken toegevoegd.',
     },
 }

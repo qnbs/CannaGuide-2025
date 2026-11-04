@@ -1047,5 +1047,7 @@ export const plantsView = {
             'Nichts wurde hinzugef\u00FCgt: {{count}} offene Aufgaben dieser Phase stammen aus einem anderen oder fr\u00FCheren Plan. Entferne sie und plane dann erneut.',
         stageStartUnknown:
             'Der Beginn dieser Phase wurde nicht aufgezeichnet, deshalb sind die Aufgaben ab heute geplant.',
+        noScheduleForStage:
+            'F\u00FCr diese Phase gibt es keinen Plan, deshalb wurden keine Aufgaben hinzugef\u00FCgt.',
     },
 }

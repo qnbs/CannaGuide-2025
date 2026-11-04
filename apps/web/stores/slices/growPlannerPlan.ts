@@ -19,14 +19,15 @@ export const evictionsFor = (size: number, count: number): number =>
  */
 export const withoutOldestCompleted = (tasks: PlannerTask[], count: number): PlannerTask[] => {
     if (count <= 0) return tasks
+    // By the rows themselves, not their ids: an open row that shares an id with a
+    // completed one (a damaged import) must never go with it.
     const removed = new Set(
         tasks
             .filter((task) => !isOpen(task))
             .sort((left, right) => (left.completedAt ?? 0) - (right.completedAt ?? 0))
-            .slice(0, count)
-            .map((task) => task.id),
+            .slice(0, count),
     )
-    return tasks.filter((task) => !removed.has(task.id))
+    return tasks.filter((task) => !removed.has(task))
 }
 
 // ---------------------------------------------------------------------------
@@ -235,8 +236,14 @@ const otherScheduleCount = (
     scope: string,
 ): number => {
     const produced = new Set(unique.map((task) => task.id))
+    // Same plant only: the prefix of plant `p` is also how plant `p-SEED`'s ids start.
+    const plants = new Set(unique.map((task) => task.plantId))
     return tasks.filter(
-        (task) => isOpen(task) && task.id.startsWith(scope) && !produced.has(task.id),
+        (task) =>
+            isOpen(task) &&
+            plants.has(task.plantId) &&
+            task.id.startsWith(scope) &&
+            !produced.has(task.id),
     ).length
 }
 

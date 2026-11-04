@@ -106,6 +106,16 @@ describe('growPlanner task cap and generated tasks (GH #659)', () => {
         expect(next.tasks.filter(({ id }) => id.startsWith('done-'))).toHaveLength(19)
     })
 
+    it('never removes an open task that shares its id with a completed one', () => {
+        const open = tasks(MAX_TASKS - 1, 'open-')
+        const twin = task('open-0', { completedAt: 1 })
+
+        const next = growPlannerReducer(withTasks([twin, ...open]), addPlannerTask(task('manual')))
+
+        expect(next.tasks.filter(({ completedAt }) => completedAt == null)).toHaveLength(MAX_TASKS)
+        expect(next.tasks).not.toContain(twin)
+    })
+
     it('reports what was added, already there and refused', () => {
         const store = createAppStoreSync()
         store.dispatch(bulkAddTasks(generated(tasks(MAX_TASKS - 2, 'open-'))))
@@ -167,6 +177,17 @@ describe('schedule identity (GH #659)', () => {
         const done = planNewTasks([], hybrid).next.map((t) => ({ ...t, completedAt: 5 }))
 
         const plan = planNewTasks(done, run({ strainType: 'Indica' }))
+
+        expect(plan.fromOtherSchedule).toBe(0)
+        expect(plan.added).toBeGreaterThan(0)
+    })
+
+    it('does not count tasks of a plant whose id extends this one as another schedule', () => {
+        const otherPlant = task('auto-p1-SEED-SEED-step-photo-hybrid-0-water-0', {
+            plantId: 'p1-SEED',
+        })
+
+        const plan = planNewTasks([otherPlant], run({ currentStage: PlantStage.Seed }))
 
         expect(plan.fromOtherSchedule).toBe(0)
         expect(plan.added).toBeGreaterThan(0)

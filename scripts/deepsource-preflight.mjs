@@ -96,7 +96,14 @@ export const createPreflightLinter = () =>
         ],
     })
 
-const git = (args) => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' })
+/**
+ * Room for large base files and long path lists: Node's default output buffer
+ * is 1 MiB, and an overflow would read as a failed git call.
+ */
+const GIT_MAX_BUFFER = 64 * 1024 * 1024
+
+const git = (args) =>
+    execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8', maxBuffer: GIT_MAX_BUFFER })
 
 /** The merge base with origin/main, or a clear error when that ref is missing. */
 const mergeBase = () => {
@@ -105,6 +112,7 @@ const mergeBase = () => {
             cwd: repoRoot,
             encoding: 'utf8',
             stdio: ['ignore', 'pipe', 'ignore'],
+            maxBuffer: GIT_MAX_BUFFER,
         }).trim()
     } catch {
         throw new Error(
@@ -291,6 +299,7 @@ const gitQuiet = (args) =>
         cwd: repoRoot,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
+        maxBuffer: GIT_MAX_BUFFER,
     })
 
 /**

@@ -3,11 +3,15 @@ import { existsSync } from 'node:fs'
 
 const LINT_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'])
 
+/** Room for long path lists: spawnSync's default output buffer is 1 MiB. */
+const GIT_MAX_BUFFER = 64 * 1024 * 1024
+
 function runGit(args) {
     const result = spawnSync('git', args, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
         shell: false,
+        maxBuffer: GIT_MAX_BUFFER,
     })
 
     if (result.status !== 0) {
@@ -64,6 +68,7 @@ function listGit(args) {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
         shell: false,
+        maxBuffer: GIT_MAX_BUFFER,
     })
     if (result.status !== 0) throw new Error(`git ${args.join(' ')} failed`)
     return result.stdout.split('\0').filter(Boolean)

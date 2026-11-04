@@ -500,6 +500,13 @@ export const equipmentView = {
             waterTemp: 'Watertemp. (C)',
             addReading: 'Meting Toevoegen',
             clearAll: 'Alles Wissen',
+            clearAllConfirm: {
+                title: 'Hydro-geschiedenis verwijderen?',
+                description:
+                    'Hiermee worden alle hydrometingen ({{readings}}) en alle hydrowaarschuwingen ({{alerts}}) definitief verwijderd. Je drempelwaarden en het systeemtype blijven behouden. Dit kan niet ongedaan worden gemaakt.',
+                confirm: 'Metingen en waarschuwingen verwijderen',
+                cancel: 'Annuleren',
+            },
         },
         thresholds: {
             title: 'Waarschuwingsdrempels',

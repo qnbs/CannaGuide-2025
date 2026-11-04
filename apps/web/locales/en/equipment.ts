@@ -501,6 +501,13 @@ export const equipmentView = {
             waterTemp: 'Water Temp (C)',
             addReading: 'Add Reading',
             clearAll: 'Clear All',
+            clearAllConfirm: {
+                title: 'Delete the hydro history?',
+                description:
+                    'This permanently deletes all hydro readings ({{readings}}) and all hydro alerts ({{alerts}}). Your thresholds and the system type are kept. This cannot be undone.',
+                confirm: 'Delete readings and alerts',
+                cancel: 'Cancel',
+            },
         },
         thresholds: {
             title: 'Alert Thresholds',

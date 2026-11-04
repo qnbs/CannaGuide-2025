@@ -23,6 +23,23 @@ const DEFAULT_THRESHOLDS: HydroThresholds = {
     waterTempMax: 24,
 }
 
+/**
+ * A reading id that no stored reading has. Two readings in the same millisecond
+ * share the timestamp part, and the random part can collide too; with every
+ * reading kept, a duplicate id would make removeReading delete both.
+ */
+export const uniqueReadingId = (
+    readings: readonly HydroReading[],
+    timestamp: number,
+    random: () => number = secureRandom,
+): string => {
+    const taken = new Set(readings.map(({ id }) => id))
+    const base = `hr-${String(timestamp)}-${String(Math.floor(random() * 1e6))}`
+    let id = base
+    for (let suffix = 1; taken.has(id); suffix += 1) id = `${base}-${String(suffix)}`
+    return id
+}
+
 // ---------------------------------------------------------------------------
 // Alert checker
 // ---------------------------------------------------------------------------
@@ -84,7 +101,7 @@ const hydroSlice = createSlice({
         addReading(state, action: PayloadAction<Omit<HydroReading, 'id'>>) {
             const reading: HydroReading = {
                 ...action.payload,
-                id: `hr-${action.payload.timestamp}-${Math.floor(secureRandom() * 1e6)}`,
+                id: uniqueReadingId(state.readings, action.payload.timestamp),
             }
             // Every hydro reading is entered by hand (HydroReadingForm), so none is
             // removed to make room: they leave only through removeReading or

@@ -11,6 +11,7 @@ import hydroReducer, {
     DEFAULT_THRESHOLDS,
     selectHydroReadings,
     selectLatestReading,
+    uniqueReadingId,
 } from './hydroSlice'
 import type { HydroState, HydroReading, HydroThresholds } from '@/types'
 
@@ -72,6 +73,17 @@ describe('hydroSlice', () => {
 
         expect(state.readings.map(({ timestamp }) => timestamp)).toEqual([5, 3, 5, 1, 3])
         expect(new Set(state.readings.map(({ id }) => id)).size).toBe(5)
+    })
+
+    it('never hands out an id a stored reading already has, even when the random part repeats', () => {
+        const fixed = () => 0.5
+        const first = uniqueReadingId([], 7, fixed)
+        const firstReading = { ...makeReading({ timestamp: 7 }), id: first }
+
+        const second = uniqueReadingId([firstReading], 7, fixed)
+        const third = uniqueReadingId([firstReading, { ...firstReading, id: second }], 7, fixed)
+
+        expect(new Set([first, second, third]).size).toBe(3)
     })
 
     it('keeps a full history saved by the old version and adds to it', () => {

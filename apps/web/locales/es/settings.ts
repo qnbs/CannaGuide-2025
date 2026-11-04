@@ -709,6 +709,12 @@ export const settingsView = {
         growImportSuccess: 'Cultivo "{{name}}" importado exitosamente.',
         growImportError:
             'Importacion fallida. Asegurate de que sea un archivo de exportacion de cultivo valido (v2.0).',
+        growImportLimit:
+            'Importaci\u00F3n rechazada: ya tienes el m\u00E1ximo de {{max}} cultivos. Elimina primero un cultivo.',
+        growImportAlreadyPresent:
+            'Importaci\u00F3n rechazada: las plantas de este archivo ya est\u00E1n en la app.',
+        growImportPlantLimit:
+            'Importaci\u00F3n rechazada: no hay suficientes espacios libres para las plantas de este archivo. Solo se pueden cultivar como m\u00E1ximo tres plantas a la vez.',
         totalUsage: 'Uso Total',
         lastBackup: 'Ultima Copia de Seguridad',
         noBackup: 'Aun no se ha creado ninguna copia de seguridad',

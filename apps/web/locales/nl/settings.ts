@@ -696,6 +696,12 @@ export const settingsView = {
         growImportSuccess: 'Kweek "{{name}}" succesvol geimporteerd.',
         growImportError:
             'Import mislukt. Controleer of het een geldig kweek-exportbestand (v2.0) is.',
+        growImportLimit:
+            'Import geweigerd: je hebt al het maximum van {{max}} kweken. Verwijder eerst een kweek.',
+        growImportAlreadyPresent:
+            'Import geweigerd: de planten uit dit bestand staan al in de app.',
+        growImportPlantLimit:
+            'Import geweigerd: er zijn niet genoeg vrije plantplaatsen voor de planten in dit bestand. Er mogen maximaal drie planten tegelijk worden gekweekt.',
         totalUsage: 'Totaal gebruik',
         lastBackup: 'Laatste back-up',
         noBackup: 'Nog geen back-up gemaakt',

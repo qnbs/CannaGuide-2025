@@ -712,6 +712,12 @@ export const settingsView = {
         growImportSuccess: 'Culture "{{name}}" importee avec succes.',
         growImportError:
             "Importation echouee. Veuillez verifier qu'il s'agit d'un fichier d'exportation de culture valide (v2.0).",
+        growImportLimit:
+            "Importation refus\u00E9e : vous avez d\u00E9j\u00E0 le maximum de {{max}} cultures. Supprimez d'abord une culture.",
+        growImportAlreadyPresent:
+            "Importation refus\u00E9e : les plantes de ce fichier sont d\u00E9j\u00E0 dans l'app.",
+        growImportPlantLimit:
+            "Importation refus\u00E9e : il n'y a pas assez d'emplacements libres pour les plantes de ce fichier. Au plus trois plantes peuvent \u00EAtre cultiv\u00E9es en m\u00EAme temps.",
         totalUsage: 'Utilisation totale',
         lastBackup: 'Derniere sauvegarde',
         noBackup: 'Aucune sauvegarde creee',

@@ -2,6 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
+    state: {
+        simulation: {
+            plants: { entities: {}, ids: [] as string[] },
+            plantSlots: [null, null, null] as (string | null)[],
+        },
+        grows: {
+            activeGrowId: 'default-grow',
+            grows: { entities: {}, ids: [] as string[] },
+        },
+    },
     dispatch: vi.fn(),
     addNotification: vi.fn(),
     replacePrimaryPersistedSnapshot: vi.fn(),
@@ -10,17 +20,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/stores/store', () => ({
     useAppDispatch: () => mocks.dispatch,
-    useAppSelector: (selector: (state: unknown) => unknown) =>
-        selector({
-            simulation: {
-                plants: { entities: {}, ids: [] },
-                plantSlots: [null, null, null],
-            },
-            grows: {
-                activeGrowId: 'default-grow',
-                grows: { entities: {}, ids: [] },
-            },
-        }),
+    useAppSelector: (selector: (state: unknown) => unknown) => selector(mocks.state),
 }))
 
 vi.mock('react-i18next', () => ({
@@ -69,7 +69,16 @@ describe('useDataManagementActions', () => {
     beforeEach(async () => {
         vi.clearAllMocks()
         vi.resetModules()
-        mocks.dispatch.mockReturnValue({ unwrap: vi.fn().mockResolvedValue(undefined) })
+        mocks.state.grows.grows.ids = []
+        // Thunks run against the mocked state, like the real thunk middleware.
+        mocks.dispatch.mockImplementation((action: unknown) =>
+            typeof action === 'function'
+                ? (action as (d: unknown, g: () => unknown) => unknown)(
+                      mocks.dispatch,
+                      () => mocks.state,
+                  )
+                : { unwrap: vi.fn(() => Promise.resolve()) },
+        )
         mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
         ;({ useDataManagementActions } = await import('./useDataManagementActions'))
     })
@@ -204,6 +213,104 @@ describe('useDataManagementActions', () => {
         expect(mocks.addNotification).toHaveBeenCalledWith({
             type: 'error',
             message: 'settingsView.data.sliceResetError',
+        })
+    })
+
+    describe('grow import (GH #674)', () => {
+        const growFile = async (plantCount: number): Promise<File> => {
+            const { plantSimulationService } = await import('@/services/plantSimulationService')
+            const strain = {
+                id: 'strain-hook-test',
+                name: 'Hook Strain',
+                type: 'Hybrid',
+                floweringType: 'Photoperiod',
+                agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
+            }
+            const setup = {
+                lightType: 'LED',
+                lightWattage: 300,
+                lightHours: 18,
+                ventilation: 'medium',
+                hasCirculationFan: true,
+                potSize: 11,
+                potType: 'Fabric',
+                medium: 'Soil',
+                dynamicLighting: false,
+            }
+            const plants = Array.from({ length: plantCount }, (_, index) => ({
+                ...plantSimulationService.createPlant(
+                    strain as Parameters<typeof plantSimulationService.createPlant>[0],
+                    setup as Parameters<typeof plantSimulationService.createPlant>[1],
+                    `Plant ${String(index)}`,
+                ),
+                id: `p${String(index)}`,
+                growId: 'default-grow',
+            }))
+            const body = JSON.stringify({
+                version: '2.0',
+                exportedAt: 1,
+                grow: { id: 'default-grow', name: 'Balcony', isActive: true },
+                plants,
+            })
+            return new File([body], 'grow.json', { type: 'application/json' })
+        }
+
+        const importFile = async (file: File) => {
+            const { result } = renderHook(() => useDataManagementActions())
+            act(() => {
+                result.current.handleGrowFileChange({
+                    target: { files: [file], value: 'grow.json' },
+                } as unknown as Parameters<typeof result.current.handleGrowFileChange>[0])
+            })
+            await waitFor(() => expect(mocks.addNotification).toHaveBeenCalled())
+        }
+
+        const dispatchedActions = (): { type: string; payload: unknown }[] =>
+            mocks.dispatch.mock.calls
+                .map(([action]) => action as { type?: string; payload?: unknown })
+                .filter((action) => typeof action.type === 'string')
+                .map((action) => ({ type: String(action.type), payload: action.payload }))
+        const dispatchedTypes = (): string[] => dispatchedActions().map(({ type }) => type)
+
+        it('adds the grow and every plant, then reports success', async () => {
+            await importFile(await growFile(2))
+
+            expect(dispatchedTypes()).toEqual([
+                'grows/addGrow',
+                'simulation/addPlant',
+                'simulation/addPlant',
+            ])
+            expect(mocks.addNotification).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'success' }),
+            )
+        })
+
+        it('adds nothing and says why when the plants exceed the free slots', async () => {
+            await importFile(await growFile(4))
+
+            expect(dispatchedTypes()).toEqual([])
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.data.growImportPlantLimit',
+            })
+            expect(mocks.addNotification).not.toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'success' }),
+            )
+        })
+
+        it('gives the grow a new id in a profile that already has the default grow', async () => {
+            mocks.state.grows.grows.ids = ['default-grow']
+
+            await importFile(await growFile(2))
+
+            const [growAction, ...plantActions] = dispatchedActions()
+            const growId = (growAction?.payload as { id: string }).id
+            expect(growId).not.toBe('default-grow')
+            expect(
+                plantActions.map(
+                    ({ payload }) => (payload as { plant: { growId: string } }).plant.growId,
+                ),
+            ).toEqual([growId, growId])
         })
     })
 })

@@ -4,13 +4,13 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice'
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { setSimulationState } from '@/stores/slices/simulationSlice'
-import { addGrow } from '@/stores/slices/growsSlice'
-import type { VersionedSliceName } from '@/constants'
+import { MAX_GROWS, type VersionedSliceName } from '@/constants'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { dbService } from '@/services/dbService'
 import { selectSimulation } from '@/stores/selectors'
 import { selectActiveGrow, selectActiveGrowPlants } from '@/stores/selectors'
 import type { GrowExportData } from '@/types'
+import { importGrowFile, type GrowImportRefusal } from '@/services/growImport'
 import {
     eraseAllData,
     exportAllUserData,
@@ -20,6 +20,15 @@ import {
 import * as Sentry from '@sentry/react'
 import { pruneOnQuotaThreshold } from '@/services/indexedDbPruneService'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+
+/** Unparsable text is an invalid export, like any other wrong shape. */
+const parseJson = (content: string): unknown => {
+    try {
+        return JSON.parse(content) as unknown
+    } catch {
+        return undefined
+    }
+}
 
 export function useDataManagementActions() {
     const { t } = useTranslation()
@@ -130,6 +139,22 @@ export function useDataManagementActions() {
         document.getElementById('import-grow-file-input')?.click()
     }, [])
 
+    const growImportRefusalMessage = useCallback(
+        (reason: GrowImportRefusal): string => {
+            switch (reason) {
+                case 'growLimit':
+                    return String(t('settingsView.data.growImportLimit', { max: MAX_GROWS }))
+                case 'alreadyPresent':
+                    return String(t('settingsView.data.growImportAlreadyPresent'))
+                case 'plantLimit':
+                    return String(t('settingsView.data.growImportPlantLimit'))
+                default:
+                    return String(t('settingsView.data.growImportError'))
+            }
+        },
+        [t],
+    )
+
     const handleGrowFileChange = useCallback(
         (e: ChangeEvent<HTMLInputElement>) => {
             const file = e.target.files?.[0]
@@ -138,39 +163,27 @@ export function useDataManagementActions() {
             reader.onload = (event) => {
                 const content = event.target?.result
                 if (typeof content !== 'string') return
-                try {
-                    const parsed = JSON.parse(content) as unknown
-                    if (
-                        typeof parsed !== 'object' ||
-                        parsed === null ||
-                        (parsed as { version?: unknown }).version !== '2.0' ||
-                        !(parsed as { grow?: unknown }).grow ||
-                        !Array.isArray((parsed as { plants?: unknown }).plants)
-                    ) {
-                        throw new Error('Invalid grow export format')
-                    }
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-                    const data = parsed as GrowExportData
-                    dispatch(addGrow(data.grow))
-                    getUISnapshot().addNotification({
-                        type: 'success',
-                        message: String(
-                            t('settingsView.data.growImportSuccess', {
-                                name: data.grow.name,
-                            }),
-                        ),
-                    })
-                } catch {
+                // Decided as a whole against the state at this moment: either the grow
+                // and all its plants fit and are added, or nothing is (GH #674).
+                const plan = dispatch(importGrowFile(parseJson(content)))
+                if (!plan.ok) {
                     getUISnapshot().addNotification({
                         type: 'error',
-                        message: String(t('settingsView.data.growImportError')),
+                        message: growImportRefusalMessage(plan.reason),
                     })
+                    return
                 }
+                getUISnapshot().addNotification({
+                    type: 'success',
+                    message: String(
+                        t('settingsView.data.growImportSuccess', { name: plan.grow.name }),
+                    ),
+                })
             }
             reader.readAsText(file)
             e.target.value = ''
         },
-        [dispatch, t],
+        [dispatch, t, growImportRefusalMessage],
     )
 
     const handleResetAll = async (): Promise<void> => {

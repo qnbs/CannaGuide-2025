@@ -332,8 +332,15 @@ const report = (findings, entries, options) => {
     )
 }
 
+/** A named file that does not exist is an error, not a clean run (a typo, a stale path). */
+const assertNamedFilesExist = (named) => {
+    const missing = named.filter((file) => !existsSync(resolve(repoRoot, file)))
+    if (missing.length > 0) throw new Error(`file(s) not found: ${missing.join(', ')}`)
+}
+
 /** Named files are compared with themselves at the base; otherwise the changed files. */
 const selectEntries = (named, base) => {
+    assertNamedFilesExist(named)
     const entries =
         named.length > 0 ? named.map((file) => ({ file, basePath: file })) : changedFiles(base)
     const lintable = new Set(lintableFiles(entries.map(({ file }) => file)))

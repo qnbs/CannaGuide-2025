@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
 import {
     MIRRORED,
@@ -204,6 +205,17 @@ test('always reports a parse error, even when the base had one too', () => {
     const parse = (line) => ({ ruleId: null, line, message: 'Parsing error: Unexpected token' })
 
     assert.equal(raisedFindings([parse(9)], [parse(3)]).length, 1)
+})
+
+test('fails instead of passing when a named file does not exist', () => {
+    const run = spawnSync(
+        process.execPath,
+        ['scripts/deepsource-preflight.mjs', '--all', 'scripts/does-not-exist.mjs'],
+        { encoding: 'utf8' },
+    )
+
+    assert.equal(run.status, 2)
+    assert.match(run.stderr, /file\(s\) not found: scripts\/does-not-exist\.mjs/u)
 })
 
 test('parses TSX', async () => {

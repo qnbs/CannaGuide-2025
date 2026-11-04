@@ -265,8 +265,17 @@ const lintText = async (linter, text, file) => {
     return (result?.messages ?? []).filter(isPreflightFinding)
 }
 
+/**
+ * Where the file was at the base, for the comparison. A file renamed out of a
+ * path DeepSource excludes (vendor, dist, ...) was never analyzed there, so it
+ * is compared with nothing: all its findings are new to DeepSource.
+ */
+export const baselinePath = (entry) =>
+    isSkippedPath(entry.basePath) && !isSkippedPath(entry.file) ? null : entry.basePath
+
 /** The file at the merge base, or an empty text when it is new there. */
 const baseText = (base, file) => {
+    if (file === null) return ''
     try {
         return execFileSync('git', ['show', `${base}:${file}`], {
             cwd: repoRoot,
@@ -288,7 +297,7 @@ const findingsOf = async (linter, entry, options) => {
         entry.file,
     )
     if (options.all) return now
-    const before = await lintText(linter, baseText(options.base, entry.basePath), entry.file)
+    const before = await lintText(linter, baseText(options.base, baselinePath(entry)), entry.file)
     return raisedFindings(now, before)
 }
 

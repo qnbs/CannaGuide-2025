@@ -3,6 +3,7 @@ import { test } from 'node:test'
 import {
     MIRRORED,
     PREFLIGHT_RULES,
+    baselinePath,
     createPreflightLinter,
     findingKey,
     functionOf,
@@ -189,6 +190,14 @@ test('skips the paths .deepsource.toml excludes', () => {
         assert.equal(isSkippedPath(path), true, path)
     }
     assert.equal(isSkippedPath('apps/web/services/output.ts'), false)
+})
+
+test('compares a file renamed out of an excluded path with nothing', () => {
+    assert.equal(baselinePath({ file: 'apps/web/lib/x.ts', basePath: 'vendor/x.ts' }), null)
+    assert.equal(
+        baselinePath({ file: 'scripts/new.mjs', basePath: 'scripts/old.mjs' }),
+        'scripts/old.mjs',
+    )
 })
 
 test('parses TSX', async () => {

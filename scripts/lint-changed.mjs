@@ -67,23 +67,36 @@ function tryListGit(args) {
     return result.status === 0 ? result.stdout.split('\0').filter(Boolean) : []
 }
 
-/** The committed range this branch adds on top of `baseRef`, or '' when there is none. */
+/**
+ * The committed range this branch adds on top of `baseRef`. Fails closed: with
+ * no base, or no merge base, the branch's commits would silently go unlinted
+ * and the run would still pass. CI checks out the full history (fetch-depth 0),
+ * so there it always resolves.
+ */
 function committedRange(baseRef) {
-    if (!baseRef) return ''
+    if (!baseRef) {
+        throw new Error('no base ref (origin/main, main or HEAD~1) found: set LINT_BASE_REF')
+    }
     if (baseRef === 'HEAD~1') return 'HEAD~1..HEAD'
     const mergeBase = tryRunGit(['merge-base', baseRef, 'HEAD'])
-    return mergeBase ? `${mergeBase}...HEAD` : ''
+    if (!mergeBase) {
+        throw new Error(
+            `no merge base between ${baseRef} and HEAD: run \`git fetch origin main\` or set LINT_BASE_REF`,
+        )
+    }
+    return `${mergeBase}...HEAD`
 }
 
 function getChangedFiles(baseRef) {
     const files = new Set()
 
-    const range = committedRange(baseRef)
-    if (range) {
-        tryListGit(['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB', range]).forEach((file) =>
-            files.add(file),
-        )
-    }
+    tryListGit([
+        'diff',
+        '--name-only',
+        '-z',
+        '--diff-filter=ACMRTUXB',
+        committedRange(baseRef),
+    ]).forEach((file) => files.add(file))
 
     // Staged and unstaged changes, then new files: they are in no diff yet, but
     // the pre-commit hook lints them once staged. All lists use -z: without it
@@ -105,6 +118,16 @@ function getChangedFiles(baseRef) {
         .filter((file) => existsSync(file))
 }
 
+/** The changed files, or exit 2 with the reason when the base cannot be resolved. */
+function changedFilesOrExit(baseRef) {
+    try {
+        return getChangedFiles(baseRef)
+    } catch (error) {
+        console.error(`[lint:changed] ${error instanceof Error ? error.message : String(error)}`)
+        return process.exit(2)
+    }
+}
+
 function main() {
     const inGitRepo = tryRunGit(['rev-parse', '--is-inside-work-tree']) === 'true'
     if (!inGitRepo) {
@@ -113,7 +136,7 @@ function main() {
     }
 
     const baseRef = resolveBaseRef()
-    const changedFiles = getChangedFiles(baseRef)
+    const changedFiles = changedFilesOrExit(baseRef)
 
     if (changedFiles.length === 0) {
         console.log(`[lint:changed] No changed JS/TS files found (base: ${baseRef || 'n/a'}).`)

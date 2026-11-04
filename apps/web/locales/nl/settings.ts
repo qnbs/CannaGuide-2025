@@ -871,9 +871,9 @@ export const settingsView = {
         title: 'Privacy & Beveiliging',
         localOnlyMode: 'Alleen-lokaal-modus',
         localOnlyModeDesc:
-            'Blokkeert ALLE uitgaand netwerkverkeer: Sentry-fouttracking, cloud AI-verzoeken en Gist-synchronisatie. Alleen lokale AI-inferentie en lokale opslag zijn toegestaan.',
+            'Houdt je gegevens op dit apparaat en in je lokale netwerk. Zolang deze modus aan staat, verstuurt CannaGuide geen foutrapporten en geen verzoeken aan cloud-AI of cloud-spraakuitvoer, slaat het online rasopzoekingen en delen met de community over, en verbindt het MQTT-sensoren alleen met brokers in je lokale netwerk. Nog niet afgedekt: lokale AI-modellen die bij het eerste gebruik worden gedownload (het expliciet vooraf laden is geblokkeerd) en spraakherkenning, die sommige browsers online verwerken.',
         localOnlyModeActive:
-            'Alleen-lokaal-modus is actief. Alle externe netwerkverzoeken zijn geblokkeerd. Schakel deze schakelaar uit om cloudfuncties te herstellen.',
+            'De alleen-lokaal-modus is actief. Foutrapporten, cloud-AI, cloud-spraakuitvoer, online rasopzoekingen en delen met de community staan uit, en MQTT is beperkt tot je lokale netwerk. Modeldownloads bij het eerste gebruik en de spraakherkenning van de browser zijn nog niet geblokkeerd. Zet deze modus uit om cloudfuncties te herstellen.',
         requirePin: 'PIN vereisen bij opstarten',
         requirePinDesc: 'Bescherm je app met een 4-cijferige PIN.',
         setPin: 'PIN instellen/wijzigen',
@@ -910,8 +910,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Drijft alle AI-functies aan -- Multi-provider BYOK (Gemini, OpenAI, xAI, Anthropic) met 22 lokale AI-servicemodules.',
             react: 'React 19 + TypeScript (strikt), Redux Toolkit, Zustand, RTK Query, 9 cannabisthema s.',
-            indexedDb:
-                'Dubbele IndexedDB-persistentie voor 100% offline functionaliteit met CRDT-cloudsync.',
+            indexedDb: 'Dubbele IndexedDB-opslag voor offline-first gebruik.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 prioriteitspreemptieve workers (VPD, genealogie, inferentie, visie, hydro-voorspelling) via getypeerde WorkerBus.',
@@ -1081,7 +1080,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Disclaimer',
-            disclaimerContent: '<p>Alle informatie in deze app is uitsluitend bedoeld voor educatieve en entertainmentdoeleinden. De teelt van cannabis is onderworpen aan strenge wettelijke regelgeving. Informeer jezelf over de wetten in je regio en handel altijd verantwoordelijk en in overeenstemming met de wet.</p>',
+            disclaimerContent:
+                '<p>Alle informatie in deze app is uitsluitend bedoeld voor educatieve en entertainmentdoeleinden. De teelt van cannabis is onderworpen aan strenge wettelijke regelgeving. Informeer jezelf over de wetten in je regio en handel altijd verantwoordelijk en in overeenstemming met de wet.</p>',
         },
     },
     communityShare: {
@@ -1209,7 +1209,7 @@ export const settingsView = {
         exportImagesError:
             "Je foto's konden niet worden gelezen, daarom is er geen ZIP-backup gemaakt; je gegevens zijn ongewijzigd. Sluit andere CannaGuide-tabbladen of herstart de app en probeer het opnieuw.",
         exportArchivedJournalError:
-            "Je gearchiveerde dagboekitems konden niet worden gelezen, daarom is er geen ZIP-backup gemaakt; je gegevens zijn ongewijzigd. Sluit andere CannaGuide-tabbladen of herstart de app en probeer het opnieuw.",
+            'Je gearchiveerde dagboekitems konden niet worden gelezen, daarom is er geen ZIP-backup gemaakt; je gegevens zijn ongewijzigd. Sluit andere CannaGuide-tabbladen of herstart de app en probeer het opnieuw.',
         includePhotos: "Foto's opnemen",
         photoCount_one: '{{count}} foto',
         photoCount_other: "{{count}} foto's",

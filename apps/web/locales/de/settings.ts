@@ -874,9 +874,9 @@ export const settingsView = {
         title: 'Privatsphäre & Sicherheit',
         localOnlyMode: 'Nur-Lokal-Modus',
         localOnlyModeDesc:
-            'Blockiert ALLEN ausgehenden Netzwerkverkehr: Sentry-Fehlertracking, Cloud-KI-Anfragen und Gist-Sync. Nur lokale KI-Inferenz und lokale Speicherung sind erlaubt.',
+            'Hält deine Daten auf diesem Gerät und in deinem lokalen Netzwerk. Solange der Modus aktiv ist, sendet CannaGuide keine Fehlerberichte und keine Anfragen an Cloud-KI oder Cloud-Sprachausgabe, überspringt Online-Sortenabfragen und das Teilen mit der Community und verbindet MQTT-Sensoren nur mit Brokern in deinem lokalen Netzwerk. Noch nicht abgedeckt: lokale KI-Modelle, die beim ersten Gebrauch heruntergeladen werden (das ausdrückliche Vorladen ist blockiert), und die Spracherkennung, die manche Browser online verarbeiten.',
         localOnlyModeActive:
-            'Nur-Lokal-Modus ist aktiv. Alle externen Netzwerk-Anfragen sind blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
+            'Der Nur-Lokal-Modus ist aktiv. Fehlerberichte, Cloud-KI, Cloud-Sprachausgabe, Online-Sortenabfragen und das Teilen mit der Community sind aus, und MQTT ist auf dein lokales Netzwerk beschränkt. Modelldownloads beim ersten Gebrauch und die Browser-Spracherkennung sind noch nicht blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
         requirePin: 'PIN beim Start anfordern',
         requirePinDesc: 'Schütze deine App mit einer 4-stelligen PIN.',
         setPin: 'PIN festlegen/ändern',
@@ -913,8 +913,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Treiber aller KI-Funktionen -- Multi-Provider BYOK (Gemini, OpenAI, xAI, Anthropic) mit 22 lokalen KI-Service-Modulen.',
             react: 'React 19 + TypeScript (strikt), Redux Toolkit, Zustand, RTK Query, 9 Cannabis-Themes.',
-            indexedDb:
-                'Duale IndexedDB-Persistenz fuer 100% Offline-Funktionalitaet mit CRDT-Cloud-Sync.',
+            indexedDb: 'Doppelte IndexedDB-Persistenz für Offline-first-Nutzung.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 prioritaets-praeemptive Worker (VPD, Genealogie, Inferenz, Vision, Hydro-Forecast) via typisiertem WorkerBus.',
@@ -1084,7 +1083,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Haftungsausschluss',
-            disclaimerContent: '<p>Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.</p>',
+            disclaimerContent:
+                '<p>Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.</p>',
         },
     },
     communityShare: {

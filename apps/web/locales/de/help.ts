@@ -569,7 +569,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Sprachsteuerung & Sprachausgabe',
                 content:
-                    'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen.',
+                    'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen. Die Spracherkennung übernimmt Ihr Browser: Manche Browser, etwa Chrome, senden die Aufnahme an den Online-Sprachdienst des Browser-Herstellers. Die <strong>Offline-Spracherkennung</strong> in den Einstellungen ergänzt ein Modell auf dem Gerät, das verwendet wird, solange Sie offline sind.',
             },
             dataManagement: {
                 title: 'Datensouveränität: Backup & Wiederherstellung',
@@ -587,9 +587,9 @@ export const helpView = {
                     'CannaGuide liefert einen <strong>dreistufigen lokalen KI-Stack</strong>, damit Ratschläge nie abreißen:<ol><li><strong>WebLLM</strong> — GPU-beschleunigte Inferenz via WebGPU (Qwen3-0.5B). Beste Qualität auf leistungsstarken Geräten.</li><li><strong>Transformers.js</strong> — ONNX-basierte WASM/WebGPU-Inferenz (Qwen2.5-1.5B-Instruct). Funktioniert in jedem modernen Browser.</li><li><strong>Heuristiken</strong> — Schlüsselwort- und VPD-basierte Analyse, wenn kein Modell geladen ist.</li></ol>Öffnen Sie <strong>Einstellungen → Allgemein & UI</strong>, um Modelle im Voraus zu laden. Der <strong>Force-WASM</strong>-Schalter fixiert die Inferenz auf WASM, wenn WebGPU Instabilität verursacht. CLIP-ViT-L-14 übernimmt die Bildklassifizierung mit 33 Cannabis-spezifischen Labels. Inferenz-Ergebnisse werden in einem LRU-64-Cache gespeichert, um Wiederholungen zu vermeiden.',
             },
             cloudSync: {
-                title: 'Ein-Tipp Cloud-Synchronisation',
+                title: 'Cloud-Sync (derzeit nicht verfügbar)',
                 content:
-                    'Sichern Sie Ihren gesamten App-Zustand in einem <strong>privaten GitHub Gist</strong> mit einem einzigen Tipp. Öffnen Sie <strong>Einstellungen → Datenverwaltung</strong> und geben Sie einen GitHub Personal Access Token mit <code>gist</code>-Berechtigung ein. Die App erstellt oder aktualisiert ein privates Gist, das nur Ihnen gehört — Ihre Daten berühren niemals einen Drittanbieter-Server. Stellen Sie auf jedem Gerät wieder her, indem Sie aus demselben Gist importieren.',
+                    'Der Cloud-Sync über ein privates GitHub Gist ist <strong>in dieser Version abgeschaltet</strong>. Um Ihre Daten zu sichern oder auf ein anderes Gerät zu übertragen, exportieren Sie den App-Zustand unter <strong>Einstellungen → Datenverwaltung</strong> als Datei und importieren ihn dort wieder.',
             },
             multiProvider: {
                 title: 'Multi-Provider-KI (BYOK)',
@@ -817,7 +817,7 @@ export const helpView = {
             privacy: {
                 title: 'Datenschutz & Sicherheit',
                 content:
-                    'Schützen Sie die App mit einer PIN-Sperre, verwalten Sie den Datenexport/-import und konfigurieren Sie die Ein-Tipp Cloud-Synchronisation via GitHub Gist. Löschen Sie bei Bedarf alle App-Daten.',
+                    'Schützen Sie die App mit einer PIN-Sperre, verwalten Sie Datenexport/-import und den Nur-Lokal-Modus und löschen Sie bei Bedarf alle App-Daten.',
             },
             iot: {
                 title: 'IoT-Einstellungen',
@@ -827,7 +827,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Datenverwaltung',
                 content:
-                    'Exportieren und importieren Sie Ihren gesamten App-Zustand als JSON. Nutzen Sie die GitHub-Gist-Synchronisation für gerätübergreifende Backups. Löschen Sie IndexedDB-Caches und setzen Sie die App bei Bedarf zurück.',
+                    'Exportieren und importieren Sie den gesamten App-Zustand als JSON, zur Sicherung und zum Umzug auf ein anderes Gerät. Leeren Sie bei Bedarf die IndexedDB-Caches und setzen Sie die App zurück.',
             },
             about: {
                 title: 'Info / About',
@@ -999,8 +999,8 @@ export const faq = {
         answer: 'Die Telemetrie misst Inferenzgeschwindigkeit, Token-Durchsatz, Cache-Trefferquoten und Modellnutzung — alles lokal auf Ihrem Gerät. Keine Daten verlassen den Browser. So verstehen Sie, ob Ihr Gerät leistungsfähig genug für lokale KI ist.',
     },
     cloudSync: {
-        question: 'Wie funktioniert die Ein-Tipp Cloud-Synchronisation?',
-        answer: 'CannaGuide sichert Ihren gesamten App-Zustand in einem <strong>privaten GitHub Gist</strong>, das nur Ihnen gehört. Öffnen Sie Einstellungen → Datenverwaltung, fügen Sie einen GitHub Personal Access Token mit <code>gist</code>-Berechtigung hinzu und tippen Sie auf Sync. Stellen Sie auf jedem Gerät wieder her, indem Sie aus demselben Gist importieren. Kein Drittanbieter-Server berührt jemals Ihre Daten.',
+        question: 'Gibt es einen Cloud-Sync?',
+        answer: 'Derzeit nicht. Der Cloud-Sync über ein privates GitHub Gist ist in dieser Version abgeschaltet. Um Ihre Daten zu sichern oder auf ein anderes Gerät zu übertragen, exportieren Sie den App-Zustand unter Einstellungen → Datenverwaltung als Datei und importieren ihn dort wieder.',
     },
     multiProviderAi: {
         question: 'Kann ich einen anderen KI-Anbieter verwenden?',

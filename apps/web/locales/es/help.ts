@@ -395,7 +395,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Control por Voz y Habla',
                 content:
-                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta.',
+                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta. El reconocimiento de voz lo realiza tu navegador: algunos navegadores, como Chrome, env\u00EDan el audio al servicio de voz en l\u00EDnea del fabricante del navegador. El <strong>Reconocimiento de Voz Offline</strong> de Configuraci\u00F3n a\u00F1ade un modelo en el dispositivo que se usa mientras est\u00E1s sin conexi\u00F3n.',
             },
             dataManagement: {
                 title: 'Soberania de Datos: Respaldo y Restauracion',
@@ -413,9 +413,9 @@ export const helpView = {
                     'CannaGuide incluye una <strong>pila de IA local de tres capas</strong> para que los consejos nunca se detengan:<ol><li><strong>WebLLM</strong> -- Inferencia acelerada por GPU via WebGPU (Qwen3-0.5B). Mejor calidad en dispositivos de alta gama.</li><li><strong>Transformers.js</strong> -- Inferencia ONNX via WASM/WebGPU (Qwen2.5-1.5B-Instruct). Funciona en cualquier navegador moderno.</li><li><strong>Reglas Heuristicas</strong> -- Analisis basado en palabras clave y VPD cuando no hay modelo cargado.</li></ol>Abre <strong>Configuracion -> General y UI</strong> para precargar modelos mientras estas en linea. El toggle <strong>Forzar WASM</strong> bloquea la inferencia a WASM cuando WebGPU causa inestabilidad. CLIP-ViT-L-14 maneja la clasificacion visual con 33 etiquetas especificas de cannabis. Los resultados de inferencia se almacenan en una cache LRU-64 para evitar trabajo repetido.',
             },
             cloudSync: {
-                title: 'Sincronizacion en la Nube con un Toque',
+                title: 'Sincronizaci\u00F3n en la nube (no disponible por ahora)',
                 content:
-                    'Respalda todo el estado de tu app en un <strong>Gist privado de GitHub</strong> con un solo toque. Abre <strong>Configuracion -> Gestion de Datos</strong> e ingresa un Token de Acceso Personal de GitHub con alcance <code>gist</code>. La app crea o actualiza un Gist privado que tu posees -- tus datos nunca tocan un servidor de terceros. Restaura en cualquier dispositivo importando desde el mismo Gist.',
+                    'La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 <strong>desactivada en esta versi\u00F3n</strong>. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, exporta el estado de la app como archivo en <strong>Configuraci\u00F3n -> Gesti\u00F3n de Datos</strong> e imp\u00F3rtalo all\u00ED.',
             },
             multiProvider: {
                 title: 'IA Multi-Proveedor (BYOK)',
@@ -720,8 +720,8 @@ export const faq = {
         answer: 'La telemetria mide la velocidad de inferencia, el rendimiento de tokens, las tasas de acierto de cache y el uso de modelos -- todo localmente en tu dispositivo. Ningun dato sale jamas del navegador. Esto te ayuda a entender si tu dispositivo es lo suficientemente potente para la IA local.',
     },
     cloudSync: {
-        question: 'Como funciona la Sincronizacion en la Nube con un Toque?',
-        answer: 'CannaGuide respalda todo el estado de tu app en un <strong>Gist privado de GitHub</strong> que solo tu posees. Abre Configuracion -> Gestion de Datos, agrega un Token de Acceso Personal de GitHub con alcance <code>gist</code> y toca Sincronizar. Restaura en cualquier dispositivo importando desde el mismo Gist. Ningun servidor de terceros jamas toca tus datos.',
+        question: '\u00BFHay sincronizaci\u00F3n en la nube?',
+        answer: 'Por ahora no. La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 desactivada en esta versi\u00F3n. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, exporta el estado de la app como archivo en Configuraci\u00F3n -> Gesti\u00F3n de Datos e imp\u00F3rtalo all\u00ED.',
     },
     multiProviderAi: {
         question: 'Puedo usar un proveedor de IA diferente?',

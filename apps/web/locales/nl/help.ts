@@ -396,7 +396,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Spraakbesturing en Spraak',
                 content:
-                    'Bedien de app handsfree. Druk op de <strong>microfoonknop</strong> in de koptekst om te luisteren. Je kunt ook <strong>Tekst-naar-Spraak (TTS)</strong> inschakelen in Instellingen.',
+                    'Bedien de app handsfree. Druk op de <strong>microfoonknop</strong> in de koptekst om te luisteren. Je kunt ook <strong>Tekst-naar-Spraak (TTS)</strong> inschakelen in Instellingen. Spraakherkenning gebeurt door je browser: sommige browsers, zoals Chrome, sturen de audio naar de online spraakdienst van de browsermaker. <strong>Offline Spraakherkenning</strong> in Instellingen voegt een model op het apparaat toe dat wordt gebruikt zolang je offline bent.',
             },
             dataManagement: {
                 title: 'Datasoevereiniteit: Backup en Herstel',
@@ -414,9 +414,9 @@ export const helpView = {
                     'CannaGuide bevat een <strong>drielaagse lokale AI-stack</strong>:<ol><li><strong>WebLLM</strong> -- GPU-versnelde inferentie via WebGPU (Qwen3-0.5B).</li><li><strong>Transformers.js</strong> -- ONNX-inferentie via WASM/WebGPU (Qwen2.5-1.5B-Instruct).</li><li><strong>Heuristische Regels</strong> -- Trefwoord- en VPD-gebaseerde analyse wanneer er geen model is geladen.</li></ol>Open <strong>Instellingen -> Algemeen en UI</strong> om modellen voor te laden.',
             },
             cloudSync: {
-                title: 'One-Tap Cloud Sync',
+                title: 'Cloudsynchronisatie (momenteel niet beschikbaar)',
                 content:
-                    'Maak een backup van je volledige app-status naar een <strong>privaat GitHub Gist</strong> met een enkele tik. Open <strong>Instellingen -> Gegevensbeheer</strong> en voer een GitHub Personal Access Token in met <code>gist</code> scope.',
+                    'Cloudsynchronisatie via een priv\u00E9 GitHub Gist is <strong>in deze versie uitgeschakeld</strong>. Om je gegevens te back-uppen of naar een ander apparaat over te zetten, exporteer je de app-status als bestand via <strong>Instellingen -> Gegevensbeheer</strong> en importeer je hem daar weer.',
             },
             multiProvider: {
                 title: 'Multi-Provider AI (BYOK)',
@@ -722,8 +722,8 @@ export const faq = {
         answer: "Telemetrie meet inferentiesnelheid, tokendoorvoer en cache-hitratio's -- alles lokaal op je apparaat. Geen data verlaat ooit de browser.",
     },
     cloudSync: {
-        question: 'Hoe werkt One-Tap Cloud Sync?',
-        answer: 'CannaGuide maakt een backup van je volledige app-status naar een <strong>privaat GitHub Gist</strong>. Open Instellingen -> Gegevensbeheer, voeg een GitHub Personal Access Token met <code>gist</code> scope toe en tik op Sync.',
+        question: 'Is er cloudsynchronisatie?',
+        answer: 'Op dit moment niet. Cloudsynchronisatie via een priv\u00E9 GitHub Gist is in deze versie uitgeschakeld. Om je gegevens te back-uppen of naar een ander apparaat over te zetten, exporteer je de app-status als bestand via Instellingen -> Gegevensbeheer en importeer je hem daar weer.',
     },
     multiProviderAi: {
         question: 'Kan ik een andere AI-provider gebruiken?',

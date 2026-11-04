@@ -849,9 +849,9 @@ export const settingsView = {
         title: 'Privacy & Security',
         localOnlyMode: 'Local-Only Mode',
         localOnlyModeDesc:
-            'Blocks ALL outbound network traffic: Sentry error tracking, cloud AI requests, and Gist sync. Only local AI inference and local storage are allowed.',
+            'Keeps your data on this device and your local network. While it is on, CannaGuide sends no error reports and no cloud AI or cloud text-to-speech requests, skips online strain lookups and community sharing, and connects MQTT sensors only to brokers on your local network. Not covered yet: local AI models that download on first use (the explicit preload is blocked), and speech recognition, which some browsers process online.',
         localOnlyModeActive:
-            'Local-Only Mode is active. All external network requests are blocked. Disable this toggle to restore cloud features.',
+            'Local-Only Mode is active. Error reports, cloud AI, cloud text-to-speech, online strain lookups and community sharing are off, and MQTT is limited to your local network. Model downloads on first use and browser speech recognition are not blocked yet. Turn this off to restore cloud features.',
         requirePin: 'Require PIN on Launch',
         requirePinDesc: 'Protect your app with a 4-digit PIN.',
         setPin: 'Set/Change PIN',
@@ -887,8 +887,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Powers all AI features -- multi-provider BYOK (Gemini, OpenAI, xAI, Anthropic) with 22 local AI service modules.',
             react: 'React 19 + TypeScript (strict), Redux Toolkit, Zustand, RTK Query, 9 cannabis themes.',
-            indexedDb:
-                'Dual IndexedDB persistence for 100% offline functionality with CRDT cloud sync.',
+            indexedDb: 'Dual IndexedDB persistence for offline-first use.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 priority-preemptive workers (VPD, genealogy, inference, vision, hydro forecast) via typed WorkerBus.',
@@ -1058,7 +1057,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Disclaimer',
-            disclaimerContent: '<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>',
+            disclaimerContent:
+                '<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>',
         },
     },
     communityShare: {

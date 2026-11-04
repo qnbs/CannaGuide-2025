@@ -566,7 +566,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Voice Control & Speech',
                 content:
-                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud.',
+                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud. Speech recognition is done by your browser: some browsers, such as Chrome, send the audio to the browser maker\'s online speech service. <strong>Offline Speech Recognition</strong> in Settings adds an on-device model that is used while you are offline.',
             },
             dataManagement: {
                 title: 'Data Sovereignty: Backup & Restore',
@@ -584,9 +584,9 @@ export const helpView = {
                     'CannaGuide ships a <strong>three-layer local AI stack</strong> so advice never stops:<ol><li><strong>WebLLM</strong> — GPU-accelerated inference via WebGPU (Qwen3-0.5B). Best quality on high-end devices.</li><li><strong>Transformers.js</strong> — ONNX-based WASM/WebGPU inference (Qwen2.5-1.5B-Instruct). Works on every modern browser.</li><li><strong>Heuristic Rules</strong> — Keyword and VPD-based analysis when no model is loaded.</li></ol>Open <strong>Settings → General & UI</strong> to preload models while online. The <strong>Force WASM</strong> toggle locks inference to WASM when WebGPU causes instability. CLIP-ViT-L-14 handles vision classification with 33 cannabis-specific labels. Inference results are cached in an LRU-64 cache to avoid repeat work.',
             },
             cloudSync: {
-                title: 'One-Tap Cloud Sync',
+                title: 'Cloud Sync (currently unavailable)',
                 content:
-                    'Back up your entire app state to a <strong>private GitHub Gist</strong> with a single tap. Open <strong>Settings → Data Management</strong> and enter a GitHub Personal Access Token with <code>gist</code> scope. The app creates or updates a private Gist that you own — your data never touches a third-party server. Restore on any device by importing from the same Gist.',
+                    'Cloud sync through a private GitHub Gist is <strong>switched off in this version</strong>. To back up your data or move it to another device, export your app state as a file under <strong>Settings → Data Management</strong> and import it there.',
             },
             multiProvider: {
                 title: 'Multi-Provider AI (BYOK)',
@@ -815,7 +815,7 @@ export const helpView = {
             privacy: {
                 title: 'Privacy & Security',
                 content:
-                    'Protect the app with a PIN lock, manage data export/import, and configure one-tap cloud sync via GitHub Gist. Wipe all app data if needed.',
+                    'Protect the app with a PIN lock, manage data export/import and Local-Only Mode, and wipe all app data if needed.',
             },
             iot: {
                 title: 'IoT Settings',
@@ -825,7 +825,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Data Management',
                 content:
-                    'Export and import your entire app state as JSON. Use GitHub Gist sync for cross-device backups. Clear IndexedDB caches and reset the app if needed.',
+                    'Export and import your entire app state as JSON, for backups and for moving to another device. Clear IndexedDB caches and reset the app if needed.',
             },
             about: {
                 title: 'About',
@@ -997,8 +997,8 @@ export const faq = {
         answer: 'Telemetry measures inference speed, token throughput, cache hit rates, and model usage — all locally on your device. No data ever leaves the browser. This helps you understand if your device is powerful enough for local AI.',
     },
     cloudSync: {
-        question: 'How does One-Tap Cloud Sync work?',
-        answer: 'CannaGuide backs up your entire app state to a <strong>private GitHub Gist</strong> that only you own. Open Settings → Data Management, add a GitHub Personal Access Token with <code>gist</code> scope, and tap Sync. Restore on any device by importing from the same Gist. No third-party server ever touches your data.',
+        question: 'Is there cloud sync?',
+        answer: 'Not at the moment. Cloud sync through a private GitHub Gist is switched off in this version. To back up your data or move it to another device, export your app state as a file under Settings → Data Management and import it there.',
     },
     multiProviderAi: {
         question: 'Can I use a different AI provider?',

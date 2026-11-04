@@ -398,7 +398,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Controle Vocal et Parole',
                 content:
-                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres.",
+                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres. La reconnaissance vocale est assur\u00E9e par votre navigateur : certains navigateurs, comme Chrome, envoient l'audio au service vocal en ligne de l'\u00E9diteur du navigateur. La <strong>Reconnaissance vocale hors ligne</strong> des Param\u00E8tres ajoute un mod\u00E8le sur l'appareil, utilis\u00E9 tant que vous \u00EAtes hors ligne.",
             },
             dataManagement: {
                 title: 'Souverainete des Donnees : Sauvegarde et Restauration',
@@ -416,9 +416,9 @@ export const helpView = {
                     "CannaGuide embarque une <strong>pile IA locale a trois couches</strong> :<ol><li><strong>WebLLM</strong> -- Inference acceleree GPU via WebGPU (Qwen3-0.5B).</li><li><strong>Transformers.js</strong> -- Inference ONNX via WASM/WebGPU (Qwen2.5-1.5B-Instruct).</li><li><strong>Regles Heuristiques</strong> -- Analyse par mots-cles et VPD quand aucun modele n'est charge.</li></ol>Ouvrez <strong>Parametres -> General et UI</strong> pour precharger les modeles.",
             },
             cloudSync: {
-                title: 'Synchronisation Cloud en un Clic',
+                title: 'Synchronisation cloud (indisponible pour le moment)',
                 content:
-                    "Sauvegardez tout l'etat de votre app dans un <strong>Gist prive GitHub</strong> en un seul clic. Ouvrez <strong>Parametres -> Gestion des Donnees</strong> et entrez un Token d'Acces Personnel GitHub avec la portee <code>gist</code>.",
+                    "La synchronisation cloud via un Gist GitHub priv\u00E9 est <strong>d\u00E9sactiv\u00E9e dans cette version</strong>. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, exportez l'\u00E9tat de l'app sous forme de fichier dans <strong>Param\u00E8tres -> Gestion des Donn\u00E9es</strong> et importez-le \u00E0 cet endroit.",
             },
             multiProvider: {
                 title: 'IA Multi-Fournisseur (BYOK)',
@@ -725,8 +725,8 @@ export const faq = {
         answer: "La telemetrie mesure la vitesse d'inference, le debit de tokens et les taux de cache -- tout localement sur votre appareil. Aucune donnee ne quitte jamais le navigateur.",
     },
     cloudSync: {
-        question: 'Comment fonctionne la Synchronisation Cloud en un Clic ?',
-        answer: "CannaGuide sauvegarde tout l'etat dans un <strong>Gist prive GitHub</strong>. Ouvrez Parametres -> Gestion des Donnees, ajoutez un Token d'Acces Personnel GitHub avec portee <code>gist</code>.",
+        question: 'Existe-t-il une synchronisation cloud ?',
+        answer: "Pas pour le moment. La synchronisation cloud via un Gist GitHub priv\u00E9 est d\u00E9sactiv\u00E9e dans cette version. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, exportez l'\u00E9tat de l'app sous forme de fichier dans Param\u00E8tres -> Gestion des Donn\u00E9es et importez-le \u00E0 cet endroit.",
     },
     multiProviderAi: {
         question: "Puis-je utiliser un autre fournisseur d'IA ?",

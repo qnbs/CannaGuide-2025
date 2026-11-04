@@ -673,6 +673,11 @@ export const settingsView = {
         growImportDesc: 'Import a previously exported grow file (v2.0 format).',
         growImportSuccess: 'Grow "{{name}}" imported successfully.',
         growImportError: 'Import failed. Please ensure it is a valid grow export file (v2.0).',
+        growImportLimit:
+            'Import refused: you already have the maximum of {{max}} grows. Remove a grow first.',
+        growImportAlreadyPresent: 'Import refused: the plants in this file are already in the app.',
+        growImportPlantLimit:
+            'Import refused: there are not enough free plant slots for the plants in this file. At most three plants can be grown at the same time.',
         totalUsage: 'Total Usage',
         lastBackup: 'Last Backup',
         noBackup: 'No backup created yet',

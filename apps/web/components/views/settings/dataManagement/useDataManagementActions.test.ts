@@ -206,4 +206,80 @@ describe('useDataManagementActions', () => {
             message: 'settingsView.data.sliceResetError',
         })
     })
+
+    describe('grow import (GH #674)', () => {
+        const growFile = async (plantCount: number): Promise<File> => {
+            const { plantSimulationService } = await import('@/services/plantSimulationService')
+            const strain = {
+                id: 'strain-hook-test',
+                name: 'Hook Strain',
+                type: 'Hybrid',
+                floweringType: 'Photoperiod',
+                agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' },
+            }
+            const setup = {
+                lightType: 'LED',
+                lightWattage: 300,
+                lightHours: 18,
+                ventilation: 'medium',
+                hasCirculationFan: true,
+                potSize: 11,
+                potType: 'Fabric',
+                medium: 'Soil',
+                dynamicLighting: false,
+            }
+            const plants = Array.from({ length: plantCount }, (_, index) => ({
+                ...plantSimulationService.createPlant(
+                    strain as Parameters<typeof plantSimulationService.createPlant>[0],
+                    setup as Parameters<typeof plantSimulationService.createPlant>[1],
+                    `Plant ${String(index)}`,
+                ),
+                id: `p${String(index)}`,
+                growId: 'default-grow',
+            }))
+            const body = JSON.stringify({
+                version: '2.0',
+                exportedAt: 1,
+                grow: { id: 'default-grow', name: 'Balcony', isActive: true },
+                plants,
+            })
+            return new File([body], 'grow.json', { type: 'application/json' })
+        }
+
+        const importFile = async (file: File) => {
+            const { result } = renderHook(() => useDataManagementActions())
+            act(() => {
+                result.current.handleGrowFileChange({
+                    target: { files: [file], value: 'grow.json' },
+                } as unknown as Parameters<typeof result.current.handleGrowFileChange>[0])
+            })
+            await waitFor(() => expect(mocks.addNotification).toHaveBeenCalled())
+        }
+
+        const dispatchedTypes = (): string[] =>
+            mocks.dispatch.mock.calls.map(([action]) => (action as { type: string }).type)
+
+        it('adds the grow and every plant, then reports success', async () => {
+            await importFile(await growFile(2))
+
+            expect(dispatchedTypes()).toEqual([
+                'grows/addGrow',
+                'simulation/addPlant',
+                'simulation/addPlant',
+            ])
+            expect(mocks.addNotification).toHaveBeenCalledWith(
+                expect.objectContaining({ type: 'success' }),
+            )
+        })
+
+        it('adds nothing and says why when the plants exceed the free slots', async () => {
+            await importFile(await growFile(4))
+
+            expect(dispatchedTypes()).toEqual([])
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.data.growImportPlantLimit',
+            })
+        })
+    })
 })

@@ -697,6 +697,12 @@ export const settingsView = {
         growImportSuccess: 'Grow "{{name}}" erfolgreich importiert.',
         growImportError:
             'Import fehlgeschlagen. Bitte stellen Sie sicher, dass es sich um eine gueltige Grow-Exportdatei (v2.0) handelt.',
+        growImportLimit:
+            'Import abgelehnt: Du hast bereits die Höchstzahl von {{max}} Grows. Entferne zuerst einen Grow.',
+        growImportAlreadyPresent:
+            'Import abgelehnt: Die Pflanzen aus dieser Datei sind bereits in der App.',
+        growImportPlantLimit:
+            'Import abgelehnt: Für die Pflanzen in dieser Datei sind nicht genug Pflanzenplätze frei. Es dürfen höchstens drei Pflanzen gleichzeitig angebaut werden.',
         totalUsage: 'Gesamtnutzung',
         lastBackup: 'Letztes Backup',
         noBackup: 'Noch kein Backup erstellt',

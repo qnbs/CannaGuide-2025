@@ -76,9 +76,13 @@ export const initSentry = (): void => {
             replaysOnErrorSampleRate: 1.0,
             integrations: [
                 mod.browserTracingIntegration(),
+                // Replays must never carry what the user wrote or photographed:
+                // journal entries, notes, strain names, settings values, plant
+                // photos (GH #586). Text and inputs are masked, media blocked.
                 mod.replayIntegration({
-                    maskAllText: false,
-                    blockAllMedia: false,
+                    maskAllText: true,
+                    maskAllInputs: true,
+                    blockAllMedia: true,
                 }),
             ],
             beforeSend(event) {

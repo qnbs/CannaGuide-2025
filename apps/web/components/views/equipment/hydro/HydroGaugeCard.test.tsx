@@ -8,7 +8,8 @@ describe('HydroGaugeCard', () => {
         (count) => {
             render(<HydroGaugeCard label="Readings" value={count} unit="#" decimals={0} />)
 
-            expect(screen.getByText(String(count)).className).toContain('text-emerald-400')
+            // Neutral: a count is neither healthy (green) nor too high (red).
+            expect(screen.getByText(String(count)).className).toContain('text-slate-200')
             expect(screen.getByText('#').textContent).toBe('#')
         },
     )

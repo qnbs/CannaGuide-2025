@@ -133,6 +133,23 @@ describe('plantToYMap / yMapToPlant', () => {
         expect(deserialized!.stressCounters).toEqual(plant.stressCounters)
     })
 
+    it('carries the stage start with the stage it describes', () => {
+        const plant = { ...makePlant(), stageStart: { stage: makePlant().stage, at: 4_000 } }
+
+        expect(yMapToPlant(plantToYMap(plant))?.stageStart).toEqual(plant.stageStart)
+    })
+
+    it('keeps the plant and drops a damaged or missing stage start', () => {
+        const record = plantToYMap(makePlant())
+
+        for (const stageStart of ['{not json', '{"stage":"NOPE","at":1}', '{"stage":"SEED"}']) {
+            const plant = yMapToPlant({ ...record, stageStart })
+            expect(plant).not.toBeNull()
+            expect(plant && 'stageStart' in plant).toBe(false)
+        }
+        expect(yMapToPlant(record)?.stageStart).toBeUndefined()
+    })
+
     it('keeps the plant when the flowering policy is not a known mode', () => {
         const plant = makePlant()
         const serialized = plantToYMap(plant)

@@ -230,7 +230,13 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
             autoScheduleInput(plantId, plant, stageStart),
         )
         if (result.tasks.length === 0) return
-        const outcome = dispatch(addGeneratedTasks({ tasks: result.tasks, scope: result.scope }))
+        const outcome = dispatch(
+            addGeneratedTasks({
+                tasks: result.tasks,
+                scope: result.scope,
+                stageStartedAt: stageStart.known ? stageStart.at : null,
+            }),
+        )
         notifyAutoScheduleOutcome({ ...outcome, stageStartKnown: stageStart.known }, t)
     }, [dispatch, plantId, plant, t])
 

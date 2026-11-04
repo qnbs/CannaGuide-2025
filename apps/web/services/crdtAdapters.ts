@@ -3,6 +3,7 @@ import type { Plant, JournalEntry } from '@/types'
 import { PlantStage, JournalEntryType } from '@/types'
 import type { NutrientScheduleEntry, EcPhReading } from '@/stores/slices/nutrientPlannerSlice'
 import { DEFAULT_GROW_ID } from '@/constants'
+import { parseStageStart } from '@/services/simulation/stageStart'
 
 // ---------------------------------------------------------------------------
 // Minimal Zod schemas for CRDT deserialization validation
@@ -161,7 +162,15 @@ export const plantToYMap = (plant: Plant): Record<string, unknown> => ({
     cannabinoidProfile: JSON.stringify(plant.cannabinoidProfile),
     terpeneProfile: JSON.stringify(plant.terpeneProfile),
     stressCounters: JSON.stringify(plant.stressCounters),
+    // When the stage began; synced with the stage it describes (GH #659).
+    stageStart: plant.stageStart === undefined ? undefined : JSON.stringify(plant.stageStart),
 })
+
+/** The validated stage start of a sync record, or no key at all. */
+const stageStartField = (value: unknown): Pick<Plant, 'stageStart'> => {
+    const stageStart = parseStageStart(value)
+    return stageStart === undefined ? {} : { stageStart }
+}
 
 /**
  * Deserialize a Y.Map record back into a Plant.
@@ -169,8 +178,10 @@ export const plantToYMap = (plant: Plant): Record<string, unknown> => ({
  */
 export const yMapToPlant = (data: Record<string, unknown>): Plant | null => {
     try {
+        const { stageStart: storedStageStart, ...fields } = data
         const parsed = {
-            ...data,
+            ...fields,
+            ...stageStartField(storedStageStart),
             strain:
                 typeof data['strain'] === 'string' ? JSON.parse(data['strain']) : data['strain'],
             biomass:

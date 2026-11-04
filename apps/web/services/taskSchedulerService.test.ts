@@ -159,6 +159,18 @@ describe('taskSchedulerService', () => {
             }
         })
 
+        it.each([PlantStage.Germination, PlantStage.Harvest, PlantStage.Drying])(
+            'gives %s, a stage without a feeding phase, no brand weeks',
+            (currentStage) => {
+                const result = taskSchedulerService.generateTasks(
+                    makeInput({ currentStage, brandScheduleId: 'builtin.biobizz-organic' }),
+                )
+
+                expect(result.tasks.filter(({ id }) => id.includes('-feed-'))).toEqual([])
+                expect(result.brandUsed).toBeNull()
+            },
+        )
+
         it('uses the plant creation for its first stage', () => {
             expect(
                 currentStageStart({ stage: PlantStage.Seed, createdAt: 1_000, journal: [] }),

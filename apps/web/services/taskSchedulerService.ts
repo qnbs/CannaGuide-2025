@@ -190,15 +190,15 @@ const templateTasks = (
     }
 }
 
-const brandLabelOf = (stage: PlantStage): string => stageKeyOf(stage)?.label ?? 'vegetative'
-
 const NO_TASKS = { tasks: [] as PlannerTask[], used: null }
 
 const brandTasks = (input: TaskSchedulerInput): { tasks: PlannerTask[]; used: string | null } => {
     if (!input.brandScheduleId) return NO_TASKS
     const brand = findBrandSchedule(input.brandScheduleId)
-    if (!brand) return NO_TASKS
-    const label = brandLabelOf(input.currentStage)
+    // A stage without a feeding phase (germination, harvest, drying, curing)
+    // gets no brand weeks; it used to fall back to the vegetative weeks.
+    const label = stageKeyOf(input.currentStage)?.label
+    if (!brand || label === undefined) return NO_TASKS
     return {
         tasks: nutrientWeeksToTasks(brand.data.weeks, input.plantId, input.stageStartDate, label, {
             stage: input.currentStage,

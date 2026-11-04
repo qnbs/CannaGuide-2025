@@ -33,8 +33,12 @@ export const withoutOldestCompleted = (tasks: PlannerTask[], count: number): Pla
 // Tasks generated before stable ids
 // ---------------------------------------------------------------------------
 
-/** Generated before stable ids existed (GH #659): `auto-<time>-<counter>-<uuid>`. */
-const LEGACY_AUTO_ID = /^auto-(?<batch>\d+)-\d+-/u
+/**
+ * Generated before stable ids existed (GH #659): `auto-<ms time>-<counter>-<8 hex>`,
+ * the whole id. A stable id of a plant whose id happens to start with digits
+ * does not match, because it goes on after the hex part.
+ */
+const LEGACY_AUTO_ID = /^auto-(?<batch>\d{13})-\d+-[0-9a-f]{8}$/u
 
 interface LegacyRow {
     task: PlannerTask
@@ -45,11 +49,21 @@ interface LegacyRow {
 const legacyBatchOf = (task: PlannerTask): string | undefined =>
     LEGACY_AUTO_ID.exec(task.id)?.groups?.['batch']
 
-const legacyRowsOf = (tasks: readonly PlannerTask[]): LegacyRow[] =>
-    tasks.filter(isOpen).flatMap((task) => {
+/**
+ * The old open rows that may belong to the current stage. The time in an old id
+ * is when that batch was generated, so a batch from before the current stage
+ * began belongs to an earlier stage (Seed and Seedling share template steps).
+ * Without a recorded stage start no old row is matched: a visible copy is
+ * better than a task silently left out.
+ */
+const legacyRowsOf = (tasks: readonly PlannerTask[], since: number | null): LegacyRow[] => {
+    if (since === null) return []
+    return tasks.filter(isOpen).flatMap((task) => {
         const stamp = legacyBatchOf(task)
-        return stamp === undefined ? [] : [{ task, batch: `${task.plantId}|${stamp}` }]
+        if (stamp === undefined || Number(stamp) < since) return []
+        return [{ task, batch: `${task.plantId}|${stamp}` }]
     })
+}
 
 const taskKey = (task: PlannerTask): string => `${task.plantId}|${task.type}|${task.notes ?? ''}`
 
@@ -106,14 +120,16 @@ const matchByShift = (match: LegacyMatch, fresh: readonly PlannerTask[]): void =
  * match. Once a batch has one match it is known to be this schedule, and its
  * other rows are matched by type and by the same distance in time, so a row
  * whose notes the grower edited is recognised and not copied. Each old row
- * stands for one new task at most.
+ * stands for one new task at most. Only batches generated since the stage
+ * began (`since`) are considered.
  */
 export const legacyMatches = (
     tasks: readonly PlannerTask[],
     fresh: readonly PlannerTask[],
+    since: number | null,
 ): Set<string> => {
     const match: LegacyMatch = {
-        rows: legacyRowsOf(tasks),
+        rows: legacyRowsOf(tasks, since),
         claimed: new Set(),
         matched: new Set(),
         shifts: new Map(),
@@ -132,6 +148,8 @@ export interface GeneratedTasks {
     tasks: readonly PlannerTask[]
     /** The id prefix of every generated task of this plant and stage. */
     scope: string
+    /** When the plant entered this stage, or null when that was not recorded. */
+    stageStartedAt: number | null
 }
 
 export interface GeneratedTasksPlan {
@@ -153,10 +171,14 @@ const uniqueById = (tasks: readonly PlannerTask[]): PlannerTask[] => {
 }
 
 /** The tasks the planner does not have yet, by id or as an old random-id row. */
-const freshTasks = (tasks: readonly PlannerTask[], unique: PlannerTask[]): PlannerTask[] => {
+const freshTasks = (
+    tasks: readonly PlannerTask[],
+    unique: PlannerTask[],
+    since: number | null,
+): PlannerTask[] => {
     const known = new Set(tasks.map((task) => task.id))
     const unknown = unique.filter((task) => !known.has(task.id))
-    const legacy = legacyMatches(tasks, unknown)
+    const legacy = legacyMatches(tasks, unknown, since)
     return unknown.filter((task) => !legacy.has(task.id))
 }
 
@@ -194,7 +216,7 @@ export const planNewTasks = (
     generated: GeneratedTasks,
 ): GeneratedTasksPlan => {
     const unique = uniqueById(generated.tasks)
-    const fresh = freshTasks(tasks, unique)
+    const fresh = freshTasks(tasks, unique, generated.stageStartedAt)
     const fromOtherSchedule = otherScheduleCount(tasks, unique, generated.scope)
     const blocked = fromOtherSchedule > 0
     const accepted = blocked ? [] : fresh.slice(0, roomFor(tasks))

@@ -53,6 +53,19 @@ describe('useUIStore', () => {
             useUIStore.getState().addNotification({ message: 'B', type: 'error' })
             expect(useUIStore.getState().notifications).toHaveLength(2)
         })
+
+        it('gives notices added in the same millisecond distinct ids', () => {
+            vi.useFakeTimers()
+            vi.setSystemTime(1_000)
+            useUIStore.getState().addNotification({ message: 'A', type: 'success' })
+            useUIStore.getState().addNotification({ message: 'B', type: 'info' })
+            vi.useRealTimers()
+
+            const [first, second] = useUIStore.getState().notifications
+            expect(first?.id).not.toBe(second?.id)
+            useUIStore.getState().removeNotification(first?.id ?? -1)
+            expect(useUIStore.getState().notifications.map(({ message }) => message)).toEqual(['B'])
+        })
     })
 
     describe('setAppReady', () => {

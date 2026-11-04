@@ -26,7 +26,11 @@ const task = (id: string, overrides: Partial<PlannerTask> = {}): PlannerTask => 
 const tasks = (count: number, prefix: string, overrides: Partial<PlannerTask> = {}) =>
     Array.from({ length: count }, (_, index) => task(`${prefix}${String(index)}`, overrides))
 
-const generated = (list: PlannerTask[], scope = SCOPE) => ({ tasks: list, scope })
+const generated = (list: PlannerTask[], scope = SCOPE, stageStartedAt: number | null = 0) => ({
+    tasks: list,
+    scope,
+    stageStartedAt,
+})
 
 const withTasks = (list: PlannerTask[]): GrowPlannerState => ({ tasks: list })
 
@@ -98,6 +102,7 @@ describe('growPlanner task cap and generated tasks (GH #659)', () => {
         const next = growPlannerReducer(withTasks(existing), addPlannerTask(task('manual')))
 
         expect(next.tasks).toHaveLength(existing.length)
+        expect(next.tasks.some(({ id }) => id === 'manual')).toBe(true)
         expect(next.tasks.filter(({ id }) => id.startsWith('done-'))).toHaveLength(19)
     })
 
@@ -142,7 +147,7 @@ describe('schedule identity (GH #659)', () => {
     })
     const run = (overrides: Partial<TaskSchedulerInput> = {}) => {
         const result = taskSchedulerService.generateTasks(input(overrides))
-        return generated(result.tasks, result.scope)
+        return generated(result.tasks, result.scope, 0)
     }
 
     it('adds nothing and names the count when the stage has open tasks of another template', () => {
@@ -252,6 +257,71 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         ]
 
         expect(planNewTasks(otherStage, generated(fresh))).toMatchObject({ added: 3 })
+    })
+
+    it('keeps Seed tasks from before the update from hiding the Seedling schedule', () => {
+        // Seed and Seedling share the template's seedling steps, so plant, type
+        // and notes match; only the batch time tells the stages apart.
+        const stamp = 1_730_000_000_000
+        const asLegacy = (list: readonly PlannerTask[]) =>
+            list.map((t, index) => ({
+                ...t,
+                id: `auto-${String(stamp)}-${String(index + 1)}-aaaaaaaa`,
+            }))
+        const seedBatch = asLegacy(
+            taskSchedulerService.generateTasks({
+                plantId: 'p1',
+                strainType: 'Hybrid',
+                floweringType: 'Photoperiod',
+                currentStage: PlantStage.Seed,
+                stageStartDate: stamp,
+            }).tasks,
+        )
+        const seedling = taskSchedulerService.generateTasks({
+            plantId: 'p1',
+            strainType: 'Hybrid',
+            floweringType: 'Photoperiod',
+            currentStage: PlantStage.Seedling,
+            stageStartDate: stamp + 5 * 86_400_000,
+        })
+        expect(seedBatch.length).toBeGreaterThan(0)
+
+        const later = planNewTasks(
+            seedBatch,
+            generated(seedling.tasks, seedling.scope, stamp + 5 * 86_400_000),
+        )
+        const sameStage = planNewTasks(seedBatch, generated(seedling.tasks, seedling.scope, stamp))
+
+        expect(later).toMatchObject({ added: seedling.tasks.length, alreadyScheduled: 0 })
+        // Control: a batch generated in this stage is recognised.
+        expect(sameStage).toMatchObject({ added: 0, alreadyScheduled: seedling.tasks.length })
+    })
+
+    it('does not take a batch generated before the stage began for this stage', () => {
+        // Seed and Seedling share template steps; the old batch is the Seed one.
+        const plan = planNewTasks(legacy, generated(fresh, SCOPE, 1_730_000_000_001))
+
+        expect(plan).toMatchObject({ added: 3, alreadyScheduled: 0 })
+    })
+
+    it('matches no old row when the stage start is not recorded', () => {
+        expect(planNewTasks(legacy, generated(fresh, SCOPE, null))).toMatchObject({ added: 3 })
+    })
+
+    it('does not take a stable id of a plant whose id starts with digits for an old one', () => {
+        const digitPlant = '1730000000000-3-1a2b3c4d'
+        const stable = task(`auto-${digitPlant}-SEED-step-t-0-water-0`, {
+            plantId: digitPlant,
+            notes: 'A',
+        })
+        const next = task(`auto-${digitPlant}-SEEDLING-step-t-0-water-0`, {
+            plantId: digitPlant,
+            notes: 'A',
+        })
+
+        const plan = planNewTasks([stable], generated([next], `auto-${digitPlant}-SEEDLING-`))
+
+        expect(plan).toMatchObject({ added: 1, alreadyScheduled: 0 })
     })
 
     it('ignores completed old rows', () => {

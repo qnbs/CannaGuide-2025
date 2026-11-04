@@ -129,6 +129,13 @@ export interface UIActions {
 
 const MAIN_VIEWS: View[] = [View.Plants, View.Strains, View.Equipment, View.Knowledge]
 
+/**
+ * The current time, or one more than the newest notice when several arrive in
+ * the same millisecond, so dismissing one notice never removes another.
+ */
+const nextNotificationId = (notifications: readonly Notification[]): number =>
+    Math.max(Date.now(), ...notifications.map(({ id }) => id + 1))
+
 const initialGrowFlow: UIState['newGrowFlow'] = {
     status: 'idle',
     slotIndex: null,
@@ -200,7 +207,10 @@ export const useUIStore = create<UIState & UIActions>()(
 
             addNotification: (payload) =>
                 set((state) => ({
-                    notifications: [...state.notifications, { id: Date.now(), ...payload }],
+                    notifications: [
+                        ...state.notifications,
+                        { id: nextNotificationId(state.notifications), ...payload },
+                    ],
                 })),
 
             removeNotification: (id) =>

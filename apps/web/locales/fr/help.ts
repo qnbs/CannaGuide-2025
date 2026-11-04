@@ -380,7 +380,8 @@ export const helpView = {
         toc: 'Aller a la Section',
         introduction: {
             title: 'Introduction et Philosophie',
-            content: `Bienvenue dans CannaGuide 2025, votre copilote ultime pour la culture du cannabis. Ce manuel vous guide a travers les fonctionnalites avancees de l'app.<h4>Nos Principes Fondamentaux :</h4><ul><li><strong>Offline First :</strong> plantes, journal et reglages fonctionnent sans connexion internet ; l'IA cloud, la reconnaissance vocale de certains navigateurs et le premier telechargement des modeles en ont besoin. Les actions faites hors ligne sont mises en file d'attente et rejouees au retour en ligne. Une pile IA locale a trois couches garantit que les diagnostics et conseils restent disponibles meme sans reseau.</li><li><strong>Axe sur la Performance :</strong> Une UI fluide grace au dechargement des simulations complexes vers un Web Worker et une inference optimisee ONNX avec cache LRU.</li><li><strong>Souverainete des Donnees :</strong> Controle complet avec sauvegarde et restauration sur votre appareil (sauvegarde ZIP). La synchronisation cloud est desactivee dans cette version.</li><li><strong>IA Multi-Fournisseur :</strong> Apportez votre propre cle pour Google Gemini, OpenAI, Anthropic ou xAI/Grok -- ou utilisez la pile IA locale sur l'appareil sans aucune cle API requise.</li></ul>`,
+            content:
+                "Bienvenue dans CannaGuide 2025, votre copilote ultime pour la culture du cannabis. Ce manuel vous guide a travers les fonctionnalites avancees de l'app.<h4>Nos Principes Fondamentaux :</h4><ul><li><strong>Offline First :</strong> plantes, journal et reglages fonctionnent sans connexion internet ; l'IA cloud, la reconnaissance vocale de certains navigateurs et le premier telechargement des modeles en ont besoin. Les actions faites hors ligne sont mises en file d'attente et rejouees au retour en ligne. Une pile IA locale a trois couches garantit que les diagnostics et conseils restent disponibles meme sans reseau.</li><li><strong>Axe sur la Performance :</strong> Une UI fluide grace au dechargement des simulations complexes vers un Web Worker et une inference optimisee ONNX avec cache LRU.</li><li><strong>Souverainete des Donnees :</strong> Controle complet avec sauvegarde et restauration sur votre appareil (sauvegarde ZIP). La synchronisation cloud est desactivee dans cette version.</li><li><strong>IA Multi-Fournisseur :</strong> Apportez votre propre cle pour Google Gemini, OpenAI, Anthropic ou xAI/Grok -- ou utilisez la pile IA locale sur l'appareil sans aucune cle API requise.</li></ul>",
         },
         general: {
             title: 'Fonctionnalites de la Plateforme',
@@ -388,7 +389,7 @@ export const helpView = {
             pwa: {
                 title: 'PWA et Usage Hors Ligne',
                 content:
-                    "Installez CannaGuide comme une <strong>Progressive Web App</strong> pour une experience native via l'icone dans l'en-tete. Le Service Worker robuste met en cache toutes les donnees, assurant une <strong>utilisation hors ligne (hors requetes IA en direct, reconnaissance vocale de certains navigateurs et premier telechargement des modeles)</strong>.",
+                    "Installez CannaGuide comme une <strong>Progressive Web App</strong> pour une exp\u00E9rience native via l'ic\u00F4ne de l'en-t\u00EAte. Le Service Worker garde l'app elle-m\u00EAme disponible hors ligne ; vos plantes, notes et archives sont enregistr\u00E9es dans la base de donn\u00E9es du navigateur sur cet appareil. Hors ligne, tout fonctionne sauf les requ\u00EAtes IA en direct, la reconnaissance vocale de certains navigateurs et le premier t\u00E9l\u00E9chargement des mod\u00E8les.",
             },
             commandPalette: {
                 title: 'Palette de Commandes (Cmd/Ctrl + K)',
@@ -403,7 +404,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Souverainete des Donnees : Sauvegarde et Restauration',
                 content:
-                    "Dans <code>Param\u00E8tres > Gestion des Donn\u00E9es</code>, vous gardez le contr\u00F4le total. La <strong>sauvegarde ZIP</strong> contient tout, y compris les photos et les journaux archiv\u00E9s, et le restaure sur n'importe quel appareil. L'export JSON ne contient que l'\u00E9tat de l'app (plantes, r\u00E9glages, etc.), sans photos ni journaux archiv\u00E9s.",
+                    "Dans <code>Param\u00E8tres > Gestion des Donn\u00E9es</code>, vous gardez le contr\u00F4le total. La <strong>sauvegarde ZIP</strong> contient les donn\u00E9es de l'app, y compris les photos et les journaux archiv\u00E9s, et les restaure sur n'importe quel appareil ; les cl\u00E9s d'API ne sont pas incluses et doivent \u00EAtre saisies \u00E0 nouveau. La sauvegarde JSON (sauvegarde et restauration) ne contient que l'\u00E9tat de l'app (plantes, r\u00E9glages, etc.), sans photos ni journaux archiv\u00E9s.",
             },
             accessibility: {
                 title: 'Accessibilite Amelioree',

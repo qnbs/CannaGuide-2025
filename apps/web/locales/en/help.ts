@@ -548,7 +548,8 @@ export const helpView = {
         toc: 'Jump to Section',
         introduction: {
             title: 'Introduction & Philosophy',
-            content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> Your plants, journal and settings work without an internet connection; cloud AI, speech recognition in some browsers and first-time model downloads need one. Actions taken offline are queued and replayed when you are back online. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with backup and restore on your device (ZIP backup). Cloud sync is switched off in this version.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>`,
+            content:
+                "Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> Your plants, journal and settings work without an internet connection; cloud AI, speech recognition in some browsers and first-time model downloads need one. Actions taken offline are queued and replayed when you are back online. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with backup and restore on your device (ZIP backup). Cloud sync is switched off in this version.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>",
         },
         general: {
             title: 'Platform-Wide Features',
@@ -556,7 +557,7 @@ export const helpView = {
             pwa: {
                 title: 'PWA & Offline Use',
                 content:
-                    'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The robust Service Worker caches all app data, including your plants, notes, and even AI archives, ensuring <strong>offline use (except live AI requests, speech recognition in some browsers and first-time model downloads)</strong>.',
+                    "Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The Service Worker keeps the app itself available offline; your plants, notes and archives are stored in the browser's database on this device. Offline use covers everything except live AI requests, speech recognition in some browsers and first-time model downloads.",
             },
             commandPalette: {
                 title: 'Command Palette (Cmd/Ctrl + K)',
@@ -571,7 +572,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Data Sovereignty: Backup & Restore',
                 content:
-                    'Under <code>Settings > Data Management</code>, you have full control. The <strong>ZIP backup</strong> holds everything, including photos and archived journals, and restores it on any device. The JSON export holds the app state only (plants, settings, etc.), without photos or archived journals.',
+                    'Under <code>Settings > Data Management</code>, you have full control. The <strong>ZIP backup</strong> holds your app data, including photos and archived journals, and restores it on any device; API keys are not included and must be entered again. The JSON backup under Backup & Restore holds the app state only (plants, settings, etc.), without photos or archived journals.',
             },
             accessibility: {
                 title: 'Enhanced Accessibility',
@@ -825,7 +826,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Data Management',
                 content:
-                    'Use the ZIP backup for a complete backup or for moving to another device; it includes photos and archived journals. The JSON export holds the app state only. Clear IndexedDB caches and reset the app if needed.',
+                    'Use the ZIP backup to back up your app data or move it to another device; it includes photos and archived journals, but not API keys. The JSON backup holds the app state only. Clear IndexedDB caches and reset the app if needed.',
             },
             about: {
                 title: 'About',

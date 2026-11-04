@@ -551,7 +551,8 @@ export const helpView = {
         toc: 'Zum Abschnitt springen',
         introduction: {
             title: 'Einführung & Philosophie',
-            content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> Pflanzen, Tagebuch und Einstellungen funktionieren ohne Internetverbindung; Cloud-KI, die Spracherkennung mancher Browser und erstmalige Modelldownloads brauchen eine. Offline ausgeführte Aktionen werden vorgemerkt und ausgeführt, sobald Sie wieder online sind. Ein dreistufiger lokaler KI-Stack stellt sicher, dass Diagnosen und Ratschläge auch ohne Netzwerk verfügbar bleiben.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker und ONNX-optimierter Inferenz mit LRU-Caching.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch Backup und Wiederherstellung auf Ihrem Gerät (ZIP-Backup). Der Cloud-Sync ist in dieser Version abgeschaltet.</li><li><strong>Multi-Provider-KI:</strong> Bringen Sie Ihren eigenen Schlüssel mit für Google Gemini, OpenAI, Anthropic oder xAI/Grok — oder nutzen Sie den lokalen KI-Stack ganz ohne API-Schlüssel.</li></ul>`,
+            content:
+                'Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> Pflanzen, Tagebuch und Einstellungen funktionieren ohne Internetverbindung; Cloud-KI, die Spracherkennung mancher Browser und erstmalige Modelldownloads brauchen eine. Offline ausgeführte Aktionen werden vorgemerkt und ausgeführt, sobald Sie wieder online sind. Ein dreistufiger lokaler KI-Stack stellt sicher, dass Diagnosen und Ratschläge auch ohne Netzwerk verfügbar bleiben.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker und ONNX-optimierter Inferenz mit LRU-Caching.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch Backup und Wiederherstellung auf Ihrem Gerät (ZIP-Backup). Der Cloud-Sync ist in dieser Version abgeschaltet.</li><li><strong>Multi-Provider-KI:</strong> Bringen Sie Ihren eigenen Schlüssel mit für Google Gemini, OpenAI, Anthropic oder xAI/Grok — oder nutzen Sie den lokalen KI-Stack ganz ohne API-Schlüssel.</li></ul>',
         },
         general: {
             title: 'Plattformweite Funktionen',
@@ -559,7 +560,7 @@ export const helpView = {
             pwa: {
                 title: 'PWA & Offline-Nutzung',
                 content:
-                    'Installieren Sie CannaGuide als <strong>Progressive Web App</strong> für ein natives App-Erlebnis über das Icon in der Kopfzeile. Der robuste Service Worker speichert alle App-Daten zwischen, einschließlich Ihrer Pflanzen, Notizen und sogar KI-Archive, und gewährleistet so eine <strong>Offline-Nutzung (ausgenommen Live-KI-Anfragen, die Spracherkennung mancher Browser und erstmalige Modelldownloads)</strong>.',
+                    'Installieren Sie CannaGuide als <strong>Progressive Web App</strong> für ein natives App-Erlebnis über das Icon in der Kopfzeile. Der Service Worker hält die App selbst offline verfügbar; Ihre Pflanzen, Notizen und Archive liegen in der Datenbank des Browsers auf diesem Gerät. Offline funktioniert alles außer Live-KI-Anfragen, der Spracherkennung mancher Browser und erstmaligen Modelldownloads.',
             },
             commandPalette: {
                 title: 'Befehlspalette (Cmd/Ctrl + K)',
@@ -574,7 +575,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Datensouveränität: Backup & Wiederherstellung',
                 content:
-                    'Unter <code>Einstellungen > Datenverwaltung</code> haben Sie die volle Kontrolle. Das <strong>ZIP-Backup</strong> enthält alles, auch Fotos und archivierte Tagebücher, und stellt es auf jedem Gerät wieder her. Der JSON-Export enthält nur den App-Zustand (Pflanzen, Einstellungen usw.), ohne Fotos und archivierte Tagebücher.',
+                    'Unter <code>Einstellungen > Datenverwaltung</code> haben Sie die volle Kontrolle. Das <strong>ZIP-Backup</strong> enthält Ihre App-Daten, auch Fotos und archivierte Tagebücher, und stellt sie auf jedem Gerät wieder her; API-Schlüssel sind nicht enthalten und müssen neu eingegeben werden. Das JSON-Backup (Sichern und Wiederherstellen) enthält nur den App-Zustand (Pflanzen, Einstellungen usw.), ohne Fotos und archivierte Tagebücher.',
             },
             accessibility: {
                 title: 'Erweiterte Barrierefreiheit',
@@ -827,7 +828,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Datenverwaltung',
                 content:
-                    'Nutzen Sie das ZIP-Backup für eine vollständige Sicherung oder den Umzug auf ein anderes Gerät; es enthält auch Fotos und archivierte Tagebücher. Der JSON-Export enthält nur den App-Zustand. Leeren Sie bei Bedarf die IndexedDB-Caches und setzen Sie die App zurück.',
+                    'Nutzen Sie das ZIP-Backup, um Ihre App-Daten zu sichern oder auf ein anderes Gerät zu übertragen; es enthält auch Fotos und archivierte Tagebücher, aber keine API-Schlüssel. Das JSON-Backup enthält nur den App-Zustand. Leeren Sie bei Bedarf die IndexedDB-Caches und setzen Sie die App zurück.',
             },
             about: {
                 title: 'Info / About',

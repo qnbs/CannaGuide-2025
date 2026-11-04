@@ -377,7 +377,8 @@ export const helpView = {
         toc: 'Ir a Seccion',
         introduction: {
             title: 'Introduccion y Filosofia',
-            content: `Bienvenido a CannaGuide 2025, tu copiloto definitivo para el cultivo de cannabis. Este manual te guia a traves de las funciones avanzadas de la app.<h4>Nuestros Principios Fundamentales:</h4><ul><li><strong>Offline First:</strong> plantas, diario y ajustes funcionan sin conexion a internet; la IA en la nube, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos la necesitan. Las acciones hechas sin conexion se ponen en cola y se repiten al volver a estar en linea. Una pila de IA local de tres capas asegura que los diagnosticos y consejos esten disponibles incluso sin red.</li><li><strong>Orientado al Rendimiento:</strong> Una UI fluida gracias a la descarga de simulaciones complejas a un Web Worker e inferencia optimizada con ONNX y cache LRU.</li><li><strong>Soberania de Datos:</strong> Control completo con respaldo y restauracion en tu dispositivo (copia ZIP). La sincronizacion en la nube esta desactivada en esta version.</li><li><strong>IA Multi-Proveedor:</strong> Trae tu propia clave para Google Gemini, OpenAI, Anthropic o xAI/Grok -- o usa la pila de IA local en el dispositivo sin necesidad de claves API.</li></ul>`,
+            content:
+                'Bienvenido a CannaGuide 2025, tu copiloto definitivo para el cultivo de cannabis. Este manual te guia a traves de las funciones avanzadas de la app.<h4>Nuestros Principios Fundamentales:</h4><ul><li><strong>Offline First:</strong> plantas, diario y ajustes funcionan sin conexion a internet; la IA en la nube, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos la necesitan. Las acciones hechas sin conexion se ponen en cola y se repiten al volver a estar en linea. Una pila de IA local de tres capas asegura que los diagnosticos y consejos esten disponibles incluso sin red.</li><li><strong>Orientado al Rendimiento:</strong> Una UI fluida gracias a la descarga de simulaciones complejas a un Web Worker e inferencia optimizada con ONNX y cache LRU.</li><li><strong>Soberania de Datos:</strong> Control completo con respaldo y restauracion en tu dispositivo (copia ZIP). La sincronizacion en la nube esta desactivada en esta version.</li><li><strong>IA Multi-Proveedor:</strong> Trae tu propia clave para Google Gemini, OpenAI, Anthropic o xAI/Grok -- o usa la pila de IA local en el dispositivo sin necesidad de claves API.</li></ul>',
         },
         general: {
             title: 'Funciones de toda la Plataforma',
@@ -385,7 +386,7 @@ export const helpView = {
             pwa: {
                 title: 'PWA y Uso sin Conexion',
                 content:
-                    'Instala CannaGuide como una <strong>Progressive Web App</strong> para una experiencia nativa a traves del icono en el encabezado. El robusto Service Worker almacena en cache todos los datos de la app, incluyendo plantas, notas e incluso archivos de IA, asegurando <strong>uso sin conexion (excepto solicitudes IA en vivo, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos)</strong>.',
+                    'Instala CannaGuide como una <strong>Progressive Web App</strong> para una experiencia nativa a trav\u00E9s del icono del encabezado. El Service Worker mantiene la propia app disponible sin conexi\u00F3n; tus plantas, notas y archivos se guardan en la base de datos del navegador en este dispositivo. Sin conexi\u00F3n funciona todo excepto las solicitudes de IA en vivo, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos.',
             },
             commandPalette: {
                 title: 'Paleta de Comandos (Cmd/Ctrl + K)',
@@ -400,7 +401,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Soberania de Datos: Respaldo y Restauracion',
                 content:
-                    'En <code>Configuraci\u00F3n > Gesti\u00F3n de Datos</code> tienes el control total. La <strong>copia ZIP</strong> lo contiene todo, incluidas fotos y diarios archivados, y lo restaura en cualquier dispositivo. La exportaci\u00F3n JSON contiene solo el estado de la app (plantas, ajustes, etc.), sin fotos ni diarios archivados.',
+                    'En <code>Configuraci\u00F3n > Gesti\u00F3n de Datos</code> tienes el control total. La <strong>copia ZIP</strong> contiene los datos de tu app, incluidas fotos y diarios archivados, y los restaura en cualquier dispositivo; las claves de API no se incluyen y hay que volver a introducirlas. La copia JSON (copia y restauraci\u00F3n) contiene solo el estado de la app (plantas, ajustes, etc.), sin fotos ni diarios archivados.',
             },
             accessibility: {
                 title: 'Accesibilidad Mejorada',

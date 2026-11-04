@@ -378,7 +378,8 @@ export const helpView = {
         toc: 'Ga naar Sectie',
         introduction: {
             title: 'Introductie en Filosofie',
-            content: `Welkom bij CannaGuide 2025, je ultieme copiloot voor cannabisteelt. Deze handleiding begeleidt je door de geavanceerde functies van de app.<h4>Onze Kernprincipes:</h4><ul><li><strong>Offline First:</strong> planten, dagboek en instellingen werken zonder internetverbinding; cloud-AI, spraakherkenning in sommige browsers en het eerste downloaden van modellen hebben er een nodig. Offline uitgevoerde acties worden in de wachtrij gezet en opnieuw uitgevoerd zodra je weer online bent. Een drielaagse lokale AI-stack zorgt ervoor dat diagnostiek en advies beschikbaar blijven zelfs zonder netwerk.</li><li><strong>Prestatie-gericht:</strong> Een vloeiende UI dankzij het offloaden van complexe simulaties naar een Web Worker en ONNX-geoptimaliseerde inferentie met LRU-caching.</li><li><strong>Datasoevereiniteit:</strong> Volledige controle met backup en herstel op je apparaat (ZIP-backup). Cloud-sync is in deze versie uitgeschakeld.</li><li><strong>Multi-Provider AI:</strong> Breng je eigen sleutel mee voor Google Gemini, OpenAI, Anthropic of xAI/Grok -- of gebruik de lokale AI-stack op het apparaat zonder API-sleutels.</li></ul>`,
+            content:
+                'Welkom bij CannaGuide 2025, je ultieme copiloot voor cannabisteelt. Deze handleiding begeleidt je door de geavanceerde functies van de app.<h4>Onze Kernprincipes:</h4><ul><li><strong>Offline First:</strong> planten, dagboek en instellingen werken zonder internetverbinding; cloud-AI, spraakherkenning in sommige browsers en het eerste downloaden van modellen hebben er een nodig. Offline uitgevoerde acties worden in de wachtrij gezet en opnieuw uitgevoerd zodra je weer online bent. Een drielaagse lokale AI-stack zorgt ervoor dat diagnostiek en advies beschikbaar blijven zelfs zonder netwerk.</li><li><strong>Prestatie-gericht:</strong> Een vloeiende UI dankzij het offloaden van complexe simulaties naar een Web Worker en ONNX-geoptimaliseerde inferentie met LRU-caching.</li><li><strong>Datasoevereiniteit:</strong> Volledige controle met backup en herstel op je apparaat (ZIP-backup). Cloud-sync is in deze versie uitgeschakeld.</li><li><strong>Multi-Provider AI:</strong> Breng je eigen sleutel mee voor Google Gemini, OpenAI, Anthropic of xAI/Grok -- of gebruik de lokale AI-stack op het apparaat zonder API-sleutels.</li></ul>',
         },
         general: {
             title: 'Platformbrede Functies',
@@ -386,7 +387,7 @@ export const helpView = {
             pwa: {
                 title: 'PWA en Offline Gebruik',
                 content:
-                    'Installeer CannaGuide als een <strong>Progressive Web App</strong> voor een native app-ervaring. De robuuste Service Worker cached alle app-data, waardoor <strong>offline gebruik (behalve live AI-verzoeken, spraakherkenning in sommige browsers en het eerste downloaden van modellen)</strong> is gegarandeerd.',
+                    'Installeer CannaGuide als een <strong>Progressive Web App</strong> voor een native app-ervaring. De Service Worker houdt de app zelf offline beschikbaar; je planten, notities en archieven staan in de database van de browser op dit apparaat. Offline werkt alles behalve live AI-verzoeken, spraakherkenning in sommige browsers en het eerste downloaden van modellen.',
             },
             commandPalette: {
                 title: 'Commandopalet (Cmd/Ctrl + K)',
@@ -401,7 +402,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Datasoevereiniteit: Backup en Herstel',
                 content:
-                    "Onder <code>Instellingen > Gegevensbeheer</code> heb je de volledige controle. De <strong>ZIP-backup</strong> bevat alles, ook foto's en gearchiveerde dagboeken, en herstelt het op elk apparaat. De JSON-export bevat alleen de app-status (planten, instellingen enz.), zonder foto's of gearchiveerde dagboeken.",
+                    "Onder <code>Instellingen > Gegevensbeheer</code> heb je de volledige controle. De <strong>ZIP-backup</strong> bevat je app-gegevens, ook foto's en gearchiveerde dagboeken, en herstelt ze op elk apparaat; API-sleutels zitten er niet in en moet je opnieuw invoeren. De JSON-backup (back-up en herstel) bevat alleen de app-status (planten, instellingen enz.), zonder foto's of gearchiveerde dagboeken.",
             },
             accessibility: {
                 title: 'Verbeterde Toegankelijkheid',

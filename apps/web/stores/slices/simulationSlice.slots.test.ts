@@ -126,6 +126,33 @@ describe('plant slots enforce the three-plant cap (KCanG Section 9 (1))', () => 
         expect(newPlantRefusal(withPlants('a', 'b'), 2, seed)).toBeNull()
     })
 
+    it('does not let a synced update turn a finished plant active past the cap', () => {
+        // Three plants count; a finished one without a slot is kept alongside.
+        const full = withPlants('a', 'b', 'c')
+        const withFinished = {
+            ...full,
+            plants: {
+                ids: [...full.plants.ids, 'done'],
+                entities: {
+                    ...full.plants.entities,
+                    done: { ...plant('done'), stage: PlantStage.Finished },
+                },
+            },
+        }
+
+        const reactivated = simulationReducer(
+            withFinished,
+            upsertPlant({ ...plant('done'), stage: PlantStage.Vegetative }),
+        )
+        const renamed = simulationReducer(
+            withFinished,
+            upsertPlant({ ...plant('done'), stage: PlantStage.Finished, name: 'kept' }),
+        )
+
+        expect(reactivated.plants.entities['done']?.stage).toBe(PlantStage.Finished)
+        expect(renamed.plants.entities['done']?.name).toBe('kept')
+    })
+
     it('does not count finished plants toward the cap', () => {
         const twoSlotted = withPlants('a', 'b')
         const withFinished = {

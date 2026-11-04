@@ -497,7 +497,7 @@ export const plantsView = {
     notifications: {
         allSlotsFull: 'Alle plantplekken zijn vol!',
         plantLimitReached:
-            'De wettelijke limiet van drie groeiende planten is bereikt. Rond een plant af of verwijder er een voordat je een nieuwe start.',
+            'De wettelijke limiet van drie groeiende planten (KCanG \u00A7 9 (1)) is bereikt. Rond een plant af of verwijder er een voordat je een nieuwe start.',
         growStarted: 'Kweek gestart voor {{name}}!',
     },
     actionModals: {

@@ -85,6 +85,20 @@ export const newPlantRefusal = (
     return canAcceptNewPlant(state, plant) ? null : 'cap'
 }
 
+/**
+ * Whether a synced plant may be stored. A plant the store does not hold needs
+ * room like any new plant. A plant it holds may be updated, unless the update
+ * makes it start counting toward the cap (a finished plant turned active again)
+ * while the cap is already reached -- that would be one plant too many.
+ */
+const admitsUpsert = (state: SimulationState, plant: Plant): boolean => {
+    const existing = state.plants.entities[plant.id]
+    const known = existing !== undefined || state.plantSlots.includes(plant.id)
+    if (!known) return canAcceptNewPlant(state, plant)
+    const startsCounting = countsTowardCap(plant) && !countsTowardCap(existing)
+    return !startsCounting || capCountingPlants(state) < MAX_PLANTS_CANG
+}
+
 /** Gives a plant without a slot the first free one, if there is one. */
 const slotIfFree = (slots: (string | null)[], plantId: string): void => {
     if (slots.includes(plantId)) return
@@ -365,14 +379,10 @@ export const simulationSlice = createSlice({
         upsertPlant: {
             reducer(state, action: PayloadAction<Plant>) {
                 const plant = action.payload
-                // An update to a plant the store already holds adds no plant, so it
-                // is applied, also to one an older sync left without a slot.
-                const known =
-                    state.plantSlots.includes(plant.id) ||
-                    state.plants.entities[plant.id] !== undefined
-                // A new plant needs a free slot; without one it is not added at all,
-                // so a synced plant can never take the app past three plants.
-                if (!known && !canAcceptNewPlant(state, plant)) return
+                // Updates to plants the store holds are applied (also to one an older
+                // sync left without a slot); a new plant needs room, and no update may
+                // take the plants counting toward the cap past three.
+                if (!admitsUpsert(state, plant)) return
                 plantsAdapter.upsertOne(state.plants, plant)
                 slotIfFree(state.plantSlots, plant.id)
             },

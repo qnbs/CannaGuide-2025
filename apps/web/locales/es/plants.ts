@@ -511,7 +511,7 @@ export const plantsView = {
     notifications: {
         allSlotsFull: 'Todos los espacios de plantas estan llenos!',
         plantLimitReached:
-            'Se ha alcanzado el l\u00EDmite legal de tres plantas en cultivo. Termina o elimina una planta antes de empezar otra.',
+            'Se ha alcanzado el l\u00EDmite legal de tres plantas en cultivo (KCanG \u00A7 9 (1)). Termina o elimina una planta antes de empezar otra.',
         growStarted: 'Cultivo iniciado para {{name}}!',
     },
     actionModals: {

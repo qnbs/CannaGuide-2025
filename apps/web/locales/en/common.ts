@@ -241,6 +241,8 @@ export const common = {
             'The saved data was changed by another tab or window after this one loaded, so this page is out of date and has stopped saving to keep that newer data safe. Reload to continue with the latest data. Edits made in this tab since it loaded are not saved and are lost when you reload.',
         reload: 'Reload',
     },
+    saveFailed:
+        'Your latest changes could not be saved, so they would be lost if you close or reload the app. The browser storage may be full: free up space, and the app tries again with your next change.',
     unverifiedTab: {
         title: 'Saving is paused',
         description:

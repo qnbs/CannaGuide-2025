@@ -88,6 +88,15 @@ const handleStaleSnapshot = (): void => stopAsStale(renderStaleTabNotice)
 /** A save was refused, or would be, because this page cannot check for other tabs' saves. */
 const handleUnverifiedSnapshot = (): void => stopAsStale(renderUnverifiedTabNotice)
 
+/** A save failed (storage full, IndexedDB error): say so, the changes are only in memory. */
+const notifySaveFailure = (): void => {
+    void Promise.all([import('@/i18n'), import('@/stores/useUIStore')]).then(
+        ([{ getT }, { getUISnapshot }]) => {
+            getUISnapshot().addNotification({ message: getT()('common.saveFailed'), type: 'error' })
+        },
+    )
+}
+
 const handleRefusedSave = (refusal: Error): void => {
     if (refusal instanceof UnverifiedSnapshotError) handleUnverifiedSnapshot()
     else handleStaleSnapshot()
@@ -178,7 +187,11 @@ export const mountHydratedApp = async (): Promise<void> => {
         const secretsMoved = await moveLegacySecrets(hydratedStore)
         await startCrdtLayer(hydratedStore)
 
-        const flushPersistedState = setupPersistedStateSync(hydratedStore, handleRefusedSave)
+        const flushPersistedState = setupPersistedStateSync(
+            hydratedStore,
+            handleRefusedSave,
+            notifySaveFailure,
+        )
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState)
     } catch (error) {

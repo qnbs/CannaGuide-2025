@@ -20,7 +20,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
-- **fix(hydro):** Hydro readings are no longer lost after the 168th entry (#686). Every reading is entered by hand, yet the store kept only the latest 168, so each new measurement silently deleted the oldest one, however many months the history spanned (the limit was meant as seven days of hourly readings). Manual readings are now kept: they leave only through Remove or Clear All. The chart still shows the chosen time range and the forecast still uses its latest window, so a long history does not slow them down.
+- **fix(hydro):** Hydro readings are no longer lost after the 168th entry (#686). Every reading is entered by hand, yet the store kept only the latest 168, so each new measurement silently deleted the oldest one, however many months the history spanned (the limit was meant as seven days of hourly readings). Manual readings are now kept: they leave only through Remove or Clear All. The chart still shows the chosen time range and the forecast still uses its latest window, so a long history does not slow them down. If saving fails (for example because the browser storage is full), the app now says so instead of only logging it: the latest changes exist only in memory until a save succeeds (five languages).
 
 - **fix(hydro):** Clear All in the Hydro Monitor asks before it deletes anything (#685). One click used to delete every hydro reading and every hydro alert at once, without a warning and with no way back. The button now opens a confirmation that names both lists with their counts and says that thresholds and the system type are kept and that the deletion cannot be undone; Cancel or Escape leaves both histories as they are. Five languages.
 

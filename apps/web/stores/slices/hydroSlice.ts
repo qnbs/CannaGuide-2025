@@ -33,8 +33,10 @@ export const uniqueReadingId = (
     timestamp: number,
     random: () => number = secureRandom,
 ): string => {
-    const taken = new Set(readings.map(({ id }) => id))
     const base = `hr-${String(timestamp)}-${String(Math.floor(random() * 1e6))}`
+    // The usual case has no collision: check without building a set of every id.
+    if (!readings.some(({ id }) => id === base)) return base
+    const taken = new Set(readings.map(({ id }) => id))
     let id = base
     for (let suffix = 1; taken.has(id); suffix += 1) id = `${base}-${String(suffix)}`
     return id

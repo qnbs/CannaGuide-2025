@@ -81,6 +81,8 @@ export const common = {
             "Les donn\u00E9es enregistr\u00E9es ont \u00E9t\u00E9 modifi\u00E9es par un autre onglet ou une autre fen\u00EAtre apr\u00E8s le chargement de celui-ci : cette page est obsol\u00E8te et a cess\u00E9 d'enregistrer pour pr\u00E9server ces donn\u00E9es plus r\u00E9centes. Rechargez pour continuer avec les derni\u00E8res donn\u00E9es. Les modifications faites dans cet onglet depuis son chargement n'ont pas \u00E9t\u00E9 enregistr\u00E9es et seront perdues au rechargement.",
         reload: 'Recharger',
     },
+    saveFailed:
+        "Vos derni\u00E8res modifications n'ont pas pu \u00EAtre enregistr\u00E9es et seraient perdues si vous fermez ou rechargez l'application. Le stockage du navigateur est peut-\u00EAtre plein : lib\u00E9rez de l'espace, et l'application r\u00E9essaiera \u00E0 votre prochaine modification.",
     unverifiedTab: {
         title: 'Enregistrement suspendu',
         description:

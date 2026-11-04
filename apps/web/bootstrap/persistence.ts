@@ -13,14 +13,26 @@ export type FlushPersistedState = () => Promise<boolean>
  * another tab saved since this page loaded, or because this page cannot check
  * that (UnverifiedSnapshotError; stores/snapshotRevision.ts, GH #669). The
  * caller must stop saving and tell the user; nothing was written.
+ * @param onSaveFailure called when a save fails for another reason (storage
+ * full, IndexedDB error): the latest changes exist only in memory until a save
+ * succeeds, and the user must know. Called once per run of failures; a
+ * successful save starts the count again (GH #686: with every manual reading
+ * kept, a full store must not be silent).
  */
 export const setupPersistedStateSync = (
     hydratedStore: AppStore,
     onStaleSnapshot?: (refusal: StaleSnapshotError) => void,
+    onSaveFailure?: (error: unknown) => void,
 ): FlushPersistedState => {
+    let failing = false
+    const reportFailure = (error: unknown): void => {
+        if (failing) return
+        failing = true
+        onSaveFailure?.(error)
+    }
     const saveState = async () => {
         try {
-            return await schedulePersistenceWrite(async () => {
+            const saved = await schedulePersistenceWrite(async () => {
                 const state = hydratedStore.getState() as RootState
                 const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                     state.simulation,
@@ -33,6 +45,8 @@ export const setupPersistedStateSync = (
                 const serializedState = JSON.stringify(stateToSave)
                 await writeSnapshot(serializedState)
             })
+            if (saved) failing = false
+            return saved
         } catch (e) {
             if (e instanceof StaleSnapshotError) {
                 console.warn('[Persistence] Not saved:', e.message)
@@ -40,6 +54,7 @@ export const setupPersistedStateSync = (
                 return false
             }
             console.error('[Persistence] Failed to save state:', e)
+            reportFailure(e)
             return false
         }
     }

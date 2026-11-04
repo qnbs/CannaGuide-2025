@@ -77,7 +77,7 @@ describe('useDataManagementActions', () => {
                       mocks.dispatch,
                       () => mocks.state,
                   )
-                : { unwrap: vi.fn().mockResolvedValue(undefined) },
+                : { unwrap: vi.fn(() => Promise.resolve()) },
         )
         mocks.replacePrimaryPersistedSnapshot.mockResolvedValue(true)
         ;({ useDataManagementActions } = await import('./useDataManagementActions'))

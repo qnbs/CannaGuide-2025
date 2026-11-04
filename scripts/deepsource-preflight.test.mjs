@@ -131,6 +131,34 @@ test('compares named functions with themselves, so a swap does not hide a regres
     assert.deepEqual(raised.map(functionOf), ["Arrow function 'b'"])
 })
 
+test('pairs same-name and anonymous functions by order when their number is unchanged', () => {
+    const at = (name, value, line) => ({
+        ruleId: 'complexity',
+        line,
+        message: `${name} has a complexity of ${String(value)}. Maximum allowed is 5.`,
+    })
+
+    // Two `render` methods: the first 11 -> 7, the second 7 -> 10.
+    const renders = raisedFindings(
+        [at("Method 'render'", 7, 10), at("Method 'render'", 10, 40)],
+        [at("Method 'render'", 11, 10), at("Method 'render'", 7, 40)],
+    )
+    // Two inline callbacks, swapped the same way.
+    const callbacks = raisedFindings(
+        [at('Arrow function', 7, 5), at('Arrow function', 10, 30)],
+        [at('Arrow function', 11, 5), at('Arrow function', 7, 30)],
+    )
+
+    assert.deepEqual(
+        renders.map(({ line }) => line),
+        [40],
+    )
+    assert.deepEqual(
+        callbacks.map(({ line }) => line),
+        [30],
+    )
+})
+
 test('reads renames, copies and odd paths from NUL-separated name-status output', () => {
     const output = [
         'M',

@@ -53,69 +53,49 @@ function resolveBaseRef() {
     return ''
 }
 
+/**
+ * A NUL-separated path list exactly as git writes it. Nothing is trimmed: with
+ * -z git neither quotes nor pads names, and a name may itself start or end
+ * with whitespace.
+ */
+function tryListGit(args) {
+    const result = spawnSync('git', args, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        shell: false,
+    })
+    return result.status === 0 ? result.stdout.split('\0').filter(Boolean) : []
+}
+
+/** The committed range this branch adds on top of `baseRef`, or '' when there is none. */
+function committedRange(baseRef) {
+    if (!baseRef) return ''
+    if (baseRef === 'HEAD~1') return 'HEAD~1..HEAD'
+    const mergeBase = tryRunGit(['merge-base', baseRef, 'HEAD'])
+    return mergeBase ? `${mergeBase}...HEAD` : ''
+}
+
 function getChangedFiles(baseRef) {
     const files = new Set()
 
-    if (baseRef) {
-        let diffTarget = ''
-        if (baseRef === 'HEAD~1') {
-            diffTarget = 'HEAD~1..HEAD'
-        } else {
-            const mergeBase = tryRunGit(['merge-base', baseRef, 'HEAD'])
-            if (mergeBase) {
-                diffTarget = `${mergeBase}...HEAD`
-            }
-        }
-
-        if (diffTarget) {
-            const committedDiff = tryRunGit([
-                'diff',
-                '--name-only',
-                '-z',
-                '--diff-filter=ACMRTUXB',
-                diffTarget,
-            ])
-
-            committedDiff
-                .split('\0')
-                .map((file) => file.trim())
-                .filter(Boolean)
-                .forEach((file) => files.add(file))
-        }
+    const range = committedRange(baseRef)
+    if (range) {
+        tryListGit(['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB', range]).forEach((file) =>
+            files.add(file),
+        )
     }
 
-    const stagedDiff = tryRunGit([
-        'diff',
-        '--name-only',
-        '-z',
-        '--cached',
-        '--diff-filter=ACMRTUXB',
-    ])
-
-    stagedDiff
-        .split('\0')
-        .map((file) => file.trim())
-        .filter(Boolean)
-        .forEach((file) => files.add(file))
-
-    const workingTreeDiff = tryRunGit(['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB'])
-
-    workingTreeDiff
-        .split('\0')
-        .map((file) => file.trim())
-        .filter(Boolean)
-        .forEach((file) => files.add(file))
-
-    // New files are in no diff yet, but the pre-commit hook lints them once staged.
-    // All lists use -z: without it git quotes paths with spaces or non-ASCII
-    // bytes ("caf\303\251.ts"), and the quoted name matches no extension.
-    const untracked = tryRunGit(['ls-files', '-z', '--others', '--exclude-standard'])
-
-    untracked
-        .split('\0')
-        .map((file) => file.trim())
-        .filter(Boolean)
-        .forEach((file) => files.add(file))
+    // Staged and unstaged changes, then new files: they are in no diff yet, but
+    // the pre-commit hook lints them once staged. All lists use -z: without it
+    // git quotes paths with spaces or non-ASCII bytes ("caf\303\251.ts"), and
+    // the quoted name matches no extension.
+    for (const args of [
+        ['diff', '--name-only', '-z', '--cached', '--diff-filter=ACMRTUXB'],
+        ['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB'],
+        ['ls-files', '-z', '--others', '--exclude-standard'],
+    ]) {
+        tryListGit(args).forEach((file) => files.add(file))
+    }
 
     return [...files]
         .filter((file) => {

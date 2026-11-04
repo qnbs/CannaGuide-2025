@@ -222,10 +222,30 @@ const byFunction = (messages) => {
  * simpler cannot hide another getting more complex; anonymous functions (an
  * inline callback) can only be compared by value among themselves.
  */
+const byLine = (left, right) => left.line - right.line
+
+/** The same functions in the same order: compare each with its counterpart. */
+const raisedByOrder = (now, before) => {
+    const ordered = [...before].sort(byLine)
+    return [...now]
+        .sort(byLine)
+        .filter((message, index) => complexityOf(message) > complexityOf(ordered[index]))
+}
+
+/**
+ * Per group of functions with the same name (or the same anonymous kind): with
+ * as many findings as at the base, they are the same functions in the same
+ * order, so each is compared with its counterpart -- two `render` methods, or
+ * two inline callbacks, cannot cancel each other out. When the number changed,
+ * a function was added or removed, and only the values can be compared.
+ */
+const raisedInGroup = (now, before) =>
+    now.length === before.length ? raisedByOrder(now, before) : raisedByValue(now, before)
+
 const raisedComplexity = (now, before) => {
     const beforeGroups = byFunction(before)
     return [...byFunction(now)].flatMap(([name, messages]) =>
-        raisedByValue(messages, beforeGroups.get(name) ?? []),
+        raisedInGroup(messages, beforeGroups.get(name) ?? []),
     )
 }
 
@@ -284,7 +304,9 @@ const runPreflight = async (entries, options) => {
 
 const report = (findings, entries, options) => {
     for (const finding of findings) console.log(finding)
-    const scope = options.all ? 'all findings' : 'rules whose count rose'
+    const scope = options.all
+        ? 'all findings'
+        : 'findings that rose against the merge base; complexity per function'
     console.log(
         `[deepsource-preflight] ${String(findings.length)} finding(s) in ${String(entries.length)} file(s) (${scope}; partial coverage)`,
     )

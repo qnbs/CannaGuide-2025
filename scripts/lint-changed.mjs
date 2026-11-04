@@ -99,6 +99,15 @@ function getChangedFiles(baseRef) {
         .filter(Boolean)
         .forEach((file) => files.add(file))
 
+    // New files are in no diff yet, but the pre-commit hook lints them once staged.
+    const untracked = tryRunGit(['ls-files', '--others', '--exclude-standard'])
+
+    untracked
+        .split('\n')
+        .map((file) => file.trim())
+        .filter(Boolean)
+        .forEach((file) => files.add(file))
+
     return [...files]
         .filter((file) => {
             const extension = file.slice(file.lastIndexOf('.'))
@@ -125,7 +134,9 @@ function main() {
     console.log(`[lint:changed] Linting ${changedFiles.length} changed files (base: ${baseRef}).`)
     const result = spawnSync(
         'pnpm',
-        ['exec', 'eslint', '--quiet', '--report-unused-disable-directives', '--', ...changedFiles],
+        // The same bar as the pre-commit hook (lint-staged): warnings fail too, so a
+        // warning in a file outside the strict scopes is found before the commit.
+        ['exec', 'eslint', '--max-warnings', '0', '--no-warn-ignored', '--', ...changedFiles],
         {
             stdio: 'inherit',
             shell: process.platform === 'win32',

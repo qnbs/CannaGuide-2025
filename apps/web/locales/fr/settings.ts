@@ -993,7 +993,7 @@ export const settingsView = {
             philosophyTitle: 'Philosophie du projet',
             philosophyContent: `
             <p>CannaGuide 2025 repose sur un ensemble de principes fondamentaux concus pour offrir une experience de premier ordre :</p>
-            <blockquote><strong>Offline First</strong> : Votre jardin ne s'arrete pas quand votre internet s'arrete. L'application est concue pour etre <strong>100% fonctionnelle hors ligne</strong>.</blockquote>
+            <blockquote><strong>Offline First</strong> : Votre jardin ne s'arrete pas quand votre internet s'arrete. L'application est concue <strong>offline-first</strong> : seuls l'IA cloud, la reconnaissance vocale de certains navigateurs et le premier telechargement des modeles demandent une connexion.</blockquote>
             <blockquote><strong>Performance is Key</strong> : Une interface fluide et reactive est non negociable. Les calculs lourds, comme la simulation multi-plantes complexe, sont delegues a un <strong>Web Worker</strong> dedie.</blockquote>
             <blockquote><strong>Data Sovereignty</strong> : Vos donnees sont les votres, point final. La possibilite d'<strong>exporter et importer l'integralite de l'etat de votre application</strong> vous donne un controle total.</blockquote>
             <blockquote><strong>AI as a Co-pilot</strong> : Nous utilisons l'API Google Gemini non comme un gadget, mais comme un outil puissant pour fournir des <strong>informations exploitables et contextuelles</strong>.</blockquote>

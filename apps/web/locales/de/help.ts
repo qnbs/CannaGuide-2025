@@ -551,15 +551,15 @@ export const helpView = {
         toc: 'Zum Abschnitt springen',
         introduction: {
             title: 'Einführung & Philosophie',
-            content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> 100%ige Funktionalität ohne Internetverbindung. Aktionen werden in eine Warteschlange gestellt und später synchronisiert. Ein dreistufiger lokaler KI-Stack stellt sicher, dass Diagnosen und Ratschläge auch ohne Netzwerk verfügbar bleiben.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker und ONNX-optimierter Inferenz mit LRU-Caching.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch vollständige Backup-, Wiederherstellungs- und verschlüsselte Ein-Tipp-Cloud-Synchronisation via GitHub Gist. Kein Server sieht jemals Ihre Daten.</li><li><strong>Multi-Provider-KI:</strong> Bringen Sie Ihren eigenen Schlüssel mit für Google Gemini, OpenAI, Anthropic oder xAI/Grok — oder nutzen Sie den lokalen KI-Stack ganz ohne API-Schlüssel.</li></ul>`,
+            content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> Pflanzen, Tagebuch und Einstellungen funktionieren ohne Internetverbindung; Cloud-KI, die Spracherkennung mancher Browser und erstmalige Modelldownloads brauchen eine. Offline ausgeführte Aktionen werden vorgemerkt und ausgeführt, sobald Sie wieder online sind. Ein dreistufiger lokaler KI-Stack stellt sicher, dass Diagnosen und Ratschläge auch ohne Netzwerk verfügbar bleiben.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker und ONNX-optimierter Inferenz mit LRU-Caching.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch Backup und Wiederherstellung auf Ihrem Gerät (ZIP-Backup). Der Cloud-Sync ist in dieser Version abgeschaltet.</li><li><strong>Multi-Provider-KI:</strong> Bringen Sie Ihren eigenen Schlüssel mit für Google Gemini, OpenAI, Anthropic oder xAI/Grok — oder nutzen Sie den lokalen KI-Stack ganz ohne API-Schlüssel.</li></ul>`,
         },
         general: {
             title: 'Plattformweite Funktionen',
             content: 'Funktionen, die Ihr Erlebnis in der gesamten App verbessern.',
             pwa: {
-                title: 'PWA & 100% Offline-Funktionalität',
+                title: 'PWA & Offline-Nutzung',
                 content:
-                    'Installieren Sie CannaGuide als <strong>Progressive Web App</strong> für ein natives App-Erlebnis über das Icon in der Kopfzeile. Der robuste Service Worker speichert alle App-Daten zwischen, einschließlich Ihrer Pflanzen, Notizen und sogar KI-Archive, und gewährleistet so eine <strong>100%ige Offline-Funktionalität (ausgenommen Live-KI-Anfragen)</strong>.',
+                    'Installieren Sie CannaGuide als <strong>Progressive Web App</strong> für ein natives App-Erlebnis über das Icon in der Kopfzeile. Der robuste Service Worker speichert alle App-Daten zwischen, einschließlich Ihrer Pflanzen, Notizen und sogar KI-Archive, und gewährleistet so eine <strong>Offline-Nutzung (ausgenommen Live-KI-Anfragen, die Spracherkennung mancher Browser und erstmalige Modelldownloads)</strong>.',
             },
             commandPalette: {
                 title: 'Befehlspalette (Cmd/Ctrl + K)',
@@ -569,12 +569,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Sprachsteuerung & Sprachausgabe',
                 content:
-                    'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen. Die Spracherkennung übernimmt Ihr Browser: Manche Browser, etwa Chrome, senden die Aufnahme an den Online-Sprachdienst des Browser-Herstellers. Die <strong>Offline-Spracherkennung</strong> in den Einstellungen ergänzt ein Modell auf dem Gerät, das verwendet wird, solange Sie offline sind.',
+                    'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen. Die Spracherkennung übernimmt Ihr Browser: Manche Browser, etwa Chrome, senden die Aufnahme an den Online-Sprachdienst des Browser-Herstellers; Sprachbefehle funktionieren dann offline nicht.',
             },
             dataManagement: {
                 title: 'Datensouveränität: Backup & Wiederherstellung',
                 content:
-                    'Unter <code>Einstellungen > Datenverwaltung</code> haben Sie die volle Kontrolle. Exportieren Sie Ihren gesamten App-Zustand (Pflanzen, Einstellungen usw.) als einzelne JSON-Datei zur <strong>Sicherung</strong>. Importieren Sie diese Datei später, um Ihren Zustand auf jedem Gerät vollständig <strong>wiederherzustellen</strong>.',
+                    'Unter <code>Einstellungen > Datenverwaltung</code> haben Sie die volle Kontrolle. Das <strong>ZIP-Backup</strong> enthält alles, auch Fotos und archivierte Tagebücher, und stellt es auf jedem Gerät wieder her. Der JSON-Export enthält nur den App-Zustand (Pflanzen, Einstellungen usw.), ohne Fotos und archivierte Tagebücher.',
             },
             accessibility: {
                 title: 'Erweiterte Barrierefreiheit',
@@ -589,7 +589,7 @@ export const helpView = {
             cloudSync: {
                 title: 'Cloud-Sync (derzeit nicht verfügbar)',
                 content:
-                    'Der Cloud-Sync über ein privates GitHub Gist ist <strong>in dieser Version abgeschaltet</strong>. Um Ihre Daten zu sichern oder auf ein anderes Gerät zu übertragen, exportieren Sie den App-Zustand unter <strong>Einstellungen → Datenverwaltung</strong> als Datei und importieren ihn dort wieder.',
+                    'Der Cloud-Sync über ein privates GitHub Gist ist <strong>in dieser Version abgeschaltet</strong>. Um Ihre Daten zu sichern oder auf ein anderes Gerät zu übertragen, erstellen Sie unter <strong>Einstellungen → Datenverwaltung</strong> ein <strong>ZIP-Backup</strong> und stellen es dort wieder her.',
             },
             multiProvider: {
                 title: 'Multi-Provider-KI (BYOK)',
@@ -827,7 +827,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Datenverwaltung',
                 content:
-                    'Exportieren und importieren Sie den gesamten App-Zustand als JSON, zur Sicherung und zum Umzug auf ein anderes Gerät. Leeren Sie bei Bedarf die IndexedDB-Caches und setzen Sie die App zurück.',
+                    'Nutzen Sie das ZIP-Backup für eine vollständige Sicherung oder den Umzug auf ein anderes Gerät; es enthält auch Fotos und archivierte Tagebücher. Der JSON-Export enthält nur den App-Zustand. Leeren Sie bei Bedarf die IndexedDB-Caches und setzen Sie die App zurück.',
             },
             about: {
                 title: 'Info / About',
@@ -1000,7 +1000,7 @@ export const faq = {
     },
     cloudSync: {
         question: 'Gibt es einen Cloud-Sync?',
-        answer: 'Derzeit nicht. Der Cloud-Sync über ein privates GitHub Gist ist in dieser Version abgeschaltet. Um Ihre Daten zu sichern oder auf ein anderes Gerät zu übertragen, exportieren Sie den App-Zustand unter Einstellungen → Datenverwaltung als Datei und importieren ihn dort wieder.',
+        answer: 'Derzeit nicht. Der Cloud-Sync über ein privates GitHub Gist ist in dieser Version abgeschaltet. Um Ihre Daten zu sichern oder auf ein anderes Gerät zu übertragen, erstellen Sie unter Einstellungen → Datenverwaltung ein ZIP-Backup und stellen es dort wieder her.',
     },
     multiProviderAi: {
         question: 'Kann ich einen anderen KI-Anbieter verwenden?',

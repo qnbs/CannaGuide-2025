@@ -968,7 +968,7 @@ export const settingsView = {
             philosophyTitle: 'Projectfilosofie',
             philosophyContent: `
             <p>CannaGuide 2025 is gebouwd op een set kernprincipes ontworpen om een eersteklas ervaring te bieden:</p>
-            <blockquote><strong>Offline First</strong>: Je tuin stopt niet wanneer je internet uitvalt. De app is ontworpen om <strong>100% offline functioneel</strong> te zijn.</blockquote>
+            <blockquote><strong>Offline First</strong>: Je tuin stopt niet wanneer je internet uitvalt. De app is <strong>offline-first</strong> gebouwd: alleen cloud-AI, spraakherkenning in sommige browsers en het eerste downloaden van modellen hebben een verbinding nodig.</blockquote>
             <blockquote><strong>Prestatie is Essentieel</strong>: Een vloeiende, responsieve UI is niet onderhandelbaar. Zwaar rekenwerk, zoals de complexe multiplantensimulatie, wordt uitbesteed aan een speciale <strong>Web Worker</strong>.</blockquote>
             <blockquote><strong>Gegevenssoevereiniteit</strong>: Je gegevens zijn van jou, punt. De mogelijkheid om je <strong>volledige applicatiestatus te exporteren en importeren</strong> geeft je volledige controle.</blockquote>
             <blockquote><strong>AI als Co-piloot</strong>: We gebruiken de Google Gemini API niet als gimmick, maar als krachtig hulpmiddel om <strong>bruikbare, contextbewuste inzichten</strong> te bieden.</blockquote>

@@ -380,15 +380,15 @@ export const helpView = {
         toc: 'Aller a la Section',
         introduction: {
             title: 'Introduction et Philosophie',
-            content: `Bienvenue dans CannaGuide 2025, votre copilote ultime pour la culture du cannabis. Ce manuel vous guide a travers les fonctionnalites avancees de l'app.<h4>Nos Principes Fondamentaux :</h4><ul><li><strong>Offline First :</strong> 100% de fonctionnalite sans connexion internet. Les actions sont mises en file d'attente et synchronisees ulterieurement. Une pile IA locale a trois couches garantit que les diagnostics et conseils restent disponibles meme sans reseau.</li><li><strong>Axe sur la Performance :</strong> Une UI fluide grace au dechargement des simulations complexes vers un Web Worker et une inference optimisee ONNX avec cache LRU.</li><li><strong>Souverainete des Donnees :</strong> Controle complet avec sauvegarde complete, restauration et synchronisation chiffree en un clic via GitHub Gist. Aucun serveur ne voit jamais vos donnees.</li><li><strong>IA Multi-Fournisseur :</strong> Apportez votre propre cle pour Google Gemini, OpenAI, Anthropic ou xAI/Grok -- ou utilisez la pile IA locale sur l'appareil sans aucune cle API requise.</li></ul>`,
+            content: `Bienvenue dans CannaGuide 2025, votre copilote ultime pour la culture du cannabis. Ce manuel vous guide a travers les fonctionnalites avancees de l'app.<h4>Nos Principes Fondamentaux :</h4><ul><li><strong>Offline First :</strong> plantes, journal et reglages fonctionnent sans connexion internet ; l'IA cloud, la reconnaissance vocale de certains navigateurs et le premier telechargement des modeles en ont besoin. Les actions faites hors ligne sont mises en file d'attente et rejouees au retour en ligne. Une pile IA locale a trois couches garantit que les diagnostics et conseils restent disponibles meme sans reseau.</li><li><strong>Axe sur la Performance :</strong> Une UI fluide grace au dechargement des simulations complexes vers un Web Worker et une inference optimisee ONNX avec cache LRU.</li><li><strong>Souverainete des Donnees :</strong> Controle complet avec sauvegarde et restauration sur votre appareil (sauvegarde ZIP). La synchronisation cloud est desactivee dans cette version.</li><li><strong>IA Multi-Fournisseur :</strong> Apportez votre propre cle pour Google Gemini, OpenAI, Anthropic ou xAI/Grok -- ou utilisez la pile IA locale sur l'appareil sans aucune cle API requise.</li></ul>`,
         },
         general: {
             title: 'Fonctionnalites de la Plateforme',
             content: "Fonctionnalites qui ameliorent votre experience dans toute l'app.",
             pwa: {
-                title: 'PWA et Fonctionnalite 100% Offline',
+                title: 'PWA et Usage Hors Ligne',
                 content:
-                    "Installez CannaGuide comme une <strong>Progressive Web App</strong> pour une experience native via l'icone dans l'en-tete. Le Service Worker robuste met en cache toutes les donnees, assurant une <strong>fonctionnalite 100% offline (hors requetes IA en direct)</strong>.",
+                    "Installez CannaGuide comme une <strong>Progressive Web App</strong> pour une experience native via l'icone dans l'en-tete. Le Service Worker robuste met en cache toutes les donnees, assurant une <strong>utilisation hors ligne (hors requetes IA en direct, reconnaissance vocale de certains navigateurs et premier telechargement des modeles)</strong>.",
             },
             commandPalette: {
                 title: 'Palette de Commandes (Cmd/Ctrl + K)',
@@ -398,12 +398,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Controle Vocal et Parole',
                 content:
-                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres. La reconnaissance vocale est assur\u00E9e par votre navigateur : certains navigateurs, comme Chrome, envoient l'audio au service vocal en ligne de l'\u00E9diteur du navigateur. La <strong>Reconnaissance vocale hors ligne</strong> des Param\u00E8tres ajoute un mod\u00E8le sur l'appareil, utilis\u00E9 tant que vous \u00EAtes hors ligne.",
+                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres. La reconnaissance vocale est assur\u00E9e par votre navigateur : certains navigateurs, comme Chrome, envoient l'audio au service vocal en ligne de l'\u00E9diteur du navigateur, si bien que les commandes vocales peuvent ne pas fonctionner hors ligne.",
             },
             dataManagement: {
                 title: 'Souverainete des Donnees : Sauvegarde et Restauration',
                 content:
-                    "Sous <code>Parametres > Gestion des Donnees</code>, vous avez le controle total. Exportez tout l'etat de votre app comme fichier JSON pour <strong>sauvegarde</strong>. Importez ce fichier pour <strong>restaurer</strong> completement votre etat sur n'importe quel appareil.",
+                    "Dans <code>Param\u00E8tres > Gestion des Donn\u00E9es</code>, vous gardez le contr\u00F4le total. La <strong>sauvegarde ZIP</strong> contient tout, y compris les photos et les journaux archiv\u00E9s, et le restaure sur n'importe quel appareil. L'export JSON ne contient que l'\u00E9tat de l'app (plantes, r\u00E9glages, etc.), sans photos ni journaux archiv\u00E9s.",
             },
             accessibility: {
                 title: 'Accessibilite Amelioree',
@@ -418,7 +418,7 @@ export const helpView = {
             cloudSync: {
                 title: 'Synchronisation cloud (indisponible pour le moment)',
                 content:
-                    "La synchronisation cloud via un Gist GitHub priv\u00E9 est <strong>d\u00E9sactiv\u00E9e dans cette version</strong>. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, exportez l'\u00E9tat de l'app sous forme de fichier dans <strong>Param\u00E8tres -> Gestion des Donn\u00E9es</strong> et importez-le \u00E0 cet endroit.",
+                    'La synchronisation cloud via un Gist GitHub priv\u00E9 est <strong>d\u00E9sactiv\u00E9e dans cette version</strong>. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, cr\u00E9ez une <strong>sauvegarde ZIP</strong> dans <strong>Param\u00E8tres -> Gestion des Donn\u00E9es</strong> et restaurez-la \u00E0 cet endroit.',
             },
             multiProvider: {
                 title: 'IA Multi-Fournisseur (BYOK)',
@@ -726,7 +726,7 @@ export const faq = {
     },
     cloudSync: {
         question: 'Existe-t-il une synchronisation cloud ?',
-        answer: "Pas pour le moment. La synchronisation cloud via un Gist GitHub priv\u00E9 est d\u00E9sactiv\u00E9e dans cette version. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, exportez l'\u00E9tat de l'app sous forme de fichier dans Param\u00E8tres -> Gestion des Donn\u00E9es et importez-le \u00E0 cet endroit.",
+        answer: 'Pas pour le moment. La synchronisation cloud via un Gist GitHub priv\u00E9 est d\u00E9sactiv\u00E9e dans cette version. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, cr\u00E9ez une sauvegarde ZIP dans Param\u00E8tres -> Gestion des Donn\u00E9es et restaurez-la \u00E0 cet endroit.',
     },
     multiProviderAi: {
         question: "Puis-je utiliser un autre fournisseur d'IA ?",

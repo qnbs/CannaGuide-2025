@@ -548,15 +548,15 @@ export const helpView = {
         toc: 'Jump to Section',
         introduction: {
             title: 'Introduction & Philosophy',
-            content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> 100% functionality without an internet connection. Actions are queued and synced later. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with full backup, restore, and encrypted one-tap cloud sync via GitHub Gist. No server ever sees your data.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>`,
+            content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> Your plants, journal and settings work without an internet connection; cloud AI, speech recognition in some browsers and first-time model downloads need one. Actions taken offline are queued and replayed when you are back online. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with backup and restore on your device (ZIP backup). Cloud sync is switched off in this version.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>`,
         },
         general: {
             title: 'Platform-Wide Features',
             content: 'Features that enhance your experience throughout the app.',
             pwa: {
-                title: 'PWA & 100% Offline Functionality',
+                title: 'PWA & Offline Use',
                 content:
-                    'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The robust Service Worker caches all app data, including your plants, notes, and even AI archives, ensuring <strong>100% offline functionality (excluding live AI requests)</strong>.',
+                    'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The robust Service Worker caches all app data, including your plants, notes, and even AI archives, ensuring <strong>offline use (except live AI requests, speech recognition in some browsers and first-time model downloads)</strong>.',
             },
             commandPalette: {
                 title: 'Command Palette (Cmd/Ctrl + K)',
@@ -566,12 +566,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Voice Control & Speech',
                 content:
-                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud. Speech recognition is done by your browser: some browsers, such as Chrome, send the audio to the browser maker\'s online speech service. <strong>Offline Speech Recognition</strong> in Settings adds an on-device model that is used while you are offline.',
+                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud. Speech recognition is done by your browser: some browsers, such as Chrome, send the audio to the browser maker\'s online speech service, so voice commands may not work offline.',
             },
             dataManagement: {
                 title: 'Data Sovereignty: Backup & Restore',
                 content:
-                    'Under <code>Settings > Data Management</code>, you have full control. Export your entire app state (plants, settings, etc.) as a single JSON file for <strong>backup</strong>. Import this file later to fully <strong>restore</strong> your state on any device.',
+                    'Under <code>Settings > Data Management</code>, you have full control. The <strong>ZIP backup</strong> holds everything, including photos and archived journals, and restores it on any device. The JSON export holds the app state only (plants, settings, etc.), without photos or archived journals.',
             },
             accessibility: {
                 title: 'Enhanced Accessibility',
@@ -586,7 +586,7 @@ export const helpView = {
             cloudSync: {
                 title: 'Cloud Sync (currently unavailable)',
                 content:
-                    'Cloud sync through a private GitHub Gist is <strong>switched off in this version</strong>. To back up your data or move it to another device, export your app state as a file under <strong>Settings → Data Management</strong> and import it there.',
+                    'Cloud sync through a private GitHub Gist is <strong>switched off in this version</strong>. To back up your data or move it to another device, create a <strong>ZIP backup</strong> under <strong>Settings → Data Management</strong> and restore it there.',
             },
             multiProvider: {
                 title: 'Multi-Provider AI (BYOK)',
@@ -825,7 +825,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Data Management',
                 content:
-                    'Export and import your entire app state as JSON, for backups and for moving to another device. Clear IndexedDB caches and reset the app if needed.',
+                    'Use the ZIP backup for a complete backup or for moving to another device; it includes photos and archived journals. The JSON export holds the app state only. Clear IndexedDB caches and reset the app if needed.',
             },
             about: {
                 title: 'About',
@@ -998,7 +998,7 @@ export const faq = {
     },
     cloudSync: {
         question: 'Is there cloud sync?',
-        answer: 'Not at the moment. Cloud sync through a private GitHub Gist is switched off in this version. To back up your data or move it to another device, export your app state as a file under Settings → Data Management and import it there.',
+        answer: 'Not at the moment. Cloud sync through a private GitHub Gist is switched off in this version. To back up your data or move it to another device, create a ZIP backup under Settings → Data Management and restore it there.',
     },
     multiProviderAi: {
         question: 'Can I use a different AI provider?',

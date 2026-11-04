@@ -377,15 +377,15 @@ export const helpView = {
         toc: 'Ir a Seccion',
         introduction: {
             title: 'Introduccion y Filosofia',
-            content: `Bienvenido a CannaGuide 2025, tu copiloto definitivo para el cultivo de cannabis. Este manual te guia a traves de las funciones avanzadas de la app.<h4>Nuestros Principios Fundamentales:</h4><ul><li><strong>Offline First:</strong> 100% de funcionalidad sin conexion a internet. Las acciones se ponen en cola y se sincronizan despues. Una pila de IA local de tres capas asegura que los diagnosticos y consejos esten disponibles incluso sin red.</li><li><strong>Orientado al Rendimiento:</strong> Una UI fluida gracias a la descarga de simulaciones complejas a un Web Worker e inferencia optimizada con ONNX y cache LRU.</li><li><strong>Soberania de Datos:</strong> Control completo con respaldo total, restauracion y sincronizacion cifrada en la nube con un solo toque via GitHub Gist. Ningun servidor jamas ve tus datos.</li><li><strong>IA Multi-Proveedor:</strong> Trae tu propia clave para Google Gemini, OpenAI, Anthropic o xAI/Grok -- o usa la pila de IA local en el dispositivo sin necesidad de claves API.</li></ul>`,
+            content: `Bienvenido a CannaGuide 2025, tu copiloto definitivo para el cultivo de cannabis. Este manual te guia a traves de las funciones avanzadas de la app.<h4>Nuestros Principios Fundamentales:</h4><ul><li><strong>Offline First:</strong> plantas, diario y ajustes funcionan sin conexion a internet; la IA en la nube, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos la necesitan. Las acciones hechas sin conexion se ponen en cola y se repiten al volver a estar en linea. Una pila de IA local de tres capas asegura que los diagnosticos y consejos esten disponibles incluso sin red.</li><li><strong>Orientado al Rendimiento:</strong> Una UI fluida gracias a la descarga de simulaciones complejas a un Web Worker e inferencia optimizada con ONNX y cache LRU.</li><li><strong>Soberania de Datos:</strong> Control completo con respaldo y restauracion en tu dispositivo (copia ZIP). La sincronizacion en la nube esta desactivada en esta version.</li><li><strong>IA Multi-Proveedor:</strong> Trae tu propia clave para Google Gemini, OpenAI, Anthropic o xAI/Grok -- o usa la pila de IA local en el dispositivo sin necesidad de claves API.</li></ul>`,
         },
         general: {
             title: 'Funciones de toda la Plataforma',
             content: 'Funciones que mejoran tu experiencia en toda la app.',
             pwa: {
-                title: 'PWA y Funcionalidad 100% Offline',
+                title: 'PWA y Uso sin Conexion',
                 content:
-                    'Instala CannaGuide como una <strong>Progressive Web App</strong> para una experiencia nativa a traves del icono en el encabezado. El robusto Service Worker almacena en cache todos los datos de la app, incluyendo plantas, notas e incluso archivos de IA, asegurando <strong>funcionalidad 100% offline (excluyendo solicitudes IA en vivo)</strong>.',
+                    'Instala CannaGuide como una <strong>Progressive Web App</strong> para una experiencia nativa a traves del icono en el encabezado. El robusto Service Worker almacena en cache todos los datos de la app, incluyendo plantas, notas e incluso archivos de IA, asegurando <strong>uso sin conexion (excepto solicitudes IA en vivo, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos)</strong>.',
             },
             commandPalette: {
                 title: 'Paleta de Comandos (Cmd/Ctrl + K)',
@@ -395,12 +395,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Control por Voz y Habla',
                 content:
-                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta. El reconocimiento de voz lo realiza tu navegador: algunos navegadores, como Chrome, env\u00EDan el audio al servicio de voz en l\u00EDnea del fabricante del navegador. El <strong>Reconocimiento de Voz Offline</strong> de Configuraci\u00F3n a\u00F1ade un modelo en el dispositivo que se usa mientras est\u00E1s sin conexi\u00F3n.',
+                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta. El reconocimiento de voz lo realiza tu navegador: algunos navegadores, como Chrome, env\u00EDan el audio al servicio de voz en l\u00EDnea del fabricante del navegador, por lo que los comandos de voz pueden no funcionar sin conexi\u00F3n.',
             },
             dataManagement: {
                 title: 'Soberania de Datos: Respaldo y Restauracion',
                 content:
-                    'Bajo <code>Configuracion > Gestion de Datos</code>, tienes control total. Exporta todo el estado de tu app (plantas, configuracion, etc.) como un archivo JSON para <strong>respaldo</strong>. Importa este archivo despues para <strong>restaurar</strong> completamente tu estado en cualquier dispositivo.',
+                    'En <code>Configuraci\u00F3n > Gesti\u00F3n de Datos</code> tienes el control total. La <strong>copia ZIP</strong> lo contiene todo, incluidas fotos y diarios archivados, y lo restaura en cualquier dispositivo. La exportaci\u00F3n JSON contiene solo el estado de la app (plantas, ajustes, etc.), sin fotos ni diarios archivados.',
             },
             accessibility: {
                 title: 'Accesibilidad Mejorada',
@@ -415,7 +415,7 @@ export const helpView = {
             cloudSync: {
                 title: 'Sincronizaci\u00F3n en la nube (no disponible por ahora)',
                 content:
-                    'La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 <strong>desactivada en esta versi\u00F3n</strong>. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, exporta el estado de la app como archivo en <strong>Configuraci\u00F3n -> Gesti\u00F3n de Datos</strong> e imp\u00F3rtalo all\u00ED.',
+                    'La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 <strong>desactivada en esta versi\u00F3n</strong>. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, crea una <strong>copia ZIP</strong> en <strong>Configuraci\u00F3n -> Gesti\u00F3n de Datos</strong> y rest\u00E1urala all\u00ED.',
             },
             multiProvider: {
                 title: 'IA Multi-Proveedor (BYOK)',
@@ -721,7 +721,7 @@ export const faq = {
     },
     cloudSync: {
         question: '\u00BFHay sincronizaci\u00F3n en la nube?',
-        answer: 'Por ahora no. La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 desactivada en esta versi\u00F3n. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, exporta el estado de la app como archivo en Configuraci\u00F3n -> Gesti\u00F3n de Datos e imp\u00F3rtalo all\u00ED.',
+        answer: 'Por ahora no. La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 desactivada en esta versi\u00F3n. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, crea una copia ZIP en Configuraci\u00F3n -> Gesti\u00F3n de Datos y rest\u00E1urala all\u00ED.',
     },
     multiProviderAi: {
         question: 'Puedo usar un proveedor de IA diferente?',

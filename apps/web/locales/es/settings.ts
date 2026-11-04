@@ -986,7 +986,7 @@ export const settingsView = {
             philosophyTitle: 'Filosofia del Proyecto',
             philosophyContent: `
             <p>CannaGuide 2025 esta construido sobre un conjunto de principios fundamentales disenados para ofrecer una experiencia de primera clase:</p>
-            <blockquote><strong>Sin Conexion Primero</strong>: Tu jardin no se detiene cuando tu internet lo hace. La aplicacion esta disenada para ser <strong>100% funcional sin conexion</strong>.</blockquote>
+            <blockquote><strong>Sin Conexion Primero</strong>: Tu jardin no se detiene cuando tu internet lo hace. La aplicacion esta construida <strong>offline-first</strong>: solo la IA en la nube, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos necesitan conexion.</blockquote>
             <blockquote><strong>El Rendimiento es Clave</strong>: Una interfaz fluida y responsiva no es negociable. El trabajo pesado, como la simulacion compleja de multiples plantas, se descarga a un <strong>Web Worker</strong> dedicado.</blockquote>
             <blockquote><strong>Soberania de Datos</strong>: Tus datos son tuyos, punto. La capacidad de <strong>exportar e importar todo el estado de tu aplicacion</strong> te da control completo.</blockquote>
             <blockquote><strong>AI como Copiloto</strong>: Aprovechamos la Google Gemini API no como un truco, sino como una herramienta poderosa para proporcionar <strong>informacion accionable y contextualizada</strong>.</blockquote>

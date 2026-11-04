@@ -971,7 +971,7 @@ export const settingsView = {
             philosophyTitle: 'Projektphilosophie',
             philosophyContent: `
             <p>CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt sind, ein erstklassiges Erlebnis zu bieten:</p>
-            <blockquote><strong>Offline First</strong>: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie <strong>100% offline funktionsfähig</strong> ist.</blockquote>
+            <blockquote><strong>Offline First</strong>: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist <strong>offline-first</strong> gebaut: Nur Cloud-KI, die Spracherkennung mancher Browser und erstmalige Modelldownloads brauchen eine Verbindung.</blockquote>
             <blockquote><strong>Leistung ist entscheidend</strong>: Eine flüssige, reaktionsschnelle Benutzeroberfläche ist unerlässlich. Rechenintensive Aufgaben, wie die komplexe Pflanzensimulation, werden in einen <strong>Web Worker</strong> ausgelagert.</blockquote>
             <blockquote><strong>Datensouveränität</strong>: Ihre Daten gehören Ihnen. Die Möglichkeit, Ihren <strong>gesamten Anwendungszustand zu exportieren und zu importieren</strong>, gibt Ihnen vollständige Kontrolle.</blockquote>
             <blockquote><strong>KI als Co-Pilot</strong>: Wir nutzen KI nicht als Gimmick, sondern als leistungsstarkes Werkzeug, um <strong>umsetzbare, kontextbezogene Einblicke</strong> zu liefern.</blockquote>

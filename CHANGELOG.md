@@ -49,6 +49,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **fix(privacy):** Sentry session replays now mask all text and form inputs and block all images and media (#586). Before, replays were configured with `maskAllText: false` and `blockAllMedia: false`, so a recorded session could show journal entries, notes, strain names and plant photos as they appeared on screen. This applies only when a production build has a Sentry DSN configured and Local-Only Mode is off; it is not known whether any deployed host records replays, and no data exposure is claimed.
+
 - **chore(security):** The two dev-only extract-zip audit exceptions (GHSA-jmr9-qjv8-65gv, GHSA-7pqw-9j4j-h8q3) are renewed until 2026-12-15 after a fresh analysis, ahead of their 2026-11-15 expiry. The patched extract-zip 2.0.2 is still not on npm. The `@lhci/cli` 0.16 upgrade would remove extract-zip but pulls in `chromium-bidi` 157, whose bundled code carries a Zod version below the GHSA-mrhx-c7xc-m3w5 fix that the repo's existing patch does not cover, so it is not taken. extract-zip is reached only when Lighthouse runs (in CI, or `lighthouse:ci` by hand), never in the app. Recheck triggers are recorded in `scripts/security/audit-exceptions.json` and `SECURITY.md`.
 
 - **security(audit):** The withdrawn braces advisory GHSA-vfj7-8cjw-p6xm is no longer ignored. GitHub withdrew it on 2026-10-23 because there is no practical vulnerability. braces stays at 3.0.3; 3.0.4 was never published. The two extract-zip high advisories stay ignored until a published patch exists.

@@ -54,7 +54,7 @@ describe('JSON export format (persisted snapshot)', () => {
         store.dispatch(
             setSetting({
                 path: 'data.cloudSync.encryptionKeyBase64',
-                value: 'c3luYy1rZXktY2FuYXJ5',
+                value: 'canary_sync_key_0000000000',
             }),
         )
         const state = store.getState()
@@ -64,7 +64,7 @@ describe('JSON export format (persisted snapshot)', () => {
         )
 
         expect(json).not.toContain('4711')
-        expect(json).not.toContain('c3luYy1rZXktY2FuYXJ5')
+        expect(json).not.toContain('canary_sync_key_0000000000')
         expect(passesImportCheck(json)).toBe(true)
     })
 })

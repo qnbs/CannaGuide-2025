@@ -45,6 +45,30 @@ describe('plant slots enforce the three-plant cap (KCanG Section 9 (1))', () => 
         expect(synced.plantSlots).toEqual(['a', 'b', 'c', null, null])
     })
 
+    it('applies an update to a plant an older sync left without a slot', () => {
+        // Three plants in the slots, and a fourth entity without one (legacy state).
+        const full = withPlants('a', 'b', 'c')
+        const orphan = {
+            ...full,
+            plants: {
+                ids: [...full.plants.ids, 'o'],
+                entities: { ...full.plants.entities, o: plant('o') },
+            },
+        }
+        const renamed = { ...plant('o'), name: 'renamed' }
+
+        const updated = simulationReducer(orphan, upsertPlant(renamed))
+        const withRoom = simulationReducer(
+            { ...orphan, plantSlots: ['a', null, 'c'] },
+            upsertPlant(renamed),
+        )
+
+        expect(updated.plants.entities['o']?.name).toBe('renamed')
+        expect(updated.plantSlots).toEqual(['a', 'b', 'c'])
+        expect(plantCount(updated)).toBe(plantCount(orphan))
+        expect(withRoom.plantSlots).toEqual(['a', 'o', 'c'])
+    })
+
     it('refuses a second plant with an id that is already present', () => {
         const state = simulationReducer(
             withPlants('a'),

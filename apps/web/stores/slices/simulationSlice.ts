@@ -35,6 +35,13 @@ export const isFreeSlot = (slots: readonly (string | null)[], index: number): bo
 export const firstFreeSlot = (slots: readonly (string | null)[]): number =>
     slots.slice(0, MAX_PLANTS_CANG).findIndex((slot) => slot === null)
 
+/** Gives a plant without a slot the first free one, if there is one. */
+const slotIfFree = (slots: (string | null)[], plantId: string): void => {
+    if (slots.includes(plantId)) return
+    const index = firstFreeSlot(slots)
+    if (index >= 0) slots[index] = plantId
+}
+
 export const simulationSlice = createSlice({
     name: 'simulation',
     initialState,
@@ -306,17 +313,16 @@ export const simulationSlice = createSlice({
         upsertPlant: {
             reducer(state, action: PayloadAction<Plant>) {
                 const plant = action.payload
-                // An update to a plant that already has a slot stays allowed.
-                if (state.plantSlots.includes(plant.id)) {
-                    plantsAdapter.upsertOne(state.plants, plant)
-                    return
-                }
+                // An update to a plant the store already holds adds no plant, so it
+                // is applied, also to one an older sync left without a slot.
+                const known =
+                    state.plantSlots.includes(plant.id) ||
+                    state.plants.entities[plant.id] !== undefined
                 // A new plant needs a free slot; without one it is not added at all,
                 // so a synced plant can never take the app past three plants.
-                const emptySlotIndex = firstFreeSlot(state.plantSlots)
-                if (emptySlotIndex < 0) return
+                if (!known && firstFreeSlot(state.plantSlots) < 0) return
                 plantsAdapter.upsertOne(state.plants, plant)
-                state.plantSlots[emptySlotIndex] = plant.id
+                slotIfFree(state.plantSlots, plant.id)
             },
             prepare(plant: Plant, meta?: { fromCrdt?: boolean | undefined }) {
                 return { payload: plant, meta: { fromCrdt: meta?.fromCrdt } }

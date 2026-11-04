@@ -1011,5 +1011,8 @@ export const plantsView = {
         noStrain: 'No strain assigned. Assign a strain to generate tasks automatically.',
         confirmOverwrite: 'This will add new tasks to the existing schedule. Continue?',
         selectMedium: 'Select grow medium',
+        alreadyScheduled: 'The tasks for this stage are already in the planner.',
+        plannerFull:
+            'The planner holds at most {{max}} open and recent tasks, so some tasks were not added. Complete or remove tasks to make room.',
     },
 }

@@ -1038,5 +1038,8 @@ export const plantsView = {
         confirmOverwrite:
             'Es werden neue Aufgaben zum bestehenden Zeitplan hinzugefuegt. Fortfahren?',
         selectMedium: 'Anbaumedium waehlen',
+        alreadyScheduled: 'Die Aufgaben für diese Phase stehen bereits im Planer.',
+        plannerFull:
+            'Der Planer fasst höchstens {{max}} offene und aktuelle Aufgaben, daher wurden einige Aufgaben nicht hinzugefügt. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
     },
 }

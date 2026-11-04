@@ -970,5 +970,8 @@ export const plantsView = {
         noStrain: 'No hay cepa asignada. Asigna una cepa para generar tareas automaticamente.',
         confirmOverwrite: 'Se agregaran nuevas tareas al programa existente. Continuar?',
         selectMedium: 'Seleccionar medio de cultivo',
+        alreadyScheduled: 'Las tareas de esta fase ya est\u00E1n en el planificador.',
+        plannerFull:
+            'El planificador admite como m\u00E1ximo {{max}} tareas abiertas y recientes, as\u00ED que algunas tareas no se a\u00F1adieron. Completa o elimina tareas para hacer sitio.',
     },
 }

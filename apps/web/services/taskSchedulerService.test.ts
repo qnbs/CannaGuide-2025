@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { taskSchedulerService } from './taskSchedulerService'
+import { currentStageStartedAt, taskSchedulerService } from './taskSchedulerService'
 import type { TaskSchedulerInput } from './taskSchedulerService'
-import { PlantStage } from '@/types'
+import { JournalEntryType, PlantStage } from '@/types'
+import type { JournalEntry } from '@/types'
 
 describe('taskSchedulerService', () => {
     const makeInput = (overrides: Partial<TaskSchedulerInput> = {}): TaskSchedulerInput => ({
@@ -21,7 +22,9 @@ describe('taskSchedulerService', () => {
         })
 
         it('generates tasks for VEGETATIVE stage', () => {
-            const result = taskSchedulerService.generateTasks(makeInput({ currentStage: PlantStage.Vegetative }))
+            const result = taskSchedulerService.generateTasks(
+                makeInput({ currentStage: PlantStage.Vegetative }),
+            )
             expect(result.tasks.length).toBeGreaterThan(0)
             for (const task of result.tasks) {
                 expect(task.plantId).toBe('p-test')
@@ -31,12 +34,16 @@ describe('taskSchedulerService', () => {
         })
 
         it('generates tasks for FLOWERING stage', () => {
-            const result = taskSchedulerService.generateTasks(makeInput({ currentStage: PlantStage.Flowering }))
+            const result = taskSchedulerService.generateTasks(
+                makeInput({ currentStage: PlantStage.Flowering }),
+            )
             expect(result.tasks.length).toBeGreaterThan(0)
         })
 
         it('generates tasks for SEEDLING stage', () => {
-            const result = taskSchedulerService.generateTasks(makeInput({ currentStage: PlantStage.Seedling }))
+            const result = taskSchedulerService.generateTasks(
+                makeInput({ currentStage: PlantStage.Seedling }),
+            )
             expect(result.tasks.length).toBeGreaterThanOrEqual(0)
         })
 
@@ -50,7 +57,9 @@ describe('taskSchedulerService', () => {
         })
 
         it('works for Autoflower strains', () => {
-            const result = taskSchedulerService.generateTasks(makeInput({ floweringType: 'Autoflower' }))
+            const result = taskSchedulerService.generateTasks(
+                makeInput({ floweringType: 'Autoflower' }),
+            )
             expect(result.templateUsed).not.toBeNull()
         })
 
@@ -71,7 +80,9 @@ describe('taskSchedulerService', () => {
         })
 
         it('handles SEED stage', () => {
-            const result = taskSchedulerService.generateTasks(makeInput({ currentStage: PlantStage.Seed }))
+            const result = taskSchedulerService.generateTasks(
+                makeInput({ currentStage: PlantStage.Seed }),
+            )
             expect(result).toBeDefined()
         })
 
@@ -79,6 +90,45 @@ describe('taskSchedulerService', () => {
             // This should still work but possibly with no template match
             const result = taskSchedulerService.generateTasks(makeInput())
             expect(result).toBeDefined()
+        })
+    })
+
+    describe('repeatable generation (GH #659)', () => {
+        it('gives the same tasks the same ids on every run', () => {
+            const input = makeInput({
+                currentStage: PlantStage.Vegetative,
+                brandScheduleId: undefined,
+            })
+
+            const first = taskSchedulerService.generateTasks(input).tasks.map(({ id }) => id)
+            const second = taskSchedulerService.generateTasks(input).tasks.map(({ id }) => id)
+
+            expect(first.length).toBeGreaterThan(0)
+            expect(second).toEqual(first)
+            expect(new Set(first).size).toBe(first.length)
+        })
+
+        it('lays the schedule out from the start of the current stage', () => {
+            const stageChange = {
+                id: 'j1',
+                type: JournalEntryType.System,
+                createdAt: 5_000,
+                details: { from: PlantStage.Seedling, to: PlantStage.Vegetative },
+            } as unknown as JournalEntry
+
+            expect(
+                currentStageStartedAt({
+                    stage: PlantStage.Vegetative,
+                    createdAt: 1_000,
+                    journal: [stageChange],
+                }),
+            ).toBe(5_000)
+        })
+
+        it('uses the plant creation for its first stage', () => {
+            expect(
+                currentStageStartedAt({ stage: PlantStage.Seed, createdAt: 1_000, journal: [] }),
+            ).toBe(1_000)
         })
     })
 })

@@ -973,5 +973,9 @@ export const plantsView = {
             'Aucune variete assignee. Assignez une variete pour generer des taches automatiquement.',
         confirmOverwrite: 'De nouvelles taches seront ajoutees au planning existant. Continuer ?',
         selectMedium: 'Selectionner le milieu de culture',
+        alreadyScheduled:
+            'Les t\u00E2ches de cette phase sont d\u00E9j\u00E0 dans le planificateur.',
+        plannerFull:
+            "Le planificateur contient au plus {{max}} t\u00E2ches ouvertes et r\u00E9centes : certaines t\u00E2ches n'ont donc pas \u00E9t\u00E9 ajout\u00E9es. Terminez ou supprimez des t\u00E2ches pour faire de la place.",
     },
 }

@@ -955,5 +955,8 @@ export const plantsView = {
         noStrain: 'Geen ras toegewezen. Wijs een ras toe om automatisch taken te genereren.',
         confirmOverwrite: 'Er worden nieuwe taken aan het bestaande schema toegevoegd. Doorgaan?',
         selectMedium: 'Teeltmedium selecteren',
+        alreadyScheduled: 'De taken voor deze fase staan al in de planner.',
+        plannerFull:
+            'De planner bevat maximaal {{max}} open en recente taken, dus sommige taken zijn niet toegevoegd. Rond taken af of verwijder ze om ruimte te maken.',
     },
 }

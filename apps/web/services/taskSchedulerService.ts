@@ -6,7 +6,13 @@
 // base, then optionally overlays nutrient feeding tasks from a brand.
 // ---------------------------------------------------------------------------
 
-import type { PlannerTask, GrowAction, PlantStage } from '@/types'
+import {
+    JournalEntryType,
+    type PlannerTask,
+    type GrowAction,
+    type PlantStage,
+    type Plant,
+} from '@/types'
 import {
     findBestTemplate,
     type GrowScheduleTemplate,
@@ -39,20 +45,23 @@ export interface TaskSchedulerResult {
 // Helpers
 // ---------------------------------------------------------------------------
 
-let taskCounter = 0
-
-const generateTaskId = (): string => {
-    taskCounter++
-    return `auto-${Date.now()}-${taskCounter}-${crypto.randomUUID().slice(0, 8)}`
-}
+/**
+ * Generated tasks get ids from what they are, not when they were made: the same
+ * plant, stage and template step always give the same id. Running Auto Schedule
+ * again therefore yields tasks the planner already has, and it skips them
+ * instead of adding a second copy (GH #659).
+ */
+const autoTaskId = (plantId: string, stage: PlantStage, source: string): string =>
+    `auto-${plantId}-${stage}-${source}`
 
 const stepsToTasks = (
     steps: ScheduleStep[],
     plantId: string,
     stageStartDate: number,
+    stage: PlantStage,
 ): PlannerTask[] =>
-    steps.map((step) => ({
-        id: generateTaskId(),
+    steps.map((step, index) => ({
+        id: autoTaskId(plantId, stage, `step-${index}-${step.action}-${step.dayOffset}`),
         plantId,
         type: step.action,
         scheduledAt: stageStartDate + step.dayOffset * 86_400_000,
@@ -65,6 +74,7 @@ const nutrientWeeksToTasks = (
     plantId: string,
     stageStartDate: number,
     targetStage: string,
+    feedIdPrefix: { stage: PlantStage; brand: string },
 ): PlannerTask[] => {
     const relevantWeeks = weeks.filter((w) => {
         const lower = w.stage.toLowerCase()
@@ -83,7 +93,7 @@ const nutrientWeeksToTasks = (
             .join(' | ')
 
         return {
-            id: generateTaskId(),
+            id: autoTaskId(plantId, feedIdPrefix.stage, `feed-${feedIdPrefix.brand}-w${week.week}`),
             plantId,
             type: 'feed' as GrowAction,
             scheduledAt: stageStartDate + (week.week - 1) * 7 * 86_400_000,
@@ -91,6 +101,29 @@ const nutrientWeeksToTasks = (
             notes,
         }
     })
+}
+
+/**
+ * When the plant entered its current stage: the simulation's stage-change
+ * journal entry for that stage, or the plant's creation for its first stage. The
+ * schedule is laid out from here, not from the moment Auto Schedule is pressed
+ * (GH #659), so a plan made late in a stage does not start over.
+ */
+/** A stage-change entry's details name the stage the plant moved to. */
+const isStageChangeTo = (details: unknown, stage: PlantStage): boolean =>
+    typeof details === 'object' && details !== null && 'to' in details && details.to === stage
+
+export const currentStageStartedAt = (
+    plant: Pick<Plant, 'stage' | 'createdAt' | 'journal'>,
+): number => {
+    const entered = plant.journal
+        .filter(
+            (entry) =>
+                entry.type === JournalEntryType.System &&
+                isStageChangeTo(entry.details, plant.stage),
+        )
+        .reduce((latest, entry) => Math.max(latest, entry.createdAt), Number.NEGATIVE_INFINITY)
+    return Number.isFinite(entered) ? entered : plant.createdAt
 }
 
 // ---------------------------------------------------------------------------
@@ -137,7 +170,7 @@ export const taskSchedulerService = {
                 steps = template.floweringSteps
             }
 
-            tasks.push(...stepsToTasks(steps, plantId, stageStartDate))
+            tasks.push(...stepsToTasks(steps, plantId, stageStartDate, currentStage))
         }
 
         // 2. Overlay nutrient brand tasks
@@ -158,6 +191,7 @@ export const taskSchedulerService = {
                     plantId,
                     stageStartDate,
                     stageLabel,
+                    { stage: currentStage, brand: brandScheduleId },
                 )
                 tasks.push(...nutrientTasks)
             }

@@ -8,11 +8,13 @@ import {
     addPlannerTask,
     completePlannerTask,
     removePlannerTask,
-    bulkAddTasks,
+    addGeneratedTasks,
+    MAX_TASKS,
 } from '@/stores/slices/growPlannerSlice'
 import { selectPlantById } from '@/stores/selectors'
 import { secureRandom } from '@/utils/random'
-import { taskSchedulerService } from '@/services/taskSchedulerService'
+import { currentStageStartedAt, taskSchedulerService } from '@/services/taskSchedulerService'
+import { getUISnapshot } from '@/stores/useUIStore'
 
 interface GrowPlannerViewProps {
     plantId?: string | undefined
@@ -152,7 +154,7 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
             strainType: plant.strain?.type ?? 'Hybrid',
             floweringType: plant.strain?.floweringType ?? 'Photoperiod',
             currentStage: plant.stage,
-            stageStartDate: Date.now(),
+            stageStartDate: currentStageStartedAt(plant),
             medium:
                 plant.mediumType === 'Soil' ||
                 plant.mediumType === 'Coco' ||
@@ -160,10 +162,24 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
                     ? plant.mediumType
                     : undefined,
         })
-        if (result.tasks.length > 0) {
-            dispatch(bulkAddTasks(result.tasks))
+        if (result.tasks.length === 0) return
+        const outcome = dispatch(addGeneratedTasks(result.tasks))
+        const notify = getUISnapshot().addNotification
+        if (outcome.added > 0) {
+            notify({
+                type: 'success',
+                message: t('plantsView.autoScheduler.generated', { count: outcome.added }),
+            })
+        } else if (outcome.alreadyScheduled > 0 && outcome.refusedForCap === 0) {
+            notify({ type: 'info', message: t('plantsView.autoScheduler.alreadyScheduled') })
         }
-    }, [dispatch, plantId, plant])
+        if (outcome.refusedForCap > 0) {
+            notify({
+                type: 'error',
+                message: t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
+            })
+        }
+    }, [dispatch, plantId, plant, t])
 
     const navigateCalendar = useCallback(
         (direction: -1 | 1) => {

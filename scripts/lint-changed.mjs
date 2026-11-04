@@ -56,15 +56,17 @@ function resolveBaseRef() {
 /**
  * A NUL-separated path list exactly as git writes it. Nothing is trimmed: with
  * -z git neither quotes nor pads names, and a name may itself start or end
- * with whitespace.
+ * with whitespace. A failed listing throws: an empty list would read as
+ * "nothing changed" and let the run pass without linting anything.
  */
-function tryListGit(args) {
+function listGit(args) {
     const result = spawnSync('git', args, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
         shell: false,
     })
-    return result.status === 0 ? result.stdout.split('\0').filter(Boolean) : []
+    if (result.status !== 0) throw new Error(`git ${args.join(' ')} failed`)
+    return result.stdout.split('\0').filter(Boolean)
 }
 
 /**
@@ -90,7 +92,7 @@ function committedRange(baseRef) {
 function getChangedFiles(baseRef) {
     const files = new Set()
 
-    tryListGit([
+    listGit([
         'diff',
         '--name-only',
         '-z',
@@ -107,7 +109,7 @@ function getChangedFiles(baseRef) {
         ['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB'],
         ['ls-files', '-z', '--others', '--exclude-standard'],
     ]) {
-        tryListGit(args).forEach((file) => files.add(file))
+        listGit(args).forEach((file) => files.add(file))
     }
 
     return [...files]

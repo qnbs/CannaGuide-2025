@@ -311,7 +311,8 @@ const gitQuiet = (args) =>
  */
 const existsAtBase = (base, file) => {
     try {
-        return gitQuiet(['ls-tree', '-z', base, '--', file]).length > 0
+        // --literal-pathspecs: a name with *, ? or [ is a path, not a pattern.
+        return gitQuiet(['--literal-pathspecs', 'ls-tree', '-z', base, '--', file]).length > 0
     } catch {
         // A path that is not in the tree is an empty listing, not an error; a
         // failure means the base tree itself cannot be read.

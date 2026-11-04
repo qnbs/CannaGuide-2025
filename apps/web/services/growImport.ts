@@ -1,9 +1,14 @@
 import { z } from 'zod'
-import { MAX_GROWS } from '@/constants'
+import { MAX_GROWS, MAX_PLANTS_CANG } from '@/constants'
 import { PlantStage, type Grow, type Plant } from '@/types'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
 import { addGrow } from '@/stores/slices/growsSlice'
-import { addPlant, isFreeSlot } from '@/stores/slices/simulationSlice'
+import {
+    addPlant,
+    capCountingPlants,
+    countsTowardCap,
+    isFreeSlot,
+} from '@/stores/slices/simulationSlice'
 import type { AppDispatch, RootState } from '@/stores/store'
 
 /**
@@ -40,6 +45,8 @@ export interface GrowImportTarget {
     growIds: readonly string[]
     plantIds: readonly string[]
     plantSlots: readonly (string | null)[]
+    /** Plants in the store that count toward the legal cap, slotted or not. */
+    capCountingPlants: number
 }
 
 const PLANT_STAGES: ReadonlySet<string> = new Set(Object.values(PlantStage))
@@ -118,6 +125,14 @@ const defaultGrowId = (): string => `grow-${Date.now()}-${crypto.randomUUID().sl
 const hasDuplicateIds = (plants: readonly Plant[]): boolean =>
     new Set(plants.map((plant) => plant.id)).size !== plants.length
 
+/**
+ * Every imported plant needs a free slot, and the ones that count toward the
+ * legal cap must fit next to the store's counting plants (slotted or not).
+ */
+const exceedsPlantLimit = (plants: readonly Plant[], target: GrowImportTarget): boolean =>
+    plants.length > freeSlotIndexes(target.plantSlots).length ||
+    plants.filter(countsTowardCap).length + target.capCountingPlants > MAX_PLANTS_CANG
+
 /** Why the import cannot go ahead against this store, or null when it can. */
 const refusalFor = (
     plants: readonly Plant[],
@@ -126,7 +141,7 @@ const refusalFor = (
     if (hasDuplicateIds(plants)) return 'invalid'
     if (target.growIds.length >= MAX_GROWS) return 'growLimit'
     if (plants.some((plant) => target.plantIds.includes(plant.id))) return 'alreadyPresent'
-    return plants.length > freeSlotIndexes(target.plantSlots).length ? 'plantLimit' : null
+    return exceedsPlantLimit(plants, target) ? 'plantLimit' : null
 }
 
 /** Decides a per-grow import against the current store; never changes anything. */
@@ -168,6 +183,7 @@ export const importGrowFile =
                 growIds: grows.grows.ids,
                 plantIds: simulation.plants.ids,
                 plantSlots: simulation.plantSlots,
+                capCountingPlants: capCountingPlants(simulation),
             },
             options,
         )

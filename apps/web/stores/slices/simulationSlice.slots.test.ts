@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import simulationReducer, { addPlant, upsertPlant } from '@/stores/slices/simulationSlice'
-import type { Plant, SimulationState } from '@/types'
+import { PlantStage, type Plant, type SimulationState } from '@/types'
 
 const plant = (id: string): Plant =>
     ({ id, growId: 'default-grow', name: id, journal: [] }) as unknown as Plant
@@ -67,6 +67,43 @@ describe('plant slots enforce the three-plant cap (KCanG Section 9 (1))', () => 
         expect(updated.plantSlots).toEqual(['a', 'b', 'c'])
         expect(plantCount(updated)).toBe(plantCount(orphan))
         expect(withRoom.plantSlots).toEqual(['a', 'o', 'c'])
+    })
+
+    it('counts a plant without a slot toward the cap, so a free slot alone is not room', () => {
+        // Two slotted plants, one free slot, and a legacy plant without a slot.
+        const twoSlotted = withPlants('a', 'b')
+        const withLegacy = {
+            ...twoSlotted,
+            plants: {
+                ids: [...twoSlotted.plants.ids, 'legacy'],
+                entities: { ...twoSlotted.plants.entities, legacy: plant('legacy') },
+            },
+        }
+
+        const added = simulationReducer(withLegacy, addPlant({ plant: plant('d'), slotIndex: 2 }))
+        const synced = simulationReducer(withLegacy, upsertPlant(plant('e')))
+
+        expect(plantCount(added)).toBe(3)
+        expect(plantCount(synced)).toBe(3)
+        expect(added.plantSlots).toEqual(['a', 'b', null])
+    })
+
+    it('does not count finished plants toward the cap', () => {
+        const twoSlotted = withPlants('a', 'b')
+        const withFinished = {
+            ...twoSlotted,
+            plants: {
+                ids: [...twoSlotted.plants.ids, 'done'],
+                entities: {
+                    ...twoSlotted.plants.entities,
+                    done: { ...plant('done'), stage: PlantStage.Finished },
+                },
+            },
+        }
+
+        const added = simulationReducer(withFinished, addPlant({ plant: plant('c'), slotIndex: 2 }))
+
+        expect(added.plantSlots).toEqual(['a', 'b', 'c'])
     })
 
     it('refuses a second plant with an id that is already present', () => {

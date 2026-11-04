@@ -4,7 +4,7 @@ import { DEFAULT_GROW_ID } from '@/constants'
 import growsReducer, { addGrow } from '@/stores/slices/growsSlice'
 import simulationReducer, { addPlant } from '@/stores/slices/simulationSlice'
 import { plantSimulationService } from '@/services/plantSimulationService'
-import { StrainType } from '@/types'
+import { PlantStage, StrainType } from '@/types'
 import type { GrowSetup, Plant, Strain } from '@/types'
 import { createAppStoreSync } from '@/stores/store'
 import { importGrowFile, planGrowImport, type GrowImportTarget } from './growImport'
@@ -48,6 +48,7 @@ const freshProfile: GrowImportTarget = {
     growIds: [DEFAULT_GROW_ID],
     plantIds: [],
     plantSlots: [null, null, null],
+    capCountingPlants: 0,
 }
 
 const options = { now: 1000, newGrowId: () => 'grow-new' }
@@ -77,7 +78,12 @@ describe('planGrowImport (GH #674)', () => {
     })
 
     it('uses only free slots', () => {
-        const target = { ...freshProfile, plantIds: ['other'], plantSlots: ['other', null, null] }
+        const target = {
+            ...freshProfile,
+            plantIds: ['other'],
+            plantSlots: ['other', null, null],
+            capCountingPlants: 1,
+        }
 
         const plan = planGrowImport(exportOf([plant('p1')]), target, options)
 
@@ -89,6 +95,7 @@ describe('planGrowImport (GH #674)', () => {
             ...freshProfile,
             plantIds: ['a', 'b'],
             plantSlots: ['a', null, 'b', null, null],
+            capCountingPlants: 2,
         }
 
         // Only slot 1 is usable; slots 3 and 4 are beyond the cap of three.
@@ -102,8 +109,31 @@ describe('planGrowImport (GH #674)', () => {
         })
     })
 
+    it('counts plants without a slot toward the cap, and does not count finished ones', () => {
+        // Two slotted plants plus a legacy plant without a slot: one slot free, cap full.
+        const full = {
+            ...freshProfile,
+            plantIds: ['a', 'b', 'legacy'],
+            plantSlots: ['a', 'b', null],
+            capCountingPlants: 3,
+        }
+        const finished = { ...plant('p1'), stage: PlantStage.Finished }
+
+        expect(planGrowImport(exportOf([plant('p1')]), full, options)).toEqual({
+            ok: false,
+            reason: 'plantLimit',
+        })
+        // A finished plant still needs the free slot but does not count toward the cap.
+        expect(planGrowImport(exportOf([finished]), full, options)).toMatchObject({ ok: true })
+    })
+
     it('refuses the whole import when the plants do not fit the three-plant cap', () => {
-        const target = { ...freshProfile, plantIds: ['a', 'b'], plantSlots: ['a', 'b', null] }
+        const target = {
+            ...freshProfile,
+            plantIds: ['a', 'b'],
+            plantSlots: ['a', 'b', null],
+            capCountingPlants: 2,
+        }
 
         expect(planGrowImport(exportOf([plant('p1'), plant('p2')]), target, options)).toEqual({
             ok: false,
@@ -121,7 +151,12 @@ describe('planGrowImport (GH #674)', () => {
     })
 
     it('refuses a second import of the same plants', () => {
-        const target = { ...freshProfile, plantIds: ['p1'], plantSlots: ['p1', null, null] }
+        const target = {
+            ...freshProfile,
+            plantIds: ['p1'],
+            plantSlots: ['p1', null, null],
+            capCountingPlants: 1,
+        }
 
         expect(planGrowImport(exportOf([plant('p1')]), target, options)).toEqual({
             ok: false,

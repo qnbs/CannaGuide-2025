@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createEntityAdapter } from '@reduxjs/toolki
 import { Plant, JournalEntry, Task, VentilationPower, SimulationState, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import type { SimulationPoint } from '@/types/simulation.types'
+import { MAX_PLANTS_CANG } from '@/constants'
 
 export const plantsAdapter = createEntityAdapter<Plant>()
 
@@ -14,14 +15,25 @@ const initialState: SimulationState = {
 }
 
 /**
+ * Slots beyond the legal cap are never used, whatever length a persisted or
+ * imported `plantSlots` array has: its length is not what limits the plants.
+ */
+const usableSlots = (slots: readonly (string | null)[]): number =>
+    Math.min(slots.length, MAX_PLANTS_CANG)
+
+/**
  * The three plant slots are where the legal cap of three plants at a time
  * (KCanG Section 9 (1)) is enforced: every plant entity has a slot, and
  * removePlant frees both together. A new plant is therefore only accepted into
  * a slot that exists and is free; anything else would leave a plant without a
  * slot (overwritten) or more plants than slots.
  */
-const isFreeSlot = (slots: readonly (string | null)[], index: number): boolean =>
-    Number.isInteger(index) && index >= 0 && index < slots.length && slots[index] === null
+export const isFreeSlot = (slots: readonly (string | null)[], index: number): boolean =>
+    Number.isInteger(index) && index >= 0 && index < usableSlots(slots) && slots[index] === null
+
+/** The first free slot within the legal cap, or -1. */
+export const firstFreeSlot = (slots: readonly (string | null)[]): number =>
+    slots.slice(0, MAX_PLANTS_CANG).findIndex((slot) => slot === null)
 
 export const simulationSlice = createSlice({
     name: 'simulation',
@@ -301,7 +313,7 @@ export const simulationSlice = createSlice({
                 }
                 // A new plant needs a free slot; without one it is not added at all,
                 // so a synced plant can never take the app past three plants.
-                const emptySlotIndex = state.plantSlots.findIndex((slot) => slot === null)
+                const emptySlotIndex = firstFreeSlot(state.plantSlots)
                 if (emptySlotIndex < 0) return
                 plantsAdapter.upsertOne(state.plants, plant)
                 state.plantSlots[emptySlotIndex] = plant.id

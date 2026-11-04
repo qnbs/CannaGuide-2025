@@ -33,6 +33,18 @@ describe('plant slots enforce the three-plant cap (KCanG Section 9 (1))', () => 
         expect(plantCount(state)).toBe(1)
     })
 
+    it('never uses a slot beyond the legal cap, even when a stored array is longer', () => {
+        // A persisted or imported state whose plantSlots array has more than three entries.
+        const longer = { ...withPlants('a', 'b', 'c'), plantSlots: ['a', 'b', 'c', null, null] }
+
+        const added = simulationReducer(longer, addPlant({ plant: plant('d'), slotIndex: 3 }))
+        const synced = simulationReducer(longer, upsertPlant(plant('e')))
+
+        expect(plantCount(added)).toBe(3)
+        expect(plantCount(synced)).toBe(3)
+        expect(synced.plantSlots).toEqual(['a', 'b', 'c', null, null])
+    })
+
     it('refuses a second plant with an id that is already present', () => {
         const state = simulationReducer(
             withPlants('a'),

@@ -14,7 +14,7 @@ import {
 } from '@/types/schemas'
 import { View } from '@/types'
 import { workerBus } from '@/services/workerBus'
-import { simulationSlice } from '../simulationSlice'
+import { firstFreeSlot, isFreeSlot, simulationSlice } from '../simulationSlice'
 import { notifyPlantEvents } from './simulationNotifications'
 
 export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: RootState }>(
@@ -40,12 +40,8 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
 
         // A slot chosen in the UI that is taken (or does not exist) is not used:
         // writing into it would orphan the plant there. Look for a free one instead.
-        if (
-            finalSlotIndex === null ||
-            finalSlotIndex === undefined ||
-            simulation.plantSlots[finalSlotIndex] !== null
-        ) {
-            finalSlotIndex = simulation.plantSlots.findIndex((slot) => slot === null)
+        if (finalSlotIndex == null || !isFreeSlot(simulation.plantSlots, finalSlotIndex)) {
+            finalSlotIndex = firstFreeSlot(simulation.plantSlots)
         }
 
         if (finalSlotIndex === -1) {

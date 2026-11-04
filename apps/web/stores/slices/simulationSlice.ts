@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction, createEntityAdapter } from '@reduxjs/toolkit'
 import {
     Plant,
+    PlantStage,
     JournalEntry,
     Task,
     VentilationPower,
@@ -9,6 +10,7 @@ import {
 } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import type { SimulationPoint } from '@/types/simulation.types'
+import { MAX_PLANTS_CANG } from '@/constants'
 
 export const plantsAdapter = createEntityAdapter<Plant>()
 
@@ -18,6 +20,90 @@ const initialState: SimulationState = {
     selectedPlantId: null,
     vpdProfiles: {},
     isCatchingUp: false,
+}
+
+/**
+ * Slots beyond the legal cap are never used, whatever length a persisted or
+ * imported `plantSlots` array has: its length is not what limits the plants.
+ */
+const usableSlots = (slots: readonly (string | null)[]): number =>
+    Math.min(slots.length, MAX_PLANTS_CANG)
+
+/**
+ * The three plant slots are where the legal cap of three plants at a time
+ * (KCanG Section 9 (1)) is enforced: every plant entity has a slot, and
+ * removePlant frees both together. A new plant is therefore only accepted into
+ * a slot that exists and is free; anything else would leave a plant without a
+ * slot (overwritten) or more plants than slots.
+ */
+export const isFreeSlot = (slots: readonly (string | null)[], index: number): boolean =>
+    Number.isInteger(index) && index >= 0 && index < usableSlots(slots) && slots[index] === null
+
+/** The first free slot within the legal cap, or -1. */
+export const firstFreeSlot = (slots: readonly (string | null)[]): number =>
+    slots.slice(0, MAX_PLANTS_CANG).findIndex((slot) => slot === null)
+
+/**
+ * Plants that count toward the legal cap: every stage before Finished (KCanG
+ * Section 9 (1), "gleichzeitig"). The count is over all plant entities, not the
+ * slots: a state restored from an older version can hold plants without a slot,
+ * and those still count.
+ */
+export const countsTowardCap = (plant: Pick<Plant, 'stage'> | undefined): boolean =>
+    plant !== undefined && plant.stage !== PlantStage.Finished
+
+export const capCountingPlants = (state: Pick<SimulationState, 'plants'>): number =>
+    Object.values(state.plants.entities).filter(countsTowardCap).length
+
+/**
+ * Whether a new plant can be accepted: a free slot within the cap, and -- when
+ * the plant itself counts toward the cap -- fewer than MAX_PLANTS_CANG plants
+ * counting already. A free slot alone does not prove room: a legacy plant
+ * without a slot may hold its place in the count. A finished plant needs the
+ * slot but no room in the count. Every path that adds a plant (the reducers,
+ * starting a grow, the grow import) decides with this one rule.
+ */
+export const canAcceptNewPlant = (
+    state: Pick<SimulationState, 'plants' | 'plantSlots'>,
+    plant: Pick<Plant, 'stage'>,
+): boolean =>
+    firstFreeSlot(state.plantSlots) >= 0 &&
+    (!countsTowardCap(plant) || capCountingPlants(state) < MAX_PLANTS_CANG)
+
+/**
+ * Why a new plant cannot be added at `slotIndex` (-1: no free slot found), or
+ * null when it can: `slots` when there is no free slot, `cap` when the plants
+ * that count already reach the legal limit. Starting a grow asks this before it
+ * reports anything, so it never reports a plant the reducer then refuses.
+ */
+export const newPlantRefusal = (
+    state: Pick<SimulationState, 'plants' | 'plantSlots'>,
+    slotIndex: number,
+    plant: Pick<Plant, 'stage'>,
+): 'slots' | 'cap' | null => {
+    if (slotIndex === -1 || !isFreeSlot(state.plantSlots, slotIndex)) return 'slots'
+    return canAcceptNewPlant(state, plant) ? null : 'cap'
+}
+
+/**
+ * Whether a synced plant may be stored. A plant the store does not hold needs
+ * room like any new plant. A plant it holds may be updated, unless the update
+ * makes it start counting toward the cap (a finished plant turned active again)
+ * while the cap is already reached -- that would be one plant too many.
+ */
+const admitsUpsert = (state: SimulationState, plant: Plant): boolean => {
+    const existing = state.plants.entities[plant.id]
+    const known = existing !== undefined || state.plantSlots.includes(plant.id)
+    if (!known) return canAcceptNewPlant(state, plant)
+    const startsCounting = countsTowardCap(plant) && !countsTowardCap(existing)
+    return !startsCounting || capCountingPlants(state) < MAX_PLANTS_CANG
+}
+
+/** Gives a plant without a slot the first free one, if there is one. */
+const slotIfFree = (slots: (string | null)[], plantId: string): void => {
+    if (slots.includes(plantId)) return
+    const index = firstFreeSlot(slots)
+    if (index >= 0) slots[index] = plantId
 }
 
 export const simulationSlice = createSlice({
@@ -33,6 +119,10 @@ export const simulationSlice = createSlice({
         },
         addPlant: (state, action: PayloadAction<{ plant: Plant; slotIndex: number }>) => {
             const { plant, slotIndex } = action.payload
+            // An occupied or missing slot, a plant id already present, or a full cap
+            // (counted over all plants, slotted or not) is refused.
+            if (!isFreeSlot(state.plantSlots, slotIndex) || state.plants.entities[plant.id]) return
+            if (!canAcceptNewPlant(state, plant)) return
             plantsAdapter.addOne(state.plants, plant)
             state.plantSlots[slotIndex] = plant.id
         },
@@ -289,14 +379,12 @@ export const simulationSlice = createSlice({
         upsertPlant: {
             reducer(state, action: PayloadAction<Plant>) {
                 const plant = action.payload
+                // Updates to plants the store holds are applied (also to one an older
+                // sync left without a slot); a new plant needs room, and no update may
+                // take the plants counting toward the cap past three.
+                if (!admitsUpsert(state, plant)) return
                 plantsAdapter.upsertOne(state.plants, plant)
-                // Assign to first empty slot if this is a new plant
-                if (!state.plantSlots.includes(plant.id)) {
-                    const emptySlotIndex = state.plantSlots.findIndex((slot) => slot === null)
-                    if (emptySlotIndex >= 0) {
-                        state.plantSlots[emptySlotIndex] = plant.id
-                    }
-                }
+                slotIfFree(state.plantSlots, plant.id)
             },
             prepare(plant: Plant, meta?: { fromCrdt?: boolean | undefined }) {
                 return { payload: plant, meta: { fromCrdt: meta?.fromCrdt } }

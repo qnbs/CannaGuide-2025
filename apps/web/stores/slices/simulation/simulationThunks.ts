@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { Plant, JournalEntry, Task, JournalEntryType } from '@/types'
+import { Plant, PlantStage, JournalEntry, Task, JournalEntryType } from '@/types'
 import { plantSimulationService, vpdService } from '@/services/plantSimulationService'
 import { equipmentWithPolicy } from '@/services/simulation/floweringMode'
 import { RootState } from '../../store'
@@ -14,7 +14,7 @@ import {
 } from '@/types/schemas'
 import { View } from '@/types'
 import { workerBus } from '@/services/workerBus'
-import { simulationSlice } from '../simulationSlice'
+import { firstFreeSlot, isFreeSlot, newPlantRefusal, simulationSlice } from '../simulationSlice'
 import { notifyPlantEvents } from './simulationNotifications'
 
 export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: RootState }>(
@@ -30,6 +30,16 @@ export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: R
     },
 )
 
+const REFUSAL_MESSAGE = {
+    slots: 'plantsView.notifications.allSlotsFull',
+    cap: 'plantsView.notifications.plantLimitReached',
+} as const
+
+const refuseNewGrow = (refusal: keyof typeof REFUSAL_MESSAGE): void => {
+    getUISnapshot().addNotification({ message: getT()(REFUSAL_MESSAGE[refusal]), type: 'error' })
+    getUISnapshot().cancelNewGrow()
+}
+
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (_, { dispatch, getState }) => {
@@ -38,17 +48,16 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
 
         let finalSlotIndex = slotIndex
 
-        if (finalSlotIndex === null || finalSlotIndex === undefined) {
-            finalSlotIndex = simulation.plantSlots.findIndex((slot) => slot === null)
+        // A slot chosen in the UI that is taken (or does not exist) is not used:
+        // writing into it would orphan the plant there. Look for a free one instead.
+        if (finalSlotIndex == null || !isFreeSlot(simulation.plantSlots, finalSlotIndex)) {
+            finalSlotIndex = firstFreeSlot(simulation.plantSlots)
         }
 
-        if (finalSlotIndex === -1) {
-            const t = getT()
-            getUISnapshot().addNotification({
-                message: t('plantsView.notifications.allSlotsFull'),
-                type: 'error',
-            })
-            getUISnapshot().cancelNewGrow()
+        // A new grow starts as a seed, which counts toward the legal cap.
+        const refusal = newPlantRefusal(simulation, finalSlotIndex, { stage: PlantStage.Seed })
+        if (refusal) {
+            refuseNewGrow(refusal)
             return
         }
 

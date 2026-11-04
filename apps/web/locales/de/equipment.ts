@@ -506,6 +506,13 @@ export const equipmentView = {
             waterTemp: 'Wassertemp. (C)',
             addReading: 'Messwert hinzufuegen',
             clearAll: 'Alle loeschen',
+            clearAllConfirm: {
+                title: 'Hydro-Verlauf l\u00F6schen?',
+                description:
+                    'Damit werden alle Hydro-Messwerte ({{readings}}) und alle Hydro-Warnungen ({{alerts}}) endg\u00FCltig gel\u00F6scht. Deine Grenzwerte und der Systemtyp bleiben erhalten. Das kann nicht r\u00FCckg\u00E4ngig gemacht werden.',
+                confirm: 'Messwerte und Warnungen l\u00F6schen',
+                cancel: 'Abbrechen',
+            },
         },
         thresholds: {
             title: 'Warn-Schwellenwerte',

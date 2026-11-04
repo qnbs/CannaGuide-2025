@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import {
     addReading,
     clearAlerts,
@@ -12,6 +13,9 @@ export const HydroReadingForm: React.FC = memo(() => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const readings = useAppSelector(selectHydroReadings)
+    // Every stored alert, dismissed ones included: Clear All removes them all.
+    const alertCount = useAppSelector((state) => state.hydro.alerts.length)
+    const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false)
 
     const [formPh, setFormPh] = useState('')
     const [formEc, setFormEc] = useState('')
@@ -35,9 +39,12 @@ export const HydroReadingForm: React.FC = memo(() => {
         setFormTemp('')
     }, [dispatch, formPh, formEc, formTemp])
 
+    // Clear All deletes two lists at once and cannot be undone, so it asks first
+    // and names both, with their counts (GH #685).
     const handleClearAll = useCallback(() => {
         dispatch(clearReadings())
         dispatch(clearAlerts())
+        setIsClearConfirmOpen(false)
     }, [dispatch])
 
     return (
@@ -107,13 +114,25 @@ export const HydroReadingForm: React.FC = memo(() => {
                 {readings.length > 0 && (
                     <button
                         type="button"
-                        onClick={handleClearAll}
+                        onClick={() => setIsClearConfirmOpen(true)}
                         className="text-xs text-muted hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200"
                     >
                         {t('equipmentView.hydroMonitoring.input.clearAll')}
                     </button>
                 )}
             </div>
+            <ConfirmDialog
+                open={isClearConfirmOpen}
+                title={t('equipmentView.hydroMonitoring.input.clearAllConfirm.title')}
+                description={t('equipmentView.hydroMonitoring.input.clearAllConfirm.description', {
+                    readings: readings.length,
+                    alerts: alertCount,
+                })}
+                confirmLabel={t('equipmentView.hydroMonitoring.input.clearAllConfirm.confirm')}
+                cancelLabel={t('equipmentView.hydroMonitoring.input.clearAllConfirm.cancel')}
+                onConfirm={handleClearAll}
+                onOpenChange={setIsClearConfirmOpen}
+            />
         </div>
     )
 })

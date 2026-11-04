@@ -508,6 +508,13 @@ export const equipmentView = {
             waterTemp: 'Temp. Eau (C)',
             addReading: 'Ajouter',
             clearAll: 'Tout Effacer',
+            clearAllConfirm: {
+                title: "Supprimer l'historique hydroponique ?",
+                description:
+                    'Cela supprime d\u00E9finitivement toutes les mesures hydroponiques ({{readings}}) et toutes les alertes hydroponiques ({{alerts}}). Vos seuils et le type de syst\u00E8me sont conserv\u00E9s. Cette action est irr\u00E9versible.',
+                confirm: 'Supprimer mesures et alertes',
+                cancel: 'Annuler',
+            },
         },
         thresholds: {
             title: 'Seuils d Alerte',

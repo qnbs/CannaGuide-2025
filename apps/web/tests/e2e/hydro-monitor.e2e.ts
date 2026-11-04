@@ -108,6 +108,46 @@ test.describe('Hydro Monitor Critical Path', () => {
         expect(tracker.messages).toHaveLength(0)
     })
 
+    test('Clear All asks first and deletes only after confirmation (GH #685)', async ({ page }) => {
+        const tracker = attachRuntimeErrorTracking(page)
+
+        await page.locator('[data-view-id="equipment"]').first().click()
+        await expect(page.locator('main').first()).toBeVisible({ timeout: 15_000 })
+        const hydroButton = page.getByRole('button', { name: /Hydro Monitor/i })
+        await expect(hydroButton.first()).toBeVisible({ timeout: 15_000 })
+        await hydroButton.first().scrollIntoViewIfNeeded()
+        await hydroButton.first().click({ timeout: 10_000 })
+
+        // One manual reading makes the Clear All button appear.
+        await page.locator('#hydro-ph').fill('6.1')
+        await page.locator('#hydro-ec').fill('1.5')
+        await page.locator('#hydro-temp').fill('21')
+        await page.getByRole('button', { name: 'Add Reading', exact: true }).last().click()
+        const clearAll = page.getByRole('button', { name: 'Clear All', exact: true })
+        await expect(clearAll).toBeVisible({ timeout: 10_000 })
+
+        // Cancel keeps the reading.
+        await clearAll.click()
+        const dialog = page.getByRole('dialog')
+        await expect(dialog).toContainText('all hydro readings (1)')
+        await dialog.getByRole('button', { name: 'Cancel' }).click()
+        await expect(dialog).toBeHidden()
+        await expect(clearAll).toBeVisible()
+
+        // Confirm deletes it: the button goes away with the last reading.
+        await clearAll.click()
+        await page
+            .getByRole('dialog')
+            .getByRole('button', { name: 'Delete readings and alerts' })
+            .click()
+        await expect(page.getByRole('dialog')).toBeHidden()
+        await expect(page.getByRole('button', { name: 'Clear All', exact: true })).toHaveCount(0)
+
+        await expectNoCrashPatterns(page)
+        tracker.detach()
+        expect(tracker.messages).toHaveLength(0)
+    })
+
     test('Hydro Monitor renders without runtime errors', async ({ page }) => {
         const tracker = attachRuntimeErrorTracking(page)
 

@@ -504,6 +504,13 @@ export const equipmentView = {
             waterTemp: 'Temp. Agua (C)',
             addReading: 'Agregar Lectura',
             clearAll: 'Limpiar Todo',
+            clearAllConfirm: {
+                title: '\u00BFBorrar el historial hidrop\u00F3nico?',
+                description:
+                    'Esto borra de forma permanente todas las mediciones hidrop\u00F3nicas ({{readings}}) y todas las alertas hidrop\u00F3nicas ({{alerts}}). Tus umbrales y el tipo de sistema se conservan. No se puede deshacer.',
+                confirm: 'Borrar mediciones y alertas',
+                cancel: 'Cancelar',
+            },
         },
         thresholds: {
             title: 'Umbrales de Alerta',

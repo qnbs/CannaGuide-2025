@@ -542,6 +542,8 @@ export const plantsView = {
     archivedPlant: 'Archivierte Pflanze',
     notifications: {
         allSlotsFull: 'Alle Pflanzen-Slots sind belegt!',
+        plantLimitReached:
+            'Das gesetzliche Limit von drei wachsenden Pflanzen ist erreicht. Schlie\u00DFe eine Pflanze ab oder entferne sie, bevor du eine neue startest.',
         growStarted: 'Anbau für {{name}} gestartet!',
     },
     actionModals: {

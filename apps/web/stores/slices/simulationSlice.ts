@@ -56,12 +56,34 @@ export const capCountingPlants = (state: Pick<SimulationState, 'plants'>): numbe
     Object.values(state.plants.entities).filter(countsTowardCap).length
 
 /**
- * A new plant is accepted only with a free slot within the cap and fewer than
- * MAX_PLANTS_CANG plants counting toward it. A free slot alone does not prove
- * room: a legacy plant without a slot may hold its place in the count.
+ * Whether a new plant can be accepted: a free slot within the cap, and -- when
+ * the plant itself counts toward the cap -- fewer than MAX_PLANTS_CANG plants
+ * counting already. A free slot alone does not prove room: a legacy plant
+ * without a slot may hold its place in the count. A finished plant needs the
+ * slot but no room in the count. Every path that adds a plant (the reducers,
+ * starting a grow, the grow import) decides with this one rule.
  */
-const hasRoomForNewPlant = (state: SimulationState): boolean =>
-    firstFreeSlot(state.plantSlots) >= 0 && capCountingPlants(state) < MAX_PLANTS_CANG
+export const canAcceptNewPlant = (
+    state: Pick<SimulationState, 'plants' | 'plantSlots'>,
+    plant: Pick<Plant, 'stage'>,
+): boolean =>
+    firstFreeSlot(state.plantSlots) >= 0 &&
+    (!countsTowardCap(plant) || capCountingPlants(state) < MAX_PLANTS_CANG)
+
+/**
+ * Why a new plant cannot be added at `slotIndex` (-1: no free slot found), or
+ * null when it can: `slots` when there is no free slot, `cap` when the plants
+ * that count already reach the legal limit. Starting a grow asks this before it
+ * reports anything, so it never reports a plant the reducer then refuses.
+ */
+export const newPlantRefusal = (
+    state: Pick<SimulationState, 'plants' | 'plantSlots'>,
+    slotIndex: number,
+    plant: Pick<Plant, 'stage'>,
+): 'slots' | 'cap' | null => {
+    if (slotIndex === -1 || !isFreeSlot(state.plantSlots, slotIndex)) return 'slots'
+    return canAcceptNewPlant(state, plant) ? null : 'cap'
+}
 
 /** Gives a plant without a slot the first free one, if there is one. */
 const slotIfFree = (slots: (string | null)[], plantId: string): void => {
@@ -86,7 +108,7 @@ export const simulationSlice = createSlice({
             // An occupied or missing slot, a plant id already present, or a full cap
             // (counted over all plants, slotted or not) is refused.
             if (!isFreeSlot(state.plantSlots, slotIndex) || state.plants.entities[plant.id]) return
-            if (!hasRoomForNewPlant(state)) return
+            if (!canAcceptNewPlant(state, plant)) return
             plantsAdapter.addOne(state.plants, plant)
             state.plantSlots[slotIndex] = plant.id
         },
@@ -350,7 +372,7 @@ export const simulationSlice = createSlice({
                     state.plants.entities[plant.id] !== undefined
                 // A new plant needs a free slot; without one it is not added at all,
                 // so a synced plant can never take the app past three plants.
-                if (!known && !hasRoomForNewPlant(state)) return
+                if (!known && !canAcceptNewPlant(state, plant)) return
                 plantsAdapter.upsertOne(state.plants, plant)
                 slotIfFree(state.plantSlots, plant.id)
             },

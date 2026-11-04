@@ -521,6 +521,8 @@ export const plantsView = {
     archivedPlant: 'Archived Plant',
     notifications: {
         allSlotsFull: 'All plant slots are full!',
+        plantLimitReached:
+            'The legal limit of three growing plants is reached. Finish or remove a plant before starting a new one.',
         growStarted: 'Grow started for {{name}}!',
     },
     actionModals: {

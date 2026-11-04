@@ -496,6 +496,8 @@ export const plantsView = {
     archivedPlant: 'Gearchiveerde Plant',
     notifications: {
         allSlotsFull: 'Alle plantplekken zijn vol!',
+        plantLimitReached:
+            'De wettelijke limiet van drie groeiende planten is bereikt. Rond een plant af of verwijder er een voordat je een nieuwe start.',
         growStarted: 'Kweek gestart voor {{name}}!',
     },
     actionModals: {

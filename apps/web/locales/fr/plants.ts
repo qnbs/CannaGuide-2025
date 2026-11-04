@@ -512,6 +512,8 @@ export const plantsView = {
     archivedPlant: 'Plante Archivee',
     notifications: {
         allSlotsFull: 'Tous les emplacements de plantes sont pleins!',
+        plantLimitReached:
+            "La limite l\u00E9gale de trois plantes en culture est atteinte. Terminez ou supprimez une plante avant d'en commencer une nouvelle.",
         growStarted: 'Culture demarree pour {{name}}!',
     },
     actionModals: {

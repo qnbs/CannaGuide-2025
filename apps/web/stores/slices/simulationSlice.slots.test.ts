@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import simulationReducer, { addPlant, upsertPlant } from '@/stores/slices/simulationSlice'
+import simulationReducer, {
+    addPlant,
+    newPlantRefusal,
+    upsertPlant,
+} from '@/stores/slices/simulationSlice'
 import { PlantStage, type Plant, type SimulationState } from '@/types'
 
 const plant = (id: string): Plant =>
@@ -86,6 +90,40 @@ describe('plant slots enforce the three-plant cap (KCanG Section 9 (1))', () => 
         expect(plantCount(added)).toBe(3)
         expect(plantCount(synced)).toBe(3)
         expect(added.plantSlots).toEqual(['a', 'b', null])
+    })
+
+    it('accepts a finished plant into a free slot even when the count is full', () => {
+        // The import plans a finished plant into this state; the reducer must agree.
+        const twoSlotted = withPlants('a', 'b')
+        const withLegacy = {
+            ...twoSlotted,
+            plants: {
+                ids: [...twoSlotted.plants.ids, 'legacy'],
+                entities: { ...twoSlotted.plants.entities, legacy: plant('legacy') },
+            },
+        }
+        const finished = { ...plant('f'), stage: PlantStage.Finished }
+
+        const added = simulationReducer(withLegacy, addPlant({ plant: finished, slotIndex: 2 }))
+
+        expect(added.plantSlots).toEqual(['a', 'b', 'f'])
+    })
+
+    it('tells starting a grow why it cannot add a plant, before anything is reported', () => {
+        const seed = { stage: PlantStage.Seed }
+        const twoSlotted = withPlants('a', 'b')
+        const withLegacy = {
+            ...twoSlotted,
+            plants: {
+                ids: [...twoSlotted.plants.ids, 'legacy'],
+                entities: { ...twoSlotted.plants.entities, legacy: plant('legacy') },
+            },
+        }
+
+        expect(newPlantRefusal(withPlants('a', 'b', 'c'), -1, seed)).toBe('slots')
+        expect(newPlantRefusal(withPlants('a'), 0, seed)).toBe('slots')
+        expect(newPlantRefusal(withLegacy, 2, seed)).toBe('cap')
+        expect(newPlantRefusal(withPlants('a', 'b'), 2, seed)).toBeNull()
     })
 
     it('does not count finished plants toward the cap', () => {

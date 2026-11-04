@@ -32,6 +32,8 @@ test('flags a template literal without interpolation, not a tagged one', async (
 test('flags `undefined` passed as the last argument', async () => {
     assert.match((await lint('run(1, undefined)\n')).join(), /Redundant `undefined`/u)
     assert.deepEqual(await lint('run(undefined, 1)\n'), [])
+    // A call to a function named undefined, without arguments, is not an argument.
+    assert.deepEqual(await lint('const undefined = () => 1\nundefined()\n'), [])
 })
 
 test('does not bring back the retired JS-0067 (module-scope declarations)', async () => {

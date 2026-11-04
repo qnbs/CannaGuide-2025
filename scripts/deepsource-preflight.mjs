@@ -46,7 +46,9 @@ const SELECTORS = [
         message: 'JS-R1004 Template literal without interpolation: use a plain string literal.',
     },
     {
-        selector: 'CallExpression > Identifier[name="undefined"]:last-child',
+        // Only in the `arguments` field: `undefined()` (a local function named
+        // undefined, called without arguments) is the callee, not an argument.
+        selector: 'CallExpression > Identifier.arguments[name="undefined"]:last-child',
         message: 'JS-W1042 Redundant `undefined` as the last argument: leave it out.',
     },
     {
@@ -311,7 +313,9 @@ const existsAtBase = (base, file) => {
     try {
         return gitQuiet(['ls-tree', '-z', base, '--', file]).length > 0
     } catch {
-        return false
+        // A path that is not in the tree is an empty listing, not an error; a
+        // failure means the base tree itself cannot be read.
+        throw new Error(`cannot read the merge-base tree for ${file}: fetch the missing objects`)
     }
 }
 

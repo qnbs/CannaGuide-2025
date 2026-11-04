@@ -84,6 +84,24 @@ describe('planGrowImport (GH #674)', () => {
         expect(plan.ok && plan.plants.map(({ slotIndex }) => slotIndex)).toEqual([1])
     })
 
+    it('plans no slot beyond the legal cap, even when a stored array is longer', () => {
+        const target = {
+            ...freshProfile,
+            plantIds: ['a', 'b'],
+            plantSlots: ['a', null, 'b', null, null],
+        }
+
+        // Only slot 1 is usable; slots 3 and 4 are beyond the cap of three.
+        expect(planGrowImport(exportOf([plant('p1')]), target, options)).toMatchObject({
+            ok: true,
+            plants: [{ slotIndex: 1 }],
+        })
+        expect(planGrowImport(exportOf([plant('p1'), plant('p2')]), target, options)).toEqual({
+            ok: false,
+            reason: 'plantLimit',
+        })
+    })
+
     it('refuses the whole import when the plants do not fit the three-plant cap', () => {
         const target = { ...freshProfile, plantIds: ['a', 'b'], plantSlots: ['a', 'b', null] }
 

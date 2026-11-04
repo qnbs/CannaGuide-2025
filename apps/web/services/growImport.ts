@@ -3,7 +3,7 @@ import { MAX_GROWS } from '@/constants'
 import { PlantStage, type Grow, type Plant } from '@/types'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
 import { addGrow } from '@/stores/slices/growsSlice'
-import { addPlant } from '@/stores/slices/simulationSlice'
+import { addPlant, isFreeSlot } from '@/stores/slices/simulationSlice'
 import type { AppDispatch, RootState } from '@/stores/store'
 
 /**
@@ -99,8 +99,13 @@ const toGrow = (grow: z.infer<typeof growSchema>, id: string, now: number): Grow
     archived: grow.archived,
 })
 
+/**
+ * The slots a plant may take: free, and within the legal cap. The reducer
+ * refuses anything else, so planning from the array length could promise a
+ * slot of an overlong stored array that the add then drops.
+ */
 const freeSlotIndexes = (slots: readonly (string | null)[]): number[] =>
-    slots.flatMap((slot, index) => (slot === null ? [index] : []))
+    slots.flatMap((_slot, index) => (isFreeSlot(slots, index) ? [index] : []))
 
 export interface GrowImportOptions {
     now?: number

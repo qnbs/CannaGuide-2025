@@ -10,8 +10,12 @@ export const recordStageStart = (plant: Plant, previous: PlantStage, at: number)
     plant.stageStart = { stage: plant.stage, at }
 }
 
-const isTimestamp = (value: unknown): value is number =>
-    typeof value === 'number' && Number.isFinite(value)
+/** The largest time a `Date` can hold, in milliseconds either side of the epoch. */
+const MAX_DATE_MS = 8.64e15
+
+/** A time a `Date` can represent: finite, and within the `Date` range. */
+export const isTimestamp = (value: unknown): value is number =>
+    typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= MAX_DATE_MS
 
 const isStage = (value: unknown): value is PlantStage =>
     Object.values(PlantStage).some((stage) => stage === value)

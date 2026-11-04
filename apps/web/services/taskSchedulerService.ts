@@ -15,7 +15,7 @@ import {
 } from '@/types'
 import { findBestTemplate, type ScheduleStep } from '@/data/growScheduleTemplates'
 import { findBrandSchedule } from '@/data/nutrientBrands'
-import { recordedStageStart } from '@/services/simulation/stageStart'
+import { isTimestamp, recordedStageStart } from '@/services/simulation/stageStart'
 import type { NutrientWeek } from '@/services/pluginService'
 
 // ---------------------------------------------------------------------------
@@ -128,7 +128,8 @@ const journaledStageStart = (plant: Pick<Plant, 'stage' | 'journal'>): number | 
         .filter(
             (entry) =>
                 entry.type === JournalEntryType.System &&
-                isStageChangeTo(entry.details, plant.stage),
+                isStageChangeTo(entry.details, plant.stage) &&
+                isTimestamp(entry.createdAt),
         )
         .reduce((latest, entry) => Math.max(latest, entry.createdAt), Number.NEGATIVE_INFINITY)
     return Number.isFinite(entered) ? entered : undefined
@@ -151,7 +152,10 @@ export const currentStageStart = (
     plant: Pick<Plant, 'stage' | 'stageStart' | 'createdAt' | 'journal'>,
     now: number = Date.now(),
 ): CurrentStageStart => {
-    const at = recordedStageStart(plant) ?? firstStageStart(plant) ?? journaledStageStart(plant)
+    // A time a Date cannot hold (a damaged import) would give tasks invalid dates.
+    const at = [recordedStageStart(plant), firstStageStart(plant), journaledStageStart(plant)].find(
+        isTimestamp,
+    )
     return at === undefined ? { at: now, known: false } : { at, known: true }
 }
 

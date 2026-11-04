@@ -1038,13 +1038,13 @@ export const plantsView = {
         confirmOverwrite:
             'Es werden neue Aufgaben zum bestehenden Zeitplan hinzugefuegt. Fortfahren?',
         selectMedium: 'Anbaumedium waehlen',
-        alreadyScheduled: 'Die Aufgaben für diese Phase stehen bereits im Planer.',
+        alreadyScheduled: 'Die Aufgaben f\u00FCr diese Phase stehen bereits im Planer.',
         plannerFull:
-            'Einige erzeugte Aufgaben wurden nicht hinzugefügt: Sie werden nur hinzugefügt, solange der Planer weniger als {{max}} offene Aufgaben hat, und offene Aufgaben werden nie entfernt, um Platz zu schaffen. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
+            'Einige erzeugte Aufgaben wurden nicht hinzugef\u00FCgt: Sie werden nur hinzugef\u00FCgt, solange der Planer weniger als {{max}} offene Aufgaben hat, und offene Aufgaben werden nie entfernt, um Platz zu schaffen. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
         otherSchedule_one:
-            'Nichts wurde hinzugefügt: {{count}} offene Aufgabe dieser Phase stammt aus einem anderen Plan. Entferne sie und plane dann erneut.',
+            'Nichts wurde hinzugef\u00FCgt: {{count}} offene Aufgabe dieser Phase stammt aus einem anderen Plan. Entferne sie und plane dann erneut.',
         otherSchedule_other:
-            'Nichts wurde hinzugefügt: {{count}} offene Aufgaben dieser Phase stammen aus einem anderen Plan. Entferne sie und plane dann erneut.',
+            'Nichts wurde hinzugef\u00FCgt: {{count}} offene Aufgaben dieser Phase stammen aus einem anderen Plan. Entferne sie und plane dann erneut.',
         stageStartUnknown:
             'Der Beginn dieser Phase wurde nicht aufgezeichnet, deshalb sind die Aufgaben ab heute geplant.',
     },

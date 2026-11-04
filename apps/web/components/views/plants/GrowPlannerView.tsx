@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { PlannerTask, GrowAction, Plant } from '@/types'
+import type { PlannerTask, GrowAction } from '@/types'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import {
     selectAllPlannerTasks,
@@ -14,12 +14,8 @@ import {
 } from '@/stores/slices/growPlannerSlice'
 import { selectPlantById } from '@/stores/selectors'
 import { secureRandom } from '@/utils/random'
-import {
-    currentStageStart,
-    taskSchedulerService,
-    type CurrentStageStart,
-    type TaskSchedulerInput,
-} from '@/services/taskSchedulerService'
+import { currentStageStart, taskSchedulerService } from '@/services/taskSchedulerService'
+import { autoScheduleInput, knownStageStart } from './autoScheduleInput'
 import { getUISnapshot } from '@/stores/useUIStore'
 
 interface GrowPlannerViewProps {
@@ -46,29 +42,6 @@ const GROW_ACTIONS: Array<{ type: GrowAction; color: string; icon: string }> = [
 const getActionStyle = (type: GrowAction): string =>
     GROW_ACTIONS.find((a) => a.type === type)?.color ??
     'bg-slate-500/20 text-slate-400 ring-slate-400/30'
-
-type SchedulerMedium = 'Soil' | 'Coco' | 'Hydro'
-
-const isSchedulerMedium = (medium: string | undefined): medium is SchedulerMedium =>
-    medium === 'Soil' || medium === 'Coco' || medium === 'Hydro'
-
-/** The grow medium in the form the scheduler knows, or undefined. */
-const schedulerMediumOf = (medium: string | undefined): SchedulerMedium | undefined =>
-    isSchedulerMedium(medium) ? medium : undefined
-
-/** The scheduler input for a plant: its cultivar, stage, stage start and medium. */
-const autoScheduleInput = (
-    plantId: string,
-    plant: Plant,
-    stageStart: CurrentStageStart,
-): TaskSchedulerInput => ({
-    plantId,
-    strainType: plant.strain?.type ?? 'Hybrid',
-    floweringType: plant.strain?.floweringType ?? 'Photoperiod',
-    currentStage: plant.stage,
-    stageStartDate: stageStart.at,
-    medium: schedulerMediumOf(plant.mediumType),
-})
 
 type Translate = ReturnType<typeof useTranslation>['t']
 
@@ -111,6 +84,13 @@ const AUTO_SCHEDULE_NOTICES: readonly AutoScheduleNotice[] = [
         message: (_report, t) => t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
     },
 ]
+
+const notifyNoStrain = (t: Translate): void => {
+    getUISnapshot().addNotification({
+        type: 'info',
+        message: t('plantsView.autoScheduler.noStrain'),
+    })
+}
 
 /** Tells the user what Auto Schedule added, found already there, or left out, and why. */
 const notifyAutoScheduleOutcome = (report: AutoScheduleReport, t: Translate): void => {
@@ -226,15 +206,18 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
     const handleAutoSchedule = useCallback(() => {
         if (!plantId || !plant) return
         const stageStart = currentStageStart(plant)
-        const result = taskSchedulerService.generateTasks(
-            autoScheduleInput(plantId, plant, stageStart),
-        )
+        const input = autoScheduleInput(plantId, plant, stageStart)
+        if (!input) {
+            notifyNoStrain(t)
+            return
+        }
+        const result = taskSchedulerService.generateTasks(input)
         if (result.tasks.length === 0) return
         const outcome = dispatch(
             addGeneratedTasks({
                 tasks: result.tasks,
                 scope: result.scope,
-                stageStartedAt: stageStart.known ? stageStart.at : null,
+                stageStartedAt: knownStageStart(stageStart),
             }),
         )
         notifyAutoScheduleOutcome({ ...outcome, stageStartKnown: stageStart.known }, t)

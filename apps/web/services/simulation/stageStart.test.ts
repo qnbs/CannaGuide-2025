@@ -150,6 +150,20 @@ describe('reading the stage start', () => {
         })
     })
 
+    it('does not use a time a Date cannot hold', () => {
+        const outOfRange = 1e300
+        const plant = {
+            ...base,
+            stage: PlantStage.Flowering,
+            stageStart: { stage: PlantStage.Flowering, at: outOfRange },
+        }
+        const seed = { ...base, createdAt: outOfRange, stage: PlantStage.Seed }
+
+        expect(recordedStageStart(plant)).toBeUndefined()
+        expect(currentStageStart(plant, 9_000)).toEqual({ at: 9_000, known: false })
+        expect(currentStageStart(seed, 9_000)).toEqual({ at: 9_000, known: false })
+    })
+
     it('prefers the recorded start to the journal entry', () => {
         const plant = {
             ...base,

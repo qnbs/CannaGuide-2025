@@ -976,6 +976,6 @@ export const plantsView = {
         alreadyScheduled:
             'Les t\u00E2ches de cette phase sont d\u00E9j\u00E0 dans le planificateur.',
         plannerFull:
-            "Le planificateur contient au plus {{max}} t\u00E2ches ouvertes et r\u00E9centes : certaines t\u00E2ches n'ont donc pas \u00E9t\u00E9 ajout\u00E9es. Terminez ou supprimez des t\u00E2ches pour faire de la place.",
+            "Certaines t\u00E2ches g\u00E9n\u00E9r\u00E9es n'ont pas \u00E9t\u00E9 ajout\u00E9es : les t\u00E2ches g\u00E9n\u00E9r\u00E9es ne remplissent le planificateur que jusqu'\u00E0 {{max}} t\u00E2ches, et les t\u00E2ches ouvertes ne sont jamais supprim\u00E9es pour faire de la place. Terminez ou supprimez des t\u00E2ches pour faire de la place.",
     },
 }

@@ -125,6 +125,40 @@ describe('taskSchedulerService', () => {
             ).toBe(5_000)
         })
 
+        it('gives brand feeding tasks the same ids on every run', () => {
+            const input = makeInput({
+                currentStage: PlantStage.Vegetative,
+                brandScheduleId: 'builtin.biobizz-organic',
+            })
+
+            const feed = (run: ReturnType<typeof taskSchedulerService.generateTasks>) =>
+                run.tasks.filter(({ id }) => id.includes('-feed-')).map(({ id }) => id)
+            const first = feed(taskSchedulerService.generateTasks(input))
+
+            expect(first.length).toBeGreaterThan(0)
+            expect(feed(taskSchedulerService.generateTasks(input))).toEqual(first)
+        })
+
+        it('uses now for a later stage whose stage-change entry is missing, not the creation date', () => {
+            expect(
+                currentStageStartedAt(
+                    { stage: PlantStage.Flowering, createdAt: 1_000, journal: [] },
+                    9_000,
+                ),
+            ).toBe(9_000)
+        })
+
+        it('names the template in the id, so another template is not taken for this one', () => {
+            const ids = taskSchedulerService
+                .generateTasks(makeInput({ currentStage: PlantStage.Vegetative }))
+                .tasks.map(({ id }) => id)
+
+            expect(ids.length).toBeGreaterThan(0)
+            for (const id of ids.filter((value) => value.includes('-step-'))) {
+                expect(id).toMatch(/-step-[a-z0-9-]+-\d+-/u)
+            }
+        })
+
         it('uses the plant creation for its first stage', () => {
             expect(
                 currentStageStartedAt({ stage: PlantStage.Seed, createdAt: 1_000, journal: [] }),

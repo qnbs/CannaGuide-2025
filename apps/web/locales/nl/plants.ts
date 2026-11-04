@@ -957,6 +957,6 @@ export const plantsView = {
         selectMedium: 'Teeltmedium selecteren',
         alreadyScheduled: 'De taken voor deze fase staan al in de planner.',
         plannerFull:
-            'De planner bevat maximaal {{max}} open en recente taken, dus sommige taken zijn niet toegevoegd. Rond taken af of verwijder ze om ruimte te maken.',
+            'Sommige gegenereerde taken zijn niet toegevoegd: gegenereerde taken vullen de planner maar tot {{max}} taken, en open taken worden nooit verwijderd om ruimte te maken. Rond taken af of verwijder ze om ruimte te maken.',
     },
 }

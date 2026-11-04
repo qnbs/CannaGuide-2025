@@ -1013,6 +1013,6 @@ export const plantsView = {
         selectMedium: 'Select grow medium',
         alreadyScheduled: 'The tasks for this stage are already in the planner.',
         plannerFull:
-            'The planner holds at most {{max}} open and recent tasks, so some tasks were not added. Complete or remove tasks to make room.',
+            'Some generated tasks were not added: generated tasks fill the planner only up to {{max}} tasks, and open tasks are never removed to make room. Complete or remove tasks to make room.',
     },
 }

@@ -5,6 +5,7 @@ import growPlannerReducer, {
     addGeneratedTasks,
     addPlannerTask,
     bulkAddTasks,
+    planNewTasks,
 } from '@/stores/slices/growPlannerSlice'
 import { createAppStoreSync } from '@/stores/store'
 import type { GrowPlannerState, PlannerTask } from '@/types'
@@ -86,5 +87,41 @@ describe('growPlanner task cap and generated tasks (GH #659)', () => {
 
         expect(first).toEqual({ added: 2, alreadyScheduled: 0, refusedForCap: 1 })
         expect(again).toEqual({ added: 0, alreadyScheduled: 2, refusedForCap: 0 })
+    })
+
+    it('refuses every new generated task when manual tasks already exceed the cap', () => {
+        const open = tasks(MAX_TASKS + 2, 'open-')
+
+        const plan = planNewTasks(open, tasks(4, 'new-'))
+
+        expect(plan.next).toEqual(open)
+        expect(plan).toMatchObject({ added: 0, refusedForCap: 4 })
+    })
+
+    it('removes nothing, not even completed tasks, when the batch has nothing new', () => {
+        const done = tasks(5, 'done-', { completedAt: 1 })
+        const open = tasks(MAX_TASKS, 'open-')
+        const existing = [...done, ...open]
+
+        const plan = planNewTasks(existing, open.slice(0, 3))
+
+        expect(plan.next).toBe(existing)
+        expect(plan).toMatchObject({ added: 0, alreadyScheduled: 3, refusedForCap: 0 })
+    })
+
+    it('counts an id that appears twice in one batch once', () => {
+        expect(planNewTasks([], [task('auto-x'), task('auto-x')])).toMatchObject({ added: 1 })
+    })
+
+    it('treats an open task generated with an old random id as already scheduled', () => {
+        const legacy = task('auto-1730000000000-3-1a2b3c4d', { type: 'feed', notes: 'Week 2' })
+
+        const plan = planNewTasks(
+            [legacy],
+            [task('auto-p1-VEGETATIVE-feed-x-w2', { type: 'feed', notes: 'Week 2' })],
+        )
+
+        expect(plan).toMatchObject({ added: 0, alreadyScheduled: 1 })
+        expect(plan.next).toEqual([legacy])
     })
 })

@@ -972,6 +972,6 @@ export const plantsView = {
         selectMedium: 'Seleccionar medio de cultivo',
         alreadyScheduled: 'Las tareas de esta fase ya est\u00E1n en el planificador.',
         plannerFull:
-            'El planificador admite como m\u00E1ximo {{max}} tareas abiertas y recientes, as\u00ED que algunas tareas no se a\u00F1adieron. Completa o elimina tareas para hacer sitio.',
+            'Algunas tareas generadas no se a\u00F1adieron: las tareas generadas solo llenan el planificador hasta {{max}} tareas y las tareas abiertas nunca se eliminan para hacer sitio. Completa o elimina tareas para hacer sitio.',
     },
 }

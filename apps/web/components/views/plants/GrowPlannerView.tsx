@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { PlannerTask, GrowAction } from '@/types'
+import type { PlannerTask, GrowAction, Plant } from '@/types'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import {
     selectAllPlannerTasks,
@@ -10,10 +10,15 @@ import {
     removePlannerTask,
     addGeneratedTasks,
     MAX_TASKS,
+    type AutoScheduleOutcome,
 } from '@/stores/slices/growPlannerSlice'
 import { selectPlantById } from '@/stores/selectors'
 import { secureRandom } from '@/utils/random'
-import { currentStageStartedAt, taskSchedulerService } from '@/services/taskSchedulerService'
+import {
+    currentStageStartedAt,
+    taskSchedulerService,
+    type TaskSchedulerInput,
+} from '@/services/taskSchedulerService'
 import { getUISnapshot } from '@/stores/useUIStore'
 
 interface GrowPlannerViewProps {
@@ -37,11 +42,48 @@ const GROW_ACTIONS: Array<{ type: GrowAction; color: string; icon: string }> = [
     { type: 'pest_control', color: 'bg-red-500/20 text-red-400 ring-red-400/30', icon: '*' },
 ]
 
-function getActionStyle(type: GrowAction): string {
-    return (
-        GROW_ACTIONS.find((a) => a.type === type)?.color ??
-        'bg-slate-500/20 text-slate-400 ring-slate-400/30'
-    )
+const getActionStyle = (type: GrowAction): string =>
+    GROW_ACTIONS.find((a) => a.type === type)?.color ??
+    'bg-slate-500/20 text-slate-400 ring-slate-400/30'
+
+type SchedulerMedium = 'Soil' | 'Coco' | 'Hydro'
+
+const isSchedulerMedium = (medium: string | undefined): medium is SchedulerMedium =>
+    medium === 'Soil' || medium === 'Coco' || medium === 'Hydro'
+
+/** The grow medium in the form the scheduler knows, or undefined. */
+const schedulerMediumOf = (medium: string | undefined): SchedulerMedium | undefined =>
+    isSchedulerMedium(medium) ? medium : undefined
+
+/** The scheduler input for a plant: its cultivar, stage, stage start and medium. */
+const autoScheduleInput = (plantId: string, plant: Plant): TaskSchedulerInput => ({
+    plantId,
+    strainType: plant.strain?.type ?? 'Hybrid',
+    floweringType: plant.strain?.floweringType ?? 'Photoperiod',
+    currentStage: plant.stage,
+    stageStartDate: currentStageStartedAt(plant),
+    medium: schedulerMediumOf(plant.mediumType),
+})
+
+type Translate = ReturnType<typeof useTranslation>['t']
+
+/** Tells the user what Auto Schedule added, found already there, or could not fit. */
+const notifyAutoScheduleOutcome = (outcome: AutoScheduleOutcome, t: Translate): void => {
+    const notify = getUISnapshot().addNotification
+    if (outcome.added > 0) {
+        notify({
+            type: 'success',
+            message: t('plantsView.autoScheduler.generated', { count: outcome.added }),
+        })
+    } else if (outcome.refusedForCap === 0) {
+        notify({ type: 'info', message: t('plantsView.autoScheduler.alreadyScheduled') })
+    }
+    if (outcome.refusedForCap > 0) {
+        notify({
+            type: 'error',
+            message: t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
+        })
+    }
 }
 
 export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, plantName }) => {
@@ -149,36 +191,9 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
 
     const handleAutoSchedule = useCallback(() => {
         if (!plantId || !plant) return
-        const result = taskSchedulerService.generateTasks({
-            plantId,
-            strainType: plant.strain?.type ?? 'Hybrid',
-            floweringType: plant.strain?.floweringType ?? 'Photoperiod',
-            currentStage: plant.stage,
-            stageStartDate: currentStageStartedAt(plant),
-            medium:
-                plant.mediumType === 'Soil' ||
-                plant.mediumType === 'Coco' ||
-                plant.mediumType === 'Hydro'
-                    ? plant.mediumType
-                    : undefined,
-        })
+        const result = taskSchedulerService.generateTasks(autoScheduleInput(plantId, plant))
         if (result.tasks.length === 0) return
-        const outcome = dispatch(addGeneratedTasks(result.tasks))
-        const notify = getUISnapshot().addNotification
-        if (outcome.added > 0) {
-            notify({
-                type: 'success',
-                message: t('plantsView.autoScheduler.generated', { count: outcome.added }),
-            })
-        } else if (outcome.alreadyScheduled > 0 && outcome.refusedForCap === 0) {
-            notify({ type: 'info', message: t('plantsView.autoScheduler.alreadyScheduled') })
-        }
-        if (outcome.refusedForCap > 0) {
-            notify({
-                type: 'error',
-                message: t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
-            })
-        }
+        notifyAutoScheduleOutcome(dispatch(addGeneratedTasks(result.tasks)), t)
     }, [dispatch, plantId, plant, t])
 
     const navigateCalendar = useCallback(

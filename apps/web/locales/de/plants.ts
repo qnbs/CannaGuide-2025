@@ -1040,6 +1040,6 @@ export const plantsView = {
         selectMedium: 'Anbaumedium waehlen',
         alreadyScheduled: 'Die Aufgaben für diese Phase stehen bereits im Planer.',
         plannerFull:
-            'Der Planer fasst höchstens {{max}} offene und aktuelle Aufgaben, daher wurden einige Aufgaben nicht hinzugefügt. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
+            'Einige erzeugte Aufgaben wurden nicht hinzugefügt: Erzeugte Aufgaben füllen den Planer nur bis {{max}} Aufgaben, und offene Aufgaben werden nie entfernt, um Platz zu schaffen. Erledige oder entferne Aufgaben, um Platz zu schaffen.',
     },
 }

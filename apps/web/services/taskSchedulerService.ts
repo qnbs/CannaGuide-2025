@@ -10,16 +10,12 @@ import {
     JournalEntryType,
     type PlannerTask,
     type GrowAction,
-    type PlantStage,
+    PlantStage,
     type Plant,
 } from '@/types'
-import {
-    findBestTemplate,
-    type GrowScheduleTemplate,
-    type ScheduleStep,
-} from '@/data/growScheduleTemplates'
+import { findBestTemplate, type ScheduleStep } from '@/data/growScheduleTemplates'
 import { findBrandSchedule } from '@/data/nutrientBrands'
-import type { NutrientSchedulePlugin, NutrientWeek } from '@/services/pluginService'
+import type { NutrientWeek } from '@/services/pluginService'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -59,9 +55,14 @@ const stepsToTasks = (
     plantId: string,
     stageStartDate: number,
     stage: PlantStage,
+    templateId: string,
 ): PlannerTask[] =>
     steps.map((step, index) => ({
-        id: autoTaskId(plantId, stage, `step-${index}-${step.action}-${step.dayOffset}`),
+        id: autoTaskId(
+            plantId,
+            stage,
+            `step-${templateId}-${index}-${step.action}-${step.dayOffset}`,
+        ),
         plantId,
         type: step.action,
         scheduledAt: stageStartDate + step.dayOffset * 86_400_000,
@@ -103,19 +104,23 @@ const nutrientWeeksToTasks = (
     })
 }
 
-/**
- * When the plant entered its current stage: the simulation's stage-change
- * journal entry for that stage, or the plant's creation for its first stage. The
- * schedule is laid out from here, not from the moment Auto Schedule is pressed
- * (GH #659), so a plan made late in a stage does not start over.
- */
 /** A stage-change entry's details name the stage the plant moved to. */
 const isStageChangeTo = (details: unknown, stage: PlantStage): boolean =>
     typeof details === 'object' && details !== null && 'to' in details && details.to === stage
 
+/**
+ * When the plant entered its current stage, to lay the schedule out from there
+ * instead of from the moment Auto Schedule is pressed (GH #659): its creation
+ * for the first stage; otherwise the simulation's stage-change journal entry
+ * for that stage. That entry can be missing (stage-change logging off, or the
+ * entry moved to the archive); then `now` is used, as before this change, rather
+ * than the creation date, which would lay a later stage out weeks too early.
+ */
 export const currentStageStartedAt = (
     plant: Pick<Plant, 'stage' | 'createdAt' | 'journal'>,
+    now: number = Date.now(),
 ): number => {
+    if (plant.stage === PlantStage.Seed) return plant.createdAt
     const entered = plant.journal
         .filter(
             (entry) =>
@@ -123,7 +128,60 @@ export const currentStageStartedAt = (
                 isStageChangeTo(entry.details, plant.stage),
         )
         .reduce((latest, entry) => Math.max(latest, entry.createdAt), Number.NEGATIVE_INFINITY)
-    return Number.isFinite(entered) ? entered : plant.createdAt
+    return Number.isFinite(entered) ? entered : now
+}
+
+/** Which template steps and which brand-schedule label belong to a plant stage. */
+const STAGE_KEYS: readonly {
+    match: string
+    steps: 'seedlingSteps' | 'vegetativeSteps' | 'floweringSteps'
+    label: string
+}[] = [
+    { match: 'seed', steps: 'seedlingSteps', label: 'seedling' },
+    { match: 'clone', steps: 'seedlingSteps', label: 'seedling' },
+    { match: 'veg', steps: 'vegetativeSteps', label: 'vegetative' },
+    { match: 'flower', steps: 'floweringSteps', label: 'flowering' },
+    { match: 'bloom', steps: 'floweringSteps', label: 'flowering' },
+]
+
+const stageKeyOf = (stage: PlantStage) =>
+    STAGE_KEYS.find(({ match }) => stage.toLowerCase().includes(match))
+
+const templateTasks = (
+    input: TaskSchedulerInput,
+): { tasks: PlannerTask[]; used: string | null } => {
+    const template = findBestTemplate(input.strainType, input.floweringType)
+    if (!template) return { tasks: [], used: null }
+    const key = stageKeyOf(input.currentStage)
+    const steps = key ? template[key.steps] : []
+    return {
+        tasks: stepsToTasks(
+            steps,
+            input.plantId,
+            input.stageStartDate,
+            input.currentStage,
+            template.id,
+        ),
+        used: template.name,
+    }
+}
+
+const brandLabelOf = (stage: PlantStage): string => stageKeyOf(stage)?.label ?? 'vegetative'
+
+const NO_TASKS = { tasks: [] as PlannerTask[], used: null }
+
+const brandTasks = (input: TaskSchedulerInput): { tasks: PlannerTask[]; used: string | null } => {
+    if (!input.brandScheduleId) return NO_TASKS
+    const brand = findBrandSchedule(input.brandScheduleId)
+    if (!brand) return NO_TASKS
+    const label = brandLabelOf(input.currentStage)
+    return {
+        tasks: nutrientWeeksToTasks(brand.data.weeks, input.plantId, input.stageStartDate, label, {
+            stage: input.currentStage,
+            brand: input.brandScheduleId,
+        }),
+        used: brand.data.brand,
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -139,67 +197,9 @@ export const taskSchedulerService = {
      * growPlannerSlice via bulkAddTasks.
      */
     generateTasks(input: TaskSchedulerInput): TaskSchedulerResult {
-        const {
-            plantId,
-            strainType,
-            floweringType,
-            currentStage,
-            stageStartDate,
-            brandScheduleId,
-        } = input
-
-        const template: GrowScheduleTemplate | undefined = findBestTemplate(
-            strainType,
-            floweringType,
-        )
-        const tasks: PlannerTask[] = []
-        let templateUsed: string | null = null
-        let brandUsed: string | null = null
-
-        // 1. Generate base tasks from template
-        if (template) {
-            templateUsed = template.name
-            const stageKey = currentStage.toLowerCase()
-
-            let steps: ScheduleStep[] = []
-            if (stageKey.includes('seed') || stageKey.includes('clone')) {
-                steps = template.seedlingSteps
-            } else if (stageKey.includes('veg')) {
-                steps = template.vegetativeSteps
-            } else if (stageKey.includes('flower') || stageKey.includes('bloom')) {
-                steps = template.floweringSteps
-            }
-
-            tasks.push(...stepsToTasks(steps, plantId, stageStartDate, currentStage))
-        }
-
-        // 2. Overlay nutrient brand tasks
-        if (brandScheduleId) {
-            const brand: NutrientSchedulePlugin | undefined = findBrandSchedule(brandScheduleId)
-            if (brand) {
-                brandUsed = brand.data.brand
-                const stageKey = currentStage.toLowerCase()
-                let stageLabel = 'vegetative'
-                if (stageKey.includes('seed') || stageKey.includes('clone')) {
-                    stageLabel = 'seedling'
-                } else if (stageKey.includes('flower') || stageKey.includes('bloom')) {
-                    stageLabel = 'flowering'
-                }
-
-                const nutrientTasks = nutrientWeeksToTasks(
-                    brand.data.weeks,
-                    plantId,
-                    stageStartDate,
-                    stageLabel,
-                    { stage: currentStage, brand: brandScheduleId },
-                )
-                tasks.push(...nutrientTasks)
-            }
-        }
-
-        // 3. Sort by scheduled date
-        tasks.sort((a, b) => a.scheduledAt - b.scheduledAt)
-
-        return { tasks, templateUsed, brandUsed }
+        const base = templateTasks(input)
+        const feed = brandTasks(input)
+        const tasks = [...base.tasks, ...feed.tasks].sort((a, b) => a.scheduledAt - b.scheduledAt)
+        return { tasks, templateUsed: base.used, brandUsed: feed.used }
     },
 }

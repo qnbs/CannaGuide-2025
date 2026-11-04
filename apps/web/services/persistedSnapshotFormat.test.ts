@@ -4,20 +4,16 @@ import { createAppStoreSync } from '@/stores/store'
 import { addGrow } from '@/stores/slices/growsSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
-import { buildPersistedSnapshot } from './persistedSnapshotFormat'
+import {
+    buildPersistedSnapshot,
+    isImportableSnapshot,
+    redactForExport,
+} from './persistedSnapshotFormat'
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
 
-/** The check the JSON import applies before it restores a file. */
-const passesImportCheck = (json: string): boolean => {
-    const parsed: unknown = JSON.parse(json)
-    return (
-        typeof parsed === 'object' &&
-        parsed !== null &&
-        typeof (parsed as { version?: unknown }).version === 'number'
-    )
-}
+const passesImportCheck = (json: string): boolean => isImportableSnapshot(JSON.parse(json))
 
 const storeWithGrow = () => {
     const store = createAppStoreSync()
@@ -50,5 +46,25 @@ describe('JSON export format (persisted snapshot)', () => {
         const json = JSON.stringify(buildPersistedSnapshot(state, state.simulation))
 
         expect(json).not.toContain(CANARY)
+    })
+
+    it('leaves the app PIN and the sync encryption key out of an exported file', () => {
+        const store = storeWithGrow()
+        store.dispatch(setSetting({ path: 'privacy.pin', value: '4711' }))
+        store.dispatch(
+            setSetting({
+                path: 'data.cloudSync.encryptionKeyBase64',
+                value: 'c3luYy1rZXktY2FuYXJ5',
+            }),
+        )
+        const state = store.getState()
+
+        const json = JSON.stringify(
+            redactForExport(buildPersistedSnapshot(state, state.simulation)),
+        )
+
+        expect(json).not.toContain('4711')
+        expect(json).not.toContain('c3luYy1rZXktY2FuYXJ5')
+        expect(passesImportCheck(json)).toBe(true)
     })
 })

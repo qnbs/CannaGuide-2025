@@ -232,13 +232,15 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
         const state = getState()
         // The persisted snapshot format, so the file can be imported again (the
         // whole Redux state has no top-level version and was always refused).
-        // Credentials stay out of the download (#654): no secret path is kept.
-        const [{ buildPersistedSnapshot }, { dbService }] = await Promise.all([
-            import('@/services/persistedSnapshotFormat'),
-            import('@/services/dbService'),
-        ])
-        const simulation = await dbService.optimizeSimulationForPersistence(state.simulation)
-        const stateToSave = JSON.stringify(buildPersistedSnapshot(state, simulation), null, 2)
+        // Read-only: no journal is trimmed and no archive is written, unlike a
+        // save. Credentials, the app PIN and the sync key stay out of the file.
+        const [{ buildPersistedSnapshot, redactForExport }, { stripSimulationDerivedData }] =
+            await Promise.all([
+                import('@/services/persistedSnapshotFormat'),
+                import('@/services/db/types'),
+            ])
+        const snapshot = buildPersistedSnapshot(state, stripSimulationDerivedData(state.simulation))
+        const stateToSave = JSON.stringify(redactForExport(snapshot), null, 2)
         const blob = new Blob([stateToSave], { type: 'application/json' })
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')

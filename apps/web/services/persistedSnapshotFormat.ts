@@ -1,4 +1,5 @@
 import type { RootState } from '@/stores/store'
+import type { PersistedState } from '@/services/migration/migrationTypes'
 import { SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { getUISnapshot } from '@/stores/useUIStore'
 import { redactSettingsSecrets, type SecretSettingPath } from '@/utils/redactSecrets'
@@ -16,7 +17,7 @@ export const buildPersistedSnapshot = (
     state: RootState,
     simulation: RootState['simulation'],
     keepSecretPaths: readonly SecretSettingPath[] = [],
-) => ({
+): PersistedState => ({
     version: state.settings.version,
     _sliceVersions: SLICE_SCHEMA_VERSIONS,
     // Credentials live encrypted outside Redux; only a legacy key whose
@@ -61,3 +62,37 @@ export const buildPersistedSnapshot = (
         knowledgeViewTab: getUISnapshot().knowledgeViewTab,
     },
 })
+
+/**
+ * The check the JSON import applies before it restores a file: an object with a
+ * numeric top-level `version`, as `buildPersistedSnapshot` writes it.
+ */
+export const isImportableSnapshot = (value: unknown): boolean =>
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { version?: unknown }).version === 'number'
+
+/**
+ * A downloaded file leaves the device, so it carries neither the app PIN nor the
+ * cloud-sync encryption key, which both sit in plain text in the settings. A
+ * restored file therefore has no PIN lock and no sync key; both are set again.
+ */
+export const redactForExport = (snapshot: PersistedState): PersistedState => {
+    const settingsSlice = snapshot.settings
+    if (!settingsSlice) return snapshot
+    const { settings } = settingsSlice
+    return {
+        ...snapshot,
+        settings: {
+            ...settingsSlice,
+            settings: {
+                ...settings,
+                privacy: { ...settings.privacy, pin: null },
+                data: {
+                    ...settings.data,
+                    cloudSync: { ...settings.data.cloudSync, encryptionKeyBase64: null },
+                },
+            },
+        },
+    }
+}

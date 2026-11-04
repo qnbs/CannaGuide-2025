@@ -106,7 +106,10 @@ describe('exportAllData (#654)', () => {
         // A real initial state, because the export writes the persisted snapshot
         // format, with secrets added where they would sit in Redux.
         const { createAppStoreSync } = await import('@/stores/store')
-        const base = createAppStoreSync().getState()
+        const { addGrow } = await import('@/stores/slices/growsSlice')
+        const store = createAppStoreSync()
+        store.dispatch(addGrow({ id: 'grow-export-sentinel', name: 'Tent', isActive: true }))
+        const base = store.getState()
         const state = {
             ...base,
             settings: {
@@ -125,10 +128,14 @@ describe('exportAllData (#654)', () => {
         const json = await readBlob(createObjectURL.mock.calls[0]![0])
         expect(json).not.toContain(CANARY)
         expect(json).not.toContain('pv_canary_0000000000000000000000000000')
-        // The import accepts only a file with a numeric top-level version.
-        const parsed = JSON.parse(json) as { version?: unknown; grows?: unknown }
-        expect(typeof parsed.version).toBe('number')
-        expect(parsed.grows).toBeDefined()
+        // The real import path: the version gate, then the migration pipeline.
+        const { isImportableSnapshot } = await import('@/services/persistedSnapshotFormat')
+        const { parseAndMigratePersistedSnapshot } =
+            await import('@/services/migration/persistedSnapshot')
+        expect(isImportableSnapshot(JSON.parse(json))).toBe(true)
+        const restored = parseAndMigratePersistedSnapshot(json)
+        expect(restored.grows?.grows.ids).toContain('grow-export-sentinel')
+        expect(restored.simulation?.plantSlots).toEqual(base.simulation.plantSlots)
         expect(click).toHaveBeenCalled()
         click.mockRestore()
     })

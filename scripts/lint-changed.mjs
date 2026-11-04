@@ -3,11 +3,15 @@ import { existsSync } from 'node:fs'
 
 const LINT_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs'])
 
+/** Room for long path lists: spawnSync's default output buffer is 1 MiB. */
+const GIT_MAX_BUFFER = 64 * 1024 * 1024
+
 function runGit(args) {
     const result = spawnSync('git', args, {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
         shell: false,
+        maxBuffer: GIT_MAX_BUFFER,
     })
 
     if (result.status !== 0) {
@@ -53,51 +57,65 @@ function resolveBaseRef() {
     return ''
 }
 
+/**
+ * A NUL-separated path list exactly as git writes it. Nothing is trimmed: with
+ * -z git neither quotes nor pads names, and a name may itself start or end
+ * with whitespace. A failed listing throws: an empty list would read as
+ * "nothing changed" and let the run pass without linting anything.
+ */
+function listGit(args) {
+    const result = spawnSync('git', args, {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
+        shell: false,
+        maxBuffer: GIT_MAX_BUFFER,
+    })
+    if (result.status !== 0) throw new Error(`git ${args.join(' ')} failed`)
+    return result.stdout.split('\0').filter(Boolean)
+}
+
+/**
+ * The committed range this branch adds on top of `baseRef`. Fails closed: with
+ * no base, or no merge base, the branch's commits would silently go unlinted
+ * and the run would still pass. CI checks out the full history (fetch-depth 0),
+ * so there it always resolves.
+ */
+function committedRange(baseRef) {
+    if (!baseRef) {
+        throw new Error('no base ref (origin/main, main or HEAD~1) found: set LINT_BASE_REF')
+    }
+    if (baseRef === 'HEAD~1') return 'HEAD~1..HEAD'
+    const mergeBase = tryRunGit(['merge-base', baseRef, 'HEAD'])
+    if (!mergeBase) {
+        throw new Error(
+            `no merge base between ${baseRef} and HEAD: run \`git fetch origin main\` or set LINT_BASE_REF`,
+        )
+    }
+    return `${mergeBase}...HEAD`
+}
+
 function getChangedFiles(baseRef) {
     const files = new Set()
 
-    if (baseRef) {
-        let diffTarget = ''
-        if (baseRef === 'HEAD~1') {
-            diffTarget = 'HEAD~1..HEAD'
-        } else {
-            const mergeBase = tryRunGit(['merge-base', baseRef, 'HEAD'])
-            if (mergeBase) {
-                diffTarget = `${mergeBase}...HEAD`
-            }
-        }
+    listGit([
+        'diff',
+        '--name-only',
+        '-z',
+        '--diff-filter=ACMRTUXB',
+        committedRange(baseRef),
+    ]).forEach((file) => files.add(file))
 
-        if (diffTarget) {
-            const committedDiff = tryRunGit([
-                'diff',
-                '--name-only',
-                '--diff-filter=ACMRTUXB',
-                diffTarget,
-            ])
-
-            committedDiff
-                .split('\n')
-                .map((file) => file.trim())
-                .filter(Boolean)
-                .forEach((file) => files.add(file))
-        }
+    // Staged and unstaged changes, then new files: they are in no diff yet, but
+    // the pre-commit hook lints them once staged. All lists use -z: without it
+    // git quotes paths with spaces or non-ASCII bytes ("caf\303\251.ts"), and
+    // the quoted name matches no extension.
+    for (const args of [
+        ['diff', '--name-only', '-z', '--cached', '--diff-filter=ACMRTUXB'],
+        ['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB'],
+        ['ls-files', '-z', '--others', '--exclude-standard'],
+    ]) {
+        listGit(args).forEach((file) => files.add(file))
     }
-
-    const stagedDiff = tryRunGit(['diff', '--name-only', '--cached', '--diff-filter=ACMRTUXB'])
-
-    stagedDiff
-        .split('\n')
-        .map((file) => file.trim())
-        .filter(Boolean)
-        .forEach((file) => files.add(file))
-
-    const workingTreeDiff = tryRunGit(['diff', '--name-only', '--diff-filter=ACMRTUXB'])
-
-    workingTreeDiff
-        .split('\n')
-        .map((file) => file.trim())
-        .filter(Boolean)
-        .forEach((file) => files.add(file))
 
     return [...files]
         .filter((file) => {
@@ -105,6 +123,16 @@ function getChangedFiles(baseRef) {
             return LINT_EXTENSIONS.has(extension)
         })
         .filter((file) => existsSync(file))
+}
+
+/** The changed files, or exit 2 with the reason when the base cannot be resolved. */
+function changedFilesOrExit(baseRef) {
+    try {
+        return getChangedFiles(baseRef)
+    } catch (error) {
+        console.error(`[lint:changed] ${error instanceof Error ? error.message : String(error)}`)
+        return process.exit(2)
+    }
 }
 
 function main() {
@@ -115,7 +143,7 @@ function main() {
     }
 
     const baseRef = resolveBaseRef()
-    const changedFiles = getChangedFiles(baseRef)
+    const changedFiles = changedFilesOrExit(baseRef)
 
     if (changedFiles.length === 0) {
         console.log(`[lint:changed] No changed JS/TS files found (base: ${baseRef || 'n/a'}).`)
@@ -125,7 +153,9 @@ function main() {
     console.log(`[lint:changed] Linting ${changedFiles.length} changed files (base: ${baseRef}).`)
     const result = spawnSync(
         'pnpm',
-        ['exec', 'eslint', '--quiet', '--report-unused-disable-directives', '--', ...changedFiles],
+        // The same bar as the pre-commit hook (lint-staged): warnings fail too, so a
+        // warning in a file outside the strict scopes is found before the commit.
+        ['exec', 'eslint', '--max-warnings', '0', '--no-warn-ignored', '--', ...changedFiles],
         {
             stdio: 'inherit',
             shell: process.platform === 'win32',

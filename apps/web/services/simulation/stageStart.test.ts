@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { SIM_SECONDS_PER_DAY } from '@/constants'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
-import { recordedStageStart } from '@/services/simulation/stageStart'
+import { parseStageStart, recordedStageStart } from '@/services/simulation/stageStart'
 import { currentStageStart } from '@/services/taskSchedulerService'
 import { JournalEntryType, PlantStage, StrainType, type Plant, type Strain } from '@/types'
 
@@ -141,6 +141,13 @@ describe('reading the stage start', () => {
         }
 
         expect(recordedStageStart(plant)).toBeUndefined()
+    })
+
+    it('keeps only the validated fields of a stored stage start', () => {
+        expect(parseStageStart('{"stage":"SEED","at":1,"extra":{"x":1}}')).toEqual({
+            stage: PlantStage.Seed,
+            at: 1,
+        })
     })
 
     it('prefers the recorded start to the journal entry', () => {

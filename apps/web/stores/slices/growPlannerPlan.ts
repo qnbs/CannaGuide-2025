@@ -38,31 +38,68 @@ export const withoutOldestCompleted = (tasks: PlannerTask[], count: number): Pla
  * the whole id. A stable id of a plant whose id happens to start with digits
  * does not match, because it goes on after the hex part.
  */
-const LEGACY_AUTO_ID = /^auto-(?<batch>\d{13})-\d+-[0-9a-f]{8}$/u
+const LEGACY_AUTO_ID = /^auto-(?<stamp>\d{13})-(?<counter>\d+)-[0-9a-f]{8}$/u
+
+/**
+ * The old generator read the clock once per task, so one run can span several
+ * milliseconds; its module-wide counter is what runs consecutively. Rows of one
+ * plant with consecutive counters, at most this far apart, are one run.
+ */
+const MAX_RUN_GAP_MS = 1_000
 
 interface LegacyRow {
     task: PlannerTask
-    /** One press of Auto Schedule: the plant and the time in the id. */
+    /** One press of Auto Schedule (one run of the old generator). */
     batch: string
 }
 
-const legacyBatchOf = (task: PlannerTask): string | undefined =>
-    LEGACY_AUTO_ID.exec(task.id)?.groups?.['batch']
+interface ParsedLegacyRow {
+    task: PlannerTask
+    stamp: number
+    counter: number
+}
+
+const parseLegacy = (task: PlannerTask): ParsedLegacyRow | undefined => {
+    const groups = LEGACY_AUTO_ID.exec(task.id)?.groups
+    if (!groups) return undefined
+    return { task, stamp: Number(groups['stamp']), counter: Number(groups['counter']) }
+}
+
+const byPlantThenCounter = (left: ParsedLegacyRow, right: ParsedLegacyRow): number =>
+    left.task.plantId.localeCompare(right.task.plantId) || left.counter - right.counter
+
+const continuesRun = (previous: ParsedLegacyRow, row: ParsedLegacyRow): boolean =>
+    row.task.plantId === previous.task.plantId &&
+    row.counter === previous.counter + 1 &&
+    row.stamp - previous.stamp <= MAX_RUN_GAP_MS
+
+/** Numbers the runs of rows sorted by plant and counter. */
+const withRuns = (rows: readonly ParsedLegacyRow[]): LegacyRow[] => {
+    const numbered: LegacyRow[] = []
+    let run = 0
+    let previous: ParsedLegacyRow | undefined
+    for (const row of rows) {
+        if (previous !== undefined && !continuesRun(previous, row)) run += 1
+        numbered.push({ task: row.task, batch: String(run) })
+        previous = row
+    }
+    return numbered
+}
 
 /**
  * The old open rows that may belong to the current stage. The time in an old id
- * is when that batch was generated, so a batch from before the current stage
- * began belongs to an earlier stage (Seed and Seedling share template steps).
- * Without a recorded stage start no old row is matched: a visible copy is
- * better than a task silently left out.
+ * is when that run was generated, so a run from before the current stage began
+ * belongs to an earlier stage (Seed and Seedling share template steps). Without
+ * a recorded stage start no old row is matched: a visible copy is better than a
+ * task silently left out.
  */
 const legacyRowsOf = (tasks: readonly PlannerTask[], since: number | null): LegacyRow[] => {
     if (since === null) return []
-    return tasks.filter(isOpen).flatMap((task) => {
-        const stamp = legacyBatchOf(task)
-        if (stamp === undefined || Number(stamp) < since) return []
-        return [{ task, batch: `${task.plantId}|${stamp}` }]
-    })
+    const parsed = tasks
+        .filter(isOpen)
+        .flatMap((task) => parseLegacy(task) ?? [])
+        .filter((row) => row.stamp >= since)
+    return withRuns(parsed.sort(byPlantThenCounter))
 }
 
 const taskKey = (task: PlannerTask): string => `${task.plantId}|${task.type}|${task.notes ?? ''}`

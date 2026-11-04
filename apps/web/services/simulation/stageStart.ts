@@ -30,7 +30,8 @@ export const parseStageStart = (value: unknown): PlantStageStart | undefined => 
     if (typeof value !== 'string') return undefined
     try {
         const parsed: unknown = JSON.parse(value)
-        return isStageStart(parsed) ? parsed : undefined
+        // Only the validated fields: other keys of a sync record are not kept.
+        return isStageStart(parsed) ? { stage: parsed.stage, at: parsed.at } : undefined
     } catch {
         return undefined
     }

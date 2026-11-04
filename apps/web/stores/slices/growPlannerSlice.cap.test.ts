@@ -235,6 +235,45 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         expect(plan.next).toBe(edited)
     })
 
+    it('keeps an old run together when it crossed a millisecond', () => {
+        // The old generator read the clock per task; the counters run on.
+        const spanning = [
+            legacyWater,
+            task('auto-1730000000001-2-bbbbbbbb', {
+                type: 'feed',
+                notes: 'my note',
+                scheduledAt: 2_000,
+            }),
+            task('auto-1730000000001-3-cccccccc', {
+                type: 'train',
+                notes: 'C',
+                scheduledAt: 3_000,
+            }),
+        ]
+
+        expect(planNewTasks(spanning, generated(fresh))).toMatchObject({
+            added: 0,
+            alreadyScheduled: 3,
+        })
+    })
+
+    it('does not join an edited row of a later run to an earlier one', () => {
+        const runs = [
+            legacyWater,
+            // A second press 5 s later; its only row has edited notes.
+            task('auto-1730000005000-2-bbbbbbbb', {
+                type: 'feed',
+                notes: 'my note',
+                scheduledAt: 2_000,
+            }),
+        ]
+
+        expect(planNewTasks(runs, generated(fresh))).toMatchObject({
+            added: 2,
+            alreadyScheduled: 1,
+        })
+    })
+
     it('lets one old row stand for one new task only', () => {
         const twins = [
             task(`${SCOPE}step-t-0-water-0`, { notes: 'A', scheduledAt: 1_500 }),
@@ -259,42 +298,46 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         expect(planNewTasks(otherStage, generated(fresh))).toMatchObject({ added: 3 })
     })
 
-    it('keeps Seed tasks from before the update from hiding the Seedling schedule', () => {
-        // Seed and Seedling share the template's seedling steps, so plant, type
-        // and notes match; only the batch time tells the stages apart.
-        const stamp = 1_730_000_000_000
-        const asLegacy = (list: readonly PlannerTask[]) =>
-            list.map((t, index) => ({
-                ...t,
-                id: `auto-${String(stamp)}-${String(index + 1)}-aaaaaaaa`,
-            }))
-        const seedBatch = asLegacy(
+    describe('Seed and Seedling share the template steps', () => {
+        const DAY = 86_400_000
+        const createdAt = 1_730_000_000_000
+        const seedlingStart = createdAt + 5 * DAY
+        const plan = (stage: PlantStage, stageStartDate: number) =>
             taskSchedulerService.generateTasks({
                 plantId: 'p1',
                 strainType: 'Hybrid',
                 floweringType: 'Photoperiod',
-                currentStage: PlantStage.Seed,
-                stageStartDate: stamp,
-            }).tasks,
-        )
-        const seedling = taskSchedulerService.generateTasks({
-            plantId: 'p1',
-            strainType: 'Hybrid',
-            floweringType: 'Photoperiod',
-            currentStage: PlantStage.Seedling,
-            stageStartDate: stamp + 5 * 86_400_000,
+                currentStage: stage,
+                stageStartDate,
+            })
+        /** What the old generator stored: its click time in the id and as the anchor. */
+        const oldRun = (stage: PlantStage, clickedAt: number) =>
+            plan(stage, clickedAt).tasks.map((t, index) => ({
+                ...t,
+                id: `auto-${String(clickedAt)}-${String(index + 1)}-aaaaaaaa`,
+            }))
+        const seedling = plan(PlantStage.Seedling, seedlingStart)
+        const run = (existing: PlannerTask[]) =>
+            planNewTasks(existing, generated(seedling.tasks, seedling.scope, seedlingStart))
+
+        it('keeps Seed tasks from before the update from hiding the Seedling schedule', () => {
+            const seedRun = oldRun(PlantStage.Seed, createdAt + 3_600_000)
+            expect(seedRun.length).toBeGreaterThan(0)
+
+            expect(run(seedRun)).toMatchObject({
+                added: seedling.tasks.length,
+                alreadyScheduled: 0,
+            })
         })
-        expect(seedBatch.length).toBeGreaterThan(0)
 
-        const later = planNewTasks(
-            seedBatch,
-            generated(seedling.tasks, seedling.scope, stamp + 5 * 86_400_000),
-        )
-        const sameStage = planNewTasks(seedBatch, generated(seedling.tasks, seedling.scope, stamp))
+        it('recognises an old run made during the Seedling stage', () => {
+            const seedlingRun = oldRun(PlantStage.Seedling, seedlingStart + 3_600_000)
 
-        expect(later).toMatchObject({ added: seedling.tasks.length, alreadyScheduled: 0 })
-        // Control: a batch generated in this stage is recognised.
-        expect(sameStage).toMatchObject({ added: 0, alreadyScheduled: seedling.tasks.length })
+            expect(run(seedlingRun)).toMatchObject({
+                added: 0,
+                alreadyScheduled: seedling.tasks.length,
+            })
+        })
     })
 
     it('does not take a batch generated before the stage began for this stage', () => {

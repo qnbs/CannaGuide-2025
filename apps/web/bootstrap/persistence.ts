@@ -1,11 +1,9 @@
 import type { AppStore, RootState } from '@/stores/store'
-import { getUISnapshot } from '@/stores/useUIStore'
 import { StaleSnapshotError, writeSnapshot } from '@/stores/snapshotRevision'
-import { SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
-import { redactSettingsSecrets } from '@/utils/redactSecrets'
+import { buildPersistedSnapshot } from '@/services/persistedSnapshotFormat'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
@@ -27,52 +25,11 @@ export const setupPersistedStateSync = (
                 const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                     state.simulation,
                 )
-                const stateToSave = {
-                    version: state.settings.version,
-                    _sliceVersions: SLICE_SCHEMA_VERSIONS,
-                    // Credentials live encrypted outside Redux; only a legacy
-                    // key whose migration failed stays here until the next
-                    // start retries it (#654, #709).
-                    settings: redactSettingsSecrets(state.settings, pendingLegacySecretPaths()),
-                    simulation: optimizedSimulation,
-                    userStrains: state.userStrains,
-                    favorites: state.favorites,
-                    notes: state.notes,
-                    archives: state.archives,
-                    savedItems: state.savedItems,
-                    knowledge: state.knowledge,
-                    breeding: state.breeding,
-                    genealogy: state.genealogy,
-                    nutrientPlanner: {
-                        schedule: state.nutrientPlanner.schedule,
-                        readings: state.nutrientPlanner.readings,
-                        alerts: state.nutrientPlanner.alerts,
-                        autoAdjustEnabled: state.nutrientPlanner.autoAdjustEnabled,
-                        medium: state.nutrientPlanner.medium,
-                        activePluginId: state.nutrientPlanner.activePluginId,
-                        activeBrandId: state.nutrientPlanner.activeBrandId,
-                        isAiLoading: false,
-                        lastAiRecommendation: state.nutrientPlanner.lastAiRecommendation,
-                        autoAdjustRecommendation: state.nutrientPlanner.autoAdjustRecommendation,
-                    },
-                    sandbox: {
-                        savedExperiments: state.sandbox.savedExperiments,
-                        currentExperiment: null,
-                        status: 'idle' as const,
-                    },
-                    hydro: state.hydro,
-                    grows: state.grows,
-                    metrics: state.metrics,
-                    growPlanner: state.growPlanner,
-                    diagnosisHistory: state.diagnosisHistory,
-                    problemTracker: state.problemTracker,
-                    ui: {
-                        lastActiveView: getUISnapshot().lastActiveView,
-                        onboardingStep: getUISnapshot().onboardingStep,
-                        equipmentViewTab: getUISnapshot().equipmentViewTab,
-                        knowledgeViewTab: getUISnapshot().knowledgeViewTab,
-                    },
-                }
+                const stateToSave = buildPersistedSnapshot(
+                    state,
+                    optimizedSimulation,
+                    pendingLegacySecretPaths(),
+                )
                 const serializedState = JSON.stringify(stateToSave)
                 await writeSnapshot(serializedState)
             })

@@ -41,9 +41,10 @@ export const withoutOldestCompleted = (tasks: PlannerTask[], count: number): Pla
 const LEGACY_AUTO_ID = /^auto-(?<stamp>\d{13})-(?<counter>\d+)-[0-9a-f]{8}$/u
 
 /**
- * The old generator read the clock once per task, so one run can span several
- * milliseconds; its module-wide counter is what runs consecutively. Rows of one
- * plant with consecutive counters, at most this far apart, are one run.
+ * The old generator read the clock once per task, so one run can span a few
+ * milliseconds; a second press of the button comes much later. Rows of one plant
+ * at most this far apart from the previous row are one run, whatever happened to
+ * the rows between them (completed or deleted).
  */
 const MAX_RUN_GAP_MS = 1_000
 
@@ -65,41 +66,43 @@ const parseLegacy = (task: PlannerTask): ParsedLegacyRow | undefined => {
     return { task, stamp: Number(groups['stamp']), counter: Number(groups['counter']) }
 }
 
-const byPlantThenCounter = (left: ParsedLegacyRow, right: ParsedLegacyRow): number =>
-    left.task.plantId.localeCompare(right.task.plantId) || left.counter - right.counter
+const byPlantThenTime = (left: ParsedLegacyRow, right: ParsedLegacyRow): number =>
+    left.task.plantId.localeCompare(right.task.plantId) ||
+    left.stamp - right.stamp ||
+    left.counter - right.counter
 
 const continuesRun = (previous: ParsedLegacyRow, row: ParsedLegacyRow): boolean =>
-    row.task.plantId === previous.task.plantId &&
-    row.counter === previous.counter + 1 &&
-    row.stamp - previous.stamp <= MAX_RUN_GAP_MS
+    row.task.plantId === previous.task.plantId && row.stamp - previous.stamp <= MAX_RUN_GAP_MS
 
-/** Numbers the runs of rows sorted by plant and counter. */
-const withRuns = (rows: readonly ParsedLegacyRow[]): LegacyRow[] => {
-    const numbered: LegacyRow[] = []
+/** Numbers the runs of rows sorted by plant and time. */
+const withRuns = (rows: readonly ParsedLegacyRow[]): (LegacyRow & { stamp: number })[] => {
+    const numbered: (LegacyRow & { stamp: number })[] = []
     let run = 0
     let previous: ParsedLegacyRow | undefined
     for (const row of rows) {
         if (previous !== undefined && !continuesRun(previous, row)) run += 1
-        numbered.push({ task: row.task, batch: String(run) })
+        numbered.push({ task: row.task, batch: String(run), stamp: row.stamp })
         previous = row
     }
     return numbered
 }
 
 /**
- * The old open rows that may belong to the current stage. The time in an old id
- * is when that run was generated, so a run from before the current stage began
- * belongs to an earlier stage (Seed and Seedling share template steps). Without
- * a recorded stage start no old row is matched: a visible copy is better than a
+ * The old rows that may belong to the current stage. A completed old row counts
+ * like a completed stable-id task: the step was scheduled, so it is not added
+ * again. Runs are formed from all old rows, so a completed or deleted row inside
+ * a run does not split it. The time in an old id is when
+ * that run was generated, so a run from before the current stage began belongs
+ * to an earlier stage (Seed and Seedling share template steps). Without a
+ * recorded stage start no old row is matched: a visible copy is better than a
  * task silently left out.
  */
 const legacyRowsOf = (tasks: readonly PlannerTask[], since: number | null): LegacyRow[] => {
     if (since === null) return []
-    const parsed = tasks
-        .filter(isOpen)
-        .flatMap((task) => parseLegacy(task) ?? [])
+    const parsed = tasks.flatMap((task) => parseLegacy(task) ?? []).sort(byPlantThenTime)
+    return withRuns(parsed)
         .filter((row) => row.stamp >= since)
-    return withRuns(parsed.sort(byPlantThenCounter))
+        .map(({ task, batch }) => ({ task, batch }))
 }
 
 const taskKey = (task: PlannerTask): string => `${task.plantId}|${task.type}|${task.notes ?? ''}`
@@ -151,7 +154,8 @@ const matchByShift = (match: LegacyMatch, fresh: readonly PlannerTask[]): void =
 }
 
 /**
- * The new tasks that an open task with an old random id already stands for.
+ * The new tasks that a task with an old random id, open or completed, already
+ * stands for.
  * The old ids carry no stage or template, but they come in batches, one press
  * of Auto Schedule each. A new task is an old one when plant, type and notes
  * match. Once a batch has one match it is known to be this schedule, and its

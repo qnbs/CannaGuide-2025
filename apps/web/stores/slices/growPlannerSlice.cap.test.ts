@@ -257,6 +257,32 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         })
     })
 
+    it.each([
+        ['completed', true],
+        ['deleted', false],
+    ])('keeps an old run together around a %s row', (_label, keepMiddle) => {
+        const middle = task('auto-1730000000000-2-bbbbbbbb', {
+            type: 'feed',
+            notes: 'B',
+            scheduledAt: 2_000,
+            completedAt: 5,
+        })
+        const editedLast = task('auto-1730000000000-3-cccccccc', {
+            type: 'train',
+            notes: 'my note',
+            scheduledAt: 3_000,
+        })
+        const existing = keepMiddle ? [legacyWater, middle, editedLast] : [legacyWater, editedLast]
+
+        const plan = planNewTasks(existing, generated(fresh))
+
+        // The edited row is recognised either way; only a deleted step is added again.
+        expect(plan.next.filter(({ type }) => type === 'train')).toHaveLength(1)
+        expect(plan).toMatchObject(
+            keepMiddle ? { added: 0, alreadyScheduled: 3 } : { added: 1, alreadyScheduled: 2 },
+        )
+    })
+
     it('does not join an edited row of a later run to an earlier one', () => {
         const runs = [
             legacyWater,
@@ -367,9 +393,12 @@ describe('tasks generated with the old random ids (GH #659)', () => {
         expect(plan).toMatchObject({ added: 1, alreadyScheduled: 0 })
     })
 
-    it('ignores completed old rows', () => {
+    it('treats completed old rows as scheduled, like completed stable-id tasks', () => {
         const done = legacy.map((t) => ({ ...t, completedAt: 9 }))
 
-        expect(planNewTasks(done, generated(fresh))).toMatchObject({ added: 3 })
+        expect(planNewTasks(done, generated(fresh))).toMatchObject({
+            added: 0,
+            alreadyScheduled: 3,
+        })
     })
 })

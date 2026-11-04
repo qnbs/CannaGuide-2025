@@ -53,7 +53,7 @@ const rootReducer = combineReducers({
     nutrientPlanner: nutrientPlannerReducer,
     hydro: hydroReducer,
     grows: growsReducer,
-    metrics: metricsReducer, // Persisted -- plant metrics readings (FIFO 168/plant)
+    metrics: metricsReducer, // Persisted -- plant metrics readings (all kept, GH #814)
     growPlanner: growPlannerReducer, // Persisted -- planner tasks (FIFO 500)
     diagnosisHistory: diagnosisHistoryReducer, // Persisted -- diagnosis records (FIFO 100/plant)
     problemTracker: problemTrackerReducer, // Persisted -- plant issues (FIFO 200)

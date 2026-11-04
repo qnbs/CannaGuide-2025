@@ -3,12 +3,6 @@ import type { RootState } from '../store'
 import type { MetricsState, MetricsReading } from '@/types'
 
 // ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const MAX_READINGS = 168 // 7 days of hourly readings per plant
-
-// ---------------------------------------------------------------------------
 // Initial state
 // ---------------------------------------------------------------------------
 
@@ -25,25 +19,12 @@ const metricsSlice = createSlice({
     initialState,
     reducers: {
         addMetricsReading(state, action: PayloadAction<MetricsReading>) {
+            // Every reading is entered by hand (height, pot weight, CO2). The old
+            // cap of 168 per plant silently dropped the oldest one with each new
+            // entry (GH #814); the owner decided to keep them all. Readings leave
+            // only through clearMetricsForPlant or clearAllMetrics, and the chart
+            // bounds itself to its chosen time range.
             state.readings.push(action.payload)
-            // FIFO cap: keep latest MAX_READINGS per plant
-            const byPlant = new Map<string, number>()
-            for (const r of state.readings) {
-                byPlant.set(r.plantId, (byPlant.get(r.plantId) ?? 0) + 1)
-            }
-            for (const [plantId, count] of byPlant) {
-                if (count > MAX_READINGS) {
-                    const excess = count - MAX_READINGS
-                    let removed = 0
-                    state.readings = state.readings.filter((r) => {
-                        if (r.plantId === plantId && removed < excess) {
-                            removed++
-                            return false
-                        }
-                        return true
-                    })
-                }
-            }
         },
         clearMetricsForPlant(state, action: PayloadAction<string>) {
             state.readings = state.readings.filter((r) => r.plantId !== action.payload)

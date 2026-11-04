@@ -31,7 +31,11 @@ import tsParser from '@typescript-eslint/parser'
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 const SOURCE_FILE = /\.(?:ts|tsx|js|jsx|mjs|cjs)$/u
-const SKIPPED_PATH = /(?:^|\/)(?:node_modules|dist|build|coverage|target)\//u
+/** The `exclude_patterns` of `.deepsource.toml`: DeepSource does not analyze these paths. */
+const SKIPPED_PATH =
+    /(?:^|\/)(?:node_modules|dist|build|coverage|out|\.venv|__pycache__|[^/]+\.egg-info|target|\.gradle|\.mvn|vendor)\//u
+
+export const isSkippedPath = (path) => SKIPPED_PATH.test(path)
 
 const SELECTORS = [
     {
@@ -91,24 +95,58 @@ export const createPreflightLinter = () =>
 
 const git = (args) => execFileSync('git', args, { cwd: repoRoot, encoding: 'utf8' })
 
-const mergeBase = () => git(['merge-base', 'origin/main', 'HEAD']).trim()
-
-/** Files changed against the merge base with origin/main, plus untracked files. */
-const changedFiles = (base) => {
-    const changed = git(['diff', '--name-only', '--diff-filter=AMR', `${base}...HEAD`])
-    const local = git(['status', '--porcelain=v1', '--untracked-files=all'])
-        .split('\n')
-        .filter((line) => line.length > 3 && !line.startsWith(' D') && !line.startsWith('D '))
-        .map((line) => line.slice(3))
-    return [...new Set([...changed.split('\n'), ...local])]
+/** The merge base with origin/main, or a clear error when that ref is missing. */
+const mergeBase = () => {
+    try {
+        return execFileSync('git', ['merge-base', 'origin/main', 'HEAD'], {
+            cwd: repoRoot,
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore'],
+        }).trim()
+    } catch {
+        throw new Error(
+            'origin/main is not available here: run `git fetch origin main`, or name the files with --all.',
+        )
+    }
 }
+
+const nulFields = (text) => text.split('\0').filter((field) => field.length > 0)
+
+/** How many fields a `--name-status -z` record has: renames and copies name two paths. */
+const recordLength = (status) => (/^[RC]/u.test(status) ? 3 : 2)
+
+/**
+ * `git diff -z --name-status` output as `{ file, basePath }`: the path now and
+ * the path at the base. For a rename (`R100 old new`) the base path is the old
+ * one, so its findings are not taken for new ones. NUL-separated output keeps
+ * paths with spaces or non-ASCII characters exactly as they are.
+ */
+export const parseNameStatus = (text) => {
+    const fields = nulFields(text)
+    const entries = []
+    for (let index = 0; index < fields.length; index += recordLength(fields[index])) {
+        const length = recordLength(fields[index])
+        entries.push({ file: fields[index + length - 1], basePath: fields[index + 1] })
+    }
+    return entries
+}
+
+/**
+ * Every source file that differs from the merge base -- committed, staged or
+ * not -- with renames resolved, plus untracked files (new, so no base path).
+ */
+const changedFiles = (base) => [
+    ...parseNameStatus(git(['diff', '-z', '--name-status', '-M', '--diff-filter=AMRC', base])),
+    ...nulFields(git(['ls-files', '-z', '--others', '--exclude-standard'])).map((file) => ({
+        file,
+        basePath: file,
+    })),
+]
 
 export const lintableFiles = (paths) =>
     paths.filter(
         (path) =>
-            SOURCE_FILE.test(path) &&
-            !SKIPPED_PATH.test(path) &&
-            existsSync(resolve(repoRoot, path)),
+            SOURCE_FILE.test(path) && !isSkippedPath(path) && existsSync(resolve(repoRoot, path)),
     )
 
 /**
@@ -147,12 +185,8 @@ const raisedCounts = (now, before) => {
 
 const complexityOf = (message) => Number(/complexity of (\d+)/u.exec(message.message)?.[1] ?? 0)
 
-/**
- * Complexity findings that no finding at the base reaches: a new function over
- * the threshold, or one that got more complex. DeepSource reports the latter as
- * introduced too, although the number of findings in the file stays the same.
- */
-const raisedComplexity = (now, before) => {
+/** Findings no finding of the same group at the base reaches in value. */
+const raisedByValue = (now, before) => {
     const available = before.map(complexityOf).sort((left, right) => left - right)
     const byValue = [...now].sort((left, right) => complexityOf(right) - complexityOf(left))
     return byValue.filter((message) => {
@@ -161,6 +195,38 @@ const raisedComplexity = (now, before) => {
         available.splice(index, 1)
         return false
     })
+}
+
+/**
+ * Which function a complexity finding is about: ESLint names it when it has a
+ * name ("Arrow function 'build'", "Method 'render'"), and only gives the kind
+ * for an anonymous one ("Arrow function").
+ */
+export const functionOf = (message) =>
+    /^(?<name>.*) has a complexity of/u.exec(message.message)?.groups?.['name'] ?? ''
+
+const byFunction = (messages) => {
+    const groups = new Map()
+    for (const message of messages) {
+        const name = functionOf(message)
+        groups.set(name, [...(groups.get(name) ?? []), message])
+    }
+    return groups
+}
+
+/**
+ * Complexity findings that make a function worse than at the base: a new
+ * function over the threshold, or one that got more complex. DeepSource reports
+ * the latter as introduced too, although the number of findings stays the same.
+ * Named functions are compared with the same name at the base, so one getting
+ * simpler cannot hide another getting more complex; anonymous functions (an
+ * inline callback) can only be compared by value among themselves.
+ */
+const raisedComplexity = (now, before) => {
+    const beforeGroups = byFunction(before)
+    return [...byFunction(now)].flatMap(([name, messages]) =>
+        raisedByValue(messages, beforeGroups.get(name) ?? []),
+    )
 }
 
 const isComplexity = (message) => message.ruleId === 'complexity'
@@ -195,42 +261,72 @@ const baseText = (base, file) => {
 const formatFinding = (file, message) =>
     `${file}:${String(message.line)}:${String(message.column)}  ${message.ruleId ?? 'parse'}  ${message.message}`
 
-const findingsOf = async (linter, file, options) => {
-    const now = await lintText(linter, readFileSync(resolve(repoRoot, file), 'utf8'), file)
+const findingsOf = async (linter, entry, options) => {
+    const now = await lintText(
+        linter,
+        readFileSync(resolve(repoRoot, entry.file), 'utf8'),
+        entry.file,
+    )
     if (options.all) return now
-    return raisedFindings(now, await lintText(linter, baseText(options.base, file), file))
+    const before = await lintText(linter, baseText(options.base, entry.basePath), entry.file)
+    return raisedFindings(now, before)
 }
 
-const runPreflight = async (files, options) => {
+const runPreflight = async (entries, options) => {
     const linter = createPreflightLinter()
     const lines = []
-    for (const file of files) {
-        const findings = await findingsOf(linter, file, options)
-        lines.push(...findings.map((message) => formatFinding(file, message)))
+    for (const entry of entries) {
+        const findings = await findingsOf(linter, entry, options)
+        lines.push(...findings.map((message) => formatFinding(entry.file, message)))
     }
     return lines
 }
 
-const report = (findings, files, options) => {
+const report = (findings, entries, options) => {
     for (const finding of findings) console.log(finding)
     const scope = options.all ? 'all findings' : 'rules whose count rose'
     console.log(
-        `[deepsource-preflight] ${String(findings.length)} finding(s) in ${String(files.length)} file(s) (${scope}; partial coverage)`,
+        `[deepsource-preflight] ${String(findings.length)} finding(s) in ${String(entries.length)} file(s) (${scope}; partial coverage)`,
     )
 }
 
-const main = async () => {
-    const args = process.argv.slice(2)
+/** Named files are compared with themselves at the base; otherwise the changed files. */
+const selectEntries = (named, base) => {
+    const entries =
+        named.length > 0 ? named.map((file) => ({ file, basePath: file })) : changedFiles(base)
+    const lintable = new Set(lintableFiles(entries.map(({ file }) => file)))
+    return entries.filter(({ file }) => lintable.has(file))
+}
+
+/** `--all` on named files reads no base, so it works without origin/main. */
+const baseFor = (named, all) => (all && named.length > 0 ? null : mergeBase())
+
+const failsRun = (findings, args) => findings.length > 0 && !args.includes('--report-only')
+
+const run = async (args) => {
     const named = args.filter((arg) => !arg.startsWith('--'))
-    const options = { all: args.includes('--all'), base: mergeBase() }
-    const files = lintableFiles(named.length > 0 ? named : changedFiles(options.base))
-    if (files.length === 0) {
+    const all = args.includes('--all')
+    const base = baseFor(named, all)
+    const options = { all, base }
+    const entries = selectEntries(named, base)
+    if (entries.length === 0) {
         console.log('[deepsource-preflight] no changed source files')
         return
     }
-    const findings = await runPreflight(files, options)
-    report(findings, files, options)
-    if (findings.length > 0 && !args.includes('--report-only')) process.exitCode = 1
+    const findings = await runPreflight(entries, options)
+    report(findings, entries, options)
+    if (failsRun(findings, args)) process.exitCode = 1
+}
+
+const main = async () => {
+    try {
+        await run(process.argv.slice(2))
+    } catch (error) {
+        console.error(
+            `[deepsource-preflight] ${error instanceof Error ? error.message : String(error)}`,
+        )
+        process.exitCode = 2
+    }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

@@ -5,8 +5,11 @@ import {
     PREFLIGHT_RULES,
     createPreflightLinter,
     findingKey,
+    functionOf,
     isPreflightFinding,
+    isSkippedPath,
     lintableFiles,
+    parseNameStatus,
     raisedFindings,
 } from './deepsource-preflight.mjs'
 
@@ -114,6 +117,50 @@ test('reports a function that got more complex, not one that got simpler', () =>
     )
     assert.deepEqual(raisedFindings([complexity(10), complexity(7)], before), [])
     assert.equal(raisedFindings([...before, complexity(6)], before).length, 1)
+})
+
+test('compares named functions with themselves, so a swap does not hide a regression', () => {
+    const named = (name, value) => ({
+        ruleId: 'complexity',
+        message: `Arrow function '${name}' has a complexity of ${String(value)}. Maximum allowed is 5.`,
+    })
+
+    // A gets simpler (11 -> 7), B more complex (7 -> 10): by value alone they cancel out.
+    const raised = raisedFindings([named('a', 7), named('b', 10)], [named('a', 11), named('b', 7)])
+
+    assert.deepEqual(raised.map(functionOf), ["Arrow function 'b'"])
+})
+
+test('reads renames, copies and odd paths from NUL-separated name-status output', () => {
+    const output = [
+        'M',
+        'apps/web/a b.ts',
+        'R100',
+        'scripts/old.mjs',
+        'scripts/new.mjs',
+        'A',
+        'apps/web/caf\u00e9.ts',
+        '',
+    ].join('\0')
+
+    assert.deepEqual(parseNameStatus(output), [
+        { file: 'apps/web/a b.ts', basePath: 'apps/web/a b.ts' },
+        { file: 'scripts/new.mjs', basePath: 'scripts/old.mjs' },
+        { file: 'apps/web/caf\u00e9.ts', basePath: 'apps/web/caf\u00e9.ts' },
+    ])
+})
+
+test('skips the paths .deepsource.toml excludes', () => {
+    for (const path of [
+        'out/a.js',
+        'apps/x/vendor/b.js',
+        '.venv/c.js',
+        'pkg/x.egg-info/d.js',
+        'a/dist/e.js',
+    ]) {
+        assert.equal(isSkippedPath(path), true, path)
+    }
+    assert.equal(isSkippedPath('apps/web/services/output.ts'), false)
 })
 
 test('parses TSX', async () => {

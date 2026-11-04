@@ -71,39 +71,48 @@ function getChangedFiles(baseRef) {
             const committedDiff = tryRunGit([
                 'diff',
                 '--name-only',
+                '-z',
                 '--diff-filter=ACMRTUXB',
                 diffTarget,
             ])
 
             committedDiff
-                .split('\n')
+                .split('\0')
                 .map((file) => file.trim())
                 .filter(Boolean)
                 .forEach((file) => files.add(file))
         }
     }
 
-    const stagedDiff = tryRunGit(['diff', '--name-only', '--cached', '--diff-filter=ACMRTUXB'])
+    const stagedDiff = tryRunGit([
+        'diff',
+        '--name-only',
+        '-z',
+        '--cached',
+        '--diff-filter=ACMRTUXB',
+    ])
 
     stagedDiff
-        .split('\n')
+        .split('\0')
         .map((file) => file.trim())
         .filter(Boolean)
         .forEach((file) => files.add(file))
 
-    const workingTreeDiff = tryRunGit(['diff', '--name-only', '--diff-filter=ACMRTUXB'])
+    const workingTreeDiff = tryRunGit(['diff', '--name-only', '-z', '--diff-filter=ACMRTUXB'])
 
     workingTreeDiff
-        .split('\n')
+        .split('\0')
         .map((file) => file.trim())
         .filter(Boolean)
         .forEach((file) => files.add(file))
 
     // New files are in no diff yet, but the pre-commit hook lints them once staged.
-    const untracked = tryRunGit(['ls-files', '--others', '--exclude-standard'])
+    // All lists use -z: without it git quotes paths with spaces or non-ASCII
+    // bytes ("caf\303\251.ts"), and the quoted name matches no extension.
+    const untracked = tryRunGit(['ls-files', '-z', '--others', '--exclude-standard'])
 
     untracked
-        .split('\n')
+        .split('\0')
         .map((file) => file.trim())
         .filter(Boolean)
         .forEach((file) => files.add(file))

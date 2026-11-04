@@ -54,7 +54,20 @@ describe('Sentry Replay privacy (GH #586)', () => {
         }
     })
 
-    it('starts no replay at all in Local-Only Mode', async () => {
+    it('stops the running SDK, and with it the replay, when Local-Only Mode is applied after start', async () => {
+        // Production order: Sentry starts first, the persisted Local-Only Mode is
+        // applied once the store has hydrated.
+        const service = await loadService()
+        service.initSentry()
+        await service.Sentry.ready
+        expect(sdk.init).toHaveBeenCalledOnce()
+
+        service.disableSentry()
+
+        expect(sdk.close).toHaveBeenCalledOnce()
+    })
+
+    it('starts no replay at all when Local-Only Mode is on before start', async () => {
         const service = await loadService()
 
         service.disableSentry()

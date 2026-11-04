@@ -171,6 +171,28 @@ describe('taskSchedulerService', () => {
             },
         )
 
+        it('starts the first brand week of a stage with the stage', () => {
+            const start = 1_700_000_000_000
+            const week = 7 * 86_400_000
+            const feed = (currentStage: PlantStage) =>
+                taskSchedulerService
+                    .generateTasks(
+                        makeInput({
+                            currentStage,
+                            stageStartDate: start,
+                            brandScheduleId: 'builtin.biobizz-organic',
+                        }),
+                    )
+                    .tasks.filter(({ id }) => id.includes('-feed-builtin.biobizz-organic-w'))
+                    .map(({ scheduledAt }) => scheduledAt)
+                    .sort((a, b) => a - b)
+
+            // BioBizz numbers its weeks across the grow: Vegetative 3-5, Flowering 6-10.
+            expect(feed(PlantStage.Vegetative)).toEqual([start, start + week, start + 2 * week])
+            expect(feed(PlantStage.Flowering)[0]).toBe(start)
+            expect(feed(PlantStage.Flowering)).toHaveLength(5)
+        })
+
         it('uses the plant creation for its first stage', () => {
             expect(
                 currentStageStart({ stage: PlantStage.Seed, createdAt: 1_000, journal: [] }),

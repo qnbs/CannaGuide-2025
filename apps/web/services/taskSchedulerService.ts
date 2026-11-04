@@ -90,6 +90,10 @@ const nutrientWeeksToTasks = (
         return lower.includes(target) || target.includes(lower)
     })
 
+    // Brand weeks are numbered across the whole grow (Seedling 1-2, Vegetative 3-5,
+    // Flowering 6-10, ...): the stage's first week starts with the stage.
+    const firstWeek = Math.min(...relevantWeeks.map(({ week }) => week))
+
     return relevantWeeks.map((week) => {
         const products = week.products.map((p) => `${p.name} ${p.dosageMlPerLiter} ml/L`).join(', ')
         const notes = [
@@ -104,7 +108,7 @@ const nutrientWeeksToTasks = (
             id: autoTaskId(plantId, feedIdPrefix.stage, `feed-${feedIdPrefix.brand}-w${week.week}`),
             plantId,
             type: 'feed' as GrowAction,
-            scheduledAt: stageStartDate + (week.week - 1) * 7 * 86_400_000,
+            scheduledAt: stageStartDate + (week.week - firstWeek) * 7 * 86_400_000,
             recurring: false,
             notes,
         }

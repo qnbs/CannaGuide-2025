@@ -109,13 +109,10 @@ describe('hydroSlice', () => {
         expect(next.alerts.some(({ metric }) => metric === 'ph')).toBe(true)
     })
 
-    it('restores cleared readings and alerts once, in time order', () => {
-        const stored = { ...makeReading({ timestamp: 5 }), id: 'b' }
-        const restored = [
-            { ...makeReading({ timestamp: 9 }), id: 'c' },
-            { ...makeReading({ timestamp: 1 }), id: 'a' },
-            stored,
-        ]
+    it('restores cleared entries once, in their order, ahead of entries added since', () => {
+        const addedSince = { ...makeReading({ timestamp: 3 }), id: 'n' }
+        const c = { ...makeReading({ timestamp: 9 }), id: 'c' }
+        const a = { ...makeReading({ timestamp: 1 }), id: 'a' }
         const alert = {
             id: 'x',
             metric: 'ph' as const,
@@ -125,14 +122,43 @@ describe('hydroSlice', () => {
             timestamp: 2,
             dismissed: false,
         }
-        const state = { ...initialState, readings: [stored] }
+        const state = { ...initialState, readings: [addedSince] }
 
         const next = hydroReducer(
             state,
-            restoreHydroHistory({ readings: restored, alerts: [alert] }),
+            restoreHydroHistory({ readings: [c, a, c, addedSince], alerts: [alert, alert] }),
         )
 
-        expect(next.readings.map(({ id }) => id)).toEqual(['a', 'b', 'c'])
+        expect(next.readings.map(({ id }) => id)).toEqual(['c', 'a', 'n'])
+        expect(next.alerts).toEqual([alert])
+        expect(
+            selectLatestReading({ hydro: next } as Parameters<typeof selectLatestReading>[0])?.id,
+        ).toBe('n')
+    })
+
+    it('an alerts-only undo leaves the readings and the latest reading as they are', () => {
+        // Entered out of time order: the latest reading is the last one added.
+        const readings = [
+            { ...makeReading({ timestamp: 9 }), id: 'later' },
+            { ...makeReading({ timestamp: 1 }), id: 'backdated' },
+        ]
+        const alert = {
+            id: 'x',
+            metric: 'ec' as const,
+            value: 3,
+            threshold: 2.5,
+            direction: 'high' as const,
+            timestamp: 4,
+            dismissed: false,
+        }
+        const state = { ...initialState, readings }
+
+        const next = hydroReducer(state, restoreHydroHistory({ readings: [], alerts: [alert] }))
+
+        expect(next.readings).toEqual(readings)
+        expect(
+            selectLatestReading({ hydro: next } as Parameters<typeof selectLatestReading>[0])?.id,
+        ).toBe('backdated')
         expect(next.alerts).toEqual([alert])
     })
 

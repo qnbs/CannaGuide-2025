@@ -16,6 +16,17 @@ export interface HydroClearUndo {
     alerts: HydroAlert[]
 }
 
+/** The clear dialog's target, the counts it names, and the clear and undo actions. */
+export interface HydroClearState {
+    readingCount: number
+    alertCount: number
+    target: HydroClearTarget | null
+    setTarget: (target: HydroClearTarget | null) => void
+    confirmClear: () => void
+    undo: HydroClearUndo | null
+    undoClear: () => void
+}
+
 /** How long the undo of a clear stays available on the page. */
 export const HYDRO_UNDO_WINDOW_MS = 10_000
 
@@ -49,7 +60,7 @@ const withPending = (pending: HydroClearUndo | null, removed: HydroClearUndo): H
  * open. The undo puts back exactly the removed entries, with their ids; a
  * further clear inside the window joins the same undo instead of replacing it.
  */
-export const useHydroClear = () => {
+export const useHydroClear = (): HydroClearState => {
     const dispatch = useAppDispatch()
     const readings = useAppSelector(selectHydroReadings)
     // Every stored alert, dismissed ones included: clearing alerts removes them all.

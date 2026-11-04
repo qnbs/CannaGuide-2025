@@ -504,10 +504,28 @@ export const equipmentView = {
             waterTemp: 'Temp. Agua (C)',
             addReading: 'Agregar Lectura',
             clearAll: 'Limpiar Todo',
+            clearReadings: 'Borrar mediciones',
+            clearAlerts: 'Borrar alertas',
+            clearReadingsConfirm: {
+                title: '\u00BFBorrar todas las mediciones hidrop\u00F3nicas?',
+                description:
+                    'Esto borra todas las mediciones hidrop\u00F3nicas ({{readings}}). Las alertas, los umbrales y el tipo de sistema se conservan. Puedes deshacerlo en esta p\u00E1gina durante 10 segundos.',
+                confirm: 'Borrar mediciones',
+            },
+            clearAlertsConfirm: {
+                title: '\u00BFBorrar todas las alertas hidrop\u00F3nicas?',
+                description:
+                    'Esto borra todas las alertas hidrop\u00F3nicas ({{alerts}}), tambi\u00E9n las descartadas. Las mediciones, los umbrales y el tipo de sistema se conservan. Puedes deshacerlo en esta p\u00E1gina durante 10 segundos.',
+                confirm: 'Borrar alertas',
+            },
+            undo: {
+                message: 'Borrado: mediciones {{readings}}, alertas {{alerts}}.',
+                action: 'Deshacer',
+            },
             clearAllConfirm: {
                 title: '\u00BFBorrar el historial hidrop\u00F3nico?',
                 description:
-                    'Esto borra de forma permanente todas las mediciones hidrop\u00F3nicas ({{readings}}) y todas las alertas hidrop\u00F3nicas ({{alerts}}). Tus umbrales y el tipo de sistema se conservan. No se puede deshacer.',
+                    'Esto borra todas las mediciones hidrop\u00F3nicas ({{readings}}) y todas las alertas hidrop\u00F3nicas ({{alerts}}). Tus umbrales y el tipo de sistema se conservan. Puedes deshacerlo en esta p\u00E1gina durante 10 segundos.',
                 confirm: 'Borrar mediciones y alertas',
                 cancel: 'Cancelar',
             },

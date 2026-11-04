@@ -501,10 +501,28 @@ export const equipmentView = {
             waterTemp: 'Water Temp (C)',
             addReading: 'Add Reading',
             clearAll: 'Clear All',
+            clearReadings: 'Clear readings',
+            clearAlerts: 'Clear alerts',
+            clearReadingsConfirm: {
+                title: 'Delete all hydro readings?',
+                description:
+                    'This deletes all hydro readings ({{readings}}). Alerts, thresholds and the system type are kept. You can undo this on this page for 10 seconds.',
+                confirm: 'Delete readings',
+            },
+            clearAlertsConfirm: {
+                title: 'Delete all hydro alerts?',
+                description:
+                    'This deletes all hydro alerts ({{alerts}}), dismissed ones included. Readings, thresholds and the system type are kept. You can undo this on this page for 10 seconds.',
+                confirm: 'Delete alerts',
+            },
+            undo: {
+                message: 'Deleted: readings {{readings}}, alerts {{alerts}}.',
+                action: 'Undo',
+            },
             clearAllConfirm: {
                 title: 'Delete the hydro history?',
                 description:
-                    'This permanently deletes all hydro readings ({{readings}}) and all hydro alerts ({{alerts}}). Your thresholds and the system type are kept. This cannot be undone.',
+                    'This deletes all hydro readings ({{readings}}) and all hydro alerts ({{alerts}}). Your thresholds and the system type are kept. You can undo this on this page for 10 seconds.',
                 confirm: 'Delete readings and alerts',
                 cancel: 'Cancel',
             },

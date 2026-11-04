@@ -1,21 +1,44 @@
 import React, { memo, useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { useAppDispatch } from '@/stores/store'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
-import {
-    addReading,
-    clearAlerts,
-    clearReadings,
-    selectHydroReadings,
-} from '@/stores/slices/hydroSlice'
+import { addReading } from '@/stores/slices/hydroSlice'
+import { useHydroClear, type HydroClearTarget } from './useHydroClear'
+import { HydroClearActions, HydroUndoNotice } from './HydroClearControls'
+
+const INPUT = 'equipmentView.hydroMonitoring.input'
+
+/** The confirmation texts for each clear: each names exactly what it deletes. */
+const CONFIRM_KEYS = {
+    readings: {
+        title: `${INPUT}.clearReadingsConfirm.title`,
+        description: `${INPUT}.clearReadingsConfirm.description`,
+        confirm: `${INPUT}.clearReadingsConfirm.confirm`,
+    },
+    alerts: {
+        title: `${INPUT}.clearAlertsConfirm.title`,
+        description: `${INPUT}.clearAlertsConfirm.description`,
+        confirm: `${INPUT}.clearAlertsConfirm.confirm`,
+    },
+    all: {
+        title: `${INPUT}.clearAllConfirm.title`,
+        description: `${INPUT}.clearAllConfirm.description`,
+        confirm: `${INPUT}.clearAllConfirm.confirm`,
+    },
+} as const satisfies Record<HydroClearTarget, Record<'title' | 'description' | 'confirm', string>>
 
 export const HydroReadingForm: React.FC = memo(() => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const readings = useAppSelector(selectHydroReadings)
-    // Every stored alert, dismissed ones included: Clear All removes them all.
-    const alertCount = useAppSelector((state) => state.hydro.alerts.length)
-    const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false)
+    const { readingCount, alertCount, target, setTarget, confirmClear, undo, undoClear } =
+        useHydroClear()
+    const keys = CONFIRM_KEYS[target ?? 'all']
+    const closeOnDismiss = useCallback(
+        (open: boolean) => {
+            if (!open) setTarget(null)
+        },
+        [setTarget],
+    )
 
     const [formPh, setFormPh] = useState('')
     const [formEc, setFormEc] = useState('')
@@ -38,14 +61,6 @@ export const HydroReadingForm: React.FC = memo(() => {
         setFormEc('')
         setFormTemp('')
     }, [dispatch, formPh, formEc, formTemp])
-
-    // Clear All deletes two lists at once and cannot be undone, so it asks first
-    // and names both, with their counts (GH #685).
-    const handleClearAll = useCallback(() => {
-        dispatch(clearReadings())
-        dispatch(clearAlerts())
-        setIsClearConfirmOpen(false)
-    }, [dispatch])
 
     return (
         <div className="rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08] backdrop-blur-sm p-4">
@@ -102,7 +117,7 @@ export const HydroReadingForm: React.FC = memo(() => {
                     />
                 </div>
             </div>
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex flex-wrap items-center gap-2 mt-3">
                 <button
                     type="button"
                     onClick={handleAddReading}
@@ -111,27 +126,21 @@ export const HydroReadingForm: React.FC = memo(() => {
                 >
                     {t('equipmentView.hydroMonitoring.input.addReading')}
                 </button>
-                {readings.length > 0 && (
-                    <button
-                        type="button"
-                        onClick={() => setIsClearConfirmOpen(true)}
-                        className="text-xs text-muted hover:text-red-400 px-2 py-1.5 rounded-lg hover:bg-red-500/10 transition-all duration-200"
-                    >
-                        {t('equipmentView.hydroMonitoring.input.clearAll')}
-                    </button>
-                )}
+                <HydroClearActions
+                    readingCount={readingCount}
+                    alertCount={alertCount}
+                    onPick={setTarget}
+                />
             </div>
+            <HydroUndoNotice undo={undo} onUndo={undoClear} />
             <ConfirmDialog
-                open={isClearConfirmOpen}
-                title={t('equipmentView.hydroMonitoring.input.clearAllConfirm.title')}
-                description={t('equipmentView.hydroMonitoring.input.clearAllConfirm.description', {
-                    readings: readings.length,
-                    alerts: alertCount,
-                })}
-                confirmLabel={t('equipmentView.hydroMonitoring.input.clearAllConfirm.confirm')}
-                cancelLabel={t('equipmentView.hydroMonitoring.input.clearAllConfirm.cancel')}
-                onConfirm={handleClearAll}
-                onOpenChange={setIsClearConfirmOpen}
+                open={target !== null}
+                title={t(keys.title)}
+                description={t(keys.description, { readings: readingCount, alerts: alertCount })}
+                confirmLabel={t(keys.confirm)}
+                cancelLabel={t(`${INPUT}.clearAllConfirm.cancel`)}
+                onConfirm={confirmClear}
+                onOpenChange={closeOnDismiss}
             />
         </div>
     )

@@ -506,10 +506,28 @@ export const equipmentView = {
             waterTemp: 'Wassertemp. (C)',
             addReading: 'Messwert hinzufuegen',
             clearAll: 'Alle loeschen',
+            clearReadings: 'Messwerte l\u00F6schen',
+            clearAlerts: 'Warnungen l\u00F6schen',
+            clearReadingsConfirm: {
+                title: 'Alle Hydro-Messwerte l\u00F6schen?',
+                description:
+                    'Damit werden alle Hydro-Messwerte ({{readings}}) gel\u00F6scht. Warnungen, Grenzwerte und der Systemtyp bleiben erhalten. Auf dieser Seite kannst du das 10 Sekunden lang r\u00FCckg\u00E4ngig machen.',
+                confirm: 'Messwerte l\u00F6schen',
+            },
+            clearAlertsConfirm: {
+                title: 'Alle Hydro-Warnungen l\u00F6schen?',
+                description:
+                    'Damit werden alle Hydro-Warnungen ({{alerts}}) gel\u00F6scht, auch ausgeblendete. Messwerte, Grenzwerte und der Systemtyp bleiben erhalten. Auf dieser Seite kannst du das 10 Sekunden lang r\u00FCckg\u00E4ngig machen.',
+                confirm: 'Warnungen l\u00F6schen',
+            },
+            undo: {
+                message: 'Gel\u00F6scht: Messwerte {{readings}}, Warnungen {{alerts}}.',
+                action: 'R\u00FCckg\u00E4ngig',
+            },
             clearAllConfirm: {
                 title: 'Hydro-Verlauf l\u00F6schen?',
                 description:
-                    'Damit werden alle Hydro-Messwerte ({{readings}}) und alle Hydro-Warnungen ({{alerts}}) endg\u00FCltig gel\u00F6scht. Deine Grenzwerte und der Systemtyp bleiben erhalten. Das kann nicht r\u00FCckg\u00E4ngig gemacht werden.',
+                    'Damit werden alle Hydro-Messwerte ({{readings}}) und alle Hydro-Warnungen ({{alerts}}) gel\u00F6scht. Deine Grenzwerte und der Systemtyp bleiben erhalten. Auf dieser Seite kannst du das 10 Sekunden lang r\u00FCckg\u00E4ngig machen.',
                 confirm: 'Messwerte und Warnungen l\u00F6schen',
                 cancel: 'Abbrechen',
             },

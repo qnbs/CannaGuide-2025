@@ -81,6 +81,22 @@ function checkAlerts(reading: HydroReading, thresholds: HydroThresholds): HydroA
     return alerts
 }
 
+/**
+ * The restored entries, once per id and in their original order, ahead of the
+ * entries added since the clear. The lists keep insertion order
+ * (selectLatestReading reads the last entry), so nothing is re-sorted, and a
+ * list with nothing to restore is returned as it is.
+ */
+const restoreAhead = <T extends { id: string }>(stored: T[], restored: readonly T[]): T[] => {
+    const taken = new Set(stored.map(({ id }) => id))
+    const back = restored.filter(({ id }) => {
+        if (taken.has(id)) return false
+        taken.add(id)
+        return true
+    })
+    return back.length === 0 ? stored : [...back, ...stored]
+}
+
 // ---------------------------------------------------------------------------
 // Initial state
 // ---------------------------------------------------------------------------
@@ -143,6 +159,20 @@ const hydroSlice = createSlice({
         clearReadings(state) {
             state.readings = []
         },
+
+        /**
+         * Puts back readings and alerts that a clear removed (the undo of GH #685).
+         * An id that is already stored, or repeated in the payload, is put back
+         * once at most, so an undo never duplicates anything. The restored
+         * entries go back in their original order before anything added since.
+         */
+        restoreHydroHistory(
+            state,
+            action: PayloadAction<{ readings: HydroReading[]; alerts: HydroAlert[] }>,
+        ) {
+            state.readings = restoreAhead(state.readings, action.payload.readings)
+            state.alerts = restoreAhead(state.alerts, action.payload.alerts)
+        },
     },
 })
 
@@ -158,6 +188,7 @@ export const {
     dismissAlert,
     clearAlerts,
     clearReadings,
+    restoreHydroHistory,
 } = hydroSlice.actions
 
 export default hydroSlice.reducer

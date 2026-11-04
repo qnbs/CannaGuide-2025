@@ -61,7 +61,7 @@ export const HydroUndoNotice: React.FC<HydroUndoNoticeProps> = ({ undo, onUndo }
     return (
         <div
             role="status"
-            className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-white/[0.06] px-3 py-2 text-xs text-slate-300"
+            className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/[0.06] px-3 py-2 text-xs text-slate-300"
         >
             <span>
                 {t(`${INPUT}.undo.message`, {

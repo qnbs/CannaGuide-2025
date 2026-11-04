@@ -145,4 +145,25 @@ describe('HydroReadingForm undo window', () => {
         expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
         expect(store.getState().hydro.readings).toEqual([])
     })
+
+    it('a second clear inside the window keeps the first one undoable', async () => {
+        vi.useFakeTimers({ shouldAdvanceTime: true })
+        const { store } = renderForm()
+        openConfirm('Clear readings')
+        await confirmIn('Delete readings')
+        act(() => {
+            vi.advanceTimersByTime(HYDRO_UNDO_WINDOW_MS / 2)
+        })
+        openConfirm('Clear alerts')
+        await confirmIn('Delete alerts')
+        expect(screen.getByRole('status')).toHaveTextContent('readings 3, alerts 2')
+
+        // Past the first clear's own window: the second clear restarted it.
+        act(() => {
+            vi.advanceTimersByTime(HYDRO_UNDO_WINDOW_MS / 2 + 1_000)
+        })
+        fireEvent.click(screen.getByRole('button', { name: 'Undo' }))
+
+        expect(store.getState().hydro).toEqual(hydro)
+    })
 })

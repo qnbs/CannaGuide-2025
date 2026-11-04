@@ -34,10 +34,20 @@ const removedBy = (
     alerts: CLEARS[target].alerts ? alerts : [],
 })
 
+/** A clear inside a pending undo window adds to it, so the earlier clear stays undoable. */
+const withPending = (pending: HydroClearUndo | null, removed: HydroClearUndo): HydroClearUndo =>
+    pending === null
+        ? removed
+        : {
+              readings: [...pending.readings, ...removed.readings],
+              alerts: [...pending.alerts, ...removed.alerts],
+          }
+
 /**
  * Clearing the hydro history (GH #685): the grower picks readings, alerts or
  * both, confirms, and can undo it for HYDRO_UNDO_WINDOW_MS while the page is
- * open. The undo puts back exactly the removed entries, with their ids.
+ * open. The undo puts back exactly the removed entries, with their ids; a
+ * further clear inside the window joins the same undo instead of replacing it.
  */
 export const useHydroClear = () => {
     const dispatch = useAppDispatch()
@@ -58,7 +68,8 @@ export const useHydroClear = () => {
         const removed = removedBy(target, readings, alerts)
         if (CLEARS[target].readings) dispatch(clearReadings())
         if (CLEARS[target].alerts) dispatch(clearAlerts())
-        setUndo(removed)
+        // The new snapshot also restarts the window, so the first clear is not cut short.
+        setUndo((pending) => withPending(pending, removed))
         setTarget(null)
     }, [alerts, dispatch, readings, target])
 

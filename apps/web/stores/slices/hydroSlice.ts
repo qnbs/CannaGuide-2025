@@ -14,8 +14,6 @@ import { secureRandom } from '@/utils/random'
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_READINGS = 168 // 7 days of hourly readings
-
 const DEFAULT_THRESHOLDS: HydroThresholds = {
     phMin: 5.5,
     phMax: 6.5,
@@ -23,6 +21,25 @@ const DEFAULT_THRESHOLDS: HydroThresholds = {
     ecMax: 2.4,
     waterTempMin: 18,
     waterTempMax: 24,
+}
+
+/**
+ * A reading id that no stored reading has. Two readings in the same millisecond
+ * share the timestamp part, and the random part can collide too; with every
+ * reading kept, a duplicate id would make removeReading delete both.
+ */
+export const uniqueReadingId = (
+    readings: readonly HydroReading[],
+    timestamp: number,
+    random: () => number = secureRandom,
+): string => {
+    const base = `hr-${String(timestamp)}-${String(Math.floor(random() * 1e6))}`
+    // The usual case has no collision: check without building a set of every id.
+    if (!readings.some(({ id }) => id === base)) return base
+    const taken = new Set(readings.map(({ id }) => id))
+    let id = base
+    for (let suffix = 1; taken.has(id); suffix += 1) id = `${base}-${String(suffix)}`
+    return id
 }
 
 // ---------------------------------------------------------------------------
@@ -86,14 +103,14 @@ const hydroSlice = createSlice({
         addReading(state, action: PayloadAction<Omit<HydroReading, 'id'>>) {
             const reading: HydroReading = {
                 ...action.payload,
-                id: `hr-${action.payload.timestamp}-${Math.floor(secureRandom() * 1e6)}`,
+                id: uniqueReadingId(state.readings, action.payload.timestamp),
             }
+            // Every hydro reading is entered by hand (HydroReadingForm), so none is
+            // removed to make room: they leave only through removeReading or
+            // clearReadings, the grower's own actions (GH #686, owner decision).
+            // The old count cap of 168 dropped the oldest manual measurement on
+            // every 169th entry, however many months the history spanned.
             state.readings.push(reading)
-
-            // FIFO pruning
-            if (state.readings.length > MAX_READINGS) {
-                state.readings = state.readings.slice(state.readings.length - MAX_READINGS)
-            }
 
             // Check thresholds and generate alerts
             const newAlerts = checkAlerts(reading, state.thresholds)
@@ -163,4 +180,4 @@ export const selectLatestReading = (state: RootState): HydroReading | undefined 
         ? state.hydro.readings[state.hydro.readings.length - 1]
         : undefined
 
-export { DEFAULT_THRESHOLDS, MAX_READINGS, checkAlerts }
+export { DEFAULT_THRESHOLDS, checkAlerts }

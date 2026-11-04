@@ -245,6 +245,8 @@ export const common = {
             'Die gespeicherten Daten wurden von einem anderen Tab oder Fenster geändert, nachdem dieses geladen wurde. Diese Seite ist veraltet und speichert nicht mehr, damit die neueren Daten erhalten bleiben. Lade neu, um mit den aktuellen Daten weiterzumachen. Änderungen, die du in diesem Tab seit dem Laden gemacht hast, wurden nicht gespeichert und gehen beim Neuladen verloren.',
         reload: 'Neu laden',
     },
+    saveFailed:
+        'Deine letzten \u00C4nderungen konnten nicht gespeichert werden und gingen verloren, wenn du die App schlie\u00DFt oder neu l\u00E4dst. M\u00F6glicherweise ist der Browserspeicher voll: Gib Speicher frei, dann versucht die App es bei deiner n\u00E4chsten \u00C4nderung erneut.',
     unverifiedTab: {
         title: 'Speichern angehalten',
         description:

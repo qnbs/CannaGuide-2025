@@ -81,6 +81,21 @@ describe('hydroForecastService', () => {
         expect(result.trend).toBe('rising')
     })
 
+    it('judges the trend on the latest readings, not on months of old history', async () => {
+        const { forecastNextHour } = await import('./hydroForecastService')
+        // 168 old readings at pH 5.6, then 168 recent stable readings at pH 6.2.
+        const old = Array.from({ length: 168 }, (_, index) =>
+            makeReading(5.6, 1.5, 21.0, 2_000 + index),
+        )
+        const recent = Array.from({ length: 168 }, (_, index) =>
+            makeReading(6.2, 1.5, 21.0, 168 - index),
+        )
+
+        const result = await forecastNextHour([...old, ...recent])
+
+        expect(result.trend).toBe('stable')
+    })
+
     it('detects critical trend when pH out of safe range', async () => {
         const { forecastNextHour } = await import('./hydroForecastService')
         const readings = [

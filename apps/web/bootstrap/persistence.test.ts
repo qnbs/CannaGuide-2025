@@ -5,6 +5,7 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
+import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
@@ -81,5 +82,36 @@ describe('persisted settings snapshot (#654)', () => {
         expect(savedSnapshot()).toContain(CANARY)
         expect(savedSnapshot()).not.toContain(PORCUPINE_CANARY)
         vi.mocked(pendingLegacySecretPaths).mockReturnValue([])
+    })
+})
+
+describe('a save that fails (GH #686)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        setUncheckedWritePermit(() => true)
+    })
+
+    const quotaError = () => new DOMException('The quota has been exceeded.', 'QuotaExceededError')
+
+    it('tells the caller once per run of failures, and again after a save succeeded', async () => {
+        // The coordinator's real contract: true once the write completed.
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValue(quotaError())
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        expect(await flush()).toBe(false)
+        expect(await flush()).toBe(false)
+        expect(onSaveFailure).toHaveBeenCalledTimes(1)
+        expect(onSaveFailure.mock.calls[0]?.[0]).toBeInstanceOf(DOMException)
+
+        vi.mocked(indexedDBStorage.setItem).mockImplementation(() => Promise.resolve())
+        expect(await flush()).toBe(true)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValue(quotaError())
+        await flush()
+
+        expect(onSaveFailure).toHaveBeenCalledTimes(2)
+        vi.mocked(indexedDBStorage.setItem).mockImplementation(() => Promise.resolve())
     })
 })

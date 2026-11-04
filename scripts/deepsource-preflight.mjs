@@ -9,6 +9,9 @@
  * now, and reports a rule only where its count in a file went up -- the closest
  * local match for "introduced". `--all` lists every finding in those files.
  *
+ * File names are read as UTF-8; a path that is not valid UTF-8 would be missed
+ * (the repository has none: all tracked paths are ASCII).
+ *
  * Not mirrored: rules that need type information or plugins (for example
  * JS-0357 use-before-define for TypeScript, JS-0437 index keys), DeepSource's
  * metrics, and the owner-retired rules JS-0067 and JS-T1001 (GH #808), which
@@ -136,7 +139,8 @@ export const parseNameStatus = (text) => {
  * not -- with renames resolved, plus untracked files (new, so no base path).
  */
 const changedFiles = (base) => [
-    ...parseNameStatus(git(['diff', '-z', '--name-status', '-M', '--diff-filter=AMRC', base])),
+    // T: a type change, for example a symlink replaced by a regular source file.
+    ...parseNameStatus(git(['diff', '-z', '--name-status', '-M', '--diff-filter=AMRCT', base])),
     ...nulFields(git(['ls-files', '-z', '--others', '--exclude-standard'])).map((file) => ({
         file,
         basePath: file,
@@ -251,12 +255,19 @@ const raisedComplexity = (now, before) => {
 
 const isComplexity = (message) => message.ruleId === 'complexity'
 
-/** The findings that make the file worse than at the base. */
+const isParseError = (message) => message.ruleId === null
+
+/**
+ * The findings that make the file worse than at the base. A parse error is
+ * always reported: a file that does not parse cannot be analyzed at all, and
+ * one syntax error replaced by another would otherwise keep the count equal.
+ */
 export const raisedFindings = (now, before) => [
+    ...now.filter(isParseError),
     ...raisedComplexity(now.filter(isComplexity), before.filter(isComplexity)),
     ...raisedCounts(
-        now.filter((message) => !isComplexity(message)),
-        before.filter((message) => !isComplexity(message)),
+        now.filter((message) => !isComplexity(message) && !isParseError(message)),
+        before.filter((message) => !isComplexity(message) && !isParseError(message)),
     ),
 ]
 

@@ -200,6 +200,12 @@ test('compares a file renamed out of an excluded path with nothing', () => {
     )
 })
 
+test('always reports a parse error, even when the base had one too', () => {
+    const parse = (line) => ({ ruleId: null, line, message: 'Parsing error: Unexpected token' })
+
+    assert.equal(raisedFindings([parse(9)], [parse(3)]).length, 1)
+})
+
 test('parses TSX', async () => {
     assert.deepEqual(await lint('export const A = () => <div>{1}</div>\n', 'apps/web/A.tsx'), [])
 })

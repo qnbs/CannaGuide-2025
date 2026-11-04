@@ -31,6 +31,10 @@ const canonicalArchive = (entries: readonly JournalEntry[]): JournalEntry[] => {
 const sameIds = (left: readonly JournalEntry[], right: readonly JournalEntry[]): boolean =>
     left.length === right.length && left.every((entry, index) => entry.id === right[index]?.id)
 
+/** A plant's stored entries; a plant id such as "constructor" must not read Object.prototype. */
+const storedEntries = (archive: ArchivedJournalMap, plantId: string): JournalEntry[] =>
+    Object.hasOwn(archive, plantId) ? (archive[plantId] ?? []) : []
+
 /**
  * The archive with this save's overflow merged in, or null when it would not
  * change (GH #668).
@@ -48,17 +52,12 @@ const mergeArchive = (
     existing: ArchivedJournalMap,
     archivedByPlant: ArchivedJournalMap,
 ): ArchivedJournalMap | null => {
-    const merged: ArchivedJournalMap = { ...existing }
-    let changed = false
-    for (const [plantId, entries] of Object.entries(archivedByPlant)) {
-        // A plant id such as "constructor" must not read Object.prototype.
-        const current = Object.hasOwn(existing, plantId) ? (existing[plantId] ?? []) : []
+    const updates = Object.entries(archivedByPlant).flatMap(([plantId, entries]) => {
+        const current = storedEntries(existing, plantId)
         const next = canonicalArchive([...current, ...entries])
-        if (sameIds(current, next)) continue
-        changed = true
-        merged[plantId] = next
-    }
-    return changed ? merged : null
+        return sameIds(current, next) ? [] : [[plantId, next] as const]
+    })
+    return updates.length === 0 ? null : { ...existing, ...Object.fromEntries(updates) }
 }
 
 interface JournalSplit {

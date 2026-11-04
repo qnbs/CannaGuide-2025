@@ -1011,5 +1011,15 @@ export const plantsView = {
         noStrain: 'No strain assigned. Assign a strain to generate tasks automatically.',
         confirmOverwrite: 'This will add new tasks to the existing schedule. Continue?',
         selectMedium: 'Select grow medium',
+        alreadyScheduled: 'The tasks for this stage are already in the planner.',
+        plannerFull:
+            'Some generated tasks were not added: they are added only while the planner holds fewer than {{max}} tasks, and no task is ever removed to make room. Remove tasks you no longer need, then schedule again.',
+        otherSchedule_one:
+            'Nothing was added: {{count}} open task of this stage comes from another or an earlier schedule. Remove it, then schedule again.',
+        otherSchedule_other:
+            'Nothing was added: {{count}} open tasks of this stage come from another or an earlier schedule. Remove them, then schedule again.',
+        stageStartUnknown:
+            'The start of this stage was not recorded, so the tasks are scheduled from today.',
+        noScheduleForStage: 'There is no schedule for this stage, so no tasks were added.',
     },
 }

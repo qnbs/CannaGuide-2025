@@ -8,11 +8,15 @@ import {
     addPlannerTask,
     completePlannerTask,
     removePlannerTask,
-    bulkAddTasks,
+    addGeneratedTasks,
+    MAX_TASKS,
+    type AutoScheduleOutcome,
 } from '@/stores/slices/growPlannerSlice'
 import { selectPlantById } from '@/stores/selectors'
 import { secureRandom } from '@/utils/random'
-import { taskSchedulerService } from '@/services/taskSchedulerService'
+import { currentStageStart, taskSchedulerService } from '@/services/taskSchedulerService'
+import { autoScheduleInput, knownStageStart } from './autoScheduleInput'
+import { getUISnapshot } from '@/stores/useUIStore'
 
 interface GrowPlannerViewProps {
     plantId?: string | undefined
@@ -35,11 +39,63 @@ const GROW_ACTIONS: Array<{ type: GrowAction; color: string; icon: string }> = [
     { type: 'pest_control', color: 'bg-red-500/20 text-red-400 ring-red-400/30', icon: '*' },
 ]
 
-function getActionStyle(type: GrowAction): string {
-    return (
-        GROW_ACTIONS.find((a) => a.type === type)?.color ??
-        'bg-slate-500/20 text-slate-400 ring-slate-400/30'
-    )
+const getActionStyle = (type: GrowAction): string =>
+    GROW_ACTIONS.find((a) => a.type === type)?.color ??
+    'bg-slate-500/20 text-slate-400 ring-slate-400/30'
+
+type Translate = ReturnType<typeof useTranslation>['t']
+
+interface AutoScheduleReport extends AutoScheduleOutcome {
+    stageStartKnown: boolean
+}
+
+interface AutoScheduleNotice {
+    applies: (report: AutoScheduleReport) => boolean
+    type: 'success' | 'info' | 'error'
+    message: (report: AutoScheduleReport, t: Translate) => string
+}
+
+/** What Auto Schedule tells the user, in this order; every notice that applies is shown. */
+const AUTO_SCHEDULE_NOTICES: readonly AutoScheduleNotice[] = [
+    {
+        applies: (report) => report.added > 0,
+        type: 'success',
+        message: (report, t) => t('plantsView.autoScheduler.generated', { count: report.added }),
+    },
+    {
+        applies: (report) => report.added > 0 && !report.stageStartKnown,
+        type: 'info',
+        message: (_report, t) => t('plantsView.autoScheduler.stageStartUnknown'),
+    },
+    {
+        applies: (report) => report.added + report.refusedForCap + report.fromOtherSchedule === 0,
+        type: 'info',
+        message: (_report, t) => t('plantsView.autoScheduler.alreadyScheduled'),
+    },
+    {
+        applies: (report) => report.fromOtherSchedule > 0,
+        type: 'error',
+        message: (report, t) =>
+            t('plantsView.autoScheduler.otherSchedule', { count: report.fromOtherSchedule }),
+    },
+    {
+        applies: (report) => report.refusedForCap > 0,
+        type: 'error',
+        message: (_report, t) => t('plantsView.autoScheduler.plannerFull', { max: MAX_TASKS }),
+    },
+]
+
+/** Why Auto Schedule added nothing before it got to the planner. */
+const notifyInfo = (message: string): void => {
+    getUISnapshot().addNotification({ type: 'info', message })
+}
+
+/** Tells the user what Auto Schedule added, found already there, or left out, and why. */
+const notifyAutoScheduleOutcome = (report: AutoScheduleReport, t: Translate): void => {
+    const notify = getUISnapshot().addNotification
+    for (const notice of AUTO_SCHEDULE_NOTICES.filter(({ applies }) => applies(report))) {
+        notify({ type: notice.type, message: notice.message(report, t) })
+    }
 }
 
 export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, plantName }) => {
@@ -147,23 +203,26 @@ export const GrowPlannerView: React.FC<GrowPlannerViewProps> = memo(({ plantId, 
 
     const handleAutoSchedule = useCallback(() => {
         if (!plantId || !plant) return
-        const result = taskSchedulerService.generateTasks({
-            plantId,
-            strainType: plant.strain?.type ?? 'Hybrid',
-            floweringType: plant.strain?.floweringType ?? 'Photoperiod',
-            currentStage: plant.stage,
-            stageStartDate: Date.now(),
-            medium:
-                plant.mediumType === 'Soil' ||
-                plant.mediumType === 'Coco' ||
-                plant.mediumType === 'Hydro'
-                    ? plant.mediumType
-                    : undefined,
-        })
-        if (result.tasks.length > 0) {
-            dispatch(bulkAddTasks(result.tasks))
+        const stageStart = currentStageStart(plant)
+        const input = autoScheduleInput(plantId, plant, stageStart)
+        if (!input) {
+            notifyInfo(t('plantsView.autoScheduler.noStrain'))
+            return
         }
-    }, [dispatch, plantId, plant])
+        const result = taskSchedulerService.generateTasks(input)
+        if (result.tasks.length === 0) {
+            notifyInfo(t('plantsView.autoScheduler.noScheduleForStage'))
+            return
+        }
+        const outcome = dispatch(
+            addGeneratedTasks({
+                tasks: result.tasks,
+                scope: result.scope,
+                stageStartedAt: knownStageStart(stageStart),
+            }),
+        )
+        notifyAutoScheduleOutcome({ ...outcome, stageStartKnown: stageStart.known }, t)
+    }, [dispatch, plantId, plant, t])
 
     const navigateCalendar = useCallback(
         (direction: -1 | 1) => {

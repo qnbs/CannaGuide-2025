@@ -99,6 +99,7 @@ export {
     type PlantStructuralModel,
     type PlantStressCounters,
     type PlantSimulationClock,
+    type PlantStageStart,
     type PlantProblem,
     type JournalEntry,
     type JournalEntryDetails,

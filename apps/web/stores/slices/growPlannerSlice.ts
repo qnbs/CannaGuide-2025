@@ -2,11 +2,14 @@ import { createSlice, createSelector, PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../store'
 import type { GrowPlannerState, PlannerTask } from '@/types'
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+import {
+    MAX_TASKS,
+    planNewTasks,
+    type GeneratedTasks,
+    type GeneratedTasksPlan,
+} from './growPlannerPlan'
 
-const MAX_TASKS = 500
+export { MAX_TASKS, planNewTasks, type GeneratedTasks, type GeneratedTasksPlan }
 
 // ---------------------------------------------------------------------------
 // Initial state
@@ -25,11 +28,8 @@ const growPlannerSlice = createSlice({
     initialState,
     reducers: {
         addPlannerTask(state, action: PayloadAction<PlannerTask>) {
+            // A task added by hand is always kept, and nothing is removed for it.
             state.tasks.push(action.payload)
-            // FIFO cap
-            if (state.tasks.length > MAX_TASKS) {
-                state.tasks = state.tasks.slice(state.tasks.length - MAX_TASKS)
-            }
         },
         completePlannerTask(state, action: PayloadAction<{ taskId: string; completedAt: number }>) {
             const task = state.tasks.find((t) => t.id === action.payload.taskId)
@@ -59,12 +59,8 @@ const growPlannerSlice = createSlice({
         clearTasksForPlant(state, action: PayloadAction<string>) {
             state.tasks = state.tasks.filter((t) => t.plantId !== action.payload)
         },
-        bulkAddTasks(state, action: PayloadAction<PlannerTask[]>) {
-            state.tasks.push(...action.payload)
-            // FIFO cap
-            if (state.tasks.length > MAX_TASKS) {
-                state.tasks = state.tasks.slice(state.tasks.length - MAX_TASKS)
-            }
+        bulkAddTasks(state, action: PayloadAction<GeneratedTasks>) {
+            state.tasks = planNewTasks(state.tasks, action.payload).next
         },
     },
 })
@@ -78,6 +74,28 @@ export const {
     clearTasksForPlant,
     bulkAddTasks,
 } = growPlannerSlice.actions
+
+export type AutoScheduleOutcome = Omit<GeneratedTasksPlan, 'next'>
+
+type AddGeneratedTasksThunk = (
+    dispatch: (action: ReturnType<typeof bulkAddTasks>) => unknown,
+    getState: () => RootState,
+) => AutoScheduleOutcome
+
+/** Adds generated tasks and reports what was added, already there, or left out. */
+export const addGeneratedTasks =
+    (generated: GeneratedTasks): AddGeneratedTasksThunk =>
+    (dispatch, getState) => {
+        // The same pure decision the reducer makes, so the counts match what it stores.
+        const plan = planNewTasks(getState().growPlanner.tasks, generated)
+        dispatch(bulkAddTasks(generated))
+        return {
+            added: plan.added,
+            alreadyScheduled: plan.alreadyScheduled,
+            refusedForCap: plan.refusedForCap,
+            fromOtherSchedule: plan.fromOtherSchedule,
+        }
+    }
 
 // ---------------------------------------------------------------------------
 // Selectors

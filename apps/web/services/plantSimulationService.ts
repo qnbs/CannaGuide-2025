@@ -18,6 +18,7 @@ import {
     createInitialHarvestData,
 } from '@/services/simulation/postHarvestSimulation'
 import { normalizePlant } from '@/services/simulation/plantNormalization'
+import { recordStageStart } from '@/services/simulation/stageStart'
 import { equipmentWithPolicy } from '@/services/simulation/floweringMode'
 import { simulateStrainProfile } from '@/services/strainSimulationProfile'
 import {
@@ -68,7 +69,11 @@ class PlantSimulationService {
         simulationSettings?: SimulationSettings | undefined,
     ): { updatedPlant: Plant; newJournalEntries: JournalEntry[] } {
         const p = this.ensurePostHarvestData(plant)
-        return runPostHarvestAdvance(p, action, simulationSettings)
+        const stageBefore = p.stage
+        const result = runPostHarvestAdvance(p, action, simulationSettings)
+        // Drying and curing advance by the grower's action, so the stage starts now.
+        recordStageStart(result.updatedPlant, stageBefore, Date.now())
+        return result
     }
 
     getSimulationDiagnostics(
@@ -213,6 +218,7 @@ class PlantSimulationService {
             lastUpdated: now,
             age: 0,
             stage: PlantStage.Seed,
+            stageStart: { stage: PlantStage.Seed, at: now },
             health: 100,
             stressLevel: 0,
             height: 0,
@@ -294,6 +300,11 @@ class PlantSimulationService {
         const newTasks: Task[] = []
         const safeDeltaTime = Math.max(0, Number.isFinite(deltaTime) ? deltaTime : 0)
         const nextTimestamp = updatedPlant.lastUpdated + safeDeltaTime
+        // The simulated time at which the first whole day of this delta ends.
+        const firstDayEnd =
+            updatedPlant.lastUpdated -
+            updatedPlant.simulationClock.accumulatedDayMs +
+            SIM_MILLISECONDS_PER_DAY
         const totalMillisToSimulate = updatedPlant.simulationClock.accumulatedDayMs + safeDeltaTime
         const daysToSimulate = Math.floor(totalMillisToSimulate / SIM_MILLISECONDS_PER_DAY)
 
@@ -307,6 +318,7 @@ class PlantSimulationService {
 
         for (let i = 0; i < daysToSimulate; i++) {
             updatedPlant.age += 1
+            const stageBefore = updatedPlant.stage
 
             const dayResult = simulateOnePlantDay(
                 updatedPlant,
@@ -314,6 +326,7 @@ class PlantSimulationService {
                 this.dailySimulationDeps,
             )
             updatedPlant = dayResult.plant
+            recordStageStart(updatedPlant, stageBefore, firstDayEnd + i * SIM_MILLISECONDS_PER_DAY)
             newJournalEntries.push(...dayResult.journalEntries)
             newTasks.push(...dayResult.tasks)
 

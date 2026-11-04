@@ -955,5 +955,15 @@ export const plantsView = {
         noStrain: 'Geen ras toegewezen. Wijs een ras toe om automatisch taken te genereren.',
         confirmOverwrite: 'Er worden nieuwe taken aan het bestaande schema toegevoegd. Doorgaan?',
         selectMedium: 'Teeltmedium selecteren',
+        alreadyScheduled: 'De taken voor deze fase staan al in de planner.',
+        plannerFull:
+            'Sommige gegenereerde taken zijn niet toegevoegd: ze worden alleen toegevoegd zolang de planner minder dan {{max}} taken bevat, en er wordt nooit een taak verwijderd om ruimte te maken. Verwijder taken die je niet meer nodig hebt en plan daarna opnieuw.',
+        otherSchedule_one:
+            'Er is niets toegevoegd: {{count}} open taak van deze fase komt uit een ander of eerder schema. Verwijder die en plan daarna opnieuw.',
+        otherSchedule_other:
+            'Er is niets toegevoegd: {{count}} open taken van deze fase komen uit een ander of eerder schema. Verwijder ze en plan daarna opnieuw.',
+        stageStartUnknown:
+            'Het begin van deze fase is niet vastgelegd, dus de taken worden vanaf vandaag gepland.',
+        noScheduleForStage: 'Er is geen schema voor deze fase, dus er zijn geen taken toegevoegd.',
     },
 }

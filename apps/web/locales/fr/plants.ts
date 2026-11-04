@@ -973,5 +973,17 @@ export const plantsView = {
             'Aucune variete assignee. Assignez une variete pour generer des taches automatiquement.',
         confirmOverwrite: 'De nouvelles taches seront ajoutees au planning existant. Continuer ?',
         selectMedium: 'Selectionner le milieu de culture',
+        alreadyScheduled:
+            'Les t\u00E2ches de cette phase sont d\u00E9j\u00E0 dans le planificateur.',
+        plannerFull:
+            "Certaines t\u00E2ches g\u00E9n\u00E9r\u00E9es n'ont pas \u00E9t\u00E9 ajout\u00E9es : elles ne sont ajout\u00E9es que tant que le planificateur contient moins de {{max}} t\u00E2ches, et aucune t\u00E2che n'est jamais supprim\u00E9e pour faire de la place. Supprimez les t\u00E2ches dont vous n'avez plus besoin, puis planifiez \u00E0 nouveau.",
+        otherSchedule_one:
+            "Rien n'a \u00E9t\u00E9 ajout\u00E9 : {{count}} t\u00E2che ouverte de cette phase provient d'un autre planning ou d'un planning ant\u00E9rieur. Supprimez-la, puis planifiez \u00E0 nouveau.",
+        otherSchedule_other:
+            "Rien n'a \u00E9t\u00E9 ajout\u00E9 : {{count}} t\u00E2ches ouvertes de cette phase proviennent d'un autre planning ou d'un planning ant\u00E9rieur. Supprimez-les, puis planifiez \u00E0 nouveau.",
+        stageStartUnknown:
+            "Le d\u00E9but de cette phase n'a pas \u00E9t\u00E9 enregistr\u00E9, les t\u00E2ches sont donc planifi\u00E9es \u00E0 partir d'aujourd'hui.",
+        noScheduleForStage:
+            "Il n'y a pas de planning pour cette phase, aucune t\u00E2che n'a donc \u00E9t\u00E9 ajout\u00E9e.",
     },
 }

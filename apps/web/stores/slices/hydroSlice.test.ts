@@ -7,6 +7,7 @@ import hydroReducer, {
     dismissAlert,
     clearAlerts,
     clearReadings,
+    restoreHydroHistory,
     checkAlerts,
     DEFAULT_THRESHOLDS,
     selectHydroReadings,
@@ -106,6 +107,33 @@ describe('hydroSlice', () => {
         expect(next.systemType).toBe('NFT')
         expect(next.thresholds.phMax).toBe(6.2)
         expect(next.alerts.some(({ metric }) => metric === 'ph')).toBe(true)
+    })
+
+    it('restores cleared readings and alerts once, in time order', () => {
+        const stored = { ...makeReading({ timestamp: 5 }), id: 'b' }
+        const restored = [
+            { ...makeReading({ timestamp: 9 }), id: 'c' },
+            { ...makeReading({ timestamp: 1 }), id: 'a' },
+            stored,
+        ]
+        const alert = {
+            id: 'x',
+            metric: 'ph' as const,
+            value: 7,
+            threshold: 6.5,
+            direction: 'high' as const,
+            timestamp: 2,
+            dismissed: false,
+        }
+        const state = { ...initialState, readings: [stored] }
+
+        const next = hydroReducer(
+            state,
+            restoreHydroHistory({ readings: restored, alerts: [alert] }),
+        )
+
+        expect(next.readings.map(({ id }) => id)).toEqual(['a', 'b', 'c'])
+        expect(next.alerts).toEqual([alert])
     })
 
     it('removes a reading by id', () => {

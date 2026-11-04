@@ -81,6 +81,17 @@ function checkAlerts(reading: HydroReading, thresholds: HydroThresholds): HydroA
     return alerts
 }
 
+/** The stored entries plus the restored ones not already there, in time order. */
+const mergeById = <T extends { id: string; timestamp: number }>(
+    stored: T[],
+    restored: T[],
+): T[] => {
+    const taken = new Set(stored.map(({ id }) => id))
+    return [...stored, ...restored.filter(({ id }) => !taken.has(id))].sort(
+        (left, right) => left.timestamp - right.timestamp,
+    )
+}
+
 // ---------------------------------------------------------------------------
 // Initial state
 // ---------------------------------------------------------------------------
@@ -143,6 +154,19 @@ const hydroSlice = createSlice({
         clearReadings(state) {
             state.readings = []
         },
+
+        /**
+         * Puts back readings and alerts that a clear removed (the undo of GH #685).
+         * An entry whose id is already stored is skipped, so an undo can never
+         * duplicate anything; the lists stay in time order.
+         */
+        restoreHydroHistory(
+            state,
+            action: PayloadAction<{ readings: HydroReading[]; alerts: HydroAlert[] }>,
+        ) {
+            state.readings = mergeById(state.readings, action.payload.readings)
+            state.alerts = mergeById(state.alerts, action.payload.alerts)
+        },
     },
 })
 
@@ -158,6 +182,7 @@ export const {
     dismissAlert,
     clearAlerts,
     clearReadings,
+    restoreHydroHistory,
 } = hydroSlice.actions
 
 export default hydroSlice.reducer

@@ -508,10 +508,28 @@ export const equipmentView = {
             waterTemp: 'Temp. Eau (C)',
             addReading: 'Ajouter',
             clearAll: 'Tout Effacer',
+            clearReadings: 'Effacer les mesures',
+            clearAlerts: 'Effacer les alertes',
+            clearReadingsConfirm: {
+                title: 'Supprimer toutes les mesures hydroponiques ?',
+                description:
+                    'Cela supprime toutes les mesures hydroponiques ({{readings}}). Les alertes, les seuils et le type de syst\u00E8me sont conserv\u00E9s. Vous pouvez annuler sur cette page pendant 10 secondes.',
+                confirm: 'Supprimer les mesures',
+            },
+            clearAlertsConfirm: {
+                title: 'Supprimer toutes les alertes hydroponiques ?',
+                description:
+                    'Cela supprime toutes les alertes hydroponiques ({{alerts}}), y compris celles masqu\u00E9es. Les mesures, les seuils et le type de syst\u00E8me sont conserv\u00E9s. Vous pouvez annuler sur cette page pendant 10 secondes.',
+                confirm: 'Supprimer les alertes',
+            },
+            undo: {
+                message: 'Supprim\u00E9 : mesures {{readings}}, alertes {{alerts}}.',
+                action: 'Restaurer',
+            },
             clearAllConfirm: {
                 title: "Supprimer l'historique hydroponique ?",
                 description:
-                    'Cela supprime d\u00E9finitivement toutes les mesures hydroponiques ({{readings}}) et toutes les alertes hydroponiques ({{alerts}}). Vos seuils et le type de syst\u00E8me sont conserv\u00E9s. Cette action est irr\u00E9versible.',
+                    'Cela supprime toutes les mesures hydroponiques ({{readings}}) et toutes les alertes hydroponiques ({{alerts}}). Vos seuils et le type de syst\u00E8me sont conserv\u00E9s. Vous pouvez annuler sur cette page pendant 10 secondes.',
                 confirm: 'Supprimer mesures et alertes',
                 cancel: 'Annuler',
             },

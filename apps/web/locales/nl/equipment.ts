@@ -500,10 +500,28 @@ export const equipmentView = {
             waterTemp: 'Watertemp. (C)',
             addReading: 'Meting Toevoegen',
             clearAll: 'Alles Wissen',
+            clearReadings: 'Metingen wissen',
+            clearAlerts: 'Waarschuwingen wissen',
+            clearReadingsConfirm: {
+                title: 'Alle hydrometingen verwijderen?',
+                description:
+                    'Hiermee worden alle hydrometingen ({{readings}}) verwijderd. Waarschuwingen, drempelwaarden en het systeemtype blijven behouden. Je kunt dit op deze pagina 10 seconden lang ongedaan maken.',
+                confirm: 'Metingen verwijderen',
+            },
+            clearAlertsConfirm: {
+                title: 'Alle hydrowaarschuwingen verwijderen?',
+                description:
+                    'Hiermee worden alle hydrowaarschuwingen ({{alerts}}) verwijderd, ook verborgen. Metingen, drempelwaarden en het systeemtype blijven behouden. Je kunt dit op deze pagina 10 seconden lang ongedaan maken.',
+                confirm: 'Waarschuwingen verwijderen',
+            },
+            undo: {
+                message: 'Verwijderd: metingen {{readings}}, waarschuwingen {{alerts}}.',
+                action: 'Ongedaan maken',
+            },
             clearAllConfirm: {
                 title: 'Hydro-geschiedenis verwijderen?',
                 description:
-                    'Hiermee worden alle hydrometingen ({{readings}}) en alle hydrowaarschuwingen ({{alerts}}) definitief verwijderd. Je drempelwaarden en het systeemtype blijven behouden. Dit kan niet ongedaan worden gemaakt.',
+                    'Hiermee worden alle hydrometingen ({{readings}}) en alle hydrowaarschuwingen ({{alerts}}) verwijderd. Je drempelwaarden en het systeemtype blijven behouden. Je kunt dit op deze pagina 10 seconden lang ongedaan maken.',
                 confirm: 'Metingen en waarschuwingen verwijderen',
                 cancel: 'Annuleren',
             },

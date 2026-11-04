@@ -38,7 +38,13 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
 
         let finalSlotIndex = slotIndex
 
-        if (finalSlotIndex === null || finalSlotIndex === undefined) {
+        // A slot chosen in the UI that is taken (or does not exist) is not used:
+        // writing into it would orphan the plant there. Look for a free one instead.
+        if (
+            finalSlotIndex === null ||
+            finalSlotIndex === undefined ||
+            simulation.plantSlots[finalSlotIndex] !== null
+        ) {
             finalSlotIndex = simulation.plantSlots.findIndex((slot) => slot === null)
         }
 

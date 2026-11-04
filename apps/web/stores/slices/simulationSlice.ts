@@ -1,12 +1,5 @@
 import { createSlice, PayloadAction, createEntityAdapter } from '@reduxjs/toolkit'
-import {
-    Plant,
-    JournalEntry,
-    Task,
-    VentilationPower,
-    SimulationState,
-    AppSettings,
-} from '@/types'
+import { Plant, JournalEntry, Task, VentilationPower, SimulationState, AppSettings } from '@/types'
 import { plantSimulationService } from '@/services/plantSimulationService'
 import type { SimulationPoint } from '@/types/simulation.types'
 
@@ -19,6 +12,16 @@ const initialState: SimulationState = {
     vpdProfiles: {},
     isCatchingUp: false,
 }
+
+/**
+ * The three plant slots are where the legal cap of three plants at a time
+ * (KCanG Section 9 (1)) is enforced: every plant entity has a slot, and
+ * removePlant frees both together. A new plant is therefore only accepted into
+ * a slot that exists and is free; anything else would leave a plant without a
+ * slot (overwritten) or more plants than slots.
+ */
+const isFreeSlot = (slots: readonly (string | null)[], index: number): boolean =>
+    Number.isInteger(index) && index >= 0 && index < slots.length && slots[index] === null
 
 export const simulationSlice = createSlice({
     name: 'simulation',
@@ -33,6 +36,8 @@ export const simulationSlice = createSlice({
         },
         addPlant: (state, action: PayloadAction<{ plant: Plant; slotIndex: number }>) => {
             const { plant, slotIndex } = action.payload
+            // An occupied or missing slot, or a plant id already present, is refused.
+            if (!isFreeSlot(state.plantSlots, slotIndex) || state.plants.entities[plant.id]) return
             plantsAdapter.addOne(state.plants, plant)
             state.plantSlots[slotIndex] = plant.id
         },
@@ -289,14 +294,17 @@ export const simulationSlice = createSlice({
         upsertPlant: {
             reducer(state, action: PayloadAction<Plant>) {
                 const plant = action.payload
-                plantsAdapter.upsertOne(state.plants, plant)
-                // Assign to first empty slot if this is a new plant
-                if (!state.plantSlots.includes(plant.id)) {
-                    const emptySlotIndex = state.plantSlots.findIndex((slot) => slot === null)
-                    if (emptySlotIndex >= 0) {
-                        state.plantSlots[emptySlotIndex] = plant.id
-                    }
+                // An update to a plant that already has a slot stays allowed.
+                if (state.plantSlots.includes(plant.id)) {
+                    plantsAdapter.upsertOne(state.plants, plant)
+                    return
                 }
+                // A new plant needs a free slot; without one it is not added at all,
+                // so a synced plant can never take the app past three plants.
+                const emptySlotIndex = state.plantSlots.findIndex((slot) => slot === null)
+                if (emptySlotIndex < 0) return
+                plantsAdapter.upsertOne(state.plants, plant)
+                state.plantSlots[emptySlotIndex] = plant.id
             },
             prepare(plant: Plant, meta?: { fromCrdt?: boolean | undefined }) {
                 return { payload: plant, meta: { fromCrdt: meta?.fromCrdt } }

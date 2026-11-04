@@ -49,6 +49,8 @@ export const settingsView = {
         saveError: 'No se pudo guardar la clave API.',
         testError:
             'La validacion de la clave API fallo. Por favor verifica la validez y los permisos de la clave.',
+        testBlockedLocalOnly:
+            'El Modo Solo Local est\u00E1 activo, as\u00ED que la prueba de la clave no se env\u00EDa. Desactiva el Modo Solo Local para probar la clave.',
         clearError: 'No se pudo eliminar la clave API.',
         usageToday:
             'Hoy: {{requests}} solicitudes, ~{{tokens}} tokens estimados, {{remaining}} solicitudes restantes (por minuto).',
@@ -889,9 +891,9 @@ export const settingsView = {
         title: 'Privacidad y Seguridad',
         localOnlyMode: 'Modo Solo Local',
         localOnlyModeDesc:
-            'Bloquea TODO el trafico de red saliente: rastreo de errores Sentry, solicitudes AI en la nube y sincronizacion Gist. Solo se permiten la inferencia AI local y el almacenamiento local.',
+            'Mantiene tus datos en este dispositivo y en tu red local. Mientras est\u00E1 activo, CannaGuide no env\u00EDa informes de errores ni solicitudes a la IA en la nube o a la s\u00EDntesis de voz en la nube, omite las consultas de variedades en l\u00EDnea y el uso compartido con la comunidad, y conecta los sensores MQTT solo a brokers de tu red local. A\u00FAn no cubierto: los modelos de IA local que se descargan en el primer uso (la precarga expl\u00EDcita est\u00E1 bloqueada) y el reconocimiento de voz, que algunos navegadores procesan en l\u00EDnea.',
         localOnlyModeActive:
-            'El Modo Solo Local esta activo. Todas las solicitudes de red externas estan bloqueadas. Deshabilita este interruptor para restaurar las funciones en la nube.',
+            'El Modo Solo Local est\u00E1 activo. Los informes de errores, la IA en la nube, la s\u00EDntesis de voz en la nube, las consultas de variedades en l\u00EDnea y el uso compartido con la comunidad est\u00E1n desactivados, y MQTT se limita a tu red local. Las descargas de modelos en el primer uso y el reconocimiento de voz del navegador a\u00FAn no est\u00E1n bloqueados. Desact\u00EDvalo para recuperar las funciones en la nube.',
         requirePin: 'Requerir PIN al Iniciar',
         requirePinDesc: 'Protege tu aplicacion con un PIN de 4 digitos.',
         setPin: 'Establecer/Cambiar PIN',
@@ -928,8 +930,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Potencia todas las funciones AI -- Multi-proveedor BYOK (Gemini, OpenAI, xAI, Anthropic) con 22 modulos de servicio AI local.',
             react: 'React 19 + TypeScript (estricto), Redux Toolkit, Zustand, RTK Query, 9 temas de cannabis.',
-            indexedDb:
-                'Doble persistencia IndexedDB para funcionalidad 100% sin conexion con sincronizacion CRDT en la nube.',
+            indexedDb: 'Doble persistencia en IndexedDB para un uso offline-first.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 workers con preempcion por prioridad (VPD, genealogia, inferencia, vision, pronostico hidro) via WorkerBus tipado.',
@@ -987,7 +988,7 @@ export const settingsView = {
             philosophyTitle: 'Filosofia del Proyecto',
             philosophyContent: `
             <p>CannaGuide 2025 esta construido sobre un conjunto de principios fundamentales disenados para ofrecer una experiencia de primera clase:</p>
-            <blockquote><strong>Sin Conexion Primero</strong>: Tu jardin no se detiene cuando tu internet lo hace. La aplicacion esta disenada para ser <strong>100% funcional sin conexion</strong>.</blockquote>
+            <blockquote><strong>Sin Conexion Primero</strong>: Tu jardin no se detiene cuando tu internet lo hace. La aplicacion esta construida <strong>offline-first</strong>: solo la IA en la nube, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos necesitan conexion.</blockquote>
             <blockquote><strong>El Rendimiento es Clave</strong>: Una interfaz fluida y responsiva no es negociable. El trabajo pesado, como la simulacion compleja de multiples plantas, se descarga a un <strong>Web Worker</strong> dedicado.</blockquote>
             <blockquote><strong>Soberania de Datos</strong>: Tus datos son tuyos, punto. La capacidad de <strong>exportar e importar todo el estado de tu aplicacion</strong> te da control completo.</blockquote>
             <blockquote><strong>AI como Copiloto</strong>: Aprovechamos la Google Gemini API no como un truco, sino como una herramienta poderosa para proporcionar <strong>informacion accionable y contextualizada</strong>.</blockquote>
@@ -1099,7 +1100,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Aviso Legal',
-            disclaimerContent: '<p>Toda la informacion en esta aplicacion es solo para fines educativos y de entretenimiento. El cultivo de cannabis esta sujeto a regulaciones legales estrictas. Por favor informate sobre las leyes de tu region y actua siempre de manera responsable y conforme a la ley.</p>',
+            disclaimerContent:
+                '<p>Toda la informacion en esta aplicacion es solo para fines educativos y de entretenimiento. El cultivo de cannabis esta sujeto a regulaciones legales estrictas. Por favor informate sobre las leyes de tu region y actua siempre de manera responsable y conforme a la ley.</p>',
         },
     },
     communityShare: {

@@ -64,3 +64,43 @@ describe('apiKeyService', () => {
         })
     })
 })
+
+describe('apiKeyService key test in Local-Only Mode', () => {
+    it('sends no Gemini request and says why', async () => {
+        const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
+        const generateContent = vi.fn()
+        const GoogleGenAI = vi.fn(() => ({ models: { generateContent } }))
+        vi.doMock('@google/genai', () => ({ GoogleGenAI }))
+        setLocalOnlyMode(true)
+        try {
+            await expect(
+                apiKeyService.validateApiKey('AIzaSyB1234567890abcdefghijklmnopqrstu'),
+            ).rejects.toThrow('settingsView.security.testBlockedLocalOnly')
+            expect(GoogleGenAI).not.toHaveBeenCalled()
+            expect(generateContent).not.toHaveBeenCalled()
+        } finally {
+            setLocalOnlyMode(false)
+            vi.doUnmock('@google/genai')
+        }
+    })
+
+    it('sends no request when the mode is switched on while the SDK loads', async () => {
+        const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
+        const generateContent = vi.fn()
+        const GoogleGenAI = vi.fn(() => ({ models: { generateContent } }))
+        vi.doMock('@google/genai', () => {
+            // The module body runs during the import: switch the mode on there.
+            setLocalOnlyMode(true)
+            return { GoogleGenAI }
+        })
+        try {
+            await expect(
+                apiKeyService.validateApiKey('AIzaSyB1234567890abcdefghijklmnopqrstu'),
+            ).rejects.toThrow('settingsView.security.testBlockedLocalOnly')
+            expect(generateContent).not.toHaveBeenCalled()
+        } finally {
+            setLocalOnlyMode(false)
+            vi.doUnmock('@google/genai')
+        }
+    })
+})

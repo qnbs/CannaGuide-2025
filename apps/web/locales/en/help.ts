@@ -548,15 +548,16 @@ export const helpView = {
         toc: 'Jump to Section',
         introduction: {
             title: 'Introduction & Philosophy',
-            content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> 100% functionality without an internet connection. Actions are queued and synced later. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with full backup, restore, and encrypted one-tap cloud sync via GitHub Gist. No server ever sees your data.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>`,
+            content:
+                "Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> Your plants, journal and settings work without an internet connection; cloud AI, speech recognition in some browsers and first-time model downloads need one. Actions taken offline are queued and replayed when you are back online. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with backup and restore on your device (ZIP backup). Cloud sync is switched off in this version.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>",
         },
         general: {
             title: 'Platform-Wide Features',
             content: 'Features that enhance your experience throughout the app.',
             pwa: {
-                title: 'PWA & 100% Offline Functionality',
+                title: 'PWA & Offline Use',
                 content:
-                    'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The robust Service Worker caches all app data, including your plants, notes, and even AI archives, ensuring <strong>100% offline functionality (excluding live AI requests)</strong>.',
+                    "Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The Service Worker keeps the app itself available offline; your plants, notes and archives are stored in the browser's database on this device. Offline use covers everything except live AI requests, speech recognition in some browsers and first-time model downloads.",
             },
             commandPalette: {
                 title: 'Command Palette (Cmd/Ctrl + K)',
@@ -566,12 +567,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Voice Control & Speech',
                 content:
-                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud.',
+                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud. Speech recognition is done by your browser: some browsers, such as Chrome, send the audio to the browser maker\'s online speech service, so voice commands may not work offline.',
             },
             dataManagement: {
                 title: 'Data Sovereignty: Backup & Restore',
                 content:
-                    'Under <code>Settings > Data Management</code>, you have full control. Export your entire app state (plants, settings, etc.) as a single JSON file for <strong>backup</strong>. Import this file later to fully <strong>restore</strong> your state on any device.',
+                    'Under <code>Settings > Data Management</code>, you have full control. The <strong>ZIP backup</strong> holds your app data, including photos and archived journals, and restores it on any device; API keys are not included and must be entered again. The JSON backup under Backup & Restore holds the app state only (plants, settings, etc.), without photos or archived journals.',
             },
             accessibility: {
                 title: 'Enhanced Accessibility',
@@ -584,9 +585,9 @@ export const helpView = {
                     'CannaGuide ships a <strong>three-layer local AI stack</strong> so advice never stops:<ol><li><strong>WebLLM</strong> — GPU-accelerated inference via WebGPU (Qwen3-0.5B). Best quality on high-end devices.</li><li><strong>Transformers.js</strong> — ONNX-based WASM/WebGPU inference (Qwen2.5-1.5B-Instruct). Works on every modern browser.</li><li><strong>Heuristic Rules</strong> — Keyword and VPD-based analysis when no model is loaded.</li></ol>Open <strong>Settings → General & UI</strong> to preload models while online. The <strong>Force WASM</strong> toggle locks inference to WASM when WebGPU causes instability. CLIP-ViT-L-14 handles vision classification with 33 cannabis-specific labels. Inference results are cached in an LRU-64 cache to avoid repeat work.',
             },
             cloudSync: {
-                title: 'One-Tap Cloud Sync',
+                title: 'Cloud Sync (currently unavailable)',
                 content:
-                    'Back up your entire app state to a <strong>private GitHub Gist</strong> with a single tap. Open <strong>Settings → Data Management</strong> and enter a GitHub Personal Access Token with <code>gist</code> scope. The app creates or updates a private Gist that you own — your data never touches a third-party server. Restore on any device by importing from the same Gist.',
+                    'Cloud sync through a private GitHub Gist is <strong>switched off in this version</strong>. To back up your data or move it to another device, create a <strong>ZIP backup</strong> under <strong>Settings → Data Management</strong> and restore it there.',
             },
             multiProvider: {
                 title: 'Multi-Provider AI (BYOK)',
@@ -815,7 +816,7 @@ export const helpView = {
             privacy: {
                 title: 'Privacy & Security',
                 content:
-                    'Protect the app with a PIN lock, manage data export/import, and configure one-tap cloud sync via GitHub Gist. Wipe all app data if needed.',
+                    'Protect the app with a PIN lock, manage data export/import and Local-Only Mode, and wipe all app data if needed.',
             },
             iot: {
                 title: 'IoT Settings',
@@ -825,7 +826,7 @@ export const helpView = {
             dataManagement: {
                 title: 'Data Management',
                 content:
-                    'Export and import your entire app state as JSON. Use GitHub Gist sync for cross-device backups. Clear IndexedDB caches and reset the app if needed.',
+                    'Use the ZIP backup to back up your app data or move it to another device; it includes photos and archived journals, but not API keys. The JSON backup holds the app state only. Clear IndexedDB caches and reset the app if needed.',
             },
             about: {
                 title: 'About',
@@ -997,8 +998,8 @@ export const faq = {
         answer: 'Telemetry measures inference speed, token throughput, cache hit rates, and model usage — all locally on your device. No data ever leaves the browser. This helps you understand if your device is powerful enough for local AI.',
     },
     cloudSync: {
-        question: 'How does One-Tap Cloud Sync work?',
-        answer: 'CannaGuide backs up your entire app state to a <strong>private GitHub Gist</strong> that only you own. Open Settings → Data Management, add a GitHub Personal Access Token with <code>gist</code> scope, and tap Sync. Restore on any device by importing from the same Gist. No third-party server ever touches your data.',
+        question: 'Is there cloud sync?',
+        answer: 'Not at the moment. Cloud sync through a private GitHub Gist is switched off in this version. To back up your data or move it to another device, create a ZIP backup under Settings → Data Management and restore it there.',
     },
     multiProviderAi: {
         question: 'Can I use a different AI provider?',

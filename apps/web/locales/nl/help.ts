@@ -378,15 +378,16 @@ export const helpView = {
         toc: 'Ga naar Sectie',
         introduction: {
             title: 'Introductie en Filosofie',
-            content: `Welkom bij CannaGuide 2025, je ultieme copiloot voor cannabisteelt. Deze handleiding begeleidt je door de geavanceerde functies van de app.<h4>Onze Kernprincipes:</h4><ul><li><strong>Offline First:</strong> 100% functionaliteit zonder internetverbinding. Acties worden in de wachtrij geplaatst en later gesynchroniseerd. Een drielaagse lokale AI-stack zorgt ervoor dat diagnostiek en advies beschikbaar blijven zelfs zonder netwerk.</li><li><strong>Prestatie-gericht:</strong> Een vloeiende UI dankzij het offloaden van complexe simulaties naar een Web Worker en ONNX-geoptimaliseerde inferentie met LRU-caching.</li><li><strong>Datasoevereiniteit:</strong> Volledige controle met backup, herstel en versleutelde one-tap cloud-sync via GitHub Gist. Geen server ziet ooit je data.</li><li><strong>Multi-Provider AI:</strong> Breng je eigen sleutel mee voor Google Gemini, OpenAI, Anthropic of xAI/Grok -- of gebruik de lokale AI-stack op het apparaat zonder API-sleutels.</li></ul>`,
+            content:
+                'Welkom bij CannaGuide 2025, je ultieme copiloot voor cannabisteelt. Deze handleiding begeleidt je door de geavanceerde functies van de app.<h4>Onze Kernprincipes:</h4><ul><li><strong>Offline First:</strong> planten, dagboek en instellingen werken zonder internetverbinding; cloud-AI, spraakherkenning in sommige browsers en het eerste downloaden van modellen hebben er een nodig. Offline uitgevoerde acties worden in de wachtrij gezet en opnieuw uitgevoerd zodra je weer online bent. Een drielaagse lokale AI-stack zorgt ervoor dat diagnostiek en advies beschikbaar blijven zelfs zonder netwerk.</li><li><strong>Prestatie-gericht:</strong> Een vloeiende UI dankzij het offloaden van complexe simulaties naar een Web Worker en ONNX-geoptimaliseerde inferentie met LRU-caching.</li><li><strong>Datasoevereiniteit:</strong> Volledige controle met backup en herstel op je apparaat (ZIP-backup). Cloud-sync is in deze versie uitgeschakeld.</li><li><strong>Multi-Provider AI:</strong> Breng je eigen sleutel mee voor Google Gemini, OpenAI, Anthropic of xAI/Grok -- of gebruik de lokale AI-stack op het apparaat zonder API-sleutels.</li></ul>',
         },
         general: {
             title: 'Platformbrede Functies',
             content: 'Functies die je ervaring in de hele app verbeteren.',
             pwa: {
-                title: 'PWA en 100% Offline Functionaliteit',
+                title: 'PWA en Offline Gebruik',
                 content:
-                    'Installeer CannaGuide als een <strong>Progressive Web App</strong> voor een native app-ervaring. De robuuste Service Worker cached alle app-data, waardoor <strong>100% offline functionaliteit (exclusief live AI-verzoeken)</strong> is gegarandeerd.',
+                    'Installeer CannaGuide als een <strong>Progressive Web App</strong> voor een native app-ervaring. De Service Worker houdt de app zelf offline beschikbaar; je planten, notities en archieven staan in de database van de browser op dit apparaat. Offline werkt alles behalve live AI-verzoeken, spraakherkenning in sommige browsers en het eerste downloaden van modellen.',
             },
             commandPalette: {
                 title: 'Commandopalet (Cmd/Ctrl + K)',
@@ -396,12 +397,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Spraakbesturing en Spraak',
                 content:
-                    'Bedien de app handsfree. Druk op de <strong>microfoonknop</strong> in de koptekst om te luisteren. Je kunt ook <strong>Tekst-naar-Spraak (TTS)</strong> inschakelen in Instellingen.',
+                    'Bedien de app handsfree. Druk op de <strong>microfoonknop</strong> in de koptekst om te luisteren. Je kunt ook <strong>Tekst-naar-Spraak (TTS)</strong> inschakelen in Instellingen. Spraakherkenning gebeurt door je browser: sommige browsers, zoals Chrome, sturen de audio naar de online spraakdienst van de browsermaker, waardoor spraakopdrachten offline mogelijk niet werken.',
             },
             dataManagement: {
                 title: 'Datasoevereiniteit: Backup en Herstel',
                 content:
-                    'Onder <code>Instellingen > Gegevensbeheer</code> heb je volledige controle. Exporteer de volledige app-status als JSON-bestand voor <strong>backup</strong>. Importeer dit bestand om je status volledig te <strong>herstellen</strong> op elk apparaat.',
+                    "Onder <code>Instellingen > Gegevensbeheer</code> heb je de volledige controle. De <strong>ZIP-backup</strong> bevat je app-gegevens, ook foto's en gearchiveerde dagboeken, en herstelt ze op elk apparaat; API-sleutels zitten er niet in en moet je opnieuw invoeren. De JSON-backup (back-up en herstel) bevat alleen de app-status (planten, instellingen enz.), zonder foto's of gearchiveerde dagboeken.",
             },
             accessibility: {
                 title: 'Verbeterde Toegankelijkheid',
@@ -414,9 +415,9 @@ export const helpView = {
                     'CannaGuide bevat een <strong>drielaagse lokale AI-stack</strong>:<ol><li><strong>WebLLM</strong> -- GPU-versnelde inferentie via WebGPU (Qwen3-0.5B).</li><li><strong>Transformers.js</strong> -- ONNX-inferentie via WASM/WebGPU (Qwen2.5-1.5B-Instruct).</li><li><strong>Heuristische Regels</strong> -- Trefwoord- en VPD-gebaseerde analyse wanneer er geen model is geladen.</li></ol>Open <strong>Instellingen -> Algemeen en UI</strong> om modellen voor te laden.',
             },
             cloudSync: {
-                title: 'One-Tap Cloud Sync',
+                title: 'Cloudsynchronisatie (momenteel niet beschikbaar)',
                 content:
-                    'Maak een backup van je volledige app-status naar een <strong>privaat GitHub Gist</strong> met een enkele tik. Open <strong>Instellingen -> Gegevensbeheer</strong> en voer een GitHub Personal Access Token in met <code>gist</code> scope.',
+                    'Cloudsynchronisatie via een priv\u00E9 GitHub Gist is <strong>in deze versie uitgeschakeld</strong>. Om je gegevens te back-uppen of naar een ander apparaat over te zetten, maak je een <strong>ZIP-backup</strong> via <strong>Instellingen -> Gegevensbeheer</strong> en zet je die daar terug.',
             },
             multiProvider: {
                 title: 'Multi-Provider AI (BYOK)',
@@ -722,8 +723,8 @@ export const faq = {
         answer: "Telemetrie meet inferentiesnelheid, tokendoorvoer en cache-hitratio's -- alles lokaal op je apparaat. Geen data verlaat ooit de browser.",
     },
     cloudSync: {
-        question: 'Hoe werkt One-Tap Cloud Sync?',
-        answer: 'CannaGuide maakt een backup van je volledige app-status naar een <strong>privaat GitHub Gist</strong>. Open Instellingen -> Gegevensbeheer, voeg een GitHub Personal Access Token met <code>gist</code> scope toe en tik op Sync.',
+        question: 'Is er cloudsynchronisatie?',
+        answer: 'Op dit moment niet. Cloudsynchronisatie via een priv\u00E9 GitHub Gist is in deze versie uitgeschakeld. Om je gegevens te back-uppen of naar een ander apparaat over te zetten, maak je een ZIP-backup via Instellingen -> Gegevensbeheer en zet je die daar terug.',
     },
     multiProviderAi: {
         question: 'Kan ik een andere AI-provider gebruiken?',

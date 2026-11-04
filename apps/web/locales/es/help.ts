@@ -377,15 +377,16 @@ export const helpView = {
         toc: 'Ir a Seccion',
         introduction: {
             title: 'Introduccion y Filosofia',
-            content: `Bienvenido a CannaGuide 2025, tu copiloto definitivo para el cultivo de cannabis. Este manual te guia a traves de las funciones avanzadas de la app.<h4>Nuestros Principios Fundamentales:</h4><ul><li><strong>Offline First:</strong> 100% de funcionalidad sin conexion a internet. Las acciones se ponen en cola y se sincronizan despues. Una pila de IA local de tres capas asegura que los diagnosticos y consejos esten disponibles incluso sin red.</li><li><strong>Orientado al Rendimiento:</strong> Una UI fluida gracias a la descarga de simulaciones complejas a un Web Worker e inferencia optimizada con ONNX y cache LRU.</li><li><strong>Soberania de Datos:</strong> Control completo con respaldo total, restauracion y sincronizacion cifrada en la nube con un solo toque via GitHub Gist. Ningun servidor jamas ve tus datos.</li><li><strong>IA Multi-Proveedor:</strong> Trae tu propia clave para Google Gemini, OpenAI, Anthropic o xAI/Grok -- o usa la pila de IA local en el dispositivo sin necesidad de claves API.</li></ul>`,
+            content:
+                'Bienvenido a CannaGuide 2025, tu copiloto definitivo para el cultivo de cannabis. Este manual te guia a traves de las funciones avanzadas de la app.<h4>Nuestros Principios Fundamentales:</h4><ul><li><strong>Offline First:</strong> plantas, diario y ajustes funcionan sin conexion a internet; la IA en la nube, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos la necesitan. Las acciones hechas sin conexion se ponen en cola y se repiten al volver a estar en linea. Una pila de IA local de tres capas asegura que los diagnosticos y consejos esten disponibles incluso sin red.</li><li><strong>Orientado al Rendimiento:</strong> Una UI fluida gracias a la descarga de simulaciones complejas a un Web Worker e inferencia optimizada con ONNX y cache LRU.</li><li><strong>Soberania de Datos:</strong> Control completo con respaldo y restauracion en tu dispositivo (copia ZIP). La sincronizacion en la nube esta desactivada en esta version.</li><li><strong>IA Multi-Proveedor:</strong> Trae tu propia clave para Google Gemini, OpenAI, Anthropic o xAI/Grok -- o usa la pila de IA local en el dispositivo sin necesidad de claves API.</li></ul>',
         },
         general: {
             title: 'Funciones de toda la Plataforma',
             content: 'Funciones que mejoran tu experiencia en toda la app.',
             pwa: {
-                title: 'PWA y Funcionalidad 100% Offline',
+                title: 'PWA y Uso sin Conexion',
                 content:
-                    'Instala CannaGuide como una <strong>Progressive Web App</strong> para una experiencia nativa a traves del icono en el encabezado. El robusto Service Worker almacena en cache todos los datos de la app, incluyendo plantas, notas e incluso archivos de IA, asegurando <strong>funcionalidad 100% offline (excluyendo solicitudes IA en vivo)</strong>.',
+                    'Instala CannaGuide como una <strong>Progressive Web App</strong> para una experiencia nativa a trav\u00E9s del icono del encabezado. El Service Worker mantiene la propia app disponible sin conexi\u00F3n; tus plantas, notas y archivos se guardan en la base de datos del navegador en este dispositivo. Sin conexi\u00F3n funciona todo excepto las solicitudes de IA en vivo, el reconocimiento de voz de algunos navegadores y la primera descarga de modelos.',
             },
             commandPalette: {
                 title: 'Paleta de Comandos (Cmd/Ctrl + K)',
@@ -395,12 +396,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Control por Voz y Habla',
                 content:
-                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta.',
+                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta. El reconocimiento de voz lo realiza tu navegador: algunos navegadores, como Chrome, env\u00EDan el audio al servicio de voz en l\u00EDnea del fabricante del navegador, por lo que los comandos de voz pueden no funcionar sin conexi\u00F3n.',
             },
             dataManagement: {
                 title: 'Soberania de Datos: Respaldo y Restauracion',
                 content:
-                    'Bajo <code>Configuracion > Gestion de Datos</code>, tienes control total. Exporta todo el estado de tu app (plantas, configuracion, etc.) como un archivo JSON para <strong>respaldo</strong>. Importa este archivo despues para <strong>restaurar</strong> completamente tu estado en cualquier dispositivo.',
+                    'En <code>Configuraci\u00F3n > Gesti\u00F3n de Datos</code> tienes el control total. La <strong>copia ZIP</strong> contiene los datos de tu app, incluidas fotos y diarios archivados, y los restaura en cualquier dispositivo; las claves de API no se incluyen y hay que volver a introducirlas. La copia JSON (copia y restauraci\u00F3n) contiene solo el estado de la app (plantas, ajustes, etc.), sin fotos ni diarios archivados.',
             },
             accessibility: {
                 title: 'Accesibilidad Mejorada',
@@ -413,9 +414,9 @@ export const helpView = {
                     'CannaGuide incluye una <strong>pila de IA local de tres capas</strong> para que los consejos nunca se detengan:<ol><li><strong>WebLLM</strong> -- Inferencia acelerada por GPU via WebGPU (Qwen3-0.5B). Mejor calidad en dispositivos de alta gama.</li><li><strong>Transformers.js</strong> -- Inferencia ONNX via WASM/WebGPU (Qwen2.5-1.5B-Instruct). Funciona en cualquier navegador moderno.</li><li><strong>Reglas Heuristicas</strong> -- Analisis basado en palabras clave y VPD cuando no hay modelo cargado.</li></ol>Abre <strong>Configuracion -> General y UI</strong> para precargar modelos mientras estas en linea. El toggle <strong>Forzar WASM</strong> bloquea la inferencia a WASM cuando WebGPU causa inestabilidad. CLIP-ViT-L-14 maneja la clasificacion visual con 33 etiquetas especificas de cannabis. Los resultados de inferencia se almacenan en una cache LRU-64 para evitar trabajo repetido.',
             },
             cloudSync: {
-                title: 'Sincronizacion en la Nube con un Toque',
+                title: 'Sincronizaci\u00F3n en la nube (no disponible por ahora)',
                 content:
-                    'Respalda todo el estado de tu app en un <strong>Gist privado de GitHub</strong> con un solo toque. Abre <strong>Configuracion -> Gestion de Datos</strong> e ingresa un Token de Acceso Personal de GitHub con alcance <code>gist</code>. La app crea o actualiza un Gist privado que tu posees -- tus datos nunca tocan un servidor de terceros. Restaura en cualquier dispositivo importando desde el mismo Gist.',
+                    'La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 <strong>desactivada en esta versi\u00F3n</strong>. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, crea una <strong>copia ZIP</strong> en <strong>Configuraci\u00F3n -> Gesti\u00F3n de Datos</strong> y rest\u00E1urala all\u00ED.',
             },
             multiProvider: {
                 title: 'IA Multi-Proveedor (BYOK)',
@@ -720,8 +721,8 @@ export const faq = {
         answer: 'La telemetria mide la velocidad de inferencia, el rendimiento de tokens, las tasas de acierto de cache y el uso de modelos -- todo localmente en tu dispositivo. Ningun dato sale jamas del navegador. Esto te ayuda a entender si tu dispositivo es lo suficientemente potente para la IA local.',
     },
     cloudSync: {
-        question: 'Como funciona la Sincronizacion en la Nube con un Toque?',
-        answer: 'CannaGuide respalda todo el estado de tu app en un <strong>Gist privado de GitHub</strong> que solo tu posees. Abre Configuracion -> Gestion de Datos, agrega un Token de Acceso Personal de GitHub con alcance <code>gist</code> y toca Sincronizar. Restaura en cualquier dispositivo importando desde el mismo Gist. Ningun servidor de terceros jamas toca tus datos.',
+        question: '\u00BFHay sincronizaci\u00F3n en la nube?',
+        answer: 'Por ahora no. La sincronizaci\u00F3n en la nube mediante un Gist privado de GitHub est\u00E1 desactivada en esta versi\u00F3n. Para hacer una copia de seguridad o pasar tus datos a otro dispositivo, crea una copia ZIP en Configuraci\u00F3n -> Gesti\u00F3n de Datos y rest\u00E1urala all\u00ED.',
     },
     multiProviderAi: {
         question: 'Puedo usar un proveedor de IA diferente?',

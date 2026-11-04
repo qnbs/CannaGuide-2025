@@ -45,6 +45,8 @@ export const settingsView = {
         loadError: 'Could not load API key status.',
         saveError: 'Could not save API key.',
         testError: 'API key validation failed. Please check key validity and permissions.',
+        testBlockedLocalOnly:
+            'Local-Only Mode is on, so the key test is not sent. Turn Local-Only Mode off to test the key.',
         clearError: 'Could not remove API key.',
         usageToday:
             'Today: {{requests}} requests, ~{{tokens}} tokens estimated, {{remaining}} requests remaining (per minute).',
@@ -849,9 +851,9 @@ export const settingsView = {
         title: 'Privacy & Security',
         localOnlyMode: 'Local-Only Mode',
         localOnlyModeDesc:
-            'Blocks ALL outbound network traffic: Sentry error tracking, cloud AI requests, and Gist sync. Only local AI inference and local storage are allowed.',
+            'Keeps your data on this device and your local network. While it is on, CannaGuide sends no error reports and no cloud AI or cloud text-to-speech requests, skips online strain lookups and community sharing, and connects MQTT sensors only to brokers on your local network. Not covered yet: local AI models that download on first use (the explicit preload is blocked), and speech recognition, which some browsers process online.',
         localOnlyModeActive:
-            'Local-Only Mode is active. All external network requests are blocked. Disable this toggle to restore cloud features.',
+            'Local-Only Mode is active. Error reports, cloud AI, cloud text-to-speech, online strain lookups and community sharing are off, and MQTT is limited to your local network. Model downloads on first use and browser speech recognition are not blocked yet. Turn this off to restore cloud features.',
         requirePin: 'Require PIN on Launch',
         requirePinDesc: 'Protect your app with a 4-digit PIN.',
         setPin: 'Set/Change PIN',
@@ -887,8 +889,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Powers all AI features -- multi-provider BYOK (Gemini, OpenAI, xAI, Anthropic) with 22 local AI service modules.',
             react: 'React 19 + TypeScript (strict), Redux Toolkit, Zustand, RTK Query, 9 cannabis themes.',
-            indexedDb:
-                'Dual IndexedDB persistence for 100% offline functionality with CRDT cloud sync.',
+            indexedDb: 'Dual IndexedDB persistence for offline-first use.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 priority-preemptive workers (VPD, genealogy, inference, vision, hydro forecast) via typed WorkerBus.',
@@ -946,7 +947,7 @@ export const settingsView = {
             philosophyTitle: 'Project Philosophy',
             philosophyContent: `
             <p>CannaGuide 2025 is built upon a set of core principles designed to deliver a best-in-class experience:</p>
-            <blockquote><strong>Offline First</strong>: Your garden doesn't stop when your internet does. The app is engineered to be <strong>100% functional offline</strong>.</blockquote>
+            <blockquote><strong>Offline First</strong>: Your garden doesn't stop when your internet does. The app is built <strong>offline-first</strong>: only cloud AI, speech recognition in some browsers and first-time model downloads need a connection.</blockquote>
             <blockquote><strong>Performance is Key</strong>: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex, multi-plant simulation, is offloaded to a dedicated <strong>Web Worker</strong>.</blockquote>
             <blockquote><strong>Data Sovereignty</strong>: Your data is yours, period. The ability to <strong>export and import your entire application state</strong> gives you complete control.</blockquote>
             <blockquote><strong>AI as a Co-pilot</strong>: We leverage the Google Gemini API not as a gimmick, but as a powerful tool to provide <strong>actionable, context-aware insights</strong>.</blockquote>
@@ -1058,7 +1059,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Disclaimer',
-            disclaimerContent: '<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>',
+            disclaimerContent:
+                '<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>',
         },
     },
     communityShare: {

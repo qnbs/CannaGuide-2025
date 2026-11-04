@@ -48,6 +48,8 @@ export const settingsView = {
         saveError: 'API-Key konnte nicht gespeichert werden.',
         testError:
             'API-Key-Prüfung fehlgeschlagen. Bitte prüfe Gültigkeit und Berechtigungen des Keys.',
+        testBlockedLocalOnly:
+            'Der Nur-Lokal-Modus ist aktiv, deshalb wird der Schlüsseltest nicht gesendet. Deaktiviere den Nur-Lokal-Modus, um den Schlüssel zu testen.',
         clearError: 'API-Key konnte nicht entfernt werden.',
         usageToday:
             'Heute: {{requests}} Anfragen, ~{{tokens}} Token geschätzt, {{remaining}} Anfragen verbleibend (pro Minute).',
@@ -874,9 +876,9 @@ export const settingsView = {
         title: 'Privatsphäre & Sicherheit',
         localOnlyMode: 'Nur-Lokal-Modus',
         localOnlyModeDesc:
-            'Blockiert ALLEN ausgehenden Netzwerkverkehr: Sentry-Fehlertracking, Cloud-KI-Anfragen und Gist-Sync. Nur lokale KI-Inferenz und lokale Speicherung sind erlaubt.',
+            'Hält deine Daten auf diesem Gerät und in deinem lokalen Netzwerk. Solange der Modus aktiv ist, sendet CannaGuide keine Fehlerberichte und keine Anfragen an Cloud-KI oder Cloud-Sprachausgabe, überspringt Online-Sortenabfragen und das Teilen mit der Community und verbindet MQTT-Sensoren nur mit Brokern in deinem lokalen Netzwerk. Noch nicht abgedeckt: lokale KI-Modelle, die beim ersten Gebrauch heruntergeladen werden (das ausdrückliche Vorladen ist blockiert), und die Spracherkennung, die manche Browser online verarbeiten.',
         localOnlyModeActive:
-            'Nur-Lokal-Modus ist aktiv. Alle externen Netzwerk-Anfragen sind blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
+            'Der Nur-Lokal-Modus ist aktiv. Fehlerberichte, Cloud-KI, Cloud-Sprachausgabe, Online-Sortenabfragen und das Teilen mit der Community sind aus, und MQTT ist auf dein lokales Netzwerk beschränkt. Modelldownloads beim ersten Gebrauch und die Browser-Spracherkennung sind noch nicht blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
         requirePin: 'PIN beim Start anfordern',
         requirePinDesc: 'Schütze deine App mit einer 4-stelligen PIN.',
         setPin: 'PIN festlegen/ändern',
@@ -913,8 +915,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Treiber aller KI-Funktionen -- Multi-Provider BYOK (Gemini, OpenAI, xAI, Anthropic) mit 22 lokalen KI-Service-Modulen.',
             react: 'React 19 + TypeScript (strikt), Redux Toolkit, Zustand, RTK Query, 9 Cannabis-Themes.',
-            indexedDb:
-                'Duale IndexedDB-Persistenz fuer 100% Offline-Funktionalitaet mit CRDT-Cloud-Sync.',
+            indexedDb: 'Doppelte IndexedDB-Persistenz für Offline-first-Nutzung.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 prioritaets-praeemptive Worker (VPD, Genealogie, Inferenz, Vision, Hydro-Forecast) via typisiertem WorkerBus.',
@@ -972,7 +973,7 @@ export const settingsView = {
             philosophyTitle: 'Projektphilosophie',
             philosophyContent: `
             <p>CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt sind, ein erstklassiges Erlebnis zu bieten:</p>
-            <blockquote><strong>Offline First</strong>: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie <strong>100% offline funktionsfähig</strong> ist.</blockquote>
+            <blockquote><strong>Offline First</strong>: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist <strong>offline-first</strong> gebaut: Nur Cloud-KI, die Spracherkennung mancher Browser und erstmalige Modelldownloads brauchen eine Verbindung.</blockquote>
             <blockquote><strong>Leistung ist entscheidend</strong>: Eine flüssige, reaktionsschnelle Benutzeroberfläche ist unerlässlich. Rechenintensive Aufgaben, wie die komplexe Pflanzensimulation, werden in einen <strong>Web Worker</strong> ausgelagert.</blockquote>
             <blockquote><strong>Datensouveränität</strong>: Ihre Daten gehören Ihnen. Die Möglichkeit, Ihren <strong>gesamten Anwendungszustand zu exportieren und zu importieren</strong>, gibt Ihnen vollständige Kontrolle.</blockquote>
             <blockquote><strong>KI als Co-Pilot</strong>: Wir nutzen KI nicht als Gimmick, sondern als leistungsstarkes Werkzeug, um <strong>umsetzbare, kontextbezogene Einblicke</strong> zu liefern.</blockquote>
@@ -1084,7 +1085,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Haftungsausschluss',
-            disclaimerContent: '<p>Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.</p>',
+            disclaimerContent:
+                '<p>Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.</p>',
         },
     },
     communityShare: {

@@ -380,15 +380,16 @@ export const helpView = {
         toc: 'Aller a la Section',
         introduction: {
             title: 'Introduction et Philosophie',
-            content: `Bienvenue dans CannaGuide 2025, votre copilote ultime pour la culture du cannabis. Ce manuel vous guide a travers les fonctionnalites avancees de l'app.<h4>Nos Principes Fondamentaux :</h4><ul><li><strong>Offline First :</strong> 100% de fonctionnalite sans connexion internet. Les actions sont mises en file d'attente et synchronisees ulterieurement. Une pile IA locale a trois couches garantit que les diagnostics et conseils restent disponibles meme sans reseau.</li><li><strong>Axe sur la Performance :</strong> Une UI fluide grace au dechargement des simulations complexes vers un Web Worker et une inference optimisee ONNX avec cache LRU.</li><li><strong>Souverainete des Donnees :</strong> Controle complet avec sauvegarde complete, restauration et synchronisation chiffree en un clic via GitHub Gist. Aucun serveur ne voit jamais vos donnees.</li><li><strong>IA Multi-Fournisseur :</strong> Apportez votre propre cle pour Google Gemini, OpenAI, Anthropic ou xAI/Grok -- ou utilisez la pile IA locale sur l'appareil sans aucune cle API requise.</li></ul>`,
+            content:
+                "Bienvenue dans CannaGuide 2025, votre copilote ultime pour la culture du cannabis. Ce manuel vous guide a travers les fonctionnalites avancees de l'app.<h4>Nos Principes Fondamentaux :</h4><ul><li><strong>Offline First :</strong> plantes, journal et reglages fonctionnent sans connexion internet ; l'IA cloud, la reconnaissance vocale de certains navigateurs et le premier telechargement des modeles en ont besoin. Les actions faites hors ligne sont mises en file d'attente et rejouees au retour en ligne. Une pile IA locale a trois couches garantit que les diagnostics et conseils restent disponibles meme sans reseau.</li><li><strong>Axe sur la Performance :</strong> Une UI fluide grace au dechargement des simulations complexes vers un Web Worker et une inference optimisee ONNX avec cache LRU.</li><li><strong>Souverainete des Donnees :</strong> Controle complet avec sauvegarde et restauration sur votre appareil (sauvegarde ZIP). La synchronisation cloud est desactivee dans cette version.</li><li><strong>IA Multi-Fournisseur :</strong> Apportez votre propre cle pour Google Gemini, OpenAI, Anthropic ou xAI/Grok -- ou utilisez la pile IA locale sur l'appareil sans aucune cle API requise.</li></ul>",
         },
         general: {
             title: 'Fonctionnalites de la Plateforme',
             content: "Fonctionnalites qui ameliorent votre experience dans toute l'app.",
             pwa: {
-                title: 'PWA et Fonctionnalite 100% Offline',
+                title: 'PWA et Usage Hors Ligne',
                 content:
-                    "Installez CannaGuide comme une <strong>Progressive Web App</strong> pour une experience native via l'icone dans l'en-tete. Le Service Worker robuste met en cache toutes les donnees, assurant une <strong>fonctionnalite 100% offline (hors requetes IA en direct)</strong>.",
+                    "Installez CannaGuide comme une <strong>Progressive Web App</strong> pour une exp\u00E9rience native via l'ic\u00F4ne de l'en-t\u00EAte. Le Service Worker garde l'app elle-m\u00EAme disponible hors ligne ; vos plantes, notes et archives sont enregistr\u00E9es dans la base de donn\u00E9es du navigateur sur cet appareil. Hors ligne, tout fonctionne sauf les requ\u00EAtes IA en direct, la reconnaissance vocale de certains navigateurs et le premier t\u00E9l\u00E9chargement des mod\u00E8les.",
             },
             commandPalette: {
                 title: 'Palette de Commandes (Cmd/Ctrl + K)',
@@ -398,12 +399,12 @@ export const helpView = {
             voiceControl: {
                 title: 'Controle Vocal et Parole',
                 content:
-                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres.",
+                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres. La reconnaissance vocale est assur\u00E9e par votre navigateur : certains navigateurs, comme Chrome, envoient l'audio au service vocal en ligne de l'\u00E9diteur du navigateur, si bien que les commandes vocales peuvent ne pas fonctionner hors ligne.",
             },
             dataManagement: {
                 title: 'Souverainete des Donnees : Sauvegarde et Restauration',
                 content:
-                    "Sous <code>Parametres > Gestion des Donnees</code>, vous avez le controle total. Exportez tout l'etat de votre app comme fichier JSON pour <strong>sauvegarde</strong>. Importez ce fichier pour <strong>restaurer</strong> completement votre etat sur n'importe quel appareil.",
+                    "Dans <code>Param\u00E8tres > Gestion des Donn\u00E9es</code>, vous gardez le contr\u00F4le total. La <strong>sauvegarde ZIP</strong> contient les donn\u00E9es de l'app, y compris les photos et les journaux archiv\u00E9s, et les restaure sur n'importe quel appareil ; les cl\u00E9s d'API ne sont pas incluses et doivent \u00EAtre saisies \u00E0 nouveau. La sauvegarde JSON (sauvegarde et restauration) ne contient que l'\u00E9tat de l'app (plantes, r\u00E9glages, etc.), sans photos ni journaux archiv\u00E9s.",
             },
             accessibility: {
                 title: 'Accessibilite Amelioree',
@@ -416,9 +417,9 @@ export const helpView = {
                     "CannaGuide embarque une <strong>pile IA locale a trois couches</strong> :<ol><li><strong>WebLLM</strong> -- Inference acceleree GPU via WebGPU (Qwen3-0.5B).</li><li><strong>Transformers.js</strong> -- Inference ONNX via WASM/WebGPU (Qwen2.5-1.5B-Instruct).</li><li><strong>Regles Heuristiques</strong> -- Analyse par mots-cles et VPD quand aucun modele n'est charge.</li></ol>Ouvrez <strong>Parametres -> General et UI</strong> pour precharger les modeles.",
             },
             cloudSync: {
-                title: 'Synchronisation Cloud en un Clic',
+                title: 'Synchronisation cloud (indisponible pour le moment)',
                 content:
-                    "Sauvegardez tout l'etat de votre app dans un <strong>Gist prive GitHub</strong> en un seul clic. Ouvrez <strong>Parametres -> Gestion des Donnees</strong> et entrez un Token d'Acces Personnel GitHub avec la portee <code>gist</code>.",
+                    'La synchronisation cloud via un Gist GitHub priv\u00E9 est <strong>d\u00E9sactiv\u00E9e dans cette version</strong>. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, cr\u00E9ez une <strong>sauvegarde ZIP</strong> dans <strong>Param\u00E8tres -> Gestion des Donn\u00E9es</strong> et restaurez-la \u00E0 cet endroit.',
             },
             multiProvider: {
                 title: 'IA Multi-Fournisseur (BYOK)',
@@ -725,8 +726,8 @@ export const faq = {
         answer: "La telemetrie mesure la vitesse d'inference, le debit de tokens et les taux de cache -- tout localement sur votre appareil. Aucune donnee ne quitte jamais le navigateur.",
     },
     cloudSync: {
-        question: 'Comment fonctionne la Synchronisation Cloud en un Clic ?',
-        answer: "CannaGuide sauvegarde tout l'etat dans un <strong>Gist prive GitHub</strong>. Ouvrez Parametres -> Gestion des Donnees, ajoutez un Token d'Acces Personnel GitHub avec portee <code>gist</code>.",
+        question: 'Existe-t-il une synchronisation cloud ?',
+        answer: 'Pas pour le moment. La synchronisation cloud via un Gist GitHub priv\u00E9 est d\u00E9sactiv\u00E9e dans cette version. Pour sauvegarder vos donn\u00E9es ou les transf\u00E9rer sur un autre appareil, cr\u00E9ez une sauvegarde ZIP dans Param\u00E8tres -> Gestion des Donn\u00E9es et restaurez-la \u00E0 cet endroit.',
     },
     multiProviderAi: {
         question: "Puis-je utiliser un autre fournisseur d'IA ?",

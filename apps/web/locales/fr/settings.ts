@@ -49,6 +49,8 @@ export const settingsView = {
         saveError: "Impossible d'enregistrer la cle API.",
         testError:
             'La validation de la cle API a echoue. Veuillez verifier la validite et les permissions de la cle.',
+        testBlockedLocalOnly:
+            "Le mode local uniquement est actif : le test de la cl\u00E9 n'est donc pas envoy\u00E9. D\u00E9sactivez le mode local uniquement pour tester la cl\u00E9.",
         clearError: 'Impossible de supprimer la cle API.',
         usageToday:
             "Aujourd'hui : {{requests}} requetes, ~{{tokens}} tokens estimes, {{remaining}} requetes restantes (par minute).",
@@ -894,9 +896,9 @@ export const settingsView = {
         title: 'Confidentialite & Securite',
         localOnlyMode: 'Mode local uniquement',
         localOnlyModeDesc:
-            "Bloque TOUT le trafic reseau sortant : suivi d'erreurs Sentry, requetes IA cloud et synchronisation Gist. Seuls l'inference IA locale et le stockage local sont autorises.",
+            "Garde vos donn\u00E9es sur cet appareil et sur votre r\u00E9seau local. Tant qu'il est actif, CannaGuide n'envoie ni rapports d'erreurs ni requ\u00EAtes \u00E0 l'IA cloud ou \u00E0 la synth\u00E8se vocale cloud, ignore les recherches de vari\u00E9t\u00E9s en ligne et le partage communautaire, et ne connecte les capteurs MQTT qu'\u00E0 des brokers de votre r\u00E9seau local. Pas encore couvert : les mod\u00E8les d'IA locale t\u00E9l\u00E9charg\u00E9s \u00E0 la premi\u00E8re utilisation (le pr\u00E9chargement explicite est bloqu\u00E9) et la reconnaissance vocale, que certains navigateurs traitent en ligne.",
         localOnlyModeActive:
-            'Le mode local uniquement est actif. Toutes les requetes reseau externes sont bloquees. Desactivez cette option pour restaurer les fonctionnalites cloud.',
+            "Le mode local uniquement est actif. Les rapports d'erreurs, l'IA cloud, la synth\u00E8se vocale cloud, les recherches de vari\u00E9t\u00E9s en ligne et le partage communautaire sont d\u00E9sactiv\u00E9s, et MQTT est limit\u00E9 \u00E0 votre r\u00E9seau local. Les t\u00E9l\u00E9chargements de mod\u00E8les \u00E0 la premi\u00E8re utilisation et la reconnaissance vocale du navigateur ne sont pas encore bloqu\u00E9s. D\u00E9sactivez-le pour retrouver les fonctions cloud.",
         requirePin: 'Exiger un PIN au demarrage',
         requirePinDesc: 'Protegez votre application avec un PIN a 4 chiffres.',
         setPin: 'Definir/Modifier le PIN',
@@ -934,8 +936,7 @@ export const settingsView = {
             geminiLabel: 'Google Gemini:',
             gemini: 'Alimente toutes les fonctionnalites IA -- Multi-fournisseur BYOK (Gemini, OpenAI, xAI, Anthropic) avec 22 modules de service IA local.',
             react: 'React 19 + TypeScript (strict), Redux Toolkit, Zustand, RTK Query, 9 themes cannabis.',
-            indexedDb:
-                'Double persistance IndexedDB pour une fonctionnalite 100% hors ligne avec sync cloud CRDT.',
+            indexedDb: 'Double persistance IndexedDB pour un usage offline-first.',
             webWorkersLabel: 'Web Workers:',
             webWorkers:
                 '9 workers a preemption par priorite (VPD, genealogie, inference, vision, prevision hydro) via WorkerBus type.',
@@ -994,7 +995,7 @@ export const settingsView = {
             philosophyTitle: 'Philosophie du projet',
             philosophyContent: `
             <p>CannaGuide 2025 repose sur un ensemble de principes fondamentaux concus pour offrir une experience de premier ordre :</p>
-            <blockquote><strong>Offline First</strong> : Votre jardin ne s'arrete pas quand votre internet s'arrete. L'application est concue pour etre <strong>100% fonctionnelle hors ligne</strong>.</blockquote>
+            <blockquote><strong>Offline First</strong> : Votre jardin ne s'arrete pas quand votre internet s'arrete. L'application est concue <strong>offline-first</strong> : seuls l'IA cloud, la reconnaissance vocale de certains navigateurs et le premier telechargement des modeles demandent une connexion.</blockquote>
             <blockquote><strong>Performance is Key</strong> : Une interface fluide et reactive est non negociable. Les calculs lourds, comme la simulation multi-plantes complexe, sont delegues a un <strong>Web Worker</strong> dedie.</blockquote>
             <blockquote><strong>Data Sovereignty</strong> : Vos donnees sont les votres, point final. La possibilite d'<strong>exporter et importer l'integralite de l'etat de votre application</strong> vous donne un controle total.</blockquote>
             <blockquote><strong>AI as a Co-pilot</strong> : Nous utilisons l'API Google Gemini non comme un gadget, mais comme un outil puissant pour fournir des <strong>informations exploitables et contextuelles</strong>.</blockquote>
@@ -1106,7 +1107,8 @@ export const settingsView = {
             </ol>
         `,
             disclaimerTitle: 'Avertissement',
-            disclaimerContent: '<p>Toutes les informations de cette application sont fournies a des fins educatives et de divertissement uniquement. La culture du cannabis est soumise a des reglementations legales strictes. Veuillez vous informer sur les lois de votre region et agissez toujours de maniere responsable et conforme a la loi.</p>',
+            disclaimerContent:
+                '<p>Toutes les informations de cette application sont fournies a des fins educatives et de divertissement uniquement. La culture du cannabis est soumise a des reglementations legales strictes. Veuillez vous informer sur les lois de votre region et agissez toujours de maniere responsable et conforme a la loi.</p>',
         },
     },
     communityShare: {

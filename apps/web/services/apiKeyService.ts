@@ -1,6 +1,7 @@
 import { GEMINI_API_KEY_STORAGE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { encrypt, decrypt, isEncryptedPayload, ensureEncrypted } from '@/services/cryptoService'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 const GEMINI_API_KEY_PATTERN = /^AIza[0-9A-Za-z_-]{20,}$/
 const GEMINI_API_KEY_METADATA_KEY = 'cg.gemini.apiKey.meta.v1'
@@ -35,6 +36,19 @@ const saveMetadata = (metadata: ApiKeyMetadata): void => {
         localStorage.setItem(GEMINI_API_KEY_METADATA_KEY, JSON.stringify(metadata))
     } catch {
         // Best-effort only.
+    }
+}
+
+const refuseInLocalOnlyMode = (): void => {
+    if (isLocalOnlyMode()) throw new Error('settingsView.security.testBlockedLocalOnly')
+}
+
+/** A failed SDK load is a failed test, like any other error before the answer. */
+const loadGeminiSdk = async (): Promise<typeof import('@google/genai')> => {
+    try {
+        return await import('@google/genai')
+    } catch {
+        throw new Error('settingsView.security.testError')
     }
 }
 
@@ -106,9 +120,14 @@ export const apiKeyService = {
         if (!this.isValidApiKeyFormat(normalized)) {
             throw new Error('settingsView.security.invalid')
         }
+        // The Gemini SDK sends its own requests, outside the egress gate
+        // (services/net/egress.ts): refuse before it is loaded, and again after
+        // the import, in case Local-Only Mode was switched on meanwhile.
+        refuseInLocalOnlyMode()
+        const { GoogleGenAI } = await loadGeminiSdk()
+        refuseInLocalOnlyMode()
 
         try {
-            const { GoogleGenAI } = await import('@google/genai')
             const ai = new GoogleGenAI({ apiKey: normalized })
             await ai.models.generateContent({
                 model: 'gemini-2.5-flash',

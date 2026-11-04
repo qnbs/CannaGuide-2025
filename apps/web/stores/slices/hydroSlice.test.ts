@@ -9,7 +9,8 @@ import hydroReducer, {
     clearReadings,
     checkAlerts,
     DEFAULT_THRESHOLDS,
-    MAX_READINGS,
+    selectHydroReadings,
+    selectLatestReading,
 } from './hydroSlice'
 import type { HydroState, HydroReading, HydroThresholds } from '@/types'
 
@@ -38,14 +39,61 @@ describe('hydroSlice', () => {
         expect(state.readings[0]?.ph).toBe(6.0)
     })
 
-    it('applies FIFO pruning when exceeding MAX_READINGS', () => {
+    it.each([167, 168, 169, 500])('keeps all %i manual readings, the oldest included', (count) => {
         let state = initialState
-        for (let i = 0; i < MAX_READINGS + 5; i++) {
+        for (let i = 0; i < count; i++) {
             state = hydroReducer(state, addReading(makeReading({ timestamp: i })))
         }
-        expect(state.readings).toHaveLength(MAX_READINGS)
-        // Oldest readings should have been pruned
-        expect(state.readings[0]?.timestamp).toBe(5)
+
+        expect(state.readings).toHaveLength(count)
+        expect(state.readings[0]?.timestamp).toBe(0)
+    })
+
+    it('keeps a sparse history that spans more than a year (GH #686)', () => {
+        const DAY = 86_400_000
+        let state = initialState
+        // One reading every other day for 400 days: 200 readings, far more than a week.
+        for (let day = 0; day < 400; day += 2) {
+            state = hydroReducer(state, addReading(makeReading({ timestamp: day * DAY })))
+        }
+        const reloaded = JSON.parse(JSON.stringify(state)) as HydroState
+        const root = { hydro: reloaded } as Parameters<typeof selectHydroReadings>[0]
+
+        expect(selectHydroReadings(root)).toHaveLength(200)
+        expect(selectHydroReadings(root)[0]?.timestamp).toBe(0)
+        expect(selectLatestReading(root)?.timestamp).toBe(398 * DAY)
+    })
+
+    it('keeps readings with duplicate and out-of-order timestamps', () => {
+        let state = initialState
+        for (const timestamp of [5, 3, 5, 1, 3]) {
+            state = hydroReducer(state, addReading(makeReading({ timestamp })))
+        }
+
+        expect(state.readings.map(({ timestamp }) => timestamp)).toEqual([5, 3, 5, 1, 3])
+        expect(new Set(state.readings.map(({ id }) => id)).size).toBe(5)
+    })
+
+    it('keeps a full history saved by the old version and adds to it', () => {
+        // State as the previous version persisted it: exactly 168 readings.
+        const old: HydroState = {
+            ...initialState,
+            systemType: 'NFT',
+            thresholds: { ...DEFAULT_THRESHOLDS, phMax: 6.2 },
+            readings: Array.from({ length: 168 }, (_, index) => ({
+                ...makeReading({ timestamp: index }),
+                id: `old-${String(index)}`,
+            })),
+        }
+
+        const next = hydroReducer(old, addReading(makeReading({ timestamp: 1_000, ph: 7.5 })))
+
+        expect(next.readings).toHaveLength(169)
+        expect(next.readings[0]?.id).toBe('old-0')
+        // Settings untouched; the new reading still raises its alert (pH 7.5 > 6.2).
+        expect(next.systemType).toBe('NFT')
+        expect(next.thresholds.phMax).toBe(6.2)
+        expect(next.alerts.some(({ metric }) => metric === 'ph')).toBe(true)
     })
 
     it('removes a reading by id', () => {

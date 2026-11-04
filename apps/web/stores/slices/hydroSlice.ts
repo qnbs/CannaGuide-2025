@@ -14,8 +14,6 @@ import { secureRandom } from '@/utils/random'
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_READINGS = 168 // 7 days of hourly readings
-
 const DEFAULT_THRESHOLDS: HydroThresholds = {
     phMin: 5.5,
     phMax: 6.5,
@@ -88,12 +86,12 @@ const hydroSlice = createSlice({
                 ...action.payload,
                 id: `hr-${action.payload.timestamp}-${Math.floor(secureRandom() * 1e6)}`,
             }
+            // Every hydro reading is entered by hand (HydroReadingForm), so none is
+            // removed to make room: they leave only through removeReading or
+            // clearReadings, the grower's own actions (GH #686, owner decision).
+            // The old count cap of 168 dropped the oldest manual measurement on
+            // every 169th entry, however many months the history spanned.
             state.readings.push(reading)
-
-            // FIFO pruning
-            if (state.readings.length > MAX_READINGS) {
-                state.readings = state.readings.slice(state.readings.length - MAX_READINGS)
-            }
 
             // Check thresholds and generate alerts
             const newAlerts = checkAlerts(reading, state.thresholds)
@@ -163,4 +161,4 @@ export const selectLatestReading = (state: RootState): HydroReading | undefined 
         ? state.hydro.readings[state.hydro.readings.length - 1]
         : undefined
 
-export { DEFAULT_THRESHOLDS, MAX_READINGS, checkAlerts }
+export { DEFAULT_THRESHOLDS, checkAlerts }

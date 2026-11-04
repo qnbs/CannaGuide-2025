@@ -4,17 +4,17 @@
             "ghsa": "GHSA-jmr9-qjv8-65gv",
             "package": "extract-zip",
             "patched": "2.0.2",
-            "expiry": "2026-11-15",
-            "reachability": "Dev-only via @lhci/cli -> lighthouse -> puppeteer-core -> @puppeteer/browsers. Not imported by the browser PWA. Exploitation needs a malicious zip consumed by extract-zip during a browser download.",
-            "reason": "npm has no extract-zip@2.0.2 (latest 2.x is 2.0.1 as of 2026-10-06). An override cannot select an unpublished release."
+            "expiry": "2026-12-15",
+            "reachability": "Dev-only via @lhci/cli 0.15.1 -> lighthouse 12.6.1 -> puppeteer-core 24.40.0 -> @puppeteer/browsers 2.13.0 -> extract-zip 2.0.1. Reached only when Lighthouse runs (the CI Lighthouse job, or `lighthouse:ci` run by hand); not imported by the browser PWA or the desktop shell. Exploitation needs a malicious zip consumed by extract-zip during a browser download.",
+            "reason": "Renewed 2026-11-04 after a re-analysis: npm still has no extract-zip 2.0.2 (latest 2.0.1). The only removal path, @lhci/cli 0.16.0 -> lighthouse 13.6.0 -> puppeteer-core 25.16.0 (latest), drops extract-zip but pins chromium-bidi 157.0.8090-0, whose bundled mapper embeds Zod 4.6.5, below the GHSA-mrhx-c7xc-m3w5 floor 4.6.6. The repo's chromium-bidi@14.0.0 patch does not apply to it, so the bump would replace two dev-only extract-zip findings with an unpatched bundled Zod finding. Recheck when extract-zip 2.0.2 is published, or when a puppeteer-core release past the 24 h quarantine ships a chromium-bidi that embeds Zod >= 4.6.6."
         },
         {
             "ghsa": "GHSA-7pqw-9j4j-h8q3",
             "package": "extract-zip",
             "patched": "2.0.2",
-            "expiry": "2026-11-15",
-            "reachability": "Same dev-only Lighthouse/Puppeteer browser-download chain as GHSA-jmr9-qjv8-65gv. Not in the production web bundle.",
-            "reason": "Patched extract-zip 2.0.2 is not published. Re-check npm before the expiry and replace this exception with an override."
+            "expiry": "2026-12-15",
+            "reachability": "Dev-only via @lhci/cli 0.15.1 -> lighthouse 12.6.1 -> puppeteer-core 24.40.0 -> @puppeteer/browsers 2.13.0 -> extract-zip 2.0.1. Reached only when Lighthouse runs (the CI Lighthouse job, or `lighthouse:ci` run by hand); not imported by the browser PWA or the desktop shell. Exploitation needs a malicious zip consumed by extract-zip during a browser download.",
+            "reason": "Renewed 2026-11-04 after a re-analysis: npm still has no extract-zip 2.0.2 (latest 2.0.1). The only removal path, @lhci/cli 0.16.0 -> lighthouse 13.6.0 -> puppeteer-core 25.16.0 (latest), drops extract-zip but pins chromium-bidi 157.0.8090-0, whose bundled mapper embeds Zod 4.6.5, below the GHSA-mrhx-c7xc-m3w5 floor 4.6.6. The repo's chromium-bidi@14.0.0 patch does not apply to it, so the bump would replace two dev-only extract-zip findings with an unpatched bundled Zod finding. Recheck when extract-zip 2.0.2 is published, or when a puppeteer-core release past the 24 h quarantine ships a chromium-bidi that embeds Zod >= 4.6.6."
         }
     ]
 }

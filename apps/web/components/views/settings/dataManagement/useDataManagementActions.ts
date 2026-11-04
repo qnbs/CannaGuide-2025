@@ -20,6 +20,7 @@ import {
 import * as Sentry from '@sentry/react'
 import { pruneOnQuotaThreshold } from '@/services/indexedDbPruneService'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
+import { isImportableSnapshot } from '@/services/persistedSnapshotFormat'
 
 /** Unparsable text is an invalid export, like any other wrong shape. */
 const parseJson = (content: string): unknown => {
@@ -70,11 +71,7 @@ export function useDataManagementActions() {
                 if (typeof content === 'string') {
                     try {
                         const parsed: unknown = JSON.parse(content)
-                        if (
-                            typeof parsed === 'object' &&
-                            parsed !== null &&
-                            typeof (parsed as { version?: unknown }).version === 'number'
-                        ) {
+                        if (isImportableSnapshot(parsed)) {
                             setFileToImport(content)
                             setIsImportConfirmOpen(true)
                         } else {

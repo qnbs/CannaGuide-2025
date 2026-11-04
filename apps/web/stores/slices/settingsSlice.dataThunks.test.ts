@@ -103,21 +103,39 @@ describe('exportAllData (#654)', () => {
         })
         Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: vi.fn() })
         const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+        // A real initial state, because the export writes the persisted snapshot
+        // format, with secrets added where they would sit in Redux.
+        const { createAppStoreSync } = await import('@/stores/store')
+        const { addGrow } = await import('@/stores/slices/growsSlice')
+        const store = createAppStoreSync()
+        store.dispatch(addGrow({ id: 'grow-export-sentinel', name: 'Tent', isActive: true }))
+        const base = store.getState()
         const state = {
+            ...base,
             settings: {
+                ...base.settings,
                 settings: {
-                    tts: { cloudTtsApiKey: CANARY },
-                    voiceControl: { porcupineAccessKey: 'pv_canary_0000000000000000000000000000' },
+                    ...base.settings.settings,
+                    tts: { ...base.settings.settings.tts, cloudTtsApiKey: CANARY },
+                    voiceControl: {
+                        ...base.settings.settings.voiceControl,
+                        porcupineAccessKey: 'pv_canary_0000000000000000000000000000',
+                    },
                 },
-                version: 5,
             },
-            simulation: { marker: 'plants-kept' },
         }
         await exportAllData()(vi.fn(), () => state as never, undefined)
         const json = await readBlob(createObjectURL.mock.calls[0]![0])
         expect(json).not.toContain(CANARY)
         expect(json).not.toContain('pv_canary_0000000000000000000000000000')
-        expect(json).toContain('plants-kept')
+        // The real import path: the version gate, then the migration pipeline.
+        const { isImportableSnapshot } = await import('@/services/persistedSnapshotFormat')
+        const { parseAndMigratePersistedSnapshot } =
+            await import('@/services/migration/persistedSnapshot')
+        expect(isImportableSnapshot(JSON.parse(json))).toBe(true)
+        const restored = parseAndMigratePersistedSnapshot(json)
+        expect(restored.grows?.grows.ids).toContain('grow-export-sentinel')
+        expect(restored.simulation?.plantSlots).toEqual(base.simulation.plantSlots)
         expect(click).toHaveBeenCalled()
         click.mockRestore()
     })

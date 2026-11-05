@@ -1,5 +1,7 @@
 import { captureLocalAiError } from '@/services/sentryService'
-import { loadTransformers } from '@cannaguide/ai-core/ml'
+import { loadTransformers, prepareTransformersLoad } from '@cannaguide/ai-core/ml'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
 
 /**
@@ -106,7 +108,9 @@ async function ensurePipeline(): Promise<WhisperPipeline> {
     loadingPromise = (async (): Promise<WhisperPipeline | null> => {
         await acquireGpu(GPU_RESOURCE_KEY)
         try {
-            const { pipeline: createPipeline } = await loadTransformers()
+            const { pipeline: createPipeline, env } = await loadTransformers()
+            // Local-Only Mode: only a model already in the browser cache loads (GH #700).
+            await prepareTransformersLoad(env, WHISPER_MODEL_ID, isLocalOnlyMode())
             const p = await createPipeline('automatic-speech-recognition', WHISPER_MODEL_ID, {
                 quantized: true,
             })
@@ -114,6 +118,7 @@ async function ensurePipeline(): Promise<WhisperPipeline> {
             pipeline = p as unknown as WhisperPipeline
             return pipeline
         } catch (err) {
+            reportModelDownloadBlocked(err)
             captureLocalAiError(err, { stage: 'inference' })
             return null
         } finally {

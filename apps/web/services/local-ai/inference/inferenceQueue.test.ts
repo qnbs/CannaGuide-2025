@@ -8,6 +8,11 @@ import {
     resetWorkerState,
 } from './inferenceQueue'
 import { workerBus } from '@/services/workerBus'
+import { setLocalOnlyMode } from '@/services/localOnlyModeService'
+import { ModelDownloadBlockedError } from '@cannaguide/ai-core/ml'
+import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
+
+vi.mock('../models/modelDownloadBlocked', () => ({ reportModelDownloadBlocked: vi.fn() }))
 
 // Mock Worker that responds via WorkerBus protocol (addEventListener-based)
 class MockWorker {
@@ -151,5 +156,70 @@ describe('inferenceQueueService', () => {
         terminateInferenceWorker()
 
         await expect(promise).rejects.toThrow(/terminated|unregistered|No worker registered/)
+    })
+})
+
+describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
+    const posted: Array<{ payload?: { localOnly?: boolean } }> = []
+
+    /** A worker that refuses every model, as the real one does for an uncached model. */
+    class RefusingWorker {
+        private listeners: Array<(event: MessageEvent) => void> = []
+        addEventListener(type: string, handler: (event: MessageEvent) => void) {
+            if (type === 'message') this.listeners.push(handler)
+        }
+        removeEventListener(type: string, handler: (event: MessageEvent) => void) {
+            if (type === 'message') this.listeners = this.listeners.filter((h) => h !== handler)
+        }
+        postMessage = vi.fn((data: { messageId: string; payload?: { localOnly?: boolean } }) => {
+            posted.push(data)
+            setTimeout(() => {
+                for (const listener of this.listeners) {
+                    listener(
+                        new MessageEvent('message', {
+                            data: {
+                                messageId: data.messageId,
+                                success: false,
+                                error: 'Local-Only Mode blocks downloading the model Xenova/x',
+                                errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+                            },
+                        }),
+                    )
+                }
+            }, 0)
+        })
+        terminate = vi.fn()
+    }
+
+    beforeEach(() => {
+        posted.length = 0
+        workerBus.reset()
+        workerBus.register('inference', new RefusingWorker() as unknown as Worker)
+    })
+
+    afterEach(() => {
+        setLocalOnlyMode(false)
+        terminateInferenceWorker()
+        resetWorkerState()
+        workerBus.reset()
+    })
+
+    it('sends the mode with the task, and keeps a refusal typed without retrying', async () => {
+        setLocalOnlyMode(true)
+
+        const result = enqueueInference({
+            task: 'feature-extraction',
+            modelId: 'Xenova/x',
+            input: 'a',
+            timeoutMs: 5000,
+        })
+
+        await expect(result).rejects.toBeInstanceOf(ModelDownloadBlockedError)
+        await expect(result).rejects.toMatchObject({ modelId: 'Xenova/x' })
+        expect(posted).toHaveLength(1)
+        expect(posted[0]?.payload?.localOnly).toBe(true)
+        expect(reportModelDownloadBlocked).toHaveBeenCalledWith(
+            expect.any(ModelDownloadBlockedError),
+        )
     })
 })

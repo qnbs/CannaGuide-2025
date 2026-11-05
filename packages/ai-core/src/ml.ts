@@ -131,6 +131,107 @@ export const loadTransformers = async (): Promise<typeof import('@xenova/transfo
     return mod
 }
 
+/**
+ * Thrown instead of downloading a model while Local-Only Mode is on (GH #700).
+ * Callers fall back to their simpler methods and tell the user once.
+ */
+export class ModelDownloadBlockedError extends Error {
+    readonly modelId: string
+
+    constructor(modelId: string) {
+        super(`Local-Only Mode blocks downloading the model ${modelId}`)
+        this.name = 'ModelDownloadBlockedError'
+        this.modelId = modelId
+    }
+}
+
+/** The part of transformers.js `env` the download policy reads and sets. */
+export interface TransformersFetchEnv {
+    allowLocalModels?: boolean | undefined
+    allowRemoteModels?: unknown
+    remoteHost?: unknown
+    remotePathTemplate?: unknown
+    [key: string]: unknown
+}
+
+/** The cache transformers.js keeps downloaded model files in. */
+export const TRANSFORMERS_CACHE_NAME = 'transformers-cache'
+
+const DEFAULT_REMOTE_HOST = 'https://huggingface.co/'
+const DEFAULT_REMOTE_PATH_TEMPLATE = '{model}/resolve/{revision}/'
+
+/** transformers.js `pathJoin`: one slash between parts, none added at the ends. */
+const joinPath = (...parts: string[]): string =>
+    parts
+        .map((part, index) => {
+            const start = index > 0 ? part.replace(/^\//u, '') : part
+            return index < parts.length - 1 ? start.replace(/\/$/u, '') : start
+        })
+        .join('/')
+
+/**
+ * The URL transformers.js stores a model's `config.json` under in its browser
+ * cache -- the same key it builds for the download, so a downloaded model is
+ * found here. Every pipeline loads that file first.
+ */
+export const transformersConfigUrl = (env: TransformersFetchEnv, modelId: string): string => {
+    const host = typeof env.remoteHost === 'string' ? env.remoteHost : DEFAULT_REMOTE_HOST
+    const template =
+        typeof env.remotePathTemplate === 'string'
+            ? env.remotePathTemplate
+            : DEFAULT_REMOTE_PATH_TEMPLATE
+    const path = template.replaceAll('{model}', modelId).replaceAll('{revision}', 'main')
+    return joinPath(host, path, 'config.json')
+}
+
+/** What the cache check needs of `caches` (structural: `CacheStorage` fits it). */
+export interface CacheLookup {
+    open(cacheName: string): Promise<{ match(url: string): Promise<unknown> }>
+}
+
+/** Whether a transformers.js model was downloaded into the browser cache. */
+export const isTransformersModelCached = async (
+    env: TransformersFetchEnv,
+    modelId: string,
+    cacheStorage: CacheLookup | undefined = globalThis.caches,
+): Promise<boolean> => {
+    if (!cacheStorage) return false
+    try {
+        const cache = await cacheStorage.open(TRANSFORMERS_CACHE_NAME)
+        return (await cache.match(transformersConfigUrl(env, modelId))) !== undefined
+    } catch {
+        return false
+    }
+}
+
+/**
+ * Applies Local-Only Mode to the next transformers.js load (GH #700).
+ *
+ * Off: the usual download from the Hugging Face CDN (local paths stay off, see
+ * loadTransformers). On: a model that is not in the browser cache is refused
+ * with ModelDownloadBlockedError before any request, and remote downloads are
+ * switched off, so a file missing from a partly cached model fails instead of
+ * reaching the CDN. Local models must be allowed then: with both switches off,
+ * transformers.js throws before it even reads its cache.
+ */
+export const prepareTransformersLoad = async (
+    env: TransformersFetchEnv,
+    modelId: string,
+    localOnly: boolean,
+    cacheStorage?: CacheLookup,
+): Promise<void> => {
+    if (!localOnly) {
+        env.allowLocalModels = false
+        env.allowRemoteModels = true
+        return
+    }
+    if (!(await isTransformersModelCached(env, modelId, cacheStorage))) {
+        throw new ModelDownloadBlockedError(modelId)
+    }
+    env.allowLocalModels = true
+    env.allowRemoteModels = false
+}
+
 /** Lazy-load @mlc-ai/web-llm (WebGPU LLM inference). */
 export const loadWebLlm = async (): Promise<typeof import('@mlc-ai/web-llm')> =>
     import('@mlc-ai/web-llm')

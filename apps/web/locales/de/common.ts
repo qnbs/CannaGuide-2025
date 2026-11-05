@@ -257,6 +257,8 @@ export const common = {
     egress: {
         blockedByLocalOnly:
             'Der Nur-Lokal-Modus blockiert diese Verbindung: {{destination}} liegt weder auf diesem Gerät noch in deinem lokalen Netzwerk.',
+        modelDownloadBlocked:
+            'Der Nur-Lokal-Modus blockiert das Herunterladen von KI-Modellen, deshalb hat diese Funktion eine einfachere eingebaute Methode verwendet. Schalte den Modus einmal aus, um das Modell herunterzuladen; danach funktioniert es auch offline.',
     },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',

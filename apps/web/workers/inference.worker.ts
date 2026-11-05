@@ -8,9 +8,13 @@
  */
 
 import type { WorkerRequest } from '@/types/workerBus.types'
-import { workerOk, workerErr } from '@/types/workerBus.types'
+import { workerOk, workerErr, WorkerErrorCode } from '@/types/workerBus.types'
 import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
-import { loadTransformers } from '@cannaguide/ai-core/ml'
+import {
+    loadTransformers,
+    ModelDownloadBlockedError,
+    prepareTransformersLoad,
+} from '@cannaguide/ai-core/ml'
 
 type TransformersModule = Awaited<ReturnType<typeof loadTransformers>>
 type Pipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown> | undefined
@@ -24,6 +28,8 @@ export interface InferencePayload {
     input: unknown
     pipelineOptions?: Record<string, unknown> | undefined
     inferenceOptions?: Record<string, unknown> | undefined
+    /** Local-Only Mode when the task was dispatched: only cached models load (GH #700). */
+    localOnly?: boolean | undefined
 }
 
 const getTransformers = (): Promise<TransformersModule> => {
@@ -43,13 +49,15 @@ const loadPipeline = async (
     task: string,
     modelId: string,
     options: Record<string, unknown>,
+    localOnly: boolean,
 ): Promise<Pipeline> => {
     const key = `${task}::${modelId}`
     const cached = pipelineCache.get(key)
     if (cached) return cached
 
     const promise = (async () => {
-        const { pipeline } = await getTransformers()
+        const { pipeline, env } = await getTransformers()
+        await prepareTransformersLoad(env, modelId, localOnly)
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         return pipeline(task as never, modelId, options as never) as Promise<Pipeline>
     })()
@@ -115,6 +123,16 @@ export const toCloneableResult = (result: unknown): unknown => {
     return Array.isArray(result) ? result.map(toCloneableResult) : result
 }
 
+/** A refused download keeps its own code, so the main thread can tell the user why. */
+function failureResponse(messageId: string, err: unknown) {
+    const message = err instanceof Error ? err.message : 'Worker inference failed'
+    const code =
+        err instanceof ModelDownloadBlockedError
+            ? WorkerErrorCode.MODEL_DOWNLOAD_BLOCKED
+            : WorkerErrorCode.EXECUTION_ERROR
+    return workerErr(messageId, message, code)
+}
+
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
 }
@@ -131,18 +149,21 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
         )
         return
     }
-    const { task, modelId, input, pipelineOptions, inferenceOptions } = payload
+    const { task, modelId, input, pipelineOptions, inferenceOptions, localOnly } = payload
     try {
         checkAborted(messageId)
-        const pipe = await loadPipeline(task, modelId, pipelineOptions ?? { quantized: true })
+        const pipe = await loadPipeline(
+            task,
+            modelId,
+            pipelineOptions ?? { quantized: true },
+            localOnly === true,
+        )
         checkAborted(messageId)
         const result = await pipe(input, inferenceOptions)
         clearAborted(messageId)
         self.postMessage(workerOk(messageId, toCloneableResult(result)))
     } catch (err) {
-        self.postMessage(
-            workerErr(messageId, err instanceof Error ? err.message : 'Worker inference failed'),
-        )
+        self.postMessage(failureResponse(messageId, err))
     }
 }
 

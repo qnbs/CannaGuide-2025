@@ -60,6 +60,8 @@ export enum WorkerErrorCode {
     INVALID_PAYLOAD = 'INVALID_PAYLOAD',
     /** Model or resource not available. */
     RESOURCE_UNAVAILABLE = 'RESOURCE_UNAVAILABLE',
+    /** Local-Only Mode refused a model download (GH #700). */
+    MODEL_DOWNLOAD_BLOCKED = 'MODEL_DOWNLOAD_BLOCKED',
     /** Out of memory / allocation failure. */
     OUT_OF_MEMORY = 'OUT_OF_MEMORY',
     /** Operation was cancelled (e.g. AbortController). */

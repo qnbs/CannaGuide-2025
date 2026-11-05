@@ -1,0 +1,72 @@
+import { describe, expect, it } from 'vitest'
+import {
+    type CacheLookup,
+    ModelDownloadBlockedError,
+    TRANSFORMERS_CACHE_NAME,
+    isTransformersModelCached,
+    prepareTransformersLoad,
+    transformersConfigUrl,
+    type TransformersFetchEnv,
+} from '@cannaguide/ai-core/ml'
+
+/** A browser cache holding exactly `urls` in the transformers.js cache. */
+const cacheWith = (urls: string[]): CacheLookup => ({
+    open: (name) =>
+        Promise.resolve({
+            match: (url) =>
+                Promise.resolve(
+                    name === TRANSFORMERS_CACHE_NAME && urls.includes(url)
+                        ? new Response('{}')
+                        : undefined,
+                ),
+        }),
+})
+
+const MODEL = 'Xenova/all-MiniLM-L6-v2'
+const CONFIG = `https://huggingface.co/${MODEL}/resolve/main/config.json`
+
+describe('transformers.js download policy (GH #700)', () => {
+    it('builds the cache key transformers.js stores a config under', () => {
+        expect(transformersConfigUrl({}, MODEL)).toBe(CONFIG)
+        expect(
+            transformersConfigUrl(
+                { remoteHost: 'https://mirror.example', remotePathTemplate: '/{model}/{revision}' },
+                MODEL,
+            ),
+        ).toBe(`https://mirror.example/${MODEL}/main/config.json`)
+    })
+
+    it('finds a downloaded model, and nothing without a cache', async () => {
+        expect(await isTransformersModelCached({}, MODEL, cacheWith([CONFIG]))).toBe(true)
+        expect(await isTransformersModelCached({}, 'Xenova/other', cacheWith([CONFIG]))).toBe(false)
+        // This test environment has no CacheStorage, as a private window may not.
+        expect(await isTransformersModelCached({}, MODEL)).toBe(false)
+        const broken: CacheLookup = {
+            open: () => Promise.reject(new Error('SecurityError')),
+        }
+        expect(await isTransformersModelCached({}, MODEL, broken)).toBe(false)
+    })
+
+    it('without Local-Only Mode downloads as usual', async () => {
+        const env: TransformersFetchEnv = { allowLocalModels: true, allowRemoteModels: false }
+        await prepareTransformersLoad(env, MODEL, false, cacheWith([]))
+        expect(env).toMatchObject({ allowLocalModels: false, allowRemoteModels: true })
+    })
+
+    it('in Local-Only Mode refuses a model that is not downloaded, before any request', async () => {
+        const env: TransformersFetchEnv = { allowLocalModels: false, allowRemoteModels: true }
+        const refusal = prepareTransformersLoad(env, MODEL, true, cacheWith([]))
+
+        await expect(refusal).rejects.toBeInstanceOf(ModelDownloadBlockedError)
+        await expect(refusal).rejects.toMatchObject({ modelId: MODEL })
+        // Nothing switched: the refusal happens before the load would start.
+        expect(env).toMatchObject({ allowLocalModels: false, allowRemoteModels: true })
+    })
+
+    it('in Local-Only Mode loads a downloaded model with remote downloads off', async () => {
+        const env: TransformersFetchEnv = { allowLocalModels: false, allowRemoteModels: true }
+        await prepareTransformersLoad(env, MODEL, true, cacheWith([CONFIG]))
+        // Local allowed, remote off: transformers.js reads its cache and never the CDN.
+        expect(env).toMatchObject({ allowLocalModels: true, allowRemoteModels: false })
+    })
+})

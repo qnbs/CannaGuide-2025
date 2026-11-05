@@ -857,9 +857,9 @@ export const settingsView = {
         title: 'Privacy & Security',
         localOnlyMode: 'Local-Only Mode',
         localOnlyModeDesc:
-            "Keeps your data on this device and your local network. While it is on, CannaGuide sends no error reports and no cloud AI or cloud text-to-speech requests, skips online strain lookups and community sharing, connects MQTT sensors only to brokers on your local network, and turns off voice commands and dictation, because the browser's speech recognition may process audio online. Not covered yet: local AI models that download on first use (the explicit preload is blocked).",
+            "Keeps your data on this device and your local network. While it is on, CannaGuide sends no error reports and no cloud AI or cloud text-to-speech requests, skips online strain lookups and community sharing, connects MQTT sensors only to brokers on your local network, turns off voice commands and dictation, because the browser's speech recognition may process audio online, and downloads no local AI models: the ones already on this device keep working. Not covered yet: the chat model (WebLLM) and the image generator, which still download on first use.",
         localOnlyModeActive:
-            'Local-Only Mode is active. Error reports, cloud AI, cloud text-to-speech, online strain lookups, community sharing, voice commands and dictation are off, and MQTT is limited to your local network. Model downloads on first use are not blocked yet. Turn this off to restore cloud features.',
+            'Local-Only Mode is active. Error reports, cloud AI, cloud text-to-speech, online strain lookups, community sharing, voice commands, dictation and new local AI model downloads are off, and MQTT is limited to your local network. The chat model and the image generator still download on first use. Turn this off to restore cloud features.',
         requirePin: 'Require PIN on Launch',
         requirePinDesc: 'Protect your app with a 4-digit PIN.',
         setPin: 'Set/Change PIN',

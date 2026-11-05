@@ -1,5 +1,9 @@
 import type { InferencePayload } from '@/workers/inference.worker'
 import { workerBus } from '@/services/workerBus'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { WorkerBusError, WorkerErrorCode } from '@/types/workerBus.types'
+import { ModelDownloadBlockedError } from '@cannaguide/ai-core/ml'
+import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
 
 /**
  * Inference Queue Service -- dispatches ML inference tasks to a dedicated
@@ -87,8 +91,10 @@ const processQueue = (): void => {
             }
 
             activeCount++
+            // Read when the task leaves the queue, not when it was queued (GH #700).
+            const payload: InferencePayload = { ...task.payload, localOnly: isLocalOnlyMode() }
             workerBus
-                .dispatch(WORKER_NAME, 'INFER', task.payload, {
+                .dispatch(WORKER_NAME, 'INFER', payload, {
                     timeoutMs: task.timeoutMs,
                     priority: 'low',
                 })
@@ -96,7 +102,7 @@ const processQueue = (): void => {
                     task.resolve(result)
                 })
                 .catch((err: unknown) => {
-                    task.reject(err instanceof Error ? err : new Error(String(err)))
+                    task.reject(toInferenceError(err, payload.modelId))
                 })
                 .finally(() => {
                     activeCount = Math.max(0, activeCount - 1)
@@ -106,6 +112,16 @@ const processQueue = (): void => {
     } finally {
         isProcessing = false
     }
+}
+
+/** A download refused in the worker keeps its type here, and the user is told once. */
+function toInferenceError(err: unknown, modelId: string): Error {
+    if (err instanceof WorkerBusError && err.code === WorkerErrorCode.MODEL_DOWNLOAD_BLOCKED) {
+        const blocked = new ModelDownloadBlockedError(modelId)
+        reportModelDownloadBlocked(blocked)
+        return blocked
+    }
+    return err instanceof Error ? err : new Error(String(err))
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────

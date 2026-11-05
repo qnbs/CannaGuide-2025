@@ -1,4 +1,6 @@
-import { loadTransformers } from '@cannaguide/ai-core/ml'
+import { loadTransformers, prepareTransformersLoad } from '@cannaguide/ai-core/ml'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { reportModelDownloadBlocked } from './modelDownloadBlocked'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
 
 type TransformersModule = Awaited<ReturnType<typeof loadTransformers>>
@@ -239,7 +241,14 @@ export const loadTransformersPipeline = async (
             await acquireGpu('onnx-webgpu')
         }
         try {
-            const { pipeline } = await getTransformersModule()
+            const { pipeline, env } = await getTransformersModule()
+            // Local-Only Mode: only a model already in the browser cache loads (GH #700).
+            await prepareTransformersLoad(env, modelId, isLocalOnlyMode()).catch(
+                (error: unknown) => {
+                    reportModelDownloadBlocked(error)
+                    throw error
+                },
+            )
             const mergedOptions = buildPipelineOptions(modelId, backend, options)
             return executePipelineLoad(pipeline, task, modelId, mergedOptions)
         } finally {

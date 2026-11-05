@@ -14,10 +14,15 @@ class ProxiedTensor {
 }
 
 const pipeOutput = vi.hoisted(() => ({ value: undefined as unknown }))
-vi.mock('@cannaguide/ai-core/ml', () => ({
+const pipelineCalls = vi.hoisted(() => ({ count: 0 }))
+vi.mock('@cannaguide/ai-core/ml', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@cannaguide/ai-core/ml')>()),
     loadTransformers: async () => ({
         env: { backends: { onnx: { wasm: {} } } },
-        pipeline: async () => async () => pipeOutput.value,
+        pipeline: async () => {
+            pipelineCalls.count += 1
+            return async () => pipeOutput.value
+        },
     }),
 }))
 
@@ -90,5 +95,34 @@ describe('inference.worker replies', () => {
 
         expect(reply).toMatchObject({ success: true, data: labels })
         expect(() => structuredClone(reply)).not.toThrow()
+    })
+
+    it('in Local-Only Mode refuses a model that is not downloaded, with its own code', async () => {
+        await import('./inference.worker')
+        vi.mocked(self.postMessage).mockClear()
+        pipelineCalls.count = 0
+
+        void handler(
+            new MessageEvent('message', {
+                data: {
+                    messageId: 'lo-1',
+                    type: 'INFER',
+                    payload: {
+                        task: 'feature-extraction',
+                        modelId: 'Xenova/not-cached',
+                        input: 'x',
+                        localOnly: true,
+                    },
+                },
+            }),
+        )
+        await vi.waitFor(() => expect(self.postMessage).toHaveBeenCalled())
+
+        expect(vi.mocked(self.postMessage).mock.calls[0]?.[0]).toMatchObject({
+            messageId: 'lo-1',
+            success: false,
+            errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+        })
+        expect(pipelineCalls.count).toBe(0)
     })
 })

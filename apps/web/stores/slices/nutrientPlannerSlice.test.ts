@@ -11,6 +11,8 @@ import reducer, {
     setAiLoading,
     setAiRecommendation,
     getOptimalRange,
+    upsertReading,
+    type EcPhReading,
     type NutrientPlannerState,
 } from './nutrientPlannerSlice'
 import { PlantStage } from '@/types'
@@ -217,6 +219,89 @@ describe('nutrientPlannerSlice', () => {
         state = reducer(state, setAiRecommendation('Use pH down'))
         expect(state.isAiLoading).toBe(false)
         expect(state.lastAiRecommendation).toBe('Use pH down')
+    })
+})
+
+describe('EC/pH reading retention (GH #814)', () => {
+    const inRange = {
+        plantId: null,
+        ec: 1.0,
+        ph: 6.3,
+        waterTempC: 20,
+        readingType: 'input' as const,
+        notes: '',
+    }
+
+    const stored = (index: number, ec = 1.0): EcPhReading => ({
+        ...inRange,
+        id: `legacy-${String(index)}`,
+        timestamp: index,
+        ec,
+    })
+
+    /** A store at the old cap of 500, with non-default settings. */
+    const legacy: NutrientPlannerState = {
+        ...initialState,
+        medium: 'Hydro',
+        readings: Array.from({ length: 500 }, (_, i) => stored(i)),
+    }
+
+    it.each([499, 500, 501, 1000])('keeps all %i manually logged readings', (count) => {
+        let state = initialState
+        for (let i = 0; i < count; i++) state = reducer(state, addReading(inRange))
+
+        expect(state.readings).toHaveLength(count)
+        expect(new Set(state.readings.map(({ id }) => id)).size).toBe(count)
+    })
+
+    it('a store at the old cap keeps all 500 and the new one, and its settings', () => {
+        const state = reducer(legacy, addReading(inRange))
+
+        expect(state.readings).toHaveLength(501)
+        expect(state.readings.slice(0, 500)).toEqual(legacy.readings)
+        expect(state.medium).toBe('Hydro')
+        expect(state.schedule).toEqual(legacy.schedule)
+    })
+
+    it('upserting a new id at the old cap adds it without dropping another', () => {
+        const state = reducer(legacy, upsertReading(stored(900)))
+
+        expect(state.readings).toHaveLength(501)
+        expect(state.readings[0]?.id).toBe('legacy-0')
+        expect(state.readings.at(-1)?.id).toBe('legacy-900')
+    })
+
+    it('upserting an existing id replaces only that reading', () => {
+        const state = reducer(legacy, upsertReading(stored(250, 2.4)))
+
+        expect(state.readings).toHaveLength(500)
+        expect(state.readings[250]).toEqual(stored(250, 2.4))
+        expect(state.readings.filter((_, i) => i !== 250)).toEqual(
+            legacy.readings.filter((_, i) => i !== 250),
+        )
+    })
+
+    it('keeps a long history through a reload', () => {
+        const reloaded = JSON.parse(
+            JSON.stringify(reducer(legacy, addReading(inRange))),
+        ) as NutrientPlannerState
+
+        expect(reloaded.readings).toHaveLength(501)
+        expect(reloaded.readings[0]).toEqual(stored(0))
+    })
+
+    it('auto-adjust still reads only the recent window of a long history', () => {
+        // 600 old readings far above the EC range, then 10 in range.
+        const highHistory: NutrientPlannerState = {
+            ...initialState,
+            autoAdjustEnabled: true,
+            readings: Array.from({ length: 600 }, (_, i) => stored(i, 9)),
+        }
+        let state = highHistory
+        for (let i = 0; i < 10; i++) state = reducer(state, addReading(inRange))
+
+        expect(state.readings).toHaveLength(610)
+        expect(state.autoAdjustRecommendation).toBeNull()
     })
 })
 

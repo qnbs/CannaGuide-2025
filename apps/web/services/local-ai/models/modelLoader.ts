@@ -263,16 +263,17 @@ export const applyLocalOnlyPolicy = async (modelId: string): Promise<void> => {
 }
 
 /**
- * Called when Local-Only Mode is switched on: the loaded transformers.js module
- * becomes cache-only at once, so a download under way -- whoever holds its
- * promise -- fails at its next file instead of continuing (GH #700). Nothing
- * to do before the module was loaded, or when the mode is switched off (the
- * next load sets its switches then).
+ * Called when Local-Only Mode changes: while it is on, the loaded
+ * transformers.js module becomes cache-only at once, so a download under way --
+ * whoever holds its promise -- fails at its next file instead of continuing
+ * (GH #700). The live mode decides, also after the wait, so a quick toggle
+ * cannot leave a stale "on" behind. Nothing to do before the module was loaded,
+ * or with the mode off (the next load sets its switches then).
  */
-export const enforceLocalOnlyOnTransformers = async (enabled: boolean): Promise<void> => {
-    if (!enabled || !transformersModulePromise) return
+export const enforceLocalOnlyOnTransformers = async (): Promise<void> => {
+    if (!isLocalOnlyMode() || !transformersModulePromise) return
     const { env } = await transformersModulePromise
-    applyLocalOnlyToTransformersEnv(env)
+    if (isLocalOnlyMode()) applyLocalOnlyToTransformersEnv(env)
 }
 
 /** Evict the oldest pipelines BEFORE inserting -- prevents exceeding the limit during a load. */
@@ -299,7 +300,8 @@ export const loadTransformersPipeline = async (
     const promise = (async () => {
         checkMemoryPressure()
         // Nothing is downloaded in Local-Only Mode, so a cached model needs no room.
-        if (!localOnly) await ensureRoomForDownload()
+        // Read live: the mode may have been switched off during the cache lookup.
+        if (!isLocalOnlyMode()) await ensureRoomForDownload()
         await acquireLoadSlot()
         const backend = detectOnnxBackend()
         // Acquire GPU mutex when using Weber backend to prevent VRAM collision with WebLLM

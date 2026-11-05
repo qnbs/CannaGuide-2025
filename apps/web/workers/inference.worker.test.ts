@@ -171,20 +171,67 @@ describe('inference.worker replies', () => {
         pipelineGate.wait = Promise.resolve()
     })
 
-    it('a LOCAL_ONLY message makes the loaded env cache-only and is acknowledged', async () => {
+    const tellLocalOnly = (enabled: boolean) =>
+        handler(
+            new MessageEvent('message', {
+                data: {
+                    messageId: `lo-${String(enabled)}`,
+                    type: 'LOCAL_ONLY',
+                    payload: { enabled },
+                },
+            }),
+        )
+
+    it('a LOCAL_ONLY message makes the loaded env cache-only, with no reply', async () => {
         await infer('text-classification', 'warm-1')
         vi.mocked(self.postMessage).mockClear()
 
-        void handler(
-            new MessageEvent('message', { data: { messageId: 'lo-on', type: 'LOCAL_ONLY' } }),
-        )
-        await vi.waitFor(() => expect(self.postMessage).toHaveBeenCalled())
+        await tellLocalOnly(true)
 
-        expect(vi.mocked(self.postMessage).mock.calls[0]?.[0]).toMatchObject({
-            messageId: 'lo-on',
-            success: true,
-        })
-        expect(workerEnv).toMatchObject({ allowRemoteModels: false, allowLocalModels: true })
+        try {
+            await vi.waitFor(() =>
+                expect(workerEnv).toMatchObject({
+                    allowRemoteModels: false,
+                    allowLocalModels: true,
+                }),
+            )
+            // Posted outside the bus: nothing waits for an answer.
+            expect(self.postMessage).not.toHaveBeenCalled()
+        } finally {
+            await tellLocalOnly(false)
+        }
+    })
+
+    it('after LOCAL_ONLY a task with a stale localOnly: false still loads cache-only', async () => {
+        await import('./inference.worker')
+        await tellLocalOnly(true)
+        vi.mocked(self.postMessage).mockClear()
+        pipelineCalls.count = 0
+        try {
+            // Dispatched before the switch, or replayed after a preemption.
+            void handler(
+                new MessageEvent('message', {
+                    data: {
+                        messageId: 'stale-1',
+                        type: 'INFER',
+                        payload: {
+                            task: 'feature-extraction',
+                            modelId: 'Xenova/stale',
+                            input: 'x',
+                            localOnly: false,
+                        },
+                    },
+                }),
+            )
+            await vi.waitFor(() => expect(self.postMessage).toHaveBeenCalled())
+            expect(vi.mocked(self.postMessage).mock.calls[0]?.[0]).toMatchObject({
+                messageId: 'stale-1',
+                errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+            })
+            expect(pipelineCalls.count).toBe(0)
+        } finally {
+            await tellLocalOnly(false)
+        }
     })
 
     it('a file refused after the switch is reported with the blocked code', async () => {

@@ -174,13 +174,19 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
 }
 
 /**
- * Local-Only Mode was switched on: a running inference worker makes its
- * transformers.js env cache-only at once, so a download it started for an
- * earlier task stops at its next file (GH #700). No worker is started for this.
+ * Local-Only Mode changed: a running inference worker learns it at once, so a
+ * download it started for an earlier task stops at its next file (GH #700).
+ * Posted straight to the worker, outside the bus queue: a queued request would
+ * wait behind the downloading task, and a high-priority one would preempt it
+ * and replay its stale payload. No worker is started for this.
  */
-export const applyLocalOnlyModeToInferenceWorker = async (enabled: boolean): Promise<void> => {
-    if (!enabled || !workerBus.has(WORKER_NAME)) return
-    await workerBus.dispatch(WORKER_NAME, INFERENCE_LOCAL_ONLY_MESSAGE, null, { priority: 'high' })
+export const applyLocalOnlyModeToInferenceWorker = (enabled: boolean): void => {
+    if (!workerBus.has(WORKER_NAME)) return
+    workerBus.getWorker(WORKER_NAME).postMessage({
+        messageId: `local-only-${crypto.randomUUID()}`,
+        type: INFERENCE_LOCAL_ONLY_MESSAGE,
+        payload: { enabled },
+    })
 }
 
 /** Returns true if the inference worker is available. */

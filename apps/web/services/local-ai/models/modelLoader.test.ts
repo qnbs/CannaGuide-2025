@@ -478,13 +478,24 @@ describe('loadTransformersPipeline in Local-Only Mode (GH #700)', () => {
     it('switching the mode on makes the loaded module cache-only at once', async () => {
         await getTransformersModule()
         transformers.env.allowRemoteModels = true
+        setLocalOnlyMode(true)
 
-        await enforceLocalOnlyOnTransformers(true)
+        await enforceLocalOnlyOnTransformers()
 
         expect(transformers.env).toMatchObject({
             allowRemoteModels: false,
             localModelPath: NO_LOCAL_MODELS_PATH,
         })
+    })
+
+    it('a stale call after the mode was switched off again changes nothing', async () => {
+        await getTransformersModule()
+        transformers.env.allowRemoteModels = true
+        setLocalOnlyMode(false)
+
+        await enforceLocalOnlyOnTransformers()
+
+        expect(transformers.env.allowRemoteModels).toBe(true)
     })
 
     it('a download refused at a later file is reported as blocked', async () => {
@@ -513,6 +524,8 @@ describe('loadTransformersPipeline in Local-Only Mode (GH #700)', () => {
 
         expect(transformers.pipeline).toHaveBeenCalledTimes(1)
         expect(transformers.env.allowRemoteModels).toBe(true)
+        // It downloads now, so it needs room like any download.
+        expect(checkStorageQuota).toHaveBeenCalledWith(200)
     })
 
     it('a failed older load does not evict the newer one for the same model', async () => {

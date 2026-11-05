@@ -64,19 +64,22 @@ const applyLocalOnlyModeToMqtt = async (enabled: boolean): Promise<void> => {
 /**
  * Local AI: switching Local-Only Mode on makes transformers.js cache-only at
  * once, on the main thread and in a running inference worker, so a model
- * download under way stops at its next file (GH #700).
+ * download under way stops at its next file; switching it off tells the worker
+ * too (GH #700). The mode is read after the imports, so a quick toggle sends
+ * the current state, not a stale one.
  */
-const applyLocalOnlyModeToLocalAi = async (enabled: boolean): Promise<void> => {
-    if (!enabled) return
-    const [{ enforceLocalOnlyOnTransformers }, { applyLocalOnlyModeToInferenceWorker }] =
-        await Promise.all([
-            import('@/services/local-ai/models/modelLoader'),
-            import('@/services/local-ai/inference/inferenceQueue'),
-        ])
-    await Promise.all([
-        enforceLocalOnlyOnTransformers(enabled),
-        applyLocalOnlyModeToInferenceWorker(enabled),
+const applyLocalOnlyModeToLocalAi = async (): Promise<void> => {
+    const [
+        { isLocalOnlyMode },
+        { enforceLocalOnlyOnTransformers },
+        { applyLocalOnlyModeToInferenceWorker },
+    ] = await Promise.all([
+        import('@/services/localOnlyModeService'),
+        import('@/services/local-ai/models/modelLoader'),
+        import('@/services/local-ai/inference/inferenceQueue'),
     ])
+    applyLocalOnlyModeToInferenceWorker(isLocalOnlyMode())
+    await enforceLocalOnlyOnTransformers()
 }
 
 const syncSentry = async (localOnly: boolean): Promise<void> => {
@@ -94,7 +97,7 @@ const syncLocalOnlyMode = async (enabled: boolean) => {
     const results = await Promise.allSettled([
         applyLocalOnlyModeToMqtt(enabled),
         syncSentry(enabled),
-        applyLocalOnlyModeToLocalAi(enabled),
+        applyLocalOnlyModeToLocalAi(),
     ])
     for (const result of results) {
         if (result.status === 'rejected') {

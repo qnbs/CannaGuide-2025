@@ -161,7 +161,8 @@ describe('inferenceQueueService', () => {
 })
 
 describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
-    const posted: Array<{ type?: string; payload?: { localOnly?: boolean } }> = []
+    const posted: Array<{ type?: string; payload?: { localOnly?: boolean; enabled?: boolean } }> =
+        []
 
     /** A worker that refuses every model, as the real one does for an uncached model. */
     class RefusingWorker {
@@ -173,7 +174,11 @@ describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
             if (type === 'message') this.listeners = this.listeners.filter((h) => h !== handler)
         }
         postMessage = vi.fn(
-            (data: { messageId: string; type?: string; payload?: { localOnly?: boolean } }) => {
+            (data: {
+                messageId: string
+                type?: string
+                payload?: { localOnly?: boolean; enabled?: boolean }
+            }) => {
                 posted.push(data)
                 setTimeout(() => {
                     for (const listener of this.listeners) {
@@ -226,18 +231,16 @@ describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
         )
     })
 
-    it('a switch to Local-Only Mode reaches a running worker, and starts none', async () => {
-        await applyLocalOnlyModeToInferenceWorker(false)
-        expect(posted).toHaveLength(0)
+    it('tells a running worker the mode outside the bus queue, and starts none', () => {
+        applyLocalOnlyModeToInferenceWorker(true)
+        applyLocalOnlyModeToInferenceWorker(false)
 
-        // The refusing worker answers every message with an error; the control
-        // message only has to arrive.
-        await applyLocalOnlyModeToInferenceWorker(true).catch(() => undefined)
-        expect(posted).toHaveLength(1)
-        expect(posted[0]).toMatchObject({ type: 'LOCAL_ONLY' })
+        expect(posted).toHaveLength(2)
+        expect(posted[0]).toMatchObject({ type: 'LOCAL_ONLY', payload: { enabled: true } })
+        expect(posted[1]).toMatchObject({ type: 'LOCAL_ONLY', payload: { enabled: false } })
 
         workerBus.reset()
-        await applyLocalOnlyModeToInferenceWorker(true)
-        expect(posted).toHaveLength(1)
+        applyLocalOnlyModeToInferenceWorker(true)
+        expect(posted).toHaveLength(2)
     })
 })

@@ -37,7 +37,17 @@ export interface InferencePayload {
     inferenceOptions?: Record<string, unknown> | undefined
     /** Local-Only Mode when the task was dispatched: only cached models load (GH #700). */
     localOnly?: boolean | undefined
+    /** LOCAL_ONLY control message only: the mode the app is in now. */
+    enabled?: boolean | undefined
 }
+
+/**
+ * Local-Only Mode as the app last told this worker (LOCAL_ONLY). It applies to
+ * every task on top of the task's own flag, so a task dispatched before the
+ * switch -- or replayed after a preemption -- cannot turn remote downloads back
+ * on (GH #700).
+ */
+let localOnlyMode = false
 
 const getTransformers = (): Promise<TransformersModule> => {
     if (!transformersPromise) {
@@ -161,17 +171,40 @@ function failureResponse(messageId: string, err: unknown) {
 }
 
 /**
- * Local-Only Mode was switched on in the app: the env becomes cache-only, so a
- * download under way stops at its next file (GH #700). Without a loaded module
- * nothing is downloading, and nothing is imported just for this.
+ * The app's Local-Only Mode changed. Switched on, the env becomes cache-only at
+ * once, so a download under way stops at its next file (GH #700); without a
+ * loaded module nothing is downloading, and nothing is imported just for this.
+ * Not a bus request: it is posted outside the queue and needs no reply.
  */
-async function enforceLocalOnly(messageId: string): Promise<void> {
-    if (transformersPromise) applyLocalOnlyToTransformersEnv((await transformersPromise).env)
-    self.postMessage(workerOk(messageId, true))
+async function applyLocalOnlyMessage(enabled: boolean): Promise<void> {
+    localOnlyMode = enabled
+    if (enabled && transformersPromise) {
+        applyLocalOnlyToTransformersEnv((await transformersPromise).env)
+    }
 }
 
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
     return !event.origin || event.origin === self.location.origin
+}
+
+/** Runs one validated inference task and posts its result or its failure. */
+async function runInference(messageId: string, payload: InferencePayload): Promise<void> {
+    const { task, modelId, input, pipelineOptions, inferenceOptions, localOnly } = payload
+    try {
+        checkAborted(messageId)
+        const pipe = await loadPipeline(
+            task,
+            modelId,
+            pipelineOptions ?? { quantized: true },
+            localOnly === true || localOnlyMode,
+        )
+        checkAborted(messageId)
+        const result = await pipe(input, inferenceOptions)
+        clearAborted(messageId)
+        self.postMessage(workerOk(messageId, toCloneableResult(result)))
+    } catch (err) {
+        self.postMessage(failureResponse(messageId, err))
+    }
 }
 
 self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
@@ -181,7 +214,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
 
     const { messageId, payload, type } = e.data
     if (type === INFERENCE_LOCAL_ONLY_MESSAGE) {
-        await enforceLocalOnly(messageId)
+        await applyLocalOnlyMessage(payload?.enabled === true)
         return
     }
     if (!payload?.task || !payload?.modelId) {
@@ -190,22 +223,7 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
         )
         return
     }
-    const { task, modelId, input, pipelineOptions, inferenceOptions, localOnly } = payload
-    try {
-        checkAborted(messageId)
-        const pipe = await loadPipeline(
-            task,
-            modelId,
-            pipelineOptions ?? { quantized: true },
-            localOnly === true,
-        )
-        checkAborted(messageId)
-        const result = await pipe(input, inferenceOptions)
-        clearAborted(messageId)
-        self.postMessage(workerOk(messageId, toCloneableResult(result)))
-    } catch (err) {
-        self.postMessage(failureResponse(messageId, err))
-    }
+    await runInference(messageId, payload)
 }
 
 // W-02.1: Install cooperative abort handler (must be after self.onmessage)

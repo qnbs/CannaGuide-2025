@@ -225,15 +225,22 @@ export const VoiceControl: React.FC = () => {
         handleEnd,
     ])
 
-    // Switching Local-Only Mode on aborts the recognizers (the effects above
-    // and below); the listening state and the HUD must follow.
+    // Switching Local-Only Mode on aborts the recognizers (the layout effect
+    // above); the listening state and the live region must follow. A session
+    // or a detected hotword that it ended gets the reason, not a stale status.
     useEffect(() => {
         if (!speechBlocked) return
+        if (isListening || hotwordActive) {
+            setVoiceListening(false)
+            setVoiceStatusMessage(t('common.voiceControl.errors.localOnly'))
+        }
         setHotwordActive(false)
-        if (!isListening) return
-        setVoiceListening(false)
-        setVoiceStatusMessage(t('common.voiceControl.errors.localOnly'))
-    }, [speechBlocked, isListening, setVoiceListening, setVoiceStatusMessage, t])
+    }, [speechBlocked, isListening, hotwordActive, setVoiceListening, setVoiceStatusMessage, t])
+
+    // Switching it off clears that reason from the live region.
+    useEffect(() => {
+        if (!speechBlocked) setVoiceStatusMessage(null)
+    }, [speechBlocked, setVoiceStatusMessage])
 
     // ---------------------------------------------------------------------------
     // V-03: Hotword Wake Detection

@@ -9,7 +9,7 @@
  * module-load time (matches useDictation.test.ts pattern).
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, act } from '@testing-library/react'
 import React from 'react'
 
 // ---------------------------------------------------------------------------
@@ -539,6 +539,40 @@ describe('VoiceControl -- Local-Only Mode', () => {
         } finally {
             vi.useRealTimers()
         }
+    })
+
+    it('a detected hotword ended by the switch gets the reason in the live region', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        act(() => {
+            mockInstances[1]?.fire('result', finalResult('hey canna'))
+        })
+        expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(
+            'common.voiceControl.hotwordDetected',
+        )
+
+        mockLocalOnly = true
+        view.rerender(React.createElement(VC))
+
+        expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(
+            'common.voiceControl.errors.localOnly',
+        )
+    })
+
+    it('switching the mode off clears the reason from the live region', async () => {
+        mockLocalOnly = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        fireEvent.click(screen.getByRole('button'))
+        expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(
+            'common.voiceControl.errors.localOnly',
+        )
+
+        mockLocalOnly = false
+        view.rerender(React.createElement(VC))
+
+        expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(null)
     })
 
     it('a command result still queued after the switch runs no command', async () => {

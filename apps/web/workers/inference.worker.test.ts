@@ -17,13 +17,20 @@ const pipeOutput = vi.hoisted(() => ({ value: undefined as unknown }))
 const pipelineCalls = vi.hoisted(() => ({ count: 0 }))
 // Holds pipeline creation open, as a download in progress does.
 const pipelineGate = vi.hoisted(() => ({ wait: Promise.resolve() }))
+// A failure the next pipeline creation throws, if set.
+const pipelineError = vi.hoisted(() => ({ value: null as Error | null }))
+// One env object for the whole worker, as transformers.js has.
+const workerEnv = vi.hoisted(
+    () => ({ backends: { onnx: { wasm: {} } } }) as Record<string, unknown>,
+)
 vi.mock('@cannaguide/ai-core/ml', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@cannaguide/ai-core/ml')>()),
     loadTransformers: async () => ({
-        env: { backends: { onnx: { wasm: {} } } },
+        env: workerEnv,
         pipeline: async () => {
             pipelineCalls.count += 1
             await pipelineGate.wait
+            if (pipelineError.value) throw pipelineError.value
             return async () => pipeOutput.value
         },
     }),
@@ -60,6 +67,7 @@ describe('inference.worker replies', () => {
             success: boolean
             data?: unknown
             error?: string
+            errorCode?: string
         }
     }
 
@@ -161,5 +169,53 @@ describe('inference.worker replies', () => {
         })
         release()
         pipelineGate.wait = Promise.resolve()
+    })
+
+    it('a LOCAL_ONLY message makes the loaded env cache-only and is acknowledged', async () => {
+        await infer('text-classification', 'warm-1')
+        vi.mocked(self.postMessage).mockClear()
+
+        void handler(
+            new MessageEvent('message', { data: { messageId: 'lo-on', type: 'LOCAL_ONLY' } }),
+        )
+        await vi.waitFor(() => expect(self.postMessage).toHaveBeenCalled())
+
+        expect(vi.mocked(self.postMessage).mock.calls[0]?.[0]).toMatchObject({
+            messageId: 'lo-on',
+            success: true,
+        })
+        expect(workerEnv).toMatchObject({ allowRemoteModels: false, allowLocalModels: true })
+    })
+
+    it('a file refused after the switch is reported with the blocked code', async () => {
+        pipelineError.value = new Error(
+            '`env.allowRemoteModels=false` and file was not found locally at "x".',
+        )
+        try {
+            await import('./inference.worker')
+            vi.mocked(self.postMessage).mockClear()
+            // A model of its own: the helper's model is already loaded by earlier tests.
+            void handler(
+                new MessageEvent('message', {
+                    data: {
+                        messageId: 'late-refusal',
+                        type: 'INFER',
+                        payload: {
+                            task: 'text-classification',
+                            modelId: 'Xenova/late',
+                            input: 'x',
+                        },
+                    },
+                }),
+            )
+            await vi.waitFor(() => expect(self.postMessage).toHaveBeenCalled())
+            expect(vi.mocked(self.postMessage).mock.calls[0]?.[0]).toMatchObject({
+                messageId: 'late-refusal',
+                success: false,
+                errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+            })
+        } finally {
+            pipelineError.value = null
+        }
     })
 })

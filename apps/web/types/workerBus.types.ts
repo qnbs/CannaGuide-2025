@@ -100,6 +100,12 @@ export function workerOk<T>(messageId: string, data: T): WorkerResponse<T> {
 }
 
 /**
+ * Inference-worker control message: Local-Only Mode was switched on, so the
+ * worker's transformers.js env becomes cache-only at once (GH #700).
+ */
+export const INFERENCE_LOCAL_ONLY_MESSAGE = 'LOCAL_ONLY'
+
+/**
  * Build an error response that satisfies `WorkerResponse`.
  */
 export function workerErr(

@@ -1,11 +1,14 @@
 import { captureLocalAiError } from '@/services/sentryService'
-import { prepareTransformersLoad } from '@cannaguide/ai-core/ml'
+import { ModelDownloadBlockedError, prepareTransformersLoad } from '@cannaguide/ai-core/ml'
 // The main thread's one memoized transformers.js module: each loadTransformers()
 // call resets allowLocalModels, which would undo the Local-Only policy under a
 // load that is running (GH #700).
-import { getTransformersModule } from '../models/modelLoader'
+import {
+    applyLocalOnlyPolicy,
+    asDownloadBlocked,
+    getTransformersModule,
+} from '../models/modelLoader'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
 
 /**
@@ -96,17 +99,20 @@ export function isWhisperAvailable(): boolean {
 // Model lifecycle
 // ---------------------------------------------------------------------------
 
-/**
- * Lazily load the Whisper-Tiny model. Returns the pipeline instance.
- * Coordinates GPU access via the gpu resource manager mutex.
- */
-/** Refuses the model if it is not cached, and turns remote downloads off (GH #700). */
-async function applyLocalOnlyPolicy(): Promise<void> {
-    const { env } = await getTransformersModule()
-    await prepareTransformersLoad(env, WHISPER_MODEL_ID, true).catch((error: unknown) => {
-        reportModelDownloadBlocked(error)
-        throw error
-    })
+/** Telemetry for a failure; a Local-Only refusal is a choice, not a failure (GH #700). */
+function captureUnlessBlocked(err: unknown): void {
+    if (!(err instanceof ModelDownloadBlockedError))
+        captureLocalAiError(err, { stage: 'inference' })
+}
+
+/** Why the last load failed: a Local-Only refusal is passed on with its type (GH #700). */
+let lastLoadError: unknown = null
+
+/** The loaded pipeline, or the reason it is missing. */
+function loadedOrThrow(result: WhisperPipeline | null): WhisperPipeline {
+    if (result) return result
+    if (lastLoadError instanceof ModelDownloadBlockedError) throw lastLoadError
+    throw new Error('Whisper model failed to load')
 }
 
 /**
@@ -116,12 +122,14 @@ async function applyLocalOnlyPolicy(): Promise<void> {
 async function awaitPendingLoad(
     pending: Promise<WhisperPipeline | null>,
 ): Promise<WhisperPipeline> {
-    if (isLocalOnlyMode()) await applyLocalOnlyPolicy()
-    const result = await pending
-    if (result) return result
-    throw new Error('Whisper model failed to load')
+    if (isLocalOnlyMode()) await applyLocalOnlyPolicy(WHISPER_MODEL_ID)
+    return loadedOrThrow(await pending)
 }
 
+/**
+ * Lazily load the Whisper-Tiny model. Returns the pipeline instance.
+ * Coordinates GPU access via the gpu resource manager mutex.
+ */
 async function ensurePipeline(): Promise<WhisperPipeline> {
     if (pipeline) return pipeline
 
@@ -140,8 +148,8 @@ async function ensurePipeline(): Promise<WhisperPipeline> {
             pipeline = p as unknown as WhisperPipeline
             return pipeline
         } catch (err) {
-            reportModelDownloadBlocked(err)
-            captureLocalAiError(err, { stage: 'inference' })
+            lastLoadError = asDownloadBlocked(err, WHISPER_MODEL_ID)
+            captureUnlessBlocked(lastLoadError)
             return null
         } finally {
             releaseGpu(GPU_RESOURCE_KEY)
@@ -149,9 +157,7 @@ async function ensurePipeline(): Promise<WhisperPipeline> {
         }
     })()
 
-    const result = await loadingPromise
-    if (!result) throw new Error('Whisper model failed to load')
-    return result
+    return loadedOrThrow(await loadingPromise)
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +212,7 @@ export async function transcribe(
             coldStart: wasCold,
         }
     } catch (err) {
-        captureLocalAiError(err, { stage: 'inference' })
+        captureUnlessBlocked(err)
         throw err
     } finally {
         clearTimeout(timeout)

@@ -329,6 +329,31 @@ describe('WorkerBus', () => {
         expect(callCount).toBe(3)
     })
 
+    it('does not retry a download refused by Local-Only Mode (GH #700)', async () => {
+        const w = new MockWorker()
+        let callCount = 0
+        w.postMessage = (msg: unknown) => {
+            callCount++
+            const { messageId } = msg as { messageId: string }
+            const refusal = {
+                data: {
+                    messageId,
+                    success: false,
+                    error: 'Local-Only Mode blocks downloading the model Xenova/x',
+                    errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+                },
+            } as MessageEvent
+            setTimeout(() => w['messageHandlers'].forEach((handler) => handler(refusal)), 0)
+        }
+        workerBus.register('blocked', w as unknown as Worker)
+
+        await expect(
+            workerBus.dispatch('blocked', 'INFER', undefined, { retries: 1, retryDelayMs: 10 }),
+        ).rejects.toMatchObject({ code: 'MODEL_DOWNLOAD_BLOCKED' })
+        // One attempt: the mode does not change between retries.
+        expect(callCount).toBe(1)
+    })
+
     it('retry does not retry on "No worker registered"', async () => {
         await expect(workerBus.dispatch('missing', 'X', undefined, { retries: 3 })).rejects.toThrow(
             'No worker registered',

@@ -1,4 +1,10 @@
-import { loadTransformers, prepareTransformersLoad } from '@cannaguide/ai-core/ml'
+import {
+    applyLocalOnlyToTransformersEnv,
+    isRemoteDownloadRefusal,
+    loadTransformers,
+    ModelDownloadBlockedError,
+    prepareTransformersLoad,
+} from '@cannaguide/ai-core/ml'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { reportModelDownloadBlocked } from './modelDownloadBlocked'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
@@ -230,16 +236,39 @@ async function ensureRoomForDownload(): Promise<void> {
 const loadedPipelineKeys = new Set<string>()
 
 /**
+ * A load that failed because Local-Only Mode refused a download -- before it
+ * started, or at a later file after the mode was switched on -- as
+ * ModelDownloadBlockedError, reported to the user once (GH #700).
+ */
+export const asDownloadBlocked = (error: unknown, modelId: string): unknown => {
+    const blocked = isRemoteDownloadRefusal(error) ? new ModelDownloadBlockedError(modelId) : error
+    reportModelDownloadBlocked(blocked)
+    return blocked
+}
+
+/**
  * Local-Only Mode before a load or the reuse of a pending one (GH #700):
  * refuses a model that is not in the browser cache, and turns remote downloads
  * off, also for a load of it that is still fetching files.
  */
-async function applyLocalOnlyPolicy(modelId: string): Promise<void> {
+export const applyLocalOnlyPolicy = async (modelId: string): Promise<void> => {
     const { env } = await getTransformersModule()
     await prepareTransformersLoad(env, modelId, true).catch((error: unknown) => {
-        reportModelDownloadBlocked(error)
-        throw error
+        throw asDownloadBlocked(error, modelId)
     })
+}
+
+/**
+ * Called when Local-Only Mode is switched on: the loaded transformers.js module
+ * becomes cache-only at once, so a download under way -- whoever holds its
+ * promise -- fails at its next file instead of continuing (GH #700). Nothing
+ * to do before the module was loaded, or when the mode is switched off (the
+ * next load sets its switches then).
+ */
+export const enforceLocalOnlyOnTransformers = async (enabled: boolean): Promise<void> => {
+    if (!enabled || !transformersModulePromise) return
+    const { env } = await transformersModulePromise
+    applyLocalOnlyToTransformersEnv(env)
 }
 
 /** Evict the oldest pipelines BEFORE inserting -- prevents exceeding the limit during a load. */
@@ -277,14 +306,11 @@ export const loadTransformersPipeline = async (
         try {
             const { pipeline, env } = await getTransformersModule()
             // The mode may have changed while waiting for a slot: apply it as it is now.
-            await prepareTransformersLoad(env, modelId, isLocalOnlyMode()).catch(
-                (error: unknown) => {
-                    reportModelDownloadBlocked(error)
-                    throw error
-                },
-            )
+            await prepareTransformersLoad(env, modelId, isLocalOnlyMode())
             const mergedOptions = buildPipelineOptions(modelId, backend, options)
-            return executePipelineLoad(pipeline, task, modelId, mergedOptions)
+            return await executePipelineLoad(pipeline, task, modelId, mergedOptions)
+        } catch (error) {
+            throw asDownloadBlocked(error, modelId)
         } finally {
             if (usingWebGpu) {
                 releaseGpu('onnx-webgpu')

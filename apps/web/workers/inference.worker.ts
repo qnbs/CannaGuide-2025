@@ -8,9 +8,16 @@
  */
 
 import type { WorkerRequest } from '@/types/workerBus.types'
-import { workerOk, workerErr, WorkerErrorCode } from '@/types/workerBus.types'
+import {
+    INFERENCE_LOCAL_ONLY_MESSAGE,
+    workerOk,
+    workerErr,
+    WorkerErrorCode,
+} from '@/types/workerBus.types'
 import { initAbortHandler, checkAborted, clearAborted } from '@/utils/workerAbort'
 import {
+    applyLocalOnlyToTransformersEnv,
+    isRemoteDownloadRefusal,
     loadTransformers,
     ModelDownloadBlockedError,
     prepareTransformersLoad,
@@ -141,11 +148,20 @@ export const toCloneableResult = (result: unknown): unknown => {
 /** A refused download keeps its own code, so the main thread can tell the user why. */
 function failureResponse(messageId: string, err: unknown) {
     const message = err instanceof Error ? err.message : 'Worker inference failed'
-    const code =
-        err instanceof ModelDownloadBlockedError
-            ? WorkerErrorCode.MODEL_DOWNLOAD_BLOCKED
-            : WorkerErrorCode.EXECUTION_ERROR
+    // Refused before the load, or at a later file after the mode was switched on.
+    const blocked = err instanceof ModelDownloadBlockedError || isRemoteDownloadRefusal(err)
+    const code = blocked ? WorkerErrorCode.MODEL_DOWNLOAD_BLOCKED : WorkerErrorCode.EXECUTION_ERROR
     return workerErr(messageId, message, code)
+}
+
+/**
+ * Local-Only Mode was switched on in the app: the env becomes cache-only, so a
+ * download under way stops at its next file (GH #700). Without a loaded module
+ * nothing is downloading, and nothing is imported just for this.
+ */
+async function enforceLocalOnly(messageId: string): Promise<void> {
+    if (transformersPromise) applyLocalOnlyToTransformersEnv((await transformersPromise).env)
+    self.postMessage(workerOk(messageId, true))
 }
 
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {
@@ -157,7 +173,11 @@ self.onmessage = async (e: MessageEvent<WorkerRequest<InferencePayload>>) => {
         return
     }
 
-    const { messageId, payload } = e.data
+    const { messageId, payload, type } = e.data
+    if (type === INFERENCE_LOCAL_ONLY_MESSAGE) {
+        await enforceLocalOnly(messageId)
+        return
+    }
     if (!payload?.task || !payload?.modelId) {
         self.postMessage(
             workerErr(messageId, 'Invalid inference request: task and modelId are required'),

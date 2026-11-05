@@ -15,6 +15,8 @@ import {
     getLoadedPipelineCount,
     getLoadedPipelineKeys,
     loadTransformersPipeline,
+    enforceLocalOnlyOnTransformers,
+    getTransformersModule,
     type QuantizationLevel,
     type ModelSizeTier,
 } from './modelLoader'
@@ -471,5 +473,30 @@ describe('loadTransformersPipeline in Local-Only Mode (GH #700)', () => {
 
         expect(transformers.pipeline).toHaveBeenCalledTimes(1)
         expect(transformers.env).toMatchObject({ allowLocalModels: false, allowRemoteModels: true })
+    })
+
+    it('switching the mode on makes the loaded module cache-only at once', async () => {
+        await getTransformersModule()
+        transformers.env.allowRemoteModels = true
+
+        await enforceLocalOnlyOnTransformers(true)
+
+        expect(transformers.env).toMatchObject({
+            allowRemoteModels: false,
+            localModelPath: NO_LOCAL_MODELS_PATH,
+        })
+    })
+
+    it('a download refused at a later file is reported as blocked', async () => {
+        transformers.pipeline.mockRejectedValueOnce(
+            new Error('`env.allowRemoteModels=false` and file was not found locally at "x".'),
+        )
+
+        const load = loadTransformersPipeline('feature-extraction', 'Xenova/half', {})
+
+        await expect(load).rejects.toBeInstanceOf(ModelDownloadBlockedError)
+        expect(reportModelDownloadBlocked).toHaveBeenCalledWith(
+            expect.any(ModelDownloadBlockedError),
+        )
     })
 })

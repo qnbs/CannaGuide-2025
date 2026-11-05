@@ -215,6 +215,25 @@ export const isTransformersModelCached = async (
 }
 
 /**
+ * Switches a transformers.js env to cache-only: no remote download, and a
+ * "local" path that fetch rejects without a request (see NO_LOCAL_MODELS_PATH).
+ * transformers.js reads these switches for every file, so a load already under
+ * way fails at its next file instead of downloading it (GH #700).
+ */
+export const applyLocalOnlyToTransformersEnv = (env: TransformersFetchEnv): void => {
+    env.allowRemoteModels = false
+    env.allowLocalModels = true
+    env.localModelPath = NO_LOCAL_MODELS_PATH
+}
+
+/**
+ * Whether a load failed because remote downloads were off -- the error
+ * transformers.js 2.17.2 throws for a file it would have had to download.
+ */
+export const isRemoteDownloadRefusal = (error: unknown): boolean =>
+    error instanceof Error && error.message.includes('env.allowRemoteModels=false')
+
+/**
  * Applies Local-Only Mode to the next transformers.js load (GH #700).
  *
  * Off: the usual download from the Hugging Face CDN (local paths stay off, see
@@ -237,9 +256,7 @@ export const prepareTransformersLoad = async (
         env.allowRemoteModels = true
         return
     }
-    env.allowRemoteModels = false
-    env.allowLocalModels = true
-    env.localModelPath = NO_LOCAL_MODELS_PATH
+    applyLocalOnlyToTransformersEnv(env)
     if (!(await isTransformersModelCached(env, modelId, cacheStorage))) {
         throw new ModelDownloadBlockedError(modelId)
     }

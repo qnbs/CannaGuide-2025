@@ -6,6 +6,7 @@ import {
     getActiveCount,
     terminateInferenceWorker,
     resetWorkerState,
+    applyLocalOnlyModeToInferenceWorker,
 } from './inferenceQueue'
 import { workerBus } from '@/services/workerBus'
 import { setLocalOnlyMode } from '@/services/localOnlyModeService'
@@ -160,7 +161,7 @@ describe('inferenceQueueService', () => {
 })
 
 describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
-    const posted: Array<{ payload?: { localOnly?: boolean } }> = []
+    const posted: Array<{ type?: string; payload?: { localOnly?: boolean } }> = []
 
     /** A worker that refuses every model, as the real one does for an uncached model. */
     class RefusingWorker {
@@ -171,23 +172,25 @@ describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
         removeEventListener(type: string, handler: (event: MessageEvent) => void) {
             if (type === 'message') this.listeners = this.listeners.filter((h) => h !== handler)
         }
-        postMessage = vi.fn((data: { messageId: string; payload?: { localOnly?: boolean } }) => {
-            posted.push(data)
-            setTimeout(() => {
-                for (const listener of this.listeners) {
-                    listener(
-                        new MessageEvent('message', {
-                            data: {
-                                messageId: data.messageId,
-                                success: false,
-                                error: 'Local-Only Mode blocks downloading the model Xenova/x',
-                                errorCode: 'MODEL_DOWNLOAD_BLOCKED',
-                            },
-                        }),
-                    )
-                }
-            }, 0)
-        })
+        postMessage = vi.fn(
+            (data: { messageId: string; type?: string; payload?: { localOnly?: boolean } }) => {
+                posted.push(data)
+                setTimeout(() => {
+                    for (const listener of this.listeners) {
+                        listener(
+                            new MessageEvent('message', {
+                                data: {
+                                    messageId: data.messageId,
+                                    success: false,
+                                    error: 'Local-Only Mode blocks downloading the model Xenova/x',
+                                    errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+                                },
+                            }),
+                        )
+                    }
+                }, 0)
+            },
+        )
         terminate = vi.fn()
     }
 
@@ -221,5 +224,20 @@ describe('inferenceQueue in Local-Only Mode (GH #700)', () => {
         expect(reportModelDownloadBlocked).toHaveBeenCalledWith(
             expect.any(ModelDownloadBlockedError),
         )
+    })
+
+    it('a switch to Local-Only Mode reaches a running worker, and starts none', async () => {
+        await applyLocalOnlyModeToInferenceWorker(false)
+        expect(posted).toHaveLength(0)
+
+        // The refusing worker answers every message with an error; the control
+        // message only has to arrive.
+        await applyLocalOnlyModeToInferenceWorker(true).catch(() => undefined)
+        expect(posted).toHaveLength(1)
+        expect(posted[0]).toMatchObject({ type: 'LOCAL_ONLY' })
+
+        workerBus.reset()
+        await applyLocalOnlyModeToInferenceWorker(true)
+        expect(posted).toHaveLength(1)
     })
 })

@@ -1,7 +1,11 @@
 import type { InferencePayload } from '@/workers/inference.worker'
 import { workerBus } from '@/services/workerBus'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import { WorkerBusError, WorkerErrorCode } from '@/types/workerBus.types'
+import {
+    INFERENCE_LOCAL_ONLY_MESSAGE,
+    WorkerBusError,
+    WorkerErrorCode,
+} from '@/types/workerBus.types'
 import { ModelDownloadBlockedError } from '@cannaguide/ai-core/ml'
 import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
 
@@ -167,6 +171,16 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
 
         processQueue()
     })
+}
+
+/**
+ * Local-Only Mode was switched on: a running inference worker makes its
+ * transformers.js env cache-only at once, so a download it started for an
+ * earlier task stops at its next file (GH #700). No worker is started for this.
+ */
+export const applyLocalOnlyModeToInferenceWorker = async (enabled: boolean): Promise<void> => {
+    if (!enabled || !workerBus.has(WORKER_NAME)) return
+    await workerBus.dispatch(WORKER_NAME, INFERENCE_LOCAL_ONLY_MESSAGE, null, { priority: 'high' })
 }
 
 /** Returns true if the inference worker is available. */

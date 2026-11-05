@@ -1,8 +1,13 @@
+// Tests for @cannaguide/ai-core/ml run in the web suite, like
+// transformersOrtOrigin.test.ts: packages/ai-core has no test runner of its own,
+// and this is where its only consumers (and their aliases) are configured.
 import { describe, expect, it } from 'vitest'
 import {
     type CacheLookup,
     ModelDownloadBlockedError,
     NO_LOCAL_MODELS_PATH,
+    applyLocalOnlyToTransformersEnv,
+    isRemoteDownloadRefusal,
     TRANSFORMERS_CACHE_NAME,
     isTransformersModelCached,
     prepareTransformersLoad,
@@ -75,5 +80,35 @@ describe('transformers.js download policy (GH #700)', () => {
             localModelPath: NO_LOCAL_MODELS_PATH,
         })
         expect(String(env.localModelPath)).not.toMatch(/^(https?|data|blob|about):/u)
+    })
+
+    it('switches a loaded env to cache-only, for a load already under way', () => {
+        const env: TransformersFetchEnv = { allowLocalModels: false, allowRemoteModels: true }
+        applyLocalOnlyToTransformersEnv(env)
+        expect(env).toMatchObject({
+            allowLocalModels: true,
+            allowRemoteModels: false,
+            localModelPath: NO_LOCAL_MODELS_PATH,
+        })
+    })
+
+    it('recognises the errors transformers.js throws for a refused download', () => {
+        // Both messages of transformers.js 2.17.2 (src/utils/hub.js) when remote is off.
+        expect(
+            isRemoteDownloadRefusal(
+                new Error(
+                    '`local_files_only=true` or `env.allowRemoteModels=false` and file was not found locally at "x".',
+                ),
+            ),
+        ).toBe(true)
+        expect(
+            isRemoteDownloadRefusal(
+                new Error(
+                    '`env.allowRemoteModels=false`, but attempted to load a remote file from: y.',
+                ),
+            ),
+        ).toBe(true)
+        expect(isRemoteDownloadRefusal(new Error('WebGPU context lost'))).toBe(false)
+        expect(isRemoteDownloadRefusal('env.allowRemoteModels=false')).toBe(false)
     })
 })

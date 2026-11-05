@@ -81,6 +81,9 @@ vi.mock('react-i18next', () => ({
 }))
 
 const mockSetVoiceListening = vi.fn()
+const mockAddNotification = vi.fn()
+let mockLocalOnly = false
+let mockHotwordEnabled = false
 const mockSetVoiceStatusMessage = vi.fn()
 const mockProcessVoiceCommand = vi.fn()
 
@@ -95,6 +98,7 @@ vi.mock('@/stores/useUIStore', () => ({
             setVoiceListening: mockSetVoiceListening,
             setVoiceStatusMessage: mockSetVoiceStatusMessage,
             processVoiceCommand: mockProcessVoiceCommand,
+            addNotification: mockAddNotification,
         }
         return selector(state)
     },
@@ -106,7 +110,11 @@ vi.mock('@/stores/store', () => ({
             settings: {
                 settings: {
                     general: { language: 'en' },
-                    voiceControl: { hotwordEnabled: false, continuousListening: false },
+                    voiceControl: {
+                        hotwordEnabled: mockHotwordEnabled,
+                        continuousListening: false,
+                    },
+                    privacy: { localOnlyMode: mockLocalOnly },
                 },
             },
         }),
@@ -116,6 +124,8 @@ vi.mock('@/stores/selectors', () => ({
     selectLanguage: (s: { settings: { settings: { general: { language: string } } } }) =>
         s.settings.settings.general.language,
     selectSettings: (s: { settings: { settings: unknown } }) => s.settings.settings,
+    selectLocalOnlyMode: (s: { settings: { settings: { privacy: { localOnlyMode: boolean } } } }) =>
+        s.settings.settings.privacy.localOnlyMode,
 }))
 
 vi.mock('@/components/icons/PhosphorIcons', () => ({
@@ -154,6 +164,8 @@ async function importVoiceControl(): Promise<React.FC> {
 
 beforeEach(() => {
     vi.clearAllMocks()
+    mockLocalOnly = false
+    mockHotwordEnabled = false
     installMockSpeechRecognition()
 })
 
@@ -357,6 +369,50 @@ describe('VoiceControl -- toggle button', () => {
 
         expect(main?.start).toHaveBeenCalled()
         expect(mockSetVoiceListening).toHaveBeenCalledWith(true)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Local-Only Mode (GH #717): browser speech recognition may run in the cloud
+// ---------------------------------------------------------------------------
+
+describe('VoiceControl -- Local-Only Mode', () => {
+    it('creates no recognizer, and the mic says why instead of listening', async () => {
+        mockLocalOnly = true
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        render(React.createElement(VC))
+
+        expect(mockInstances).toHaveLength(0)
+
+        fireEvent.click(screen.getByRole('button'))
+
+        expect(mockSetVoiceListening).not.toHaveBeenCalledWith(true)
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
+            'common.voiceControl.errors.localOnly',
+        )
+        expect(mockAddNotification).toHaveBeenCalledWith({
+            message: 'common.voiceControl.errors.localOnly',
+            type: 'info',
+        })
+        expect(screen.getByRole('button')).toHaveAttribute(
+            'title',
+            'common.voiceControl.errors.localOnly',
+        )
+    })
+
+    it('switching the mode on aborts the command and hotword recognizers', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        const running = [...mockInstances]
+        expect(running).toHaveLength(2)
+
+        mockLocalOnly = true
+        view.rerender(React.createElement(VC))
+
+        for (const recognizer of running) expect(recognizer.abort).toHaveBeenCalled()
+        expect(mockInstances).toHaveLength(2)
     })
 })
 

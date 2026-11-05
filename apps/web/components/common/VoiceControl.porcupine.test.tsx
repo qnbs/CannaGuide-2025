@@ -16,6 +16,7 @@ const keyStore = vi.hoisted(() => ({
     listeners: new Set<() => void>(),
 }))
 let legacyKey: string | null = null
+let localOnly = false
 
 vi.mock('@/services/porcupineKeyService', () => ({
     porcupineKeyService: {
@@ -46,6 +47,7 @@ vi.mock('@/stores/useUIStore', () => ({
             setVoiceListening: vi.fn(),
             setVoiceStatusMessage: vi.fn(),
             processVoiceCommand: vi.fn(),
+            addNotification: vi.fn(),
         }),
 }))
 vi.mock('@/stores/store', () => ({
@@ -61,6 +63,7 @@ vi.mock('@/stores/store', () => ({
                         porcupineAccessKey: legacyKey,
                         porcupineKeyword: 'porcupine',
                     },
+                    privacy: { localOnlyMode: localOnly },
                 },
             },
         }),
@@ -69,6 +72,8 @@ vi.mock('@/stores/selectors', () => ({
     selectLanguage: (s: { settings: { settings: { general: { language: string } } } }) =>
         s.settings.settings.general.language,
     selectSettings: (s: { settings: { settings: unknown } }) => s.settings.settings,
+    selectLocalOnlyMode: (s: { settings: { settings: { privacy: { localOnlyMode: boolean } } } }) =>
+        s.settings.settings.privacy.localOnlyMode,
 }))
 vi.mock('@/components/icons/PhosphorIcons', () => ({
     PhosphorIcons: { Microphone: () => React.createElement('svg') },
@@ -101,7 +106,7 @@ const renderVoiceControl = async () => {
     const { porcupineWakeWordService } = await import('@/services/porcupineWakeWordService')
     const view = render(<VoiceControl />)
     await settle()
-    return { porcupine: porcupineWakeWordService, view }
+    return { porcupine: porcupineWakeWordService, view, VoiceControl }
 }
 
 const changeStoredKey = async (key: string | null) => {
@@ -118,6 +123,7 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         keyStore.key = null
         keyStore.listeners.clear()
         legacyKey = null
+        localOnly = false
         ;(window as WindowWithSpeech).SpeechRecognition = MockSpeechRecognition
     })
 
@@ -256,5 +262,23 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         await settle()
         expect(porcupine.dispose).toHaveBeenCalledTimes(1)
         expect(porcupine.init).toHaveBeenLastCalledWith(LEGACY, 'porcupine')
+    })
+
+    it('stays off in Local-Only Mode, and stops when the mode is switched on (GH #717)', async () => {
+        keyStore.key = STORED
+        localOnly = true
+        const { porcupine, view, VoiceControl } = await renderVoiceControl()
+
+        expect(porcupine.init).not.toHaveBeenCalled()
+
+        localOnly = false
+        view.rerender(<VoiceControl />)
+        await settle()
+        expect(porcupine.init).toHaveBeenCalledTimes(1)
+
+        localOnly = true
+        view.rerender(<VoiceControl />)
+        await settle()
+        expect(porcupine.stop).toHaveBeenCalled()
     })
 })

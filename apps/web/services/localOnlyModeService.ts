@@ -4,7 +4,8 @@
 // The flag behind the setting. Services that leave the app go through the
 // egress gate in services/net/egress.ts, which reads it; some older call sites
 // still check it directly. When enabled: Sentry disabled, cloud AI blocked,
-// Gist sync blocked, MQTT limited to LAN brokers, cloud TTS skipped. Not every
+// Gist sync blocked, MQTT limited to LAN brokers, cloud TTS skipped, browser
+// speech recognition off (the UI reads selectLocalOnlyMode for that). Not every
 // path is covered yet; docs/ARCHITECTURE.md ("Local-Only Mode egress gate")
 // lists what is not.
 // ---------------------------------------------------------------------------

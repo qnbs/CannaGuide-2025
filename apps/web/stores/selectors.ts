@@ -55,6 +55,13 @@ export const selectSettings = createSelector(
     [selectSettingsState],
     (settingsState: SettingsState): AppSettings => settingsState.settings,
 )
+/**
+ * Local-Only Mode as the UI sees it, straight from the setting. Browser speech
+ * recognition reads it to stay off while the mode is on (GH #717).
+ */
+export const selectLocalOnlyMode = (state: RootState): boolean =>
+    state.settings.settings.privacy.localOnlyMode
+
 export const selectAiMode = createSelector(
     [selectSettings],
     (settings: AppSettings): AiMode => settings.aiMode ?? 'hybrid',

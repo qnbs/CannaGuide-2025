@@ -13,13 +13,25 @@ import { isDictationSupported } from '@/hooks/useDictation'
 // Mock i18n selector (selectLanguage -> 'en')
 // ---------------------------------------------------------------------------
 
+let mockLocalOnly = false
+
 vi.mock('@/stores/store', () => ({
     useAppSelector: (selector: (s: unknown) => unknown) =>
-        selector({ settings: { settings: { general: { language: 'en' } } } }),
+        selector({
+            settings: {
+                settings: {
+                    general: { language: 'en' },
+                    privacy: { localOnlyMode: mockLocalOnly },
+                },
+            },
+        }),
 }))
 vi.mock('@/stores/selectors', () => ({
     selectLanguage: (state: { settings: { settings: { general: { language: string } } } }) =>
         state.settings.settings.general.language,
+    selectLocalOnlyMode: (state: {
+        settings: { settings: { privacy: { localOnlyMode: boolean } } }
+    }) => state.settings.settings.privacy.localOnlyMode,
 }))
 
 // ---------------------------------------------------------------------------
@@ -288,5 +300,48 @@ describe('useDictation -- lang mapping', () => {
         expect(mapLang('en')).toBe('en-US')
         expect(mapLang('fr')).toBe('en-US')
         expect(mapLang('nl')).toBe('en-US')
+    })
+})
+
+describe('useDictation -- Local-Only Mode (GH #717)', () => {
+    beforeEach(() => {
+        mockLocalOnly = false
+        installMockSpeechRecognition()
+    })
+
+    afterEach(() => {
+        mockLocalOnly = false
+        uninstallMockSpeechRecognition()
+    })
+
+    it('does not start the browser recognizer and reports why', async () => {
+        mockLocalOnly = true
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result } = renderHook(() => useDictation())
+
+        act(() => {
+            result.current.start()
+        })
+
+        expect(mockInstances).toHaveLength(0)
+        expect(result.current.isListening).toBe(false)
+        expect(result.current.error).toBe('localOnly')
+    })
+
+    it('switching the mode on stops a running dictation', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result, rerender } = renderHook(() => useDictation())
+        act(() => {
+            result.current.start()
+        })
+        const running = mockInstances[0]
+        expect(result.current.isListening).toBe(true)
+
+        mockLocalOnly = true
+        rerender()
+
+        expect(running?.abort).toHaveBeenCalled()
+        expect(result.current.isListening).toBe(false)
+        expect(result.current.error).toBe('localOnly')
     })
 })

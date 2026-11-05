@@ -254,6 +254,8 @@ export const ai = {
             noSpeech: 'No se detecto habla.',
             notAllowed: 'Acceso al microfono denegado.',
             startFailed: 'No se pudo iniciar la escucha.',
+            localOnly:
+                'La entrada de voz est\u00E1 desactivada en el Modo Solo Local: el reconocimiento de voz del navegador puede procesar el audio en l\u00EDnea.',
             notUnderstood: 'No se entendio. Intenta de nuevo.',
             maxRetries: 'No se pudo entender tras varios intentos. Intenta mas tarde.',
         },

@@ -254,6 +254,8 @@ export const ai = {
             noSpeech: 'Geen spraak gedetecteerd.',
             notAllowed: 'Microfoontoegang geweigerd.',
             startFailed: 'Kon niet beginnen met luisteren.',
+            localOnly:
+                'Spraakinvoer staat uit in de alleen-lokaal-modus: de spraakherkenning van de browser kan audio online verwerken.',
             notUnderstood: 'Niet begrepen. Probeer het opnieuw.',
             maxRetries: 'Kon na meerdere pogingen niet worden begrepen. Probeer later opnieuw.',
         },

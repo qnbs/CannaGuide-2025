@@ -397,7 +397,8 @@ export const settingsView = {
         testVoiceSentence: 'This is a test of the selected voice.',
         voiceControl: {
             enabled: 'Enable Voice Control',
-            enabledDesc: 'Control the app using simple voice commands.',
+            enabledDesc:
+                "Control the app using simple voice commands. They use your browser's speech recognition, which some browsers process online; Local-Only Mode turns them off.",
             hotwordEnabled: 'Always-On Hotword',
             hotwordEnabledDesc:
                 'Keeps the microphone ready for hands-free wake words when supported by the browser.',
@@ -856,9 +857,9 @@ export const settingsView = {
         title: 'Privacy & Security',
         localOnlyMode: 'Local-Only Mode',
         localOnlyModeDesc:
-            'Keeps your data on this device and your local network. While it is on, CannaGuide sends no error reports and no cloud AI or cloud text-to-speech requests, skips online strain lookups and community sharing, and connects MQTT sensors only to brokers on your local network. Not covered yet: local AI models that download on first use (the explicit preload is blocked), and speech recognition, which some browsers process online.',
+            "Keeps your data on this device and your local network. While it is on, CannaGuide sends no error reports and no cloud AI or cloud text-to-speech requests, skips online strain lookups and community sharing, connects MQTT sensors only to brokers on your local network, and turns off voice commands and dictation, because the browser's speech recognition may process audio online. Not covered yet: local AI models that download on first use (the explicit preload is blocked).",
         localOnlyModeActive:
-            'Local-Only Mode is active. Error reports, cloud AI, cloud text-to-speech, online strain lookups and community sharing are off, and MQTT is limited to your local network. Model downloads on first use and browser speech recognition are not blocked yet. Turn this off to restore cloud features.',
+            'Local-Only Mode is active. Error reports, cloud AI, cloud text-to-speech, online strain lookups, community sharing, voice commands and dictation are off, and MQTT is limited to your local network. Model downloads on first use are not blocked yet. Turn this off to restore cloud features.',
         requirePin: 'Require PIN on Launch',
         requirePinDesc: 'Protect your app with a 4-digit PIN.',
         setPin: 'Set/Change PIN',

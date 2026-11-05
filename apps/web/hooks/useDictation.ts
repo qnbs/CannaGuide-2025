@@ -7,7 +7,7 @@
  */
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useAppSelector } from '@/stores/store'
-import { selectLanguage } from '@/stores/selectors'
+import { selectLanguage, selectLocalOnlyMode } from '@/stores/selectors'
 
 // Re-use the same Web Speech API types as VoiceControl.tsx
 interface WDictationRecognitionResult {
@@ -74,6 +74,9 @@ export interface UseDictationReturn {
 
 export function useDictation(onTranscript?: (text: string) => void): UseDictationReturn {
     const lang = useAppSelector(selectLanguage)
+    // Browser speech recognition may process the audio online, so Local-Only
+    // Mode keeps dictation off and stops a running one (GH #717).
+    const localOnly = useAppSelector(selectLocalOnlyMode)
     const [isListening, setIsListening] = useState(false)
     const [transcript, setTranscript] = useState('')
     const [error, setError] = useState<string | null>(null)
@@ -96,7 +99,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         setError(null)
     }, [])
 
-    const start = useCallback(() => {
+    const startRecognition = useCallback(() => {
         const SpeechRecognitionAPI = getSpeechRecognitionAPI()
         if (!SpeechRecognitionAPI) return
         if (recognitionRef.current) {
@@ -158,6 +161,19 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
             setIsListening(false)
         }
     }, [lang])
+
+    const start = useCallback(() => {
+        if (localOnly) setError('localOnly')
+        else startRecognition()
+    }, [localOnly, startRecognition])
+
+    useEffect(() => {
+        if (!localOnly || !recognitionRef.current) return
+        recognitionRef.current.abort()
+        recognitionRef.current = null
+        setIsListening(false)
+        setError('localOnly')
+    }, [localOnly])
 
     // Cleanup on unmount
     useEffect(() => {

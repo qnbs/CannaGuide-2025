@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/stores/store'
-import { selectLanguage, selectSettings } from '@/stores/selectors'
+import { selectLanguage, selectLocalOnlyMode, selectSettings } from '@/stores/selectors'
 import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
@@ -53,6 +53,23 @@ const hasSpeechRecognitionSupport = typeof SpeechRecognitionAPI === 'function'
 /** Regex that matches "hey canna" or "hey cannaguide" (case-insensitive). */
 const HOTWORD_REGEX = /hey\s+canna(?:guide)?/i
 
+/**
+ * Whether a wake word may listen: the hotword is on, voice control is
+ * available, and Local-Only Mode is off (GH #717).
+ */
+function wakeWordAllowed(
+    hotwordEnabled: boolean,
+    isAvailable: boolean,
+    speechBlocked: boolean,
+): boolean {
+    return hotwordEnabled && isAvailable && !speechBlocked
+}
+
+/** The mic's tooltip: why it does nothing while Local-Only Mode is on. */
+function micTitleKey(speechBlocked: boolean): string {
+    return speechBlocked ? 'common.voiceControl.errors.localOnly' : 'common.voiceControl.toggle'
+}
+
 /** Duration (ms) the command listener stays active after hotword detection. */
 const HOTWORD_ACTIVATION_MS = 5_000
 
@@ -60,6 +77,11 @@ export const VoiceControl: React.FC = () => {
     const { t } = useTranslation()
     const lang = useAppSelector(selectLanguage)
     const settings = useAppSelector(selectSettings)
+    // Browser speech recognition may send the audio to the browser vendor's
+    // online service, which the app cannot see or stop, so Local-Only Mode
+    // keeps every recognizer here off (GH #717). Porcupine stays off too: a
+    // wake word would have no command listener to start.
+    const speechBlocked = useAppSelector(selectLocalOnlyMode)
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
     const continuousListening = settings.voiceControl.continuousListening
     const isListening = useUIStore((s) => s.voiceControl.isListening)
@@ -129,7 +151,7 @@ export const VoiceControl: React.FC = () => {
     }, [continuousListening, isListening, setVoiceListening, setVoiceStatusMessage])
 
     useEffect(() => {
-        if (!isAvailable || !hasSpeechRecognitionSupport) return
+        if (!isAvailable || !hasSpeechRecognitionSupport || speechBlocked) return
 
         const recognition = new SpeechRecognitionAPI()
         recognition.continuous = continuousListening
@@ -150,7 +172,17 @@ export const VoiceControl: React.FC = () => {
                 recognitionRef.current = null
             }
         }
-    }, [isAvailable, continuousListening, handleResult, handleError, handleEnd])
+    }, [isAvailable, speechBlocked, continuousListening, handleResult, handleError, handleEnd])
+
+    // Switching Local-Only Mode on aborts the recognizers (the effects above
+    // and below); the listening state and the HUD must follow.
+    useEffect(() => {
+        if (!speechBlocked) return
+        setHotwordActive(false)
+        if (!isListening) return
+        setVoiceListening(false)
+        setVoiceStatusMessage(t('common.voiceControl.errors.localOnly'))
+    }, [speechBlocked, isListening, setVoiceListening, setVoiceStatusMessage, t])
 
     useEffect(() => {
         if (recognitionRef.current) {
@@ -187,7 +219,10 @@ export const VoiceControl: React.FC = () => {
     }, [t, isListening, setVoiceStatusMessage, setVoiceListening])
 
     useEffect(() => {
-        if (!isAvailable || !hasSpeechRecognitionSupport || !hotwordEnabled) {
+        if (
+            !hasSpeechRecognitionSupport ||
+            !wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
+        ) {
             if (hotwordRecRef.current) {
                 hotwordRecRef.current.abort()
                 hotwordRecRef.current = null
@@ -250,7 +285,7 @@ export const VoiceControl: React.FC = () => {
                 hotwordRecRef.current = null
             }
         }
-    }, [isAvailable, hotwordEnabled, lang, activateFromHotword])
+    }, [isAvailable, hotwordEnabled, speechBlocked, lang, activateFromHotword])
 
     // ---------------------------------------------------------------------------
     // V-03b: Porcupine WASM Wake-Word Detection (optional upgrade)
@@ -285,7 +320,8 @@ export const VoiceControl: React.FC = () => {
 
     useEffect(() => {
         const usePorcupine =
-            settings.voiceControl.wakeWordEngine === 'porcupine' && hotwordEnabled && isAvailable
+            settings.voiceControl.wakeWordEngine === 'porcupine' &&
+            wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
 
         if (!usePorcupine) {
             if (porcupineInitRef.current) {
@@ -355,9 +391,18 @@ export const VoiceControl: React.FC = () => {
         settings.voiceControl.porcupineKeyword,
         hotwordEnabled,
         isAvailable,
+        speechBlocked,
         activateFromHotword,
         enqueuePorcupine,
     ])
+
+    const addNotification = useUIStore((s) => s.addNotification)
+    // Visible and announced: the mic does nothing while Local-Only Mode is on.
+    const explainSpeechBlocked = () => {
+        const reason = t('common.voiceControl.errors.localOnly')
+        setVoiceStatusMessage(reason)
+        addNotification({ message: reason, type: 'info' })
+    }
 
     const toggleListening = () => {
         if (!isAvailable || !hasSpeechRecognitionSupport || !recognitionRef.current) return
@@ -383,6 +428,11 @@ export const VoiceControl: React.FC = () => {
         }
     }
 
+    const handleMicClick = (): void => {
+        if (speechBlocked) explainSpeechBlocked()
+        else toggleListening()
+    }
+
     if (!isAvailable || !hasSpeechRecognitionSupport) {
         return null
     }
@@ -396,8 +446,8 @@ export const VoiceControl: React.FC = () => {
                         ? 'text-red-400 animate-pulse bg-red-500/20'
                         : 'text-slate-300 hover:text-slate-100'
                 }`}
-                onClick={toggleListening}
-                title={t('common.voiceControl.toggle')}
+                onClick={handleMicClick}
+                title={t(micTitleKey(speechBlocked))}
                 aria-label={t('common.voiceControl.toggle')}
                 aria-pressed={isListening}
             >

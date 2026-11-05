@@ -255,6 +255,8 @@ export const ai = {
             noSpeech: 'Aucune parole detectee.',
             notAllowed: 'Acces au microphone refuse.',
             startFailed: "Impossible de demarrer l'ecoute.",
+            localOnly:
+                "La saisie vocale est d\u00E9sactiv\u00E9e en mode local uniquement : la reconnaissance vocale du navigateur peut traiter l'audio en ligne.",
             notUnderstood: 'Pas compris. Veuillez reessayer.',
             maxRetries: 'Impossible de comprendre apres plusieurs tentatives. Reessayez plus tard.',
         },

@@ -1,5 +1,6 @@
 import type { DiagnosisRecord, MetricsReading } from '@/types'
 import { formatDate } from './pdfTypes'
+import { valueRange } from './pdfStats'
 
 export function renderMetricsCanvas(
     readings: MetricsReading[],
@@ -41,8 +42,7 @@ export function renderMetricsCanvas(
     ): void => {
         if (values.length < 2) return
 
-        const minVal = Math.min(...values.map((v) => v.y))
-        const maxVal = Math.max(...values.map((v) => v.y))
+        const { min: minVal, max: maxVal } = valueRange(values.map((v) => v.y))
         const range = maxVal - minVal || 1
 
         ctx.strokeStyle = color

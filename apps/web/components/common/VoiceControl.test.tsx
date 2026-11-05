@@ -364,6 +364,21 @@ describe('VoiceControl -- end handling', () => {
 // ---------------------------------------------------------------------------
 
 describe('VoiceControl -- toggle button', () => {
+    it('stopping in continuous mode does not restart on the end event', async () => {
+        mockIsListening = true
+        mockContinuous = true
+        const VC = await importVoiceControl()
+        render(React.createElement(VC))
+        const main = mockInstances[0]
+
+        fireEvent.click(screen.getByRole('button'))
+        main?.fire('end')
+
+        expect(main?.stop).toHaveBeenCalled()
+        expect(main?.start).not.toHaveBeenCalled()
+        expect(mockSetVoiceListening).toHaveBeenCalledWith(false)
+    })
+
     it('calls start on the recognizer when toggle is clicked', async () => {
         const VC = await importVoiceControl()
         render(React.createElement(VC))

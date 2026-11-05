@@ -353,6 +353,13 @@ export const VoiceControl: React.FC = () => {
     // stop finishing after the next dispose() would mark a released engine
     // ready again (#744 review).
     const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
+    // Local-Only Mode releases the engine instead of stopping it: init()
+    // subscribes WebVoiceProcessor, which keeps the microphone open until
+    // dispose() unsubscribes, and stop() only pauses the worker.
+    const releasePorcupine = useCallback(async () => {
+        await porcupineWakeWordService.dispose()
+        porcupineConfigRef.current = null
+    }, [])
     const enqueuePorcupine = useCallback((step: () => Promise<unknown>) => {
         porcupineRunRef.current = porcupineRunRef.current.then(step).then(
             () => undefined,
@@ -432,7 +439,9 @@ export const VoiceControl: React.FC = () => {
             disposed = true
             // Queued even while this run is still starting: it then stops the
             // engine that run is about to leave listening (#744 review).
-            enqueuePorcupine(() => porcupineWakeWordService.stop())
+            enqueuePorcupine(
+                speechBlockedRef.current ? releasePorcupine : () => porcupineWakeWordService.stop(),
+            )
             porcupineInitRef.current = false
         }
     }, [
@@ -445,6 +454,7 @@ export const VoiceControl: React.FC = () => {
         speechBlocked,
         activateFromHotword,
         enqueuePorcupine,
+        releasePorcupine,
     ])
 
     const addNotification = useUIStore((s) => s.addNotification)
@@ -459,6 +469,8 @@ export const VoiceControl: React.FC = () => {
         if (!isAvailable || !hasSpeechRecognitionSupport || !recognitionRef.current) return
 
         if (isListening) {
+            // An explicit stop: continuous mode must not restart on the 'end'.
+            isListeningRef.current = false
             recognitionRef.current.stop()
         } else {
             try {

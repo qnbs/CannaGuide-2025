@@ -279,6 +279,7 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         localOnly = true
         view.rerender(<VoiceControl />)
         await settle()
-        expect(porcupine.stop).toHaveBeenCalled()
+        // Released, not only stopped: init() subscribed the microphone.
+        expect(porcupine.dispose).toHaveBeenCalled()
     })
 })

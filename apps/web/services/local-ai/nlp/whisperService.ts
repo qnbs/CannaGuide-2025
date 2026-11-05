@@ -99,10 +99,21 @@ export function isWhisperAvailable(): boolean {
 // Model lifecycle
 // ---------------------------------------------------------------------------
 
-/** Telemetry for a failure; a Local-Only refusal is a choice, not a failure (GH #700). */
+/** A load that failed; its cause was already captured where it happened. */
+class WhisperLoadFailedError extends Error {
+    constructor() {
+        super('Whisper model failed to load')
+        this.name = 'WhisperLoadFailedError'
+    }
+}
+
+/**
+ * Telemetry for a failure, once: a Local-Only refusal is a choice, not a
+ * failure (GH #700), and a failed load was captured in the load itself.
+ */
 function captureUnlessBlocked(err: unknown): void {
-    if (!(err instanceof ModelDownloadBlockedError))
-        captureLocalAiError(err, { stage: 'inference' })
+    if (err instanceof ModelDownloadBlockedError || err instanceof WhisperLoadFailedError) return
+    captureLocalAiError(err, { stage: 'inference' })
 }
 
 /** Why the last load failed: a Local-Only refusal is passed on with its type (GH #700). */
@@ -112,7 +123,7 @@ let lastLoadError: unknown = null
 function loadedOrThrow(result: WhisperPipeline | null): WhisperPipeline {
     if (result) return result
     if (lastLoadError instanceof ModelDownloadBlockedError) throw lastLoadError
-    throw new Error('Whisper model failed to load')
+    throw new WhisperLoadFailedError()
 }
 
 /**

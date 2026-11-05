@@ -45,4 +45,15 @@ describe('whisperService in Local-Only Mode (GH #700)', () => {
             expect.any(ModelDownloadBlockedError),
         )
     })
+
+    it('reports a failed load to telemetry once, not again from transcribe', async () => {
+        vi.stubGlobal('AudioContext', class {})
+        transformers.pipeline.mockRejectedValueOnce(new Error('WebGPU context lost'))
+        captureLocalAiError.mockClear()
+        const { transcribe } = await import('./whisperService')
+
+        await expect(transcribe(new Float32Array([0.1]))).rejects.toThrow(/failed to load/)
+
+        expect(captureLocalAiError).toHaveBeenCalledTimes(1)
+    })
 })

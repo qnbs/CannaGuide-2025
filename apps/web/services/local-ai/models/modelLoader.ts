@@ -253,9 +253,13 @@ export const asDownloadBlocked = (error: unknown, modelId: string): unknown => {
  */
 export const applyLocalOnlyPolicy = async (modelId: string): Promise<void> => {
     const { env } = await getTransformersModule()
-    await prepareTransformersLoad(env, modelId, true).catch((error: unknown) => {
-        throw asDownloadBlocked(error, modelId)
-    })
+    try {
+        await prepareTransformersLoad(env, modelId, true)
+    } catch (error) {
+        // Switched off during the cache lookup: downloads are allowed again.
+        if (isLocalOnlyMode()) throw asDownloadBlocked(error, modelId)
+        await prepareTransformersLoad(env, modelId, false)
+    }
 }
 
 /**
@@ -322,10 +326,16 @@ export const loadTransformersPipeline = async (
     evictForNewPipeline()
     loadedPipelineKeys.delete(cacheKey)
     pipelineCache.set(cacheKey, promise)
+    // Only for this entry: it may have been evicted and replaced by a newer load.
+    const isCurrent = (): boolean => pipelineCache.get(cacheKey) === promise
     promise.then(
-        () => loadedPipelineKeys.add(cacheKey),
+        () => {
+            if (isCurrent()) loadedPipelineKeys.add(cacheKey)
+        },
         // Evict from cache on failure so retry is possible
-        () => pipelineCache.delete(cacheKey),
+        () => {
+            if (isCurrent()) pipelineCache.delete(cacheKey)
+        },
     )
     return promise
 }

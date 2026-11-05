@@ -87,9 +87,15 @@ const loadPipeline = async (
     evictOldestPipeline()
     loadedPipelines.delete(key)
     pipelineCache.set(key, promise)
+    // Only for this entry: it may have been evicted and replaced by a newer load.
+    const isCurrent = (): boolean => pipelineCache.get(key) === promise
     promise.then(
-        () => loadedPipelines.add(key),
-        () => pipelineCache.delete(key),
+        () => {
+            if (isCurrent()) loadedPipelines.add(key)
+        },
+        () => {
+            if (isCurrent()) pipelineCache.delete(key)
+        },
     )
     return promise
 }

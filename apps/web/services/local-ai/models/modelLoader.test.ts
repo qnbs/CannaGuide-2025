@@ -499,4 +499,35 @@ describe('loadTransformersPipeline in Local-Only Mode (GH #700)', () => {
             expect.any(ModelDownloadBlockedError),
         )
     })
+
+    it('allows the download when the mode is switched off during the cache lookup', async () => {
+        setLocalOnlyMode(true)
+        vi.stubGlobal('caches', {
+            open: () => {
+                setLocalOnlyMode(false)
+                return Promise.resolve({ match: () => Promise.resolve() })
+            },
+        })
+
+        await loadTransformersPipeline('feature-extraction', 'Xenova/toggled', {})
+
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+        expect(transformers.env.allowRemoteModels).toBe(true)
+    })
+
+    it('a failed older load does not evict the newer one for the same model', async () => {
+        let fail: (error: Error) => void = () => undefined
+        transformers.pipeline.mockReturnValueOnce(new Promise((_, reject) => (fail = reject)))
+        const older = loadTransformersPipeline('feature-extraction', 'Xenova/replaced', {})
+        await vi.waitFor(() => expect(transformers.pipeline).toHaveBeenCalledTimes(1))
+        clearPipelineCache()
+        await loadTransformersPipeline('feature-extraction', 'Xenova/replaced', {})
+
+        fail(new Error('network'))
+        await expect(older).rejects.toThrow('network')
+        await loadTransformersPipeline('feature-extraction', 'Xenova/replaced', {})
+
+        // The newer pipeline was reused: no third load.
+        expect(transformers.pipeline).toHaveBeenCalledTimes(2)
+    })
 })

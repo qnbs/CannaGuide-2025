@@ -415,6 +415,35 @@ describe('VoiceControl -- Local-Only Mode', () => {
         expect(mockInstances).toHaveLength(2)
     })
 
+    it('a command result still queued after the switch runs no command', async () => {
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        const main = mockInstances[0]
+
+        mockLocalOnly = true
+        view.rerender(React.createElement(VC))
+        main?.fire('result', {
+            results: [
+                Object.assign([{ transcript: 'water plant', confidence: 1 }], { isFinal: true }),
+            ],
+        })
+
+        expect(mockProcessVoiceCommand).not.toHaveBeenCalled()
+    })
+
+    it('a recognizer created when the mode is switched off gets the app language', async () => {
+        mockLocalOnly = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        expect(mockInstances).toHaveLength(0)
+
+        mockLocalOnly = false
+        view.rerender(React.createElement(VC))
+
+        expect(mockInstances).toHaveLength(1)
+        expect(mockInstances[0]?.lang).toBe('en-US')
+    })
+
     it('a hotword heard by a stale listener after the switch starts nothing', async () => {
         mockHotwordEnabled = true
         const VC = await importVoiceControl()

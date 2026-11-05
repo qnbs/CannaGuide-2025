@@ -65,6 +65,11 @@ function wakeWordAllowed(
     return hotwordEnabled && isAvailable && !speechBlocked
 }
 
+/** The recognizer language for the app language (commands exist in German and English). */
+function recognitionLang(lang: string): string {
+    return lang === 'de' ? 'de-DE' : 'en-US'
+}
+
 /** The mic's tooltip: why it does nothing while Local-Only Mode is on. */
 function micTitleKey(speechBlocked: boolean): string {
     return speechBlocked ? 'common.voiceControl.errors.localOnly' : 'common.voiceControl.toggle'
@@ -162,8 +167,17 @@ export const VoiceControl: React.FC = () => {
         const recognition = new SpeechRecognitionAPI()
         recognition.continuous = continuousListening
         recognition.interimResults = true
+        // Set here, not only on a language change: a recognizer created later
+        // (for example when Local-Only Mode is switched off) needs it too.
+        recognition.lang = recognitionLang(lang)
 
-        recognition.addEventListener('result', handleResult)
+        // A result already queued when Local-Only Mode was switched on must not
+        // run a command; the cleanup below may not have run yet.
+        const onResult = (event: WSpeechRecognitionEvent): void => {
+            if (!speechBlockedRef.current) handleResult(event)
+        }
+
+        recognition.addEventListener('result', onResult)
         recognition.addEventListener('error', handleError)
         recognition.addEventListener('end', handleEnd)
 
@@ -171,14 +185,22 @@ export const VoiceControl: React.FC = () => {
 
         return () => {
             if (recognition) {
-                recognition.removeEventListener('result', handleResult)
+                recognition.removeEventListener('result', onResult)
                 recognition.removeEventListener('error', handleError)
                 recognition.removeEventListener('end', handleEnd)
                 recognition.abort()
                 recognitionRef.current = null
             }
         }
-    }, [isAvailable, speechBlocked, continuousListening, handleResult, handleError, handleEnd])
+    }, [
+        isAvailable,
+        speechBlocked,
+        continuousListening,
+        lang,
+        handleResult,
+        handleError,
+        handleEnd,
+    ])
 
     // Switching Local-Only Mode on aborts the recognizers (the effects above
     // and below); the listening state and the HUD must follow.
@@ -189,12 +211,6 @@ export const VoiceControl: React.FC = () => {
         setVoiceListening(false)
         setVoiceStatusMessage(t('common.voiceControl.errors.localOnly'))
     }, [speechBlocked, isListening, setVoiceListening, setVoiceStatusMessage, t])
-
-    useEffect(() => {
-        if (recognitionRef.current) {
-            recognitionRef.current.lang = lang === 'de' ? 'de-DE' : 'en-US'
-        }
-    }, [lang])
 
     // ---------------------------------------------------------------------------
     // V-03: Hotword Wake Detection
@@ -249,7 +265,7 @@ export const VoiceControl: React.FC = () => {
             const hw = new SpeechRecognitionAPI()
             hw.continuous = true
             hw.interimResults = true
-            hw.lang = lang === 'de' ? 'de-DE' : 'en-US'
+            hw.lang = recognitionLang(lang)
 
             const onResult = (event: WSpeechRecognitionEvent) => {
                 for (let i = 0; i < event.results.length; i++) {

@@ -172,6 +172,45 @@ export const common = {
         mainContent: 'Contenu principal',
         mainNavigation: 'Navigation principale',
     },
+    voiceControl: {
+        listening: 'Ecoute...',
+        processing: 'Traitement: "{{transcript}}"',
+        toggle: 'Basculer le controle vocal',
+        assistantThinking: 'Reflexion...',
+        hotwordDetected: 'Mot cle detecte -- parlez maintenant.',
+        noPlantContext: "Aucun contexte de plante actif n'est disponible pour l'assistant vocal.",
+        assistantFailed: "La requete de l'assistant vocal a echoue.",
+        readAloud: 'Lire a voix haute',
+        mode: {
+            idle: 'Inactif',
+            listening: 'Ecoute',
+            processing: 'Traitement',
+            speaking: 'Parle',
+            confirmation: 'En attente de confirmation',
+        },
+        hud: {
+            title: 'Controle Vocal',
+            collapse: 'Reduire le HUD vocal',
+            expand: 'Agrandir le HUD vocal',
+        },
+        confirmation: {
+            question: 'Executer "{{command}}" ?',
+            yes: 'Oui',
+            no: 'Non',
+            cancelled: 'Commande annulee.',
+            yesOrNo: 'Veuillez repondre oui ou non.',
+        },
+        errors: {
+            generic: 'Une erreur de reconnaissance vocale est survenue.',
+            noSpeech: 'Aucune parole detectee.',
+            notAllowed: 'Acces au microphone refuse.',
+            startFailed: "Impossible de demarrer l'ecoute.",
+            localOnly:
+                "La saisie vocale est d\u00E9sactiv\u00E9e en mode local uniquement : la reconnaissance vocale du navigateur peut traiter l'audio en ligne.",
+            notUnderstood: 'Pas compris. Veuillez reessayer.',
+            maxRetries: 'Impossible de comprendre apres plusieurs tentatives. Reessayez plus tard.',
+        },
+    },
 }
 
 export const nav = {
@@ -221,42 +260,5 @@ export const ai = {
         loadingModel: 'Chargement du modele dans le cache...',
         eta: '~{{time}} restant',
         ariaLabel: 'Progression du chargement du modele',
-    },
-    voiceControl: {
-        listening: 'Ecoute...',
-        processing: 'Traitement: "{{transcript}}"',
-        toggle: 'Basculer le controle vocal',
-        assistantThinking: 'Reflexion...',
-        hotwordDetected: 'Mot cle detecte -- parlez maintenant.',
-        noPlantContext: "Aucun contexte de plante actif n'est disponible pour l'assistant vocal.",
-        assistantFailed: "La requete de l'assistant vocal a echoue.",
-        readAloud: 'Lire a voix haute',
-        mode: {
-            idle: 'Inactif',
-            listening: 'Ecoute',
-            processing: 'Traitement',
-            speaking: 'Parle',
-            confirmation: 'En attente de confirmation',
-        },
-        hud: {
-            title: 'Controle Vocal',
-            collapse: 'Reduire le HUD vocal',
-            expand: 'Agrandir le HUD vocal',
-        },
-        confirmation: {
-            question: 'Executer "{{command}}" ?',
-            yes: 'Oui',
-            no: 'Non',
-            cancelled: 'Commande annulee.',
-            yesOrNo: 'Veuillez repondre oui ou non.',
-        },
-        errors: {
-            generic: 'Une erreur de reconnaissance vocale est survenue.',
-            noSpeech: 'Aucune parole detectee.',
-            notAllowed: 'Acces au microphone refuse.',
-            startFailed: "Impossible de demarrer l'ecoute.",
-            notUnderstood: 'Pas compris. Veuillez reessayer.',
-            maxRetries: 'Impossible de comprendre apres plusieurs tentatives. Reessayez plus tard.',
-        },
     },
 }

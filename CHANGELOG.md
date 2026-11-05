@@ -22,6 +22,12 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(privacy):** Local-Only Mode now turns off voice commands, the hotword and dictation (#717). They use the browser's speech recognition, which some browsers process on the vendor's online service, so the mode's promise to keep data on the device did not hold for them. The Porcupine wake word, which listens on the device, is turned off too, because it would have no command listener to start. While the mode is on, no recognizer starts; switching it on stops one that is running, and the microphone explains why instead of listening. The privacy and voice settings now say this. Five languages.
+
+- **fix(voice):** Turning off the always-on hotword (or switching to another wake-word engine) now closes the microphone that the Porcupine wake word had opened; it used to stay open in the background. Starting or stopping a voice command no longer restarts the listeners, and stopping in continuous mode really stops.
+
+- **fix(i18n):** Voice-control messages (listening, hotword, errors, confirmations) now appear in Spanish, French and Dutch. Their translations sat in the wrong section of those locale files, so the app always showed the English text.
+
 - **fix(nutrients):** EC/pH readings are no longer lost after the 500th entry (#814). Each reading is logged by hand with Log Reading in the EC/pH planner, yet the store kept only the latest 500, so every new entry silently deleted the oldest one. All readings are now kept, and nothing deletes them automatically any more; a synced update replaces the reading with the same id and never drops another one. The monitor, history and auto-adjust still use the most recent readings. Entries already dropped by earlier versions cannot be recovered.
 
 - **fix(metrics):** Plant metrics are no longer lost after the 168th entry per plant (#814). Height, pot weight and CO2 are entered by hand in a plant's Metrics tab, yet the store kept only the latest 168 per plant, so each new entry silently deleted that plant's oldest one. Every entry is now kept and leaves only when the plant's metrics are cleared; other plants were never affected and still are not. The chart still shows the chosen time range. Entries already dropped by earlier versions cannot be recovered.

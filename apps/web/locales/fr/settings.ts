@@ -424,7 +424,8 @@ export const settingsView = {
         testVoiceSentence: 'Ceci est un test de la voix selectionnee.',
         voiceControl: {
             enabled: 'Activer la commande vocale',
-            enabledDesc: "Controlez l'application a l'aide de commandes vocales simples.",
+            enabledDesc:
+                "Contr\u00F4lez l'application \u00E0 l'aide de commandes vocales simples. Elles utilisent la reconnaissance vocale de votre navigateur, que certains navigateurs traitent en ligne ; le mode local uniquement les d\u00E9sactive.",
             hotwordEnabled: 'Mot-cle permanent',
             hotwordEnabledDesc:
                 'Garde le microphone pret pour les mots de reveil mains libres lorsque le navigateur le prend en charge.',
@@ -902,9 +903,9 @@ export const settingsView = {
         title: 'Confidentialite & Securite',
         localOnlyMode: 'Mode local uniquement',
         localOnlyModeDesc:
-            "Garde vos donn\u00E9es sur cet appareil et sur votre r\u00E9seau local. Tant qu'il est actif, CannaGuide n'envoie ni rapports d'erreurs ni requ\u00EAtes \u00E0 l'IA cloud ou \u00E0 la synth\u00E8se vocale cloud, ignore les recherches de vari\u00E9t\u00E9s en ligne et le partage communautaire, et ne connecte les capteurs MQTT qu'\u00E0 des brokers de votre r\u00E9seau local. Pas encore couvert : les mod\u00E8les d'IA locale t\u00E9l\u00E9charg\u00E9s \u00E0 la premi\u00E8re utilisation (le pr\u00E9chargement explicite est bloqu\u00E9) et la reconnaissance vocale, que certains navigateurs traitent en ligne.",
+            "Garde vos donn\u00E9es sur cet appareil et sur votre r\u00E9seau local. Tant qu'il est actif, CannaGuide n'envoie ni rapports d'erreurs ni requ\u00EAtes \u00E0 l'IA cloud ou \u00E0 la synth\u00E8se vocale cloud, ignore les recherches de vari\u00E9t\u00E9s en ligne et le partage communautaire, ne connecte les capteurs MQTT qu'\u00E0 des brokers de votre r\u00E9seau local et d\u00E9sactive les commandes vocales et la dict\u00E9e, car la reconnaissance vocale du navigateur peut traiter l'audio en ligne. Pas encore couvert : les mod\u00E8les d'IA locale t\u00E9l\u00E9charg\u00E9s \u00E0 la premi\u00E8re utilisation (le pr\u00E9chargement explicite est bloqu\u00E9).",
         localOnlyModeActive:
-            "Le mode local uniquement est actif. Les rapports d'erreurs, l'IA cloud, la synth\u00E8se vocale cloud, les recherches de vari\u00E9t\u00E9s en ligne et le partage communautaire sont d\u00E9sactiv\u00E9s, et MQTT est limit\u00E9 \u00E0 votre r\u00E9seau local. Les t\u00E9l\u00E9chargements de mod\u00E8les \u00E0 la premi\u00E8re utilisation et la reconnaissance vocale du navigateur ne sont pas encore bloqu\u00E9s. D\u00E9sactivez-le pour retrouver les fonctions cloud.",
+            "Le mode local uniquement est actif. Les rapports d'erreurs, l'IA cloud, la synth\u00E8se vocale cloud, les recherches de vari\u00E9t\u00E9s en ligne, le partage communautaire, les commandes vocales et la dict\u00E9e sont d\u00E9sactiv\u00E9s, et MQTT est limit\u00E9 \u00E0 votre r\u00E9seau local. Les t\u00E9l\u00E9chargements de mod\u00E8les \u00E0 la premi\u00E8re utilisation ne sont pas encore bloqu\u00E9s. D\u00E9sactivez-le pour retrouver les fonctions cloud.",
         requirePin: 'Exiger un PIN au demarrage',
         requirePinDesc: 'Protegez votre application avec un PIN a 4 chiffres.',
         setPin: 'Definir/Modifier le PIN',

@@ -221,6 +221,8 @@ export const common = {
             noSpeech: 'Keine Sprache erkannt.',
             notAllowed: 'Mikrofonzugriff verweigert.',
             startFailed: 'Zuhören konnte nicht gestartet werden.',
+            localOnly:
+                'Spracheingabe ist im Nur-Lokal-Modus aus: Die Spracherkennung des Browsers kann Audio online verarbeiten.',
             notUnderstood: 'Nicht verstanden. Bitte versuche es erneut.',
             maxRetries: 'Nach mehreren Versuchen nicht verstanden. Bitte später erneut versuchen.',
             assistantFailed:

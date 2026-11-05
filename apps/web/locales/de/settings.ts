@@ -412,7 +412,8 @@ export const settingsView = {
         testVoiceSentence: 'Dies ist ein Test der ausgewählten Stimme.',
         voiceControl: {
             enabled: 'Sprachsteuerung aktivieren',
-            enabledDesc: 'Steuere die App mit einfachen Sprachbefehlen.',
+            enabledDesc:
+                'Steuere die App mit einfachen Sprachbefehlen. Sie nutzen die Spracherkennung deines Browsers, die manche Browser online verarbeiten; im Nur-Lokal-Modus sind sie aus.',
             hotwordEnabled: 'Permanentes Hotword',
             hotwordEnabledDesc:
                 'Hält das Mikrofon für freihändige Aktivierungswörter bereit, sofern der Browser dies unterstützt.',
@@ -882,9 +883,9 @@ export const settingsView = {
         title: 'Privatsphäre & Sicherheit',
         localOnlyMode: 'Nur-Lokal-Modus',
         localOnlyModeDesc:
-            'Hält deine Daten auf diesem Gerät und in deinem lokalen Netzwerk. Solange der Modus aktiv ist, sendet CannaGuide keine Fehlerberichte und keine Anfragen an Cloud-KI oder Cloud-Sprachausgabe, überspringt Online-Sortenabfragen und das Teilen mit der Community und verbindet MQTT-Sensoren nur mit Brokern in deinem lokalen Netzwerk. Noch nicht abgedeckt: lokale KI-Modelle, die beim ersten Gebrauch heruntergeladen werden (das ausdrückliche Vorladen ist blockiert), und die Spracherkennung, die manche Browser online verarbeiten.',
+            'H\u00E4lt deine Daten auf diesem Ger\u00E4t und in deinem lokalen Netzwerk. Solange der Modus aktiv ist, sendet CannaGuide keine Fehlerberichte und keine Anfragen an Cloud-KI oder Cloud-Sprachausgabe, \u00FCberspringt Online-Sortenabfragen und das Teilen mit der Community, verbindet MQTT-Sensoren nur mit Brokern in deinem lokalen Netzwerk und schaltet Sprachbefehle und Diktat aus, weil die Spracherkennung des Browsers Audio online verarbeiten kann. Noch nicht abgedeckt: lokale KI-Modelle, die beim ersten Gebrauch heruntergeladen werden (das ausdr\u00FCckliche Vorladen ist blockiert).',
         localOnlyModeActive:
-            'Der Nur-Lokal-Modus ist aktiv. Fehlerberichte, Cloud-KI, Cloud-Sprachausgabe, Online-Sortenabfragen und das Teilen mit der Community sind aus, und MQTT ist auf dein lokales Netzwerk beschränkt. Modelldownloads beim ersten Gebrauch und die Browser-Spracherkennung sind noch nicht blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
+            'Der Nur-Lokal-Modus ist aktiv. Fehlerberichte, Cloud-KI, Cloud-Sprachausgabe, Online-Sortenabfragen, das Teilen mit der Community, Sprachbefehle und Diktat sind aus, und MQTT ist auf dein lokales Netzwerk beschr\u00E4nkt. Modelldownloads beim ersten Gebrauch sind noch nicht blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
         requirePin: 'PIN beim Start anfordern',
         requirePinDesc: 'Schütze deine App mit einer 4-stelligen PIN.',
         setPin: 'PIN festlegen/ändern',

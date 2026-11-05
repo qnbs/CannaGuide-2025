@@ -5,9 +5,9 @@
  * Starts/stops a SpeechRecognition session and accumulates the transcript.
  * Used by LogActionModal for hands-free note entry.
  */
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import { useAppSelector } from '@/stores/store'
-import { selectLanguage } from '@/stores/selectors'
+import { selectLanguage, selectLocalOnlyMode } from '@/stores/selectors'
 
 // Re-use the same Web Speech API types as VoiceControl.tsx
 interface WDictationRecognitionResult {
@@ -47,6 +47,15 @@ interface WDictationRecognition extends EventTarget {
 }
 type WDictationRecognitionCtor = { new (): WDictationRecognition }
 
+/** The text of every result so far, in order (first alternative of each). */
+function joinTranscript(results: WDictationRecognitionResultList): string {
+    let full = ''
+    for (let i = 0; i < results.length; i++) {
+        full += results[i]?.[0]?.transcript ?? ''
+    }
+    return full
+}
+
 const getSpeechRecognitionAPI = (): WDictationRecognitionCtor | undefined =>
     (window as Window & { SpeechRecognition?: WDictationRecognitionCtor }).SpeechRecognition ||
     (window as Window & { webkitSpeechRecognition?: WDictationRecognitionCtor })
@@ -74,11 +83,16 @@ export interface UseDictationReturn {
 
 export function useDictation(onTranscript?: (text: string) => void): UseDictationReturn {
     const lang = useAppSelector(selectLanguage)
+    // Browser speech recognition may process the audio online, so Local-Only
+    // Mode keeps dictation off and stops a running one (GH #717).
+    const localOnly = useAppSelector(selectLocalOnlyMode)
     const [isListening, setIsListening] = useState(false)
     const [transcript, setTranscript] = useState('')
     const [error, setError] = useState<string | null>(null)
     const recognitionRef = useRef<WDictationRecognition | null>(null)
     const onTranscriptRef = useRef(onTranscript)
+    // The text so far, including an interim result, for a stop by the switch.
+    const transcriptRef = useRef('')
 
     // Keep callback ref current without re-creating recognition
     useEffect(() => {
@@ -92,11 +106,12 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
     }, [])
 
     const reset = useCallback(() => {
+        transcriptRef.current = ''
         setTranscript('')
         setError(null)
     }, [])
 
-    const start = useCallback(() => {
+    const startRecognition = useCallback(() => {
         const SpeechRecognitionAPI = getSpeechRecognitionAPI()
         if (!SpeechRecognitionAPI) return
         if (recognitionRef.current) {
@@ -112,16 +127,14 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         rec.interimResults = true
         rec.lang = lang === 'de' ? 'de-DE' : 'en-US'
 
+        // A replaced or aborted recognizer can still fire (an async 'aborted'
+        // error, a late 'end'); only the current one may change the state.
+        const isCurrent = (): boolean => recognitionRef.current === rec
+
         rec.addEventListener('result', (event: WDictationRecognitionEvent) => {
-            let full = ''
-            for (let i = 0; i < event.results.length; i++) {
-                const item = event.results[i]
-                if (!item) continue
-                const first = item[0]
-                if (first) {
-                    full += first.transcript
-                }
-            }
+            if (!isCurrent()) return
+            const full = joinTranscript(event.results)
+            transcriptRef.current = full
             setTranscript(full)
             // Call callback on final results only
             const latest = event.results[event.results.length - 1]
@@ -131,6 +144,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         })
 
         rec.addEventListener('error', (event: WDictationRecognitionErrorEvent) => {
+            if (!isCurrent()) return
             console.debug('[useDictation] error:', event.error)
             if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                 setError('notAllowed')
@@ -143,10 +157,11 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         })
 
         rec.addEventListener('end', () => {
-            setIsListening(false)
+            if (isCurrent()) setIsListening(false)
         })
 
         recognitionRef.current = rec
+        transcriptRef.current = ''
         setError(null)
 
         try {
@@ -158,6 +173,24 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
             setIsListening(false)
         }
     }, [lang])
+
+    const start = useCallback(() => {
+        if (localOnly) setError('localOnly')
+        else startRecognition()
+    }, [localOnly, startRecognition])
+
+    // A layout effect, so the recognizer stops in the commit of the switch: a
+    // passive effect would leave a gap in which it keeps listening and a queued
+    // result still counts as current and overwrites the note.
+    useLayoutEffect(() => {
+        if (!localOnly || !recognitionRef.current) return
+        recognitionRef.current.abort()
+        recognitionRef.current = null
+        // An aborted recognizer sends no final result: keep what was dictated.
+        if (transcriptRef.current) onTranscriptRef.current?.(transcriptRef.current)
+        setIsListening(false)
+        setError('localOnly')
+    }, [localOnly])
 
     // Cleanup on unmount
     useEffect(() => {

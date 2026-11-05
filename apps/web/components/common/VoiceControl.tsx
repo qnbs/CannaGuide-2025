@@ -1,7 +1,7 @@
-import React, { useEffect, useCallback, useRef, useState } from 'react'
+import React, { useEffect, useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/stores/store'
-import { selectLanguage, selectSettings } from '@/stores/selectors'
+import { selectLanguage, selectLocalOnlyMode, selectSettings } from '@/stores/selectors'
 import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
@@ -53,6 +53,28 @@ const hasSpeechRecognitionSupport = typeof SpeechRecognitionAPI === 'function'
 /** Regex that matches "hey canna" or "hey cannaguide" (case-insensitive). */
 const HOTWORD_REGEX = /hey\s+canna(?:guide)?/i
 
+/**
+ * Whether a wake word may listen: the hotword is on, voice control is
+ * available, and Local-Only Mode is off (GH #717).
+ */
+function wakeWordAllowed(
+    hotwordEnabled: boolean,
+    isAvailable: boolean,
+    speechBlocked: boolean,
+): boolean {
+    return hotwordEnabled && isAvailable && !speechBlocked
+}
+
+/** The recognizer language for the app language (commands exist in German and English). */
+function recognitionLang(lang: string): string {
+    return lang === 'de' ? 'de-DE' : 'en-US'
+}
+
+/** The mic's tooltip: why it does nothing while Local-Only Mode is on. */
+function micTitleKey(speechBlocked: boolean): string {
+    return speechBlocked ? 'common.voiceControl.errors.localOnly' : 'common.voiceControl.toggle'
+}
+
 /** Duration (ms) the command listener stays active after hotword detection. */
 const HOTWORD_ACTIVATION_MS = 5_000
 
@@ -60,6 +82,14 @@ export const VoiceControl: React.FC = () => {
     const { t } = useTranslation()
     const lang = useAppSelector(selectLanguage)
     const settings = useAppSelector(selectSettings)
+    // Browser speech recognition may send the audio to the browser vendor's
+    // online service, which the app cannot see or stop, so Local-Only Mode
+    // keeps every recognizer here off (GH #717). Porcupine stays off too: a
+    // wake word would have no command listener to start.
+    const speechBlocked = useAppSelector(selectLocalOnlyMode)
+    // The live value for listeners created before a change (see the layout
+    // effect below, which also aborts the recognizers at commit).
+    const speechBlockedRef = useRef(speechBlocked)
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
     const continuousListening = settings.voiceControl.continuousListening
     const isListening = useUIStore((s) => s.voiceControl.isListening)
@@ -69,11 +99,28 @@ export const VoiceControl: React.FC = () => {
     const setVoiceStatusMessage = useUIStore((s) => s.setVoiceStatusMessage)
     const processVoiceCommand = useUIStore((s) => s.processVoiceCommand)
     const recognitionRef = useRef<WSpeechRecognition | null>(null)
+    // Read by the end and hotword handlers. As a dependency, isListening made
+    // every start or stop of a session rebuild (and abort) the recognizers.
+    const isListeningRef = useRef(isListening)
+    useLayoutEffect(() => {
+        isListeningRef.current = isListening
+    }, [isListening])
 
     // Hotword listener state
     const hotwordRecRef = useRef<WSpeechRecognition | null>(null)
     const hotwordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [hotwordActive, setHotwordActive] = useState(false)
+
+    // Switching Local-Only Mode on stops recognition in the commit itself, not
+    // in a later passive cleanup: between the two, a recognizer could keep
+    // sending audio, deliver a queued result or restart itself on 'end'. The
+    // listeners read the ref, so an event that still arrives does nothing.
+    useLayoutEffect(() => {
+        speechBlockedRef.current = speechBlocked
+        if (!speechBlocked) return
+        recognitionRef.current?.abort()
+        hotwordRecRef.current?.abort()
+    }, [speechBlocked])
 
     const handleResult = useCallback(
         (event: WSpeechRecognitionEvent) => {
@@ -116,7 +163,7 @@ export const VoiceControl: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         // In continuous listening mode, auto-restart recognition
-        if (continuousListening && isListening && recognitionRef.current) {
+        if (continuousListening && isListeningRef.current && recognitionRef.current) {
             try {
                 recognitionRef.current.start()
                 return
@@ -126,37 +173,74 @@ export const VoiceControl: React.FC = () => {
         }
         setVoiceListening(false)
         setVoiceStatusMessage(null)
-    }, [continuousListening, isListening, setVoiceListening, setVoiceStatusMessage])
+    }, [continuousListening, setVoiceListening, setVoiceStatusMessage])
 
     useEffect(() => {
-        if (!isAvailable || !hasSpeechRecognitionSupport) return
+        if (!isAvailable || !hasSpeechRecognitionSupport || speechBlocked) return
 
         const recognition = new SpeechRecognitionAPI()
         recognition.continuous = continuousListening
         recognition.interimResults = true
+        // Set here, not only on a language change: a recognizer created later
+        // (for example when Local-Only Mode is switched off) needs it too.
+        recognition.lang = recognitionLang(lang)
 
-        recognition.addEventListener('result', handleResult)
-        recognition.addEventListener('error', handleError)
-        recognition.addEventListener('end', handleEnd)
+        // A result already queued when Local-Only Mode was switched on must not
+        // run a command; the cleanup below may not have run yet.
+        const onResult = (event: WSpeechRecognitionEvent): void => {
+            if (!speechBlockedRef.current) handleResult(event)
+        }
+
+        // Continuous mode restarts on 'end'; never after the switch.
+        const onEnd = (): void => {
+            if (!speechBlockedRef.current) handleEnd()
+        }
+        // The abort at the switch fires 'aborted'; it must not replace the reason.
+        const onError = (event: WSpeechRecognitionErrorEvent): void => {
+            if (!speechBlockedRef.current) handleError(event)
+        }
+
+        recognition.addEventListener('result', onResult)
+        recognition.addEventListener('error', onError)
+        recognition.addEventListener('end', onEnd)
 
         recognitionRef.current = recognition
 
         return () => {
             if (recognition) {
-                recognition.removeEventListener('result', handleResult)
-                recognition.removeEventListener('error', handleError)
-                recognition.removeEventListener('end', handleEnd)
+                recognition.removeEventListener('result', onResult)
+                recognition.removeEventListener('error', onError)
+                recognition.removeEventListener('end', onEnd)
                 recognition.abort()
                 recognitionRef.current = null
             }
         }
-    }, [isAvailable, continuousListening, handleResult, handleError, handleEnd])
+    }, [
+        isAvailable,
+        speechBlocked,
+        continuousListening,
+        lang,
+        handleResult,
+        handleError,
+        handleEnd,
+    ])
 
+    // Switching Local-Only Mode on aborts the recognizers (the layout effect
+    // above); the listening state and the live region must follow. A session
+    // or a detected hotword that it ended gets the reason, not a stale status.
     useEffect(() => {
-        if (recognitionRef.current) {
-            recognitionRef.current.lang = lang === 'de' ? 'de-DE' : 'en-US'
+        if (!speechBlocked) return
+        if (isListening || hotwordActive) {
+            setVoiceListening(false)
+            setVoiceStatusMessage(t('common.voiceControl.errors.localOnly'))
         }
-    }, [lang])
+        setHotwordActive(false)
+    }, [speechBlocked, isListening, hotwordActive, setVoiceListening, setVoiceStatusMessage, t])
+
+    // Switching it off clears that reason from the live region.
+    useEffect(() => {
+        if (!speechBlocked) setVoiceStatusMessage(null)
+    }, [speechBlocked, setVoiceStatusMessage])
 
     // ---------------------------------------------------------------------------
     // V-03: Hotword Wake Detection
@@ -164,7 +248,7 @@ export const VoiceControl: React.FC = () => {
     // for "hey canna(guide)?". When detected, the command listener activates for
     // HOTWORD_ACTIVATION_MS milliseconds then goes silent again.
     // ---------------------------------------------------------------------------
-    const activateFromHotword = useCallback(() => {
+    const startHotwordSession = useCallback(() => {
         setHotwordActive(true)
         setVoiceStatusMessage(t('common.voiceControl.hotwordDetected'))
         if (hotwordTimerRef.current !== null) {
@@ -176,7 +260,7 @@ export const VoiceControl: React.FC = () => {
         }, HOTWORD_ACTIVATION_MS)
 
         // Start main command listener
-        if (recognitionRef.current && !isListening) {
+        if (recognitionRef.current && !isListeningRef.current) {
             try {
                 recognitionRef.current.start()
                 setVoiceListening(true)
@@ -184,10 +268,19 @@ export const VoiceControl: React.FC = () => {
                 // already started or unavailable -- ignore
             }
         }
-    }, [t, isListening, setVoiceStatusMessage, setVoiceListening])
+    }, [t, setVoiceStatusMessage, setVoiceListening])
+
+    // A stale hotword or Porcupine listener may still call this after Local-Only
+    // Mode was switched on, so it reads the ref, not the render's value.
+    const activateFromHotword = useCallback(() => {
+        if (!speechBlockedRef.current) startHotwordSession()
+    }, [startHotwordSession])
 
     useEffect(() => {
-        if (!isAvailable || !hasSpeechRecognitionSupport || !hotwordEnabled) {
+        if (
+            !hasSpeechRecognitionSupport ||
+            !wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
+        ) {
             if (hotwordRecRef.current) {
                 hotwordRecRef.current.abort()
                 hotwordRecRef.current = null
@@ -198,11 +291,13 @@ export const VoiceControl: React.FC = () => {
         let stopped = false
 
         const startHotword = () => {
-            if (stopped || !hasSpeechRecognitionSupport) return
+            // A restart timer set before the switch may fire before the cleanup
+            // marks this run stopped: the live setting decides.
+            if (stopped || speechBlockedRef.current || !hasSpeechRecognitionSupport) return
             const hw = new SpeechRecognitionAPI()
             hw.continuous = true
             hw.interimResults = true
-            hw.lang = lang === 'de' ? 'de-DE' : 'en-US'
+            hw.lang = recognitionLang(lang)
 
             const onResult = (event: WSpeechRecognitionEvent) => {
                 for (let i = 0; i < event.results.length; i++) {
@@ -222,7 +317,7 @@ export const VoiceControl: React.FC = () => {
 
             const onEnd = () => {
                 // Auto-restart so the hotword listener stays alive
-                if (!stopped) {
+                if (!stopped && !speechBlockedRef.current) {
                     setTimeout(() => startHotword(), 200)
                 }
             }
@@ -250,14 +345,13 @@ export const VoiceControl: React.FC = () => {
                 hotwordRecRef.current = null
             }
         }
-    }, [isAvailable, hotwordEnabled, lang, activateFromHotword])
+    }, [isAvailable, hotwordEnabled, speechBlocked, lang, activateFromHotword])
 
     // ---------------------------------------------------------------------------
     // V-03b: Porcupine WASM Wake-Word Detection (optional upgrade)
     // When wakeWordEngine === 'porcupine' and an access key is set, use
     // Porcupine for low-CPU always-on keyword detection. Falls back to regex.
     // ---------------------------------------------------------------------------
-    const porcupineInitRef = useRef(false)
     // Identifies the key and keyword the engine was created with. init() keeps
     // an existing engine, so a changed or removed key needs dispose() first
     // (#744 review). Holds no key, only what changed.
@@ -267,6 +361,16 @@ export const VoiceControl: React.FC = () => {
     // stop finishing after the next dispose() would mark a released engine
     // ready again (#744 review).
     const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
+    // An engine that is no longer wanted (hotword off, another engine,
+    // Local-Only Mode) is released, not only stopped: init() subscribes
+    // WebVoiceProcessor, which keeps the microphone open until dispose()
+    // unsubscribes, and stop() only pauses the worker. Checked when the step
+    // runs, so an init that was still queued is released as well.
+    const releasePorcupine = useCallback(async () => {
+        if (porcupineConfigRef.current === null) return
+        await porcupineWakeWordService.dispose()
+        porcupineConfigRef.current = null
+    }, [])
     const enqueuePorcupine = useCallback((step: () => Promise<unknown>) => {
         porcupineRunRef.current = porcupineRunRef.current.then(step).then(
             () => undefined,
@@ -285,13 +389,11 @@ export const VoiceControl: React.FC = () => {
 
     useEffect(() => {
         const usePorcupine =
-            settings.voiceControl.wakeWordEngine === 'porcupine' && hotwordEnabled && isAvailable
+            settings.voiceControl.wakeWordEngine === 'porcupine' &&
+            wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
 
         if (!usePorcupine) {
-            if (porcupineInitRef.current) {
-                enqueuePorcupine(() => porcupineWakeWordService.stop())
-                porcupineInitRef.current = false
-            }
+            enqueuePorcupine(releasePorcupine)
             return
         }
 
@@ -332,8 +434,6 @@ export const VoiceControl: React.FC = () => {
                     activateFromHotword()
                 })
                 await porcupineWakeWordService.start()
-                // A teardown during start() already queued its stop behind this run.
-                if (!disposed) porcupineInitRef.current = true
             } catch {
                 console.debug('[VoiceControl] Porcupine init failed -- regex fallback active')
             }
@@ -345,8 +445,8 @@ export const VoiceControl: React.FC = () => {
             disposed = true
             // Queued even while this run is still starting: it then stops the
             // engine that run is about to leave listening (#744 review).
+            // The next run releases it if Porcupine is no longer wanted.
             enqueuePorcupine(() => porcupineWakeWordService.stop())
-            porcupineInitRef.current = false
         }
     }, [
         settings.voiceControl.wakeWordEngine,
@@ -355,14 +455,26 @@ export const VoiceControl: React.FC = () => {
         settings.voiceControl.porcupineKeyword,
         hotwordEnabled,
         isAvailable,
+        speechBlocked,
         activateFromHotword,
         enqueuePorcupine,
+        releasePorcupine,
     ])
+
+    const addNotification = useUIStore((s) => s.addNotification)
+    // Visible and announced: the mic does nothing while Local-Only Mode is on.
+    const explainSpeechBlocked = () => {
+        const reason = t('common.voiceControl.errors.localOnly')
+        setVoiceStatusMessage(reason)
+        addNotification({ message: reason, type: 'info' })
+    }
 
     const toggleListening = () => {
         if (!isAvailable || !hasSpeechRecognitionSupport || !recognitionRef.current) return
 
         if (isListening) {
+            // An explicit stop: continuous mode must not restart on the 'end'.
+            isListeningRef.current = false
             recognitionRef.current.stop()
         } else {
             try {
@@ -383,6 +495,11 @@ export const VoiceControl: React.FC = () => {
         }
     }
 
+    const handleMicClick = (): void => {
+        if (speechBlocked) explainSpeechBlocked()
+        else toggleListening()
+    }
+
     if (!isAvailable || !hasSpeechRecognitionSupport) {
         return null
     }
@@ -396,8 +513,8 @@ export const VoiceControl: React.FC = () => {
                         ? 'text-red-400 animate-pulse bg-red-500/20'
                         : 'text-slate-300 hover:text-slate-100'
                 }`}
-                onClick={toggleListening}
-                title={t('common.voiceControl.toggle')}
+                onClick={handleMicClick}
+                title={t(micTitleKey(speechBlocked))}
                 aria-label={t('common.voiceControl.toggle')}
                 aria-pressed={isListening}
             >

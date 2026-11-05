@@ -218,6 +218,8 @@ export const common = {
             noSpeech: 'No speech was detected.',
             notAllowed: 'Microphone access denied.',
             startFailed: 'Could not start listening.',
+            localOnly:
+                "Voice input is off in Local-Only Mode: the browser's speech recognition may process audio online.",
             notUnderstood: 'Not understood. Please try again.',
             maxRetries: 'Could not understand after several attempts. Please try later.',
             assistantFailed: 'The voice assistant could not answer. Please try again.',

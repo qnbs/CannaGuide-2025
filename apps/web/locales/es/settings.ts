@@ -420,7 +420,8 @@ export const settingsView = {
         testVoiceSentence: 'Esta es una prueba de la voz seleccionada.',
         voiceControl: {
             enabled: 'Habilitar Control por Voz',
-            enabledDesc: 'Controla la aplicacion usando comandos de voz simples.',
+            enabledDesc:
+                'Controla la aplicaci\u00F3n usando comandos de voz simples. Usan el reconocimiento de voz de tu navegador, que algunos navegadores procesan en l\u00EDnea; el Modo Solo Local los desactiva.',
             hotwordEnabled: 'Palabra Clave Siempre Activa',
             hotwordEnabledDesc:
                 'Mantiene el microfono listo para palabras de activacion manos libres cuando el navegador lo soporta.',
@@ -897,9 +898,9 @@ export const settingsView = {
         title: 'Privacidad y Seguridad',
         localOnlyMode: 'Modo Solo Local',
         localOnlyModeDesc:
-            'Mantiene tus datos en este dispositivo y en tu red local. Mientras est\u00E1 activo, CannaGuide no env\u00EDa informes de errores ni solicitudes a la IA en la nube o a la s\u00EDntesis de voz en la nube, omite las consultas de variedades en l\u00EDnea y el uso compartido con la comunidad, y conecta los sensores MQTT solo a brokers de tu red local. A\u00FAn no cubierto: los modelos de IA local que se descargan en el primer uso (la precarga expl\u00EDcita est\u00E1 bloqueada) y el reconocimiento de voz, que algunos navegadores procesan en l\u00EDnea.',
+            'Mantiene tus datos en este dispositivo y en tu red local. Mientras est\u00E1 activo, CannaGuide no env\u00EDa informes de errores ni solicitudes a la IA en la nube o a la s\u00EDntesis de voz en la nube, omite las consultas de variedades en l\u00EDnea y el uso compartido con la comunidad, conecta los sensores MQTT solo a brokers de tu red local y desactiva los comandos de voz y el dictado, porque el reconocimiento de voz del navegador puede procesar el audio en l\u00EDnea. A\u00FAn no cubierto: los modelos de IA local que se descargan en el primer uso (la precarga expl\u00EDcita est\u00E1 bloqueada).',
         localOnlyModeActive:
-            'El Modo Solo Local est\u00E1 activo. Los informes de errores, la IA en la nube, la s\u00EDntesis de voz en la nube, las consultas de variedades en l\u00EDnea y el uso compartido con la comunidad est\u00E1n desactivados, y MQTT se limita a tu red local. Las descargas de modelos en el primer uso y el reconocimiento de voz del navegador a\u00FAn no est\u00E1n bloqueados. Desact\u00EDvalo para recuperar las funciones en la nube.',
+            'El Modo Solo Local est\u00E1 activo. Los informes de errores, la IA en la nube, la s\u00EDntesis de voz en la nube, las consultas de variedades en l\u00EDnea, el uso compartido con la comunidad, los comandos de voz y el dictado est\u00E1n desactivados, y MQTT se limita a tu red local. Las descargas de modelos en el primer uso a\u00FAn no est\u00E1n bloqueadas. Desact\u00EDvalo para recuperar las funciones en la nube.',
         requirePin: 'Requerir PIN al Iniciar',
         requirePinDesc: 'Protege tu aplicacion con un PIN de 4 digitos.',
         setPin: 'Establecer/Cambiar PIN',

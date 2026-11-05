@@ -171,6 +171,45 @@ export const common = {
         mainContent: 'Hoofdinhoud',
         mainNavigation: 'Hoofdnavigatie',
     },
+    voiceControl: {
+        listening: 'Luistert...',
+        processing: 'Verwerken: "{{transcript}}"',
+        toggle: 'Spraakbesturing schakelen',
+        assistantThinking: 'Nadenken...',
+        hotwordDetected: 'Activeringswoord herkend -- spreek nu.',
+        noPlantContext: 'Er is geen actieve plantencontext beschikbaar voor de spraakassistent.',
+        assistantFailed: 'Spraakassistent-verzoek mislukt.',
+        readAloud: 'Voorlezen',
+        mode: {
+            idle: 'Inactief',
+            listening: 'Luistert',
+            processing: 'Verwerkt',
+            speaking: 'Spreekt',
+            confirmation: 'Wacht op bevestiging',
+        },
+        hud: {
+            title: 'Spraakbesturing',
+            collapse: 'Spraak-HUD inklappen',
+            expand: 'Spraak-HUD uitklappen',
+        },
+        confirmation: {
+            question: '"{{command}}" uitvoeren?',
+            yes: 'Ja',
+            no: 'Nee',
+            cancelled: 'Opdracht geannuleerd.',
+            yesOrNo: 'Antwoord alsjeblieft met ja of nee.',
+        },
+        errors: {
+            generic: 'Er is een spraakherkenningsfout opgetreden.',
+            noSpeech: 'Geen spraak gedetecteerd.',
+            notAllowed: 'Microfoontoegang geweigerd.',
+            startFailed: 'Kon niet beginnen met luisteren.',
+            localOnly:
+                'Spraakinvoer staat uit in de alleen-lokaal-modus: de spraakherkenning van de browser kan audio online verwerken.',
+            notUnderstood: 'Niet begrepen. Probeer het opnieuw.',
+            maxRetries: 'Kon na meerdere pogingen niet worden begrepen. Probeer later opnieuw.',
+        },
+    },
 }
 
 export const nav = {
@@ -220,42 +259,5 @@ export const ai = {
         loadingModel: 'Model wordt in de cache geladen...',
         eta: '~{{time}} resterend',
         ariaLabel: 'Voortgang van het laden van het model',
-    },
-    voiceControl: {
-        listening: 'Luistert...',
-        processing: 'Verwerken: "{{transcript}}"',
-        toggle: 'Spraakbesturing schakelen',
-        assistantThinking: 'Nadenken...',
-        hotwordDetected: 'Activeringswoord herkend -- spreek nu.',
-        noPlantContext: 'Er is geen actieve plantencontext beschikbaar voor de spraakassistent.',
-        assistantFailed: 'Spraakassistent-verzoek mislukt.',
-        readAloud: 'Voorlezen',
-        mode: {
-            idle: 'Inactief',
-            listening: 'Luistert',
-            processing: 'Verwerkt',
-            speaking: 'Spreekt',
-            confirmation: 'Wacht op bevestiging',
-        },
-        hud: {
-            title: 'Spraakbesturing',
-            collapse: 'Spraak-HUD inklappen',
-            expand: 'Spraak-HUD uitklappen',
-        },
-        confirmation: {
-            question: '"{{command}}" uitvoeren?',
-            yes: 'Ja',
-            no: 'Nee',
-            cancelled: 'Opdracht geannuleerd.',
-            yesOrNo: 'Antwoord alsjeblieft met ja of nee.',
-        },
-        errors: {
-            generic: 'Er is een spraakherkenningsfout opgetreden.',
-            noSpeech: 'Geen spraak gedetecteerd.',
-            notAllowed: 'Microfoontoegang geweigerd.',
-            startFailed: 'Kon niet beginnen met luisteren.',
-            notUnderstood: 'Niet begrepen. Probeer het opnieuw.',
-            maxRetries: 'Kon na meerdere pogingen niet worden begrepen. Probeer later opnieuw.',
-        },
     },
 }

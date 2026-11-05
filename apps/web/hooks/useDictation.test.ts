@@ -6,20 +6,33 @@
  * error handling, reset/stop behaviour.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, render } from '@testing-library/react'
+import { createElement, Fragment, useLayoutEffect } from 'react'
 import { isDictationSupported } from '@/hooks/useDictation'
 
 // ---------------------------------------------------------------------------
 // Mock i18n selector (selectLanguage -> 'en')
 // ---------------------------------------------------------------------------
 
+let mockLocalOnly = false
+
 vi.mock('@/stores/store', () => ({
     useAppSelector: (selector: (s: unknown) => unknown) =>
-        selector({ settings: { settings: { general: { language: 'en' } } } }),
+        selector({
+            settings: {
+                settings: {
+                    general: { language: 'en' },
+                    privacy: { localOnlyMode: mockLocalOnly },
+                },
+            },
+        }),
 }))
 vi.mock('@/stores/selectors', () => ({
     selectLanguage: (state: { settings: { settings: { general: { language: string } } } }) =>
         state.settings.settings.general.language,
+    selectLocalOnlyMode: (state: {
+        settings: { settings: { privacy: { localOnlyMode: boolean } } }
+    }) => state.settings.settings.privacy.localOnlyMode,
 }))
 
 // ---------------------------------------------------------------------------
@@ -288,5 +301,131 @@ describe('useDictation -- lang mapping', () => {
         expect(mapLang('en')).toBe('en-US')
         expect(mapLang('fr')).toBe('en-US')
         expect(mapLang('nl')).toBe('en-US')
+    })
+})
+
+describe('useDictation -- Local-Only Mode (GH #717)', () => {
+    beforeEach(() => {
+        mockLocalOnly = false
+        installMockSpeechRecognition()
+    })
+
+    afterEach(() => {
+        mockLocalOnly = false
+        uninstallMockSpeechRecognition()
+    })
+
+    it('does not start the browser recognizer and reports why', async () => {
+        mockLocalOnly = true
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result } = renderHook(() => useDictation())
+
+        act(() => {
+            result.current.start()
+        })
+
+        expect(mockInstances).toHaveLength(0)
+        expect(result.current.isListening).toBe(false)
+        expect(result.current.error).toBe('localOnly')
+    })
+
+    it('switching the mode on stops a running dictation', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result, rerender } = renderHook(() => useDictation())
+        act(() => {
+            result.current.start()
+        })
+        const running = mockInstances[0]
+        expect(result.current.isListening).toBe(true)
+
+        mockLocalOnly = true
+        rerender()
+
+        expect(running?.abort).toHaveBeenCalled()
+        expect(result.current.isListening).toBe(false)
+        expect(result.current.error).toBe('localOnly')
+    })
+
+    it('stops dictation in the commit of the switch, so a queued result does not count', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const onTranscript = vi.fn()
+        let api: ReturnType<typeof useDictation> | undefined
+        const Host = () => {
+            api = useDictation(onTranscript)
+            return null
+        }
+        const atCommit = { aborted: false }
+        // Rendered after Host: its layout effect runs after Host's layout effects
+        // and before any passive effect.
+        const Probe = ({ blocked }: { blocked: boolean }) => {
+            useLayoutEffect(() => {
+                if (!blocked) return
+                const rec = mockInstances[0]
+                atCommit.aborted = (rec?.abort.mock.calls.length ?? 0) > 0
+                rec?.fire('result', {
+                    results: [
+                        Object.assign([{ transcript: 'late', confidence: 1 }], { isFinal: true }),
+                    ],
+                })
+            }, [blocked])
+            return null
+        }
+        const tree = (blocked: boolean) =>
+            createElement(Fragment, null, createElement(Host), createElement(Probe, { blocked }))
+        const view = render(tree(false))
+        act(() => {
+            api?.start()
+        })
+
+        mockLocalOnly = true
+        view.rerender(tree(true))
+
+        expect(atCommit.aborted).toBe(true)
+        expect(onTranscript).not.toHaveBeenCalled()
+        expect(api?.transcript).toBe('')
+        view.unmount()
+    })
+
+    it('switching the mode on keeps the interim text that was dictated', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const onTranscript = vi.fn()
+        const { result, rerender } = renderHook(() => useDictation(onTranscript))
+        act(() => {
+            result.current.start()
+        })
+        act(() => {
+            mockInstances[0]?.fire('result', {
+                results: [
+                    Object.assign([{ transcript: 'half a note', confidence: 1 }], {
+                        isFinal: false,
+                    }),
+                ],
+            })
+        })
+        expect(onTranscript).not.toHaveBeenCalled()
+
+        mockLocalOnly = true
+        rerender()
+
+        expect(onTranscript).toHaveBeenCalledWith('half a note')
+    })
+
+    it('a late aborted error or end from the stopped recognizer keeps the reason', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result, rerender } = renderHook(() => useDictation())
+        act(() => {
+            result.current.start()
+        })
+        const running = mockInstances[0]
+        mockLocalOnly = true
+        rerender()
+
+        act(() => {
+            running?.fire('error', { error: 'aborted' })
+            running?.fire('end')
+        })
+
+        expect(result.current.error).toBe('localOnly')
+        expect(result.current.isListening).toBe(false)
     })
 })

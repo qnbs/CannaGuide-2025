@@ -412,7 +412,8 @@ export const settingsView = {
         testVoiceSentence: 'Dit is een test van de geselecteerde stem.',
         voiceControl: {
             enabled: 'Spraakbesturing inschakelen',
-            enabledDesc: 'Bedien de app met eenvoudige spraakopdrachten.',
+            enabledDesc:
+                'Bedien de app met eenvoudige spraakopdrachten. Ze gebruiken de spraakherkenning van je browser, die sommige browsers online verwerken; de alleen-lokaal-modus zet ze uit.',
             hotwordEnabled: 'Altijd-aan wekwoord',
             hotwordEnabledDesc:
                 'Houdt de microfoon gereed voor handsfree wekwoorden wanneer ondersteund door de browser.',
@@ -879,9 +880,9 @@ export const settingsView = {
         title: 'Privacy & Beveiliging',
         localOnlyMode: 'Alleen-lokaal-modus',
         localOnlyModeDesc:
-            'Houdt je gegevens op dit apparaat en in je lokale netwerk. Zolang deze modus aan staat, verstuurt CannaGuide geen foutrapporten en geen verzoeken aan cloud-AI of cloud-spraakuitvoer, slaat het online rasopzoekingen en delen met de community over, en verbindt het MQTT-sensoren alleen met brokers in je lokale netwerk. Nog niet afgedekt: lokale AI-modellen die bij het eerste gebruik worden gedownload (het expliciet vooraf laden is geblokkeerd) en spraakherkenning, die sommige browsers online verwerken.',
+            'Houdt je gegevens op dit apparaat en in je lokale netwerk. Zolang deze modus aan staat, verstuurt CannaGuide geen foutrapporten en geen verzoeken aan cloud-AI of cloud-spraakuitvoer, slaat het online rasopzoekingen en delen met de community over, verbindt het MQTT-sensoren alleen met brokers in je lokale netwerk en zet het spraakopdrachten en dicteren uit, omdat de spraakherkenning van de browser audio online kan verwerken. Nog niet afgedekt: lokale AI-modellen die bij het eerste gebruik worden gedownload (het expliciet vooraf laden is geblokkeerd).',
         localOnlyModeActive:
-            'De alleen-lokaal-modus is actief. Foutrapporten, cloud-AI, cloud-spraakuitvoer, online rasopzoekingen en delen met de community staan uit, en MQTT is beperkt tot je lokale netwerk. Modeldownloads bij het eerste gebruik en de spraakherkenning van de browser zijn nog niet geblokkeerd. Zet deze modus uit om cloudfuncties te herstellen.',
+            'De alleen-lokaal-modus is actief. Foutrapporten, cloud-AI, cloud-spraakuitvoer, online rasopzoekingen, delen met de community, spraakopdrachten en dicteren staan uit, en MQTT is beperkt tot je lokale netwerk. Modeldownloads bij het eerste gebruik zijn nog niet geblokkeerd. Zet deze modus uit om cloudfuncties te herstellen.',
         requirePin: 'PIN vereisen bij opstarten',
         requirePinDesc: 'Bescherm je app met een 4-cijferige PIN.',
         setPin: 'PIN instellen/wijzigen',

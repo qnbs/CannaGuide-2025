@@ -204,7 +204,9 @@ export const createCachedPipelineLoader = (
 ): (() => Promise<LocalAiPipeline>) => {
     let cached: Promise<LocalAiPipeline> | null = null
     return (): Promise<LocalAiPipeline> => {
-        if (!cached) {
+        // In Local-Only Mode every call goes through the policy (GH #700): a
+        // pending load may still be fetching files.
+        if (!cached || isLocalOnlyMode()) {
             cached = loadTransformersPipeline(task, modelId, options).catch((error: unknown) => {
                 cached = null
                 throw error
@@ -214,25 +216,57 @@ export const createCachedPipelineLoader = (
     }
 }
 
+/** Throws when free storage cannot hold a model download (~200 MB for ONNX models). */
+async function ensureRoomForDownload(): Promise<void> {
+    const quota = await checkStorageQuota(200)
+    if (quota.ok) return
+    const avail = quota.availableMB !== null ? `${quota.availableMB} MB` : 'unknown'
+    throw new Error(
+        `Insufficient storage for model download (available: ${avail}, needed: ~200 MB). Free up space and try again.`,
+    )
+}
+
+/** Keys whose pipeline finished loading: those need no download to reuse. */
+const loadedPipelineKeys = new Set<string>()
+
+/**
+ * Local-Only Mode before a load or the reuse of a pending one (GH #700):
+ * refuses a model that is not in the browser cache, and turns remote downloads
+ * off, also for a load of it that is still fetching files.
+ */
+async function applyLocalOnlyPolicy(modelId: string): Promise<void> {
+    const { env } = await getTransformersModule()
+    await prepareTransformersLoad(env, modelId, true).catch((error: unknown) => {
+        reportModelDownloadBlocked(error)
+        throw error
+    })
+}
+
+/** Evict the oldest pipelines BEFORE inserting -- prevents exceeding the limit during a load. */
+function evictForNewPipeline(): void {
+    const evictionLimit = isMemoryPressureElevated() ? 6 : 12
+    while (pipelineCache.size >= evictionLimit) {
+        const oldest = pipelineCache.keys().next().value
+        if (oldest === undefined) break
+        pipelineCache.delete(oldest)
+    }
+}
+
 export const loadTransformersPipeline = async (
     task: string,
     modelId: string,
     options: Record<string, unknown>,
 ): Promise<LocalAiPipeline> => {
     const cacheKey = `${task}::${modelId}`
+    const localOnly = isLocalOnlyMode()
+    if (localOnly && !loadedPipelineKeys.has(cacheKey)) await applyLocalOnlyPolicy(modelId)
     const cached = pipelineCache.get(cacheKey)
     if (cached) return cached
 
     const promise = (async () => {
         checkMemoryPressure()
-        // Verify sufficient storage before downloading model files
-        const quota = await checkStorageQuota(200) // ~200 MB minimum for ONNX models
-        if (!quota.ok) {
-            const avail = quota.availableMB !== null ? `${quota.availableMB} MB` : 'unknown'
-            throw new Error(
-                `Insufficient storage for model download (available: ${avail}, needed: ~200 MB). Free up space and try again.`,
-            )
-        }
+        // Nothing is downloaded in Local-Only Mode, so a cached model needs no room.
+        if (!localOnly) await ensureRoomForDownload()
         await acquireLoadSlot()
         const backend = detectOnnxBackend()
         // Acquire GPU mutex when using Weber backend to prevent VRAM collision with WebLLM
@@ -242,7 +276,7 @@ export const loadTransformersPipeline = async (
         }
         try {
             const { pipeline, env } = await getTransformersModule()
-            // Local-Only Mode: only a model already in the browser cache loads (GH #700).
+            // The mode may have changed while waiting for a slot: apply it as it is now.
             await prepareTransformersLoad(env, modelId, isLocalOnlyMode()).catch(
                 (error: unknown) => {
                     reportModelDownloadBlocked(error)
@@ -259,17 +293,14 @@ export const loadTransformersPipeline = async (
         }
     })()
 
-    // Evict oldest BEFORE inserting — prevents exceeding limit during load
-    const memPressure = isMemoryPressureElevated()
-    const evictionLimit = memPressure ? 6 : 12
-    while (pipelineCache.size >= evictionLimit) {
-        const oldest = pipelineCache.keys().next().value
-        if (oldest) pipelineCache.delete(oldest)
-        else break
-    }
+    evictForNewPipeline()
+    loadedPipelineKeys.delete(cacheKey)
     pipelineCache.set(cacheKey, promise)
-    // Evict from cache on failure so retry is possible
-    promise.catch(() => pipelineCache.delete(cacheKey))
+    promise.then(
+        () => loadedPipelineKeys.add(cacheKey),
+        // Evict from cache on failure so retry is possible
+        () => pipelineCache.delete(cacheKey),
+    )
     return promise
 }
 
@@ -299,6 +330,7 @@ export const evictIdlePipelines = (keepCount = 3): void => {
 /** Reset cached pipelines (useful for tests and forced re-download). */
 export const clearPipelineCache = (): void => {
     pipelineCache.clear()
+    loadedPipelineKeys.clear()
 }
 
 // ─── Progressive Quantization & Model-Switching ──────────────────────────────

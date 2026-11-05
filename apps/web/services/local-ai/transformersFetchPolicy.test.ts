@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
     type CacheLookup,
     ModelDownloadBlockedError,
+    NO_LOCAL_MODELS_PATH,
     TRANSFORMERS_CACHE_NAME,
     isTransformersModelCached,
     prepareTransformersLoad,
@@ -59,14 +60,20 @@ describe('transformers.js download policy (GH #700)', () => {
 
         await expect(refusal).rejects.toBeInstanceOf(ModelDownloadBlockedError)
         await expect(refusal).rejects.toMatchObject({ modelId: MODEL })
-        // Nothing switched: the refusal happens before the load would start.
-        expect(env).toMatchObject({ allowLocalModels: false, allowRemoteModels: true })
+        // Remote is off already: a download of this model under way fails at its next file.
+        expect(env.allowRemoteModels).toBe(false)
     })
 
-    it('in Local-Only Mode loads a downloaded model with remote downloads off', async () => {
+    it('in Local-Only Mode loads a downloaded model from the cache only', async () => {
         const env: TransformersFetchEnv = { allowLocalModels: false, allowRemoteModels: true }
         await prepareTransformersLoad(env, MODEL, true, cacheWith([CONFIG]))
-        // Local allowed, remote off: transformers.js reads its cache and never the CDN.
-        expect(env).toMatchObject({ allowLocalModels: true, allowRemoteModels: false })
+        // Remote off; local on (needed to read the cache) but pointed at a path
+        // fetch rejects, so the app origin's SPA page is never cached as a model file.
+        expect(env).toMatchObject({
+            allowLocalModels: true,
+            allowRemoteModels: false,
+            localModelPath: NO_LOCAL_MODELS_PATH,
+        })
+        expect(String(env.localModelPath)).not.toMatch(/^(https?|data|blob|about):/u)
     })
 })

@@ -15,12 +15,15 @@ class ProxiedTensor {
 
 const pipeOutput = vi.hoisted(() => ({ value: undefined as unknown }))
 const pipelineCalls = vi.hoisted(() => ({ count: 0 }))
+// Holds pipeline creation open, as a download in progress does.
+const pipelineGate = vi.hoisted(() => ({ wait: Promise.resolve() }))
 vi.mock('@cannaguide/ai-core/ml', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@cannaguide/ai-core/ml')>()),
     loadTransformers: async () => ({
         env: { backends: { onnx: { wasm: {} } } },
         pipeline: async () => {
             pipelineCalls.count += 1
+            await pipelineGate.wait
             return async () => pipeOutput.value
         },
     }),
@@ -124,5 +127,39 @@ describe('inference.worker replies', () => {
             errorCode: 'MODEL_DOWNLOAD_BLOCKED',
         })
         expect(pipelineCalls.count).toBe(0)
+    })
+
+    it('in Local-Only Mode does not hand out a download still under way', async () => {
+        await import('./inference.worker')
+        const send = (messageId: string, localOnly: boolean) =>
+            void handler(
+                new MessageEvent('message', {
+                    data: {
+                        messageId,
+                        type: 'INFER',
+                        payload: {
+                            task: 'text-classification',
+                            modelId: 'Xenova/slow',
+                            input: 'x',
+                            localOnly,
+                        },
+                    },
+                }),
+            )
+        let release: () => void = () => undefined
+        pipelineGate.wait = new Promise<void>((resolve) => (release = resolve))
+        vi.mocked(self.postMessage).mockClear()
+
+        send('slow-1', false)
+        send('slow-2', true)
+        await vi.waitFor(() => expect(self.postMessage).toHaveBeenCalled())
+
+        expect(vi.mocked(self.postMessage).mock.calls[0]?.[0]).toMatchObject({
+            messageId: 'slow-2',
+            success: false,
+            errorCode: 'MODEL_DOWNLOAD_BLOCKED',
+        })
+        release()
+        pipelineGate.wait = Promise.resolve()
     })
 })

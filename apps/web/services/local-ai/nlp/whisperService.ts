@@ -1,5 +1,9 @@
 import { captureLocalAiError } from '@/services/sentryService'
-import { loadTransformers, prepareTransformersLoad } from '@cannaguide/ai-core/ml'
+import { prepareTransformersLoad } from '@cannaguide/ai-core/ml'
+// The main thread's one memoized transformers.js module: each loadTransformers()
+// call resets allowLocalModels, which would undo the Local-Only policy under a
+// load that is running (GH #700).
+import { getTransformersModule } from '../models/modelLoader'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
@@ -96,19 +100,37 @@ export function isWhisperAvailable(): boolean {
  * Lazily load the Whisper-Tiny model. Returns the pipeline instance.
  * Coordinates GPU access via the gpu resource manager mutex.
  */
+/** Refuses the model if it is not cached, and turns remote downloads off (GH #700). */
+async function applyLocalOnlyPolicy(): Promise<void> {
+    const { env } = await getTransformersModule()
+    await prepareTransformersLoad(env, WHISPER_MODEL_ID, true).catch((error: unknown) => {
+        reportModelDownloadBlocked(error)
+        throw error
+    })
+}
+
+/**
+ * Waits for the load already under way. In Local-Only Mode the policy applies
+ * to it first: it may still be fetching files (GH #700).
+ */
+async function awaitPendingLoad(
+    pending: Promise<WhisperPipeline | null>,
+): Promise<WhisperPipeline> {
+    if (isLocalOnlyMode()) await applyLocalOnlyPolicy()
+    const result = await pending
+    if (result) return result
+    throw new Error('Whisper model failed to load')
+}
+
 async function ensurePipeline(): Promise<WhisperPipeline> {
     if (pipeline) return pipeline
 
-    if (loadingPromise) {
-        const result = await loadingPromise
-        if (result) return result
-        throw new Error('Whisper model failed to load')
-    }
+    if (loadingPromise) return awaitPendingLoad(loadingPromise)
 
     loadingPromise = (async (): Promise<WhisperPipeline | null> => {
         await acquireGpu(GPU_RESOURCE_KEY)
         try {
-            const { pipeline: createPipeline, env } = await loadTransformers()
+            const { pipeline: createPipeline, env } = await getTransformersModule()
             // Local-Only Mode: only a model already in the browser cache loads (GH #700).
             await prepareTransformersLoad(env, WHISPER_MODEL_ID, isLocalOnlyMode())
             const p = await createPipeline('automatic-speech-recognition', WHISPER_MODEL_ID, {

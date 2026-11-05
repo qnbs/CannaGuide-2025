@@ -45,6 +45,16 @@ const getTransformers = (): Promise<TransformersModule> => {
     return transformersPromise
 }
 
+/** Evict the oldest pipeline if the cache grows too large. */
+function evictOldestPipeline(): void {
+    if (pipelineCache.size < 8) return
+    const oldest = pipelineCache.keys().next().value
+    if (oldest !== undefined) pipelineCache.delete(oldest)
+}
+
+/** Keys whose pipeline finished loading: those need no download to reuse. */
+const loadedPipelines = new Set<string>()
+
 const loadPipeline = async (
     task: string,
     modelId: string,
@@ -52,6 +62,11 @@ const loadPipeline = async (
     localOnly: boolean,
 ): Promise<Pipeline> => {
     const key = `${task}::${modelId}`
+    // A finished pipeline needs no download. A pending one may still be fetching
+    // files, so Local-Only Mode applies first, also to the load under way (GH #700).
+    if (localOnly && !loadedPipelines.has(key)) {
+        await prepareTransformersLoad((await getTransformers()).env, modelId, true)
+    }
     const cached = pipelineCache.get(key)
     if (cached) return cached
 
@@ -62,13 +77,13 @@ const loadPipeline = async (
         return pipeline(task as never, modelId, options as never) as Promise<Pipeline>
     })()
 
-    // Evict oldest if cache grows too large
-    if (pipelineCache.size >= 8) {
-        const oldest = pipelineCache.keys().next().value
-        if (oldest) pipelineCache.delete(oldest)
-    }
+    evictOldestPipeline()
+    loadedPipelines.delete(key)
     pipelineCache.set(key, promise)
-    promise.catch(() => pipelineCache.delete(key))
+    promise.then(
+        () => loadedPipelines.add(key),
+        () => pipelineCache.delete(key),
+    )
     return promise
 }
 

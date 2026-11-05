@@ -151,8 +151,18 @@ export interface TransformersFetchEnv {
     allowRemoteModels?: unknown
     remoteHost?: unknown
     remotePathTemplate?: unknown
+    localModelPath?: unknown
     [key: string]: unknown
 }
+
+/**
+ * Where transformers.js looks for "local" models in Local-Only Mode: a scheme
+ * `fetch` rejects without any request. The app ships no local models, and its
+ * own origin answers unknown paths with the SPA page (200 text/html), which
+ * transformers.js would store in its cache under the local path and read again
+ * on every later load -- poisoning the model even after the mode is off.
+ */
+export const NO_LOCAL_MODELS_PATH = 'cannaguide-no-local-models:/'
 
 /** The cache transformers.js keeps downloaded model files in. */
 export const TRANSFORMERS_CACHE_NAME = 'transformers-cache'
@@ -208,11 +218,13 @@ export const isTransformersModelCached = async (
  * Applies Local-Only Mode to the next transformers.js load (GH #700).
  *
  * Off: the usual download from the Hugging Face CDN (local paths stay off, see
- * loadTransformers). On: a model that is not in the browser cache is refused
- * with ModelDownloadBlockedError before any request, and remote downloads are
- * switched off, so a file missing from a partly cached model fails instead of
- * reaching the CDN. Local models must be allowed then: with both switches off,
- * transformers.js throws before it even reads its cache.
+ * loadTransformers). On: remote downloads are switched off first -- also for a
+ * model that is then refused, so a download of it already under way fails at
+ * its next file -- and a model that is not in the browser cache is refused with
+ * ModelDownloadBlockedError before any request. A file missing from a partly
+ * cached model then fails instead of reaching the CDN. Local models must be
+ * allowed (with both switches off transformers.js throws before it reads its
+ * cache), so their path points where nothing is fetched or cached.
  */
 export const prepareTransformersLoad = async (
     env: TransformersFetchEnv,
@@ -225,11 +237,12 @@ export const prepareTransformersLoad = async (
         env.allowRemoteModels = true
         return
     }
+    env.allowRemoteModels = false
+    env.allowLocalModels = true
+    env.localModelPath = NO_LOCAL_MODELS_PATH
     if (!(await isTransformersModelCached(env, modelId, cacheStorage))) {
         throw new ModelDownloadBlockedError(modelId)
     }
-    env.allowLocalModels = true
-    env.allowRemoteModels = false
 }
 
 /** Lazy-load @mlc-ai/web-llm (WebGPU LLM inference). */

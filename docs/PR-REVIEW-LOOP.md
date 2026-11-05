@@ -2,7 +2,7 @@
 
 Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
 
-The loop is not "read the comments and reply". It ends only when a **fresh** review produces **zero new comments** _and_ **zero unresolved threads**.
+The loop is not "read the comments and reply". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head**, that coverage left no undispositioned finding, and **zero unresolved threads** remain from any reviewer that attached a finding. A reviewer that is expired, skipped, or silent does not add a thread or a block once those two are covered. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.
 
 ---
 
@@ -10,7 +10,9 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 
 | Reviewer                                                              | Surface                                                                                                       | Where findings appear                             |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **CodeRabbit**                                                        | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
+| **CodeRabbit** (`coderabbitai[bot]`)                                  | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
+| **CodeAnt** (`codeant-ai[bot]`)                                       | correctness and maintainability                                                                               | inline review threads                             |
+| **Codex** (`chatgpt-codex-connector[bot]`)                            | correctness                                                                                                   | review on the pull                                |
 | **DeepSource**                                                        | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR                                                         | check run + issue-comment                         |
 | **Socket Security**                                                   | dependency supply-chain alerts                                                                                | check run + PR alerts comment                     |
 | **GitGuardian**                                                       | secret scanning                                                                                               | check run                                         |
@@ -23,7 +25,20 @@ The loop is not "read the comments and reply". It ends only when a **fresh** rev
 
 ## 1. Before pushing: keep the PR reviewable
 
-- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Check with `git diff --name-only main...HEAD | wc -l`.
+- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Count this pull against its remote base, not a stale local `main`:
+
+    ```bash
+    # Stacked pull: this pull, counted against its parent.
+    git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+    # Against origin/main. For a stacked pull this is the whole stack.
+    git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
+    ```
+
+    The parent count is this pull. The `origin/main` count is the whole stack. Warn when either count crosses the budget. A pull that is not stacked uses only the `origin/main` pair.
+
+- **Commit and file budget.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception: 26 commits and 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`. Do not rewrite that history to look smaller.
 - i18n fans out hard (5 locales × N namespace files). A single copy change can cross the limit — split into stacked PRs (PR2's base = PR1's branch; GitHub retargets it automatically when PR1 merges).
 - One concern per PR. A mixed PR gets mixed findings and cannot be reverted cleanly.
 - **Lint every changed file to the hook's bar before committing:** `pnpm lint:changed` lints all changed and new (untracked) JS/TS files with `--max-warnings 0`, the same bar as the pre-commit `lint-staged` step. It fails (exit 2) instead of passing when it cannot resolve a base or merge base, so a missing `origin/main` never means "nothing to lint". `lint-scopes --changed` covers only the strict scopes (hooks, `components/common`, services, stores), so a warning in `components/views/...` passes it and then fails the commit.
@@ -50,7 +65,12 @@ query($owner:String!,$repo:String!,$num:Int!,$endCursor:String){
    | "THREAD=\(.id)\n\(.path):\(.line)\n\(.comments.nodes[0].author.login): \(.comments.nodes[0].body)\n---"'
 ```
 
-Issue-comments (the bots' summary posts) paginate separately — query `comments(first:100, after:$endCursor)` the same way when you need them.
+Issue comments are part of the completion check. CodeRabbit, DeepSource, and Socket put findings in summary issue comments that never become review threads. Paginate them and disposition every finding before the loop can end:
+
+```bash
+gh api --paginate repos/qnbs/CannaGuide-2025/issues/<N>/comments \
+  --jq '.[] | {id, user:.user.login, body:.body}'
+```
 
 `isResolved == false` is the only work-list that counts. `isOutdated` threads still count — the anchor moved, the finding may not have.
 
@@ -83,24 +103,39 @@ gh api graphql -f query='mutation($t:ID!){
   resolveReviewThread(input:{threadId:$t}){ thread{ isResolved } } }' -F t='<THREAD_ID>'
 ```
 
-Cite the resolving commit SHA in every reply. A resolved thread with no explanation is not resolved, it is buried.
+Cite the resolving commit SHA in every reply that ships a fix. A refutation that changes no code cites the current head SHA. A resolved thread with no explanation is not resolved, it is buried.
 
 ---
 
-## 5. Re-trigger — the loop does not stop after one pass
+## 5. One fresh review of a stable head
 
-A fresh review routinely raises **new** findings caused by your own fixes (a "wave"). After each push:
+Do not request a full bot review after every intermediate fix.
+
+1. Let the reviewers that start on their own finish on one stable head. Do not push while that head is still being reviewed or tested.
+2. Collect every finding on that head, including nitpicks and outside-diff-range comments. Group them by root cause.
+3. Ship one fail-before / green-after fix for that group, in one signed commit. Do not cascade a push per comment.
+4. Request one fresh review of that final head:
+
+    ```bash
+    gh pr comment <N> --body "@coderabbitai full review"
+    ```
+
+5. Another full review only when the code changes again. A reply, a resolved thread, or a note that does not change the reviewed code does not need a new full review.
+
+`REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or a full-review request never attaches a review object to the current head. It is not a green check. It is not, by itself, a merge block.
+
+CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once, keeping that login's newest review. `unique_by` would keep the oldest. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:
 
 ```bash
-gh pr comment <N> --body "@coderabbitai full review"
+gh api repos/qnbs/CannaGuide-2025/pulls/<N>/reviews --paginate \
+  | jq -s '[.[][] | select(.commit_id=="<HEAD>" and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")) and .state!="DISMISSED")] | group_by(.user.login) | map(last) | .[] | {user:.user.login, state}'
 ```
 
-Then go back to **step 2**. Repeat until **both**:
+Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once on the pull. Two other reviewers do not replace that request. A `DISMISSED` review does not count. Do not send a second `@codex review` while that request has not attached a review on that head. A review of an older commit does not cover the head. That comment is not a CodeRabbit full review.
 
-- a fresh review yields **0 new comments**, and
-- **0 threads** are unresolved.
+When two of those three are reviewing that head, or have attached such a review, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not send a second full-review request while the same request is still unanswered and that check stays paused or rate limited. Do not merge a head that none of the three has reviewed.
 
-Never declare a PR done while comments are still arriving.
+When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and 0 threads are unresolved. A finding that lives only in a paginated issue comment counts the same way: read Section 2 before calling the head complete. A notice that a trial ended, or that a reviewer has no comments, is not a thread and not a new finding.
 
 ---
 
@@ -126,9 +161,10 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 
 ## 7. Definition of done (binary)
 
-- [ ] 0 unresolved review threads (verified by the step-2 query, not by eyeballing the UI).
-- [ ] A fresh review pass produced 0 new comments.
-- [ ] Every finding either fixed at the root or refuted with evidence, in-thread, citing a commit.
+- [ ] 0 unresolved review threads from reviewers that attached findings (verified by the Section 2 thread query, not by eyeballing the UI), and every finding in the paginated issue comments is fixed or refuted. A review that only says the trial ended, or that never comments, adds no thread to clear.
+- [ ] Two of CodeRabbit, CodeAnt, and Codex have covered the current head, and that coverage left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.
+- [ ] `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) is not a green check and is not a merge block once those two major reviewers have covered the head. Do not merge a head that none of the three has reviewed.
+- [ ] Every finding is either fixed at the root, with the reply citing the resolving commit, or refuted with evidence in-thread. A refutation that changes no code cites the current head SHA.
 - [ ] No new lint/type suppressions anywhere in the diff.
-- [ ] All required checks green, evidenced by run URL.
+- [ ] `✅ CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. When `AGENTS.md`, `CLAUDE.md`, or `docs/PR-REVIEW-LOOP.md` change, that check includes the `policy` job. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `✅ CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull.
 - [ ] `CHANGELOG.md` `[Unreleased]` updated.

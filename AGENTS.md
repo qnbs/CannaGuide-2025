@@ -172,13 +172,17 @@ Implementation PRs are **Ready for review** (`draft=false`) once the first revie
 
 When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): fix the valid ones. Do not leave valid review items for a follow-up unless the user explicitly defers them.
 
-**One correction wave per head.** After a push, wait until CI and the reviewers that actually run have finished on that exact SHA. Collect every finding, then push one consolidated fix. Do not cascade tiny pushes while the current head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor so the rule passes honestly. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded limits, not a clean review.
+**One stable-head correction.** Collect findings on one stable head, group them by root cause, and ship one fail-before/green-after fix. Then request one fresh review of that final head. Do not merge until two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not request a full bot review after every intermediate fix. Another full review only when the code changes again. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another full review. Do not push while that head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable`. Refactor so the rule passes honestly. `REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a review. It is not a green check, and it is not a merge block once two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not merge a head that none of the three has reviewed. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once. Two other reviewers do not replace that request. Do not send a second `@codex review` while that request has not attached a review on that head. A review of an older commit does not cover the head. Follow `docs/PR-REVIEW-LOOP.md`.
 
-**Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
-larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch
-— a local `main` may be stale or divergent, the same trap the verify scripts already avoid:
+**Keep every PR under ~100 changed files.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits, 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); do not rewrite that history. Review bots silently skip inline comments on
+larger PRs, so the loop never starts. Count this pull against its remote base. A local `main` may be stale or divergent. For a stacked pull, the `origin/<parent>` count is this pull and the `origin/main` count is the whole stack. Warn when either count crosses the budget:
 
 ```bash
+# Stacked pull: this pull, counted against its parent.
+git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+# Against origin/main. For a stacked pull this is the whole stack.
+git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
 git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
 ```
 

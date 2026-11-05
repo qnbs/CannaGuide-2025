@@ -159,18 +159,39 @@ pnpm run check:i18n
 ## Pull requests
 
 - **Keep every PR under ~100 changed files.** CodeRabbit and similar bots silently skip
-  inline review on larger PRs, so the review loop never starts. Count against the
-  merge-base with the **remote** branch -- a local `main` can be stale or divergent, which
-  is the same trap the verify scripts already avoid:
+  inline review on larger PRs, so the review loop never starts. Warn around 8 commits or
+  50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before
+  15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits,
+  89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); do not rewrite that history.
+  Count this pull against its remote base. A local `main` can be stale or divergent.
+  For a stacked pull, count against `origin/<parent>` as well; the `origin/main` count
+  is the whole stack. Warn when either count crosses the budget:
 
     ```bash
+    # Stacked pull: this pull, counted against its parent.
+    git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+    # Against origin/main. For a stacked pull this is the whole stack.
+    git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
-- **Work the review loop until it is quiescent:** fetch unresolved threads, fix or refute
-  each with evidence, reply citing the commit, resolve, push, re-trigger the bot. Repeat
-  until a fresh review yields **0 new comments and 0 unresolved threads**. A fix routinely
-  raises the next wave -- treat nitpicks and "outside diff range" comments as in scope.
+- **Review one stable head.** Collect findings, group them by root cause, and ship one
+  fail-before/green-after fix. Then request one fresh review of that final head. Do not
+  merge until two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not request a full bot review
+  after every intermediate fix. Another full review only when the code changes again. A
+  false positive that is refuted with evidence and resolved, with no code change, is
+  dispositioned and does not require another full review. Do not push while that head is
+  still being reviewed or tested. A new push makes the previous CI and review evidence
+  stale. The loop ends when two of those reviewers have covered the head, every
+  attached finding is fixed or refuted, and 0 threads are unresolved. `REVIEW_UNAVAILABLE` means a reviewer is
+  skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a
+  review. It is not a green check, and it is not a merge block once two of CodeRabbit,
+  CodeAnt, and Codex have covered that head. Do not merge a head that none of the three
+  has reviewed. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once.
+  Two other reviewers do not replace that request. Do not send a second `@codex review` while that
+  request has not attached a review on that head. A review of an older commit does not cover the head.
+  Nitpicks and "outside diff range" comments are in scope. Follow `docs/PR-REVIEW-LOOP.md`.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.
 - **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so

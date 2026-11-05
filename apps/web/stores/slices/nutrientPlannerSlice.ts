@@ -168,7 +168,6 @@ const initialState: NutrientPlannerState = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-const MAX_READINGS = 500
 const MAX_ALERTS = 50
 
 /** Map plugin stage strings to PlantStage enum */
@@ -261,12 +260,12 @@ const nutrientPlannerSlice = createSlice({
                 id: `reading-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
                 timestamp: Date.now(),
             }
+            // Every reading is logged by hand (Log Reading). The old cap of 500
+            // silently dropped the oldest one with each new entry (GH #814); the
+            // owner decided to keep them all. Readings leave only through
+            // removeReading or clearReadings; the views and auto-adjust read
+            // their own recent window.
             state.readings.push(reading)
-
-            // Cap readings (FIFO)
-            if (state.readings.length > MAX_READINGS) {
-                state.readings = state.readings.slice(-MAX_READINGS)
-            }
 
             // Auto-alert generation
             const medium = state.medium
@@ -453,13 +452,12 @@ const nutrientPlannerSlice = createSlice({
             reducer(state, action: PayloadAction<EcPhReading>) {
                 const reading = action.payload
                 const idx = state.readings.findIndex((r) => r.id === reading.id)
+                // Replaces the reading with the same id, or adds it; never drops
+                // another reading (GH #814).
                 if (idx >= 0) {
                     state.readings[idx] = reading
                 } else {
                     state.readings.push(reading)
-                    if (state.readings.length > MAX_READINGS) {
-                        state.readings = state.readings.slice(-MAX_READINGS)
-                    }
                 }
             },
             prepare(reading: EcPhReading, meta?: { fromCrdt?: boolean | undefined }) {

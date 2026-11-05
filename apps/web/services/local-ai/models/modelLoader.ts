@@ -225,7 +225,8 @@ export const createCachedPipelineLoader = (
 /** Throws when free storage cannot hold a model download (~200 MB for ONNX models). */
 async function ensureRoomForDownload(): Promise<void> {
     const quota = await checkStorageQuota(200)
-    if (quota.ok) return
+    // Switched on during the check: nothing will be downloaded (GH #700).
+    if (quota.ok || isLocalOnlyMode()) return
     const avail = quota.availableMB !== null ? `${quota.availableMB} MB` : 'unknown'
     throw new Error(
         `Insufficient storage for model download (available: ${avail}, needed: ~200 MB). Free up space and try again.`,

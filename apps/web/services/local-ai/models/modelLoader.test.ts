@@ -543,4 +543,17 @@ describe('loadTransformersPipeline in Local-Only Mode (GH #700)', () => {
         // The newer pipeline was reused: no third load.
         expect(transformers.pipeline).toHaveBeenCalledTimes(2)
     })
+
+    it('a quota failure after the mode was switched on does not deny a cached model', async () => {
+        stubCacheWith('Xenova/cached-late')
+        vi.mocked(checkStorageQuota).mockImplementationOnce(() => {
+            setLocalOnlyMode(true)
+            return Promise.resolve({ ok: false, availableMB: 50, totalMB: 2000 })
+        })
+
+        await loadTransformersPipeline('feature-extraction', 'Xenova/cached-late', {})
+
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+        expect(transformers.env.allowRemoteModels).toBe(false)
+    })
 })

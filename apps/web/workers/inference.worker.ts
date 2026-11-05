@@ -178,9 +178,10 @@ function failureResponse(messageId: string, err: unknown) {
  */
 async function applyLocalOnlyMessage(enabled: boolean): Promise<void> {
     localOnlyMode = enabled
-    if (enabled && transformersPromise) {
-        applyLocalOnlyToTransformersEnv((await transformersPromise).env)
-    }
+    if (!enabled || !transformersPromise) return
+    const { env } = await transformersPromise
+    // A later "off" may have arrived while this waited: the newest message wins.
+    if (localOnlyMode) applyLocalOnlyToTransformersEnv(env)
 }
 
 const isTrustedWorkerMessage = (event: MessageEvent<unknown>): boolean => {

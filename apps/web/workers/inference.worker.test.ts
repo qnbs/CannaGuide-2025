@@ -265,4 +265,15 @@ describe('inference.worker replies', () => {
             pipelineError.value = null
         }
     })
+
+    it('a later LOCAL_ONLY off wins over an earlier on that was still waiting', async () => {
+        await infer('text-classification', 'warm-2')
+        workerEnv.allowRemoteModels = true
+
+        const on = tellLocalOnly(true)
+        const off = tellLocalOnly(false)
+        await Promise.all([on, off])
+
+        expect(workerEnv.allowRemoteModels).toBe(true)
+    })
 })

@@ -11,6 +11,7 @@ import {
     reportedPercentText,
     truncate,
 } from './pdfTypes'
+import { valueRange } from './pdfStats'
 
 /**
  * Generates a structured PDF grow report for a plant.
@@ -171,24 +172,27 @@ export async function generateGrowReport(
         const phValues = hydroReadings.map((r) => r.ph)
         const ecValues = hydroReadings.map((r) => r.ec)
         const tempValues = hydroReadings.map((r) => r.waterTemp)
+        const phRange = valueRange(phValues)
+        const ecRange = valueRange(ecValues)
+        const tempRange = valueRange(tempValues)
 
         const hydroRows: [string, string, string, string][] = [
             [
                 'pH',
-                Math.min(...phValues).toFixed(2),
-                Math.max(...phValues).toFixed(2),
+                phRange.min.toFixed(2),
+                phRange.max.toFixed(2),
                 (phValues.reduce((a, b) => a + b, 0) / phValues.length).toFixed(2),
             ],
             [
                 'EC (mS/cm)',
-                Math.min(...ecValues).toFixed(2),
-                Math.max(...ecValues).toFixed(2),
+                ecRange.min.toFixed(2),
+                ecRange.max.toFixed(2),
                 (ecValues.reduce((a, b) => a + b, 0) / ecValues.length).toFixed(2),
             ],
             [
                 'Water Temp (C)',
-                Math.min(...tempValues).toFixed(1),
-                Math.max(...tempValues).toFixed(1),
+                tempRange.min.toFixed(1),
+                tempRange.max.toFixed(1),
                 (tempValues.reduce((a, b) => a + b, 0) / tempValues.length).toFixed(1),
             ],
         ]

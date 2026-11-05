@@ -26,18 +26,68 @@ describe('metricsSlice', () => {
         expect(state.readings[0]?.height).toBe(15)
     })
 
-    it('applies FIFO pruning per plant at 168 cap', () => {
+    it.each([167, 168, 169, 500])('keeps all %i manual readings of a plant', (count) => {
         let state = initialState
-        for (let i = 0; i < 175; i++) {
+        for (let i = 0; i < count; i++) {
             state = metricsReducer(
                 state,
                 addMetricsReading(makeReading({ plantId: 'plant-1', timestamp: i, height: i })),
             )
         }
         const plant1Readings = state.readings.filter((r) => r.plantId === 'plant-1')
-        expect(plant1Readings).toHaveLength(168)
-        // Oldest pruned -- first remaining should be offset by 7
-        expect(plant1Readings[0]?.timestamp).toBe(7)
+        expect(plant1Readings).toHaveLength(count)
+        // The first manual entry is still there, and still the oldest.
+        expect(plant1Readings[0]?.timestamp).toBe(0)
+        expect(plant1Readings.at(-1)?.height).toBe(count - 1)
+    })
+
+    it('keeps a sparse multi-month history through a reload, per plant', () => {
+        const DAY = 86_400_000
+        let state = initialState
+        // One reading every other day for 400 days on plant-1, weekly on plant-2.
+        for (let day = 0; day < 400; day += 2) {
+            state = metricsReducer(
+                state,
+                addMetricsReading(makeReading({ plantId: 'plant-1', timestamp: day * DAY })),
+            )
+            if (day % 7 === 0) {
+                state = metricsReducer(
+                    state,
+                    addMetricsReading(makeReading({ plantId: 'plant-2', timestamp: day * DAY })),
+                )
+            }
+        }
+        const reloaded = JSON.parse(JSON.stringify(state)) as MetricsState
+        const root = { metrics: reloaded } as Parameters<
+            ReturnType<typeof selectMetricsForPlant>
+        >[0]
+
+        expect(selectMetricsForPlant('plant-1')(root)).toHaveLength(200)
+        expect(selectMetricsForPlant('plant-1')(root)[0]?.timestamp).toBe(0)
+        expect(selectMetricsForPlant('plant-2')(root)).toHaveLength(29)
+        expect(selectLatestMetrics('plant-1')(root)?.timestamp).toBe(398 * DAY)
+    })
+
+    it('keeps readings with duplicate and out-of-order timestamps', () => {
+        let state = initialState
+        for (const timestamp of [5, 5, 1, 9, 1]) {
+            state = metricsReducer(state, addMetricsReading(makeReading({ timestamp })))
+        }
+        expect(state.readings.map((r) => r.timestamp)).toEqual([5, 5, 1, 9, 1])
+    })
+
+    it('a legacy plant at the old cap keeps its 168 readings and the 169th', () => {
+        const legacy: MetricsState = {
+            readings: Array.from({ length: 168 }, (_, i) =>
+                makeReading({ plantId: 'plant-1', timestamp: i }),
+            ),
+        }
+        const state = metricsReducer(
+            legacy,
+            addMetricsReading(makeReading({ plantId: 'plant-1', timestamp: 168 })),
+        )
+        expect(state.readings).toHaveLength(169)
+        expect(state.readings.slice(0, 168)).toEqual(legacy.readings)
     })
 
     it('does not prune readings of other plants', () => {

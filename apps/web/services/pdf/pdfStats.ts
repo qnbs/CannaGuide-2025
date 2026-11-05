@@ -9,6 +9,21 @@ export interface MetricStats {
     unit: string
 }
 
+/**
+ * The smallest and largest of `values` (at least one), in one pass. A spread
+ * into Math.min/Math.max fails with a RangeError on a long enough list, and the
+ * metrics and hydro histories are kept in full (GH #686, GH #814).
+ */
+export function valueRange(values: readonly number[]): { min: number; max: number } {
+    let min = Number.POSITIVE_INFINITY
+    let max = Number.NEGATIVE_INFINITY
+    for (const value of values) {
+        if (value < min) min = value
+        if (value > max) max = value
+    }
+    return { min, max }
+}
+
 export function computeMetricStats(readings: MetricsReading[]): MetricStats[] {
     const stats: MetricStats[] = []
     const fields: Array<{
@@ -27,8 +42,7 @@ export function computeMetricStats(readings: MetricsReading[]): MetricStats[] {
             .map((r) => r[field.key])
             .filter((v): v is number => typeof v === 'number')
         if (values.length === 0) continue
-        const min = Math.min(...values)
-        const max = Math.max(...values)
+        const { min, max } = valueRange(values)
         const avg = values.reduce((a, b) => a + b, 0) / values.length
         stats.push({
             label: field.label,

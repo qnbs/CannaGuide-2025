@@ -13,6 +13,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import type { GrowthStage } from '@/types/simulation.types'
 import { PlantStage } from '@/types'
 import { METRIC_COLORS, CHART_CHROME } from '@/utils/chartPalette'
+import { buildMetricsChartData } from './metricsChartData'
 
 interface MetricsOverviewTabProps {
     plant: Plant
@@ -71,35 +72,10 @@ export const MetricsOverviewTab: React.FC<MetricsOverviewTabProps> = memo(({ pla
     // Filter data by time range
     const cutoff = Date.now() - TIME_RANGES[timeRange]
 
-    const chartData = useMemo(() => {
-        const metricsFiltered = metricsReadings.filter((r) => r.timestamp >= cutoff)
-        const hydroFiltered = hydroReadings.filter((r) => r.timestamp >= cutoff)
-
-        // Merge timelines
-        const allTimestamps = new Set([
-            ...metricsFiltered.map((r) => r.timestamp),
-            ...hydroFiltered.map((r) => r.timestamp),
-        ])
-
-        return Array.from(allTimestamps)
-            .sort((a, b) => a - b)
-            .map((ts) => {
-                const metric = metricsFiltered.find((r) => r.timestamp === ts)
-                const hydro = hydroFiltered.find((r) => r.timestamp === ts)
-                return {
-                    time: new Date(ts).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    }),
-                    vpd: currentVPD,
-                    ph: hydro?.ph,
-                    ec: hydro?.ec,
-                    height: metric?.height,
-                    potWeight: metric?.potWeight,
-                    co2: metric?.co2,
-                }
-            })
-    }, [metricsReadings, hydroReadings, cutoff, currentVPD])
+    const chartData = useMemo(
+        () => buildMetricsChartData(metricsReadings, hydroReadings, cutoff, currentVPD),
+        [metricsReadings, hydroReadings, cutoff, currentVPD],
+    )
 
     const handleAddReading = useCallback(() => {
         const reading = {

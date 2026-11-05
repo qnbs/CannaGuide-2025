@@ -344,4 +344,23 @@ describe('useDictation -- Local-Only Mode (GH #717)', () => {
         expect(result.current.isListening).toBe(false)
         expect(result.current.error).toBe('localOnly')
     })
+
+    it('a late aborted error or end from the stopped recognizer keeps the reason', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result, rerender } = renderHook(() => useDictation())
+        act(() => {
+            result.current.start()
+        })
+        const running = mockInstances[0]
+        mockLocalOnly = true
+        rerender()
+
+        act(() => {
+            running?.fire('error', { error: 'aborted' })
+            running?.fire('end')
+        })
+
+        expect(result.current.error).toBe('localOnly')
+        expect(result.current.isListening).toBe(false)
+    })
 })

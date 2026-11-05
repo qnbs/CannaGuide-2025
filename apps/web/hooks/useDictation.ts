@@ -47,6 +47,15 @@ interface WDictationRecognition extends EventTarget {
 }
 type WDictationRecognitionCtor = { new (): WDictationRecognition }
 
+/** The text of every result so far, in order (first alternative of each). */
+function joinTranscript(results: WDictationRecognitionResultList): string {
+    let full = ''
+    for (let i = 0; i < results.length; i++) {
+        full += results[i]?.[0]?.transcript ?? ''
+    }
+    return full
+}
+
 const getSpeechRecognitionAPI = (): WDictationRecognitionCtor | undefined =>
     (window as Window & { SpeechRecognition?: WDictationRecognitionCtor }).SpeechRecognition ||
     (window as Window & { webkitSpeechRecognition?: WDictationRecognitionCtor })
@@ -115,16 +124,13 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         rec.interimResults = true
         rec.lang = lang === 'de' ? 'de-DE' : 'en-US'
 
+        // A replaced or aborted recognizer can still fire (an async 'aborted'
+        // error, a late 'end'); only the current one may change the state.
+        const isCurrent = (): boolean => recognitionRef.current === rec
+
         rec.addEventListener('result', (event: WDictationRecognitionEvent) => {
-            let full = ''
-            for (let i = 0; i < event.results.length; i++) {
-                const item = event.results[i]
-                if (!item) continue
-                const first = item[0]
-                if (first) {
-                    full += first.transcript
-                }
-            }
+            if (!isCurrent()) return
+            const full = joinTranscript(event.results)
             setTranscript(full)
             // Call callback on final results only
             const latest = event.results[event.results.length - 1]
@@ -134,6 +140,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         })
 
         rec.addEventListener('error', (event: WDictationRecognitionErrorEvent) => {
+            if (!isCurrent()) return
             console.debug('[useDictation] error:', event.error)
             if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
                 setError('notAllowed')
@@ -146,7 +153,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         })
 
         rec.addEventListener('end', () => {
-            setIsListening(false)
+            if (isCurrent()) setIsListening(false)
         })
 
         recognitionRef.current = rec

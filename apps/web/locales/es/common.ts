@@ -171,6 +171,45 @@ export const common = {
         mainContent: 'Contenido principal',
         mainNavigation: 'Navegacion principal',
     },
+    voiceControl: {
+        listening: 'Escuchando...',
+        processing: 'Procesando: "{{transcript}}"',
+        toggle: 'Alternar control por voz',
+        assistantThinking: 'Pensando...',
+        hotwordDetected: 'Palabra clave detectada -- habla ahora.',
+        noPlantContext: 'No hay contexto de planta activo para el asistente de voz.',
+        assistantFailed: 'La solicitud del asistente de voz fallo.',
+        readAloud: 'Leer en voz alta',
+        mode: {
+            idle: 'Inactivo',
+            listening: 'Escuchando',
+            processing: 'Procesando',
+            speaking: 'Hablando',
+            confirmation: 'Esperando confirmacion',
+        },
+        hud: {
+            title: 'Control por Voz',
+            collapse: 'Minimizar HUD de voz',
+            expand: 'Expandir HUD de voz',
+        },
+        confirmation: {
+            question: 'Ejecutar "{{command}}"?',
+            yes: 'Si',
+            no: 'No',
+            cancelled: 'Comando cancelado.',
+            yesOrNo: 'Por favor responde si o no.',
+        },
+        errors: {
+            generic: 'Ocurrio un error de reconocimiento de voz.',
+            noSpeech: 'No se detecto habla.',
+            notAllowed: 'Acceso al microfono denegado.',
+            startFailed: 'No se pudo iniciar la escucha.',
+            localOnly:
+                'La entrada de voz est\u00E1 desactivada en el Modo Solo Local: el reconocimiento de voz del navegador puede procesar el audio en l\u00EDnea.',
+            notUnderstood: 'No se entendio. Intenta de nuevo.',
+            maxRetries: 'No se pudo entender tras varios intentos. Intenta mas tarde.',
+        },
+    },
 }
 
 export const nav = {
@@ -220,44 +259,5 @@ export const ai = {
         loadingModel: 'Cargando modelo en la cache...',
         eta: '~{{time}} restante',
         ariaLabel: 'Progreso de carga del modelo',
-    },
-    voiceControl: {
-        listening: 'Escuchando...',
-        processing: 'Procesando: "{{transcript}}"',
-        toggle: 'Alternar control por voz',
-        assistantThinking: 'Pensando...',
-        hotwordDetected: 'Palabra clave detectada -- habla ahora.',
-        noPlantContext: 'No hay contexto de planta activo para el asistente de voz.',
-        assistantFailed: 'La solicitud del asistente de voz fallo.',
-        readAloud: 'Leer en voz alta',
-        mode: {
-            idle: 'Inactivo',
-            listening: 'Escuchando',
-            processing: 'Procesando',
-            speaking: 'Hablando',
-            confirmation: 'Esperando confirmacion',
-        },
-        hud: {
-            title: 'Control por Voz',
-            collapse: 'Minimizar HUD de voz',
-            expand: 'Expandir HUD de voz',
-        },
-        confirmation: {
-            question: 'Ejecutar "{{command}}"?',
-            yes: 'Si',
-            no: 'No',
-            cancelled: 'Comando cancelado.',
-            yesOrNo: 'Por favor responde si o no.',
-        },
-        errors: {
-            generic: 'Ocurrio un error de reconocimiento de voz.',
-            noSpeech: 'No se detecto habla.',
-            notAllowed: 'Acceso al microfono denegado.',
-            startFailed: 'No se pudo iniciar la escucha.',
-            localOnly:
-                'La entrada de voz est\u00E1 desactivada en el Modo Solo Local: el reconocimiento de voz del navegador puede procesar el audio en l\u00EDnea.',
-            notUnderstood: 'No se entendio. Intenta de nuevo.',
-            maxRetries: 'No se pudo entender tras varios intentos. Intenta mas tarde.',
-        },
     },
 }

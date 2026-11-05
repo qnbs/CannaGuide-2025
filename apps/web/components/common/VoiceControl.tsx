@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useRef, useState } from 'react'
+import React, { useEffect, useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppSelector } from '@/stores/store'
 import { selectLanguage, selectLocalOnlyMode, selectSettings } from '@/stores/selectors'
@@ -82,6 +82,12 @@ export const VoiceControl: React.FC = () => {
     // keeps every recognizer here off (GH #717). Porcupine stays off too: a
     // wake word would have no command listener to start.
     const speechBlocked = useAppSelector(selectLocalOnlyMode)
+    // The live value for listeners created before a change: a hotword result
+    // can arrive after the setting commits but before the cleanup aborts.
+    const speechBlockedRef = useRef(speechBlocked)
+    useLayoutEffect(() => {
+        speechBlockedRef.current = speechBlocked
+    }, [speechBlocked])
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
     const continuousListening = settings.voiceControl.continuousListening
     const isListening = useUIStore((s) => s.voiceControl.isListening)
@@ -196,7 +202,7 @@ export const VoiceControl: React.FC = () => {
     // for "hey canna(guide)?". When detected, the command listener activates for
     // HOTWORD_ACTIVATION_MS milliseconds then goes silent again.
     // ---------------------------------------------------------------------------
-    const activateFromHotword = useCallback(() => {
+    const startHotwordSession = useCallback(() => {
         setHotwordActive(true)
         setVoiceStatusMessage(t('common.voiceControl.hotwordDetected'))
         if (hotwordTimerRef.current !== null) {
@@ -217,6 +223,12 @@ export const VoiceControl: React.FC = () => {
             }
         }
     }, [t, isListening, setVoiceStatusMessage, setVoiceListening])
+
+    // A stale hotword or Porcupine listener may still call this after Local-Only
+    // Mode was switched on, so it reads the ref, not the render's value.
+    const activateFromHotword = useCallback(() => {
+        if (!speechBlockedRef.current) startHotwordSession()
+    }, [startHotwordSession])
 
     useEffect(() => {
         if (

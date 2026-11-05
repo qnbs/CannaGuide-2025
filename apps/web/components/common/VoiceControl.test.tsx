@@ -414,6 +414,26 @@ describe('VoiceControl -- Local-Only Mode', () => {
         for (const recognizer of running) expect(recognizer.abort).toHaveBeenCalled()
         expect(mockInstances).toHaveLength(2)
     })
+
+    it('a hotword heard by a stale listener after the switch starts nothing', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        const [main, hotword] = mockInstances
+
+        mockLocalOnly = true
+        view.rerender(React.createElement(VC))
+        hotword?.fire('result', {
+            results: [
+                Object.assign([{ transcript: 'hey canna', confidence: 1 }], { isFinal: true }),
+            ],
+        })
+
+        expect(mockSetVoiceStatusMessage).not.toHaveBeenCalledWith(
+            'common.voiceControl.hotwordDetected',
+        )
+        expect(main?.start).not.toHaveBeenCalled()
+    })
 })
 
 // ---------------------------------------------------------------------------

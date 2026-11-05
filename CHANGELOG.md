@@ -22,7 +22,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
-- **fix(privacy):** Local-Only Mode now turns off voice commands, the hotword, the Porcupine wake word and dictation (#717). They use the browser's speech recognition, which some browsers process on the vendor's online service, so the mode's promise to keep data on the device did not hold for them. While the mode is on, no recognizer starts; switching it on stops one that is running, and the microphone explains why instead of listening. The privacy and voice settings now say this. Five languages.
+- **fix(privacy):** Local-Only Mode now turns off voice commands, the hotword and dictation (#717). They use the browser's speech recognition, which some browsers process on the vendor's online service, so the mode's promise to keep data on the device did not hold for them. The Porcupine wake word, which listens on the device, is turned off too, because it would have no command listener to start. While the mode is on, no recognizer starts; switching it on stops one that is running, and the microphone explains why instead of listening. The privacy and voice settings now say this. Five languages.
 
 - **fix(i18n):** Voice-control messages (listening, hotword, errors, confirmations) now appear in Spanish, French and Dutch. Their translations sat in the wrong section of those locale files, so the app always showed the English text.
 

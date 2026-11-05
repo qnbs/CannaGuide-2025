@@ -61,6 +61,27 @@ const applyLocalOnlyModeToMqtt = async (enabled: boolean): Promise<void> => {
     }
 }
 
+/**
+ * Local AI: switching Local-Only Mode on makes transformers.js cache-only at
+ * once, on the main thread and in a running inference worker, so a model
+ * download under way stops at its next file; switching it off tells the worker
+ * too (GH #700). The mode is read after the imports, so a quick toggle sends
+ * the current state, not a stale one.
+ */
+const applyLocalOnlyModeToLocalAi = async (): Promise<void> => {
+    const [
+        { isLocalOnlyMode },
+        { enforceLocalOnlyOnTransformers },
+        { applyLocalOnlyModeToInferenceWorker },
+    ] = await Promise.all([
+        import('@/services/localOnlyModeService'),
+        import('@/services/local-ai/models/modelLoader'),
+        import('@/services/local-ai/inference/inferenceQueue'),
+    ])
+    applyLocalOnlyModeToInferenceWorker(isLocalOnlyMode())
+    await enforceLocalOnlyOnTransformers()
+}
+
 const syncSentry = async (localOnly: boolean): Promise<void> => {
     const { disableSentry, enableSentry } = await import('@/services/sentryService')
     if (localOnly) disableSentry()
@@ -70,12 +91,13 @@ const syncSentry = async (localOnly: boolean): Promise<void> => {
 const syncLocalOnlyMode = async (enabled: boolean) => {
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     setLocalOnlyMode(enabled)
-    // Both steps run at once: the MQTT shutdown neither waits for the Sentry
-    // import nor fails with it, and the reverse. A stale run after a quick
-    // toggle is harmless, because both services read the live mode.
+    // The steps run at once: none waits for another's import or fails with it.
+    // A stale run after a quick toggle is harmless, because every service reads
+    // the live mode.
     const results = await Promise.allSettled([
         applyLocalOnlyModeToMqtt(enabled),
         syncSentry(enabled),
+        applyLocalOnlyModeToLocalAi(),
     ])
     for (const result of results) {
         if (result.status === 'rejected') {

@@ -60,6 +60,8 @@ export enum WorkerErrorCode {
     INVALID_PAYLOAD = 'INVALID_PAYLOAD',
     /** Model or resource not available. */
     RESOURCE_UNAVAILABLE = 'RESOURCE_UNAVAILABLE',
+    /** Local-Only Mode refused a model download (GH #700). */
+    MODEL_DOWNLOAD_BLOCKED = 'MODEL_DOWNLOAD_BLOCKED',
     /** Out of memory / allocation failure. */
     OUT_OF_MEMORY = 'OUT_OF_MEMORY',
     /** Operation was cancelled (e.g. AbortController). */
@@ -96,6 +98,12 @@ export class WorkerBusError extends Error {
 export function workerOk<T>(messageId: string, data: T): WorkerResponse<T> {
     return { messageId, success: true, data }
 }
+
+/**
+ * Inference-worker control message: Local-Only Mode was switched on, so the
+ * worker's transformers.js env becomes cache-only at once (GH #700).
+ */
+export const INFERENCE_LOCAL_ONLY_MESSAGE = 'LOCAL_ONLY'
 
 /**
  * Build an error response that satisfies `WorkerResponse`.

@@ -31,6 +31,7 @@ import { LocalAiModelManager } from './modelManager'
 import { loadTransformersPipeline, clearPipelineCache } from './modelLoader'
 import { disposeWebLlm } from './webLlmService'
 import { clearInferenceCache } from '../core/inferenceRouter'
+import { setLocalOnlyMode } from '@/services/localOnlyModeService'
 
 describe('LocalAiModelManager', () => {
     let manager: LocalAiModelManager
@@ -112,5 +113,21 @@ describe('LocalAiModelManager', () => {
         expect(disposeWebLlm).toHaveBeenCalled()
         expect(clearPipelineCache).toHaveBeenCalled()
         expect(clearInferenceCache).toHaveBeenCalled()
+    })
+
+    it('in Local-Only Mode does not hand out a remembered load (GH #700)', async () => {
+        const pending = new Promise<never>(() => undefined)
+        vi.mocked(loadTransformersPipeline).mockReturnValueOnce(pending)
+        void manager.loadVisionPipeline()
+
+        setLocalOnlyMode(true)
+        try {
+            vi.mocked(loadTransformersPipeline).mockResolvedValueOnce(vi.fn())
+            await manager.loadVisionPipeline()
+            // The second request went through the loader, and so through the policy.
+            expect(loadTransformersPipeline).toHaveBeenCalledTimes(2)
+        } finally {
+            setLocalOnlyMode(false)
+        }
     })
 })

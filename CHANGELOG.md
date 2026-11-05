@@ -22,6 +22,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(privacy):** Local-Only Mode no longer downloads local AI models on first use (#700). The explicit preload was already blocked, but a feature that needed a text, embedding or speech model that was not on the device yet still downloaded it from the Hugging Face CDN. While the mode is on, only models already in the browser cache load; for any other model the feature falls back to its simpler built-in method, and the app says once why. Switching the mode on also stops a model download that is already under way, at its next file. The chat model (WebLLM) and the image generator are not covered yet, and the privacy settings say so. Five languages.
+
 - **fix(privacy):** Local-Only Mode now turns off voice commands, the hotword and dictation (#717). They use the browser's speech recognition, which some browsers process on the vendor's online service, so the mode's promise to keep data on the device did not hold for them. The Porcupine wake word, which listens on the device, is turned off too, because it would have no command listener to start. While the mode is on, no recognizer starts; switching it on stops one that is running, and the microphone explains why instead of listening. The privacy and voice settings now say this. Five languages.
 
 - **fix(voice):** Turning off the always-on hotword (or switching to another wake-word engine) now closes the microphone that the Porcupine wake word had opened; it used to stay open in the background. Starting or stopping a voice command no longer restarts the listeners, and stopping in continuous mode really stops.

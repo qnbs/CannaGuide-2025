@@ -15,6 +15,8 @@ import {
     getLoadedPipelineCount,
     getLoadedPipelineKeys,
     loadTransformersPipeline,
+    enforceLocalOnlyOnTransformers,
+    getTransformersModule,
     type QuantizationLevel,
     type ModelSizeTier,
 } from './modelLoader'
@@ -23,16 +25,20 @@ import {
 // Mocks for GPU mutex + Transformers.js
 // ---------------------------------------------------------------------------
 
+vi.mock('./modelDownloadBlocked', () => ({ reportModelDownloadBlocked: vi.fn() }))
+
 vi.mock('../device/gpuResourceManager', () => ({
     acquireGpu: vi.fn().mockResolvedValue(undefined),
     releaseGpu: vi.fn(),
 }))
 
-vi.mock('@xenova/transformers', () => ({
-    default: {},
+// The mocked module, also for the tests: importing the package itself would be
+// an undeclared dependency of apps/web (check:phantom-deps).
+const transformers = vi.hoisted(() => ({
     pipeline: vi.fn().mockResolvedValue(vi.fn()),
-    env: { backends: { onnx: { wasm: {} } }, allowLocalModels: true },
+    env: { backends: { onnx: { wasm: {} } }, allowLocalModels: true } as Record<string, unknown>,
 }))
+vi.mock('@xenova/transformers', () => ({ default: {}, ...transformers }))
 
 vi.mock('@/utils/browserApis', async (importOriginal) => {
     const actual = await importOriginal<typeof import('@/utils/browserApis')>()
@@ -49,6 +55,10 @@ vi.mock('@/utils/browserApis', async (importOriginal) => {
 })
 
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
+import { ModelDownloadBlockedError, NO_LOCAL_MODELS_PATH } from '@cannaguide/ai-core/ml'
+import { checkStorageQuota } from '@/utils/browserApis'
+import { setLocalOnlyMode } from '@/services/localOnlyModeService'
+import { reportModelDownloadBlocked } from './modelDownloadBlocked'
 
 describe('localAIModelLoader', () => {
     beforeEach(() => {
@@ -369,5 +379,181 @@ describe('localAIModelLoader', () => {
             expect(acquireGpu).not.toHaveBeenCalled()
             expect(releaseGpu).not.toHaveBeenCalled()
         })
+    })
+})
+
+describe('loadTransformersPipeline in Local-Only Mode (GH #700)', () => {
+    /** A browser cache that holds the config of `cachedModel` only. */
+    const stubCacheWith = (cachedModel: string) =>
+        vi.stubGlobal('caches', {
+            open: () =>
+                Promise.resolve({
+                    match: (url: string) =>
+                        Promise.resolve(
+                            url.includes(`${cachedModel}/`) ? new Response('{}') : undefined,
+                        ),
+                }),
+        })
+
+    beforeEach(() => {
+        transformers.pipeline.mockReset()
+        transformers.pipeline.mockResolvedValue(vi.fn())
+    })
+
+    afterEach(() => {
+        setLocalOnlyMode(false)
+        vi.unstubAllGlobals()
+        clearPipelineCache()
+        vi.mocked(checkStorageQuota).mockResolvedValue({
+            ok: true,
+            availableMB: 1000,
+            totalMB: 2000,
+        })
+    })
+
+    it('refuses a model that is not downloaded, before any pipeline starts', async () => {
+        setLocalOnlyMode(true)
+
+        const load = loadTransformersPipeline('feature-extraction', 'Xenova/not-cached', {})
+
+        await expect(load).rejects.toBeInstanceOf(ModelDownloadBlockedError)
+        expect(transformers.pipeline).not.toHaveBeenCalled()
+        expect(reportModelDownloadBlocked).toHaveBeenCalledWith(
+            expect.any(ModelDownloadBlockedError),
+        )
+    })
+
+    it('loads a downloaded model with remote downloads off and no local path to fetch', async () => {
+        setLocalOnlyMode(true)
+        stubCacheWith('Xenova/cached')
+
+        await loadTransformersPipeline('feature-extraction', 'Xenova/cached', {})
+
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+        expect(transformers.env).toMatchObject({
+            allowLocalModels: true,
+            allowRemoteModels: false,
+            localModelPath: NO_LOCAL_MODELS_PATH,
+        })
+    })
+
+    it('needs no free storage for a downloaded model', async () => {
+        setLocalOnlyMode(true)
+        stubCacheWith('Xenova/cached')
+        vi.mocked(checkStorageQuota).mockResolvedValue({
+            ok: false,
+            availableMB: 50,
+            totalMB: 2000,
+        })
+
+        await loadTransformersPipeline('feature-extraction', 'Xenova/cached', {})
+
+        expect(checkStorageQuota).not.toHaveBeenCalledWith(200)
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not hand out a download still under way once the mode is on', async () => {
+        let finish: (value: unknown) => void = () => undefined
+        transformers.pipeline.mockReturnValueOnce(new Promise((resolve) => (finish = resolve)))
+        const pending = loadTransformersPipeline('feature-extraction', 'Xenova/downloading', {})
+        await vi.waitFor(() => expect(transformers.pipeline).toHaveBeenCalledTimes(1))
+
+        setLocalOnlyMode(true)
+        const reuse = loadTransformersPipeline('feature-extraction', 'Xenova/downloading', {})
+
+        await expect(reuse).rejects.toBeInstanceOf(ModelDownloadBlockedError)
+        // Its remaining files are refused too: remote downloads are off now.
+        expect(transformers.env.allowRemoteModels).toBe(false)
+        finish(vi.fn())
+        await pending
+    })
+
+    it('without Local-Only Mode downloads as before', async () => {
+        await loadTransformersPipeline('feature-extraction', 'Xenova/remote', {})
+
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+        expect(transformers.env).toMatchObject({ allowLocalModels: false, allowRemoteModels: true })
+    })
+
+    it('switching the mode on makes the loaded module cache-only at once', async () => {
+        await getTransformersModule()
+        transformers.env.allowRemoteModels = true
+        setLocalOnlyMode(true)
+
+        await enforceLocalOnlyOnTransformers()
+
+        expect(transformers.env).toMatchObject({
+            allowRemoteModels: false,
+            localModelPath: NO_LOCAL_MODELS_PATH,
+        })
+    })
+
+    it('a stale call after the mode was switched off again changes nothing', async () => {
+        await getTransformersModule()
+        transformers.env.allowRemoteModels = true
+        setLocalOnlyMode(false)
+
+        await enforceLocalOnlyOnTransformers()
+
+        expect(transformers.env.allowRemoteModels).toBe(true)
+    })
+
+    it('a download refused at a later file is reported as blocked', async () => {
+        transformers.pipeline.mockRejectedValueOnce(
+            new Error('`env.allowRemoteModels=false` and file was not found locally at "x".'),
+        )
+
+        const load = loadTransformersPipeline('feature-extraction', 'Xenova/half', {})
+
+        await expect(load).rejects.toBeInstanceOf(ModelDownloadBlockedError)
+        expect(reportModelDownloadBlocked).toHaveBeenCalledWith(
+            expect.any(ModelDownloadBlockedError),
+        )
+    })
+
+    it('allows the download when the mode is switched off during the cache lookup', async () => {
+        setLocalOnlyMode(true)
+        vi.stubGlobal('caches', {
+            open: () => {
+                setLocalOnlyMode(false)
+                return Promise.resolve({ match: () => Promise.resolve() })
+            },
+        })
+
+        await loadTransformersPipeline('feature-extraction', 'Xenova/toggled', {})
+
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+        expect(transformers.env.allowRemoteModels).toBe(true)
+        // It downloads now, so it needs room like any download.
+        expect(checkStorageQuota).toHaveBeenCalledWith(200)
+    })
+
+    it('a failed older load does not evict the newer one for the same model', async () => {
+        let fail: (error: Error) => void = () => undefined
+        transformers.pipeline.mockReturnValueOnce(new Promise((_, reject) => (fail = reject)))
+        const older = loadTransformersPipeline('feature-extraction', 'Xenova/replaced', {})
+        await vi.waitFor(() => expect(transformers.pipeline).toHaveBeenCalledTimes(1))
+        clearPipelineCache()
+        await loadTransformersPipeline('feature-extraction', 'Xenova/replaced', {})
+
+        fail(new Error('network'))
+        await expect(older).rejects.toThrow('network')
+        await loadTransformersPipeline('feature-extraction', 'Xenova/replaced', {})
+
+        // The newer pipeline was reused: no third load.
+        expect(transformers.pipeline).toHaveBeenCalledTimes(2)
+    })
+
+    it('a quota failure after the mode was switched on does not deny a cached model', async () => {
+        stubCacheWith('Xenova/cached-late')
+        vi.mocked(checkStorageQuota).mockImplementationOnce(() => {
+            setLocalOnlyMode(true)
+            return Promise.resolve({ ok: false, availableMB: 50, totalMB: 2000 })
+        })
+
+        await loadTransformersPipeline('feature-extraction', 'Xenova/cached-late', {})
+
+        expect(transformers.pipeline).toHaveBeenCalledTimes(1)
+        expect(transformers.env.allowRemoteModels).toBe(false)
     })
 })

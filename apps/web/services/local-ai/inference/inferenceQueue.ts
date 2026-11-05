@@ -1,5 +1,13 @@
 import type { InferencePayload } from '@/workers/inference.worker'
 import { workerBus } from '@/services/workerBus'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import {
+    INFERENCE_LOCAL_ONLY_MESSAGE,
+    WorkerBusError,
+    WorkerErrorCode,
+} from '@/types/workerBus.types'
+import { ModelDownloadBlockedError } from '@cannaguide/ai-core/ml'
+import { reportModelDownloadBlocked } from '../models/modelDownloadBlocked'
 
 /**
  * Inference Queue Service -- dispatches ML inference tasks to a dedicated
@@ -87,8 +95,10 @@ const processQueue = (): void => {
             }
 
             activeCount++
+            // Read when the task leaves the queue, not when it was queued (GH #700).
+            const payload: InferencePayload = { ...task.payload, localOnly: isLocalOnlyMode() }
             workerBus
-                .dispatch(WORKER_NAME, 'INFER', task.payload, {
+                .dispatch(WORKER_NAME, 'INFER', payload, {
                     timeoutMs: task.timeoutMs,
                     priority: 'low',
                 })
@@ -96,7 +106,7 @@ const processQueue = (): void => {
                     task.resolve(result)
                 })
                 .catch((err: unknown) => {
-                    task.reject(err instanceof Error ? err : new Error(String(err)))
+                    task.reject(toInferenceError(err, payload.modelId))
                 })
                 .finally(() => {
                     activeCount = Math.max(0, activeCount - 1)
@@ -106,6 +116,16 @@ const processQueue = (): void => {
     } finally {
         isProcessing = false
     }
+}
+
+/** A download refused in the worker keeps its type here, and the user is told once. */
+function toInferenceError(err: unknown, modelId: string): Error {
+    if (err instanceof WorkerBusError && err.code === WorkerErrorCode.MODEL_DOWNLOAD_BLOCKED) {
+        const blocked = new ModelDownloadBlockedError(modelId)
+        reportModelDownloadBlocked(blocked)
+        return blocked
+    }
+    return err instanceof Error ? err : new Error(String(err))
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -150,6 +170,22 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
         }
 
         processQueue()
+    })
+}
+
+/**
+ * Local-Only Mode changed: a running inference worker learns it at once, so a
+ * download it started for an earlier task stops at its next file (GH #700).
+ * Posted straight to the worker, outside the bus queue: a queued request would
+ * wait behind the downloading task, and a high-priority one would preempt it
+ * and replay its stale payload. No worker is started for this.
+ */
+export const applyLocalOnlyModeToInferenceWorker = (enabled: boolean): void => {
+    if (!workerBus.has(WORKER_NAME)) return
+    workerBus.getWorker(WORKER_NAME).postMessage({
+        messageId: `local-only-${crypto.randomUUID()}`,
+        type: INFERENCE_LOCAL_ONLY_MESSAGE,
+        payload: { enabled },
     })
 }
 

@@ -880,9 +880,9 @@ export const settingsView = {
         title: 'Privacy & Beveiliging',
         localOnlyMode: 'Alleen-lokaal-modus',
         localOnlyModeDesc:
-            'Houdt je gegevens op dit apparaat en in je lokale netwerk. Zolang deze modus aan staat, verstuurt CannaGuide geen foutrapporten en geen verzoeken aan cloud-AI of cloud-spraakuitvoer, slaat het online rasopzoekingen en delen met de community over, verbindt het MQTT-sensoren alleen met brokers in je lokale netwerk en zet het spraakopdrachten en dicteren uit, omdat de spraakherkenning van de browser audio online kan verwerken. Nog niet afgedekt: lokale AI-modellen die bij het eerste gebruik worden gedownload (het expliciet vooraf laden is geblokkeerd).',
+            'Houdt je gegevens op dit apparaat en in je lokale netwerk. Zolang deze modus aan staat, verstuurt CannaGuide geen foutrapporten en geen verzoeken aan cloud-AI of cloud-spraakuitvoer, slaat het online rasopzoekingen en delen met de community over, verbindt het MQTT-sensoren alleen met brokers in je lokale netwerk, zet het spraakopdrachten en dicteren uit, omdat de spraakherkenning van de browser audio online kan verwerken, en downloadt het geen lokale AI-modellen: de modellen die al op dit apparaat staan blijven werken. Nog niet afgedekt: het chatmodel (WebLLM) en de afbeeldingsgenerator, die bij het eerste gebruik nog steeds worden gedownload.',
         localOnlyModeActive:
-            'De alleen-lokaal-modus is actief. Foutrapporten, cloud-AI, cloud-spraakuitvoer, online rasopzoekingen, delen met de community, spraakopdrachten en dicteren staan uit, en MQTT is beperkt tot je lokale netwerk. Modeldownloads bij het eerste gebruik zijn nog niet geblokkeerd. Zet deze modus uit om cloudfuncties te herstellen.',
+            'De alleen-lokaal-modus is actief. Foutrapporten, cloud-AI, cloud-spraakuitvoer, online rasopzoekingen, delen met de community, spraakopdrachten, dicteren en nieuwe downloads van lokale AI-modellen staan uit, en MQTT is beperkt tot je lokale netwerk. Het chatmodel en de afbeeldingsgenerator worden bij het eerste gebruik nog steeds gedownload. Zet deze modus uit om cloudfuncties te herstellen.',
         requirePin: 'PIN vereisen bij opstarten',
         requirePinDesc: 'Bescherm je app met een 4-cijferige PIN.',
         setPin: 'PIN instellen/wijzigen',

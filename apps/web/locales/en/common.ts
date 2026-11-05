@@ -253,6 +253,8 @@ export const common = {
     egress: {
         blockedByLocalOnly:
             'Local-Only Mode blocks this connection: {{destination}} is not on this device or your local network.',
+        modelDownloadBlocked:
+            'Local-Only Mode blocks downloading AI models, so this feature used a simpler built-in method. Turn the mode off once to download the model; after that it also works offline.',
     },
     errorBoundary: {
         title: 'Something went wrong.',

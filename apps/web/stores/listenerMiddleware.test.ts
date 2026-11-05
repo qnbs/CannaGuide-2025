@@ -90,11 +90,21 @@ vi.mock('@/services/aiService', () => ({
 
 vi.mock('@/services/localOnlyModeService', () => ({
     setLocalOnlyMode: vi.fn(),
+    isLocalOnlyMode: vi.fn(() => true),
 }))
 
 vi.mock('@/services/sentryService', () => ({
     disableSentry: vi.fn(),
     enableSentry: vi.fn(),
+}))
+
+vi.mock('@/services/local-ai/models/modelLoader', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/services/local-ai/models/modelLoader')>()),
+    enforceLocalOnlyOnTransformers: vi.fn(() => Promise.resolve()),
+}))
+vi.mock('@/services/local-ai/inference/inferenceQueue', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/services/local-ai/inference/inferenceQueue')>()),
+    applyLocalOnlyModeToInferenceWorker: vi.fn(),
 }))
 
 vi.mock('@/services/mqttClientService', () => ({
@@ -294,6 +304,21 @@ describe('listenerMiddleware', () => {
             await vi.waitFor(() => {
                 expect(mqttClientService.enforceLocalOnlyMode).toHaveBeenCalled()
                 expect(mqttSensorService.enforceLocalOnlyMode).toHaveBeenCalled()
+            })
+        })
+
+        it('makes local AI model loads cache-only when local-only mode is enabled (GH #700)', async () => {
+            const { enforceLocalOnlyOnTransformers } =
+                await import('@/services/local-ai/models/modelLoader')
+            const { applyLocalOnlyModeToInferenceWorker } =
+                await import('@/services/local-ai/inference/inferenceQueue')
+
+            store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
+
+            await vi.waitFor(() => {
+                expect(enforceLocalOnlyOnTransformers).toHaveBeenCalled()
+                // The live mode, read after the imports.
+                expect(applyLocalOnlyModeToInferenceWorker).toHaveBeenCalledWith(true)
             })
         })
 

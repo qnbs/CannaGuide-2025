@@ -8,10 +8,7 @@ import {
 } from '@/services/worker-bus/workerBusConstants'
 import { fireDispatchHooks } from '@/services/worker-bus/workerBusHooks'
 import { isRateLimitAllowed } from '@/services/worker-bus/workerBusRateLimit'
-import {
-    findPreemptionCandidate,
-    preemptJob,
-} from '@/services/worker-bus/workerBusPreemption'
+import { findPreemptionCandidate, preemptJob } from '@/services/worker-bus/workerBusPreemption'
 import { getWorkerTelemetry } from '@/services/worker-bus/workerBusTelemetry'
 import type { PendingRequest, QueuedDispatch } from '@/services/worker-bus/workerBusTypes'
 import type { WorkerBusRuntime } from '@/services/worker-bus/workerBusRuntime'
@@ -110,12 +107,7 @@ export function sendToWorker<TResponse>(
     timeoutMs: number,
     opts: SendToWorkerOpts = {},
 ): Promise<TResponse> {
-    const {
-        signal,
-        transferable,
-        priority = 'normal',
-        preemptionCount = 0,
-    } = opts
+    const { signal, transferable, priority = 'normal', preemptionCount = 0 } = opts
     const messageId = `${workerName}:${crypto.randomUUID()}`
     const tel = getWorkerTelemetry(workerName)
     tel.totalDispatches++
@@ -363,6 +355,8 @@ export async function dispatchWithRetry<TResponse>(
                     WorkerErrorCode.QUEUE_FULL,
                     WorkerErrorCode.CANCELLED,
                     WorkerErrorCode.RATE_LIMITED,
+                    // Local-Only Mode stays on between attempts (GH #700).
+                    WorkerErrorCode.MODEL_DOWNLOAD_BLOCKED,
                 ]
                 if (nonRetryableCodes.includes(lastError.code)) {
                     throw lastError

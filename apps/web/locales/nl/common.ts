@@ -89,6 +89,8 @@ export const common = {
     egress: {
         blockedByLocalOnly:
             'De alleen-lokaal-modus blokkeert deze verbinding: {{destination}} staat niet op dit apparaat en niet in je lokale netwerk.',
+        modelDownloadBlocked:
+            'De alleen-lokaal-modus blokkeert het downloaden van AI-modellen, daarom gebruikte deze functie een eenvoudigere ingebouwde methode. Zet de modus \u00E9\u00E9n keer uit om het model te downloaden; daarna werkt het ook offline.',
     },
     mqtt: {
         notConnected: 'MQTT-broker is niet verbonden.',

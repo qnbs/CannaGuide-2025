@@ -10,20 +10,24 @@ import { disposeWebLlm } from './webLlmService'
 import { VISION_MODEL_ID } from '../vision/diagnosisService'
 import { captureLocalAiError } from '@/services/sentryService'
 import { clearInferenceCache } from '../core/inferenceRouter'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 /** Fallback text model ID (always the lightweight 0.5B). */
 const ALT_TEXT_MODEL_ID = 'Xenova/Qwen2.5-0.5B-Instruct'
 
 /**
  * Manages model pipeline lifecycle: loading, caching, fallback, disposal.
- * Pipeline promises are cached so repeated calls re-use loading promises.
+ * Pipeline promises are cached so repeated calls re-use loading promises --
+ * except in Local-Only Mode, where every call goes through
+ * loadTransformersPipeline: a cached promise may be a download still under way,
+ * which the Local-Only policy has to see first (GH #700).
  */
 export class LocalAiModelManager {
     private textPipelinePromise: Promise<LocalAiPipeline> | null = null
     private visionPipelinePromise: Promise<LocalAiPipeline> | null = null
 
     loadTextPipeline(): Promise<LocalAiPipeline> {
-        if (!this.textPipelinePromise) {
+        if (!this.textPipelinePromise || isLocalOnlyMode()) {
             const profile = getResolvedProfile()
             const primaryId = profile.transformersModelId
             this.textPipelinePromise = loadTransformersPipeline('text-generation', primaryId, {
@@ -49,7 +53,7 @@ export class LocalAiModelManager {
     }
 
     loadVisionPipeline(): Promise<LocalAiPipeline> {
-        if (!this.visionPipelinePromise) {
+        if (!this.visionPipelinePromise || isLocalOnlyMode()) {
             this.visionPipelinePromise = loadTransformersPipeline(
                 'zero-shot-image-classification',
                 VISION_MODEL_ID,

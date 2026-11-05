@@ -1,4 +1,12 @@
-import { loadTransformers } from '@cannaguide/ai-core/ml'
+import {
+    applyLocalOnlyToTransformersEnv,
+    isRemoteDownloadRefusal,
+    loadTransformers,
+    ModelDownloadBlockedError,
+    prepareTransformersLoad,
+} from '@cannaguide/ai-core/ml'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { reportModelDownloadBlocked } from './modelDownloadBlocked'
 import { acquireGpu, releaseGpu } from '../device/gpuResourceManager'
 
 type TransformersModule = Awaited<ReturnType<typeof loadTransformers>>
@@ -202,7 +210,9 @@ export const createCachedPipelineLoader = (
 ): (() => Promise<LocalAiPipeline>) => {
     let cached: Promise<LocalAiPipeline> | null = null
     return (): Promise<LocalAiPipeline> => {
-        if (!cached) {
+        // In Local-Only Mode every call goes through the policy (GH #700): a
+        // pending load may still be fetching files.
+        if (!cached || isLocalOnlyMode()) {
             cached = loadTransformersPipeline(task, modelId, options).catch((error: unknown) => {
                 cached = null
                 throw error
@@ -212,25 +222,87 @@ export const createCachedPipelineLoader = (
     }
 }
 
+/** Throws when free storage cannot hold a model download (~200 MB for ONNX models). */
+async function ensureRoomForDownload(): Promise<void> {
+    const quota = await checkStorageQuota(200)
+    // Switched on during the check: nothing will be downloaded (GH #700).
+    if (quota.ok || isLocalOnlyMode()) return
+    const avail = quota.availableMB !== null ? `${quota.availableMB} MB` : 'unknown'
+    throw new Error(
+        `Insufficient storage for model download (available: ${avail}, needed: ~200 MB). Free up space and try again.`,
+    )
+}
+
+/** Keys whose pipeline finished loading: those need no download to reuse. */
+const loadedPipelineKeys = new Set<string>()
+
+/**
+ * A load that failed because Local-Only Mode refused a download -- before it
+ * started, or at a later file after the mode was switched on -- as
+ * ModelDownloadBlockedError, reported to the user once (GH #700).
+ */
+export const asDownloadBlocked = (error: unknown, modelId: string): unknown => {
+    const blocked = isRemoteDownloadRefusal(error) ? new ModelDownloadBlockedError(modelId) : error
+    reportModelDownloadBlocked(blocked)
+    return blocked
+}
+
+/**
+ * Local-Only Mode before a load or the reuse of a pending one (GH #700):
+ * refuses a model that is not in the browser cache, and turns remote downloads
+ * off, also for a load of it that is still fetching files.
+ */
+export const applyLocalOnlyPolicy = async (modelId: string): Promise<void> => {
+    const { env } = await getTransformersModule()
+    try {
+        await prepareTransformersLoad(env, modelId, true)
+    } catch (error) {
+        // Switched off during the cache lookup: downloads are allowed again.
+        if (isLocalOnlyMode()) throw asDownloadBlocked(error, modelId)
+        await prepareTransformersLoad(env, modelId, false)
+    }
+}
+
+/**
+ * Called when Local-Only Mode changes: while it is on, the loaded
+ * transformers.js module becomes cache-only at once, so a download under way --
+ * whoever holds its promise -- fails at its next file instead of continuing
+ * (GH #700). The live mode decides, also after the wait, so a quick toggle
+ * cannot leave a stale "on" behind. Nothing to do before the module was loaded,
+ * or with the mode off (the next load sets its switches then).
+ */
+export const enforceLocalOnlyOnTransformers = async (): Promise<void> => {
+    if (!isLocalOnlyMode() || !transformersModulePromise) return
+    const { env } = await transformersModulePromise
+    if (isLocalOnlyMode()) applyLocalOnlyToTransformersEnv(env)
+}
+
+/** Evict the oldest pipelines BEFORE inserting -- prevents exceeding the limit during a load. */
+function evictForNewPipeline(): void {
+    const evictionLimit = isMemoryPressureElevated() ? 6 : 12
+    while (pipelineCache.size >= evictionLimit) {
+        const oldest = pipelineCache.keys().next().value
+        if (oldest === undefined) break
+        pipelineCache.delete(oldest)
+    }
+}
+
 export const loadTransformersPipeline = async (
     task: string,
     modelId: string,
     options: Record<string, unknown>,
 ): Promise<LocalAiPipeline> => {
     const cacheKey = `${task}::${modelId}`
+    const localOnly = isLocalOnlyMode()
+    if (localOnly && !loadedPipelineKeys.has(cacheKey)) await applyLocalOnlyPolicy(modelId)
     const cached = pipelineCache.get(cacheKey)
     if (cached) return cached
 
     const promise = (async () => {
         checkMemoryPressure()
-        // Verify sufficient storage before downloading model files
-        const quota = await checkStorageQuota(200) // ~200 MB minimum for ONNX models
-        if (!quota.ok) {
-            const avail = quota.availableMB !== null ? `${quota.availableMB} MB` : 'unknown'
-            throw new Error(
-                `Insufficient storage for model download (available: ${avail}, needed: ~200 MB). Free up space and try again.`,
-            )
-        }
+        // Nothing is downloaded in Local-Only Mode, so a cached model needs no room.
+        // Read live: the mode may have been switched off during the cache lookup.
+        if (!isLocalOnlyMode()) await ensureRoomForDownload()
         await acquireLoadSlot()
         const backend = detectOnnxBackend()
         // Acquire GPU mutex when using Weber backend to prevent VRAM collision with WebLLM
@@ -239,9 +311,13 @@ export const loadTransformersPipeline = async (
             await acquireGpu('onnx-webgpu')
         }
         try {
-            const { pipeline } = await getTransformersModule()
+            const { pipeline, env } = await getTransformersModule()
+            // The mode may have changed while waiting for a slot: apply it as it is now.
+            await prepareTransformersLoad(env, modelId, isLocalOnlyMode())
             const mergedOptions = buildPipelineOptions(modelId, backend, options)
-            return executePipelineLoad(pipeline, task, modelId, mergedOptions)
+            return await executePipelineLoad(pipeline, task, modelId, mergedOptions)
+        } catch (error) {
+            throw asDownloadBlocked(error, modelId)
         } finally {
             if (usingWebGpu) {
                 releaseGpu('onnx-webgpu')
@@ -250,17 +326,20 @@ export const loadTransformersPipeline = async (
         }
     })()
 
-    // Evict oldest BEFORE inserting — prevents exceeding limit during load
-    const memPressure = isMemoryPressureElevated()
-    const evictionLimit = memPressure ? 6 : 12
-    while (pipelineCache.size >= evictionLimit) {
-        const oldest = pipelineCache.keys().next().value
-        if (oldest) pipelineCache.delete(oldest)
-        else break
-    }
+    evictForNewPipeline()
+    loadedPipelineKeys.delete(cacheKey)
     pipelineCache.set(cacheKey, promise)
-    // Evict from cache on failure so retry is possible
-    promise.catch(() => pipelineCache.delete(cacheKey))
+    // Only for this entry: it may have been evicted and replaced by a newer load.
+    const isCurrent = (): boolean => pipelineCache.get(cacheKey) === promise
+    promise.then(
+        () => {
+            if (isCurrent()) loadedPipelineKeys.add(cacheKey)
+        },
+        // Evict from cache on failure so retry is possible
+        () => {
+            if (isCurrent()) pipelineCache.delete(cacheKey)
+        },
+    )
     return promise
 }
 
@@ -290,6 +369,7 @@ export const evictIdlePipelines = (keepCount = 3): void => {
 /** Reset cached pipelines (useful for tests and forced re-download). */
 export const clearPipelineCache = (): void => {
     pipelineCache.clear()
+    loadedPipelineKeys.clear()
 }
 
 // ─── Progressive Quantization & Model-Switching ──────────────────────────────

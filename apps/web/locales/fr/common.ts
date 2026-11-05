@@ -91,6 +91,8 @@ export const common = {
     egress: {
         blockedByLocalOnly:
             "Le mode local uniquement bloque cette connexion : {{destination}} n'est ni sur cet appareil ni sur votre r\u00E9seau local.",
+        modelDownloadBlocked:
+            "Le mode local uniquement bloque le t\u00E9l\u00E9chargement des mod\u00E8les d'IA ; cette fonction a donc utilis\u00E9 une m\u00E9thode int\u00E9gr\u00E9e plus simple. D\u00E9sactivez le mode une fois pour t\u00E9l\u00E9charger le mod\u00E8le ; ensuite, il fonctionne aussi hors ligne.",
     },
     mqtt: {
         notConnected: "Le broker MQTT n'est pas connect\u00E9.",

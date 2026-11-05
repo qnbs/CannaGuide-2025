@@ -386,6 +386,30 @@ describe('useDictation -- Local-Only Mode (GH #717)', () => {
         view.unmount()
     })
 
+    it('switching the mode on keeps the interim text that was dictated', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const onTranscript = vi.fn()
+        const { result, rerender } = renderHook(() => useDictation(onTranscript))
+        act(() => {
+            result.current.start()
+        })
+        act(() => {
+            mockInstances[0]?.fire('result', {
+                results: [
+                    Object.assign([{ transcript: 'half a note', confidence: 1 }], {
+                        isFinal: false,
+                    }),
+                ],
+            })
+        })
+        expect(onTranscript).not.toHaveBeenCalled()
+
+        mockLocalOnly = true
+        rerender()
+
+        expect(onTranscript).toHaveBeenCalledWith('half a note')
+    })
+
     it('a late aborted error or end from the stopped recognizer keeps the reason', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result, rerender } = renderHook(() => useDictation())

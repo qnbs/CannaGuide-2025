@@ -91,6 +91,8 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
     const [error, setError] = useState<string | null>(null)
     const recognitionRef = useRef<WDictationRecognition | null>(null)
     const onTranscriptRef = useRef(onTranscript)
+    // The text so far, including an interim result, for a stop by the switch.
+    const transcriptRef = useRef('')
 
     // Keep callback ref current without re-creating recognition
     useEffect(() => {
@@ -104,6 +106,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
     }, [])
 
     const reset = useCallback(() => {
+        transcriptRef.current = ''
         setTranscript('')
         setError(null)
     }, [])
@@ -131,6 +134,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         rec.addEventListener('result', (event: WDictationRecognitionEvent) => {
             if (!isCurrent()) return
             const full = joinTranscript(event.results)
+            transcriptRef.current = full
             setTranscript(full)
             // Call callback on final results only
             const latest = event.results[event.results.length - 1]
@@ -157,6 +161,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         })
 
         recognitionRef.current = rec
+        transcriptRef.current = ''
         setError(null)
 
         try {
@@ -181,6 +186,8 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         if (!localOnly || !recognitionRef.current) return
         recognitionRef.current.abort()
         recognitionRef.current = null
+        // An aborted recognizer sends no final result: keep what was dictated.
+        if (transcriptRef.current) onTranscriptRef.current?.(transcriptRef.current)
         setIsListening(false)
         setError('localOnly')
     }, [localOnly])

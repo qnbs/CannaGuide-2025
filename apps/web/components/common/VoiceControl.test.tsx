@@ -74,10 +74,11 @@ function uninstallMockSpeechRecognition(): void {
 // Mocks: i18n, Redux, Zustand stores, sub-components
 // ---------------------------------------------------------------------------
 
+// One t for every render, like react-i18next's (a new one each render would
+// recreate every callback and hide which dependencies really change).
+const mockT = (key: string) => key
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({
-        t: (key: string) => key,
-    }),
+    useTranslation: () => ({ t: mockT }),
 }))
 
 const mockSetVoiceListening = vi.fn()
@@ -447,6 +448,7 @@ describe('VoiceControl -- Local-Only Mode', () => {
                 const startsBefore = main.start.mock.calls.length
                 main.fire('end')
                 main.fire('result', finalResult('water plant'))
+                main.fire('error', { error: 'aborted' })
                 atCommit.restarted = main.start.mock.calls.length > startsBefore
             }, [blocked])
             return null
@@ -467,6 +469,24 @@ describe('VoiceControl -- Local-Only Mode', () => {
         expect(atCommit.aborted).toEqual([true, true])
         expect(atCommit.restarted).toBe(false)
         expect(mockProcessVoiceCommand).not.toHaveBeenCalled()
+        expect(mockSetVoiceStatusMessage).not.toHaveBeenCalledWith(
+            'common.voiceControl.errors.generic',
+        )
+    })
+
+    it('starting or ending a session keeps the command and hotword recognizers', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        const running = [...mockInstances]
+
+        mockIsListening = true
+        view.rerender(React.createElement(VC))
+        mockIsListening = false
+        view.rerender(React.createElement(VC))
+
+        expect(mockInstances).toHaveLength(2)
+        for (const recognizer of running) expect(recognizer.abort).not.toHaveBeenCalled()
     })
 
     it('a command result still queued after the switch runs no command', async () => {

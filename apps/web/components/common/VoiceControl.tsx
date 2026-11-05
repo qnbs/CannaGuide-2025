@@ -99,6 +99,12 @@ export const VoiceControl: React.FC = () => {
     const setVoiceStatusMessage = useUIStore((s) => s.setVoiceStatusMessage)
     const processVoiceCommand = useUIStore((s) => s.processVoiceCommand)
     const recognitionRef = useRef<WSpeechRecognition | null>(null)
+    // Read by the end and hotword handlers. As a dependency, isListening made
+    // every start or stop of a session rebuild (and abort) the recognizers.
+    const isListeningRef = useRef(isListening)
+    useLayoutEffect(() => {
+        isListeningRef.current = isListening
+    }, [isListening])
 
     // Hotword listener state
     const hotwordRecRef = useRef<WSpeechRecognition | null>(null)
@@ -157,7 +163,7 @@ export const VoiceControl: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         // In continuous listening mode, auto-restart recognition
-        if (continuousListening && isListening && recognitionRef.current) {
+        if (continuousListening && isListeningRef.current && recognitionRef.current) {
             try {
                 recognitionRef.current.start()
                 return
@@ -167,7 +173,7 @@ export const VoiceControl: React.FC = () => {
         }
         setVoiceListening(false)
         setVoiceStatusMessage(null)
-    }, [continuousListening, isListening, setVoiceListening, setVoiceStatusMessage])
+    }, [continuousListening, setVoiceListening, setVoiceStatusMessage])
 
     useEffect(() => {
         if (!isAvailable || !hasSpeechRecognitionSupport || speechBlocked) return
@@ -189,9 +195,13 @@ export const VoiceControl: React.FC = () => {
         const onEnd = (): void => {
             if (!speechBlockedRef.current) handleEnd()
         }
+        // The abort at the switch fires 'aborted'; it must not replace the reason.
+        const onError = (event: WSpeechRecognitionErrorEvent): void => {
+            if (!speechBlockedRef.current) handleError(event)
+        }
 
         recognition.addEventListener('result', onResult)
-        recognition.addEventListener('error', handleError)
+        recognition.addEventListener('error', onError)
         recognition.addEventListener('end', onEnd)
 
         recognitionRef.current = recognition
@@ -199,7 +209,7 @@ export const VoiceControl: React.FC = () => {
         return () => {
             if (recognition) {
                 recognition.removeEventListener('result', onResult)
-                recognition.removeEventListener('error', handleError)
+                recognition.removeEventListener('error', onError)
                 recognition.removeEventListener('end', onEnd)
                 recognition.abort()
                 recognitionRef.current = null
@@ -243,7 +253,7 @@ export const VoiceControl: React.FC = () => {
         }, HOTWORD_ACTIVATION_MS)
 
         // Start main command listener
-        if (recognitionRef.current && !isListening) {
+        if (recognitionRef.current && !isListeningRef.current) {
             try {
                 recognitionRef.current.start()
                 setVoiceListening(true)
@@ -251,7 +261,7 @@ export const VoiceControl: React.FC = () => {
                 // already started or unavailable -- ignore
             }
         }
-    }, [t, isListening, setVoiceStatusMessage, setVoiceListening])
+    }, [t, setVoiceStatusMessage, setVoiceListening])
 
     // A stale hotword or Porcupine listener may still call this after Local-Only
     // Mode was switched on, so it reads the ref, not the render's value.

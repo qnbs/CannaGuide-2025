@@ -504,6 +504,43 @@ describe('VoiceControl -- Local-Only Mode', () => {
         for (const recognizer of running) expect(recognizer.abort).not.toHaveBeenCalled()
     })
 
+    it('a hotword restart timer that fires in the switch commit starts nothing', async () => {
+        vi.useFakeTimers()
+        try {
+            mockHotwordEnabled = true
+            const VC = await importVoiceControl()
+            const fired = { count: -1 }
+            // Rendered after VoiceControl: runs in the same commit's layout phase,
+            // before the passive cleanup marks the hotword run stopped.
+            const Probe: React.FC<{ blocked: boolean }> = ({ blocked }) => {
+                React.useLayoutEffect(() => {
+                    if (!blocked) return
+                    const before = mockInstances.length
+                    vi.advanceTimersByTime(250)
+                    fired.count = mockInstances.length - before
+                }, [blocked])
+                return null
+            }
+            const tree = (blocked: boolean) =>
+                React.createElement(
+                    React.Fragment,
+                    null,
+                    React.createElement(VC),
+                    React.createElement(Probe, { blocked }),
+                )
+            const view = render(tree(false))
+            // The hotword recognizer ends: its restart is scheduled 200 ms later.
+            mockInstances[1]?.fire('end')
+
+            mockLocalOnly = true
+            view.rerender(tree(true))
+
+            expect(fired.count).toBe(0)
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
     it('a command result still queued after the switch runs no command', async () => {
         const VC = await importVoiceControl()
         const view = render(React.createElement(VC))

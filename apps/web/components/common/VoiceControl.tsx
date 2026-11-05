@@ -284,7 +284,9 @@ export const VoiceControl: React.FC = () => {
         let stopped = false
 
         const startHotword = () => {
-            if (stopped || !hasSpeechRecognitionSupport) return
+            // A restart timer set before the switch may fire before the cleanup
+            // marks this run stopped: the live setting decides.
+            if (stopped || speechBlockedRef.current || !hasSpeechRecognitionSupport) return
             const hw = new SpeechRecognitionAPI()
             hw.continuous = true
             hw.interimResults = true

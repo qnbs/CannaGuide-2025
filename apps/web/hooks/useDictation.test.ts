@@ -6,7 +6,8 @@
  * error handling, reset/stop behaviour.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
+import { renderHook, act, render } from '@testing-library/react'
+import { createElement, Fragment, useLayoutEffect } from 'react'
 import { isDictationSupported } from '@/hooks/useDictation'
 
 // ---------------------------------------------------------------------------
@@ -343,6 +344,46 @@ describe('useDictation -- Local-Only Mode (GH #717)', () => {
         expect(running?.abort).toHaveBeenCalled()
         expect(result.current.isListening).toBe(false)
         expect(result.current.error).toBe('localOnly')
+    })
+
+    it('stops dictation in the commit of the switch, so a queued result does not count', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const onTranscript = vi.fn()
+        let api: ReturnType<typeof useDictation> | undefined
+        const Host = () => {
+            api = useDictation(onTranscript)
+            return null
+        }
+        const atCommit = { aborted: false }
+        // Rendered after Host: its layout effect runs after Host's layout effects
+        // and before any passive effect.
+        const Probe = ({ blocked }: { blocked: boolean }) => {
+            useLayoutEffect(() => {
+                if (!blocked) return
+                const rec = mockInstances[0]
+                atCommit.aborted = (rec?.abort.mock.calls.length ?? 0) > 0
+                rec?.fire('result', {
+                    results: [
+                        Object.assign([{ transcript: 'late', confidence: 1 }], { isFinal: true }),
+                    ],
+                })
+            }, [blocked])
+            return null
+        }
+        const tree = (blocked: boolean) =>
+            createElement(Fragment, null, createElement(Host), createElement(Probe, { blocked }))
+        const view = render(tree(false))
+        act(() => {
+            api?.start()
+        })
+
+        mockLocalOnly = true
+        view.rerender(tree(true))
+
+        expect(atCommit.aborted).toBe(true)
+        expect(onTranscript).not.toHaveBeenCalled()
+        expect(api?.transcript).toBe('')
+        view.unmount()
     })
 
     it('a late aborted error or end from the stopped recognizer keeps the reason', async () => {

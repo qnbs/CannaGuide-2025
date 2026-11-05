@@ -5,7 +5,7 @@
  * Starts/stops a SpeechRecognition session and accumulates the transcript.
  * Used by LogActionModal for hands-free note entry.
  */
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
 import { useAppSelector } from '@/stores/store'
 import { selectLanguage, selectLocalOnlyMode } from '@/stores/selectors'
 
@@ -174,7 +174,10 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         else startRecognition()
     }, [localOnly, startRecognition])
 
-    useEffect(() => {
+    // A layout effect, so the recognizer stops in the commit of the switch: a
+    // passive effect would leave a gap in which it keeps listening and a queued
+    // result still counts as current and overwrites the note.
+    useLayoutEffect(() => {
         if (!localOnly || !recognitionRef.current) return
         recognitionRef.current.abort()
         recognitionRef.current = null

@@ -87,12 +87,9 @@ export const VoiceControl: React.FC = () => {
     // keeps every recognizer here off (GH #717). Porcupine stays off too: a
     // wake word would have no command listener to start.
     const speechBlocked = useAppSelector(selectLocalOnlyMode)
-    // The live value for listeners created before a change: a hotword result
-    // can arrive after the setting commits but before the cleanup aborts.
+    // The live value for listeners created before a change (see the layout
+    // effect below, which also aborts the recognizers at commit).
     const speechBlockedRef = useRef(speechBlocked)
-    useLayoutEffect(() => {
-        speechBlockedRef.current = speechBlocked
-    }, [speechBlocked])
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
     const continuousListening = settings.voiceControl.continuousListening
     const isListening = useUIStore((s) => s.voiceControl.isListening)
@@ -107,6 +104,17 @@ export const VoiceControl: React.FC = () => {
     const hotwordRecRef = useRef<WSpeechRecognition | null>(null)
     const hotwordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [hotwordActive, setHotwordActive] = useState(false)
+
+    // Switching Local-Only Mode on stops recognition in the commit itself, not
+    // in a later passive cleanup: between the two, a recognizer could keep
+    // sending audio, deliver a queued result or restart itself on 'end'. The
+    // listeners read the ref, so an event that still arrives does nothing.
+    useLayoutEffect(() => {
+        speechBlockedRef.current = speechBlocked
+        if (!speechBlocked) return
+        recognitionRef.current?.abort()
+        hotwordRecRef.current?.abort()
+    }, [speechBlocked])
 
     const handleResult = useCallback(
         (event: WSpeechRecognitionEvent) => {
@@ -177,9 +185,14 @@ export const VoiceControl: React.FC = () => {
             if (!speechBlockedRef.current) handleResult(event)
         }
 
+        // Continuous mode restarts on 'end'; never after the switch.
+        const onEnd = (): void => {
+            if (!speechBlockedRef.current) handleEnd()
+        }
+
         recognition.addEventListener('result', onResult)
         recognition.addEventListener('error', handleError)
-        recognition.addEventListener('end', handleEnd)
+        recognition.addEventListener('end', onEnd)
 
         recognitionRef.current = recognition
 
@@ -187,7 +200,7 @@ export const VoiceControl: React.FC = () => {
             if (recognition) {
                 recognition.removeEventListener('result', onResult)
                 recognition.removeEventListener('error', handleError)
-                recognition.removeEventListener('end', handleEnd)
+                recognition.removeEventListener('end', onEnd)
                 recognition.abort()
                 recognitionRef.current = null
             }
@@ -285,7 +298,7 @@ export const VoiceControl: React.FC = () => {
 
             const onEnd = () => {
                 // Auto-restart so the hotword listener stays alive
-                if (!stopped) {
+                if (!stopped && !speechBlockedRef.current) {
                     setTimeout(() => startHotword(), 200)
                 }
             }

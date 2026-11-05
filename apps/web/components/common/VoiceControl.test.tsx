@@ -84,6 +84,8 @@ const mockSetVoiceListening = vi.fn()
 const mockAddNotification = vi.fn()
 let mockLocalOnly = false
 let mockHotwordEnabled = false
+let mockIsListening = false
+let mockContinuous = false
 const mockSetVoiceStatusMessage = vi.fn()
 const mockProcessVoiceCommand = vi.fn()
 
@@ -91,7 +93,7 @@ vi.mock('@/stores/useUIStore', () => ({
     useUIStore: (selector: (s: Record<string, unknown>) => unknown) => {
         const state: Record<string, unknown> = {
             voiceControl: {
-                isListening: false,
+                isListening: mockIsListening,
                 isAvailable: true,
                 statusMessage: null,
             },
@@ -112,7 +114,7 @@ vi.mock('@/stores/store', () => ({
                     general: { language: 'en' },
                     voiceControl: {
                         hotwordEnabled: mockHotwordEnabled,
-                        continuousListening: false,
+                        continuousListening: mockContinuous,
                     },
                     privacy: { localOnlyMode: mockLocalOnly },
                 },
@@ -166,6 +168,8 @@ beforeEach(() => {
     vi.clearAllMocks()
     mockLocalOnly = false
     mockHotwordEnabled = false
+    mockIsListening = false
+    mockContinuous = false
     installMockSpeechRecognition()
 })
 
@@ -376,6 +380,11 @@ describe('VoiceControl -- toggle button', () => {
 // Local-Only Mode (GH #717): browser speech recognition may run in the cloud
 // ---------------------------------------------------------------------------
 
+/** A final recognition result with one alternative. */
+const finalResult = (transcript: string) => ({
+    results: [Object.assign([{ transcript, confidence: 1 }], { isFinal: true })],
+})
+
 describe('VoiceControl -- Local-Only Mode', () => {
     it('creates no recognizer, and the mic says why instead of listening', async () => {
         mockLocalOnly = true
@@ -413,6 +422,51 @@ describe('VoiceControl -- Local-Only Mode', () => {
 
         for (const recognizer of running) expect(recognizer.abort).toHaveBeenCalled()
         expect(mockInstances).toHaveLength(2)
+    })
+
+    it('stops recognition in the commit of the switch, before any passive cleanup', async () => {
+        mockHotwordEnabled = true
+        mockIsListening = true
+        mockContinuous = true
+        const VC = await importVoiceControl()
+        const recognizers: {
+            main: MockRecInstance | undefined
+            hotword: MockRecInstance | undefined
+        } = { main: undefined, hotword: undefined }
+        const atCommit = { aborted: [false, false], restarted: false }
+        // Rendered after VoiceControl: its layout effect runs after VoiceControl's
+        // layout effects and before any passive effect or cleanup.
+        const Probe: React.FC<{ blocked: boolean }> = ({ blocked }) => {
+            React.useLayoutEffect(() => {
+                const { main, hotword } = recognizers
+                if (!blocked || !main || !hotword) return
+                atCommit.aborted = [
+                    main.abort.mock.calls.length > 0,
+                    hotword.abort.mock.calls.length > 0,
+                ]
+                const startsBefore = main.start.mock.calls.length
+                main.fire('end')
+                main.fire('result', finalResult('water plant'))
+                atCommit.restarted = main.start.mock.calls.length > startsBefore
+            }, [blocked])
+            return null
+        }
+        const tree = (blocked: boolean) =>
+            React.createElement(
+                React.Fragment,
+                null,
+                React.createElement(VC),
+                React.createElement(Probe, { blocked }),
+            )
+        const view = render(tree(false))
+        ;[recognizers.main, recognizers.hotword] = mockInstances
+
+        mockLocalOnly = true
+        view.rerender(tree(true))
+
+        expect(atCommit.aborted).toEqual([true, true])
+        expect(atCommit.restarted).toBe(false)
+        expect(mockProcessVoiceCommand).not.toHaveBeenCalled()
     })
 
     it('a command result still queued after the switch runs no command', async () => {

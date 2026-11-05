@@ -345,7 +345,6 @@ export const VoiceControl: React.FC = () => {
     // When wakeWordEngine === 'porcupine' and an access key is set, use
     // Porcupine for low-CPU always-on keyword detection. Falls back to regex.
     // ---------------------------------------------------------------------------
-    const porcupineInitRef = useRef(false)
     // Identifies the key and keyword the engine was created with. init() keeps
     // an existing engine, so a changed or removed key needs dispose() first
     // (#744 review). Holds no key, only what changed.
@@ -355,10 +354,13 @@ export const VoiceControl: React.FC = () => {
     // stop finishing after the next dispose() would mark a released engine
     // ready again (#744 review).
     const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
-    // Local-Only Mode releases the engine instead of stopping it: init()
-    // subscribes WebVoiceProcessor, which keeps the microphone open until
-    // dispose() unsubscribes, and stop() only pauses the worker.
+    // An engine that is no longer wanted (hotword off, another engine,
+    // Local-Only Mode) is released, not only stopped: init() subscribes
+    // WebVoiceProcessor, which keeps the microphone open until dispose()
+    // unsubscribes, and stop() only pauses the worker. Checked when the step
+    // runs, so an init that was still queued is released as well.
     const releasePorcupine = useCallback(async () => {
+        if (porcupineConfigRef.current === null) return
         await porcupineWakeWordService.dispose()
         porcupineConfigRef.current = null
     }, [])
@@ -384,10 +386,7 @@ export const VoiceControl: React.FC = () => {
             wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
 
         if (!usePorcupine) {
-            if (porcupineInitRef.current) {
-                enqueuePorcupine(() => porcupineWakeWordService.stop())
-                porcupineInitRef.current = false
-            }
+            enqueuePorcupine(releasePorcupine)
             return
         }
 
@@ -428,8 +427,6 @@ export const VoiceControl: React.FC = () => {
                     activateFromHotword()
                 })
                 await porcupineWakeWordService.start()
-                // A teardown during start() already queued its stop behind this run.
-                if (!disposed) porcupineInitRef.current = true
             } catch {
                 console.debug('[VoiceControl] Porcupine init failed -- regex fallback active')
             }
@@ -441,10 +438,8 @@ export const VoiceControl: React.FC = () => {
             disposed = true
             // Queued even while this run is still starting: it then stops the
             // engine that run is about to leave listening (#744 review).
-            enqueuePorcupine(
-                speechBlockedRef.current ? releasePorcupine : () => porcupineWakeWordService.stop(),
-            )
-            porcupineInitRef.current = false
+            // The next run releases it if Porcupine is no longer wanted.
+            enqueuePorcupine(() => porcupineWakeWordService.stop())
         }
     }, [
         settings.voiceControl.wakeWordEngine,

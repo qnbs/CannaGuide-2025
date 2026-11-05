@@ -17,6 +17,7 @@ const keyStore = vi.hoisted(() => ({
 }))
 let legacyKey: string | null = null
 let localOnly = false
+let hotword = true
 
 vi.mock('@/services/porcupineKeyService', () => ({
     porcupineKeyService: {
@@ -57,7 +58,7 @@ vi.mock('@/stores/store', () => ({
                 settings: {
                     general: { language: 'en' },
                     voiceControl: {
-                        hotwordEnabled: true,
+                        hotwordEnabled: hotword,
                         continuousListening: false,
                         wakeWordEngine: 'porcupine',
                         porcupineAccessKey: legacyKey,
@@ -124,6 +125,7 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         keyStore.listeners.clear()
         legacyKey = null
         localOnly = false
+        hotword = true
         ;(window as WindowWithSpeech).SpeechRecognition = MockSpeechRecognition
     })
 
@@ -281,5 +283,22 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         await settle()
         // Released, not only stopped: init() subscribed the microphone.
         expect(porcupine.dispose).toHaveBeenCalled()
+    })
+
+    it('turning the hotword off releases the engine, so the microphone closes', async () => {
+        keyStore.key = STORED
+        const { porcupine, view, VoiceControl } = await renderVoiceControl()
+        expect(porcupine.init).toHaveBeenCalledTimes(1)
+
+        hotword = false
+        view.rerender(<VoiceControl />)
+        await settle()
+        // stop() only pauses the worker; dispose() unsubscribes WebVoiceProcessor.
+        expect(porcupine.dispose).toHaveBeenCalledTimes(1)
+
+        localOnly = true
+        view.rerender(<VoiceControl />)
+        await settle()
+        expect(porcupine.dispose).toHaveBeenCalledTimes(1)
     })
 })

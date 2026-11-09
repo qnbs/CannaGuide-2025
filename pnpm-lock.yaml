@@ -421,7 +421,7 @@ importers:
     optionalDependencies:
       '@mlc-ai/web-llm':
         specifier: '*'
-        version: 0.2.86
+        version: 0.2.87
       '@xenova/transformers':
         specifier: '*'
         version: 2.17.2(@types/node@26.1.1)
@@ -1925,8 +1925,8 @@ packages:
   '@lhci/utils@0.15.1':
     resolution: {integrity: sha512-WclJnUQJeOMY271JSuaOjCv/aA0pgvuHZS29NFNdIeI14id8eiFsjith85EGKYhljgoQhJ2SiW4PsVfFiakNNw==}
 
-  '@mlc-ai/web-llm@0.2.86':
-    resolution: {integrity: sha512-plciXBCYtY7iTKHzEcsqOfSO+s5u8NqMYFPnHmRbsN8CEdKcolgXIoGLPbzO6FtJHV43m7YP00x6qQ6Kb8CJJw==}
+  '@mlc-ai/web-llm@0.2.87':
+    resolution: {integrity: sha512-34N19988MdaEtzh8Mq/IOrfKCk2HRDOrXgEkLT28r3aiyAU6ZJSUB+v35t7zyU+0QEaFl91Y4U5SuPN/cwoHNw==}
 
   '@msw/url@0.1.2':
     resolution: {integrity: sha512-DdeBLQxQ+ZrtmwEmaj7GQ7lbzPCgbbbyAqOz/I4ulo68hwBpfdNvQJ5bmihJUkAAKOeCmqCIG3OFZGosqFN4mA==}
@@ -9550,7 +9550,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@mlc-ai/web-llm@0.2.86':
+  '@mlc-ai/web-llm@0.2.87':
     dependencies:
       loglevel: 1.9.2
     optional: true

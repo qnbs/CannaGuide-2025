@@ -71,8 +71,8 @@ importers:
         specifier: ^1.62.1
         version: 1.62.1
       '@socketsecurity/cli':
-        specifier: ^1.12.1
-        version: 1.12.2
+        specifier: ^1.14.0
+        version: 1.14.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.72.1
         version: 8.72.1(@typescript-eslint/parser@8.72.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -122,8 +122,8 @@ importers:
         specifier: ^3.9.10
         version: 3.9.10
       snyk:
-        specifier: ^1.1308.3
-        version: 1.1308.3
+        specifier: ^1.1308.4
+        version: 1.1308.4
       tsx:
         specifier: ^4.23.1
         version: 4.23.1
@@ -2774,8 +2774,8 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
-  '@socketsecurity/cli@1.12.2':
-    resolution: {integrity: sha512-MpLbcp+xLbj7y8tF4FUfn5PDuz/EjfCaZtDlEO4IYevjuO1E8+4uAOWfetcyMj1rY59fEb3FxFFX7Awdb/kRzA==}
+  '@socketsecurity/cli@1.14.0':
+    resolution: {integrity: sha512-YKLwyi/VV5c57S9LfQ4oIMrLHdZQ7NqKqTIUYH/nir3D/AeQVVnTONfPyOXPQ1/jkrILSg4PL7sxTuNJNS8WDg==}
     engines: {node: '>=18.20.8', pnpm: '>=10.33.0'}
     hasBin: true
 
@@ -6969,8 +6969,8 @@ packages:
     resolution: {integrity: sha512-RQsvleCbF8cVHEv+xuDGaA4pOizFqJ0GgjtMSRo6oP8pnN7WsigHgVGey6aILRBKv4W2YOMHLqbKdnB6hpB9fw==}
     engines: {node: '>=20.0.0'}
 
-  snyk@1.1308.3:
-    resolution: {integrity: sha512-CgpCJyOg4c4VvWSU6sIHrgU4z5MoknuQ1WhZi6gYjkluCgpBaEvmGd+SiyegY1FWYNhocTj+RpJwn5af3wwPkw==}
+  snyk@1.1308.4:
+    resolution: {integrity: sha512-BhGSPx0lDhPdq1pTpC3xrdryUcsDKGlS9vt/bJkY33XHxe4OqdXuWxsuzcV/YZIKFnx6gwVXkMUdeHRtJUIA5A==}
     engines: {node: '>=12'}
     hasBin: true
     bundledDependencies:
@@ -10323,7 +10323,7 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
-  '@socketsecurity/cli@1.12.2':
+  '@socketsecurity/cli@1.14.0':
     dependencies:
       '@socketsecurity/socket-patch': 2.0.0(patch_hash=375db8e6bdf3a95986598bdffcecc5defdbe14f45de028c075c3397a02d59e33)
       form-data: 4.0.6
@@ -14964,7 +14964,7 @@ snapshots:
 
   smob@1.6.2: {}
 
-  snyk@1.1308.3:
+  snyk@1.1308.4:
     dependencies:
       '@sentry/node': 7.120.4
 

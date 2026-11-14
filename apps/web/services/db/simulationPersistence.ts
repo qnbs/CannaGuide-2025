@@ -96,14 +96,11 @@ export const simulationPersistence = {
         )
 
         if (Object.keys(archivedByPlant).length > 0) {
-            const existingArchive =
-                (await metadataStore.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ??
-                {}
-            const mergedArchive = mergeArchive(existingArchive, archivedByPlant)
-            // Nothing new for the archive: no write.
-            if (mergedArchive) {
-                await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, mergedArchive)
-            }
+            await metadataStore.updateMetadata<ArchivedJournalMap>(
+                ARCHIVED_LOGS_METADATA_KEY,
+                (existingArchive) =>
+                    mergeArchive(existingArchive ?? {}, archivedByPlant) ?? undefined,
+            )
         }
 
         if (!hasChanges) {
@@ -123,6 +120,6 @@ export const simulationPersistence = {
     async getArchivedPlantLogs(plantId: string): Promise<JournalEntry[]> {
         const archive =
             (await metadataStore.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {}
-        return archive[plantId] ?? []
+        return storedEntries(archive, plantId)
     },
 }

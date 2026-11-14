@@ -187,6 +187,19 @@ describe('journal overflow archive (GH #668)', () => {
         expect(archivedIdsOf('constructor')).toEqual(range(0, 7))
     })
 
+    it('returns no archived entries for an inherited plant id', async () => {
+        await expect(simulationPersistence.getArchivedPlantLogs('constructor')).resolves.toEqual([])
+
+        store.data.set(
+            ARCHIVED_LOGS_METADATA_KEY,
+            Object.fromEntries([['constructor', [entry(7)]]]),
+        )
+
+        await expect(simulationPersistence.getArchivedPlantLogs('constructor')).resolves.toEqual([
+            entry(7),
+        ])
+    })
+
     it('still trims the saved copy to the kept entries', async () => {
         const saved = await simulationPersistence.optimizeSimulationForPersistence(
             simulationWith(10),

@@ -126,6 +126,7 @@ vi.mock('@/i18n', () => ({
 }))
 
 import { backupService } from '@/services/backupService'
+import { createArchivedJournalRestoreWrite } from '@/services/backupArchivedJournal'
 import { metadataStore } from '@/services/db/metadataStore'
 import { ARCHIVED_LOGS_METADATA_KEY } from '@/services/db/types'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
@@ -225,6 +226,47 @@ const metaDeclaring = (archivedJournalEntryCount: number): string =>
     })
 
 const storedArchive = (): Promise<unknown> => metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)
+
+const gateNextArchiveMetadataOperation = () => {
+    let operationStarted!: () => void
+    let continueOperation!: () => void
+    let isPaused = false
+    const started = new Promise<void>((resolve) => {
+        operationStarted = resolve
+    })
+    const mayContinue = new Promise<void>((resolve) => {
+        continueOperation = resolve
+    })
+    const pauseOnce = async (): Promise<void> => {
+        if (isPaused) return
+        isPaused = true
+        operationStarted()
+        await mayContinue
+    }
+
+    const originalGet = metadataStore.getMetadata.bind(metadataStore)
+    const getSpy = vi.spyOn(metadataStore, 'getMetadata').mockImplementation(async (key) => {
+        const current = await originalGet(key)
+        if (key === ARCHIVED_LOGS_METADATA_KEY) await pauseOnce()
+        return current
+    })
+    const originalUpdate = metadataStore.updateMetadata.bind(metadataStore)
+    const updateSpy = vi
+        .spyOn(metadataStore, 'updateMetadata')
+        .mockImplementation(async (key, update) => {
+            if (key === ARCHIVED_LOGS_METADATA_KEY) await pauseOnce()
+            return originalUpdate(key, update)
+        })
+
+    return {
+        started,
+        resume: continueOperation,
+        restoreSpies: () => {
+            getSpy.mockRestore()
+            updateSpy.mockRestore()
+        },
+    }
+}
 
 describe('archived plant journals in the ZIP backup (#667)', () => {
     beforeEach(async () => {
@@ -365,6 +407,74 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             expect(await storedArchive()).toEqual({
                 other: [archivedEntry('x')],
                 p1: [archivedEntry('old-0'), archivedEntry('old-1')],
+            })
+        })
+
+        it('does not overwrite an archive update committed while restore is preparing its merge', async () => {
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
+                p1: [archivedEntry('old-0')],
+            })
+            const gate = gateNextArchiveMetadataOperation()
+            const restoreWrite = createArchivedJournalRestoreWrite({
+                p1: [archivedEntry('backup-1')],
+            })
+            const applying = restoreWrite.apply()
+            try {
+                await gate.started
+                await metadataStore.updateMetadata<Record<string, unknown[]>>(
+                    ARCHIVED_LOGS_METADATA_KEY,
+                    (current) => ({
+                        ...current,
+                        p1: [...(current?.p1 ?? []), archivedEntry('optimizer-1')],
+                    }),
+                )
+            } finally {
+                gate.resume()
+                await applying
+                gate.restoreSpies()
+            }
+
+            expect(await storedArchive()).toEqual({
+                p1: [
+                    archivedEntry('old-0'),
+                    archivedEntry('optimizer-1'),
+                    archivedEntry('backup-1'),
+                ],
+            })
+        })
+
+        it('does not roll back an archive changed by another writer after restore apply', async () => {
+            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
+                p1: [archivedEntry('old-0')],
+            })
+            const restoreWrite = createArchivedJournalRestoreWrite({
+                p1: [archivedEntry('backup-1')],
+            })
+            await restoreWrite.apply()
+
+            const gate = gateNextArchiveMetadataOperation()
+            const reverting = restoreWrite.revert()
+            try {
+                await gate.started
+                await metadataStore.updateMetadata<Record<string, unknown[]>>(
+                    ARCHIVED_LOGS_METADATA_KEY,
+                    (current) => ({
+                        ...current,
+                        p1: [...(current?.p1 ?? []), archivedEntry('optimizer-1')],
+                    }),
+                )
+            } finally {
+                gate.resume()
+                await reverting
+                gate.restoreSpies()
+            }
+
+            expect(await storedArchive()).toEqual({
+                p1: [
+                    archivedEntry('old-0'),
+                    archivedEntry('backup-1'),
+                    archivedEntry('optimizer-1'),
+                ],
             })
         })
 
@@ -548,7 +658,7 @@ describe('archived plant journals in the ZIP backup (#667)', () => {
             await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, {
                 p9: [archivedEntry('keep')],
             })
-            vi.spyOn(metadataStore, 'setMetadata').mockRejectedValueOnce(
+            vi.spyOn(metadataStore, 'updateMetadata').mockRejectedValue(
                 new Error('QuotaExceededError'),
             )
 

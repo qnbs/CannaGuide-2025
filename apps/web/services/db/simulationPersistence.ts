@@ -120,6 +120,6 @@ export const simulationPersistence = {
     async getArchivedPlantLogs(plantId: string): Promise<JournalEntry[]> {
         const archive =
             (await metadataStore.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {}
-        return archive[plantId] ?? []
+        return storedEntries(archive, plantId)
     },
 }

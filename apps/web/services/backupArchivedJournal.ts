@@ -1,4 +1,4 @@
-import { metadataStore } from '@/services/db/metadataStore'
+import { DELETE_METADATA, metadataStore } from '@/services/db/metadataStore'
 import { ARCHIVED_LOGS_METADATA_KEY } from '@/services/db/types'
 import type { DependentStoreWrite } from '@/services/persistedStateService'
 
@@ -189,20 +189,19 @@ export const createArchivedJournalRestoreWrite = (
     let written: ArchivedJournal | undefined
     return {
         apply: async () => {
-            previous = await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)
-            const existing = previous === undefined ? {} : toArchivedJournal(previous)
-            written = mergeArchivedJournals(existing, incoming)
-            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, written)
+            await metadataStore.updateMetadata<unknown>(ARCHIVED_LOGS_METADATA_KEY, (current) => {
+                previous = current
+                const existing = current === undefined ? {} : toArchivedJournal(current)
+                written = mergeArchivedJournals(existing, incoming)
+                return written
+            })
         },
         revert: async () => {
             if (written === undefined) return
-            const current = await metadataStore.getMetadata(ARCHIVED_LOGS_METADATA_KEY)
-            if (!sameArchive(current, written)) return
-            if (previous === undefined) {
-                await metadataStore.deleteMetadata(ARCHIVED_LOGS_METADATA_KEY)
-                return
-            }
-            await metadataStore.setMetadata(ARCHIVED_LOGS_METADATA_KEY, previous)
+            await metadataStore.updateMetadata<unknown>(ARCHIVED_LOGS_METADATA_KEY, (current) => {
+                if (!sameArchive(current, written)) return undefined
+                return previous === undefined ? DELETE_METADATA : previous
+            })
         },
     }
 }

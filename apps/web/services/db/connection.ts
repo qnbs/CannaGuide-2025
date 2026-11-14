@@ -35,13 +35,15 @@ export const withRetry = async <T>(
     operation: () => Promise<T>,
     context: string,
     retries: number = MAX_RETRIES,
+    shouldRetry: (error: unknown) => boolean = () => true,
 ): Promise<T> => {
     for (let attempt = 0; attempt < retries; attempt++) {
         try {
             return await operation()
         } catch (error) {
             const isLastAttempt = attempt === retries - 1
-            if (isLastAttempt) {
+            if (isLastAttempt || !shouldRetry(error)) {
+                if (!isLastAttempt) throw error
                 console.debug(`[dbService] ${context} failed after ${retries} attempts:`, error)
                 throw error
             }

@@ -7,6 +7,14 @@ const store = vi.hoisted(() => ({ data: new Map<string, unknown>(), writes: 0 })
 vi.mock('./metadataStore', () => ({
     metadataStore: {
         getMetadata: vi.fn((key: string) => Promise.resolve(store.data.get(key))),
+        updateMetadata: vi.fn((key: string, update: (current: unknown) => unknown) => {
+            const next = update(store.data.get(key))
+            if (next !== undefined) {
+                store.writes += 1
+                store.data.set(key, structuredClone(next))
+            }
+            return Promise.resolve()
+        }),
         setMetadata: vi.fn((key: string, value: unknown) => {
             store.writes += 1
             store.data.set(key, structuredClone(value))
@@ -105,6 +113,16 @@ describe('journal overflow archive (GH #668)', () => {
         await simulationPersistence.optimizeSimulationForPersistence(simulationWith(12))
 
         expect(archivedIds()).toEqual(range(0, 9))
+    })
+
+    it('preserves archive updates from concurrent tabs (GH #669)', async () => {
+        await Promise.all([
+            simulationPersistence.optimizeSimulationForPersistence(simulationFor('p1', 10, 0)),
+            simulationPersistence.optimizeSimulationForPersistence(simulationFor('p2', 10, 10)),
+        ])
+
+        expect(archivedIdsOf('p1')).toEqual(range(0, 7))
+        expect(archivedIdsOf('p2')).toEqual(range(10, 17))
     })
 
     it('at the cap, adds the newer overflow and then stands still', async () => {

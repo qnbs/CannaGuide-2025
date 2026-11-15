@@ -1,0 +1,889 @@
+{
+    "schema_version": 1,
+    "observed_at_utc": "2026-11-15T06:58:05.781Z",
+    "tool": {
+        "name": "Claude Code CLI",
+        "version": "2.1.323"
+    },
+    "base_commit": "4d4703eb1478230f352d2f0da91c7be91cd38503",
+    "method": "Sequential no-session-persistence print probes with project/local settings and no tools, from ten repository work directories, inside bubblewrap user/network namespaces. An in-memory local Anthropic Messages SSE mock served each request. Full normalized CLAUDE.md contents were compared in memory; only marker paths/order/positions were retained. Temporary HOME was scanned for JSONL, probe prompt, and full instructions; none were found. No model service or external route was used.",
+    "isolation": {
+        "network_namespace": "bubblewrap --unshare-user --unshare-net",
+        "loopback_enabled_inside_namespace": true,
+        "network_route_count": 0,
+        "external_probe_result": "ENETUNREACH",
+        "api_target": "in-memory local mock on 127.0.0.1",
+        "raw_prompt_persisted": false,
+        "session_persistence_disabled": true,
+        "temporary_config_scan": {
+            "jsonl_files": 0,
+            "probe_prompt_matches": 0,
+            "full_instruction_matches": 0
+        }
+    },
+    "contexts": [
+        {
+            "cwd": ".",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "apps/web",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": true,
+                    "position": 27161,
+                    "global_position": 27187,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "web"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "apps/web/services/db",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": true,
+                    "position": 27161,
+                    "global_position": 27187,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "database": {
+                    "present": true,
+                    "position": 30941,
+                    "global_position": 30967,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "web", "database"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "apps/web/services/local-ai",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": true,
+                    "position": 27161,
+                    "global_position": 27187,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": true,
+                    "position": 30947,
+                    "global_position": 30973,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "web", "local_ai"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "apps/web/services/worker-bus",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": true,
+                    "position": 27161,
+                    "global_position": 27187,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": true,
+                    "position": 30949,
+                    "global_position": 30975,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "web", "worker_bus"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "apps/web/data/strains",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": true,
+                    "position": 27161,
+                    "global_position": 27187,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": true,
+                    "position": 30942,
+                    "global_position": 30968,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "web", "strains"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "apps/desktop",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": true,
+                    "position": 27165,
+                    "global_position": 27191,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "desktop"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "packages/ai-core",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": true,
+                    "position": 27169,
+                    "global_position": 27195,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "ai_core"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": "scripts",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": true,
+                    "position": 27160,
+                    "global_position": 27186,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "github": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                }
+            },
+            "marker_order": ["root", "scripts"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        },
+        {
+            "cwd": ".github",
+            "requestPath": "/v1/messages?beta=true",
+            "marker_results": {
+                "root": {
+                    "present": true,
+                    "position": 8484,
+                    "global_position": 8510,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                },
+                "web": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "database": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "local_ai": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "worker_bus": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "strains": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "desktop": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "ai_core": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "scripts": {
+                    "present": false,
+                    "position": -1,
+                    "global_position": -1,
+                    "payload_path": null,
+                    "full_file_match": false
+                },
+                "github": {
+                    "present": true,
+                    "position": 27160,
+                    "global_position": 27186,
+                    "payload_path": "$.messages[0].content[0].text",
+                    "full_file_match": true
+                }
+            },
+            "marker_order": ["root", "github"],
+            "request_captured": true,
+            "mock_response_received": true,
+            "raw_prompt_recorded": false,
+            "only_in_memory": true,
+            "cli_exit_code": 0
+        }
+    ],
+    "instruction_file_sha256": {
+        "AGENTS.md": "478c740905f753b4edc7a3f6f02859a6ee64f990ceb93a60fc82ab1b843dbcff",
+        "CLAUDE.md": "a50b53ef44f10d8efad0e70a8e81df83b5650f7fed0a09db7290bd3d0b00c055",
+        "apps/web/CLAUDE.md": "9f9438ad1d7c06ed43820e14148aa6900ccd1295124f89454365618329aa8201",
+        "apps/web/AGENTS.md": "276d17e57741ac0d84f240a9478d5a4fdbaf9b37caccede9fc2b5a5b8c5eada7",
+        "apps/web/services/db/CLAUDE.md": "ee75a08615701076d12fb861509aa56072ae780b0dbf7e5850ed85ba91af4941",
+        "apps/web/services/db/AGENTS.md": "1f6c4b3bf86dad6e8e6acf179747df38ec3543279bcedc0c3a727e601ea00a1d",
+        "apps/web/services/local-ai/CLAUDE.md": "1a0c7b94b06b869f76101d38b4594ecb01c51ff44c23fed84d4e71ffd875c725",
+        "apps/web/services/worker-bus/CLAUDE.md": "2f7eaa3f14768e3fe9a573d3cceb51fdc8a93328b5ed5d626313f787a8375900",
+        "apps/web/data/strains/CLAUDE.md": "5c88168dfe893e24000aeccded745c249873f428aa8cf3c192e0357f61b29976",
+        "apps/desktop/CLAUDE.md": "01dfcec6f4efbfd3e5e41eb409d5cbcf4030b5adf9862c7a27c08422978f46c8",
+        "apps/desktop/AGENTS.md": "5a74b88e3822f0a06e30c1e95749e77e7ec511bfaeb5d85aee7f91ced9c5259d",
+        "packages/ai-core/CLAUDE.md": "263991d451c50eaf4824e61a8e34e33a54a0c8517abd0812053d963a447c9968",
+        "scripts/CLAUDE.md": "1b3afca40124a759d692e52822e84c8e12bcb4d54e4b8bd294cd9fdfabefe8e1",
+        "scripts/AGENTS.md": "b930d34895d7bb505fcd8d696e895894cf397ebd7a469f4be1e05b6e4f6ea4d2",
+        ".github/CLAUDE.md": "b0c31c22c79502fe117d2ec38bdece64a9ce56cc42ffd8332f37ad4d86c6c005",
+        ".github/AGENTS.md": "e2f4a34f401bde2320e84e5d5e14d90324dfe25d01c51a7cdb108982ec50c195"
+    },
+    "host_level_instruction_files": {
+        "paths_redacted": true,
+        "observed": false,
+        "note": "Temporary HOME isolated this probe from host-level instruction files."
+    },
+    "database_context_syscall_check": {
+        "cwd": "apps/web/services/db",
+        "read_claude_files": ["CLAUDE.md", "apps/web/CLAUDE.md", "apps/web/services/db/CLAUDE.md"],
+        "checked_only_paths": [
+            "AGENTS.md",
+            "apps/web/AGENTS.md",
+            "apps/web/services/db/AGENTS.md",
+            "apps/desktop/AGENTS.md",
+            "scripts/AGENTS.md",
+            ".github/AGENTS.md"
+        ],
+        "checked_only_evidence": "Complete AGENTS.md contents were absent from all captured Claude API request payloads."
+    },
+    "limitations": [
+        "The CLI received a synthetic local mock response; no real model response was obtained.",
+        "Full-file prompt inclusion proves loader scope and order, not semantic execution of every normative rule.",
+        "Codex loader semantics were separately verified; Claude prompt capture contained no complete AGENTS.md file."
+    ],
+    "source_hash_verified_at_utc": "2026-11-15T07:05:29.517Z",
+    "source_hash_note": "Hashes were refreshed after the Codex-only apps/web/AGENTS.md clarification. The last full 10-context Claude probe remains 2026-11-15T06:58:05.781Z; it loaded no AGENTS.md content. No Claude instruction file or Claude setting changed after that probe."
+}

@@ -1,0 +1,175 @@
+{
+    "observed_at_utc": "2026-11-15T07:04:46.818Z",
+    "tool": "Codex CLI",
+    "version": "codex-cli 0.169.0",
+    "base_commit": "4d4703eb1478230f352d2f0da91c7be91cd38503",
+    "method": "Sequential codex debug prompt-input probes on CLI 0.169.0 in ten work directories. Each probe used a temporary HOME/CODEX_HOME with a trusted-project entry for this exact worktree. Parsed JSON string leaves were compared in memory against complete normalized local instruction contents; no model/API call was made and no prompt payload was persisted.",
+    "contexts": [
+        {
+            "cwd": ".",
+            "task_kind": "root",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50763
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "apps/web",
+            "task_kind": "web",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "apps/web/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50586,
+                "apps/web/AGENTS.md": 68655
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "apps/web/services/db",
+            "task_kind": "database",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "apps/web/AGENTS.md", "apps/web/services/db/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50598,
+                "apps/web/AGENTS.md": 68667,
+                "apps/web/services/db/AGENTS.md": 71175
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "apps/web/services/local-ai",
+            "task_kind": "local_ai",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "apps/web/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50604,
+                "apps/web/AGENTS.md": 68673
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "apps/web/services/worker-bus",
+            "task_kind": "worker_bus",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "apps/web/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50606,
+                "apps/web/AGENTS.md": 68675
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "apps/web/data/strains",
+            "task_kind": "strains",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "apps/web/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50599,
+                "apps/web/AGENTS.md": 68668
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "apps/desktop",
+            "task_kind": "desktop",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "apps/desktop/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50590,
+                "apps/desktop/AGENTS.md": 68659
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "packages/ai-core",
+            "task_kind": "ai_core",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50594
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": "scripts",
+            "task_kind": "scripts",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", "scripts/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50585,
+                "scripts/AGENTS.md": 68654
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        },
+        {
+            "cwd": ".github",
+            "task_kind": "github",
+            "exit_code": 0,
+            "loaded": ["AGENTS.md", ".github/AGENTS.md"],
+            "missing": [],
+            "unexpected_out_of_scope": [],
+            "prompt_positions": {
+                "AGENTS.md": 50585,
+                ".github/AGENTS.md": 68654
+            },
+            "probe_exit_code": 0,
+            "full_file_match_only": true
+        }
+    ],
+    "out_of_scope_check": {
+        "root_CLAUDE_md_loaded_by_Codex": false,
+        "marker_sha256": "cabe9fb646949329cb807cf6a001efb8e03999cb2968bceccec83c50ff3d3122",
+        "marker_unique_across_local_instruction_files": true,
+        "apps_web_AGENTS_absent_from_desktop": true,
+        "nested_CLAUDE_paths_loaded_by_Codex": false,
+        "observed_at_utc": "2026-11-15T07:04:46.818Z"
+    },
+    "instruction_file_sha256": {
+        "AGENTS.md": "478c740905f753b4edc7a3f6f02859a6ee64f990ceb93a60fc82ab1b843dbcff",
+        "CLAUDE.md": "a50b53ef44f10d8efad0e70a8e81df83b5650f7fed0a09db7290bd3d0b00c055",
+        "apps/web/CLAUDE.md": "9f9438ad1d7c06ed43820e14148aa6900ccd1295124f89454365618329aa8201",
+        "apps/web/AGENTS.md": "276d17e57741ac0d84f240a9478d5a4fdbaf9b37caccede9fc2b5a5b8c5eada7",
+        "apps/web/services/db/CLAUDE.md": "ee75a08615701076d12fb861509aa56072ae780b0dbf7e5850ed85ba91af4941",
+        "apps/web/services/db/AGENTS.md": "1f6c4b3bf86dad6e8e6acf179747df38ec3543279bcedc0c3a727e601ea00a1d",
+        "apps/web/services/local-ai/CLAUDE.md": "1a0c7b94b06b869f76101d38b4594ecb01c51ff44c23fed84d4e71ffd875c725",
+        "apps/web/services/worker-bus/CLAUDE.md": "2f7eaa3f14768e3fe9a573d3cceb51fdc8a93328b5ed5d626313f787a8375900",
+        "apps/web/data/strains/CLAUDE.md": "5c88168dfe893e24000aeccded745c249873f428aa8cf3c192e0357f61b29976",
+        "apps/desktop/CLAUDE.md": "01dfcec6f4efbfd3e5e41eb409d5cbcf4030b5adf9862c7a27c08422978f46c8",
+        "apps/desktop/AGENTS.md": "5a74b88e3822f0a06e30c1e95749e77e7ec511bfaeb5d85aee7f91ced9c5259d",
+        "packages/ai-core/CLAUDE.md": "263991d451c50eaf4824e61a8e34e33a54a0c8517abd0812053d963a447c9968",
+        "scripts/CLAUDE.md": "1b3afca40124a759d692e52822e84c8e12bcb4d54e4b8bd294cd9fdfabefe8e1",
+        "scripts/AGENTS.md": "b930d34895d7bb505fcd8d696e895894cf397ebd7a469f4be1e05b6e4f6ea4d2",
+        ".github/CLAUDE.md": "b0c31c22c79502fe117d2ec38bdece64a9ce56cc42ffd8332f37ad4d86c6c005",
+        ".github/AGENTS.md": "e2f4a34f401bde2320e84e5d5e14d90324dfe25d01c51a7cdb108982ec50c195"
+    },
+    "source_hash_method": "SHA-256 over exact raw bytes for each local instruction file, refreshed after the ten successful current-worktree Codex prompt-input probes at observed_at_utc."
+}

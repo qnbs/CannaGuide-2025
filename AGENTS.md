@@ -50,16 +50,9 @@ corepack pnpm install --frozen-lockfile
 
 Reinstall only when `pnpm-lock.yaml` actually changed, and always with `--frozen-lockfile` — a bare `pnpm install` re-resolves carets and can trip the `minimumReleaseAge` quarantine in CI. See [README.md](README.md) for the canonical command list.
 
-### Run the web app (dev)
+### Workspace development
 
-`pnpm run dev` at the repo root runs **turbo** for all packages, including `@cannaguide/desktop`, which fails without the Rust/Tauri toolchain. For web-only development:
-
-```bash
-cd apps/web && pnpm run dev -- --host 0.0.0.0
-```
-
-- **URL:** `http://localhost:5173/CannaGuide-2025/` (Vite `base` is `/CannaGuide-2025/`)
-- **Preview (production build):** `pnpm run build` then `pnpm run preview` → port **4173**
+`pnpm run dev` at the repo root runs **turbo** for all packages, including `@cannaguide/desktop`, which fails without the Rust/Tauri toolchain. For web-only setup and optional web services, use [`apps/web/AGENTS.md`](apps/web/AGENTS.md); native desktop setup is in [`apps/desktop/AGENTS.md`](apps/desktop/AGENTS.md). End-to-end browser tests run in CI only.
 
 ### Lint / test / build
 
@@ -120,26 +113,11 @@ incremental `tsc` above (91 s / 0.85 GB), so it loses on both axes. It also repo
 that `tsc` does not, and a gate that goes red on an unfixable error gets switched off. Do not
 adopt it. See [`docs/toolchain-update.md`](docs/toolchain-update.md).
 
-**React versions:** `apps/web` pins `react@^19.2.7` and `react-dom@^19.2.7` (aligned in lockfile).
-
-**Vitest mock isolation:** Suites that mock shared modules (`@/services/sentryService`, `@/services/local-ai`, etc.) should use `vi.hoisted()` for stable mock references and `vi.resetModules()` + dynamic `import()` in `beforeEach` when the module under test binds mocks at import time. Reference implementations: `services/aiResponseValidation.test.ts`, `services/growLogRagService.test.ts`. Residual sporadic full-suite noise in unrelated modules may still occur — run affected files in isolation to confirm regressions.
-
-### Optional services
-
-- **IoT mock:** `node docker/iot-mocks/src/server.mjs` (port **3001**)
-- **Desktop:** `pnpm run dev:desktop` needs Rust + Tauri v2
-- **Playwright E2E:** `pnpm run build` then `pnpm run test:e2e` (starts preview on **4173**)
-
 ### Secrets
 
 Cloud AI uses provider keys configured in app Settings; optional environment configuration is
 not required for core offline flows. GitHub Gist cloud sync remains disabled. Do not activate
 sync, Sentry or Replay merely to verify a dependency update.
-
-### Code guidelines
-
-- **AI disclaimers:** Every UI surface that renders AI-generated output (cloud or local: advice, diagnosis, vision/leaf scan, image generation, equipment/breeding recommendations, chat) MUST show the shared `AiDisclaimer` component (`apps/web/components/common/AiDisclaimer.tsx`). Use the `medical` prop for health/diagnosis-style surfaces. Do not inline a bespoke `t('ai.disclaimer')` string in new code — reuse the component so the notice stays consistent across all five locales.
-- **File-size budget:** Keep new/heavily-changed files within **200–700 LOC** (`pnpm run check:file-budget`). Split god-files into sub-components + hooks (views) or thematic modules (services) before merge.
 
 ### Git hooks: run them, never bypass
 
@@ -172,15 +150,32 @@ Implementation PRs are **Ready for review** (`draft=false`) once the first revie
 
 When a PR has open review threads (CodeAnt, CodeRabbit, human, or bot): fix the valid ones. Do not leave valid review items for a follow-up unless the user explicitly defers them.
 
-**One correction wave per head.** After a push, wait until CI and the reviewers that actually run have finished on that exact SHA. Collect every finding, then push one consolidated fix. Do not cascade tiny pushes while the current head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and "outside diff range" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable` — refactor so the rule passes honestly. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded limits, not a clean review.
+**One stable-head correction.** Let reviews that start automatically finish on one stable head. Collect every finding, including paginated issue-comment findings and outside-diff comments, group them by root cause, and ship one signed corrective commit after the relevant checks and reviews finish. Request one fresh CodeRabbit full review of that final head; another full review is due only after code changes. A new push makes prior CI and review evidence stale. Do not merge until two of CodeRabbit, CodeAnt, and Codex have covered the exact current head with non-dismissed reviews. Do not merge a head that none of the three has reviewed. `REVIEW_UNAVAILABLE` (skipped, paused, rate limited, quota skipped, expired trial, or no attached review) is not a green check, and it is not a merge block once two of them have covered. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once; do not repeat the request while unanswered. A dismissed or older-head review does not count. Fix every valid finding at its root; refute false positives with evidence. Reply citing the resolving commit for fixes, or the current head for no-code refutations, and resolve every thread. Do not push during an active review or check run. Never add a new `biome-ignore` / `eslint-disable` to silence a finding.
 
 **Keep every PR under ~100 changed files.** Review bots silently skip inline comments on
-larger PRs, so the loop never starts. Count against the merge-base with the **remote** branch
-— a local `main` may be stale or divergent, the same trap the verify scripts already avoid:
+larger PRs, so the loop never starts. Warn near 8 commits / 50 files; stop adding scope near
+12 / 75; open a successor before 15 commits or about 100 files. PR #757 is a documented
+historical exception (26 commits / 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`);
+preserve its history. Count against remote refs, not a possibly stale local `main`:
 
 ```bash
+# Stacked pull: this pull, counted against its parent.
+git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+# Against origin/main. For a stacked pull this is the whole stack.
+git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
 git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
 ```
+
+### Cross-agent global safeguards
+
+- **CanG legal boundary:** For Germany, keep the KCanG §9(1) limit at no more than three cannabis plants simultaneously across all grows at one residence. Count active stages from Seed through Curing; archived and finished plants do not count as active. Do not weaken this rule without verifying the applicable law and current code.
+- **SSH-signed commits:** Sign every commit with the configured SSH signing identity and verify the signature locally and on GitHub. An unsigned commit does not satisfy the merge policy. Never disable signing or rewrite another operator's commits.
+- **A11y ratchet:** Do not raise `.a11y-baseline.json` to make a gate pass. Fix warnings and lower the baseline only when verified counts fall; do not add lint suppressions. Keep the a11y CI gate enabled.
+- **Local-Only privacy:** Preserve no-egress behavior wherever the user-selected mode or consent requires local-only processing. Check provider/model downloads, workers, service workers, caches, retries and mode changes; local inference alone does not prove zero egress. Never log user payloads or credentials.
+- **SAFE-only retention:** Before cleanup, use immutable IDs and verify owner, active PR/production/incident/rollback references, recovery and the live resource state. Use the required dry-run and immediate readback. `UNKNOWN`, `KEEP`, and `PROTECTED` resources are never deleted; stop on mismatches and follow the applicable owner gate.
+- **Review coverage:** Before merge, two of CodeRabbit, CodeAnt and Codex must cover the exact current head; a head with no reviewer coverage cannot merge. `REVIEW_UNAVAILABLE` is not a green result and ceases to block only after two reviewers cover that head. If Codex has no non-dismissed review on the head, request `@codex review` once and do not repeat the request while unanswered.
+- **PR budget:** Warn near 8 commits / 50 changed files; stop adding scope near 12 / 75; open a successor before 15 commits or about 100 changed files. Count a stacked PR against its parent and the whole stack against `origin/main`. Preserve the documented #757 historical exception.
 
 ### Authority and trust (all agents)
 

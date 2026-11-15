@@ -6,11 +6,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+- **docs(agent-context):** establish scoped Claude/Codex guidance for web, persistence, AI, workers and repository automation; preserve global safeguards and traceability.
+
 ### Added
 
 - **feat(strains):** Non-chemical cultivar claims are a separate schema from laboratory analyte facts. A party claim can name a breeder, owner, creator, publisher, co-developer, grower, wholesaler, or pharmacy seller, and an unknown breeder stays a null name. Two attributed breeder, owner, creator, or publisher names for one cultivar both remain, and the conflict is reported without dropping either. Different roles, different cultivars, and several growers are not that conflict. Feminized and autoflower are independent form claims. A flowering duration in days is not the same claim as a lifecycle duration in weeks, days are not converted into weeks, and the same duration on another cultivar is a different claim. This change does not regenerate the checked-in catalog (776 ids, SHA256 `90d9f688452094db0d0b3bbdb044e7c19271e12ffef04ed6723daea7abef6e27`).
 
 ### Changed
+
+- **docs(review):** Review work is collected on a stable pull-request head, with two named reviewers required on that exact head, paginated issue comments included in finding disposition, documented unavailable-review semantics, and stacked-pull budgets measured against remote refs. The policy gate and a fixture test enforce reviewer coverage without replacing required CI checks.
 
 - **feat(hydro):** In the Hydro Monitor, readings and alerts can be cleared separately, and a clear can be undone (#685 follow-up). Next to Clear All there are now Clear readings and Clear alerts, each with its own confirmation that names exactly the list it deletes. After a confirmed clear, the Hydro Monitor shows what was deleted with an Undo button for 10 seconds; Undo puts back exactly the deleted readings and alerts, with their ids, without duplicating anything. A second clear within those 10 seconds joins the same undo and restarts the time, so the first clear is not lost. The confirmations say that the undo is available on this page for 10 seconds, and no longer that a clear is final. Five languages.
 

@@ -151,7 +151,7 @@ jobs:
                   # instruction files. They are listed so a guide-only or
                   # architecture-only edit still runs cursor-project-config.test.mjs.
                   # README.md stays a plain doc.
-                  POLICY_PATHS='(^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/ARCHITECTURE\.md$|^docs/DEVOPS-GATES\.md$|^docs/GRAPHIFY-COMPLETE-GUIDE\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/)'
+                   POLICY_PATHS='(^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/ARCHITECTURE\.md$|^docs/DEVOPS-GATES\.md$|^docs/GRAPHIFY-COMPLETE-GUIDE\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/|(^|.*/)(AGENTS|CLAUDE)\.md$|^docs/agent-instructions/|^scripts/security/(check-agent-(policy|instruction-architecture)(\.test)?|traceability-integrity\.test|review-coverage\.test)\.mjs$|^\.github/workflows/ci\.yml$)'
                   set +e
                   POLICY=$(printf '%s\n' "$CHANGED" | grep -E "$POLICY_PATHS")
                   POLICY_STATUS=$?
@@ -448,6 +448,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
+                  fetch-depth: 0
                   persist-credentials: false
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
@@ -455,6 +456,8 @@ jobs:
                   node-version: ${{ env.NODE_VERSION }}
             - name: Agent policy gate
               run: node scripts/security/check-agent-policy.mjs
+            - name: Instruction architecture gate
+              run: node scripts/security/check-agent-instruction-architecture.mjs
             - name: Security policy regression tests
               run: node --test --test-concurrency=1 ./scripts/security/*.test.mjs
             - name: Cursor project config tests

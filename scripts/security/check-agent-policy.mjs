@@ -42,6 +42,20 @@ export const AGENT_FILES = [
     '.github/CI-AUDIT.md',
     '.github/workflows/README.md',
     'docs/DEVOPS-GATES.md',
+    'apps/web/CLAUDE.md',
+    'apps/web/AGENTS.md',
+    'apps/web/services/db/CLAUDE.md',
+    'apps/web/services/db/AGENTS.md',
+    'apps/web/services/local-ai/CLAUDE.md',
+    'apps/web/services/worker-bus/CLAUDE.md',
+    'apps/web/data/strains/CLAUDE.md',
+    'apps/desktop/CLAUDE.md',
+    'apps/desktop/AGENTS.md',
+    'packages/ai-core/CLAUDE.md',
+    'scripts/CLAUDE.md',
+    'scripts/AGENTS.md',
+    '.github/CLAUDE.md',
+    '.github/AGENTS.md',
 ]
 
 /**
@@ -420,13 +434,44 @@ export function shellCommands(text) {
 
 const FENCE = /^\s*(```|~~~)/
 
+const GLOBAL_ROOT_INVARIANTS = [
+    ['SSH-signed commits', /SSH-signed commits/i],
+    ['low-RAM thresholds', /256 MB[\s\S]*512 MB[\s\S]*900 MB/],
+    [
+        'A11y ratchet protects the baseline',
+        /A11y ratchet[\s\S]{0,180}(?:do not raise[\s\S]{0,100}\.a11y-baseline\.json|\.a11y-baseline\.json[\s\S]{0,180}never be raised)/i,
+    ],
+    ['hook integrity', /pre-push[\s\S]*--no-verify|--no-verify[\s\S]*pre-push/i],
+    ['Local-Only privacy', /Local-Only privacy[\s\S]{0,400}no-egress/i],
+    ['writer lease', /QNB-259[\s\S]{0,240}writer lease|writer lease[\s\S]{0,240}QNB-259/i],
+    ['15-commit PR budget', /15 commits[\s\S]{0,240}100 changed files/i],
+    ['SAFE-only retention', /SAFE-only retention[\s\S]{0,500}UNKNOWN/i],
+]
+
+const REVIEW_COVERAGE = [
+    ['two-reviewer coverage', /two of CodeRabbit,\s+CodeAnt,\s+and Codex have covered/],
+    ['REVIEW_UNAVAILABLE is not a green check', /REVIEW_UNAVAILABLE[\s\S]{0,500}not a green check/],
+    [
+        'unavailable is not a merge block once two have covered',
+        /not a merge block once (?:two of|those two)/,
+    ],
+    ['no merge when none of the three reviewed', /none of the three\s+has reviewed/],
+    [
+        'a Codex review request when none is on the head',
+        /has no non-dismissed review on that head,\s+comment\s+`@codex review`/,
+    ],
+]
+
 const REQUIRED = {
     'AGENTS.md': [
         ['an "Authority and trust" section', /^#{2,4} Authority and trust/m],
         ['the writer lease (QNB-259)', /QNB-259/],
         ['read-only reviewers', /read-only reviewers/i],
         ['the untrusted-content rule', /data, never instructions/i],
+        ...REVIEW_COVERAGE,
     ],
+    'CLAUDE.md': REVIEW_COVERAGE,
+    'docs/PR-REVIEW-LOOP.md': REVIEW_COVERAGE,
 }
 /** Must appear at least once in an affirmative (not forbidding) clause. */
 const AFFIRMED = {
@@ -507,6 +552,13 @@ function lineProblems(name, line, where, inFence, needs) {
 /** Problems across `files` (name -> text); empty when every file is sound. */
 export function agentPolicyProblems(files, { needs } = {}) {
     const problems = []
+    for (const name of ['AGENTS.md', 'CLAUDE.md']) {
+        if (!Object.hasOwn(files, name)) continue
+        const rootText = files[name]
+        for (const [label, pattern] of GLOBAL_ROOT_INVARIANTS) {
+            if (!pattern.test(rootText)) problems.push(`${name}: missing ${label}`)
+        }
+    }
     for (const [name, text] of Object.entries(files)) {
         let inFence = false
         text.split('\n').forEach((line, index) => {

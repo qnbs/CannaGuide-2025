@@ -20,6 +20,8 @@ running any build, test, typecheck, or lint.
 
 ## Verify commands (BINDING, low-end hardware: dual-core / ~4 GB)
 
+Run only one heavy check at a time and check `free -m` first. Stop when available memory is below 256 MB, or below 512 MB with exhausted swap; warn below 900 MB and respect the measured 900 MB cgroup headroom. E2E, Playwright, Stryker and Lighthouse remain CI-only on this host.
+
 **Never** run a bare `turbo run <task>`, and **never** run `pnpm typecheck` / `test` /
 `lint` without `--filter`. A full `turbo run typecheck` builds five tasks and takes **6-9
 minutes** with a real OOM risk. Verify through:
@@ -159,18 +161,35 @@ pnpm run check:i18n
 ## Pull requests
 
 - **Keep every PR under ~100 changed files.** CodeRabbit and similar bots silently skip
-  inline review on larger PRs, so the review loop never starts. Count against the
-  merge-base with the **remote** branch -- a local `main` can be stale or divergent, which
-  is the same trap the verify scripts already avoid:
+  inline review on larger PRs, so the review loop never starts. Warn near 8 commits or
+  50 files; stop adding scope near 12 commits or 75 files; open a successor before
+  15 commits or about 100 files. PR #757 is a documented historical exception (26 commits,
+  89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); preserve its history. Count a
+  stacked pull against its parent and the whole stack against `origin/main`:
 
     ```bash
+    # Stacked pull: this pull, counted against its parent.
+    git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
+    git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+    # Against origin/main. For a stacked pull this is the whole stack.
+    git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
-- **Work the review loop until it is quiescent:** fetch unresolved threads, fix or refute
-  each with evidence, reply citing the commit, resolve, push, re-trigger the bot. Repeat
-  until a fresh review yields **0 new comments and 0 unresolved threads**. A fix routinely
-  raises the next wave -- treat nitpicks and "outside diff range" comments as in scope.
+- **Review one stable head.** Let reviews finish, collect every finding including
+  paginated issue-comment findings and outside-diff comments, group by root cause, and ship
+  one consolidated signed fix. Request one fresh CodeRabbit full review of the final head;
+  another full review is due only after code changes. Do not merge until two of CodeRabbit,
+  CodeAnt, and Codex have covered the exact current head with non-dismissed reviews. Do not
+  merge a head that none of the three has reviewed. `REVIEW_UNAVAILABLE` (skipped, paused,
+  rate limited, quota skipped, expired trial, or no attached review) is not a green check,
+  and it is not a merge block once two of them have covered. When
+  `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment
+  `@codex review` once; do not repeat while unanswered. A dismissed or older-head review
+  does not count. Fix each valid finding at its root; refute false positives with evidence.
+  Cite the resolving commit in fix replies and the current head SHA for no-code refutations.
+  Resolve all threads and disposition paginated issue-comment findings before calling the
+  review complete. Never push during active review or checks.
 - **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
   rule passes honestly; the suppression ratchet gates CI.
 - **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so
@@ -189,6 +208,19 @@ pnpm run check:i18n
 - A PR with **any unsigned commit** is `mergeStateStatus: BLOCKED` even when green. Fix it
   by re-committing signed. Admin merges (`--admin`) are an owner action outside agent
   policy -- an agent never uses or suggests them.
+
+## Authority and safe retention (BINDING)
+
+- **Live state outranks written claims.** Re-read current repository settings, PR/check state, provider resources and ownership before relying on issue text, old audit notes, documentation or prior-session evidence. Label desired state separately from observed state.
+
+- **SSH-signed commits:** Sign every commit with the configured SSH signing identity and verify its signature locally and on GitHub. An unsigned commit does not satisfy merge policy. Never disable signing or rewrite another operator's commits.
+- **A11y ratchet:** The `.a11y-baseline.json` must never be raised to make CI pass. Fix warnings and lower the baseline only when verified counts fall; do not add lint suppressions.
+- **Local-Only privacy:** Preserve no-egress behavior wherever the user-selected mode or consent requires local-only processing. Check provider/model downloads, workers, service workers, caches, retries and mode changes; local inference alone does not prove zero egress. Never log user payloads or credentials.
+- **PR budget:** Warn near 8 commits / 50 changed files; stop adding scope near 12 / 75; open a successor before 15 commits or about 100 changed files. Count a stacked PR against its parent and the whole stack against `origin/main`. Preserve the documented #757 historical exception.
+
+- **One source writer:** only the operator holding the current owner-authorized writer lease may create branches, commits, pushes, pull requests, or merges. Re-read Linear QNB-259 before the first mutation; do not assume an identity or grant a second writer.
+- **SAFE-only retention:** inventory immutable resource IDs and verify ownership, active PR/production aliases, rollback use, and recovery first. KEEP, PROTECTED, and UNKNOWN resources are not deleted. Stop on ambiguity; owner authorization never replaces evidence or provider safeguards.
+- **Cloud sync remains disabled:** GitHub Gist sync is not enabled and is not an available backup path. Do not activate it for verification.
 
 ## Language
 
@@ -209,9 +241,7 @@ are exempt by design.
 
 # Architecture at a glance
 
-Big-picture structure that spans multiple files -- the parts you cannot infer from a single
-directory listing. Feature-level detail is in `README.md`; this is the map a fresh session
-needs to place a change correctly.
+CannaGuide is an offline-first React/Vite PWA. Root guidance is the global contract; implementation detail belongs in the nearest applicable scoped instruction file.
 
 ## Context loading order
 
@@ -228,52 +258,9 @@ Two maps orient a session before you open individual files (full detail:
    typecheck). `graphify update . && node ./scripts/codegraph.mjs` refreshes both layers.
 3. **Targeted reads** -- then open the specific files the maps pointed to.
 
-## State: two stores joined by one bridge
+## Scoped architecture
 
-- **Redux Toolkit** (`stores/store.ts`, `stores/slices/*`) owns the 19 **persisted** domain
-  slices (simulation, grows, strains, breeding, genealogy, metrics, diagnosis, hydro, ...),
-  saved to IndexedDB via `stores/indexedDBStorage.ts` (debounced, force-saved on
-  `visibilitychange`).
-- **Zustand** (`stores/use*Store.ts`, `sensorStore.ts`) owns the 9 **transient** UI stores
-  (UI, voice, TTS, filters, IoT, alerts, calculator session) -- never persisted.
-- `services/uiStateBridge.ts` is the sanctioned seam between them (`getReduxSnapshot`,
-  `subscribeToRedux`, `dispatchToRedux`). Cross the two systems through it, not directly.
-  IndexedDB-first: `localStorage` is only for small non-secret flags.
-
-## AI: one facade, cloud and local behind it
-
-- **Cloud (BYOK, 4 providers).** Every call funnels `services/aiFacade.ts` ->
-  `services/aiService.ts` -> `services/aiProviderService.ts` (Gemini / OpenAI / Claude /
-  Grok), rate-limited, with Zod-validated structured output. Orchestration and prompt safety
-  live in `services/ai/` (`aiOrchestrator.ts`, `safetyPipeline.ts`).
-- **Local (offline).** `services/local-ai/` runs a 3-layer fallback (WebLLM ->
-  Transformers.js -> heuristics), with inference cached in IndexedDB.
-- Any UI that renders AI output must use `components/common/AiDisclaimer.tsx` (`medical` prop
-  for health/diagnosis surfaces) -- do not inline a bespoke disclaimer string.
-
-## Workers: everything heavy goes through the WorkerBus
-
-`apps/web/workers/` holds 10 Web Workers (VPD simulation, genealogy, scenario, inference,
-vision, terpene, hydro forecast, image gen, calculation, voice), plus the root
-`simulation.worker.ts`. They are **not** invoked directly -- `services/worker-bus/` is a
-promise-based dispatcher with a priority queue, backpressure, retry, `AbortController`, and
-Transferable zero-copy. See `docs/worker-bus.md`.
-
-## Persistence: dual IndexedDB, offline-first
-
-- `CannaGuideStateDB` -- Redux state (via the storage adapter above).
-- `CannaGuideDB` -- domain data: strains, images, full-text search index (`services/db/*`).
-- Prefer IndexedDB; `localStorage` is only for small non-secret flags (the one sanctioned
-  exception is `useIotStore`'s MQTT connection config). The retained CRDT cloud-sync code
-  (Yjs + GitHub Gists) lives behind `CLOUD_SYNC_DISABLED`; it is not an available backup path.
-
-## i18n: five locales, no hardcoded strings
-
-`i18n.ts` + `locales/{en,de,es,fr,nl}/`, one file per namespace (~13 per locale). User-visible
-text goes through `t('...')` in React or `getT()` outside it -- never a literal. `check:i18n` /
-`check:i18n-usage` / `lint:i18n` gate locale parity and are part of "done" for any new text
-surface. (`fallbackLng: 'en'` means a missing key renders English, not a raw key -- so a
-gap can pass a smoke test while es/fr/nl silently fall back; trust the gates, not the screen.)
+For Claude, read the nearest nested `CLAUDE.md`: web architecture is in `apps/web/CLAUDE.md`, database and persistence in `apps/web/services/db/CLAUDE.md`, local inference in `apps/web/services/local-ai/CLAUDE.md`, worker dispatch in `apps/web/services/worker-bus/CLAUDE.md`, and shared AI-core in `packages/ai-core/CLAUDE.md`. Codex reads the corresponding nested `AGENTS.md` chain instead. These files add detail and cannot relax the root privacy, legal, integrity or release safeguards.
 
 ## Drift gates: docs-truth and a11y ratchet
 
@@ -289,10 +276,3 @@ them (`docs/DEVOPS-GATES.md` is the full inventory):
   jsx-a11y warnings may not exceed `.a11y-baseline.json` (currently 79). Fixing warnings lets
   you _lower_ it with `node scripts/check-a11y-ratchet.mjs --update` in the same PR; never raise
   it. Rules stay `warn` -- this is a count ceiling, not a flip-to-error.
-
-## Everyday commands not covered above
-
-Typecheck / test / lint are governed by the **binding** verify section at the top of this file
--- use `pnpm verify*`, never the bare or `turbo run` forms. The rest:
-
-Dev server (web only): `cd apps/web && pnpm run dev` -- root `pnpm run dev` runs Turbo across all packages incl. desktop and fails without Rust. Vite `base` is `/CannaGuide-2025/`, port 5173.

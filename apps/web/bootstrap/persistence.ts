@@ -36,14 +36,19 @@ export const setupPersistedStateSync = (
     const failureMarkerTabId = getPersistenceFailureMarkerTabId()
     activatePersistenceFailureTab(failureMarkerTabId)
     let failing = false
+    let saveAttemptSequence = 0
+    let latestSuccessfulSaveAttempt = 0
     const reportFailure = (error: unknown): void => {
         if (failing) return
         failing = true
         onSaveFailure?.(error)
     }
     const saveState = async () => {
+        const saveAttempt = ++saveAttemptSequence
+        let writeCallbackStarted = false
         try {
             const saved = await schedulePersistenceWrite(async () => {
+                writeCallbackStarted = true
                 try {
                     const state = hydratedStore.getState() as RootState
                     const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
@@ -68,6 +73,7 @@ export const setupPersistedStateSync = (
                 }
             })
             if (saved) {
+                latestSuccessfulSaveAttempt = saveAttempt
                 failing = false
             }
             return saved
@@ -76,6 +82,12 @@ export const setupPersistedStateSync = (
                 console.warn('[Persistence] Not saved:', e.message)
                 onStaleSnapshot?.(e)
                 return false
+            }
+            // A coordinator failure (for example, a rejected Web Lock request)
+            // can happen before the write callback records its failure. Preserve
+            // the warning unless a later save from this tab already succeeded.
+            if (!writeCallbackStarted && latestSuccessfulSaveAttempt < saveAttempt) {
+                markPendingSnapshotSaveFailure(failureMarkerTabId)
             }
             console.error('[Persistence] Failed to save state:', e)
             reportFailure(e)

@@ -201,6 +201,25 @@ describe('a save that fails (GH #686)', () => {
         expect(hasPendingSnapshotSaveFailure()).toBe(true)
     })
 
+    it('records a failure when the coordinator rejects before invoking the write callback', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        const coordinationError = new Error('Persistence lock request failed')
+        vi.mocked(schedulePersistenceWrite).mockRejectedValueOnce(coordinationError)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await expect(flush()).resolves.toBe(false)
+
+        expect(indexedDBStorage.setItem).not.toHaveBeenCalled()
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+        expect(onSaveFailure).toHaveBeenCalledOnce()
+        expect(onSaveFailure).toHaveBeenCalledWith(coordinationError)
+
+        await expect(flush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(false)
+    })
+
     it('does not let an automatic startup save hide a warning captured during hydration', async () => {
         vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
         const failedTabFlush = setupPersistedStateSync(storeWithKey())

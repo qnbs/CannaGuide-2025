@@ -627,7 +627,7 @@ export function codexLoaderEvidenceProblems(evidence, currentHashes) {
         if (context.exit_code !== 0) problems.push('Codex loader context failed: ' + name)
         if (
             !Array.isArray(context.loaded) ||
-            JSON.stringify([...context.loaded].sort()) !== JSON.stringify([...expected].sort())
+            JSON.stringify(context.loaded) !== JSON.stringify(expected)
         ) {
             problems.push('Codex loaded paths differ from expected scope: ' + name)
         }
@@ -874,7 +874,7 @@ export function pr777EvidenceProblems(traceability, evidence) {
     if (evidence.head_sha !== pr.headRefOid)
         problems.push('PR #777 source evidence is for a stale head')
     if (
-        !/source blobs, full-file hashes, line counts, and cited-line hashes only/i.test(
+        !/source blobs, full-file hashes, line counts, cited-line text and line hashes only/i.test(
             evidence.source_evidence_scope || '',
         )
     ) {
@@ -911,9 +911,19 @@ export function pr777EvidenceProblems(traceability, evidence) {
             if (end > record.line_count)
                 problems.push(rule.id + ': PR source line exceeds recorded blob length')
             for (let line = start; line <= end; line += 1) {
-                if (!/^[a-f0-9]{64}$/.test(record.line_hashes?.[String(line)] || '')) {
+                const lineKey = String(line)
+                const recordedHash = record.line_hashes?.[lineKey]
+                const sourceLine = record.line_texts?.[lineKey]
+                if (typeof sourceLine !== 'string' || !/^[a-f0-9]{64}$/.test(recordedHash || '')) {
                     problems.push(
                         rule.id + ': missing PR source line evidence for ' + file + ':' + line,
+                    )
+                    continue
+                }
+                const computedHash = createHash('sha256').update(sourceLine, 'utf8').digest('hex')
+                if (computedHash !== recordedHash) {
+                    problems.push(
+                        rule.id + ': PR source line hash mismatch for ' + file + ':' + line,
                     )
                 }
             }

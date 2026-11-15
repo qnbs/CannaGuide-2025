@@ -343,31 +343,39 @@ test('Codex loader evidence fails closed on missing scope, out-of-scope files, a
     assert.ok(problems.some((problem) => problem.includes('stale for .github/AGENTS.md')))
 })
 
-test('PR #777 line evidence fails closed on stale heads and missing immutable positions', () => {
+test('PR #777 evidence recomputes cited line hashes and rejects stale or missing evidence', () => {
     const traceability = {
         pr_777: { headRefOid: 'a'.repeat(40) },
         rules: [{ id: 'P-001', source: 'PR #777', source_ref: 'AGENTS.md:175; CLAUDE.md:180' }],
     }
+    const agentsLineText = 'captured source line from AGENTS.md'
+    const claudeLineText = 'captured source line from CLAUDE.md'
     const evidence = {
         pull_request: 777,
         state: 'open',
         base: 'main',
         head_sha: 'a'.repeat(40),
         source_evidence_scope:
-            'Exact source blobs, full-file hashes, line counts, and cited-line hashes only; this does not assert that the transferred policy has been implemented or verified.',
+            'Exact source blobs, full-file hashes, line counts, cited-line text and line hashes only; cited-line hashes are recomputed from captured text. This does not assert that the transferred policy has been implemented or verified.',
         source_verified_rule_ids: ['P-001'],
         files: {
             'AGENTS.md': {
                 blob_sha: '1'.repeat(40),
                 sha256: '2'.repeat(64),
                 line_count: 200,
-                line_hashes: { 175: '3'.repeat(64) },
+                line_hashes: {
+                    175: createHash('sha256').update(agentsLineText, 'utf8').digest('hex'),
+                },
+                line_texts: { 175: agentsLineText },
             },
             'CLAUDE.md': {
                 blob_sha: '4'.repeat(40),
                 sha256: '5'.repeat(64),
                 line_count: 200,
-                line_hashes: { 180: '6'.repeat(64) },
+                line_hashes: {
+                    180: createHash('sha256').update(claudeLineText, 'utf8').digest('hex'),
+                },
+                line_texts: { 180: claudeLineText },
             },
         },
     }
@@ -379,6 +387,22 @@ test('PR #777 line evidence fails closed on stale heads and missing immutable po
     const problems = pr777EvidenceProblems(traceability, stale)
     assert.ok(problems.some((problem) => problem.includes('stale head')))
     assert.ok(problems.some((problem) => problem.includes('missing PR source line evidence')))
+
+    const forgedHash = structuredClone(evidence)
+    forgedHash.files['AGENTS.md'].line_hashes['175'] = '0'.repeat(64)
+    assert.ok(
+        pr777EvidenceProblems(traceability, forgedHash).some((problem) =>
+            problem.includes('PR source line hash mismatch for AGENTS.md:175'),
+        ),
+    )
+
+    const missingText = structuredClone(evidence)
+    delete missingText.files['AGENTS.md'].line_texts['175']
+    assert.ok(
+        pr777EvidenceProblems(traceability, missingText).some((problem) =>
+            problem.includes('missing PR source line evidence for AGENTS.md:175'),
+        ),
+    )
 })
 
 test('destination paths fail closed for missing, unsafe, nonexistent and unrendered entries', async () => {

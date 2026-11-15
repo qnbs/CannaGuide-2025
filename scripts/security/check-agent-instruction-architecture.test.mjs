@@ -301,6 +301,16 @@ test('Codex loader evidence rejects missing, duplicate, unexpected, or incorrect
     )
 })
 
+test('Codex loader evidence preserves ancestor-before-descendant prompt order', () => {
+    const leafFirst = structuredClone(codexLoaderEvidence)
+    leafFirst.contexts.find((context) => context.cwd === 'apps/web/services/db').loaded.reverse()
+    assert.ok(
+        codexLoaderEvidenceProblems(leafFirst, leafFirst.instruction_file_sha256).some((problem) =>
+            problem.includes('loaded paths differ from expected scope: database'),
+        ),
+    )
+})
+
 test('Codex loader evidence rejects any claim that nested Claude rules are loaded by Codex', () => {
     const contradicted = structuredClone(codexLoaderEvidence)
     contradicted.out_of_scope_check.nested_CLAUDE_paths_loaded_by_Codex = true

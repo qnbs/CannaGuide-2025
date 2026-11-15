@@ -3867,7 +3867,7 @@
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
-                    "anchor": "WEB-03: Redux Toolkit (`stores/store.ts`, `stores/slices/*`) owns the 19 persisted domain slices"
+                    "anchor": "WEB-03: Redux Toolkit (`stores/store.ts`, `stores/slices/*`) owns persisted domain state"
                 }
             ]
         },
@@ -3888,7 +3888,7 @@
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
-                    "anchor": "Zustand (`stores/use*Store.ts`, `sensorStore.ts`) owns the 9 transient UI stores"
+                    "anchor": "Zustand (`stores/use*Store.ts`, `sensorStore.ts`) owns UI-facing state"
                 }
             ]
         },
@@ -3909,7 +3909,7 @@
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
-                    "anchor": "and is never persisted"
+                    "anchor": "the earlier \"never persisted\" description was too broad"
                 }
             ]
         },

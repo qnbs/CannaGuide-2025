@@ -846,7 +846,7 @@
     "instruction_file_sha256": {
         "AGENTS.md": "798fe109445b83bcc8c767bc49fdd3a750ea1d8dae17990aaf37d684ea09eddf",
         "CLAUDE.md": "25b5d2024ac5725dc4203c9a2800dc310d4e0bd8c0a8b72cb52dd53e92b1b7df",
-        "apps/web/CLAUDE.md": "9f9438ad1d7c06ed43820e14148aa6900ccd1295124f89454365618329aa8201",
+        "apps/web/CLAUDE.md": "0456e459c694b9709e95c58b73836a92fc37ade390b5a590194f677168da96b1",
         "apps/web/AGENTS.md": "47fa98f64be19a7e3ad92afe89fee64f53ee24f6f9e88cc57941b80549748037",
         "apps/web/services/db/CLAUDE.md": "ee75a08615701076d12fb861509aa56072ae780b0dbf7e5850ed85ba91af4941",
         "apps/web/services/db/AGENTS.md": "1f6c4b3bf86dad6e8e6acf179747df38ec3543279bcedc0c3a727e601ea00a1d",

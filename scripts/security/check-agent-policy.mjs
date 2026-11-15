@@ -480,6 +480,7 @@ export function normativePolicyText(text) {
 
 const SSH_SIGNING_REQUIRED_CLAIMS = [
     /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b/i,
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\baren(?:'|\u2019)t\s+(?:required|necessary|mandatory)\b/i,
     /\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b/i,
 ]
 const SSH_SIGNING_PERMISSION_CLAIMS = [
@@ -496,7 +497,11 @@ export function sshSigningContradiction(text) {
             for (const pattern of SSH_SIGNING_PERMISSION_CLAIMS) {
                 for (const match of segment.matchAll(pattern)) {
                     const tokenIndex = match.index + match[0].lastIndexOf(match[1])
-                    if (!isForbiddenAt(segment, tokenIndex)) return true
+                    const apostropheNegatedOptional = /\baren(?:'|\u2019)t\s+$/.test(
+                        segment.slice(0, tokenIndex),
+                    )
+                    if (!isForbiddenAt(segment, tokenIndex) && !apostropheNegatedOptional)
+                        return true
                 }
             }
         }

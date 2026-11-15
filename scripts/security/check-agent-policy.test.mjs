@@ -374,12 +374,18 @@ test('quoted, blockquoted, and fenced root text cannot satisfy required global s
 test('negated SSH-signing guidance fails the global root safeguard', () => {
     for (const file of ['AGENTS.md', 'CLAUDE.md']) {
         const sound = file === 'AGENTS.md' ? SOUND_AGENTS : SOUND_CLAUDE
-        const negated = sound.replace('SSH-signed commits', 'SSH-signed commits are not required')
-        const problems = problemsOf({ [file]: negated })
-        assert.ok(
-            problems.includes(`${file}: contradicts SSH-signed commits`),
-            `${file} must reject a negated SSH-signing rule`,
-        )
+        for (const negation of [
+            'SSH-signed commits are not required',
+            "SSH-signed commits aren't required",
+            'SSH-signed commits aren’t required',
+        ]) {
+            const negated = sound.replace('SSH-signed commits', negation)
+            const problems = problemsOf({ [file]: negated })
+            assert.ok(
+                problems.includes(`${file}: contradicts SSH-signed commits`),
+                `${file} must reject a negated SSH-signing rule: ${negation}`,
+            )
+        }
     }
 })
 
@@ -401,6 +407,8 @@ test('protective SSH-signing rules are not misclassified as contradictions', () 
         'Never allow unsigned commits.',
         'Unsigned commits are not allowed.',
         'SSH-signed commits are not optional.',
+        "SSH-signed commits aren't optional.",
+        'SSH-signed commits aren’t optional.',
     ]
     for (const file of ['AGENTS.md', 'CLAUDE.md']) {
         const sound = file === 'AGENTS.md' ? SOUND_AGENTS : SOUND_CLAUDE

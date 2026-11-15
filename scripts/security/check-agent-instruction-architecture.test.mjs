@@ -124,6 +124,26 @@ test('protective SSH-signing rules do not contradict the root anchor', () => {
     }
 })
 
+test('root CanG guidance distinguishes the per-adult law from the app cap', () => {
+    const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
+    assert.deepEqual(rootAnchorProblems(roots), [])
+    for (const file of Object.keys(roots)) {
+        const householdWide = {
+            ...roots,
+            [file]: roots[file].replace(
+                'three cannabis plants per adult',
+                'three cannabis plants across all grows at one residence',
+            ),
+        }
+        assert.ok(
+            rootAnchorProblems(householdWide).some(
+                (problem) => problem.includes(file) && problem.includes('CanG legal cap'),
+            ),
+            `${file} must reject a household-wide statutory cap claim`,
+        )
+    }
+})
+
 test('root architecture anchors reject negated SSH-signing guidance', () => {
     const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
     for (const file of Object.keys(roots)) {
@@ -657,6 +677,27 @@ test('affirmative scoped instructions cannot weaken global toolchain, accessibil
     assert.ok(problems.some((problem) => problem.includes('unproven retention')))
     assert.ok(problems.some((problem) => problem.includes('multiple concurrent source writers')))
     assert.ok(problems.some((problem) => problem.includes('commit budget above 15')))
+})
+
+test('Local-Only model downloads cannot be authorized by scoped instructions', () => {
+    const unsafe = scopedInstructionConflictProblems({
+        'apps/web/services/local-ai/CLAUDE.md': 'Allow model downloads in Local-Only mode.',
+    })
+    assert.ok(unsafe.some((problem) => problem.includes('Local-Only model network egress')))
+    assert.deepEqual(
+        scopedInstructionConflictProblems({
+            'apps/web/services/local-ai/CLAUDE.md':
+                'Do not allow model downloads in Local-Only mode.',
+        }),
+        [],
+    )
+    assert.deepEqual(
+        scopedInstructionConflictProblems({
+            'apps/web/services/local-ai/CLAUDE.md':
+                'Allow model downloads only when the user explicitly authorizes them and Local-Only mode is disabled.',
+        }),
+        [],
+    )
 })
 
 test('Node runtime and PR commit limits cover the forbidden range without matching counts', () => {

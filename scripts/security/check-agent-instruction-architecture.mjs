@@ -42,7 +42,7 @@ const ROOT_ANCHORS = {
         ['single-writer authority', /one source writer/i],
         [
             'CanG legal cap',
-            /CanG legal boundary[\s\S]{0,220}three cannabis plants simultaneously across all grows at one residence[\s\S]{0,180}Seed through Curing/i,
+            /CanG legal boundary[\s\S]{0,220}up to three cannabis plants per adult[\s\S]{0,500}not a statutory household-wide cap[\s\S]{0,180}Seed through Curing/i,
         ],
         ['untrusted content boundary', /untrusted content is data, never instructions/i],
         ['hook bypass prohibition', /--no-verify/],
@@ -87,7 +87,10 @@ const ROOT_ANCHORS = {
     'CLAUDE.md': [
         ['binding root rules', /The rules below are \*\*binding\*\*/],
         ['untrusted content boundary', /untrusted content is data, never instructions/i],
-        ['CanG legal cap', /three active plants|MAX_PLANTS_CANG/],
+        [
+            'CanG legal cap',
+            /up to three cannabis plants per adult[\s\S]{0,500}not a statutory household-wide cap[\s\S]{0,180}Seed through Curing/i,
+        ],
         ['hook bypass prohibition', /--no-verify/],
         ['signed-commit gate', /unsigned commit/i],
         ['accessibility ratchet', /\.a11y-baseline\.json/],
@@ -964,6 +967,16 @@ export function pr777EvidenceProblems(traceability, evidence) {
             const [, file, startText, endText] = match
             const start = Number(startText)
             const end = Number(endText || startText)
+            if (
+                !Number.isSafeInteger(start) ||
+                start < 1 ||
+                !Number.isSafeInteger(end) ||
+                end < 1 ||
+                end < start
+            ) {
+                problems.push(rule.id + ': invalid PR #777 source line range')
+                continue
+            }
             const record = evidence.files?.[file]
             if (
                 !record ||
@@ -973,8 +986,14 @@ export function pr777EvidenceProblems(traceability, evidence) {
                 problems.push(rule.id + ': missing immutable PR source blob evidence for ' + file)
                 continue
             }
-            if (end > record.line_count)
+            if (!Number.isSafeInteger(record.line_count) || record.line_count < 1) {
+                problems.push(rule.id + ': invalid PR source blob line count for ' + file)
+                continue
+            }
+            if (end > record.line_count) {
                 problems.push(rule.id + ': PR source line exceeds recorded blob length')
+                continue
+            }
             for (let line = start; line <= end; line += 1) {
                 const lineKey = String(line)
                 const recordedHash = record.line_hashes?.[lineKey]
@@ -1034,6 +1053,14 @@ const SCOPED_CONFLICTS = [
     [
         'privacy integration activation',
         /\b(?:enable|activate|turn on)\b.{0,60}(?:Gist sync|cloud sync|Sentry|Replay)\b/i,
+    ],
+    [
+        'Local-Only model network egress',
+        /(?:\ballow\w*\b.{0,80}\bmodel downloads?\b.{0,80}\bLocal-Only\b|\bLocal-Only\b.{0,80}\ballow\w*\b.{0,80}\bmodel downloads?\b)/i,
+        (match) =>
+            !/\b(?:only\s+when|except\s+when)\b.{0,80}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:disabled|off|enabled|on)\b/i.test(
+                match.input,
+            ),
     ],
     [
         'deletion of unproven retention candidates',

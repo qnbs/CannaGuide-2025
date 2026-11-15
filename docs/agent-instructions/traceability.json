@@ -548,7 +548,7 @@
             "source_ref": "CLAUDE.md:58-71",
             "source_lines": [58, 71],
             "source_excerpt": "## Legal hard limits (CanG -- German Cannabis Act, BINDING)\n\n`MAX_GROWS` (`stores/slices/growsSlice.ts`) and `MAX_PLANTS_CANG` (`constants.ts`) are both\nhard-coded to **3**. KCanG **Section 9 (1)** -- the whole rule is in that Absatz, it has no\n`Nr.` subdivisions -- permits adults \"an ihrem Wohnsitz oder an ihrem gewoehnlichen Aufenthalt\nder private Eigenanbau von insgesamt nicht mehr als drei Cannabispflanzen gleichzeitig\". Two\nconsequences for the code: the cap attaches to the **residence**, so it is counted globally\nacross all grows rather than per grow; and \"gleichzeitig\" is why only active-stage plants\n(Seed through Curing) count, while archived/finished ones do not.\n\n**Never raise either value and never make it configurable** (setting, env var, feature flag,\nplugin) -- 3 is a legal cap, not a product decision. Any new feature (multi-tent, zone\nplanner, automation) must still respect the global cap.\n",
-            "requirement": "CanG residence-wide hard cap of three active plants; never raise/configure it (`Legal hard limits`)",
+            "requirement": "Per-adult KCanG limit; current single-user app applies a conservative three-plant cap (`Legal hard limits`)",
             "scope": "Global/legal",
             "target": "`KEEP-ROOT` in both roots; no nested file may weaken; policy regression test.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
@@ -3176,6 +3176,12 @@
             "target": "`KEEP-ROOT` in both roots; no nested file may weaken; policy regression test.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
+            "destination_evidence": [
+                {
+                    "path": "CLAUDE.md",
+                    "anchor": "CannaGuide currently uses a single-user model and\nconservatively caps that user's tracked active plants at three across their grows."
+                }
+            ],
             "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING"
         },
         {
@@ -3191,6 +3197,12 @@
             "target": "`KEEP-ROOT` in both roots; no nested file may weaken; policy regression test.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
+            "destination_evidence": [
+                {
+                    "path": "CLAUDE.md",
+                    "anchor": "For app counts, Seed through Curing are active"
+                }
+            ],
             "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING"
         },
         {
@@ -3206,6 +3218,12 @@
             "target": "`KEEP-ROOT` in both roots; no nested file may weaken; policy regression test.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
+            "destination_evidence": [
+                {
+                    "path": "CLAUDE.md",
+                    "anchor": "For app counts, Seed through Curing are active"
+                }
+            ],
             "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING"
         },
         {
@@ -3221,6 +3239,12 @@
             "target": "`KEEP-ROOT` in both roots; no nested file may weaken; policy regression test.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
+            "destination_evidence": [
+                {
+                    "path": "CLAUDE.md",
+                    "anchor": "**Do not raise either value or make either configurable** (setting, env var, feature flag,\nplugin) without verifying current law and the product model."
+                }
+            ],
             "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING"
         },
         {
@@ -3236,6 +3260,12 @@
             "target": "`KEEP-ROOT` in both roots; no nested file may weaken; policy regression test.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
+            "destination_evidence": [
+                {
+                    "path": "CLAUDE.md",
+                    "anchor": "Any future feature (multi-tent,\nzone planner, automation) must respect this conservative app limit."
+                }
+            ],
             "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING"
         },
         {

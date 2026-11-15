@@ -407,6 +407,30 @@ test('PR #777 evidence recomputes cited line hashes and rejects stale or missing
             problem.includes('missing PR source line evidence for AGENTS.md:175'),
         ),
     )
+
+    const descendingRange = structuredClone(traceability)
+    descendingRange.rules[0].source_ref = 'AGENTS.md:176-175; CLAUDE.md:180'
+    assert.ok(
+        pr777EvidenceProblems(descendingRange, evidence).some((problem) =>
+            problem.includes('invalid PR #777 source line range'),
+        ),
+    )
+
+    const unsafeIntegerRange = structuredClone(traceability)
+    unsafeIntegerRange.rules[0].source_ref = 'AGENTS.md:9007199254740992; CLAUDE.md:180'
+    assert.ok(
+        pr777EvidenceProblems(unsafeIntegerRange, evidence).some((problem) =>
+            problem.includes('invalid PR #777 source line range'),
+        ),
+    )
+
+    const outOfBlobRange = structuredClone(traceability)
+    outOfBlobRange.rules[0].source_ref = 'AGENTS.md:199-201; CLAUDE.md:180'
+    assert.ok(
+        pr777EvidenceProblems(outOfBlobRange, evidence).some((problem) =>
+            problem.includes('PR source line exceeds recorded blob length'),
+        ),
+    )
 })
 
 test('destination paths fail closed for missing, unsafe, nonexistent and unrendered entries', async () => {

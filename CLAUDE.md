@@ -60,16 +60,19 @@ real error, not noise -- don't assume the filter covers it.
 ## Legal hard limits (CanG -- German Cannabis Act, BINDING)
 
 `MAX_GROWS` (`stores/slices/growsSlice.ts`) and `MAX_PLANTS_CANG` (`constants.ts`) are both
-hard-coded to **3**. KCanG **Section 9 (1)** -- the whole rule is in that Absatz, it has no
-`Nr.` subdivisions -- permits adults "an ihrem Wohnsitz oder an ihrem gewoehnlichen Aufenthalt
-der private Eigenanbau von insgesamt nicht mehr als drei Cannabispflanzen gleichzeitig". Two
-consequences for the code: the cap attaches to the **residence**, so it is counted globally
-across all grows rather than per grow; and "gleichzeitig" is why only active-stage plants
-(Seed through Curing) count, while archived/finished ones do not.
+hard-coded to **3**, but they do not represent the same legal limit. KCanG **Section 9 (1)**
+permits up to three cannabis plants per adult simultaneously at that adult’s residence or
+ordinary residence ([official text](https://www.gesetze-im-internet.de/kcang/__9.html)); the BMG
+summarizes the personal limit as three plants per adult. CannaGuide currently uses a single-user model and
+conservatively caps that user's tracked active plants at three across their grows. This app
+limit is not a statutory household-wide cap and the app does not model multiple adults sharing
+a residence. For app counts, Seed through Curing are active; archived/finished plants do not
+count. `MAX_GROWS` is an app product limit, not a separate KCanG limit.
 
-**Never raise either value and never make it configurable** (setting, env var, feature flag,
-plugin) -- 3 is a legal cap, not a product decision. Any new feature (multi-tent, zone
-planner, automation) must still respect the global cap.
+**Do not raise either value or make either configurable** (setting, env var, feature flag,
+plugin) without verifying current law and the product model. A future multi-adult feature must
+apply the three-plant limit per adult, not per residence. Any future feature (multi-tent,
+zone planner, automation) must respect this conservative app limit.
 
 ## The traps that have actually bitten us
 

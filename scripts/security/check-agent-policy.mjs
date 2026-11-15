@@ -643,6 +643,17 @@ export function agentPolicyProblems(files, { needs } = {}) {
         }
     }
     for (const [name, text] of Object.entries(files)) {
+        const isScopedInstruction =
+            name === '.github/copilot-instructions.md' ||
+            /(?:^|\/)(?:AGENTS|CLAUDE)\.md$/.test(name)
+        if (
+            isScopedInstruction &&
+            name !== 'AGENTS.md' &&
+            name !== 'CLAUDE.md' &&
+            sshSigningContradiction(text)
+        ) {
+            problems.push(`${name}: contradicts SSH-signed commits`)
+        }
         let inFence = false
         const normativeText = normativePolicyText(text)
         text.split('\n').forEach((line, index) => {

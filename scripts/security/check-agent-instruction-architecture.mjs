@@ -1058,7 +1058,7 @@ const SCOPED_CONFLICTS = [
         'Local-Only model network egress',
         /(?:\ballow\w*\b.{0,80}\bmodel downloads?\b.{0,80}\bLocal-Only\b|\bLocal-Only\b.{0,80}\ballow\w*\b.{0,80}\bmodel downloads?\b)/i,
         (match) =>
-            !/\b(?:only\s+when|except\s+when)\b.{0,80}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:disabled|off|enabled|on)\b/i.test(
+            !/\bonly\s+when\b.{0,80}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:disabled|off)\b/i.test(
                 match.input,
             ),
     ],

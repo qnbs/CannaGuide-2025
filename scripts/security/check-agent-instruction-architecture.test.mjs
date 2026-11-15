@@ -680,24 +680,31 @@ test('affirmative scoped instructions cannot weaken global toolchain, accessibil
 })
 
 test('Local-Only model downloads cannot be authorized by scoped instructions', () => {
-    const unsafe = scopedInstructionConflictProblems({
-        'apps/web/services/local-ai/CLAUDE.md': 'Allow model downloads in Local-Only mode.',
-    })
-    assert.ok(unsafe.some((problem) => problem.includes('Local-Only model network egress')))
-    assert.deepEqual(
-        scopedInstructionConflictProblems({
-            'apps/web/services/local-ai/CLAUDE.md':
-                'Do not allow model downloads in Local-Only mode.',
-        }),
-        [],
-    )
-    assert.deepEqual(
-        scopedInstructionConflictProblems({
-            'apps/web/services/local-ai/CLAUDE.md':
-                'Allow model downloads only when the user explicitly authorizes them and Local-Only mode is disabled.',
-        }),
-        [],
-    )
+    const path = 'apps/web/services/local-ai/CLAUDE.md'
+    for (const unsafeText of [
+        'Allow model downloads in Local-Only mode.',
+        'Allow model downloads only when Local-Only mode is enabled.',
+        'Allow model downloads only when Local-Only mode is on.',
+    ]) {
+        assert.ok(
+            scopedInstructionConflictProblems({ [path]: unsafeText }).some((problem) =>
+                problem.includes('Local-Only model network egress'),
+            ),
+            `unsafe Local-Only allowance passed: ${unsafeText}`,
+        )
+    }
+    for (const safeText of [
+        'Do not allow model downloads when Local-Only mode is enabled.',
+        'Allow model downloads only when the user explicitly authorizes them and Local-Only mode is disabled.',
+        'Allow model downloads only when Local-Only mode is off.',
+        'Allow model downloads except when Local-Only mode is enabled.',
+    ]) {
+        assert.deepEqual(
+            scopedInstructionConflictProblems({ [path]: safeText }),
+            [],
+            `safe model-download condition was rejected: ${safeText}`,
+        )
+    }
 })
 
 test('Node runtime and PR commit limits cover the forbidden range without matching counts', () => {

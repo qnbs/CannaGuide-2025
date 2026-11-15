@@ -389,6 +389,14 @@ test('negated SSH-signing guidance fails the global root safeguard', () => {
     }
 })
 
+test('SSH-signing contradictions are rejected in scoped instructions without requiring root anchors there', () => {
+    const path = 'scripts/AGENTS.md'
+    assert.deepEqual(agentPolicyProblems({ [path]: 'SSH-signed commits are required.' }), [])
+    assert.deepEqual(agentPolicyProblems({ [path]: 'SSH-signed commits are not required.' }), [
+        `${path}: contradicts SSH-signed commits`,
+    ])
+})
+
 test('a semicolon cannot carry a prohibition over a later unsigned-commit permission', () => {
     for (const file of ['AGENTS.md', 'CLAUDE.md']) {
         const sound = file === 'AGENTS.md' ? SOUND_AGENTS : SOUND_CLAUDE

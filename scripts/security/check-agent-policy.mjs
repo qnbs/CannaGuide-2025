@@ -23,6 +23,7 @@
  *
  * Usage: node scripts/security/check-agent-policy.mjs
  */
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -31,7 +32,7 @@ import { pathToFileURL } from 'node:url'
 const ROOT = path.resolve(import.meta.dirname, '../..')
 
 /** Every file ci.yml routes to the policy job (POLICY_PATHS, minus generated graphify-out). */
-export const AGENT_FILES = [
+const POLICY_REFERENCE_FILES = [
     'AGENTS.md',
     'CLAUDE.md',
     '.github/copilot-instructions.md',
@@ -42,7 +43,46 @@ export const AGENT_FILES = [
     '.github/CI-AUDIT.md',
     '.github/workflows/README.md',
     'docs/DEVOPS-GATES.md',
+    'apps/web/CLAUDE.md',
+    'apps/web/AGENTS.md',
+    'apps/web/services/db/CLAUDE.md',
+    'apps/web/services/db/AGENTS.md',
+    'apps/web/services/local-ai/CLAUDE.md',
+    'apps/web/services/worker-bus/CLAUDE.md',
+    'apps/web/data/strains/CLAUDE.md',
+    'apps/web/data/strains/AGENTS.md',
+    'apps/desktop/CLAUDE.md',
+    'apps/desktop/AGENTS.md',
+    'packages/ai-core/CLAUDE.md',
+    'scripts/CLAUDE.md',
+    'scripts/AGENTS.md',
+    '.github/CLAUDE.md',
+    '.github/AGENTS.md',
 ]
+
+/** Find tracked and non-ignored working-tree agent instructions, including new scopes. */
+export function instructionFilesFromGitOutput(paths) {
+    return [
+        ...new Set(
+            String(paths)
+                .split('\0')
+                .filter((file) => /(^|\/)(AGENTS|CLAUDE)\.md$/.test(file)),
+        ),
+    ].sort()
+}
+
+export function discoverInstructionFiles(root = ROOT) {
+    const paths = execFileSync(
+        'git',
+        ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+        { cwd: root, encoding: 'utf8' },
+    )
+    return instructionFilesFromGitOutput(paths)
+}
+
+export const AGENT_FILES = [
+    ...new Set([...POLICY_REFERENCE_FILES, ...discoverInstructionFiles()]),
+].sort()
 
 /**
  * Clause boundaries: sentence ends, ` -- ` and contrast words. Not `;`: it
@@ -419,6 +459,92 @@ export function shellCommands(text) {
 }
 
 const FENCE = /^\s*(```|~~~)/
+const QUOTED_PROSE =
+    /"(?:[^"\\]|\\.)*"|\u201c[^\u201d\n]*\u201d|\u2018[^\u2019\n]*\u2019|(?<![\w])'[^'\n]+'(?![\w])/g
+
+/** Normative instruction prose: exclude examples and quoted text from policy evidence. */
+export function normativePolicyText(text) {
+    let inFence = false
+    const lines = []
+    for (const line of String(text).split('\n')) {
+        if (FENCE.test(line)) {
+            inFence = !inFence
+            continue
+        }
+        if (!inFence && !line.trimStart().startsWith('>')) {
+            lines.push(line.replace(QUOTED_PROSE, ' '))
+        }
+    }
+    return lines.join('\n')
+}
+
+const SSH_SIGNING_REQUIRED_CLAIMS = [
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b/i,
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\baren(?:'|\u2019)t\s+(?:required|necessary|mandatory)\b/i,
+    /\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b/i,
+]
+const SSH_SIGNING_PERMISSION_CLAIMS = [
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?(optional|unnecessary)\b/gi,
+    /\bunsigned commits?\b[^.!?\n]{0,80}\b(?:are\s+)?(allowed|acceptable|permitted)\b/gi,
+    /\b(allow|permit)\b[^.!?\n]{0,80}\bunsigned commits?\b/gi,
+]
+
+export function sshSigningContradiction(text) {
+    const lines = normativePolicyText(text)
+        .split(/\n[ \t]*\n/)
+        .map((paragraph) => paragraph.replace(/\n[ \t]*/g, ' '))
+        .join('\n')
+        .split('\n')
+    for (const line of lines) {
+        if (SSH_SIGNING_REQUIRED_CLAIMS.some((pattern) => pattern.test(line))) return true
+        for (const segment of line.split(';')) {
+            for (const pattern of SSH_SIGNING_PERMISSION_CLAIMS) {
+                for (const match of segment.matchAll(pattern)) {
+                    const tokenIndex = match.index + match[0].lastIndexOf(match[1])
+                    const apostropheNegatedOptional = /\baren(?:'|\u2019)t\s+$/.test(
+                        segment.slice(0, tokenIndex),
+                    )
+                    if (!isForbiddenAt(segment, tokenIndex) && !apostropheNegatedOptional)
+                        return true
+                }
+            }
+        }
+    }
+    return false
+}
+
+const NEGATED_GLOBAL_ROOT_INVARIANTS = [['SSH-signed commits', sshSigningContradiction]]
+
+const GLOBAL_ROOT_INVARIANTS = [
+    ['SSH-signed commits', /SSH-signed commits/i],
+    ['low-RAM thresholds', /256 MB[\s\S]*512 MB[\s\S]*900 MB/],
+    [
+        'A11y ratchet protects the baseline',
+        /A11y ratchet[\s\S]{0,180}(?:do not raise[\s\S]{0,100}\.a11y-baseline\.json|\.a11y-baseline\.json[\s\S]{0,180}never be raised)/i,
+    ],
+    ['hook integrity', /pre-push[\s\S]*--no-verify|--no-verify[\s\S]*pre-push/i],
+    ['Local-Only privacy', /Local-Only privacy[\s\S]{0,400}no-egress/i],
+    ['writer lease', /QNB-259[\s\S]{0,240}writer lease|writer lease[\s\S]{0,240}QNB-259/i],
+    ['15-commit PR budget', /15 commits[\s\S]{0,240}100 changed files/i],
+    ['SAFE-only retention', /SAFE-only retention[\s\S]{0,500}UNKNOWN/i],
+]
+
+const REVIEW_COVERAGE = [
+    [
+        'two-reviewer coverage',
+        /^\*\*Two-reviewer gate:\*\* Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head\.$/m,
+    ],
+    ['REVIEW_UNAVAILABLE is not a green check', /REVIEW_UNAVAILABLE[\s\S]{0,500}not a green check/],
+    [
+        'unavailable is not a merge block once two have covered',
+        /not a merge block once (?:two of|those two)/,
+    ],
+    ['no merge when none of the three reviewed', /none of the three\s+has reviewed/],
+    [
+        'a Codex review request when none is on the head',
+        /has no non-dismissed review on that head,\s+comment\s+`@codex review`/,
+    ],
+]
 
 const REQUIRED = {
     'AGENTS.md': [
@@ -426,7 +552,10 @@ const REQUIRED = {
         ['the writer lease (QNB-259)', /QNB-259/],
         ['read-only reviewers', /read-only reviewers/i],
         ['the untrusted-content rule', /data, never instructions/i],
+        ...REVIEW_COVERAGE,
     ],
+    'CLAUDE.md': [['the untrusted-content rule', /data, never instructions/i], ...REVIEW_COVERAGE],
+    'docs/PR-REVIEW-LOOP.md': REVIEW_COVERAGE,
 }
 /** Must appear at least once in an affirmative (not forbidding) clause. */
 const AFFIRMED = {
@@ -507,8 +636,30 @@ function lineProblems(name, line, where, inFence, needs) {
 /** Problems across `files` (name -> text); empty when every file is sound. */
 export function agentPolicyProblems(files, { needs } = {}) {
     const problems = []
+    for (const name of ['AGENTS.md', 'CLAUDE.md']) {
+        if (!Object.hasOwn(files, name)) continue
+        const rootText = normativePolicyText(files[name])
+        for (const [label, pattern] of GLOBAL_ROOT_INVARIANTS) {
+            if (!pattern.test(rootText)) problems.push(`${name}: missing ${label}`)
+        }
+        for (const [label, contradicts] of NEGATED_GLOBAL_ROOT_INVARIANTS) {
+            if (contradicts(rootText)) problems.push(`${name}: contradicts ${label}`)
+        }
+    }
     for (const [name, text] of Object.entries(files)) {
+        const isScopedInstruction =
+            name === '.github/copilot-instructions.md' ||
+            /(?:^|\/)(?:AGENTS|CLAUDE)\.md$/.test(name)
+        if (
+            isScopedInstruction &&
+            name !== 'AGENTS.md' &&
+            name !== 'CLAUDE.md' &&
+            sshSigningContradiction(text)
+        ) {
+            problems.push(`${name}: contradicts SSH-signed commits`)
+        }
         let inFence = false
+        const normativeText = normativePolicyText(text)
         text.split('\n').forEach((line, index) => {
             if (FENCE.test(line)) {
                 inFence = !inFence
@@ -517,7 +668,7 @@ export function agentPolicyProblems(files, { needs } = {}) {
             problems.push(...lineProblems(name, line, `${name}:${index + 1}`, inFence, needs))
         })
         for (const [label, pattern] of REQUIRED[name] ?? []) {
-            if (!pattern.test(text)) problems.push(`${name}: missing ${label}`)
+            if (!pattern.test(normativeText)) problems.push(`${name}: missing ${label}`)
         }
         for (const [label, pattern] of AFFIRMED[name] ?? []) {
             const affirmed = text

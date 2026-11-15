@@ -81,6 +81,8 @@ export const common = {
     },
     saveFailed:
         'Je laatste wijzigingen konden niet worden opgeslagen en gaan verloren als je de app sluit of herlaadt. Mogelijk is de browseropslag vol: maak ruimte vrij, dan probeert de app het opnieuw bij je volgende wijziging.',
+    previousSaveFailed:
+        'De vorige sessie kon de laatste wijzigingen niet opslaan. De gegevens die je ziet zijn de laatst succesvol opgeslagen momentopname.',
     unverifiedTab: {
         title: 'Opslaan gepauzeerd',
         description:

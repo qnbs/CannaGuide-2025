@@ -3,9 +3,18 @@ import type { AppStore } from '@/stores/store'
 import { REDUX_STATE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
+import {
+    getPendingSnapshotSaveFailureMarkers,
+    hasPendingSnapshotSaveFailure,
+    markSnapshotSaveFailurePresented,
+} from '@/services/persistenceFailureMarker'
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
+
+const runtimeTabContext = globalThis as typeof globalThis & {
+    __cannaguidePersistenceFailureTabId?: string
+}
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
@@ -58,6 +67,9 @@ const savedSnapshot = (): string => {
 describe('persisted settings snapshot (#654)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        localStorage.clear()
+        sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
         // These tests save without a revision, as the writer-lock holder may; the
         // revision check itself is covered in stores/snapshotRevision.test.ts.
         setUncheckedWritePermit(() => true)
@@ -88,6 +100,9 @@ describe('persisted settings snapshot (#654)', () => {
 describe('a save that fails (GH #686)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        localStorage.clear()
+        sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
         setUncheckedWritePermit(() => true)
     })
 
@@ -113,5 +128,173 @@ describe('a save that fails (GH #686)', () => {
 
         expect(onSaveFailure).toHaveBeenCalledTimes(2)
         vi.mocked(indexedDBStorage.setItem).mockImplementation(() => Promise.resolve())
+    })
+
+    it('keeps a payload-free warning marker until a later snapshot save succeeds', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
+        const otherTabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+
+        await expect(flush()).resolves.toBe(false)
+
+        expect(localStorage.length).toBe(1)
+        const markerValues = Array.from({ length: localStorage.length }, (_, index) =>
+            localStorage.getItem(localStorage.key(index) ?? ''),
+        )
+        expect(markerValues).toHaveLength(1)
+        expect(markerValues[0]).toBeTruthy()
+        expect(JSON.stringify(markerValues)).not.toContain(CANARY)
+        expect(JSON.stringify(markerValues)).not.toContain(PORCUPINE_CANARY)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+        expect(onSaveFailure).toHaveBeenCalledOnce()
+
+        // Another tab that started before the failure has not observed it and
+        // cannot clear this tab's marker when it saves successfully.
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(otherTabFlush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(flush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(false)
+    })
+
+    it('records an ordinary failure before the scheduled write slot is released', async () => {
+        let failureInWriteSlot!: () => void
+        const writeFailed = new Promise<void>((resolve) => {
+            failureInWriteSlot = resolve
+        })
+        let releaseFailure!: () => void
+        const holdFailedSlot = new Promise<void>((resolve) => {
+            releaseFailure = resolve
+        })
+        vi.mocked(schedulePersistenceWrite).mockImplementationOnce(async (write) => {
+            try {
+                await write()
+                return true
+            } catch (error) {
+                failureInWriteSlot()
+                await holdFailedSlot
+                throw error
+            }
+        })
+        const failedTabFlush = setupPersistedStateSync(storeWithKey())
+        sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
+        const otherTabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+
+        const failedWrite = failedTabFlush()
+        await writeFailed
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(otherTabFlush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+
+        releaseFailure()
+        await expect(failedWrite).resolves.toBe(false)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+    })
+
+    it('records a failure when the coordinator rejects before invoking the write callback', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        const coordinationError = new Error('Persistence lock request failed')
+        vi.mocked(schedulePersistenceWrite).mockRejectedValueOnce(coordinationError)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await expect(flush()).resolves.toBe(false)
+
+        expect(indexedDBStorage.setItem).not.toHaveBeenCalled()
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+        expect(onSaveFailure).toHaveBeenCalledOnce()
+        expect(onSaveFailure).toHaveBeenCalledWith(coordinationError)
+
+        await expect(flush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(false)
+    })
+
+    it('does not let an automatic startup save hide a warning captured during hydration', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const failedTabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(failedTabFlush()).resolves.toBe(false)
+        const capturedFailures = getPendingSnapshotSaveFailureMarkers()
+
+        // The same sessionStorage tab id survives reload. The startup repair/save is
+        // successful, but it only writes the restored snapshot and cannot recover edits
+        // that were lost before hydration.
+        const startupFlush = setupPersistedStateSync(
+            storeWithKey(),
+            undefined,
+            undefined,
+            capturedFailures,
+        )
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual(capturedFailures)
+
+        markSnapshotSaveFailurePresented(capturedFailures[0]!)
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([])
+    })
+
+    it('gives a new failure after presentation a new token so a successful retry resolves it', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const tabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(tabFlush()).resolves.toBe(false)
+        const capturedFailure = getPendingSnapshotSaveFailureMarkers()[0]!
+
+        const startupFlush = setupPersistedStateSync(storeWithKey(), undefined, undefined, [
+            capturedFailure,
+        ])
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([capturedFailure])
+
+        markSnapshotSaveFailurePresented(capturedFailure)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(tabFlush()).resolves.toBe(false)
+        const retriedFailure = getPendingSnapshotSaveFailureMarkers()[0]!
+        expect(retriedFailure.token).not.toBe(capturedFailure.token)
+        expect(retriedFailure.warningState).toBe('unpresented')
+
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([])
+    })
+
+    it('keeps the IndexedDB result authoritative when localStorage is unavailable', async () => {
+        localStorage.clear()
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new DOMException('Storage is blocked.', 'SecurityError')
+        })
+        const removeItem = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+            throw new DOMException('Storage is blocked.', 'SecurityError')
+        })
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+
+        try {
+            await expect(flush()).resolves.toBe(false)
+            expect(onSaveFailure).toHaveBeenCalledOnce()
+
+            vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+            await expect(flush()).resolves.toBe(true)
+        } finally {
+            setItem.mockRestore()
+            removeItem.mockRestore()
+        }
     })
 })

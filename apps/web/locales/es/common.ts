@@ -83,6 +83,8 @@ export const common = {
     },
     saveFailed:
         'Tus \u00FAltimos cambios no se pudieron guardar y se perder\u00EDan si cierras o recargas la app. Puede que el almacenamiento del navegador est\u00E9 lleno: libera espacio y la app lo intentar\u00E1 de nuevo con tu pr\u00F3ximo cambio.',
+    previousSaveFailed:
+        'La sesión anterior no pudo guardar los últimos cambios. Los datos que ves son la última copia que se guardó correctamente.',
     unverifiedTab: {
         title: 'Guardado en pausa',
         description:

@@ -5,6 +5,7 @@ import {
     UnverifiedSnapshotError,
     writeSnapshot,
 } from '@/stores/snapshotRevision'
+import { hasPendingSnapshotSaveFailure } from '@/services/persistenceFailureMarker'
 import { setupPersistedStateSync } from './persistence'
 
 vi.mock('./persistenceCoordinator', () => ({
@@ -49,6 +50,8 @@ const store = (): AppStore =>
 describe('a save refused because another tab saved (GH #669)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        localStorage.clear()
+        sessionStorage.clear()
         vi.spyOn(console, 'warn').mockImplementation(() => undefined)
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
     })
@@ -61,6 +64,7 @@ describe('a save refused because another tab saved (GH #669)', () => {
 
         expect(saved).toBe(false)
         expect(onStale).toHaveBeenCalledOnce()
+        expect(hasPendingSnapshotSaveFailure()).toBe(false)
     })
 
     it('hands the refusal itself to the caller, so it can tell an unverified page apart', async () => {

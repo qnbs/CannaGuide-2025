@@ -245,6 +245,8 @@ export const common = {
     },
     saveFailed:
         'Your latest changes could not be saved, so they would be lost if you close or reload the app. The browser storage may be full: free up space, and the app tries again with your next change.',
+    previousSaveFailed:
+        'The previous session could not save its latest changes. The data shown here is the last snapshot that was successfully saved.',
     unverifiedTab: {
         title: 'Saving is paused',
         description:

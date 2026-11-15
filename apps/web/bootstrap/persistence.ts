@@ -4,6 +4,14 @@ import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { buildPersistedSnapshot } from '@/services/persistedSnapshotFormat'
+import {
+    activatePersistenceFailureTab,
+    clearSnapshotSaveFailureForTab,
+    getPersistenceFailureMarkerTabId,
+    markPendingSnapshotSaveFailure,
+    markPersistenceFailureTabClosed,
+    type PendingSnapshotSaveFailureMarker,
+} from '@/services/persistenceFailureMarker'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
@@ -23,35 +31,63 @@ export const setupPersistedStateSync = (
     hydratedStore: AppStore,
     onStaleSnapshot?: (refusal: StaleSnapshotError) => void,
     onSaveFailure?: (error: unknown) => void,
+    observedFailureMarkers: readonly PendingSnapshotSaveFailureMarker[] = [],
 ): FlushPersistedState => {
+    const failureMarkerTabId = getPersistenceFailureMarkerTabId()
+    activatePersistenceFailureTab(failureMarkerTabId)
     let failing = false
+    let saveAttemptSequence = 0
+    let latestSuccessfulSaveAttempt = 0
     const reportFailure = (error: unknown): void => {
         if (failing) return
         failing = true
         onSaveFailure?.(error)
     }
     const saveState = async () => {
+        const saveAttempt = ++saveAttemptSequence
+        let writeCallbackStarted = false
         try {
             const saved = await schedulePersistenceWrite(async () => {
-                const state = hydratedStore.getState() as RootState
-                const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
-                    state.simulation,
-                )
-                const stateToSave = buildPersistedSnapshot(
-                    state,
-                    optimizedSimulation,
-                    pendingLegacySecretPaths(),
-                )
-                const serializedState = JSON.stringify(stateToSave)
-                await writeSnapshot(serializedState)
+                writeCallbackStarted = true
+                try {
+                    const state = hydratedStore.getState() as RootState
+                    const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
+                        state.simulation,
+                    )
+                    const stateToSave = buildPersistedSnapshot(
+                        state,
+                        optimizedSimulation,
+                        pendingLegacySecretPaths(),
+                    )
+                    const serializedState = JSON.stringify(stateToSave)
+                    await writeSnapshot(serializedState)
+                    // Do this while still inside the scheduled write slot. A later
+                    // save in another tab must not clear this tab's failed lineage.
+                    clearSnapshotSaveFailureForTab(failureMarkerTabId, observedFailureMarkers)
+                } catch (error) {
+                    if (!(error instanceof StaleSnapshotError)) {
+                        // Record the failure before the coordinator releases its write slot.
+                        markPendingSnapshotSaveFailure(failureMarkerTabId)
+                    }
+                    throw error
+                }
             })
-            if (saved) failing = false
+            if (saved) {
+                latestSuccessfulSaveAttempt = saveAttempt
+                failing = false
+            }
             return saved
         } catch (e) {
             if (e instanceof StaleSnapshotError) {
                 console.warn('[Persistence] Not saved:', e.message)
                 onStaleSnapshot?.(e)
                 return false
+            }
+            // A coordinator failure (for example, a rejected Web Lock request)
+            // can happen before the write callback records its failure. Preserve
+            // the warning unless a later save from this tab already succeeded.
+            if (!writeCallbackStarted && latestSuccessfulSaveAttempt < saveAttempt) {
+                markPendingSnapshotSaveFailure(failureMarkerTabId)
             }
             console.error('[Persistence] Failed to save state:', e)
             reportFailure(e)
@@ -79,7 +115,12 @@ export const setupPersistedStateSync = (
     window.addEventListener('pagehide', () => {
         clearTimeout(saveTimeout)
         void saveState()
+        markPersistenceFailureTabClosed(failureMarkerTabId)
         workerBus.dispose()
+    })
+
+    window.addEventListener('pageshow', () => {
+        activatePersistenceFailureTab(failureMarkerTabId)
     })
 
     return saveState

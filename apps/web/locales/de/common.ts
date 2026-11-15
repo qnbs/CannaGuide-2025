@@ -249,6 +249,8 @@ export const common = {
     },
     saveFailed:
         'Deine letzten \u00C4nderungen konnten nicht gespeichert werden und gingen verloren, wenn du die App schlie\u00DFt oder neu l\u00E4dst. M\u00F6glicherweise ist der Browserspeicher voll: Gib Speicher frei, dann versucht die App es bei deiner n\u00E4chsten \u00C4nderung erneut.',
+    previousSaveFailed:
+        'Die vorherige Sitzung konnte die letzten Änderungen nicht speichern. Angezeigt wird der zuletzt erfolgreich gespeicherte Datenstand.',
     unverifiedTab: {
         title: 'Speichern angehalten',
         description:

@@ -8,11 +8,16 @@ import {
 } from '@/services/persistedStateService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 
+const clearFailureMarkers = vi.hoisted(() => vi.fn())
+
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: { removeItem: vi.fn(async () => undefined) },
 }))
 vi.mock('@/bootstrap/persistenceCoordinator', () => ({
     stopPersistenceForOwnershipLoss: vi.fn(() => Promise.resolve()),
+}))
+vi.mock('@/services/persistenceFailureMarker', () => ({
+    clearAllSnapshotSaveFailures: clearFailureMarkers,
 }))
 vi.mock('@/services/persistedStateService', () => ({
     removePrimaryPersistedSnapshot: vi.fn(async () => true),
@@ -54,6 +59,16 @@ describe('resetAllData (#711 review)', () => {
         )
         expect(porcupineKeyService.clearApiKey).toHaveBeenCalled()
         expect(stopPersistenceForOwnershipLoss).toHaveBeenCalledOnce()
+        expect(clearFailureMarkers).toHaveBeenCalledOnce()
+        expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
+            clearFailureMarkers.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
+        expect(vi.mocked(indexedDBStorage.removeItem).mock.invocationCallOrder.at(-1)).toBeLessThan(
+            clearFailureMarkers.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
+        expect(clearFailureMarkers.mock.invocationCallOrder[0]).toBeLessThan(
+            reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
         expect(vi.mocked(stopPersistenceForOwnershipLoss).mock.invocationCallOrder[0]).toBeLessThan(
             reload.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
         )
@@ -78,6 +93,7 @@ describe('resetAllData (#711 review)', () => {
         const result = await runReset()
         expect(result.meta.requestStatus).toBe('rejected')
         expect(indexedDBStorage.removeItem).not.toHaveBeenCalled()
+        expect(clearFailureMarkers).not.toHaveBeenCalled()
         expect(stopPersistenceForOwnershipLoss).not.toHaveBeenCalled()
         expect(reload).not.toHaveBeenCalled()
     })

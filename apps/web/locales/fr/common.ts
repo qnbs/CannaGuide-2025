@@ -83,6 +83,8 @@ export const common = {
     },
     saveFailed:
         "Vos derni\u00E8res modifications n'ont pas pu \u00EAtre enregistr\u00E9es et seraient perdues si vous fermez ou rechargez l'application. Le stockage du navigateur est peut-\u00EAtre plein : lib\u00E9rez de l'espace, et l'application r\u00E9essaiera \u00E0 votre prochaine modification.",
+    previousSaveFailed:
+        'La session précédente n’a pas pu enregistrer les dernières modifications. Les données affichées correspondent au dernier instantané enregistré avec succès.',
     unverifiedTab: {
         title: 'Enregistrement suspendu',
         description:

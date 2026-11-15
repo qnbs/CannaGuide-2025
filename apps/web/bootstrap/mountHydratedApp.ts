@@ -16,6 +16,12 @@ import {
 } from './render'
 import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 import {
+    activatePersistenceFailureTab,
+    getPendingSnapshotSaveFailureMarkers,
+    getPersistenceFailureMarkerTabId,
+    markSnapshotSaveFailurePresented,
+} from '@/services/persistenceFailureMarker'
+import {
     claimWriterRole,
     holdsWriterRole,
     releaseWriterRole,
@@ -97,6 +103,24 @@ const notifySaveFailure = (): void => {
     )
 }
 
+/** A prior session ended after an observed save failure; the loaded snapshot is older. */
+const notifyPreviousSaveFailure = async (): Promise<boolean> => {
+    try {
+        const [{ getT }, { getUISnapshot }] = await Promise.all([
+            import('@/i18n'),
+            import('@/stores/useUIStore'),
+        ])
+        getUISnapshot().addNotification({
+            message: getT()('common.previousSaveFailed'),
+            type: 'error',
+        })
+        return true
+    } catch (error) {
+        console.error('[Persistence] Could not show the previous-save warning:', error)
+        return false
+    }
+}
+
 const handleRefusedSave = (refusal: Error): void => {
     if (refusal instanceof UnverifiedSnapshotError) handleUnverifiedSnapshot()
     else handleStaleSnapshot()
@@ -120,12 +144,13 @@ const mayStartSaving = (): boolean => {
 const runServicesUnlessStale = async (
     store: AppStore,
     flushPersistedState: FlushPersistedState,
+    onLocaleReady?: () => void | Promise<void>,
 ): Promise<void> => {
     if (staleSnapshotHandled) {
         await applyLocalOnlyPrivacy(store)
         return
     }
-    await runPostHydrationServices(store, flushPersistedState)
+    await runPostHydrationServices(store, flushPersistedState, onLocaleReady)
 }
 
 const moveLegacySecrets = async (store: AppStore): Promise<boolean> => {
@@ -177,6 +202,7 @@ export const mountHydratedApp = async (): Promise<void> => {
     setUncheckedWritePermit(holdsWriterRole)
     try {
         if (!(await takeWriterRole())) return
+        activatePersistenceFailureTab(getPersistenceFailureMarkerTabId())
 
         registerRecoveryListeners()
 
@@ -184,6 +210,10 @@ export const mountHydratedApp = async (): Promise<void> => {
 
         const { hydratedStore } = await hydrateApplicationStores()
         if (!mayStartSaving()) return
+        const previousSaveFailures = getPendingSnapshotSaveFailureMarkers()
+        const unpresentedSaveFailures = previousSaveFailures.filter(
+            ({ warningState }) => warningState === 'unpresented',
+        )
         const secretsMoved = await moveLegacySecrets(hydratedStore)
         await startCrdtLayer(hydratedStore)
 
@@ -191,9 +221,28 @@ export const mountHydratedApp = async (): Promise<void> => {
             hydratedStore,
             handleRefusedSave,
             notifySaveFailure,
+            previousSaveFailures,
         )
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
-        await runServicesUnlessStale(hydratedStore, flushPersistedState)
+        await runServicesUnlessStale(hydratedStore, flushPersistedState, async () => {
+            // Post-hydration restores the saved language before translating this warning.
+            if (staleSnapshotHandled || unpresentedSaveFailures.length === 0) return
+
+            const currentMarkers = getPendingSnapshotSaveFailureMarkers()
+            const stillUnpresented = unpresentedSaveFailures.filter((observed) =>
+                currentMarkers.some(
+                    (current) =>
+                        current.tabId === observed.tabId &&
+                        current.token === observed.token &&
+                        current.warningState === 'unpresented',
+                ),
+            )
+            if (stillUnpresented.length === 0) return
+
+            if (await notifyPreviousSaveFailure()) {
+                stillUnpresented.forEach((marker) => markSnapshotSaveFailurePresented(marker))
+            }
+        })
     } catch (error) {
         await showStartupError(error)
     }

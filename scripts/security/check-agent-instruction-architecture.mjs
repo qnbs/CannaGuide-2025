@@ -957,12 +957,20 @@ export function pr777EvidenceProblems(traceability, evidence) {
     return problems
 }
 
+const SSH_SIGNING_CONTRADICTION =
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b|\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b|\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:optional|unnecessary)\b|\bunsigned commits?\b[^.!?\n]{0,80}\b(?:are\s+)?(?:allowed|acceptable|permitted)\b|\b(?:allow|permit)\b[^.!?\n]{0,80}\bunsigned commits?\b/i
+
 export function rootAnchorProblems(rootFiles) {
     const problems = []
     for (const [name, anchors] of Object.entries(ROOT_ANCHORS)) {
         const text = normativePolicyText(rootFiles[name] || '')
         for (const [label, pattern] of anchors) {
-            if (!pattern.test(text)) problems.push(name + ': missing global ' + label)
+            if (
+                !pattern.test(text) ||
+                (label === 'SSH commit signing' && SSH_SIGNING_CONTRADICTION.test(text))
+            ) {
+                problems.push(name + ': missing global ' + label)
+            }
         }
     }
     return problems
@@ -1006,7 +1014,8 @@ const SCOPED_CONFLICTS = [
 ]
 
 function conflictMatchIsNegated(clause, index, length) {
-    const before = clause.slice(0, index)
+    const lastBoundary = [...clause.slice(0, index).matchAll(/[.!?](?=\s)/g)].at(-1)
+    const before = clause.slice(lastBoundary ? lastBoundary.index + 1 : 0, index)
     const after = clause.slice(index + length)
     const negations = [...before.matchAll(new RegExp(NEGATED_POLICY_LANGUAGE.source, 'gi'))]
     const actions = [...before.matchAll(POLICY_ACTION_LANGUAGE)]

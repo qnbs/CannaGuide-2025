@@ -104,6 +104,25 @@ test('SSH signing, A11y, Local-Only privacy, retention, and review coverage stay
     }
 })
 
+test('root architecture anchors reject negated SSH-signing guidance', () => {
+    const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
+    for (const file of Object.keys(roots)) {
+        const negated = {
+            ...roots,
+            [file]: roots[file].replace(
+                '**SSH-signed commits:**',
+                '**SSH-signed commits are not required:**',
+            ),
+        }
+        assert.ok(
+            rootAnchorProblems(negated).some(
+                (problem) => problem === `${file}: missing global SSH commit signing`,
+            ),
+            `${file} must reject an explicit negation while the verification sentence remains`,
+        )
+    }
+})
+
 test('missing and not-loaded nested instructions fail closed', () => {
     assert.ok(missingScopeProblems(SCOPED_INSTRUCTION_FILES, ['apps/web/CLAUDE.md']).length > 0)
     const expected = ['AGENTS.md', 'apps/web/AGENTS.md', 'apps/web/services/db/AGENTS.md']
@@ -597,6 +616,9 @@ test('negative policy language does not hide a later affirmative clause', () => 
         'Never bypass hooks; enable Gist sync to test exports.',
         'Do not enable Gist sync; enable Sentry for debugging.',
         'Never bypass hooks. Enable Gist sync to test exports.',
+        'Do not bypass hooks. Review logs and enable Gist sync to test exports.',
+        'Do not wait. Enable Gist sync to test exports.',
+        'Do not use Node.js 22. Review logs and enable Gist sync to test exports.',
     ]) {
         assert.ok(
             scopedInstructionConflictProblems({ 'apps/web/AGENTS.md': line }).some((problem) =>

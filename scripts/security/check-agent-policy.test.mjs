@@ -260,12 +260,12 @@ test('a CI Status requirement must name jobs ci-status actually needs', () => {
         'rust',
         'e2e',
     ])
-    const stale = `- **\`✅ CI Status\` only requires \`quality\` + \`e2e-full\`.** E2E does not block.\n${REVIEW_SENTENCE}`
+    const stale = `- **\`\u2705 CI Status\` only requires \`quality\` + \`e2e-full\`.** E2E does not block.\n${REVIEW_SENTENCE}`
     const problems = agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': stale }, { needs })
     assert.equal(problems.length, 2, problems.join('; '))
     assert.match(problems[0], /names `quality` as a CI Status requirement/)
     assert.match(problems[1], /names `e2e-full` as a CI Status requirement/)
-    const current = `On a code change \`✅ CI Status\` requires \`build\`, \`test\`, \`verify\`, \`security\` and \`e2e\`.\n${REVIEW_SENTENCE}`
+    const current = `On a code change \`\u2705 CI Status\` requires \`build\`, \`test\`, \`verify\`, \`security\` and \`e2e\`.\n${REVIEW_SENTENCE}`
     assert.deepEqual(agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': current }, { needs }), [])
 })
 
@@ -361,13 +361,25 @@ test('quoted, blockquoted, and fenced root text cannot satisfy required global s
         '\nThe quoted label is "SSH-signed commits".'
     const inlineQuotedClaude =
         SOUND_CLAUDE.replace(/SSH-signed commits/gi, '') +
-        '\nThe quoted label is ‘SSH-signed commits’.'
+        '\nThe quoted label is \u2018SSH-signed commits\u2019.'
     const inlineProblems = problemsOf({
         'AGENTS.md': inlineQuotedAgents,
         'CLAUDE.md': inlineQuotedClaude,
     })
     assert.ok(inlineProblems.includes('AGENTS.md: missing SSH-signed commits'))
     assert.ok(inlineProblems.includes('CLAUDE.md: missing SSH-signed commits'))
+})
+
+test('negated SSH-signing guidance fails the global root safeguard', () => {
+    for (const file of ['AGENTS.md', 'CLAUDE.md']) {
+        const sound = file === 'AGENTS.md' ? SOUND_AGENTS : SOUND_CLAUDE
+        const negated = sound.replace('SSH-signed commits', 'SSH-signed commits are not required')
+        const problems = problemsOf({ [file]: negated })
+        assert.ok(
+            problems.includes(`${file}: contradicts SSH-signed commits`),
+            `${file} must reject a negated SSH-signing rule`,
+        )
+    }
 })
 
 test('a missing authority section or verify command fails', () => {

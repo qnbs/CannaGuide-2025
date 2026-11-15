@@ -459,7 +459,8 @@ export function shellCommands(text) {
 }
 
 const FENCE = /^\s*(```|~~~)/
-const QUOTED_PROSE = /"(?:[^"\\]|\\.)*"|“[^”\n]*”|‘[^’\n]*’|(?<![\w])'[^'\n]+'(?![\w])/g
+const QUOTED_PROSE =
+    /"(?:[^"\\]|\\.)*"|\u201c[^\u201d\n]*\u201d|\u2018[^\u2019\n]*\u2019|(?<![\w])'[^'\n]+'(?![\w])/g
 
 /** Normative instruction prose: exclude examples and quoted text from policy evidence. */
 export function normativePolicyText(text) {
@@ -476,6 +477,10 @@ export function normativePolicyText(text) {
     }
     return lines.join('\n')
 }
+
+const SSH_SIGNING_CONTRADICTION =
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b|\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b|\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:optional|unnecessary)\b|\bunsigned commits?\b[^.!?\n]{0,80}\b(?:are\s+)?(?:allowed|acceptable|permitted)\b|\b(?:allow|permit)\b[^.!?\n]{0,80}\bunsigned commits?\b/i
+const NEGATED_GLOBAL_ROOT_INVARIANTS = [['SSH-signed commits', SSH_SIGNING_CONTRADICTION]]
 
 const GLOBAL_ROOT_INVARIANTS = [
     ['SSH-signed commits', /SSH-signed commits/i],
@@ -603,6 +608,9 @@ export function agentPolicyProblems(files, { needs } = {}) {
         const rootText = normativePolicyText(files[name])
         for (const [label, pattern] of GLOBAL_ROOT_INVARIANTS) {
             if (!pattern.test(rootText)) problems.push(`${name}: missing ${label}`)
+        }
+        for (const [label, pattern] of NEGATED_GLOBAL_ROOT_INVARIANTS) {
+            if (pattern.test(rootText)) problems.push(`${name}: contradicts ${label}`)
         }
     }
     for (const [name, text] of Object.entries(files)) {

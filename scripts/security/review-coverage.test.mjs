@@ -8,7 +8,8 @@ const ROOT = path.resolve(import.meta.dirname, '../..')
 const HEAD = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const OTHER = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
-const program = readFileSync(path.join(ROOT, 'docs/PR-REVIEW-LOOP.md'), 'utf8')
+const runbook = readFileSync(path.join(ROOT, 'docs/PR-REVIEW-LOOP.md'), 'utf8')
+const program = runbook
     .split('\n')
     .map((line) => line.trim())
     .find((line) => line.includes('group_by(.user.login)'))
@@ -35,6 +36,13 @@ function covered(pages) {
     })
     return JSON.parse(out)
 }
+
+test('review coverage reads the current GitHub PR head rather than local HEAD', () => {
+    assert.ok(
+        runbook.includes('HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)'),
+    )
+    assert.ok(!runbook.includes('HEAD_SHA=$(git rev-parse HEAD)'))
+})
 
 test('the documented query keeps the newest review per bot login on the head', () => {
     const pages = [

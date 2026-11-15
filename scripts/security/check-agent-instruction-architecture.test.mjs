@@ -131,21 +131,31 @@ test('the identified web rules remain in their scoped agent instructions', () =>
     }
 })
 
-test('STRAIN-03 is identical in Claude and Codex scoped instructions and Codex loads it', () => {
-    const parity = traceability.scoped_rule_parity?.find((item) => item.id === 'STRAIN-03')
-    assert.ok(parity, 'traceability must list STRAIN-03 cross-agent parity')
-    assert.equal(parity.source_path, 'apps/web/data/strains/CLAUDE.md')
-    assert.equal(parity.codex_path, 'apps/web/data/strains/AGENTS.md')
-    const source = read(parity.source_path)
-    const destination = read(parity.codex_path)
-    const rule = /- STRAIN-03: ([^\n]+)/
-    assert.equal(source.match(rule)?.[1], destination.match(rule)?.[1])
-    assert.ok(AGENT_FILES.includes(parity.codex_path))
-    assert.ok(SCOPED_INSTRUCTION_FILES.includes(parity.codex_path))
+test('all strain integrity rules are identical in Claude and Codex scoped instructions', () => {
+    const expectedIds = ['STRAIN-01', 'STRAIN-02', 'STRAIN-03', 'STRAIN-04']
+    const parityRules = traceability.scoped_rule_parity.filter((item) =>
+        expectedIds.includes(item.id),
+    )
+    assert.deepEqual(
+        parityRules.map((item) => item.id).sort(),
+        expectedIds,
+        'traceability must list every cross-agent strain rule',
+    )
+    for (const parity of parityRules) {
+        assert.equal(parity.source_path, 'apps/web/data/strains/CLAUDE.md')
+        assert.equal(parity.codex_path, 'apps/web/data/strains/AGENTS.md')
+        const rule = new RegExp(`^- ${parity.id}: ([^\\n]+)$`, 'm')
+        const sourceMatch = read(parity.source_path).match(rule)
+        const codexMatch = read(parity.codex_path).match(rule)
+        assert.ok(sourceMatch, `${parity.id} must exist in the Claude instruction`)
+        assert.ok(codexMatch, `${parity.id} must exist in the Codex instruction`)
+        assert.equal(sourceMatch[1], parity.source_text)
+        assert.equal(codexMatch[1], parity.source_text)
+    }
     assert.ok(
         codexLoaderEvidence.contexts
             .find((item) => item.task_kind === 'strains')
-            ?.loaded.includes(parity.codex_path),
+            ?.loaded.includes('apps/web/data/strains/AGENTS.md'),
     )
 })
 
@@ -487,7 +497,28 @@ test('affirmative scoped instructions cannot weaken global toolchain, accessibil
     assert.ok(problems.some((problem) => problem.includes('commit budget above 15')))
 })
 
-test('negative policy language can document forbidden alternatives without false conflict reports', () => {
+test('Node runtime and PR commit limits cover the forbidden range without matching counts', () => {
+    const invalid = scopedInstructionConflictProblems({
+        'apps/web/CLAUDE.md':
+            'Use Node.js 23 for builds.\nPin Node 27+ for scripts.\nRequire Node.js 24.14.0.\nAllow 100 commits in a PR.',
+    })
+    assert.equal(invalid.length, 4)
+    assert.equal(
+        invalid.filter((problem) => problem.includes('unsupported Node.js major')).length,
+        3,
+    )
+    assert.ok(invalid.some((problem) => problem.includes('commit budget above 15')))
+
+    assert.deepEqual(
+        scopedInstructionConflictProblems({
+            'apps/web/CLAUDE.md':
+                'Use Node.js 24.15.0 for commands.\nUse 25 fixtures for race tests.\nUse 22 regression cases for fallback tests.\nPermit 15 commits in a PR.',
+        }),
+        [],
+    )
+})
+
+test('negative policy language does not hide a later affirmative clause', () => {
     assert.deepEqual(
         scopedInstructionConflictProblems({
             'apps/web/AGENTS.md':
@@ -495,11 +526,18 @@ test('negative policy language can document forbidden alternatives without false
         }),
         [],
     )
-    assert.ok(
-        scopedInstructionConflictProblems({
-            'apps/web/AGENTS.md': 'Never bypass hooks; enable Gist sync to test exports.',
-        }).some((problem) => problem.includes('privacy integration activation')),
-    )
+    for (const line of [
+        'Never bypass hooks; enable Gist sync to test exports.',
+        'Do not enable Gist sync; enable Sentry for debugging.',
+        'Never bypass hooks. Enable Gist sync to test exports.',
+    ]) {
+        assert.ok(
+            scopedInstructionConflictProblems({ 'apps/web/AGENTS.md': line }).some((problem) =>
+                problem.includes('privacy integration activation'),
+            ),
+            `${line} must retain its affirmative conflict`,
+        )
+    }
 })
 
 test('sensitive identity and credential patterns are rejected', () => {

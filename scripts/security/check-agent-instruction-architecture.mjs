@@ -935,10 +935,17 @@ export function rootAnchorProblems(rootFiles) {
 
 const NEGATED_POLICY_LANGUAGE =
     /\b(?:do not|don't|never|must not|cannot|prohibited|forbidden|unsupported|outside the supported)\b/i
+const POLICY_ACTION_SOURCE = String.raw`(?:use|install|pin|require|run(?:\s+on)?|raise|increase|expand|grow|enable|activate|turn\s+on|delete|remove|allow|permit|accept|budget|bypass)`
+const POLICY_ACTION_LANGUAGE = new RegExp(String.raw`\b${POLICY_ACTION_SOURCE}\b`, 'gi')
+const CONFLICT_CLAUSE_BOUNDARY = new RegExp(
+    String.raw`[;!?]|\b(?:but|however|instead|then|unless|otherwise|except)\b|(?:,|\b(?:and|or)\b)(?=\s*${POLICY_ACTION_SOURCE}\b)`,
+    'gi',
+)
 const SCOPED_CONFLICTS = [
     [
         'unsupported Node.js major',
-        /\b(?:use|install|pin|require|run on)\s+(?:the\s+)?(?:Node(?:\.js)?\s*)?v?(?:22|25|26)(?:\.\d+)*\b/i,
+        /\b(?:use|install|pin|require|run on)\s+(?:the\s+)?Node(?:\.js)?\s*(?:v|>=|=)?\s*(\d+)(?:\.(\d+))?(?:\.\d+)?\b/i,
+        (match) => Number(match[1]) !== 24 || Number(match[2] || 0) < 15,
     ],
     [
         'accessibility baseline growth',
@@ -958,30 +965,22 @@ const SCOPED_CONFLICTS = [
     ],
     [
         'PR commit budget above 15',
-        /\b(?:allow|permit|accept|budget)\b.{0,30}\b(?:1[6-9]|[2-9]\d)\s+commits?\b/i,
+        /\b(?:allow|permit|accept|budget)\b.{0,30}\b(\d+)\s+commits?\b/i,
+        (match) => Number(match[1]) > 15,
     ],
 ]
 
-function clauseBounds(text, index) {
-    const boundary = /[;.!?]|\b(?:but|however|instead|then|unless|otherwise|except)\b/gi
-    let start = 0
-    let end = text.length
-    for (const match of text.matchAll(boundary)) {
-        if (match.index < index) start = match.index + match[0].length
-        else {
-            end = match.index
-            break
-        }
-    }
-    return { start, end }
-}
-
-function conflictMatchIsNegated(line, index, length) {
-    const { start, end } = clauseBounds(line, index)
-    const before = line.slice(start, index)
-    const after = line.slice(index + length, end)
+function conflictMatchIsNegated(clause, index, length) {
+    const before = clause.slice(0, index)
+    const after = clause.slice(index + length)
+    const negations = [...before.matchAll(new RegExp(NEGATED_POLICY_LANGUAGE.source, 'gi'))]
+    const actions = [...before.matchAll(POLICY_ACTION_LANGUAGE)]
+    const lastNegation = negations.at(-1)
+    const lastAction = actions.at(-1)
+    const prefixNegatesMatch =
+        lastNegation && (!lastAction || lastNegation.index > lastAction.index)
     return (
-        NEGATED_POLICY_LANGUAGE.test(before) ||
+        prefixNegatesMatch ||
         /\b(?:is|are)\s+(?:not allowed|prohibited|forbidden|unsupported)\b/i.test(after)
     )
 }
@@ -991,11 +990,27 @@ export function scopedInstructionConflictProblems(scopedFiles) {
     const problems = []
     for (const [file, text] of Object.entries(scopedFiles || {})) {
         for (const line of String(text || '').split('\n')) {
-            for (const [label, pattern] of SCOPED_CONFLICTS) {
-                const match = pattern.exec(line)
-                if (match && !conflictMatchIsNegated(line, match.index, match[0].length))
-                    problems.push(file + ': contradicts global safeguard: ' + label)
+            const labels = new Set()
+            for (const clause of line.split(CONFLICT_CLAUSE_BOUNDARY)) {
+                for (const [label, pattern, applies = () => true] of SCOPED_CONFLICTS) {
+                    const matcher = new RegExp(pattern.source, pattern.flags + 'g')
+                    let offset = 0
+                    while (offset <= clause.length) {
+                        matcher.lastIndex = offset
+                        const match = matcher.exec(clause)
+                        if (!match) break
+                        if (
+                            applies(match) &&
+                            !conflictMatchIsNegated(clause, match.index, match[0].length)
+                        ) {
+                            labels.add(label)
+                        }
+                        offset = match.index + 1
+                    }
+                }
             }
+            for (const label of labels)
+                problems.push(file + ': contradicts global safeguard: ' + label)
         }
     }
     return problems
@@ -1188,7 +1203,7 @@ const meaningfulTokens = (text) =>
 const NON_NORMATIVE_LABELS = {
     'C-022-L296-2': {
         source_claim: 'The rest:',
-        reason: 'The phrase “The rest:” is a structural transition label and does not impose behavior or policy.',
+        reason: 'The phrase \u201cThe rest:\u201d is a structural transition label and does not impose behavior or policy.',
     },
 }
 

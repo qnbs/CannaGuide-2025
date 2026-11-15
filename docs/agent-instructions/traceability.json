@@ -4205,9 +4205,30 @@
     ],
     "scoped_rule_parity": [
         {
+            "id": "STRAIN-01",
+            "source_path": "apps/web/data/strains/CLAUDE.md",
+            "source_text": "Preserve canonical strain IDs and referential integrity across catalog chunks, indexes and pending records.",
+            "codex_path": "apps/web/data/strains/AGENTS.md",
+            "verification": "scripts/security/check-agent-instruction-architecture.test.mjs: strain-rule parity and Codex scope test; codex-loader-evidence.json: strains context probe."
+        },
+        {
+            "id": "STRAIN-02",
+            "source_path": "apps/web/data/strains/CLAUDE.md",
+            "source_text": "Do not invent provenance, lineage, effects, medical claims or field values. Preserve field-level source evidence where available.",
+            "codex_path": "apps/web/data/strains/AGENTS.md",
+            "verification": "scripts/security/check-agent-instruction-architecture.test.mjs: strain-rule parity and Codex scope test; codex-loader-evidence.json: strains context probe."
+        },
+        {
             "id": "STRAIN-03",
             "source_path": "apps/web/data/strains/CLAUDE.md",
             "source_text": "Keep unverified imports quarantined under the existing pending flow; do not promote them into the canonical catalog without the repository's validation and review process.",
+            "codex_path": "apps/web/data/strains/AGENTS.md",
+            "verification": "scripts/security/check-agent-instruction-architecture.test.mjs: strain-rule parity and Codex scope test; codex-loader-evidence.json: strains context probe."
+        },
+        {
+            "id": "STRAIN-04",
+            "source_path": "apps/web/data/strains/CLAUDE.md",
+            "source_text": "Run the existing duplicate, schema and catalog-integrity checks after changes. Avoid bulk rewrites that obscure record-level provenance.",
             "codex_path": "apps/web/data/strains/AGENTS.md",
             "verification": "scripts/security/check-agent-instruction-architecture.test.mjs: strain-rule parity and Codex scope test; codex-loader-evidence.json: strains context probe."
         }

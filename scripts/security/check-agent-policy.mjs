@@ -565,16 +565,16 @@ export function agentPolicyProblems(files, { needs } = {}) {
     }
     for (const [name, text] of Object.entries(files)) {
         let inFence = false
+        const normativeLines = []
         text.split('\n').forEach((line, index) => {
             if (FENCE.test(line)) {
                 inFence = !inFence
                 return
             }
+            if (!inFence) normativeLines.push(line)
             problems.push(...lineProblems(name, line, `${name}:${index + 1}`, inFence, needs))
         })
-        const normativeText = text
-            .replace(/```[\s\S]*?```/g, '')
-            .split('\n')
+        const normativeText = normativeLines
             .filter((line) => !line.trimStart().startsWith('>'))
             .join('\n')
         for (const [label, pattern] of REQUIRED[name] ?? []) {

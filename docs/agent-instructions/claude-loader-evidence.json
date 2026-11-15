@@ -860,7 +860,7 @@
         "scripts/AGENTS.md": "b930d34895d7bb505fcd8d696e895894cf397ebd7a469f4be1e05b6e4f6ea4d2",
         ".github/CLAUDE.md": "b0c31c22c79502fe117d2ec38bdece64a9ce56cc42ffd8332f37ad4d86c6c005",
         ".github/AGENTS.md": "e2f4a34f401bde2320e84e5d5e14d90324dfe25d01c51a7cdb108982ec50c195",
-        "apps/web/data/strains/AGENTS.md": "f6f32488c1c0d0d99b18f6a8068145d3795187780fdbefb6ee951bb1fe67e111"
+        "apps/web/data/strains/AGENTS.md": "8346d6adaaf62ab4c09135ca5cd7a3bc8cccb35f828afa64b089bb28176af099"
     },
     "host_level_instruction_files": {
         "paths_redacted": true,

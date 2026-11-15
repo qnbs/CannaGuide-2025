@@ -134,7 +134,7 @@ CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only whe
 
 ```bash
 PR_NUMBER=$(gh pr view --json number --jq .number)
-HEAD_SHA=$(git rev-parse HEAD)
+HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
 gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate \
   | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at]) | group_by(.user.login) | map(last) | map(select(.state!="DISMISSED")) | .[] | {user:.user.login, state}'
 ```

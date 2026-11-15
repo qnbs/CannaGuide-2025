@@ -388,6 +388,9 @@ Every source claim inherits the destination paths of its uniquely mapped parent 
 
 ## Scoped domain rule parity
 
-| Rule      | Claude source                     | Codex destination                 | Verification                                                                                                            |
-| --------- | --------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| STRAIN-03 | `apps/web/data/strains/CLAUDE.md` | `apps/web/data/strains/AGENTS.md` | Exact rule text parity plus the `strains` Codex loader probe; see `traceability.json` and `codex-loader-evidence.json`. |
+| Rule      | Claude source                     | Codex destination                 | Verification                                                                                                                            |
+| --------- | --------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| STRAIN-01 | `apps/web/data/strains/CLAUDE.md` | `apps/web/data/strains/AGENTS.md` | Exact canonical-ID rule text parity plus the `strains` Codex loader probe; see `traceability.json` and `codex-loader-evidence.json`.    |
+| STRAIN-02 | `apps/web/data/strains/CLAUDE.md` | `apps/web/data/strains/AGENTS.md` | Exact provenance rule text parity plus the `strains` Codex loader probe; see `traceability.json` and `codex-loader-evidence.json`.      |
+| STRAIN-03 | `apps/web/data/strains/CLAUDE.md` | `apps/web/data/strains/AGENTS.md` | Exact quarantine rule text parity plus the `strains` Codex loader probe; see `traceability.json` and `codex-loader-evidence.json`.      |
+| STRAIN-04 | `apps/web/data/strains/CLAUDE.md` | `apps/web/data/strains/AGENTS.md` | Exact integrity-check rule text parity plus the `strains` Codex loader probe; see `traceability.json` and `codex-loader-evidence.json`. |

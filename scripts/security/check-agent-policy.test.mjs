@@ -294,6 +294,15 @@ test('two-reviewer exact-head coverage is required in AGENTS, CLAUDE, and the re
     }
 })
 
+test('required policy coverage inside tilde-fenced examples does not count', () => {
+    const fenced = ['~~~md', REVIEW_SENTENCE, '~~~'].join('\n')
+    const agents = SOUND_AGENTS.replace(REVIEW_SENTENCE, fenced)
+    const problems = problemsOf({ 'AGENTS.md': agents })
+    assert.ok(
+        problems.some((problem) => problem.includes('AGENTS.md: missing two-reviewer coverage')),
+    )
+})
+
 test('critical global safeguards are required in both root instruction files', () => {
     const anchors = [
         ['SSH-signed commits', 'SSH-signed commits'],

@@ -927,7 +927,17 @@ export function sourceClaimProblems(traceability, sourceSnapshots) {
     return problems
 }
 
-export function pr777EvidenceProblems(traceability, evidence) {
+const PR777_TRUSTED_HEAD_SHA = '88e866819e68ddd857e162562c7d4476ba9728e3'
+const PR777_TRUSTED_SOURCE_FILES = [
+    'AGENTS.md',
+    'CHANGELOG.md',
+    'CLAUDE.md',
+    'docs/PR-REVIEW-LOOP.md',
+    'scripts/security/check-agent-policy.mjs',
+]
+
+/** Bind captured PR #777 excerpts to the pinned historical commit and Git blobs. */
+export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
     const problems = []
     const pr = traceability?.pr_777
     if (
@@ -941,6 +951,12 @@ export function pr777EvidenceProblems(traceability, evidence) {
     }
     if (evidence.head_sha !== pr.headRefOid)
         problems.push('PR #777 source evidence is for a stale head')
+    if (pr.headRefOid !== PR777_TRUSTED_HEAD_SHA)
+        problems.push('PR #777 traceability head differs from the pinned historical commit')
+    if (evidence.head_sha !== PR777_TRUSTED_HEAD_SHA)
+        problems.push('PR #777 source evidence is not bound to the pinned historical commit')
+    if (pr.headRefOid !== PR777_TRUSTED_HEAD_SHA || evidence.head_sha !== PR777_TRUSTED_HEAD_SHA)
+        return problems
     if (
         !/source blobs, full-file hashes, line counts, cited-line text and line hashes only/i.test(
             evidence.source_evidence_scope || '',
@@ -957,6 +973,50 @@ export function pr777EvidenceProblems(traceability, evidence) {
     const evidencedIds = [...(evidence.source_verified_rule_ids || [])].sort()
     if (JSON.stringify(expectedIds) !== JSON.stringify(evidencedIds))
         problems.push('PR #777 source-verified rule IDs differ from the traceability matrix')
+
+    const expectedFiles = [...PR777_TRUSTED_SOURCE_FILES].sort()
+    const evidencedFiles = Object.keys(evidence.files || {}).sort()
+    if (JSON.stringify(expectedFiles) !== JSON.stringify(evidencedFiles))
+        problems.push(
+            'PR #777 source evidence file set differs from the pinned historical snapshot',
+        )
+
+    const sourceSnapshots = new Map()
+    for (const file of PR777_TRUSTED_SOURCE_FILES) {
+        const record = evidence.files?.[file]
+        if (!record) {
+            problems.push('missing immutable PR source blob evidence for ' + file)
+            continue
+        }
+        let snapshot
+        try {
+            const gitPath = PR777_TRUSTED_HEAD_SHA + ':' + file
+            const blobSha = execFileSync('git', ['rev-parse', gitPath], {
+                cwd: root,
+                encoding: 'utf8',
+            }).trim()
+            const bytes = execFileSync('git', ['show', gitPath], { cwd: root })
+            const lines = bytes.toString('utf8').split(/\r?\n/)
+            if (lines.at(-1) === '') lines.pop()
+            snapshot = {
+                blobSha,
+                sha256: createHash('sha256').update(bytes).digest('hex'),
+                lineCount: lines.length,
+                lines,
+            }
+        } catch {
+            problems.push('pinned PR #777 Git source blob is unavailable for ' + file)
+            continue
+        }
+        sourceSnapshots.set(file, snapshot)
+        if (record.blob_sha !== snapshot.blobSha)
+            problems.push(file + ': PR source blob SHA does not match the pinned Git object')
+        if (record.sha256 !== snapshot.sha256)
+            problems.push(file + ': PR source file hash does not match the pinned Git blob')
+        if (record.line_count !== snapshot.lineCount)
+            problems.push(file + ': PR source line count does not match the pinned Git blob')
+    }
+
     for (const rule of (traceability.rules || []).filter((item) => item.source === 'PR #777')) {
         for (const ref of (rule.source_ref || '').split('; ')) {
             const match = /^(.+?):([1-9]\d*)(?:-([1-9]\d*))?$/.exec(ref)
@@ -965,6 +1025,10 @@ export function pr777EvidenceProblems(traceability, evidence) {
                 continue
             }
             const [, file, startText, endText] = match
+            if (!PR777_TRUSTED_SOURCE_FILES.includes(file)) {
+                problems.push(rule.id + ': PR #777 source reference is outside the pinned files')
+                continue
+            }
             const start = Number(startText)
             const end = Number(endText || startText)
             if (
@@ -978,6 +1042,7 @@ export function pr777EvidenceProblems(traceability, evidence) {
                 continue
             }
             const record = evidence.files?.[file]
+            const snapshot = sourceSnapshots.get(file)
             if (
                 !record ||
                 !/^[a-f0-9]{40}$/.test(record.blob_sha || '') ||
@@ -986,12 +1051,13 @@ export function pr777EvidenceProblems(traceability, evidence) {
                 problems.push(rule.id + ': missing immutable PR source blob evidence for ' + file)
                 continue
             }
+            if (!snapshot) continue
             if (!Number.isSafeInteger(record.line_count) || record.line_count < 1) {
                 problems.push(rule.id + ': invalid PR source blob line count for ' + file)
                 continue
             }
-            if (end > record.line_count) {
-                problems.push(rule.id + ': PR source line exceeds recorded blob length')
+            if (end > snapshot.lineCount) {
+                problems.push(rule.id + ': PR source line exceeds pinned Git blob length')
                 continue
             }
             for (let line = start; line <= end; line += 1) {
@@ -1003,6 +1069,15 @@ export function pr777EvidenceProblems(traceability, evidence) {
                         rule.id + ': missing PR source line evidence for ' + file + ':' + line,
                     )
                     continue
+                }
+                if (sourceLine !== snapshot.lines[line - 1]) {
+                    problems.push(
+                        rule.id +
+                            ': PR source line text does not match pinned Git blob for ' +
+                            file +
+                            ':' +
+                            line,
+                    )
                 }
                 const computedHash = createHash('sha256').update(sourceLine, 'utf8').digest('hex')
                 if (computedHash !== recordedHash) {
@@ -1061,6 +1136,14 @@ const SCOPED_CONFLICTS = [
             !/\bonly\s+when\b.{0,80}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:disabled|off)\b/i.test(
                 match.input,
             ),
+    ],
+    [
+        'Local-Only cloud network egress',
+        /\b(?:allow|enable|route|send|transmit|upload|forward|sync|call|contact)\b.{0,100}\b(?:cloud|remote|network|online)\b.{0,100}\b(?:when|while|if|with)\b.{0,50}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:enabled|on|active)\b/i,
+    ],
+    [
+        'CanG plant cap override',
+        /\b(?:raise|increase|change|set|override|relax|weaken)\b.{0,80}\b(?:MAX_PLANTS_CANG|(?:(?:CanG|legal|plant|cannabis)\s+){0,2}(?:plant\s+)?(?:cap|limit))\b/i,
     ],
     [
         'deletion of unproven retention candidates',

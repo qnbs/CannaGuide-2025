@@ -347,69 +347,78 @@ test('Codex loader evidence fails closed on missing scope, out-of-scope files, a
     )
 })
 
-test('PR #777 evidence recomputes cited line hashes and rejects stale or missing evidence', () => {
-    const traceability = {
-        pr_777: { headRefOid: 'a'.repeat(40) },
-        rules: [{ id: 'P-001', source: 'PR #777', source_ref: 'AGENTS.md:175; CLAUDE.md:180' }],
-    }
-    const agentsLineText = 'captured source line from AGENTS.md'
-    const claudeLineText = 'captured source line from CLAUDE.md'
-    const evidence = {
-        pull_request: 777,
-        state: 'open',
-        base: 'main',
-        head_sha: 'a'.repeat(40),
-        source_evidence_scope:
-            'Exact source blobs, full-file hashes, line counts, cited-line text and line hashes only; cited-line hashes are recomputed from captured text. This does not assert that the transferred policy has been implemented or verified.',
-        source_verified_rule_ids: ['P-001'],
-        files: {
-            'AGENTS.md': {
-                blob_sha: '1'.repeat(40),
-                sha256: '2'.repeat(64),
-                line_count: 200,
-                line_hashes: {
-                    175: createHash('sha256').update(agentsLineText, 'utf8').digest('hex'),
-                },
-                line_texts: { 175: agentsLineText },
-            },
-            'CLAUDE.md': {
-                blob_sha: '4'.repeat(40),
-                sha256: '5'.repeat(64),
-                line_count: 200,
-                line_hashes: {
-                    180: createHash('sha256').update(claudeLineText, 'utf8').digest('hex'),
-                },
-                line_texts: { 180: claudeLineText },
-            },
-        },
-    }
+test('PR #777 evidence is bound to the pinned historical Git commit and blobs', () => {
+    const traceability = JSON.parse(
+        readFileSync(path.join(ROOT, 'docs/agent-instructions/traceability.json'), 'utf8'),
+    )
+    const evidence = JSON.parse(
+        readFileSync(
+            path.join(ROOT, 'docs/agent-instructions/pr-777-source-evidence.json'),
+            'utf8',
+        ),
+    )
     assert.deepEqual(pr777EvidenceProblems(traceability, evidence), [])
+
+    const tamperedText = structuredClone(evidence)
+    const tamperedLine = '175'
+    tamperedText.files['AGENTS.md'].line_texts[tamperedLine] += ' [tampered]'
+    tamperedText.files['AGENTS.md'].line_hashes[tamperedLine] = createHash('sha256')
+        .update(tamperedText.files['AGENTS.md'].line_texts[tamperedLine], 'utf8')
+        .digest('hex')
+    assert.ok(
+        pr777EvidenceProblems(traceability, tamperedText).some((problem) =>
+            problem.includes(
+                'PR source line text does not match pinned Git blob for AGENTS.md:175',
+            ),
+        ),
+    )
+
+    const forgedBlob = structuredClone(evidence)
+    forgedBlob.files['AGENTS.md'].blob_sha = '0'.repeat(40)
+    assert.ok(
+        pr777EvidenceProblems(traceability, forgedBlob).some((problem) =>
+            problem.includes('AGENTS.md: PR source blob SHA does not match the pinned Git object'),
+        ),
+    )
+
+    const forgedFileHash = structuredClone(evidence)
+    forgedFileHash.files['AGENTS.md'].sha256 = '0'.repeat(64)
+    assert.ok(
+        pr777EvidenceProblems(traceability, forgedFileHash).some((problem) =>
+            problem.includes('AGENTS.md: PR source file hash does not match the pinned Git blob'),
+        ),
+    )
 
     const stale = structuredClone(evidence)
     stale.head_sha = 'b'.repeat(40)
-    stale.files['CLAUDE.md'].line_hashes = {}
-    const problems = pr777EvidenceProblems(traceability, stale)
-    assert.ok(problems.some((problem) => problem.includes('stale head')))
-    assert.ok(problems.some((problem) => problem.includes('missing PR source line evidence')))
-
-    const forgedHash = structuredClone(evidence)
-    forgedHash.files['AGENTS.md'].line_hashes['175'] = '0'.repeat(64)
     assert.ok(
-        pr777EvidenceProblems(traceability, forgedHash).some((problem) =>
+        pr777EvidenceProblems(traceability, stale).some((problem) =>
+            problem.includes('stale head'),
+        ),
+    )
+
+    const forgedLineHash = structuredClone(evidence)
+    forgedLineHash.files['AGENTS.md'].line_hashes[tamperedLine] = '0'.repeat(64)
+    assert.ok(
+        pr777EvidenceProblems(traceability, forgedLineHash).some((problem) =>
             problem.includes('PR source line hash mismatch for AGENTS.md:175'),
         ),
     )
 
     const missingText = structuredClone(evidence)
-    delete missingText.files['AGENTS.md'].line_texts['175']
+    delete missingText.files['AGENTS.md'].line_texts[tamperedLine]
     assert.ok(
         pr777EvidenceProblems(traceability, missingText).some((problem) =>
             problem.includes('missing PR source line evidence for AGENTS.md:175'),
         ),
     )
 
+    const firstPr777Rule = traceability.rules.find((rule) => rule.source === 'PR #777')
+    assert.ok(firstPr777Rule, 'traceability fixture must contain PR #777 source rules')
+
     const descendingRange = structuredClone(traceability)
-    descendingRange.rules[0].source_ref = 'AGENTS.md:176-175; CLAUDE.md:180'
+    descendingRange.rules.find((rule) => rule.id === firstPr777Rule.id).source_ref =
+        'AGENTS.md:176-175; CLAUDE.md:180'
     assert.ok(
         pr777EvidenceProblems(descendingRange, evidence).some((problem) =>
             problem.includes('invalid PR #777 source line range'),
@@ -417,7 +426,8 @@ test('PR #777 evidence recomputes cited line hashes and rejects stale or missing
     )
 
     const unsafeIntegerRange = structuredClone(traceability)
-    unsafeIntegerRange.rules[0].source_ref = 'AGENTS.md:9007199254740992; CLAUDE.md:180'
+    unsafeIntegerRange.rules.find((rule) => rule.id === firstPr777Rule.id).source_ref =
+        'AGENTS.md:9007199254740992; CLAUDE.md:180'
     assert.ok(
         pr777EvidenceProblems(unsafeIntegerRange, evidence).some((problem) =>
             problem.includes('invalid PR #777 source line range'),
@@ -425,10 +435,12 @@ test('PR #777 evidence recomputes cited line hashes and rejects stale or missing
     )
 
     const outOfBlobRange = structuredClone(traceability)
-    outOfBlobRange.rules[0].source_ref = 'AGENTS.md:199-201; CLAUDE.md:180'
+    const lastLine = evidence.files['AGENTS.md'].line_count
+    outOfBlobRange.rules.find((rule) => rule.id === firstPr777Rule.id).source_ref =
+        `AGENTS.md:${lastLine}-${lastLine + 1}; CLAUDE.md:180`
     assert.ok(
         pr777EvidenceProblems(outOfBlobRange, evidence).some((problem) =>
-            problem.includes('PR source line exceeds recorded blob length'),
+            problem.includes('PR source line exceeds pinned Git blob length'),
         ),
     )
 })

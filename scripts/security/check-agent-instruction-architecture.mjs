@@ -1595,6 +1595,14 @@ const NON_NORMATIVE_LABELS = {
     },
 }
 
+/** Preserve operative code fences but exclude blockquotes used as illustrative text. */
+function destinationInstructionText(text) {
+    return String(text)
+        .split('\n')
+        .filter((line) => !line.trimStart().startsWith('>'))
+        .join('\n')
+}
+
 /** Prove every captured source claim survives at a declared destination. */
 export function sourceDestinationCoverageProblems(traceability, root = ROOT) {
     const problems = []
@@ -1603,7 +1611,10 @@ export function sourceDestinationCoverageProblems(traceability, root = ROOT) {
     const read = (relativePath) => {
         if (!fileCache.has(relativePath)) {
             try {
-                fileCache.set(relativePath, readFileSync(path.join(root, relativePath), 'utf8'))
+                fileCache.set(
+                    relativePath,
+                    destinationInstructionText(readFileSync(path.join(root, relativePath), 'utf8')),
+                )
             } catch {
                 fileCache.set(relativePath, null)
             }

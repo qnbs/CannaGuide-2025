@@ -378,6 +378,7 @@ test('negated SSH-signing guidance fails the global root safeguard', () => {
             'SSH-signed commits are not required',
             "SSH-signed commits aren't required",
             'SSH-signed commits aren’t required',
+            'SSH-signed commits are not\nrequired',
         ]) {
             const negated = sound.replace('SSH-signed commits', negation)
             const problems = problemsOf({ [file]: negated })
@@ -392,9 +393,16 @@ test('negated SSH-signing guidance fails the global root safeguard', () => {
 test('SSH-signing contradictions are rejected in scoped instructions without requiring root anchors there', () => {
     const path = 'scripts/AGENTS.md'
     assert.deepEqual(agentPolicyProblems({ [path]: 'SSH-signed commits are required.' }), [])
-    assert.deepEqual(agentPolicyProblems({ [path]: 'SSH-signed commits are not required.' }), [
-        `${path}: contradicts SSH-signed commits`,
-    ])
+    for (const contradiction of [
+        'SSH-signed commits are not required.',
+        'SSH-signed commits are not\nrequired.',
+        'SSH-signed commits aren’t\nrequired.',
+    ]) {
+        assert.deepEqual(agentPolicyProblems({ [path]: contradiction }), [
+            `${path}: contradicts SSH-signed commits`,
+        ])
+    }
+    assert.deepEqual(agentPolicyProblems({ [path]: 'SSH-signed commits are\nrequired.' }), [])
 })
 
 test('a semicolon cannot carry a prohibition over a later unsigned-commit permission', () => {

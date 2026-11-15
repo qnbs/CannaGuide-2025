@@ -490,7 +490,11 @@ const SSH_SIGNING_PERMISSION_CLAIMS = [
 ]
 
 export function sshSigningContradiction(text) {
-    const lines = normativePolicyText(text).split('\n')
+    const lines = normativePolicyText(text)
+        .split(/\n[ \t]*\n/)
+        .map((paragraph) => paragraph.replace(/\n[ \t]*/g, ' '))
+        .join('\n')
+        .split('\n')
     for (const line of lines) {
         if (SSH_SIGNING_REQUIRED_CLAIMS.some((pattern) => pattern.test(line))) return true
         for (const segment of line.split(';')) {

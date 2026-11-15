@@ -1523,7 +1523,7 @@
             "destination_evidence": [
                 {
                     "path": "apps/web/AGENTS.md",
-                    "anchor": "For web-only development, run `cd apps/web && pnpm run dev -- --host 127.0.0.1`"
+                    "anchor": "For web-only development, run `cd apps/web && pnpm run dev --host 127.0.0.1`"
                 }
             ]
         },

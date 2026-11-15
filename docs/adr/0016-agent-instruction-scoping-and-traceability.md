@@ -19,13 +19,13 @@ The root `AGENTS.md` and `CLAUDE.md` combine universal legal, privacy, data-inte
 
 ## Empirical loader evidence
 
-The current branch has ten sanitized Codex CLI 0.169.0 prompt-input probes and ten Claude Code CLI 2.1.323 local-mock probes. Both confirm the expected root/scoped files and ancestor-first order across root, web, database, local AI, WorkerBus, strains, desktop, AI-core, scripts, and GitHub contexts. Codex loads only the relevant `AGENTS.md` chain; Claude loads the corresponding `CLAUDE.md` chain and did not load complete `AGENTS.md` contents. Claude probes used a local SSE mock in an unshared network namespace, with zero routes, external `ENETUNREACH`, no tools, and session persistence disabled. The evidence manifests are hash-bound to the current instruction files.
+Historical evidence in this branch records ten sanitized Codex CLI 0.169.0 prompt-input probes and ten Claude Code CLI 2.1.323 local-mock probes. Both confirm the expected root/scoped files and ancestor-first order across root, web, database, local AI, WorkerBus, strains, desktop, AI-core, scripts, and GitHub contexts. Codex loads only the relevant `AGENTS.md` chain; Claude loads the corresponding `CLAUDE.md` chain and did not load complete `AGENTS.md` contents. Claude probes used a local SSE mock in an unshared network namespace, with zero routes, external `ENETUNREACH`, no tools, and session persistence disabled. The manifests record hashes of the exact instruction bytes captured by those historical probes; they describe that snapshot and do not prove that later text was loaded.
 
 These probes establish file inclusion and ordering, not semantic obedience to every rule or behavior of future CLI versions. The rule/claim gate and negative tests separately check source coverage, destination evidence, missing files, non-loaded scope, and contradictory scoped instructions.
 
 ## Consequences
 
-Relevant implementation context is available near the owned code without making legal, privacy, operator, release, or retention safety depend on nested loading. The traceability sidecar and checker become the maintenance gate for future root reductions and scope changes. Changes to instruction files or agent versions require fresh loader evidence.
+Relevant implementation context is available near the owned code without making legal, privacy, operator, release, or retention safety depend on nested loading. The traceability sidecar and checker become the maintenance gate for future root reductions and scope changes. Re-run loader probes after a scoped-path, relevant CLI-version, worktree-layout, task-context, or precedence change; content-only edits at an unchanged path do not require a new discovery probe. Follow `docs/agent-instructions/CONTEXT-LOADING.md` for the full refresh conditions.
 
 ## Rollback
 

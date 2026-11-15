@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
 import { AGENT_FILES, agentPolicyProblems } from './check-agent-policy.mjs'
@@ -937,6 +937,36 @@ test('all scoped instruction and traceability paths route through CI policy', ()
     for (const file of candidates)
         assert.ok(policy.test(file), file + ' does not trigger policy CI')
     assert.equal(policy.test('README.md'), false)
+})
+
+test('blockquoted destination text cannot satisfy source evidence', () => {
+    const tempRoot = mkdtempSync(path.join(ROOT, '.tmp-agent-evidence-'))
+    const destination = path.join(tempRoot, 'apps/web/AGENTS.md')
+    mkdirSync(path.dirname(destination), { recursive: true })
+    const claim = 'Persist browser state only in the approved IndexedDB store.'
+    const evidence = {
+        rules: [{ id: 'R-1', destination_paths: ['apps/web/AGENTS.md'] }],
+        source_claims: [
+            {
+                claim_id: 'C-1',
+                parent_rule_id: 'R-1',
+                source_claim: claim,
+                destination_evidence: [{ path: 'apps/web/AGENTS.md', anchor: claim }],
+            },
+        ],
+    }
+    try {
+        writeFileSync(destination, `> ${claim}\n`)
+        assert.ok(
+            sourceDestinationCoverageProblems(evidence, tempRoot).some((problem) =>
+                problem.includes('C-1: source claim has no exact or anchored evidence'),
+            ),
+        )
+        writeFileSync(destination, claim)
+        assert.deepEqual(sourceDestinationCoverageProblems(evidence, tempRoot), [])
+    } finally {
+        rmSync(tempRoot, { recursive: true, force: true })
+    }
 })
 
 test('every normative source claim has exact or anchored evidence at a declared destination', () => {

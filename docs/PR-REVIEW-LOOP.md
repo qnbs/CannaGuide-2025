@@ -135,8 +135,14 @@ CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only whe
 ```bash
 PR_NUMBER=$(gh pr view --json number --jq .number)
 HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
-gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate \
-  | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at]) | group_by(.user.login) | map(last) | map(select(.state!="DISMISSED")) | .[] | {user:.user.login, state}'
+REVIEW_COVERAGE=$(gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate \
+  | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at]) | group_by(.user.login) | map(last) | map(select(.state!="DISMISSED")) | .[] | {user:.user.login, state}')
+RECHECK_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
+if [ "$RECHECK_HEAD_SHA" != "$HEAD_SHA" ]; then
+  echo "PR head changed during review coverage read; rerun against the new head." >&2
+  exit 1
+fi
+printf '%s\n' "$REVIEW_COVERAGE"
 ```
 
 Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once on the pull. Two other reviewers do not replace that request. A dismissed review does not count. Do not send a second `@codex review` while the first request has not attached a review on that head. A review of an older commit does not cover the current head. That comment is not a CodeRabbit full review.

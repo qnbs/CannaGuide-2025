@@ -20,7 +20,9 @@ function coverageFilter() {
     assert.match(program, /codeant-ai\[bot\]/)
     assert.match(program, /chatgpt-codex-connector\[bot\]/)
     assert.doesNotMatch(program, /unique_by/)
-    const filter = program.replace(/^.*\| jq -s --arg head \"\$HEAD_SHA\" '/, '').replace(/'$/, '')
+    const filter = program
+        .replace(/^.*\| jq -s --arg head \"\$HEAD_SHA\" '/, '')
+        .replace(/'\)$/, '')
     return filter
 }
 
@@ -42,6 +44,20 @@ test('review coverage reads the current GitHub PR head rather than local HEAD', 
         runbook.includes('HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)'),
     )
     assert.ok(!runbook.includes('HEAD_SHA=$(git rev-parse HEAD)'))
+})
+
+test('review coverage rechecks the PR head before reporting results', () => {
+    const initialRead = runbook.indexOf('HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid')
+    const reviewRead = runbook.indexOf('REVIEW_COVERAGE=$(gh api')
+    const finalRead = runbook.indexOf(
+        'RECHECK_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid',
+    )
+    const mismatchGuard = runbook.indexOf('if [ "$RECHECK_HEAD_SHA" != "$HEAD_SHA" ]; then')
+    const output = runbook.indexOf(`printf '%s\\n' "$REVIEW_COVERAGE"`)
+
+    assert.ok(initialRead >= 0 && initialRead < reviewRead)
+    assert.ok(reviewRead < finalRead && finalRead < mismatchGuard && mismatchGuard < output)
+    assert.ok(runbook.includes('exit 1'))
 })
 
 test('the documented query keeps the newest review per bot login on the head', () => {

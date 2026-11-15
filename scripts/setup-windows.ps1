@@ -18,7 +18,7 @@ function Test-Command($name) {
 }
 
 if (-not (Test-Command 'node')) {
-    Write-Error 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows, then rerun setup.'
+    Write-Error 'Node.js not found. Install Node.js >=24.15.0 <25 from https://nodejs.org or use fnm-windows, then rerun setup.'
     exit 1
 }
 

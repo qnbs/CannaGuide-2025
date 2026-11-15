@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { nodeSatisfiesDeclaredEngines } from './agent-doctor.mjs'
 import { installedManagerFor } from './git-hooks/dependency-state.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -17,7 +18,9 @@ if (!isWindows) {
     process.exit(0)
 }
 
-const packageManager = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).packageManager
+const packageJson = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+const packageManager = packageJson.packageManager
+const enginesNode = packageJson.engines?.node
 const normalizedPackageManager = installedManagerFor(packageManager)
 if (!normalizedPackageManager) {
     console.error(
@@ -45,11 +48,13 @@ const run = (cmd, args, opts = {}) =>
 console.log('=== CannaGuide Windows Doctor ===\n')
 
 const nodeVer = process.version
-const major = Number(nodeVer.slice(1).split('.')[0])
-if (major >= 24) {
-    ok(`Node ${nodeVer} (matches engines >=24)`)
+if (nodeSatisfiesDeclaredEngines(nodeVer, enginesNode)) {
+    ok(`Node ${nodeVer} (matches engines.node ${enginesNode})`)
 } else {
-    warn(`Node ${nodeVer} — CI uses Node 24; install nvm-windows or fnm and switch to 24.x`)
+    bad(
+        `Node ${nodeVer} does not satisfy package.json engines.node '${enginesNode ?? 'missing'}'; ` +
+            'install a supported version using nvm-windows or fnm.',
+    )
 }
 
 const pnpm = run('corepack', ['pnpm', '--version'], { cwd: root })

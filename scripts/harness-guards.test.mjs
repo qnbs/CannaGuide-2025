@@ -48,9 +48,40 @@ test('declared node engines accept 24.15 through 24.x and reject 24.14 and 25', 
     assert.equal(nodeSatisfiesDeclaredEngines('v24.21.0', range), true)
     assert.equal(nodeSatisfiesDeclaredEngines('24.14.0', range), false)
     assert.equal(nodeSatisfiesDeclaredEngines('25.0.0', range), false)
+    assert.equal(nodeSatisfiesDeclaredEngines('26.0.0', range), false)
     assert.equal(nodeSatisfiesDeclaredEngines('22.22.2', range), false)
+    assert.equal(nodeSatisfiesDeclaredEngines('24.15.0-rc.1', range), false)
+    assert.equal(nodeSatisfiesDeclaredEngines('24.15.0', 'invalid range'), false)
     assert.equal(nodeSatisfiesDeclaredEngines('24.0.0', '>=24'), true)
     assert.equal(nodeSatisfiesDeclaredEngines('22.0.0', '>=24'), false)
+})
+
+test('Windows doctor and setup enforce the repository Node engine range', () => {
+    const rootPackage = JSON.parse(readFileSync('package.json', 'utf8'))
+    const windowsDoctor = readFileSync('scripts/windows-doctor.mjs', 'utf8')
+    const windowsSetup = readFileSync('scripts/setup-windows.ps1', 'utf8')
+
+    assert.equal(rootPackage.engines.node, '>=24.15.0 <25')
+    assert.match(windowsDoctor, /const enginesNode = packageJson\.engines\?\.node/)
+    assert.match(windowsDoctor, /nodeSatisfiesDeclaredEngines\(\s*nodeVer,\s*enginesNode\s*\)/)
+    assert.doesNotMatch(windowsDoctor, /major\s*>=\s*24/)
+    assert.match(windowsSetup, /Node\.js >=24\.15\.0 <25/)
+    assert.doesNotMatch(windowsSetup, /Node 24\+/)
+
+    for (const [version, expected] of [
+        ['24.14.9', false],
+        ['24.15.0', true],
+        ['24.22.3', true],
+        ['24.99.0', true],
+        ['25.0.0', false],
+        ['26.11.0', false],
+    ]) {
+        assert.equal(
+            nodeSatisfiesDeclaredEngines(version, rootPackage.engines.node),
+            expected,
+            `Node ${version}`,
+        )
+    }
 })
 
 test('playwright test and component packages stay on one release line', () => {

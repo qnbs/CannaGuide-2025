@@ -2194,7 +2194,8 @@ test('a preview delete re-checks current aliases and allows only an inert branch
         ],
     })
     const allowed = vercelApi({
-        detail: { target: 'preview' },
+        // The live Vercel v13 API returns null for current Preview deployments.
+        detail: { target: null },
         aliases: { aliases: [{ alias: branchAlias }] },
     })
     const results = await deleteProvenDeployments({
@@ -2210,7 +2211,7 @@ test('a preview delete re-checks current aliases and allows only an inert branch
 
     for (const extra of ['archive.example.com', 'canna-guide-2025-web.vercel.app']) {
         const blocked = vercelApi({
-            detail: { target: 'preview' },
+            detail: { target: null },
             aliases: { aliases: [{ alias: branchAlias }, { alias: extra }] },
         })
         await assert.rejects(
@@ -2230,6 +2231,27 @@ test('a preview delete re-checks current aliases and allows only an inert branch
             extra,
         )
     }
+
+    const missingTarget = vercelApi({
+        detail: {},
+        aliases: { aliases: [{ alias: branchAlias }] },
+    })
+    await assert.rejects(
+        () =>
+            deleteProvenDeployments({
+                backend: 'vercel',
+                plan,
+                ids: ['merged-branch-alias'],
+                token: 'test-token',
+                teamId: 'team_test',
+                fetchImpl: missingTarget.fetchImpl,
+            }),
+        /production or unknown target is protected/,
+    )
+    assert.deepEqual(
+        missingTarget.calls.map((call) => call.method),
+        ['GET'],
+    )
 })
 
 test('the dry-run gate check reports would-delete and would-refuse without deleting', async () => {

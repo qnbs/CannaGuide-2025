@@ -253,7 +253,7 @@ export async function assertStillDisposable({
     const body = await readJson(response)
     if (response.status === 404) return { skip: true, id: safeId }
     if (!response.ok) throw new Error(`refusing to delete ${safeId}: live Vercel lookup failed`)
-    if (body.target !== 'preview') {
+    if (body.target !== 'preview' && body.target !== null) {
         throw new Error(
             'refusing to delete ' + safeId + ': production or unknown target is protected',
         )

@@ -803,6 +803,31 @@ export function claudeLoaderEvidenceProblems(evidence, currentHashes, expectedBa
         if (JSON.stringify(context.marker_order) !== JSON.stringify(expected.order)) {
             problems.push('Claude prompt precedence order differs for ' + name)
         }
+        const locationFor = (marker) => {
+            const observed = context.marker_results?.[marker]
+            const payload = /^\$\.messages\[(\d+)\]\.content\[(\d+)\]\.text$/.exec(
+                observed?.payload_path || '',
+            )
+            if (!payload || !Number.isInteger(observed?.position)) return null
+            return [Number(payload[1]), Number(payload[2]), observed.position]
+        }
+        const comesBefore = (leftMarker, rightMarker) => {
+            const left = locationFor(leftMarker)
+            const right = locationFor(rightMarker)
+            if (!left || !right) return false
+            return (
+                left[0] < right[0] ||
+                (left[0] === right[0] &&
+                    (left[1] < right[1] || (left[1] === right[1] && left[2] < right[2])))
+            )
+        }
+        if (
+            expected.order
+                .slice(1)
+                .some((marker, index) => !comesBefore(expected.order[index], marker))
+        ) {
+            problems.push('Claude prompt marker positions contradict precedence order for ' + name)
+        }
     }
     // The recorded digest identifies bytes captured by the historical probe. A later
     // content-only edit does not change loader discovery; paths, order, and scope are checked above.
@@ -1327,7 +1352,13 @@ function conflictMatchIsNegated(clause, index, length) {
 export function scopedInstructionConflictProblems(scopedFiles) {
     const problems = []
     for (const [file, text] of Object.entries(scopedFiles || {})) {
-        for (const sourceLine of String(text || '').split('\n')) {
+        const normalizedText = normativePolicyText(text)
+            .split(/\n[ \t]*\n/)
+            .map((paragraph) =>
+                paragraph.replace(/\n[ \t]*/g, ' ').replace(/(?<=[.!?]) (?=[A-Z])/g, '\n'),
+            )
+            .join('\n')
+        for (const sourceLine of normalizedText.split('\n')) {
             const line = sourceLine.replace(LOCAL_ONLY_CONDITION_BEFORE_EGRESS_ACTION, '$1 ')
             const labels = new Set()
             for (const clause of line.split(CONFLICT_CLAUSE_BOUNDARY)) {

@@ -1,8 +1,12 @@
 const TAB_ID_KEY = 'cannaguide.persistenceTabId'
 const FAILURE_MARKER_PREFIX = 'cannaguide.pendingSnapshotSaveFailure:'
+const RUNTIME_TAB_ID_KEY = '__cannaguidePersistenceFailureTabId'
 
 let fallbackTabId: string | undefined
 const closedTabSessions = new Set<string>()
+const runtimeGlobal = globalThis as typeof globalThis & {
+    __cannaguidePersistenceFailureTabId?: string
+}
 
 const createTabId = (): string => {
     try {
@@ -15,14 +19,35 @@ const createTabId = (): string => {
 
 /** Stable across reloads in this tab, distinct across normal tab sessions. */
 export const getPersistenceFailureMarkerTabId = (): string => {
+    if (runtimeGlobal[RUNTIME_TAB_ID_KEY]) return runtimeGlobal[RUNTIME_TAB_ID_KEY]
+
     try {
         const existing = sessionStorage.getItem(TAB_ID_KEY)
-        if (existing) return existing
-        const created = createTabId()
-        sessionStorage.setItem(TAB_ID_KEY, created)
-        return created
+        let navigationType: PerformanceNavigationTiming['type'] | undefined
+        try {
+            const navigationEntry = performance.getEntriesByType('navigation')[0]
+            if (
+                navigationEntry &&
+                'type' in navigationEntry &&
+                (navigationEntry.type === 'navigate' ||
+                    navigationEntry.type === 'reload' ||
+                    navigationEntry.type === 'back_forward')
+            ) {
+                navigationType = navigationEntry.type
+            }
+        } catch {
+            // Keep the stored ID when navigation metadata is unavailable.
+        }
+        // A new browsing context opened by an existing same-origin page can inherit a
+        // copy of its sessionStorage. It starts with a navigation, while a reload keeps
+        // the existing browsing-context identity.
+        const tabId = existing && navigationType !== 'navigate' ? existing : createTabId()
+        if (tabId !== existing) sessionStorage.setItem(TAB_ID_KEY, tabId)
+        runtimeGlobal[RUNTIME_TAB_ID_KEY] = tabId
+        return tabId
     } catch {
         fallbackTabId ??= createTabId()
+        runtimeGlobal[RUNTIME_TAB_ID_KEY] = fallbackTabId
         return fallbackTabId
     }
 }
@@ -102,7 +127,7 @@ export const markPendingSnapshotSaveFailure = (tabId: string): void => {
     const current = readMarker(tabId)
     writeMarker({
         tabId,
-        token: current?.token ?? createTabId(),
+        token: current?.warningState === 'unpresented' ? current.token : createTabId(),
         warningState: 'unpresented',
         ownerClosed: closedTabSessions.has(tabId),
     })

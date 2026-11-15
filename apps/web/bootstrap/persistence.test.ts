@@ -12,6 +12,10 @@ import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
+const runtimeTabContext = globalThis as typeof globalThis & {
+    __cannaguidePersistenceFailureTabId?: string
+}
+
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
 
@@ -65,6 +69,7 @@ describe('persisted settings snapshot (#654)', () => {
         vi.clearAllMocks()
         localStorage.clear()
         sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
         // These tests save without a revision, as the writer-lock holder may; the
         // revision check itself is covered in stores/snapshotRevision.test.ts.
         setUncheckedWritePermit(() => true)
@@ -97,6 +102,7 @@ describe('a save that fails (GH #686)', () => {
         vi.clearAllMocks()
         localStorage.clear()
         sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
         setUncheckedWritePermit(() => true)
     })
 
@@ -129,6 +135,7 @@ describe('a save that fails (GH #686)', () => {
         const onSaveFailure = vi.fn()
         const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
         sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
         const otherTabFlush = setupPersistedStateSync(storeWithKey())
         vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
 
@@ -177,6 +184,7 @@ describe('a save that fails (GH #686)', () => {
         })
         const failedTabFlush = setupPersistedStateSync(storeWithKey())
         sessionStorage.clear()
+        delete runtimeTabContext.__cannaguidePersistenceFailureTabId
         const otherTabFlush = setupPersistedStateSync(storeWithKey())
         vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
 
@@ -215,6 +223,32 @@ describe('a save that fails (GH #686)', () => {
         expect(getPendingSnapshotSaveFailureMarkers()).toEqual(capturedFailures)
 
         markSnapshotSaveFailurePresented(capturedFailures[0]!)
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([])
+    })
+
+    it('gives a new failure after presentation a new token so a successful retry resolves it', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const tabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(tabFlush()).resolves.toBe(false)
+        const capturedFailure = getPendingSnapshotSaveFailureMarkers()[0]!
+
+        const startupFlush = setupPersistedStateSync(storeWithKey(), undefined, undefined, [
+            capturedFailure,
+        ])
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([capturedFailure])
+
+        markSnapshotSaveFailurePresented(capturedFailure)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(tabFlush()).resolves.toBe(false)
+        const retriedFailure = getPendingSnapshotSaveFailureMarkers()[0]!
+        expect(retriedFailure.token).not.toBe(capturedFailure.token)
+        expect(retriedFailure.warningState).toBe('unpresented')
+
         vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
         await expect(startupFlush()).resolves.toBe(true)
         expect(getPendingSnapshotSaveFailureMarkers()).toEqual([])

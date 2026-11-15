@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
     activatePersistenceFailureTab,
     clearSnapshotSaveFailureForTab,
@@ -9,10 +9,17 @@ import {
     markSnapshotSaveFailurePresented,
 } from './persistenceFailureMarker'
 
+const TAB_ID_KEY = 'cannaguide.persistenceTabId'
+const runtimeState = globalThis as typeof globalThis & {
+    __cannaguidePersistenceFailureTabId?: string
+}
+
 describe('persistence failure marker lifecycle (#669)', () => {
     beforeEach(() => {
+        vi.restoreAllMocks()
         localStorage.clear()
         sessionStorage.clear()
+        delete runtimeState.__cannaguidePersistenceFailureTabId
     })
 
     it('keeps an unresolved marker after presentation while its owner tab is active', () => {
@@ -44,6 +51,7 @@ describe('persistence failure marker lifecycle (#669)', () => {
         expect(getPendingSnapshotSaveFailureMarkers()).toEqual([{ ...failure, ownerClosed: true }])
 
         sessionStorage.clear()
+        delete runtimeState.__cannaguidePersistenceFailureTabId
         const nextTabId = getPersistenceFailureMarkerTabId()
         activatePersistenceFailureTab(nextTabId)
         expect(nextTabId).not.toBe(ownerTabId)
@@ -61,6 +69,7 @@ describe('persistence failure marker lifecycle (#669)', () => {
         const failure = getPendingSnapshotSaveFailureMarkers()[0]!
 
         sessionStorage.clear()
+        delete runtimeState.__cannaguidePersistenceFailureTabId
         const otherTabId = getPersistenceFailureMarkerTabId()
         activatePersistenceFailureTab(otherTabId)
         expect(otherTabId).not.toBe(ownerTabId)
@@ -76,6 +85,34 @@ describe('persistence failure marker lifecycle (#669)', () => {
         expect(getPendingSnapshotSaveFailureMarkers()).toEqual([
             { ...failure, warningState: 'presented', ownerClosed: true },
         ])
+    })
+
+    it('assigns a distinct ID to a new tab with cloned session storage', () => {
+        const ownerTabId = getPersistenceFailureMarkerTabId()
+        markPendingSnapshotSaveFailure(ownerTabId)
+        const ownerFailure = getPendingSnapshotSaveFailureMarkers()[0]!
+
+        // An opener may clone sessionStorage into a new same-origin browsing context.
+        sessionStorage.setItem(TAB_ID_KEY, ownerTabId)
+        delete runtimeState.__cannaguidePersistenceFailureTabId
+        vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+            { type: 'navigate' } as PerformanceNavigationTiming,
+        ])
+
+        const clonedTabId = getPersistenceFailureMarkerTabId()
+        expect(clonedTabId).not.toBe(ownerTabId)
+
+        clearSnapshotSaveFailureForTab(clonedTabId)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([ownerFailure])
+    })
+
+    it('preserves the tab ID across a document reload', () => {
+        sessionStorage.setItem(TAB_ID_KEY, 'reloading-tab')
+        vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+            { type: 'reload' } as PerformanceNavigationTiming,
+        ])
+
+        expect(getPersistenceFailureMarkerTabId()).toBe('reloading-tab')
     })
 
     it('does not let a stale presentation retire a newer failure token', () => {

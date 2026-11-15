@@ -1077,6 +1077,9 @@ const SCOPED_CONFLICTS = [
     ],
 ]
 
+const LOCAL_ONLY_UNSAFE_EXCEPTION =
+    /\ballow\w*\b.{0,80}\bmodel downloads?\b.{0,80}\bexcept when\b.{0,80}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:disabled|off)\b/i
+
 function conflictMatchIsNegated(clause, index, length) {
     const lastBoundary = [...clause.slice(0, index).matchAll(/[.!?](?=\s)/g)].at(-1)
     const before = clause.slice(lastBoundary ? lastBoundary.index + 1 : 0, index)
@@ -1122,6 +1125,13 @@ export function scopedInstructionConflictProblems(scopedFiles) {
                         offset = match.index + 1
                     }
                 }
+            }
+            const unsafeException = LOCAL_ONLY_UNSAFE_EXCEPTION.exec(line)
+            if (
+                unsafeException &&
+                !conflictMatchIsNegated(line, unsafeException.index, unsafeException[0].length)
+            ) {
+                labels.add('Local-Only model network egress')
             }
             for (const label of labels)
                 problems.push(file + ': contradicts global safeguard: ' + label)

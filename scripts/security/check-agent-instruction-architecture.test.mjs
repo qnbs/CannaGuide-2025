@@ -685,6 +685,7 @@ test('Local-Only model downloads cannot be authorized by scoped instructions', (
         'Allow model downloads in Local-Only mode.',
         'Allow model downloads only when Local-Only mode is enabled.',
         'Allow model downloads only when Local-Only mode is on.',
+        'Allow model downloads except when Local-Only mode is disabled.',
     ]) {
         assert.ok(
             scopedInstructionConflictProblems({ [path]: unsafeText }).some((problem) =>
@@ -695,6 +696,7 @@ test('Local-Only model downloads cannot be authorized by scoped instructions', (
     }
     for (const safeText of [
         'Do not allow model downloads when Local-Only mode is enabled.',
+        'Do not allow model downloads except when Local-Only mode is disabled.',
         'Allow model downloads only when the user explicitly authorizes them and Local-Only mode is disabled.',
         'Allow model downloads only when Local-Only mode is off.',
         'Allow model downloads except when Local-Only mode is enabled.',

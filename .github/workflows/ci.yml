@@ -151,7 +151,7 @@ jobs:
                   # instruction files. They are listed so a guide-only or
                   # architecture-only edit still runs cursor-project-config.test.mjs.
                   # README.md stays a plain doc.
-                   POLICY_PATHS='(^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/ARCHITECTURE\.md$|^docs/DEVOPS-GATES\.md$|^docs/GRAPHIFY-COMPLETE-GUIDE\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/|(^|.*/)(AGENTS|CLAUDE)\.md$|^docs/agent-instructions/|^scripts/security/(check-agent-(policy|instruction-architecture)(\.test)?|traceability-integrity\.test|review-coverage\.test)\.mjs$|^\.github/workflows/ci\.yml$)'
+                   POLICY_PATHS='(^CHANGELOG\.md$|^AGENTS\.md$|^CLAUDE\.md$|^CONTRIBUTING\.md$|^SECURITY\.md$|^\.github/copilot-instructions\.md$|^\.github/CI-AUDIT\.md$|^\.github/workflows/README\.md$|^docs/ARCHITECTURE\.md$|^docs/DEVOPS-GATES\.md$|^docs/GRAPHIFY-COMPLETE-GUIDE\.md$|^docs/PR-REVIEW-LOOP\.md$|^docs/release-process\.md$|^graphify-out/|(^|.*/)(AGENTS|CLAUDE)\.md$|^docs/agent-instructions/|^scripts/security/(check-agent-(policy|instruction-architecture)(\.test)?|traceability-integrity\.test|review-coverage\.test)\.mjs$|^\.github/workflows/ci\.yml$)'
                   set +e
                   POLICY=$(printf '%s\n' "$CHANGED" | grep -E "$POLICY_PATHS")
                   POLICY_STATUS=$?

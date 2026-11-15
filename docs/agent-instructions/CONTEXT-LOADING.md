@@ -1,1 +1,17 @@
-# Agent instruction loading and task context\n\n## Claude Code\n\nThe recorded Claude Code CLI probes verify root plus applicable ancestor CLAUDE.md markers in the ten listed work directories, in ancestor-first order. Treat this as evidence for those CLI versions and paths only. It does not prove semantic adherence or arbitrary multi-directory loading.\n\n## Codex\n\nThe recorded Codex probes verify the expected root and nested AGENTS.md paths for ten working directories. CLAUDE.md is not a Codex authority. For a multi-area task, inspect the AGENTS.md chain for every edited subtree and follow the narrowest applicable constraints in addition to the root contract.\n\n## Shared safeguards\n\nRoot AGENTS.md and CLAUDE.md remain the global safety contract. Scoped files add detail and cannot relax legal, privacy, user-data, operator-lease, signing, hook, CI, release, accessibility or SAFE-retention requirements.\n\n## Refresh conditions\n\nRe-run the recorded loader probes after changing a scoped path, upgrading the relevant CLI, changing worktree layout, adding a new task context, or changing instruction precedence. File hashes and expected markers are maintained in the adjacent loader-evidence JSON and checked in CI.\n
+# Agent instruction loading and task context
+
+## Claude Code
+
+The recorded Claude Code CLI probes verify root plus applicable ancestor CLAUDE.md markers in the ten listed work directories, in ancestor-first order. Treat this as evidence for those CLI versions and paths only. It does not prove semantic adherence or arbitrary multi-directory loading.
+
+## Codex
+
+The recorded Codex probes verify the expected root and nested AGENTS.md paths for ten working directories. CLAUDE.md is not a Codex authority. For a multi-area task, inspect the AGENTS.md chain for every edited subtree and follow the narrowest applicable constraints in addition to the root contract.
+
+## Shared safeguards
+
+Root AGENTS.md and CLAUDE.md remain the global safety contract. Scoped files add detail and cannot relax legal, privacy, user-data, operator-lease, signing, hook, CI, release, accessibility or SAFE-retention requirements.
+
+## Refresh conditions
+
+Re-run the recorded loader probes after changing a scoped path, upgrading the relevant CLI, changing worktree layout, adding a new task context, or changing instruction precedence. File hashes and expected markers are maintained in the adjacent loader-evidence JSON and checked in CI.

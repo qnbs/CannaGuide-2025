@@ -415,7 +415,6 @@ test('destination paths fail closed for missing, unsafe, nonexistent and unrende
             problem.includes('destination does not exist'),
         ),
     )
-    const unrendered = markdown.replace(/^\|\s*A-001\s*\|.*\n/m, '')
     const destinationSection = markdown.indexOf('## Destination path traceability')
     const withoutDestinationA001 =
         markdown.slice(0, destinationSection) +

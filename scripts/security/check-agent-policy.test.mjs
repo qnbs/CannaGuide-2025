@@ -13,12 +13,14 @@ import {
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const read = (rel) => readFileSync(path.join(ROOT, rel), 'utf8')
 
+const REVIEW_GATE =
+    '**Two-reviewer gate:** Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head.'
 const REVIEW_SENTENCE = [
-    'Do not merge until two of CodeRabbit, CodeAnt, and Codex have covered the current head.',
+    REVIEW_GATE,
     'REVIEW_UNAVAILABLE is not a green check, and it is not a merge block once two of them have covered.',
     'Do not merge a head that none of the three has reviewed.',
     'When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once.',
-].join(' ')
+].join('\n')
 const SOUND_AGENTS = [
     '### Authority and trust (all agents)',
     '- One source writer (Linear QNB-259). Codex, Cursor and Copilot are read-only reviewers.',
@@ -246,9 +248,26 @@ test('a CI Status requirement must name jobs ci-status actually needs', () => {
     assert.deepEqual(agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': current }, { needs }), [])
 })
 
+test('review coverage must be a positive normative line, not quoted or fenced text', () => {
+    for (const replacement of [
+        'Do not require two of CodeRabbit, CodeAnt, and Codex to cover the exact current head.',
+        '> ' + REVIEW_GATE,
+        '```md\n' + REVIEW_GATE + '\n```',
+    ]) {
+        const fixture = REVIEW_SENTENCE.replace(REVIEW_GATE, replacement)
+        assert.ok(
+            problemsOf({ 'docs/PR-REVIEW-LOOP.md': fixture }).some((problem) =>
+                problem.includes('missing two-reviewer coverage'),
+            ),
+            `non-normative reviewer text passed: ${replacement}`,
+        )
+    }
+    assert.equal(problemsOf({ 'docs/PR-REVIEW-LOOP.md': REVIEW_SENTENCE }).length, 0)
+})
+
 test('two-reviewer exact-head coverage is required in AGENTS, CLAUDE, and the review runbook', () => {
     const weakened = REVIEW_SENTENCE.replace(
-        'two of CodeRabbit, CodeAnt, and Codex have covered',
+        'two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head',
         'one reviewer has covered',
     )
         .replace('REVIEW_UNAVAILABLE is not a green check', 'REVIEW_UNAVAILABLE is a green check')

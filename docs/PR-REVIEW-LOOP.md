@@ -4,6 +4,8 @@ Standing procedure for every pull request in this repository. It applies to **al
 
 The loop is not "read the comments and reply". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head**, that coverage left no undispositioned finding, and **zero unresolved threads** remain from any reviewer that attached a finding. A reviewer that is expired, skipped, or silent does not add a thread or a block once those two are covered. `REVIEW_UNAVAILABLE` is not a green check and is not a merge block once two of those reviewers have covered the head. A false positive refuted with evidence and resolved without a code change is dispositioned and does not require another fresh review. Section 5 defines when one is due.
 
+**Two-reviewer gate:** Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head.
+
 A Sourcery quota skip or CodeRabbit skip on a non-default base is a recorded availability limit, not clean review evidence; classify it as `REVIEW_UNAVAILABLE`.
 
 ---
@@ -27,12 +29,14 @@ A Sourcery quota skip or CodeRabbit skip on a non-default base is a recorded ava
 
 ## 1. Before pushing: keep the PR reviewable
 
-- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Count this pull against its remote base, not a stale local `main`:
+- **Under ~100 changed files.** Review bots silently skip inline comments on larger PRs, so the loop never starts. Count this pull against its remote base, not a stale local `main`. Do not cascade tiny pushes while the current head is still being reviewed or tested:
 
     ```bash
-    # Stacked pull: this pull, counted against its parent.
-    git rev-list --count "$(git merge-base origin/<parent> HEAD)"..HEAD
-    git diff --name-only "$(git merge-base origin/<parent> HEAD)"...HEAD | wc -l
+    # Stacked pull: count this pull against its parent, then the whole stack against main.
+    PARENT_BRANCH=feature/previous
+    PARENT_REF="origin/${PARENT_BRANCH}"
+    git rev-list --count "$(git merge-base "$PARENT_REF" HEAD)"..HEAD
+    git diff --name-only "$(git merge-base "$PARENT_REF" HEAD)"...HEAD | wc -l
     # Against origin/main. For a stacked pull this is the whole stack.
     git rev-list --count "$(git merge-base origin/main HEAD)"..HEAD
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
@@ -129,8 +133,10 @@ Do not request a full bot review after every intermediate fix.
 CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once, keeping that login's newest review. `unique_by` would keep the oldest. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:
 
 ```bash
-gh api repos/qnbs/CannaGuide-2025/pulls/<N>/reviews --paginate \
-  | jq -s '[.[][] | select(.commit_id=="<HEAD>" and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")) and .state!="DISMISSED")] | group_by(.user.login) | map(last) | .[] | {user:.user.login, state}'
+PR_NUMBER=$(gh pr view --json number --jq .number)
+HEAD_SHA=$(git rev-parse HEAD)
+gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate \
+  | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at]) | group_by(.user.login) | map(last) | map(select(.state!="DISMISSED")) | .[] | {user:.user.login, state}'
 ```
 
 Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once on the pull. Two other reviewers do not replace that request. A dismissed review does not count. Do not send a second `@codex review` while the first request has not attached a review on that head. A review of an older commit does not cover the current head. That comment is not a CodeRabbit full review.

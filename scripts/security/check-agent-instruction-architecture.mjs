@@ -16,6 +16,7 @@ export const SCOPED_INSTRUCTION_FILES = [
     'apps/web/services/local-ai/CLAUDE.md',
     'apps/web/services/worker-bus/CLAUDE.md',
     'apps/web/data/strains/CLAUDE.md',
+    'apps/web/data/strains/AGENTS.md',
     'apps/desktop/CLAUDE.md',
     'apps/desktop/AGENTS.md',
     'packages/ai-core/CLAUDE.md',
@@ -377,7 +378,7 @@ const CODEX_LOADER_CONTEXTS = {
     database: ['AGENTS.md', 'apps/web/AGENTS.md', 'apps/web/services/db/AGENTS.md'],
     local_ai: ['AGENTS.md', 'apps/web/AGENTS.md'],
     worker_bus: ['AGENTS.md', 'apps/web/AGENTS.md'],
-    strains: ['AGENTS.md', 'apps/web/AGENTS.md'],
+    strains: ['AGENTS.md', 'apps/web/AGENTS.md', 'apps/web/data/strains/AGENTS.md'],
     desktop: ['AGENTS.md', 'apps/desktop/AGENTS.md'],
     ai_core: ['AGENTS.md'],
     scripts: ['AGENTS.md', 'scripts/AGENTS.md'],
@@ -504,7 +505,7 @@ export const PR777_ADOPTION_REQUIREMENTS = [
         label: 'remote-parent and whole-stack counting',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-010 adoption anchor',
         pattern:
-            /git merge-base origin\/<parent> HEAD[\s\S]{0,250}git merge-base origin\/main HEAD/,
+            /PARENT_BRANCH=feature\/previous[\s\S]{0,100}PARENT_REF=\"origin\/\$\{PARENT_BRANCH\}\"[\s\S]{0,160}git merge-base \"\$PARENT_REF\" HEAD[\s\S]{0,180}git merge-base origin\/main HEAD/,
     },
     {
         id: 'P-011',
@@ -517,9 +518,9 @@ export const PR777_ADOPTION_REQUIREMENTS = [
     {
         id: 'P-012',
         file: 'CHANGELOG.md',
-        label: 'Unreleased review-loop changelog entry',
+        label: 'retained review-loop changelog entry',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-012 adoption anchor',
-        pattern: /## \[Unreleased\][\s\S]{0,2500}\*\*docs\(review\):\*\*/,
+        pattern: /\*\*docs\(review\):\*\*[^\n]{0,800}stable pull-request head/i,
     },
     {
         id: 'P-013',
@@ -961,14 +962,38 @@ const SCOPED_CONFLICTS = [
     ],
 ]
 
+function clauseBounds(text, index) {
+    const boundary = /[;.!?]|\b(?:but|however|instead|then|unless|otherwise|except)\b/gi
+    let start = 0
+    let end = text.length
+    for (const match of text.matchAll(boundary)) {
+        if (match.index < index) start = match.index + match[0].length
+        else {
+            end = match.index
+            break
+        }
+    }
+    return { start, end }
+}
+
+function conflictMatchIsNegated(line, index, length) {
+    const { start, end } = clauseBounds(line, index)
+    const before = line.slice(start, index)
+    const after = line.slice(index + length, end)
+    return (
+        NEGATED_POLICY_LANGUAGE.test(before) ||
+        /\b(?:is|are)\s+(?:not allowed|prohibited|forbidden|unsupported)\b/i.test(after)
+    )
+}
+
 /** Reject affirmative scoped guidance that contradicts repository-wide safeguards. */
 export function scopedInstructionConflictProblems(scopedFiles) {
     const problems = []
     for (const [file, text] of Object.entries(scopedFiles || {})) {
         for (const line of String(text || '').split('\n')) {
-            if (NEGATED_POLICY_LANGUAGE.test(line)) continue
             for (const [label, pattern] of SCOPED_CONFLICTS) {
-                if (pattern.test(line))
+                const match = pattern.exec(line)
+                if (match && !conflictMatchIsNegated(line, match.index, match[0].length))
                     problems.push(file + ': contradicts global safeguard: ' + label)
             }
         }
@@ -1079,6 +1104,94 @@ export function crossAgentInvariantProblems(traceability, claudeEvidence, codexE
     return problems
 }
 
+const TRACEABILITY_STOP_WORDS = new Set([
+    'about',
+    'above',
+    'after',
+    'again',
+    'against',
+    'also',
+    'among',
+    'and',
+    'any',
+    'are',
+    'because',
+    'been',
+    'being',
+    'below',
+    'between',
+    'both',
+    'but',
+    'can',
+    'could',
+    'did',
+    'does',
+    'doing',
+    'down',
+    'each',
+    'else',
+    'for',
+    'from',
+    'further',
+    'had',
+    'has',
+    'have',
+    'here',
+    'into',
+    'its',
+    'just',
+    'more',
+    'most',
+    'much',
+    'must',
+    'only',
+    'other',
+    'over',
+    'same',
+    'some',
+    'such',
+    'than',
+    'that',
+    'the',
+    'their',
+    'them',
+    'then',
+    'there',
+    'these',
+    'they',
+    'this',
+    'those',
+    'through',
+    'under',
+    'until',
+    'upon',
+    'very',
+    'was',
+    'were',
+    'what',
+    'when',
+    'where',
+    'which',
+    'while',
+    'who',
+    'with',
+    'would',
+])
+const meaningfulTokens = (text) =>
+    new Set(
+        (
+            String(text)
+                .toLowerCase()
+                .match(/[a-z0-9]+/g) || []
+        ).filter((token) => token.length >= 4 && !TRACEABILITY_STOP_WORDS.has(token)),
+    )
+const NON_NORMATIVE_LABELS = {
+    'C-022-L296-2': {
+        source_claim: 'The rest:',
+        reason: 'The phrase “The rest:” is a structural transition label and does not impose behavior or policy.',
+    },
+}
+
 /** Prove every captured source claim survives at a declared destination. */
 export function sourceDestinationCoverageProblems(traceability, root = ROOT) {
     const problems = []
@@ -1121,13 +1234,25 @@ export function sourceDestinationCoverageProblems(traceability, root = ROOT) {
                     claim.claim_id + ': destination evidence anchor is missing from ' + item?.path,
                 )
                 validAnchors = false
+            } else {
+                const sourceTokens = meaningfulTokens(claim.source_claim)
+                const anchorTokens = meaningfulTokens(item.anchor)
+                if (![...sourceTokens].some((token) => anchorTokens.has(token))) {
+                    problems.push(
+                        claim.claim_id +
+                            ': destination evidence anchor is unrelated to its source claim',
+                    )
+                    validAnchors = false
+                }
             }
         }
         const disposition = claim.destination_disposition
+        const allowedLabel = NON_NORMATIVE_LABELS[claim.claim_id]
         const explicitNonNormative =
+            Boolean(allowedLabel) &&
             disposition?.kind === 'NON_NORMATIVE_LABEL' &&
-            typeof disposition.reason === 'string' &&
-            disposition.reason.trim().length >= 20
+            claim.source_claim === allowedLabel.source_claim &&
+            disposition.reason === allowedLabel.reason
         if (!exact && !validAnchors && !explicitNonNormative) {
             problems.push(
                 claim.claim_id +

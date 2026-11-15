@@ -131,6 +131,24 @@ test('the identified web rules remain in their scoped agent instructions', () =>
     }
 })
 
+test('STRAIN-03 is identical in Claude and Codex scoped instructions and Codex loads it', () => {
+    const parity = traceability.scoped_rule_parity?.find((item) => item.id === 'STRAIN-03')
+    assert.ok(parity, 'traceability must list STRAIN-03 cross-agent parity')
+    assert.equal(parity.source_path, 'apps/web/data/strains/CLAUDE.md')
+    assert.equal(parity.codex_path, 'apps/web/data/strains/AGENTS.md')
+    const source = read(parity.source_path)
+    const destination = read(parity.codex_path)
+    const rule = /- STRAIN-03: ([^\n]+)/
+    assert.equal(source.match(rule)?.[1], destination.match(rule)?.[1])
+    assert.ok(AGENT_FILES.includes(parity.codex_path))
+    assert.ok(SCOPED_INSTRUCTION_FILES.includes(parity.codex_path))
+    assert.ok(
+        codexLoaderEvidence.contexts
+            .find((item) => item.task_kind === 'strains')
+            ?.loaded.includes(parity.codex_path),
+    )
+})
+
 test('all #777 P-rules have concrete adoption anchors and reject removal', () => {
     const files = {
         'AGENTS.md': read('AGENTS.md'),
@@ -159,6 +177,26 @@ test('all #777 P-rules have concrete adoption anchors and reject removal', () =>
             requirement.id + ' removal was not detected',
         )
     }
+})
+
+test('P-012 changelog evidence survives long Unreleased notes and a dated release', () => {
+    const files = {
+        'AGENTS.md': read('AGENTS.md'),
+        'CLAUDE.md': read('CLAUDE.md'),
+        'docs/PR-REVIEW-LOOP.md': read('docs/PR-REVIEW-LOOP.md'),
+        'scripts/security/review-coverage.test.mjs': read(
+            'scripts/security/review-coverage.test.mjs',
+        ),
+        '.github/workflows/ci.yml': read('.github/workflows/ci.yml'),
+        'CHANGELOG.md': read('CHANGELOG.md'),
+    }
+    const padded = files['CHANGELOG.md'].replace(
+        '### Changed\n\n',
+        `### Changed\n\n${'x'.repeat(2600)}\n\n`,
+    )
+    assert.deepEqual(pr777AdoptionProblems({ ...files, 'CHANGELOG.md': padded }, traceability), [])
+    const dated = padded.replace('## [Unreleased]', '## [1.0.0] - 2026-11-15')
+    assert.deepEqual(pr777AdoptionProblems({ ...files, 'CHANGELOG.md': dated }, traceability), [])
 })
 
 test('#777 traceability separates immutable source evidence, local adoption, and live PR state', () => {
@@ -457,6 +495,11 @@ test('negative policy language can document forbidden alternatives without false
         }),
         [],
     )
+    assert.ok(
+        scopedInstructionConflictProblems({
+            'apps/web/AGENTS.md': 'Never bypass hooks; enable Gist sync to test exports.',
+        }).some((problem) => problem.includes('privacy integration activation')),
+    )
 })
 
 test('sensitive identity and credential patterns are rejected', () => {
@@ -468,6 +511,8 @@ test('sensitive identity and credential patterns are rejected', () => {
 })
 
 test('all scoped instruction and traceability paths route through CI policy', () => {
+    const policyPaths = /POLICY_PATHS='([^']+)'/.exec(read('.github/workflows/ci.yml'))?.[1]
+    assert.ok(policyPaths && new RegExp(policyPaths).test('CHANGELOG.md'))
     const ci = read('.github/workflows/ci.yml')
     const pattern = /POLICY_PATHS='([^']+)'/.exec(ci)?.[1]
     assert.ok(pattern)
@@ -514,6 +559,30 @@ test('every normative source claim has exact or anchored evidence at a declared 
     assert.ok(
         sourceDestinationCoverageProblems(missingAnchor).some((problem) =>
             problem.includes('destination evidence anchor is missing'),
+        ),
+    )
+    const unrelatedAnchor = structuredClone(traceability)
+    unrelatedAnchor.source_claims.find(
+        (claim) => claim.claim_id === 'A-016-L142-1',
+    ).destination_evidence[0].anchor = 'For web-only development, run'
+    assert.ok(
+        sourceDestinationCoverageProblems(unrelatedAnchor).some((problem) =>
+            problem.includes('A-016-L142-1: destination evidence anchor is unrelated'),
+        ),
+    )
+
+    const forgedExemption = structuredClone(traceability)
+    const normative = forgedExemption.source_claims.find(
+        (claim) => claim.claim_id === 'A-016-L142-1',
+    )
+    delete normative.destination_evidence
+    normative.destination_disposition = {
+        kind: 'NON_NORMATIVE_LABEL',
+        reason: 'A plausible but fabricated structural reason.',
+    }
+    assert.ok(
+        sourceDestinationCoverageProblems(forgedExemption).some((problem) =>
+            problem.includes('A-016-L142-1: invalid non-normative disposition'),
         ),
     )
 })

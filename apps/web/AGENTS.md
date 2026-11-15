@@ -14,6 +14,6 @@ Applies to `apps/web/**` and is additive to the root `AGENTS.md`. The root safet
 - WEB-CODEX-09: Keep new or heavily changed files within 200-700 LOC; run check:file-budget and split oversized modules before merge.
 - WEB-CODEX-10: Route heavy web work through WorkerBus; do not invoke worker implementations directly. Preserve cancellation and backpressure.
 
-- WEB-CODEX-12: For web-only development, run `cd apps/web && pnpm run dev -- --host 0.0.0.0`; the base path is `/CannaGuide-2025/` at port 5173. Production preview uses `pnpm run build` then `pnpm run preview` on port 4173.
+- WEB-CODEX-12: For web-only development, run `cd apps/web && pnpm run dev -- --host 127.0.0.1`; the base path is `/CannaGuide-2025/` at port 5173. Use `--host 0.0.0.0` only when intentionally exposing the server to a trusted LAN. Production preview uses `pnpm run build` then `pnpm run preview` on port 4173.
 - WEB-CODEX-13: Playwright E2E and full browser suites run in CI only; do not run them locally.
 - WEB-CODEX-14: The optional IoT mock is `node docker/iot-mocks/src/server.mjs` on port 3001.

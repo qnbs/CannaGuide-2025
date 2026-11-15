@@ -1,5 +1,5 @@
 {
-    "observed_at_utc": "2026-11-15T07:04:46.818Z",
+    "observed_at_utc": "2026-11-15T07:59:04.484Z",
     "tool": "Codex CLI",
     "version": "codex-cli 0.169.0",
     "base_commit": "4d4703eb1478230f352d2f0da91c7be91cd38503",
@@ -13,7 +13,7 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50763
+                "AGENTS.md": 50401
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -26,8 +26,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50586,
-                "apps/web/AGENTS.md": 68655
+                "AGENTS.md": 50224,
+                "apps/web/AGENTS.md": 68424
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -40,9 +40,9 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50598,
-                "apps/web/AGENTS.md": 68667,
-                "apps/web/services/db/AGENTS.md": 71175
+                "AGENTS.md": 50236,
+                "apps/web/AGENTS.md": 68436,
+                "apps/web/services/db/AGENTS.md": 71029
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -55,8 +55,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50604,
-                "apps/web/AGENTS.md": 68673
+                "AGENTS.md": 50242,
+                "apps/web/AGENTS.md": 68442
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -69,8 +69,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50606,
-                "apps/web/AGENTS.md": 68675
+                "AGENTS.md": 50244,
+                "apps/web/AGENTS.md": 68444
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -79,12 +79,13 @@
             "cwd": "apps/web/data/strains",
             "task_kind": "strains",
             "exit_code": 0,
-            "loaded": ["AGENTS.md", "apps/web/AGENTS.md"],
+            "loaded": ["AGENTS.md", "apps/web/AGENTS.md", "apps/web/data/strains/AGENTS.md"],
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50599,
-                "apps/web/AGENTS.md": 68668
+                "AGENTS.md": 50237,
+                "apps/web/AGENTS.md": 68437,
+                "apps/web/data/strains/AGENTS.md": 71030
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -97,8 +98,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50590,
-                "apps/desktop/AGENTS.md": 68659
+                "AGENTS.md": 50228,
+                "apps/desktop/AGENTS.md": 68428
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -111,7 +112,7 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50594
+                "AGENTS.md": 50232
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -124,8 +125,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50585,
-                "scripts/AGENTS.md": 68654
+                "AGENTS.md": 50223,
+                "scripts/AGENTS.md": 68423
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -138,8 +139,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50585,
-                ".github/AGENTS.md": 68654
+                "AGENTS.md": 50223,
+                ".github/AGENTS.md": 68423
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -154,10 +155,10 @@
         "observed_at_utc": "2026-11-15T07:04:46.818Z"
     },
     "instruction_file_sha256": {
-        "AGENTS.md": "478c740905f753b4edc7a3f6f02859a6ee64f990ceb93a60fc82ab1b843dbcff",
-        "CLAUDE.md": "a50b53ef44f10d8efad0e70a8e81df83b5650f7fed0a09db7290bd3d0b00c055",
+        "AGENTS.md": "798fe109445b83bcc8c767bc49fdd3a750ea1d8dae17990aaf37d684ea09eddf",
+        "CLAUDE.md": "25b5d2024ac5725dc4203c9a2800dc310d4e0bd8c0a8b72cb52dd53e92b1b7df",
         "apps/web/CLAUDE.md": "9f9438ad1d7c06ed43820e14148aa6900ccd1295124f89454365618329aa8201",
-        "apps/web/AGENTS.md": "276d17e57741ac0d84f240a9478d5a4fdbaf9b37caccede9fc2b5a5b8c5eada7",
+        "apps/web/AGENTS.md": "47fa98f64be19a7e3ad92afe89fee64f53ee24f6f9e88cc57941b80549748037",
         "apps/web/services/db/CLAUDE.md": "ee75a08615701076d12fb861509aa56072ae780b0dbf7e5850ed85ba91af4941",
         "apps/web/services/db/AGENTS.md": "1f6c4b3bf86dad6e8e6acf179747df38ec3543279bcedc0c3a727e601ea00a1d",
         "apps/web/services/local-ai/CLAUDE.md": "1a0c7b94b06b869f76101d38b4594ecb01c51ff44c23fed84d4e71ffd875c725",
@@ -169,7 +170,8 @@
         "scripts/CLAUDE.md": "1b3afca40124a759d692e52822e84c8e12bcb4d54e4b8bd294cd9fdfabefe8e1",
         "scripts/AGENTS.md": "b930d34895d7bb505fcd8d696e895894cf397ebd7a469f4be1e05b6e4f6ea4d2",
         ".github/CLAUDE.md": "b0c31c22c79502fe117d2ec38bdece64a9ce56cc42ffd8332f37ad4d86c6c005",
-        ".github/AGENTS.md": "e2f4a34f401bde2320e84e5d5e14d90324dfe25d01c51a7cdb108982ec50c195"
+        ".github/AGENTS.md": "e2f4a34f401bde2320e84e5d5e14d90324dfe25d01c51a7cdb108982ec50c195",
+        "apps/web/data/strains/AGENTS.md": "f6f32488c1c0d0d99b18f6a8068145d3795187780fdbefb6ee951bb1fe67e111"
     },
     "source_hash_method": "SHA-256 over exact raw bytes for each local instruction file, refreshed after the ten successful current-worktree Codex prompt-input probes at observed_at_utc."
 }

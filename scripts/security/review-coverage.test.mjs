@@ -19,8 +19,8 @@ function coverageFilter() {
     assert.match(program, /codeant-ai\[bot\]/)
     assert.match(program, /chatgpt-codex-connector\[bot\]/)
     assert.doesNotMatch(program, /unique_by/)
-    const filter = program.replace(/^.*\| jq -s '/, '').replace(/'$/, '')
-    return filter.replaceAll('<HEAD>', HEAD)
+    const filter = program.replace(/^.*\| jq -s --arg head \"\$HEAD_SHA\" '/, '').replace(/'$/, '')
+    return filter
 }
 
 function review(login, state, commit = HEAD, submitted = '2026-11-02T10:00:00Z') {
@@ -29,7 +29,7 @@ function review(login, state, commit = HEAD, submitted = '2026-11-02T10:00:00Z')
 
 /** Run the documented `jq -s` program over REST review pages. */
 function covered(pages) {
-    const out = execFileSync('jq', ['-s', '-c', `[${coverageFilter()}]`], {
+    const out = execFileSync('jq', ['-s', '-c', '--arg', 'head', HEAD, `[${coverageFilter()}]`], {
         input: pages.map((page) => JSON.stringify(page)).join('\n'),
         encoding: 'utf8',
     })
@@ -49,10 +49,7 @@ test('the documented query keeps the newest review per bot login on the head', (
         ],
         [review('cubic-dev-ai[bot]', 'COMMENTED')],
     ]
-    assert.deepEqual(covered(pages), [
-        { user: 'codeant-ai[bot]', state: 'COMMENTED' },
-        { user: 'coderabbitai[bot]', state: 'CHANGES_REQUESTED' },
-    ])
+    assert.deepEqual(covered(pages), [{ user: 'coderabbitai[bot]', state: 'CHANGES_REQUESTED' }])
 })
 
 test('names without the [bot] suffix match nothing, so a stripped filter fails closed', () => {

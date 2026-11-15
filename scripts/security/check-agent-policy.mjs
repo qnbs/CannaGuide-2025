@@ -49,6 +49,7 @@ export const AGENT_FILES = [
     'apps/web/services/local-ai/CLAUDE.md',
     'apps/web/services/worker-bus/CLAUDE.md',
     'apps/web/data/strains/CLAUDE.md',
+    'apps/web/data/strains/AGENTS.md',
     'apps/desktop/CLAUDE.md',
     'apps/desktop/AGENTS.md',
     'packages/ai-core/CLAUDE.md',
@@ -449,7 +450,10 @@ const GLOBAL_ROOT_INVARIANTS = [
 ]
 
 const REVIEW_COVERAGE = [
-    ['two-reviewer coverage', /two of CodeRabbit,\s+CodeAnt,\s+and Codex have covered/],
+    [
+        'two-reviewer coverage',
+        /^\*\*Two-reviewer gate:\*\* Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head\.$/m,
+    ],
     ['REVIEW_UNAVAILABLE is not a green check', /REVIEW_UNAVAILABLE[\s\S]{0,500}not a green check/],
     [
         'unavailable is not a merge block once two have covered',
@@ -568,8 +572,13 @@ export function agentPolicyProblems(files, { needs } = {}) {
             }
             problems.push(...lineProblems(name, line, `${name}:${index + 1}`, inFence, needs))
         })
+        const normativeText = text
+            .replace(/```[\s\S]*?```/g, '')
+            .split('\n')
+            .filter((line) => !line.trimStart().startsWith('>'))
+            .join('\n')
         for (const [label, pattern] of REQUIRED[name] ?? []) {
-            if (!pattern.test(text)) problems.push(`${name}: missing ${label}`)
+            if (!pattern.test(normativeText)) problems.push(`${name}: missing ${label}`)
         }
         for (const [label, pattern] of AFFIRMED[name] ?? []) {
             const affirmed = text

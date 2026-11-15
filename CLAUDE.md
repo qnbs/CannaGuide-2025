@@ -176,6 +176,8 @@ pnpm run check:i18n
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
+**Two-reviewer gate:** Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head.
+
 - **Review one stable head.** Let reviews finish, collect every finding including
   paginated issue-comment findings and outside-diff comments, group by root cause, and ship
   one consolidated signed fix. Request one fresh CodeRabbit full review of the final head;

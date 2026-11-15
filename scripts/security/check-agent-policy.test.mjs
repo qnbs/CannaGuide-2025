@@ -348,13 +348,26 @@ test('critical global safeguards are required in both root instruction files', (
     }
 })
 
-test('quoted and fenced root text cannot satisfy required global safeguards', () => {
+test('quoted, blockquoted, and fenced root text cannot satisfy required global safeguards', () => {
     const agents = SOUND_AGENTS.replace(/SSH-signed commits/gi, '') + '\n> SSH-signed commits'
     const claude =
         SOUND_CLAUDE.replace(/SSH-signed commits/gi, '') + '\n~~~md\nSSH-signed commits\n~~~'
     const problems = problemsOf({ 'AGENTS.md': agents, 'CLAUDE.md': claude })
     assert.ok(problems.includes('AGENTS.md: missing SSH-signed commits'))
     assert.ok(problems.includes('CLAUDE.md: missing SSH-signed commits'))
+
+    const inlineQuotedAgents =
+        SOUND_AGENTS.replace(/SSH-signed commits/gi, '') +
+        '\nThe quoted label is "SSH-signed commits".'
+    const inlineQuotedClaude =
+        SOUND_CLAUDE.replace(/SSH-signed commits/gi, '') +
+        '\nThe quoted label is ‘SSH-signed commits’.'
+    const inlineProblems = problemsOf({
+        'AGENTS.md': inlineQuotedAgents,
+        'CLAUDE.md': inlineQuotedClaude,
+    })
+    assert.ok(inlineProblems.includes('AGENTS.md: missing SSH-signed commits'))
+    assert.ok(inlineProblems.includes('CLAUDE.md: missing SSH-signed commits'))
 })
 
 test('a missing authority section or verify command fails', () => {

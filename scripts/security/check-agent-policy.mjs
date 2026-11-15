@@ -459,6 +459,7 @@ export function shellCommands(text) {
 }
 
 const FENCE = /^\s*(```|~~~)/
+const QUOTED_PROSE = /"(?:[^"\\]|\\.)*"|“[^”\n]*”|‘[^’\n]*’|(?<![\w])'[^'\n]+'(?![\w])/g
 
 /** Normative instruction prose: exclude examples and quoted text from policy evidence. */
 export function normativePolicyText(text) {
@@ -469,7 +470,9 @@ export function normativePolicyText(text) {
             inFence = !inFence
             continue
         }
-        if (!inFence && !line.trimStart().startsWith('>')) lines.push(line)
+        if (!inFence && !line.trimStart().startsWith('>')) {
+            lines.push(line.replace(QUOTED_PROSE, ' '))
+        }
     }
     return lines.join('\n')
 }

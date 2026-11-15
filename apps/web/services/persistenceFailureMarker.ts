@@ -2,6 +2,7 @@ const TAB_ID_KEY = 'cannaguide.persistenceTabId'
 const FAILURE_MARKER_PREFIX = 'cannaguide.pendingSnapshotSaveFailure:'
 
 let fallbackTabId: string | undefined
+const closedTabSessions = new Set<string>()
 
 const createTabId = (): string => {
     try {
@@ -31,17 +32,106 @@ const markerKey = (tabId: string): string => `${FAILURE_MARKER_PREFIX}${tabId}`
 export interface PendingSnapshotSaveFailureMarker {
     tabId: string
     token: string
+    /** Whether the previous-session warning is still owed or has been queued in the UI. */
+    warningState: 'unpresented' | 'presented'
+    /** True after pagehide; a presented orphan remains unresolved but must not warn again. */
+    ownerClosed: boolean
 }
 
-export const markPendingSnapshotSaveFailure = (tabId: string): void => {
+const readMarker = (tabId: string): PendingSnapshotSaveFailureMarker | null => {
     try {
-        localStorage.setItem(markerKey(tabId), createTabId())
+        const stored = localStorage.getItem(markerKey(tabId))
+        if (!stored) return null
+        try {
+            const parsed: unknown = JSON.parse(stored)
+            if (
+                typeof parsed === 'object' &&
+                parsed !== null &&
+                'token' in parsed &&
+                typeof parsed.token === 'string' &&
+                'warningState' in parsed &&
+                (parsed.warningState === 'unpresented' || parsed.warningState === 'presented') &&
+                'ownerClosed' in parsed &&
+                typeof parsed.ownerClosed === 'boolean'
+            ) {
+                return {
+                    tabId,
+                    token: parsed.token,
+                    warningState: parsed.warningState,
+                    ownerClosed: parsed.ownerClosed,
+                }
+            }
+        } catch {
+            // Older releases stored an opaque token. Treat it as an unpresented warning.
+        }
+        return { tabId, token: stored, warningState: 'unpresented', ownerClosed: false }
+    } catch {
+        return null
+    }
+}
+
+const writeMarker = (marker: PendingSnapshotSaveFailureMarker): void => {
+    try {
+        localStorage.setItem(
+            markerKey(marker.tabId),
+            JSON.stringify({
+                token: marker.token,
+                warningState: marker.warningState,
+                ownerClosed: marker.ownerClosed,
+            }),
+        )
     } catch {
         // The marker is best-effort and must never change the IndexedDB result.
     }
 }
 
-export const clearSnapshotSaveFailureForTab = (tabId: string): void => {
+export const activatePersistenceFailureTab = (tabId: string): void => {
+    closedTabSessions.delete(tabId)
+    const marker = readMarker(tabId)
+    if (marker?.ownerClosed) writeMarker({ ...marker, ownerClosed: false })
+}
+
+export const markPersistenceFailureTabClosed = (tabId: string): void => {
+    closedTabSessions.add(tabId)
+    const marker = readMarker(tabId)
+    if (!marker) return
+    writeMarker({ ...marker, ownerClosed: true })
+}
+
+export const markPendingSnapshotSaveFailure = (tabId: string): void => {
+    const current = readMarker(tabId)
+    writeMarker({
+        tabId,
+        token: current?.token ?? createTabId(),
+        warningState: 'unpresented',
+        ownerClosed: closedTabSessions.has(tabId),
+    })
+}
+
+export const markSnapshotSaveFailurePresented = (
+    observed: PendingSnapshotSaveFailureMarker,
+): void => {
+    const current = readMarker(observed.tabId)
+    if (!current || current.token !== observed.token) return
+    if (current.warningState !== 'presented') {
+        writeMarker({ ...current, warningState: 'presented' })
+    }
+}
+
+export const clearSnapshotSaveFailureForTab = (
+    tabId: string,
+    observedAtStartup: readonly PendingSnapshotSaveFailureMarker[] = [],
+): void => {
+    const current = readMarker(tabId)
+    if (
+        current &&
+        current.warningState === 'unpresented' &&
+        observedAtStartup.some(
+            (observed) => observed.tabId === tabId && observed.token === current.token,
+        )
+    ) {
+        return
+    }
     try {
         localStorage.removeItem(markerKey(tabId))
     } catch {
@@ -59,8 +149,9 @@ export const getPendingSnapshotSaveFailureMarkers = (): PendingSnapshotSaveFailu
         for (let index = 0; index < localStorage.length; index++) {
             const key = localStorage.key(index)
             if (key?.startsWith(FAILURE_MARKER_PREFIX)) {
-                const token = localStorage.getItem(key)
-                if (token) markers.push({ tabId: key.slice(FAILURE_MARKER_PREFIX.length), token })
+                const tabId = key.slice(FAILURE_MARKER_PREFIX.length)
+                const marker = readMarker(tabId)
+                if (marker) markers.push(marker)
             }
         }
         return markers

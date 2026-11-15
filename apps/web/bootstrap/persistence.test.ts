@@ -3,7 +3,11 @@ import type { AppStore } from '@/stores/store'
 import { REDUX_STATE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
-import { hasPendingSnapshotSaveFailure } from '@/services/persistenceFailureMarker'
+import {
+    getPendingSnapshotSaveFailureMarkers,
+    hasPendingSnapshotSaveFailure,
+    markSnapshotSaveFailurePresented,
+} from '@/services/persistenceFailureMarker'
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
@@ -187,6 +191,33 @@ describe('a save that fails (GH #686)', () => {
         releaseFailure()
         await expect(failedWrite).resolves.toBe(false)
         expect(hasPendingSnapshotSaveFailure()).toBe(true)
+    })
+
+    it('does not let an automatic startup save hide a warning captured during hydration', async () => {
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const failedTabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(failedTabFlush()).resolves.toBe(false)
+        const capturedFailures = getPendingSnapshotSaveFailureMarkers()
+
+        // The same sessionStorage tab id survives reload. The startup repair/save is
+        // successful, but it only writes the restored snapshot and cannot recover edits
+        // that were lost before hydration.
+        const startupFlush = setupPersistedStateSync(
+            storeWithKey(),
+            undefined,
+            undefined,
+            capturedFailures,
+        )
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual(capturedFailures)
+
+        markSnapshotSaveFailurePresented(capturedFailures[0]!)
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(startupFlush()).resolves.toBe(true)
+        expect(getPendingSnapshotSaveFailureMarkers()).toEqual([])
     })
 
     it('keeps the IndexedDB result authoritative when localStorage is unavailable', async () => {

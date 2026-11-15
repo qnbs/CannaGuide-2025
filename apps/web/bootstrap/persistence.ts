@@ -5,9 +5,12 @@ import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { buildPersistedSnapshot } from '@/services/persistedSnapshotFormat'
 import {
+    activatePersistenceFailureTab,
     clearSnapshotSaveFailureForTab,
     getPersistenceFailureMarkerTabId,
     markPendingSnapshotSaveFailure,
+    markPersistenceFailureTabClosed,
+    type PendingSnapshotSaveFailureMarker,
 } from '@/services/persistenceFailureMarker'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
@@ -28,8 +31,10 @@ export const setupPersistedStateSync = (
     hydratedStore: AppStore,
     onStaleSnapshot?: (refusal: StaleSnapshotError) => void,
     onSaveFailure?: (error: unknown) => void,
+    observedFailureMarkers: readonly PendingSnapshotSaveFailureMarker[] = [],
 ): FlushPersistedState => {
     const failureMarkerTabId = getPersistenceFailureMarkerTabId()
+    activatePersistenceFailureTab(failureMarkerTabId)
     let failing = false
     const reportFailure = (error: unknown): void => {
         if (failing) return
@@ -53,7 +58,7 @@ export const setupPersistedStateSync = (
                     await writeSnapshot(serializedState)
                     // Do this while still inside the scheduled write slot. A later
                     // save in another tab must not clear this tab's failed lineage.
-                    clearSnapshotSaveFailureForTab(failureMarkerTabId)
+                    clearSnapshotSaveFailureForTab(failureMarkerTabId, observedFailureMarkers)
                 } catch (error) {
                     if (!(error instanceof StaleSnapshotError)) {
                         // Record the failure before the coordinator releases its write slot.
@@ -98,7 +103,12 @@ export const setupPersistedStateSync = (
     window.addEventListener('pagehide', () => {
         clearTimeout(saveTimeout)
         void saveState()
+        markPersistenceFailureTabClosed(failureMarkerTabId)
         workerBus.dispose()
+    })
+
+    window.addEventListener('pageshow', () => {
+        activatePersistenceFailureTab(failureMarkerTabId)
     })
 
     return saveState

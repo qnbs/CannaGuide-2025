@@ -492,10 +492,12 @@ export function sshSigningContradiction(text) {
     const lines = normativePolicyText(text).split('\n')
     for (const line of lines) {
         if (SSH_SIGNING_REQUIRED_CLAIMS.some((pattern) => pattern.test(line))) return true
-        for (const pattern of SSH_SIGNING_PERMISSION_CLAIMS) {
-            for (const match of line.matchAll(pattern)) {
-                const tokenIndex = match.index + match[0].lastIndexOf(match[1])
-                if (!isForbiddenAt(line, tokenIndex)) return true
+        for (const segment of line.split(';')) {
+            for (const pattern of SSH_SIGNING_PERMISSION_CLAIMS) {
+                for (const match of segment.matchAll(pattern)) {
+                    const tokenIndex = match.index + match[0].lastIndexOf(match[1])
+                    if (!isForbiddenAt(segment, tokenIndex)) return true
+                }
             }
         }
     }

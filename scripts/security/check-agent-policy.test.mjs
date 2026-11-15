@@ -383,6 +383,19 @@ test('negated SSH-signing guidance fails the global root safeguard', () => {
     }
 })
 
+test('a semicolon cannot carry a prohibition over a later unsigned-commit permission', () => {
+    for (const file of ['AGENTS.md', 'CLAUDE.md']) {
+        const sound = file === 'AGENTS.md' ? SOUND_AGENTS : SOUND_CLAUDE
+        const problems = problemsOf({
+            [file]: `${sound}\nDo not bypass hooks; allow unsigned commits.`,
+        })
+        assert.ok(
+            problems.includes(`${file}: contradicts SSH-signed commits`),
+            `${file} must reject unsigned commits permitted after a semicolon`,
+        )
+    }
+})
+
 test('protective SSH-signing rules are not misclassified as contradictions', () => {
     const protective = [
         'Never allow unsigned commits.',

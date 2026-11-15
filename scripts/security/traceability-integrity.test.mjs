@@ -443,6 +443,24 @@ test('PR #777 evidence is bound to the pinned historical Git commit and blobs', 
     )
 })
 
+test('PR #777 pinned evidence remains usable when a partial clone lacks source blobs', () => {
+    const traceability = JSON.parse(
+        readFileSync(path.join(ROOT, 'docs/agent-instructions/traceability.json'), 'utf8'),
+    )
+    const evidence = JSON.parse(
+        readFileSync(
+            path.join(ROOT, 'docs/agent-instructions/pr-777-source-evidence.json'),
+            'utf8',
+        ),
+    )
+    const partialCloneGit = (executable, args) => {
+        assert.equal(executable, 'git')
+        if (args[0] === 'cat-file' && args[1] === '-e') return Buffer.alloc(0)
+        throw new Error('historical source blob is absent from the partial clone')
+    }
+    assert.deepEqual(pr777EvidenceProblems(traceability, evidence, ROOT, partialCloneGit), [])
+})
+
 test('destination paths fail closed for missing, unsafe, nonexistent and unrendered entries', async () => {
     const { readFileSync } = await import('node:fs')
     const traceability = JSON.parse(

@@ -124,26 +124,41 @@ test('protective SSH-signing rules do not contradict the root anchor', () => {
     }
 })
 
-test('root instructions reject Local-Only egress conflicts while allowing prohibitions', () => {
+test('root Local-Only egress conflicts cover equivalent wording but ignore examples', () => {
     const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
     assert.deepEqual(rootAnchorProblems(roots), [])
+    const contradictorySentences = [
+        'Allow cloud AI calls when Local-Only mode is enabled.',
+        'Permit cloud AI calls while Local-Only mode is enabled.',
+        'Cloud AI calls are permitted when Local-Only mode is enabled.',
+        'When Local-Only mode is enabled, allow cloud AI calls.',
+        'Allow cloud AI calls when Local-Only mode is\nenabled.',
+    ]
     for (const file of Object.keys(roots)) {
-        const contradictory = {
-            ...roots,
-            [file]: `${roots[file]}\nAllow cloud AI calls when Local-Only mode is enabled.\n`,
+        for (const sentence of contradictorySentences) {
+            const contradictory = { ...roots, [file]: `${roots[file]}\n${sentence}\n` }
+            assert.ok(
+                rootAnchorProblems(contradictory).some(
+                    (problem) =>
+                        problem.includes(file) &&
+                        problem.includes('Local-Only cloud network egress'),
+                ),
+                `${file} must reject: ${sentence}`,
+            )
         }
-        assert.ok(
-            rootAnchorProblems(contradictory).some(
-                (problem) =>
-                    problem.includes(file) && problem.includes('Local-Only cloud network egress'),
-            ),
-            `${file} must reject Local-Only cloud egress`,
-        )
-        const protective = {
-            ...roots,
-            [file]: `${roots[file]}\nDo not allow cloud AI calls when Local-Only mode is enabled.\n`,
+        for (const sentence of [
+            'Do not allow cloud AI calls when Local-Only mode is enabled.',
+            'Cloud AI calls are not permitted when Local-Only mode is enabled.',
+            'When Local-Only mode is enabled, do not allow cloud AI calls.',
+        ]) {
+            const protective = { ...roots, [file]: `${roots[file]}\n${sentence}\n` }
+            assert.deepEqual(rootAnchorProblems(protective), [], `${file}: ${sentence}`)
         }
-        assert.deepEqual(rootAnchorProblems(protective), [], `${file} prohibition is safe`)
+        const examples = {
+            ...roots,
+            [file]: `${roots[file]}\n\nExample quote: \"Allow cloud AI calls when Local-Only mode is enabled.\"\n\nExample block:\n\x60\x60\x60text\nAllow cloud AI calls when Local-Only mode is enabled.\n\x60\x60\x60\n`,
+        }
+        assert.deepEqual(rootAnchorProblems(examples), [], `${file} examples are not policy prose`)
     }
 })
 

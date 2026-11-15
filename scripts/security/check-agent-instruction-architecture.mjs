@@ -1007,7 +1007,7 @@ const PR777_TRUSTED_SOURCES = {
 const PR777_TRUSTED_SOURCE_FILES = Object.keys(PR777_TRUSTED_SOURCES)
 
 /** Bind captured PR #777 excerpts to the pinned historical commit and Git blobs. */
-export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
+export function pr777EvidenceProblems(traceability, evidence, root = ROOT, runGit = execFileSync) {
     const problems = []
     const pr = traceability?.pr_777
     if (
@@ -1053,7 +1053,7 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
 
     let gitSourceAvailable = false
     try {
-        execFileSync('git', ['cat-file', '-e', `${PR777_TRUSTED_HEAD_SHA}^{commit}`], {
+        runGit('git', ['cat-file', '-e', `${PR777_TRUSTED_HEAD_SHA}^{commit}`], {
             cwd: root,
             stdio: 'ignore',
         })
@@ -1082,11 +1082,11 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
         for (const file of PR777_TRUSTED_SOURCE_FILES) {
             const gitPath = PR777_TRUSTED_HEAD_SHA + ':' + file
             try {
-                const blobSha = execFileSync('git', ['rev-parse', gitPath], {
+                const blobSha = runGit('git', ['rev-parse', gitPath], {
                     cwd: root,
                     encoding: 'utf8',
                 }).trim()
-                const bytes = execFileSync('git', ['show', gitPath], { cwd: root })
+                const bytes = runGit('git', ['show', gitPath], { cwd: root })
                 const lines = bytes.toString('utf8').split(/\r?\n/)
                 if (lines.at(-1) === '') lines.pop()
                 const trusted = PR777_TRUSTED_SOURCES[file]
@@ -1099,7 +1099,7 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
                 }
                 gitSnapshots.set(file, lines)
             } catch {
-                problems.push('pinned PR #777 Git source blob could not be read for ' + file)
+                // Partial clones may have the commit but not this blob; validate this file against its pins.
             }
         }
     }
@@ -1210,7 +1210,16 @@ export function rootAnchorProblems(rootFiles) {
             }
         }
     }
-    problems.push(...scopedInstructionConflictProblems(rootFiles))
+    const normativeRootFiles = Object.fromEntries(
+        Object.entries(rootFiles || {}).map(([name, text]) => [
+            name,
+            normativePolicyText(text || '')
+                .split(/\n[ \t]*\n/)
+                .map((paragraph) => paragraph.replace(/\n[ \t]*/g, ' '))
+                .join('\n'),
+        ]),
+    )
+    problems.push(...scopedInstructionConflictProblems(normativeRootFiles))
     return problems
 }
 
@@ -1220,6 +1229,13 @@ const POLICY_ACTION_SOURCE = String.raw`(?:use|install|pin|require|run(?:\s+on)?
 const POLICY_ACTION_LANGUAGE = new RegExp(String.raw`\b${POLICY_ACTION_SOURCE}\b`, 'gi')
 const CONFLICT_CLAUSE_BOUNDARY = new RegExp(
     String.raw`[;!?]|\b(?:but|however|instead|then|unless|otherwise|except)\b|,(?=\s*${POLICY_ACTION_SOURCE}\b)`,
+    'gi',
+)
+const CLOUD_EGRESS_ACTION_SOURCE = String.raw`(?:allow\w*|enable|route|send|transmit|upload|forward|sync|call|contact|permit\w*)`
+const CLOUD_NETWORK_SOURCE = String.raw`(?:cloud|remote|network|online)`
+const ACTIVE_LOCAL_ONLY_SOURCE = String.raw`Local-Only\b.{0,50}\b(?:is\s+)?(?:enabled|on|active)\b`
+const LOCAL_ONLY_CONDITION_BEFORE_EGRESS_ACTION = new RegExp(
+    String.raw`(\b${ACTIVE_LOCAL_ONLY_SOURCE}),\s*(?=${CLOUD_EGRESS_ACTION_SOURCE}\b)`,
     'gi',
 )
 const SCOPED_CONFLICTS = [
@@ -1246,7 +1262,22 @@ const SCOPED_CONFLICTS = [
     ],
     [
         'Local-Only cloud network egress',
-        /\b(?:allow|enable|route|send|transmit|upload|forward|sync|call|contact)\b.{0,100}\b(?:cloud|remote|network|online)\b.{0,100}\b(?:when|while|if|with)\b.{0,50}\bLocal-Only\b.{0,30}\b(?:is\s+)?(?:enabled|on|active)\b/i,
+        new RegExp(
+            String.raw`(?:\b${CLOUD_EGRESS_ACTION_SOURCE}\b.{0,100}\b${CLOUD_NETWORK_SOURCE}\b.{0,100}\b(?:when|while|if|with)\b.{0,50}\b${ACTIVE_LOCAL_ONLY_SOURCE}|\b${CLOUD_NETWORK_SOURCE}\b.{0,80}\b(?:AI\s+)?calls?\b.{0,50}\b(?:is|are)\s+(?!not\b)(?:permitted|allowed)\b.{0,80}\b(?:when|while|if|with)\b.{0,50}\b${ACTIVE_LOCAL_ONLY_SOURCE}|\b(?:when|while|if|with)\b.{0,50}\b${ACTIVE_LOCAL_ONLY_SOURCE}.{0,100}\b${CLOUD_EGRESS_ACTION_SOURCE}\b.{0,100}\b${CLOUD_NETWORK_SOURCE}\b)`,
+            'i',
+        ),
+        (match) => {
+            const cloudIndex = match[0].search(
+                new RegExp(String.raw`\b${CLOUD_NETWORK_SOURCE}\b`, 'i'),
+            )
+            const actions = [
+                ...match[0]
+                    .slice(0, cloudIndex)
+                    .matchAll(new RegExp(CLOUD_EGRESS_ACTION_SOURCE, 'gi')),
+            ]
+            const action = actions.at(-1)
+            return !action || !conflictMatchIsNegated(match[0], action.index, action[0].length)
+        },
     ],
     [
         'CanG plant cap override',
@@ -1296,7 +1327,8 @@ function conflictMatchIsNegated(clause, index, length) {
 export function scopedInstructionConflictProblems(scopedFiles) {
     const problems = []
     for (const [file, text] of Object.entries(scopedFiles || {})) {
-        for (const line of String(text || '').split('\n')) {
+        for (const sourceLine of String(text || '').split('\n')) {
+            const line = sourceLine.replace(LOCAL_ONLY_CONDITION_BEFORE_EGRESS_ACTION, '$1 ')
             const labels = new Set()
             for (const clause of line.split(CONFLICT_CLAUSE_BOUNDARY)) {
                 for (const [label, pattern, applies = () => true] of SCOPED_CONFLICTS) {

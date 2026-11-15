@@ -32,8 +32,16 @@ import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
+const addNotification = vi.hoisted(() => vi.fn())
+const pendingSaveFailure = vi.hoisted(() => vi.fn(() => false))
 
-vi.mock('@/i18n', () => ({ i18nPromise: Promise.resolve() }))
+vi.mock('@/i18n', () => ({
+    i18nPromise: Promise.resolve(),
+    getT: () => (key: string) => key,
+}))
+vi.mock('@/stores/useUIStore', () => ({
+    getUISnapshot: () => ({ addNotification }),
+}))
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
 vi.mock('./render', () => ({
     renderError: vi.fn(),
@@ -85,6 +93,7 @@ vi.mock('./secrets', () => ({
     }),
 }))
 vi.mock('./persistence', () => ({
+    hasPendingPersistenceFailure: pendingSaveFailure,
     setupPersistedStateSync: vi.fn(() => {
         order.push('sync')
         return () => {
@@ -98,6 +107,7 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         order.length = 0
+        pendingSaveFailure.mockReturnValue(false)
     })
 
     it('rewrites the stored snapshot and its backup at once after moving a key', async () => {
@@ -125,6 +135,19 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
         vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
         await mountHydratedApp()
         expect(order).toEqual(['sync', 'services'])
+    })
+
+    it('warns when the previous session had an observed snapshot save failure', async () => {
+        pendingSaveFailure.mockReturnValue(true)
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+        await vi.waitFor(() =>
+            expect(addNotification).toHaveBeenCalledWith({
+                message: 'common.previousSaveFailed',
+                type: 'error',
+            }),
+        )
     })
 
     it('a failing migration does not stop the start and forces no save', async () => {

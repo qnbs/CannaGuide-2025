@@ -8,6 +8,25 @@ import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
 
+const PENDING_SAVE_FAILURE_KEY = 'cannaguide.pendingSnapshotSaveFailure'
+
+const setPendingSaveFailure = (pending: boolean): void => {
+    try {
+        if (pending) localStorage.setItem(PENDING_SAVE_FAILURE_KEY, '1')
+        else localStorage.removeItem(PENDING_SAVE_FAILURE_KEY)
+    } catch {
+        // The marker is best-effort: localStorage must never block IndexedDB persistence.
+    }
+}
+
+export const hasPendingPersistenceFailure = (): boolean => {
+    try {
+        return localStorage.getItem(PENDING_SAVE_FAILURE_KEY) === '1'
+    } catch {
+        return false
+    }
+}
+
 /**
  * @param onStaleSnapshot called with the refusal when a save is refused because
  * another tab saved since this page loaded, or because this page cannot check
@@ -26,6 +45,7 @@ export const setupPersistedStateSync = (
 ): FlushPersistedState => {
     let failing = false
     const reportFailure = (error: unknown): void => {
+        setPendingSaveFailure(true)
         if (failing) return
         failing = true
         onSaveFailure?.(error)
@@ -45,7 +65,10 @@ export const setupPersistedStateSync = (
                 const serializedState = JSON.stringify(stateToSave)
                 await writeSnapshot(serializedState)
             })
-            if (saved) failing = false
+            if (saved) {
+                failing = false
+                setPendingSaveFailure(false)
+            }
             return saved
         } catch (e) {
             if (e instanceof StaleSnapshotError) {

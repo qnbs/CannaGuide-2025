@@ -23,7 +23,11 @@ import {
     watchForCacheRestore,
 } from './writerOwnership'
 import { hydrateApplicationStores } from './store'
-import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
+import {
+    hasPendingPersistenceFailure,
+    setupPersistedStateSync,
+    type FlushPersistedState,
+} from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
@@ -93,6 +97,18 @@ const notifySaveFailure = (): void => {
     void Promise.all([import('@/i18n'), import('@/stores/useUIStore')]).then(
         ([{ getT }, { getUISnapshot }]) => {
             getUISnapshot().addNotification({ message: getT()('common.saveFailed'), type: 'error' })
+        },
+    )
+}
+
+/** A prior session ended after an observed save failure; the loaded snapshot is older. */
+const notifyPreviousSaveFailure = (): void => {
+    void Promise.all([import('@/i18n'), import('@/stores/useUIStore')]).then(
+        ([{ getT }, { getUISnapshot }]) => {
+            getUISnapshot().addNotification({
+                message: getT()('common.previousSaveFailed'),
+                type: 'error',
+            })
         },
     )
 }
@@ -192,6 +208,7 @@ export const mountHydratedApp = async (): Promise<void> => {
             handleRefusedSave,
             notifySaveFailure,
         )
+        if (hasPendingPersistenceFailure()) notifyPreviousSaveFailure()
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState)
     } catch (error) {

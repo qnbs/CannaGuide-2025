@@ -114,4 +114,57 @@ describe('a save that fails (GH #686)', () => {
         expect(onSaveFailure).toHaveBeenCalledTimes(2)
         vi.mocked(indexedDBStorage.setItem).mockImplementation(() => Promise.resolve())
     })
+
+    it('keeps a payload-free warning marker until a later snapshot save succeeds', async () => {
+        const markerKey = 'cannaguide.pendingSnapshotSaveFailure'
+        localStorage.clear()
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+
+        await expect(flush()).resolves.toBe(false)
+
+        expect(localStorage.length).toBe(1)
+        expect(localStorage.getItem(markerKey)).toBe('1')
+        expect(localStorage.getItem(markerKey)).not.toContain(CANARY)
+        expect(localStorage.getItem(markerKey)).not.toContain(PORCUPINE_CANARY)
+
+        // Another tab's successful save may clear the shared marker while this
+        // tab is still failing; a repeated failure must restore it.
+        localStorage.removeItem(markerKey)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+        await expect(flush()).resolves.toBe(false)
+        expect(localStorage.getItem(markerKey)).toBe('1')
+        expect(onSaveFailure).toHaveBeenCalledOnce()
+
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(flush()).resolves.toBe(true)
+        expect(localStorage.getItem(markerKey)).toBeNull()
+    })
+
+    it('keeps the IndexedDB result authoritative when localStorage is unavailable', async () => {
+        localStorage.clear()
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        const onSaveFailure = vi.fn()
+        const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new DOMException('Storage is blocked.', 'SecurityError')
+        })
+        const removeItem = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+            throw new DOMException('Storage is blocked.', 'SecurityError')
+        })
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+
+        try {
+            await expect(flush()).resolves.toBe(false)
+            expect(onSaveFailure).toHaveBeenCalledOnce()
+
+            vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+            await expect(flush()).resolves.toBe(true)
+        } finally {
+            setItem.mockRestore()
+            removeItem.mockRestore()
+        }
+    })
 })

@@ -4,9 +4,9 @@
  * GitHub's Deployments API is a different store. Pruning those records does
  * not delete Vercel deployments or Cloudflare Pages deployments.
  *
- * The two hosts share protection rules (live production, a two-deep rollback
- * window, open PR heads, active aliases, ambiguous metadata) and differ in
- * deletion mechanics. Cloudflare refuses to delete the latest deployment of a
+ * The two hosts share protection rules (all production history, a two-deep
+ * rollback window, open PR heads, active aliases, ambiguous metadata) and differ
+ * in deletion mechanics. Cloudflare refuses to delete the latest deployment of a
  * branch; that row stays protected. Vercel can delete the latest preview of a
  * branch. Its automatic branch alias (`<project>-git-<branch>-<team>`) only
  * matters while the branch's pull request is open, so a merged, closed or stale
@@ -50,7 +50,7 @@ export const LABELS = {
         closed: 'SAFE_DELETE_CLOSED_PR',
         superseded: 'SAFE_DELETE_SUPERSEDED_PREVIEW',
         dependabot: 'SAFE_DELETE_STALE_DEPENDABOT',
-        oldProduction: 'SAFE_DELETE_OLD_PRODUCTION',
+        productionHistory: 'PROTECT_PRODUCTION_HISTORY',
         unknown: 'UNKNOWN',
     },
     cloudflare: {
@@ -63,7 +63,7 @@ export const LABELS = {
         closed: 'SAFE_DELETE_CLOSED_PR_HISTORY',
         superseded: 'SAFE_DELETE_SUPERSEDED_PREVIEW',
         dependabot: 'SAFE_DELETE_STALE_DEPENDABOT',
-        oldProduction: 'SAFE_DELETE_OLD_PRODUCTION_HISTORY',
+        productionHistory: 'PROTECT_PRODUCTION_HISTORY',
         unknown: 'UNKNOWN',
     },
 }
@@ -574,7 +574,10 @@ function classifyOne(deployment, context) {
         if (deployment.branch && deployment.branch !== 'main') {
             return { className: labels.unknown, limitation: 'production deployment is not on main' }
         }
-        return { className: labels.oldProduction, limitation: '' }
+        return {
+            className: labels.productionHistory,
+            limitation: 'production deployment history is retained by policy',
+        }
     }
 
     if (openBranch) {
@@ -886,6 +889,11 @@ export function assertSafeDeleteBatch(plan, ids) {
         const row = byId.get(id)
         if (!row || !isDeletableClass(row.class) || !row.deletable) {
             throw new Error(`refusing to delete ${id || '(missing)'}: not a proven safe-delete row`)
+        }
+        if (row.target !== 'preview') {
+            throw new Error(
+                'refusing to delete ' + id + ': production or unknown target is protected',
+            )
         }
         if (row.aliases.some((host) => !isInertBranchAlias(host, plan?.backend))) {
             throw new Error(`refusing to delete aliased deployment ${id}`)

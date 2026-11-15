@@ -460,6 +460,20 @@ export function shellCommands(text) {
 
 const FENCE = /^\s*(```|~~~)/
 
+/** Normative instruction prose: exclude examples and quoted text from policy evidence. */
+export function normativePolicyText(text) {
+    let inFence = false
+    const lines = []
+    for (const line of String(text).split('\n')) {
+        if (FENCE.test(line)) {
+            inFence = !inFence
+            continue
+        }
+        if (!inFence && !line.trimStart().startsWith('>')) lines.push(line)
+    }
+    return lines.join('\n')
+}
+
 const GLOBAL_ROOT_INVARIANTS = [
     ['SSH-signed commits', /SSH-signed commits/i],
     ['low-RAM thresholds', /256 MB[\s\S]*512 MB[\s\S]*900 MB/],
@@ -583,25 +597,21 @@ export function agentPolicyProblems(files, { needs } = {}) {
     const problems = []
     for (const name of ['AGENTS.md', 'CLAUDE.md']) {
         if (!Object.hasOwn(files, name)) continue
-        const rootText = files[name]
+        const rootText = normativePolicyText(files[name])
         for (const [label, pattern] of GLOBAL_ROOT_INVARIANTS) {
             if (!pattern.test(rootText)) problems.push(`${name}: missing ${label}`)
         }
     }
     for (const [name, text] of Object.entries(files)) {
         let inFence = false
-        const normativeLines = []
+        const normativeText = normativePolicyText(text)
         text.split('\n').forEach((line, index) => {
             if (FENCE.test(line)) {
                 inFence = !inFence
                 return
             }
-            if (!inFence) normativeLines.push(line)
             problems.push(...lineProblems(name, line, `${name}:${index + 1}`, inFence, needs))
         })
-        const normativeText = normativeLines
-            .filter((line) => !line.trimStart().startsWith('>'))
-            .join('\n')
         for (const [label, pattern] of REQUIRED[name] ?? []) {
             if (!pattern.test(normativeText)) problems.push(`${name}: missing ${label}`)
         }

@@ -1,9 +1,9 @@
 {
-    "observed_at_utc": "2026-11-15T07:59:04.484Z",
+    "observed_at_utc": "2026-11-15T10:15:04.763Z",
     "tool": "Codex CLI",
     "version": "codex-cli 0.169.0",
     "base_commit": "4d4703eb1478230f352d2f0da91c7be91cd38503",
-    "method": "Sequential codex debug prompt-input probes on CLI 0.169.0 in ten work directories. Each probe used a temporary HOME/CODEX_HOME with a trusted-project entry for this exact worktree. Parsed JSON string leaves were compared in memory against complete normalized local instruction contents; no model/API call was made and no prompt payload was persisted.",
+    "method": "Sequential codex debug prompt-input probes in all ten recorded work directories. Parsed JSON string leaves were normalized in memory and compared with complete current instruction files; only loaded path sets, positions, completion booleans, and SHA-256 hashes were retained. No prompt payload was persisted.",
     "contexts": [
         {
             "cwd": ".",
@@ -13,7 +13,7 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50401
+                "AGENTS.md": 70010
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -26,8 +26,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50224,
-                "apps/web/AGENTS.md": 68424
+                "AGENTS.md": 69834,
+                "apps/web/AGENTS.md": 86680
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -40,9 +40,9 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50236,
-                "apps/web/AGENTS.md": 68436,
-                "apps/web/services/db/AGENTS.md": 71029
+                "AGENTS.md": 69846,
+                "apps/web/AGENTS.md": 86692,
+                "apps/web/services/db/AGENTS.md": 89611
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -55,8 +55,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50242,
-                "apps/web/AGENTS.md": 68442
+                "AGENTS.md": 69852,
+                "apps/web/AGENTS.md": 86698
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -69,8 +69,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50244,
-                "apps/web/AGENTS.md": 68444
+                "AGENTS.md": 69854,
+                "apps/web/AGENTS.md": 86700
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -83,9 +83,9 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50237,
-                "apps/web/AGENTS.md": 68437,
-                "apps/web/data/strains/AGENTS.md": 71030
+                "AGENTS.md": 69847,
+                "apps/web/AGENTS.md": 86693,
+                "apps/web/data/strains/AGENTS.md": 89612
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -98,8 +98,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50228,
-                "apps/desktop/AGENTS.md": 68428
+                "AGENTS.md": 69838,
+                "apps/desktop/AGENTS.md": 86684
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -112,7 +112,7 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50232
+                "AGENTS.md": 69842
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -125,8 +125,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50223,
-                "scripts/AGENTS.md": 68423
+                "AGENTS.md": 69833,
+                "scripts/AGENTS.md": 86679
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -139,8 +139,8 @@
             "missing": [],
             "unexpected_out_of_scope": [],
             "prompt_positions": {
-                "AGENTS.md": 50223,
-                ".github/AGENTS.md": 68423
+                "AGENTS.md": 69833,
+                ".github/AGENTS.md": 86679
             },
             "probe_exit_code": 0,
             "full_file_match_only": true
@@ -158,7 +158,7 @@
         "AGENTS.md": "798fe109445b83bcc8c767bc49fdd3a750ea1d8dae17990aaf37d684ea09eddf",
         "CLAUDE.md": "25b5d2024ac5725dc4203c9a2800dc310d4e0bd8c0a8b72cb52dd53e92b1b7df",
         "apps/web/CLAUDE.md": "0456e459c694b9709e95c58b73836a92fc37ade390b5a590194f677168da96b1",
-        "apps/web/AGENTS.md": "47fa98f64be19a7e3ad92afe89fee64f53ee24f6f9e88cc57941b80549748037",
+        "apps/web/AGENTS.md": "1724127010d74544406a08432ca8f12df6cca8239ab1402dc6f7cc330b0c1bae",
         "apps/web/services/db/CLAUDE.md": "ee75a08615701076d12fb861509aa56072ae780b0dbf7e5850ed85ba91af4941",
         "apps/web/services/db/AGENTS.md": "1f6c4b3bf86dad6e8e6acf179747df38ec3543279bcedc0c3a727e601ea00a1d",
         "apps/web/services/local-ai/CLAUDE.md": "1a0c7b94b06b869f76101d38b4594ecb01c51ff44c23fed84d4e71ffd875c725",

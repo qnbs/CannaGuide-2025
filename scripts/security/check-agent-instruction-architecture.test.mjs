@@ -55,6 +55,26 @@ test('missing root safeguards are reported', () => {
     assert.ok(problems.some((problem) => problem.includes('accessibility ratchet')))
 })
 
+test('root anchors ignore quoted and fenced mentions', () => {
+    const agents = read('AGENTS.md')
+    assert.match(agents, /one source writer/i, 'source fixture must contain the writer rule')
+    const quotedAgents = agents.replace(/one source writer/gi, '') + '\n> One source writer.'
+
+    const claude = read('CLAUDE.md')
+    assert.match(
+        claude,
+        /The rules below are \*\*binding\*\*/,
+        'source fixture must contain the binding root marker',
+    )
+    const fencedClaude =
+        claude.replace(/The rules below are \*\*binding\*\*/gi, '') +
+        '\n~~~md\nThe rules below are **binding**\n~~~'
+    const problems = rootAnchorProblems({ 'AGENTS.md': quotedAgents, 'CLAUDE.md': fencedClaude })
+
+    assert.ok(problems.includes('AGENTS.md: missing global single-writer authority'))
+    assert.ok(problems.includes('CLAUDE.md: missing global binding root rules'))
+})
+
 test('SSH signing, A11y, Local-Only privacy, retention, and review coverage stay in both agent roots', () => {
     const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
     assert.deepEqual(rootAnchorProblems(roots), [])
@@ -123,7 +143,7 @@ test('the identified web rules remain in their scoped agent instructions', () =>
         [
             'C-016',
             'apps/web/AGENTS.md',
-            /WEB-CODEX-08:[\s\S]*IndexedDB[\s\S]*IoT MQTT config exception/,
+            /WEB-CODEX-08:[\s\S]*useIotStore[\s\S]*encryptedPassword[\s\S]*IndexedDB/,
         ],
         [
             'C-016',
@@ -274,6 +294,16 @@ test('Codex loader evidence covers every probed scope and the Claude out-of-scop
     )
 })
 
+test('Codex loader evidence rejects marker-only prompt matches', () => {
+    const partialFile = structuredClone(codexLoaderEvidence)
+    partialFile.contexts[0].full_file_match_only = false
+    assert.ok(
+        codexLoaderEvidenceProblems(partialFile, partialFile.instruction_file_sha256).some(
+            (problem) => problem.includes('complete instruction files: root'),
+        ),
+    )
+})
+
 test('Codex loader evidence rejects missing, duplicate, unexpected, or incorrectly loaded contexts', () => {
     const missing = { ...codexLoaderEvidence, contexts: codexLoaderEvidence.contexts.slice(1) }
     assert.ok(
@@ -389,6 +419,20 @@ test('Claude loader evidence proves root and scoped markers are injected in ance
             traceability.baseline_commit,
         ),
         [],
+    )
+})
+
+test('Claude loader evidence rejects marker-only prompt matches', () => {
+    const partialFile = structuredClone(claudeLoaderEvidence)
+    partialFile.contexts.find(
+        (context) => context.cwd === '.',
+    ).marker_results.root.full_file_match = false
+    assert.ok(
+        claudeLoaderEvidenceProblems(
+            partialFile,
+            partialFile.instruction_file_sha256,
+            traceability.baseline_commit,
+        ).some((problem) => problem.includes('complete instruction file for root: root')),
     )
 })
 

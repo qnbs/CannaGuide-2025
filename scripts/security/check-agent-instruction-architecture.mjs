@@ -10,6 +10,7 @@ import {
     agentPolicyProblems,
     ciStatusNeeds,
     discoverInstructionFiles,
+    normativePolicyText,
 } from './check-agent-policy.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
@@ -630,6 +631,11 @@ export function codexLoaderEvidenceProblems(evidence, currentHashes) {
             continue
         }
         if (context.exit_code !== 0) problems.push('Codex loader context failed: ' + name)
+        if (context.full_file_match_only !== true) {
+            problems.push(
+                'Codex loader evidence does not verify complete instruction files: ' + name,
+            )
+        }
         if (
             !Array.isArray(context.loaded) ||
             JSON.stringify(context.loaded) !== JSON.stringify(expected)
@@ -718,6 +724,20 @@ export function claudeLoaderEvidenceProblems(evidence, currentHashes, expectedBa
             const shouldBePresent = present.includes(marker)
             if (observed?.present !== shouldBePresent) {
                 problems.push('Claude prompt marker scope differs for ' + name + ': ' + marker)
+            } else if (shouldBePresent && observed.full_file_match !== true) {
+                problems.push(
+                    'Claude prompt did not verify the complete instruction file for ' +
+                        name +
+                        ': ' +
+                        marker,
+                )
+            } else if (!shouldBePresent && observed.full_file_match !== false) {
+                problems.push(
+                    'Claude absent marker has inconsistent full-file evidence for ' +
+                        name +
+                        ': ' +
+                        marker,
+                )
             } else if (
                 shouldBePresent &&
                 (!Number.isInteger(observed.position) ||
@@ -940,7 +960,7 @@ export function pr777EvidenceProblems(traceability, evidence) {
 export function rootAnchorProblems(rootFiles) {
     const problems = []
     for (const [name, anchors] of Object.entries(ROOT_ANCHORS)) {
-        const text = rootFiles[name] || ''
+        const text = normativePolicyText(rootFiles[name] || '')
         for (const [label, pattern] of anchors) {
             if (!pattern.test(text)) problems.push(name + ': missing global ' + label)
         }

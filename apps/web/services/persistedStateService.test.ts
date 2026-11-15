@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
     resumePersistence: vi.fn(),
     runExclusive: vi.fn(),
     commitRecoveryEpoch: vi.fn(),
+    clearFailureMarkers: vi.fn(),
 }))
 
 vi.mock('@/bootstrap/persistenceCoordinator', () => ({
@@ -45,6 +46,9 @@ vi.mock('@/stores/snapshotRevision', () => ({
 vi.mock('@/services/migration/persistedSnapshot', () => ({
     migratePersistedSnapshot: mocks.migrate,
 }))
+vi.mock('@/services/persistenceFailureMarker', () => ({
+    clearAllSnapshotSaveFailures: mocks.clearFailureMarkers,
+}))
 vi.mock('@/constants', () => ({ REDUX_STATE_KEY: 'primary' }))
 
 describe('persistedStateService', () => {
@@ -67,6 +71,10 @@ describe('persistedStateService', () => {
 
         await expect(replacePrimaryPersistedSnapshot('{"version":1}')).resolves.toBe(true)
         expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated:{"version":1}')
+        expect(mocks.clearFailureMarkers).toHaveBeenCalledOnce()
+        expect(mocks.setItem.mock.invocationCallOrder[0]).toBeLessThan(
+            mocks.clearFailureMarkers.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
     })
 
     it('does not keep this page saving after a replacement the caller reloads for', async () => {
@@ -77,12 +85,23 @@ describe('persistedStateService', () => {
         expect(mocks.continueSaving).toHaveBeenCalledWith(false)
     })
 
+    it('keeps failure markers when an imported snapshot cannot be written', async () => {
+        const { replacePrimaryPersistedSnapshot } = await import('./persistedStateService')
+        const quota = new DOMException('State quota exceeded', 'QuotaExceededError')
+        mocks.setItem.mockRejectedValueOnce(quota)
+
+        await expect(replacePrimaryPersistedSnapshot('{"version":1}')).rejects.toBe(quota)
+
+        expect(mocks.clearFailureMarkers).not.toHaveBeenCalled()
+    })
+
     it('keeps this page saving after the repair at start, which does not reload', async () => {
         const { tryRepairPrimaryPersistedSnapshot } = await import('./persistedStateService')
 
         await expect(tryRepairPrimaryPersistedSnapshot('{"version":1}')).resolves.toBe(true)
 
         expect(mocks.continueSaving).toHaveBeenCalledWith(true)
+        expect(mocks.clearFailureMarkers).not.toHaveBeenCalled()
     })
 
     const createDependentWrite = (applyError?: Error) => {
@@ -116,6 +135,10 @@ describe('persistedStateService', () => {
         expect(mocks.suspendPersistence).toHaveBeenCalledOnce()
         expect(mocks.runExclusive).toHaveBeenCalledOnce()
         expect(mocks.commitRecoveryEpoch).toHaveBeenCalledOnce()
+        expect(mocks.clearFailureMarkers).toHaveBeenCalledOnce()
+        expect(mocks.commitRecoveryEpoch.mock.invocationCallOrder[0]).toBeLessThan(
+            mocks.clearFailureMarkers.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+        )
         expect(mocks.setItem).toHaveBeenCalledWith('primary', 'migrated:restored-snapshot')
         expect(order).toEqual(['apply', 'primary'])
         expect(mocks.resumePersistence).not.toHaveBeenCalled()
@@ -272,5 +295,6 @@ describe('persistedStateService', () => {
         expect(mocks.getItem).not.toHaveBeenCalled()
         expect(mocks.setItem).not.toHaveBeenCalled()
         expect(mocks.removeItem).not.toHaveBeenCalled()
+        expect(mocks.clearFailureMarkers).not.toHaveBeenCalled()
     })
 })

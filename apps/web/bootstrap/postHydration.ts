@@ -12,6 +12,7 @@ import type { FlushPersistedState } from './persistence'
 export const runPostHydrationServices = async (
     hydratedStore: AppStore,
     flushPersistedState?: FlushPersistedState,
+    onLocaleReady?: () => void,
 ): Promise<void> => {
     // FIRST, before any service that can reach the network.
     //
@@ -62,6 +63,8 @@ export const runPostHydrationServices = async (
             })
         }
     }
+
+    onLocaleReady?.()
 
     // Shell is interactive once core store + i18n are ready; background services may still init.
     getUISnapshot().setAppReady(true)

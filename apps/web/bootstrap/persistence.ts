@@ -4,28 +4,14 @@ import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { buildPersistedSnapshot } from '@/services/persistedSnapshotFormat'
+import {
+    clearSnapshotSaveFailureForTab,
+    getPersistenceFailureMarkerTabId,
+    markPendingSnapshotSaveFailure,
+} from '@/services/persistenceFailureMarker'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
-
-const PENDING_SAVE_FAILURE_KEY = 'cannaguide.pendingSnapshotSaveFailure'
-
-const setPendingSaveFailure = (pending: boolean): void => {
-    try {
-        if (pending) localStorage.setItem(PENDING_SAVE_FAILURE_KEY, '1')
-        else localStorage.removeItem(PENDING_SAVE_FAILURE_KEY)
-    } catch {
-        // The marker is best-effort: localStorage must never block IndexedDB persistence.
-    }
-}
-
-export const hasPendingPersistenceFailure = (): boolean => {
-    try {
-        return localStorage.getItem(PENDING_SAVE_FAILURE_KEY) === '1'
-    } catch {
-        return false
-    }
-}
 
 /**
  * @param onStaleSnapshot called with the refusal when a save is refused because
@@ -43,9 +29,9 @@ export const setupPersistedStateSync = (
     onStaleSnapshot?: (refusal: StaleSnapshotError) => void,
     onSaveFailure?: (error: unknown) => void,
 ): FlushPersistedState => {
+    const failureMarkerTabId = getPersistenceFailureMarkerTabId()
     let failing = false
     const reportFailure = (error: unknown): void => {
-        setPendingSaveFailure(true)
         if (failing) return
         failing = true
         onSaveFailure?.(error)
@@ -53,21 +39,31 @@ export const setupPersistedStateSync = (
     const saveState = async () => {
         try {
             const saved = await schedulePersistenceWrite(async () => {
-                const state = hydratedStore.getState() as RootState
-                const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
-                    state.simulation,
-                )
-                const stateToSave = buildPersistedSnapshot(
-                    state,
-                    optimizedSimulation,
-                    pendingLegacySecretPaths(),
-                )
-                const serializedState = JSON.stringify(stateToSave)
-                await writeSnapshot(serializedState)
+                try {
+                    const state = hydratedStore.getState() as RootState
+                    const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
+                        state.simulation,
+                    )
+                    const stateToSave = buildPersistedSnapshot(
+                        state,
+                        optimizedSimulation,
+                        pendingLegacySecretPaths(),
+                    )
+                    const serializedState = JSON.stringify(stateToSave)
+                    await writeSnapshot(serializedState)
+                    // Do this while still inside the scheduled write slot. A later
+                    // save in another tab must not clear this tab's failed lineage.
+                    clearSnapshotSaveFailureForTab(failureMarkerTabId)
+                } catch (error) {
+                    if (!(error instanceof StaleSnapshotError)) {
+                        // Record the failure before the coordinator releases its write slot.
+                        markPendingSnapshotSaveFailure(failureMarkerTabId)
+                    }
+                    throw error
+                }
             })
             if (saved) {
                 failing = false
-                setPendingSaveFailure(false)
             }
             return saved
         } catch (e) {

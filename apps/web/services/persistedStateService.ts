@@ -6,6 +6,7 @@ import {
 } from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import { repairSnapshot, replaceSnapshot, updateSnapshot } from '@/stores/snapshotRevision'
+import { clearAllSnapshotSaveFailures } from './persistenceFailureMarker'
 
 export interface RecoverySnapshotReplacementResult {
     success: boolean
@@ -44,6 +45,7 @@ export const replacePrimaryPersistedSnapshot = async (
         // tab made since the page read the revision; the other callers reload.
         if (continueSaving) await repairSnapshot(migratedSnapshot)
         else await replaceSnapshot(migratedSnapshot)
+        if (!continueSaving) clearAllSnapshotSaveFailures()
     })
     return replaced
 }
@@ -73,6 +75,7 @@ export const replacePrimaryPersistedSnapshotForRecovery = async (
                     throw new Error('Could not commit the cross-tab restore fence.')
                 }
                 recoveryEpochCommitted = true
+                clearAllSnapshotSaveFailures()
                 return { success: true, reloadRequired: true }
             } catch (error) {
                 if (primaryReplaced) {

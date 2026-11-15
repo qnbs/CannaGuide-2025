@@ -15,6 +15,7 @@ import {
     renderUnverifiedTabNotice,
 } from './render'
 import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
+import { getPendingSnapshotSaveFailureMarkers } from '@/services/persistenceFailureMarker'
 import {
     claimWriterRole,
     holdsWriterRole,
@@ -23,11 +24,7 @@ import {
     watchForCacheRestore,
 } from './writerOwnership'
 import { hydrateApplicationStores } from './store'
-import {
-    hasPendingPersistenceFailure,
-    setupPersistedStateSync,
-    type FlushPersistedState,
-} from './persistence'
+import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
@@ -136,12 +133,13 @@ const mayStartSaving = (): boolean => {
 const runServicesUnlessStale = async (
     store: AppStore,
     flushPersistedState: FlushPersistedState,
+    onLocaleReady?: () => void,
 ): Promise<void> => {
     if (staleSnapshotHandled) {
         await applyLocalOnlyPrivacy(store)
         return
     }
-    await runPostHydrationServices(store, flushPersistedState)
+    await runPostHydrationServices(store, flushPersistedState, onLocaleReady)
 }
 
 const moveLegacySecrets = async (store: AppStore): Promise<boolean> => {
@@ -200,6 +198,7 @@ export const mountHydratedApp = async (): Promise<void> => {
 
         const { hydratedStore } = await hydrateApplicationStores()
         if (!mayStartSaving()) return
+        const previousSaveFailures = getPendingSnapshotSaveFailureMarkers()
         const secretsMoved = await moveLegacySecrets(hydratedStore)
         await startCrdtLayer(hydratedStore)
 
@@ -208,9 +207,22 @@ export const mountHydratedApp = async (): Promise<void> => {
             handleRefusedSave,
             notifySaveFailure,
         )
-        if (hasPendingPersistenceFailure()) notifyPreviousSaveFailure()
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
-        await runServicesUnlessStale(hydratedStore, flushPersistedState)
+        await runServicesUnlessStale(hydratedStore, flushPersistedState, () => {
+            // Post-hydration restores the saved language before translating this warning.
+            const stillPending = new Set(
+                getPendingSnapshotSaveFailureMarkers().map(
+                    ({ tabId, token }) => `${tabId}:${token}`,
+                ),
+            )
+            if (
+                previousSaveFailures.some(({ tabId, token }) =>
+                    stillPending.has(`${tabId}:${token}`),
+                ) &&
+                !staleSnapshotHandled
+            )
+                notifyPreviousSaveFailure()
+        })
     } catch (error) {
         await showStartupError(error)
     }

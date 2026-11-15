@@ -3,6 +3,7 @@ import type { AppStore } from '@/stores/store'
 import { REDUX_STATE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
+import { hasPendingSnapshotSaveFailure } from '@/services/persistenceFailureMarker'
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
@@ -58,6 +59,8 @@ const savedSnapshot = (): string => {
 describe('persisted settings snapshot (#654)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        localStorage.clear()
+        sessionStorage.clear()
         // These tests save without a revision, as the writer-lock holder may; the
         // revision check itself is covered in stores/snapshotRevision.test.ts.
         setUncheckedWritePermit(() => true)
@@ -88,6 +91,8 @@ describe('persisted settings snapshot (#654)', () => {
 describe('a save that fails (GH #686)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        localStorage.clear()
+        sessionStorage.clear()
         setUncheckedWritePermit(() => true)
     })
 
@@ -116,31 +121,72 @@ describe('a save that fails (GH #686)', () => {
     })
 
     it('keeps a payload-free warning marker until a later snapshot save succeeds', async () => {
-        const markerKey = 'cannaguide.pendingSnapshotSaveFailure'
-        localStorage.clear()
         vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
         const onSaveFailure = vi.fn()
         const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
+        sessionStorage.clear()
+        const otherTabFlush = setupPersistedStateSync(storeWithKey())
         vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
 
         await expect(flush()).resolves.toBe(false)
 
         expect(localStorage.length).toBe(1)
-        expect(localStorage.getItem(markerKey)).toBe('1')
-        expect(localStorage.getItem(markerKey)).not.toContain(CANARY)
-        expect(localStorage.getItem(markerKey)).not.toContain(PORCUPINE_CANARY)
-
-        // Another tab's successful save may clear the shared marker while this
-        // tab is still failing; a repeated failure must restore it.
-        localStorage.removeItem(markerKey)
-        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
-        await expect(flush()).resolves.toBe(false)
-        expect(localStorage.getItem(markerKey)).toBe('1')
+        const markerValues = Array.from({ length: localStorage.length }, (_, index) =>
+            localStorage.getItem(localStorage.key(index) ?? ''),
+        )
+        expect(markerValues).toHaveLength(1)
+        expect(markerValues[0]).toBeTruthy()
+        expect(JSON.stringify(markerValues)).not.toContain(CANARY)
+        expect(JSON.stringify(markerValues)).not.toContain(PORCUPINE_CANARY)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
         expect(onSaveFailure).toHaveBeenCalledOnce()
+
+        // Another tab that started before the failure has not observed it and
+        // cannot clear this tab's marker when it saves successfully.
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(otherTabFlush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
 
         vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
         await expect(flush()).resolves.toBe(true)
-        expect(localStorage.getItem(markerKey)).toBeNull()
+        expect(hasPendingSnapshotSaveFailure()).toBe(false)
+    })
+
+    it('records an ordinary failure before the scheduled write slot is released', async () => {
+        let failureInWriteSlot!: () => void
+        const writeFailed = new Promise<void>((resolve) => {
+            failureInWriteSlot = resolve
+        })
+        let releaseFailure!: () => void
+        const holdFailedSlot = new Promise<void>((resolve) => {
+            releaseFailure = resolve
+        })
+        vi.mocked(schedulePersistenceWrite).mockImplementationOnce(async (write) => {
+            try {
+                await write()
+                return true
+            } catch (error) {
+                failureInWriteSlot()
+                await holdFailedSlot
+                throw error
+            }
+        })
+        const failedTabFlush = setupPersistedStateSync(storeWithKey())
+        sessionStorage.clear()
+        const otherTabFlush = setupPersistedStateSync(storeWithKey())
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
+
+        const failedWrite = failedTabFlush()
+        await writeFailed
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+
+        vi.mocked(indexedDBStorage.setItem).mockResolvedValueOnce(undefined)
+        await expect(otherTabFlush()).resolves.toBe(true)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
+
+        releaseFailure()
+        await expect(failedWrite).resolves.toBe(false)
+        expect(hasPendingSnapshotSaveFailure()).toBe(true)
     })
 
     it('keeps the IndexedDB result authoritative when localStorage is unavailable', async () => {

@@ -17,6 +17,7 @@ import {
     removePrimaryPersistedSnapshot,
     updatePrimaryPersistedSnapshot,
 } from '@/services/persistedStateService'
+import { clearAllSnapshotSaveFailures } from '@/services/persistenceFailureMarker'
 
 export const simulationProfilePresets: Record<
     AppSettings['simulation']['simulationProfile'],
@@ -273,6 +274,7 @@ export const resetAllData = createAsyncThunk<void>('settings/resetAllData', asyn
     await porcupineKeyService.clearApiKey()
     // Without this the pagehide save of the reload could write the old state back.
     await stopPersistenceForOwnershipLoss()
+    clearAllSnapshotSaveFailures()
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })

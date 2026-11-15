@@ -33,11 +33,14 @@ import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
 const addNotification = vi.hoisted(() => vi.fn())
-const pendingSaveFailure = vi.hoisted(() => vi.fn(() => false))
+const pendingSaveFailureMarkers = vi.hoisted(() =>
+    vi.fn(() => [] as { tabId: string; token: string }[]),
+)
+const locale = vi.hoisted(() => ({ value: 'browser' }))
 
 vi.mock('@/i18n', () => ({
     i18nPromise: Promise.resolve(),
-    getT: () => (key: string) => key,
+    getT: () => (key: string) => `${locale.value}:${key}`,
 }))
 vi.mock('@/stores/useUIStore', () => ({
     getUISnapshot: () => ({ addNotification }),
@@ -67,9 +70,13 @@ vi.mock('./persistenceCoordinator', () => ({
 vi.mock('./store', () => ({ hydrateApplicationStores: vi.fn(async () => ({ hydratedStore: {} })) }))
 vi.mock('./crdt', () => ({ initializeCrdtLayer: vi.fn() }))
 vi.mock('./postHydration', () => ({
-    runPostHydrationServices: vi.fn(() => {
-        order.push('services')
-    }),
+    runPostHydrationServices: vi.fn(
+        async (_store: unknown, _flush: unknown, onLocaleReady?: () => void) => {
+            order.push('services')
+            locale.value = 'saved'
+            onLocaleReady?.()
+        },
+    ),
 }))
 vi.mock('@/stores/snapshotRevision', () => {
     class StaleSnapshotError extends Error {}
@@ -92,8 +99,10 @@ vi.mock('./secrets', () => ({
         order.push('backup')
     }),
 }))
+vi.mock('@/services/persistenceFailureMarker', () => ({
+    getPendingSnapshotSaveFailureMarkers: pendingSaveFailureMarkers,
+}))
 vi.mock('./persistence', () => ({
-    hasPendingPersistenceFailure: pendingSaveFailure,
     setupPersistedStateSync: vi.fn(() => {
         order.push('sync')
         return () => {
@@ -107,7 +116,8 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
         order.length = 0
-        pendingSaveFailure.mockReturnValue(false)
+        pendingSaveFailureMarkers.mockReturnValue([])
+        locale.value = 'browser'
     })
 
     it('rewrites the stored snapshot and its backup at once after moving a key', async () => {
@@ -138,16 +148,24 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
     })
 
     it('warns when the previous session had an observed snapshot save failure', async () => {
-        pendingSaveFailure.mockReturnValue(true)
+        pendingSaveFailureMarkers.mockReturnValue([{ tabId: 'tab-a', token: 'opaque-token' }])
         vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
 
         await mountHydratedApp()
         await vi.waitFor(() =>
             expect(addNotification).toHaveBeenCalledWith({
-                message: 'common.previousSaveFailed',
+                message: 'saved:common.previousSaveFailed',
                 type: 'error',
             }),
         )
+    })
+
+    it('does not warn when no previous save failure is pending', async () => {
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+
+        await mountHydratedApp()
+
+        expect(addNotification).not.toHaveBeenCalled()
     })
 
     it('a failing migration does not stop the start and forces no save', async () => {

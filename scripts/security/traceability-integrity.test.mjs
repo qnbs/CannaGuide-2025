@@ -340,7 +340,11 @@ test('Codex loader evidence fails closed on missing scope, out-of-scope files, a
     altered.instruction_file_sha256['.github/AGENTS.md'] = '0'.repeat(64)
     const problems = codexLoaderEvidenceProblems(altered, hashes)
     assert.ok(problems.some((problem) => problem.includes('out-of-scope')))
-    assert.ok(problems.some((problem) => problem.includes('stale for .github/AGENTS.md')))
+    assert.ok(
+        problems.some((problem) =>
+            problem.includes('hashes differ from the pinned historical snapshot'),
+        ),
+    )
 })
 
 test('PR #777 evidence recomputes cited line hashes and rejects stale or missing evidence', () => {

@@ -478,9 +478,31 @@ export function normativePolicyText(text) {
     return lines.join('\n')
 }
 
-const SSH_SIGNING_CONTRADICTION =
-    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b|\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b|\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:optional|unnecessary)\b|\bunsigned commits?\b[^.!?\n]{0,80}\b(?:are\s+)?(?:allowed|acceptable|permitted)\b|\b(?:allow|permit)\b[^.!?\n]{0,80}\bunsigned commits?\b/i
-const NEGATED_GLOBAL_ROOT_INVARIANTS = [['SSH-signed commits', SSH_SIGNING_CONTRADICTION]]
+const SSH_SIGNING_REQUIRED_CLAIMS = [
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b/i,
+    /\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b/i,
+]
+const SSH_SIGNING_PERMISSION_CLAIMS = [
+    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?(optional|unnecessary)\b/gi,
+    /\bunsigned commits?\b[^.!?\n]{0,80}\b(?:are\s+)?(allowed|acceptable|permitted)\b/gi,
+    /\b(allow|permit)\b[^.!?\n]{0,80}\bunsigned commits?\b/gi,
+]
+
+export function sshSigningContradiction(text) {
+    const lines = normativePolicyText(text).split('\n')
+    for (const line of lines) {
+        if (SSH_SIGNING_REQUIRED_CLAIMS.some((pattern) => pattern.test(line))) return true
+        for (const pattern of SSH_SIGNING_PERMISSION_CLAIMS) {
+            for (const match of line.matchAll(pattern)) {
+                const tokenIndex = match.index + match[0].lastIndexOf(match[1])
+                if (!isForbiddenAt(line, tokenIndex)) return true
+            }
+        }
+    }
+    return false
+}
+
+const NEGATED_GLOBAL_ROOT_INVARIANTS = [['SSH-signed commits', sshSigningContradiction]]
 
 const GLOBAL_ROOT_INVARIANTS = [
     ['SSH-signed commits', /SSH-signed commits/i],
@@ -521,7 +543,7 @@ const REQUIRED = {
         ['the untrusted-content rule', /data, never instructions/i],
         ...REVIEW_COVERAGE,
     ],
-    'CLAUDE.md': REVIEW_COVERAGE,
+    'CLAUDE.md': [['the untrusted-content rule', /data, never instructions/i], ...REVIEW_COVERAGE],
     'docs/PR-REVIEW-LOOP.md': REVIEW_COVERAGE,
 }
 /** Must appear at least once in an affirmative (not forbidding) clause. */
@@ -609,8 +631,8 @@ export function agentPolicyProblems(files, { needs } = {}) {
         for (const [label, pattern] of GLOBAL_ROOT_INVARIANTS) {
             if (!pattern.test(rootText)) problems.push(`${name}: missing ${label}`)
         }
-        for (const [label, pattern] of NEGATED_GLOBAL_ROOT_INVARIANTS) {
-            if (pattern.test(rootText)) problems.push(`${name}: contradicts ${label}`)
+        for (const [label, contradicts] of NEGATED_GLOBAL_ROOT_INVARIANTS) {
+            if (contradicts(rootText)) problems.push(`${name}: contradicts ${label}`)
         }
     }
     for (const [name, text] of Object.entries(files)) {

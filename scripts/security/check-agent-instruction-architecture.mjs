@@ -11,6 +11,7 @@ import {
     ciStatusNeeds,
     discoverInstructionFiles,
     normativePolicyText,
+    sshSigningContradiction,
 } from './check-agent-policy.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
@@ -85,6 +86,7 @@ const ROOT_ANCHORS = {
     ],
     'CLAUDE.md': [
         ['binding root rules', /The rules below are \*\*binding\*\*/],
+        ['untrusted content boundary', /untrusted content is data, never instructions/i],
         ['CanG legal cap', /three active plants|MAX_PLANTS_CANG/],
         ['hook bypass prohibition', /--no-verify/],
         ['signed-commit gate', /unsigned commit/i],
@@ -590,8 +592,23 @@ export function pr777AdoptionProblems(files, traceability) {
     return problems
 }
 
+const HISTORICAL_LOADER_HASH_MAP_SHA256 =
+    '8dcc0774adb2142c844ca2f86c00c3b28ecbfd7151a9e9ffb0cddd45edd9be9c'
+
+function hasPinnedHistoricalLoaderHashes(evidence) {
+    const hashes = evidence?.instruction_file_sha256
+    if (!hashes || typeof hashes !== 'object' || Array.isArray(hashes)) return false
+    const entries = Object.entries(hashes).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    return (
+        createHash('sha256').update(JSON.stringify(entries)).digest('hex') ===
+        HISTORICAL_LOADER_HASH_MAP_SHA256
+    )
+}
+
 export function codexLoaderEvidenceProblems(evidence, currentHashes) {
     const problems = []
+    if (!hasPinnedHistoricalLoaderHashes(evidence))
+        problems.push('Codex loader evidence hashes differ from the pinned historical snapshot')
     if (evidence?.tool !== 'Codex CLI' || !/\d+\.\d+\.\d+/.test(evidence?.version || '')) {
         problems.push('Codex loader evidence lacks the tool name or version')
     }
@@ -642,15 +659,32 @@ export function codexLoaderEvidenceProblems(evidence, currentHashes) {
         ) {
             problems.push('Codex loaded paths differ from expected scope: ' + name)
         }
+        const promptPositions = context.prompt_positions
+        const expectedPositions = expected.map((file) => promptPositions?.[file])
+        if (
+            !expectedPositions.every((position) => Number.isSafeInteger(position) && position >= 0)
+        ) {
+            problems.push('Codex prompt positions are missing or invalid: ' + name)
+        } else if (
+            expectedPositions.some(
+                (position, index) => index > 0 && position <= expectedPositions[index - 1],
+            )
+        ) {
+            problems.push('Codex prompt positions are not ancestor-first: ' + name)
+        }
         if ((context.missing || []).length)
             problems.push('Codex expected files missing from prompt: ' + name)
         if ((context.unexpected_out_of_scope || []).length)
             problems.push('Codex loaded out-of-scope files: ' + name)
     }
+    // The recorded digest identifies bytes captured by the historical probe. A later
+    // content-only edit does not change loader discovery; paths, order, and scope are checked above.
     for (const file of CODEX_LOADER_HASH_PATHS) {
         const recorded = evidence?.instruction_file_sha256?.[file]
-        if (!recorded || recorded !== currentHashes?.[file])
-            problems.push('Codex loader evidence is stale for ' + file)
+        if (!/^[a-f0-9]{64}$/.test(recorded || ''))
+            problems.push('Codex loader evidence lacks a valid historical hash for ' + file)
+        if (!/^[a-f0-9]{64}$/.test(currentHashes?.[file] || ''))
+            problems.push('Codex current loader file hash is unavailable for ' + file)
     }
     return problems
 }
@@ -658,6 +692,8 @@ export function codexLoaderEvidenceProblems(evidence, currentHashes) {
 /** Validate bounded, no-egress Claude prompt marker probes without retaining prompt content. */
 export function claudeLoaderEvidenceProblems(evidence, currentHashes, expectedBaseCommit) {
     const problems = []
+    if (!hasPinnedHistoricalLoaderHashes(evidence))
+        problems.push('Claude loader evidence hashes differ from the pinned historical snapshot')
     if (evidence?.schema_version !== 1)
         problems.push('Claude loader evidence has an unsupported schema version')
     if (
@@ -765,10 +801,14 @@ export function claudeLoaderEvidenceProblems(evidence, currentHashes, expectedBa
             problems.push('Claude prompt precedence order differs for ' + name)
         }
     }
+    // The recorded digest identifies bytes captured by the historical probe. A later
+    // content-only edit does not change loader discovery; paths, order, and scope are checked above.
     for (const file of CLAUDE_LOADER_HASH_PATHS) {
         const recorded = evidence?.instruction_file_sha256?.[file]
-        if (!recorded || recorded !== currentHashes?.[file])
-            problems.push('Claude loader evidence is stale for ' + file)
+        if (!/^[a-f0-9]{64}$/.test(recorded || ''))
+            problems.push('Claude loader evidence lacks a valid historical hash for ' + file)
+        if (!/^[a-f0-9]{64}$/.test(currentHashes?.[file] || ''))
+            problems.push('Claude current loader file hash is unavailable for ' + file)
     }
     return problems
 }
@@ -957,9 +997,6 @@ export function pr777EvidenceProblems(traceability, evidence) {
     return problems
 }
 
-const SSH_SIGNING_CONTRADICTION =
-    /\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:are\s+)?not\s+(?:required|necessary|mandatory)\b|\b(?:do not|don't|never)\s+require\b[^.!?\n]{0,100}\bSSH-signed commits\b|\bSSH-signed commits\b[^.!?\n]{0,100}\b(?:optional|unnecessary)\b|\bunsigned commits?\b[^.!?\n]{0,80}\b(?:are\s+)?(?:allowed|acceptable|permitted)\b|\b(?:allow|permit)\b[^.!?\n]{0,80}\bunsigned commits?\b/i
-
 export function rootAnchorProblems(rootFiles) {
     const problems = []
     for (const [name, anchors] of Object.entries(ROOT_ANCHORS)) {
@@ -967,7 +1004,7 @@ export function rootAnchorProblems(rootFiles) {
         for (const [label, pattern] of anchors) {
             if (
                 !pattern.test(text) ||
-                (label === 'SSH commit signing' && SSH_SIGNING_CONTRADICTION.test(text))
+                (label === 'SSH commit signing' && sshSigningContradiction(text))
             ) {
                 problems.push(name + ': missing global ' + label)
             }

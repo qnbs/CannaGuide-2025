@@ -23,6 +23,7 @@
  *
  * Usage: node scripts/security/check-agent-policy.mjs
  */
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
@@ -31,7 +32,7 @@ import { pathToFileURL } from 'node:url'
 const ROOT = path.resolve(import.meta.dirname, '../..')
 
 /** Every file ci.yml routes to the policy job (POLICY_PATHS, minus generated graphify-out). */
-export const AGENT_FILES = [
+const POLICY_REFERENCE_FILES = [
     'AGENTS.md',
     'CLAUDE.md',
     '.github/copilot-instructions.md',
@@ -58,6 +59,30 @@ export const AGENT_FILES = [
     '.github/CLAUDE.md',
     '.github/AGENTS.md',
 ]
+
+/** Find tracked and non-ignored working-tree agent instructions, including new scopes. */
+export function instructionFilesFromGitOutput(paths) {
+    return [
+        ...new Set(
+            String(paths)
+                .split('\0')
+                .filter((file) => /(^|\/)(AGENTS|CLAUDE)\.md$/.test(file)),
+        ),
+    ].sort()
+}
+
+export function discoverInstructionFiles(root = ROOT) {
+    const paths = execFileSync(
+        'git',
+        ['ls-files', '--cached', '--others', '--exclude-standard', '-z'],
+        { cwd: root, encoding: 'utf8' },
+    )
+    return instructionFilesFromGitOutput(paths)
+}
+
+export const AGENT_FILES = [
+    ...new Set([...POLICY_REFERENCE_FILES, ...discoverInstructionFiles()]),
+].sort()
 
 /**
  * Clause boundaries: sentence ends, ` -- ` and contrast words. Not `;`: it

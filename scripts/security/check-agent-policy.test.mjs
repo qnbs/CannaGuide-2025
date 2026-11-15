@@ -7,7 +7,9 @@ import {
     AGENT_FILES,
     agentPolicyProblems,
     ciStatusNeeds,
+    discoverInstructionFiles,
     heavyCommandRule,
+    instructionFilesFromGitOutput,
 } from './check-agent-policy.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
@@ -47,6 +49,25 @@ test('the real agent instruction files pass the gate', () => {
     const files = Object.fromEntries(AGENT_FILES.map((name) => [name, read(name)]))
     const needs = ciStatusNeeds(read('.github/workflows/ci.yml'))
     assert.deepEqual(agentPolicyProblems(files, { needs }), [])
+})
+
+test('new tracked and untracked nested instruction paths reach policy validation', () => {
+    const discovered = instructionFilesFromGitOutput(
+        ['tracked-scope/CLAUDE.md', 'new-scope/AGENTS.md', 'new-scope/readme.md', ''].join('\0'),
+    )
+    assert.deepEqual(discovered, ['new-scope/AGENTS.md', 'tracked-scope/CLAUDE.md'])
+    assert.ok(AGENT_FILES.includes('apps/web/AGENTS.md'))
+    assert.ok(discoverInstructionFiles().includes('apps/web/AGENTS.md'))
+
+    const files = Object.fromEntries(
+        discovered.map((file) => [
+            file,
+            file === 'new-scope/AGENTS.md'
+                ? 'Use git commit --no-verify when hooks are slow.'
+                : 'Review the scoped task.',
+        ]),
+    )
+    assert.ok(agentPolicyProblems(files).some((problem) => problem.includes('--no-verify')))
 })
 
 test('sound fixtures pass, including prohibitions that name the banned flag', () => {

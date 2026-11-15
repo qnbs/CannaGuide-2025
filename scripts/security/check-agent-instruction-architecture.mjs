@@ -5,7 +5,12 @@ import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
-import { AGENT_FILES, agentPolicyProblems, ciStatusNeeds } from './check-agent-policy.mjs'
+import {
+    AGENT_FILES,
+    agentPolicyProblems,
+    ciStatusNeeds,
+    discoverInstructionFiles,
+} from './check-agent-policy.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 export const SCOPED_INSTRUCTION_FILES = [
@@ -948,7 +953,7 @@ const NEGATED_POLICY_LANGUAGE =
 const POLICY_ACTION_SOURCE = String.raw`(?:use|install|pin|require|run(?:\s+on)?|raise|increase|expand|grow|enable|activate|turn\s+on|delete|remove|allow|permit|accept|budget|bypass)`
 const POLICY_ACTION_LANGUAGE = new RegExp(String.raw`\b${POLICY_ACTION_SOURCE}\b`, 'gi')
 const CONFLICT_CLAUSE_BOUNDARY = new RegExp(
-    String.raw`[;!?]|\b(?:but|however|instead|then|unless|otherwise|except)\b|(?:,|\b(?:and|or)\b)(?=\s*${POLICY_ACTION_SOURCE}\b)`,
+    String.raw`[;!?]|\b(?:but|however|instead|then|unless|otherwise|except)\b|,(?=\s*${POLICY_ACTION_SOURCE}\b)`,
     'gi',
 )
 const SCOPED_CONFLICTS = [
@@ -989,8 +994,14 @@ function conflictMatchIsNegated(clause, index, length) {
     const lastAction = actions.at(-1)
     const prefixNegatesMatch =
         lastNegation && (!lastAction || lastNegation.index > lastAction.index)
+    const coordinatedActionsShareNegation =
+        lastNegation &&
+        lastAction &&
+        lastNegation.index < lastAction.index &&
+        /\b(?:and|or)\b/i.test(before.slice(lastAction.index + lastAction[0].length))
     return (
         prefixNegatesMatch ||
+        coordinatedActionsShareNegation ||
         /\b(?:is|are)\s+(?:not allowed|prohibited|forbidden|unsupported)\b/i.test(after)
     )
 }
@@ -1031,6 +1042,17 @@ export function missingScopeProblems(expectedPaths, presentPaths) {
     return expectedPaths
         .filter((file) => !present.has(file))
         .map((file) => 'missing scoped instruction path ' + file)
+}
+
+/** Reject an unregistered instruction scope until traceability and loader evidence cover it. */
+export function unregisteredInstructionProblems(
+    discoveredPaths,
+    registeredPaths = SCOPED_INSTRUCTION_FILES,
+) {
+    const registered = new Set(['AGENTS.md', 'CLAUDE.md', ...registeredPaths])
+    return discoveredPaths
+        .filter((file) => /(^|\/)(AGENTS|CLAUDE)\.md$/.test(file) && !registered.has(file))
+        .map((file) => 'unregistered scoped instruction file ' + file)
 }
 
 export function missingLoadedInstructionProblems(expectedPaths, loadedPaths) {
@@ -1334,6 +1356,7 @@ function main() {
         ]),
     )
     const present = SCOPED_INSTRUCTION_FILES.filter((file) => existsSync(path.join(ROOT, file)))
+    const discoveredInstructions = discoverInstructionFiles(ROOT)
     const needs = ciStatusNeeds(readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8'))
     const scopeText = Object.fromEntries(
         SCOPED_INSTRUCTION_FILES.map((file) => [file, policyFiles[file]]),
@@ -1377,6 +1400,7 @@ function main() {
         ...pr777AdoptionProblems(pr777Files, traceability),
         ...rootAnchorProblems(rootFiles),
         ...scopedInstructionConflictProblems(scopeText),
+        ...unregisteredInstructionProblems(discoveredInstructions),
         ...missingScopeProblems(SCOPED_INSTRUCTION_FILES, present),
         ...sensitivePatternProblems({
             'docs/agent-instructions/claude-loader-evidence.json': readFileSync(

@@ -18,6 +18,7 @@ import {
     sensitivePatternProblems,
     sourceDestinationCoverageProblems,
     traceabilityProblems,
+    unregisteredInstructionProblems,
 } from './check-agent-instruction-architecture.mjs'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
@@ -90,6 +91,18 @@ test('missing and not-loaded nested instructions fail closed', () => {
     assert.deepEqual(missingLoadedInstructionProblems(expected, loaded), [
         'instruction was not loaded: apps/web/services/db/AGENTS.md',
     ])
+})
+
+test('new nested instruction paths fail until registered for traceability and loader evidence', () => {
+    assert.deepEqual(
+        unregisteredInstructionProblems([
+            'AGENTS.md',
+            'CLAUDE.md',
+            ...SCOPED_INSTRUCTION_FILES,
+            'new-scope/AGENTS.md',
+        ]),
+        ['unregistered scoped instruction file new-scope/AGENTS.md'],
+    )
 })
 
 test('the identified web rules remain in their scoped agent instructions', () => {
@@ -548,6 +561,20 @@ test('negative policy language does not hide a later affirmative clause', () => 
             `${line} must retain its affirmative conflict`,
         )
     }
+})
+
+test('shared negation applies to coordinated actions but not to a contrast', () => {
+    assert.deepEqual(
+        scopedInstructionConflictProblems({
+            'apps/web/AGENTS.md': 'Do not enable Gist sync or activate Sentry.',
+        }),
+        [],
+    )
+    assert.ok(
+        scopedInstructionConflictProblems({
+            'apps/web/AGENTS.md': 'Do not enable Gist sync, but activate Sentry.',
+        }).some((problem) => problem.includes('privacy integration activation')),
+    )
 })
 
 test('sensitive identity and credential patterns are rejected', () => {

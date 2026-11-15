@@ -60,6 +60,9 @@ test('Windows doctor and setup enforce the repository Node engine range', () => 
     const rootPackage = JSON.parse(readFileSync('package.json', 'utf8'))
     const windowsDoctor = readFileSync('scripts/windows-doctor.mjs', 'utf8')
     const windowsSetup = readFileSync('scripts/setup-windows.ps1', 'utf8')
+    const nodeEngineCheck = readFileSync('scripts/check-node-engine.mjs', 'utf8')
+    const setupNodePreflight = windowsSetup.indexOf('node ./scripts/check-node-engine.mjs')
+    const setupCorepack = windowsSetup.indexOf('corepack')
 
     assert.equal(rootPackage.engines.node, '>=24.15.0 <25')
     assert.match(windowsDoctor, /const enginesNode = packageJson\.engines\?\.node/)
@@ -67,6 +70,15 @@ test('Windows doctor and setup enforce the repository Node engine range', () => 
     assert.doesNotMatch(windowsDoctor, /major\s*>=\s*24/)
     assert.match(windowsSetup, /Node\.js >=24\.15\.0 <25/)
     assert.doesNotMatch(windowsSetup, /Node 24\+/)
+    assert.match(
+        nodeEngineCheck,
+        /nodeSatisfiesDeclaredEngines\(process\.versions\.node,\s*nodeRange\)/,
+    )
+    assert.notEqual(setupNodePreflight, -1)
+    assert.ok(
+        setupNodePreflight < setupCorepack,
+        'Node must be validated before Corepack or install steps',
+    )
 
     for (const [version, expected] of [
         ['24.14.9', false],

@@ -1,0 +1,140 @@
+{
+    "observed_at_utc": "2026-11-15T00:31:23.814859+00:00",
+    "pull_request": 777,
+    "url": "https://github.com/qnbs/CannaGuide-2025/pull/777",
+    "state": "open",
+    "base": "main",
+    "head_sha": "88e866819e68ddd857e162562c7d4476ba9728e3",
+    "mergeable": true,
+    "files": {
+        "AGENTS.md": {
+            "blob_sha": "9304bb85240271326f7be35c92759c94226a3dd1",
+            "sha256": "089ed22bce58035b905438fc2af56e3761928028422fd0c9d6097ced55d65e30",
+            "line_count": 210,
+            "line_hashes": {
+                "175": "c4ca8ec0d320bfcd01443ced7e47c56364ceb1c7e245139ba84185eefd399ee0",
+                "177": "bbc28f71e5d8f0478a16d7c2e1585898005e50fe7997e594441dec0f8513d1f6",
+                "178": "9b5715a79086c64d10963d7f899572d0f1ded3c2668178b828817b7109ff4a75",
+                "182": "7a0a74994b61e0678f6ee807cf8be286513ee7c6064cf352069a3c8884d88664",
+                "183": "1ef158d5707c3e552c723a1c44c6dc323692ed2d55ccc5b38ae11d63b6441643",
+                "184": "b7cd74dbfac00cd9a62b3f05a8a4959371dce4e75c095ad2b5d5c5873ea049cd",
+                "185": "c2c3b9aa3e0fd2694b25d7d1d83beb2a52aff14fc2bf55ca034314b6d11898cd"
+            },
+            "line_texts": {
+                "175": "**One stable-head correction.** Collect findings on one stable head, group them by root cause, and ship one fail-before/green-after fix. Then request one fresh review of that final head. Do not merge until two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not request a full bot review after every intermediate fix. Another full review only when the code changes again. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another full review. Do not push while that head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and \"outside diff range\" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable`. Refactor so the rule passes honestly. `REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a review. It is not a green check, and it is not a merge block once two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not merge a head that none of the three has reviewed. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once. Two other reviewers do not replace that request. Do not send a second `@codex review` while that request has not attached a review on that head. A review of an older commit does not cover the head. Follow `docs/PR-REVIEW-LOOP.md`.",
+                "177": "**Keep every PR under ~100 changed files.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits, 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`); do not rewrite that history. Review bots silently skip inline comments on",
+                "178": "larger PRs, so the loop never starts. Count this pull against its remote base. A local `main` may be stale or divergent. For a stacked pull, the `origin/<parent>` count is this pull and the `origin/main` count is the whole stack. Warn when either count crosses the budget:",
+                "182": "git rev-list --count \"$(git merge-base origin/<parent> HEAD)\"..HEAD",
+                "183": "git diff --name-only \"$(git merge-base origin/<parent> HEAD)\"...HEAD | wc -l",
+                "184": "# Against origin/main. For a stacked pull this is the whole stack.",
+                "185": "git rev-list --count \"$(git merge-base origin/main HEAD)\"..HEAD"
+            }
+        },
+        "CHANGELOG.md": {
+            "blob_sha": "51977cab802873cf105d2da835d3b49940355d03",
+            "sha256": "4fbd0f901ae830328d5db4f90e58a7090c7e745578d18db031a7145d0cdb8b32",
+            "line_count": 1920,
+            "line_hashes": {
+                "12": "fb3ee405bf7f77024984d9e292a5acc77d7e03a0c6852f47ac6aa8e9d28c6363",
+                "13": "b0b6ba0c3515b16fcbcc35b33b60c2ca10c557690acd9cab4a9c15bf3cc7aad7",
+                "14": "eb9f7300b5846f90dbbd6294577c20e5e194bafdf7de7d061b0ba1386a8d9730"
+            },
+            "line_texts": {
+                "12": "- **docs(review):** The review loop collects findings on one stable head and requests one fresh review of that head. An expired, skipped, paused, or silent reviewer does not block once two of CodeRabbit, CodeAnt, and Codex have a review on that head SHA. An open thread from any reviewer that attached a finding still counts. A refuted finding that changes no code cites the current head SHA, and a stacked pull is counted against its parent branch and against `origin/main`.",
+                "13": "- **docs(review):** The coverage query keeps only the three bot logins on the current head, drops a dismissed review, and counts each login once, keeping the newest review. Paginated issue comments are part of completion, and the Agent Policy gate requires that two-reviewer wording in the agent docs.",
+                "14": "- **docs(review):** When `chatgpt-codex-connector[bot]` has no non-dismissed review on the current head, comment `@codex review` once. Two other reviewers do not replace that request, and a dismissed review does not count. A second request waits until that one has attached a review on that head. The documented query matches the REST logins `coderabbitai[bot]`, `codeant-ai[bot]`, and `chatgpt-codex-connector[bot]`; names without the `[bot]` suffix match nothing."
+            }
+        },
+        "CLAUDE.md": {
+            "blob_sha": "21d36a5d66e377e40673cb4f5940f06d66713ba3",
+            "sha256": "4731a8354a34d4d278dd85a8260cffd661e14d022d001eadd4bbc241fc94052a",
+            "line_count": 339,
+            "line_hashes": {
+                "162": "3d92097d73591f680563753d6e00b97791ddcff58b32b529c6a6f99a06095840",
+                "163": "639dba63c89376441cec1336b3b9e0aaa8a54675ccee375cb1c03ca6d565361f",
+                "164": "5732506de2f0cc12311133c956398771bbf17a38819a18c7863868ad2147dbb1",
+                "179": "ea06aa4ef4b0dbad2adbb5c3dfba26a874b3ad216c7a442c4a5c636caee6147f",
+                "181": "58ab85d54e41fa5bbea80d31f5b965565eb48842f41ef71d26164c3c2ca6b456",
+                "183": "ad970fb90e387c1427b18902baffa70b032b3d4ad993a4a45266b385d020013d",
+                "187": "0cadc5b7ba6567f19a63cc1994b874e637d2e8b224d953a39458b4a894f1954f",
+                "191": "540fd5cf8a6b62ca1babfef3a40d451c8e465f6d053675fe64c289cad9efbc76"
+            },
+            "line_texts": {
+                "162": "  inline review on larger PRs, so the review loop never starts. Warn around 8 commits or",
+                "163": "  50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before",
+                "164": "  15 commits or about 100 files. Pull request #757 is a recorded exception (26 commits,",
+                "179": "- **Review one stable head.** Collect findings, group them by root cause, and ship one",
+                "181": "  merge until two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not request a full bot review",
+                "183": "  false positive that is refuted with evidence and resolved, with no code change, is",
+                "187": "  attached finding is fixed or refuted, and 0 threads are unresolved. `REVIEW_UNAVAILABLE` means a reviewer is",
+                "191": "  has reviewed. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once."
+            }
+        },
+        "docs/PR-REVIEW-LOOP.md": {
+            "blob_sha": "42af2d8ba2c6b59c9b91c78e1ac0006cd0e4725d",
+            "sha256": "0e797422e61c0503770a129123bd2231193e83c452e8bc5fd622291173aa989e",
+            "line_count": 165,
+            "line_hashes": {
+                "5": "4cbc91584d4d0effc556069bf521aac5ce7cd9ee4afd8263fc54d98cf81f18fd",
+                "41": "a040b4791335f8b7fa684e88242ccf5dc35acd16a268bd3e2ad1299fd0b2a614",
+                "66": "68bf22d9235655cd8136486f68a307d426431c734a589cd09294a1f7b929fd49",
+                "69": "42f87e6e1e953a656e61f724df81268625f027d19af3770317c080a1bbf5102c",
+                "104": "310cfe427fa1ba1a8dc1ae5e44aaefa4847bab6e2d7790384a530797f12f7e75",
+                "108": "ca3c39fd5d0064118b7776f663c8f357487fad0314cdae8d358e9e206872796d",
+                "112": "74abf55ea44d43d557a7f73da0d007d9c98485d52ab973efb28f2f2b7fe4de26",
+                "123": "62df1f8d9b029d70552cf3571b97311c611fee662cb9f875601eaa74bf28bed0",
+                "125": "9e79908a38c53240928120a6faa8b3f7dbeb2d7cd1da3229b743e394c377d03f",
+                "136": "93a807448779d8bd576c9e0f57436de35c4c89f55031ad029b92b0b016a17120",
+                "159": "fde387fc090e9926a2a0070dc84fb88e9265c913956a193bc028a424d8c0cc7f",
+                "160": "7cd99251a5eab70a763cb47e5e1c99a99124fb78bb5a7312f9fd3bc06611cbb9",
+                "161": "bbbf122aa2b2b7f4b2fb9439970d95840526123e31226f20e823d7f32e18aded",
+                "162": "56e0721ad7acbfcb9b40a2f376afbde5daacf2a01309cfb9fb9e807cd995df4a",
+                "164": "f9227b605657cfbc2ba7e4e0aead7e0563ad244f745d45260086ab1125e4c112"
+            },
+            "line_texts": {
+                "5": "The loop is not \"read the comments and reply\". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head**, that coverage left no undispositioned finding, and **zero unresolved threads** remain from any reviewer that attached a finding. A reviewer that is expired, skipped, or silent does not add a thread or a block once those two are covered. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another fresh review. Do not request that full review after every intermediate fix. Section 5 says when one is due.",
+                "41": "- **Commit and file budget.** Warn around 8 commits or 50 files. Stop adding new scope around 12 commits or 75 files. Open a successor before 15 commits or about 100 files. Pull request #757 is a recorded exception: 26 commits and 89 files at `6b57be331c9841545c5de2a0dfcbfe9d1e77552b`. Do not rewrite that history to look smaller.",
+                "66": "Issue comments are part of the completion check. CodeRabbit, DeepSource, and Socket put findings in summary issue comments that never become review threads. Paginate them and disposition every finding before the loop can end:",
+                "69": "gh api --paginate repos/qnbs/CannaGuide-2025/issues/<N>/comments \\",
+                "104": "Cite the resolving commit SHA in every reply that ships a fix. A refutation that changes no code cites the current head SHA. A resolved thread with no explanation is not resolved, it is buried.",
+                "108": "## 5. One fresh review of a stable head",
+                "112": "1. Let the reviewers that start on their own finish on one stable head. Do not push while that head is still being reviewed or tested.",
+                "123": "`REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or a full-review request never attaches a review object to the current head. It is not a green check. It is not, by itself, a merge block.",
+                "125": "CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once, keeping that login's newest review. `unique_by` would keep the oldest. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:",
+                "136": "When a major review returns an actionable finding, go back to **Section 2**, group the findings, and ship one fix. That code change is what makes the next full review due. A finding that is refuted with evidence and resolved, with no code change, is dispositioned. It does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and 0 threads are unresolved. A finding that lives only in a paginated issue comment counts the same way: read Section 2 before calling the head complete. A notice that a trial ended, or that a reviewer has no comments, is not a thread and not a new finding.",
+                "159": "- [ ] 0 unresolved review threads from reviewers that attached findings (verified by the Section 2 thread query, not by eyeballing the UI), and every finding in the paginated issue comments is fixed or refuted. A review that only says the trial ended, or that never comments, adds no thread to clear.",
+                "160": "- [ ] Two of CodeRabbit, CodeAnt, and Codex have covered the current head, and that coverage left no undispositioned finding. A false positive that is refuted with evidence and resolved, with no code change, counts as dispositioned and does not require another full review.",
+                "161": "- [ ] `REVIEW_UNAVAILABLE` (paused, skipped, rate limited, quota, expired trial, or a request with no review object) is not a green check and is not a merge block once those two major reviewers have covered the head. Do not merge a head that none of the three has reviewed.",
+                "162": "- [ ] Every finding is either fixed at the root, with the reply citing the resolving commit, or refuted with evidence in-thread. A refutation that changes no code cites the current head SHA.",
+                "164": "- [ ] `\u2705 CI Status` is green for this diff, evidenced by run URL. That is the ruleset check. When `AGENTS.md`, `CLAUDE.md`, or `docs/PR-REVIEW-LOOP.md` change, that check includes the `policy` job. Still block the merge when CodeQL, Socket, GitGuardian, or DeepSource fails on a head where that check ran. When the pull targets `main`, CodeQL must be success for that head. A stacked pull does not invent a CodeQL result; that obligation applies when the pull targets `main`. On a code change, unit tests and both Chromium E2E shards stay part of `\u2705 CI Status`. Signatures and privacy gates stay. Do not disable an analyzer or drop a test to finish the pull."
+            }
+        },
+        "scripts/security/check-agent-policy.mjs": {
+            "blob_sha": "fd5389412d99835590237d0c23255c2b50ed6ebc",
+            "sha256": "cce4bc5ca0a560b697c1495f60c172df8075095705ec51f9fb7855a4db3e10fc",
+            "line_count": 570,
+            "line_hashes": {
+                "19": "dda9dd5060e8118ebe407bb03d3e834eb66889efc53b27b54b31bc72fa734449"
+            },
+            "line_texts": {
+                "19": " *   completion rule (two of CodeRabbit, CodeAnt, and Codex; REVIEW_UNAVAILABLE"
+            }
+        }
+    },
+    "source_evidence_scope": "Exact source blobs, full-file hashes, line counts, cited-line text and line hashes only; cited-line hashes are recomputed from captured text. This does not assert that the transferred policy has been implemented or verified.",
+    "source_verified_rule_ids": [
+        "P-001",
+        "P-002",
+        "P-003",
+        "P-004",
+        "P-005",
+        "P-006",
+        "P-007",
+        "P-008",
+        "P-009",
+        "P-010",
+        "P-011",
+        "P-012",
+        "P-013"
+    ]
+}

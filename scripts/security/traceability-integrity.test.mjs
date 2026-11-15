@@ -367,9 +367,7 @@ test('PR #777 evidence is bound to the pinned historical Git commit and blobs', 
         .digest('hex')
     assert.ok(
         pr777EvidenceProblems(traceability, tamperedText).some((problem) =>
-            problem.includes(
-                'PR source line text does not match pinned Git blob for AGENTS.md:175',
-            ),
+            problem.includes('PR source line differs from pinned source for AGENTS.md:175'),
         ),
     )
 
@@ -377,7 +375,7 @@ test('PR #777 evidence is bound to the pinned historical Git commit and blobs', 
     forgedBlob.files['AGENTS.md'].blob_sha = '0'.repeat(40)
     assert.ok(
         pr777EvidenceProblems(traceability, forgedBlob).some((problem) =>
-            problem.includes('AGENTS.md: PR source blob SHA does not match the pinned Git object'),
+            problem.includes('AGENTS.md: PR source blob SHA differs from pinned historical source'),
         ),
     )
 
@@ -385,7 +383,7 @@ test('PR #777 evidence is bound to the pinned historical Git commit and blobs', 
     forgedFileHash.files['AGENTS.md'].sha256 = '0'.repeat(64)
     assert.ok(
         pr777EvidenceProblems(traceability, forgedFileHash).some((problem) =>
-            problem.includes('AGENTS.md: PR source file hash does not match the pinned Git blob'),
+            problem.includes('AGENTS.md: PR source SHA-256 differs from pinned historical source'),
         ),
     )
 
@@ -440,7 +438,7 @@ test('PR #777 evidence is bound to the pinned historical Git commit and blobs', 
         `AGENTS.md:${lastLine}-${lastLine + 1}; CLAUDE.md:180`
     assert.ok(
         pr777EvidenceProblems(outOfBlobRange, evidence).some((problem) =>
-            problem.includes('PR source line exceeds pinned Git blob length'),
+            problem.includes('PR source line exceeds pinned source file length'),
         ),
     )
 })

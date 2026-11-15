@@ -9,6 +9,10 @@ Line counts use `wc -l`; byte counts and SHA-256 use the exact UTF-8 Git blob by
 
 Priorities express instruction-preservation urgency, not standalone severity. Mapping status does not claim migration or completed verification.
 
+### PR #777 source evidence and assurance
+
+The pinned references below were checked directly against PR #777 head `88e866819e68ddd857e162562c7d4476ba9728e3`: the commit tree, each Git blob ID, exact-byte SHA-256, line count, and every cited line. GitHub reports the historical commit signature as verified. When that Git object is available, the gate compares against it; in branch-only/offline clones, it checks vendored evidence against the pinned blob and cited-line hashes. This is deterministic integrity checking and records historical provenance to that commit. Because the fallback references live in this repository, they are not an independent runtime cryptographic-authenticity guarantee for the source or signer. The gate adds no PKI, signature protocol, or network dependency.
+
 Normative baseline fragments are recorded exactly in `traceability.json` -> `source_claims`. The checker removes inline-code bodies before classifying instructions, while explicitly retaining owner gates, toolchain prerequisites, and state-ownership invariants; positive and negative boundary cases are covered by `traceability-integrity.test.mjs`. This parser is a drift gate, not a substitute for reviewing source semantics.
 
 ## Cross-agent global invariants

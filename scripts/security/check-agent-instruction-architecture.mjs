@@ -928,13 +928,83 @@ export function sourceClaimProblems(traceability, sourceSnapshots) {
 }
 
 const PR777_TRUSTED_HEAD_SHA = '88e866819e68ddd857e162562c7d4476ba9728e3'
-const PR777_TRUSTED_SOURCE_FILES = [
-    'AGENTS.md',
-    'CHANGELOG.md',
-    'CLAUDE.md',
-    'docs/PR-REVIEW-LOOP.md',
-    'scripts/security/check-agent-policy.mjs',
-]
+/*
+ * Historical provenance: these file and cited-line hashes were independently checked against
+ * the Git objects at the verified PR #777 head above. They are deterministic integrity anchors
+ * for clean/offline clones; they do not independently authenticate the original signer at runtime.
+ */
+const PR777_TRUSTED_SOURCES = {
+    'AGENTS.md': {
+        blobSha: '9304bb85240271326f7be35c92759c94226a3dd1',
+        sha256: '089ed22bce58035b905438fc2af56e3761928028422fd0c9d6097ced55d65e30',
+        lineCount: 210,
+        lineHashes: {
+            175: 'c4ca8ec0d320bfcd01443ced7e47c56364ceb1c7e245139ba84185eefd399ee0',
+            177: 'bbc28f71e5d8f0478a16d7c2e1585898005e50fe7997e594441dec0f8513d1f6',
+            178: '9b5715a79086c64d10963d7f899572d0f1ded3c2668178b828817b7109ff4a75',
+            182: '7a0a74994b61e0678f6ee807cf8be286513ee7c6064cf352069a3c8884d88664',
+            183: '1ef158d5707c3e552c723a1c44c6dc323692ed2d55ccc5b38ae11d63b6441643',
+            184: 'b7cd74dbfac00cd9a62b3f05a8a4959371dce4e75c095ad2b5d5c5873ea049cd',
+            185: 'c2c3b9aa3e0fd2694b25d7d1d83beb2a52aff14fc2bf55ca034314b6d11898cd',
+        },
+    },
+    'CHANGELOG.md': {
+        blobSha: '51977cab802873cf105d2da835d3b49940355d03',
+        sha256: '4fbd0f901ae830328d5db4f90e58a7090c7e745578d18db031a7145d0cdb8b32',
+        lineCount: 1920,
+        lineHashes: {
+            12: 'fb3ee405bf7f77024984d9e292a5acc77d7e03a0c6852f47ac6aa8e9d28c6363',
+            13: 'b0b6ba0c3515b16fcbcc35b33b60c2ca10c557690acd9cab4a9c15bf3cc7aad7',
+            14: 'eb9f7300b5846f90dbbd6294577c20e5e194bafdf7de7d061b0ba1386a8d9730',
+        },
+    },
+    'CLAUDE.md': {
+        blobSha: '21d36a5d66e377e40673cb4f5940f06d66713ba3',
+        sha256: '4731a8354a34d4d278dd85a8260cffd661e14d022d001eadd4bbc241fc94052a',
+        lineCount: 339,
+        lineHashes: {
+            162: '3d92097d73591f680563753d6e00b97791ddcff58b32b529c6a6f99a06095840',
+            163: '639dba63c89376441cec1336b3b9e0aaa8a54675ccee375cb1c03ca6d565361f',
+            164: '5732506de2f0cc12311133c956398771bbf17a38819a18c7863868ad2147dbb1',
+            179: 'ea06aa4ef4b0dbad2adbb5c3dfba26a874b3ad216c7a442c4a5c636caee6147f',
+            181: '58ab85d54e41fa5bbea80d31f5b965565eb48842f41ef71d26164c3c2ca6b456',
+            183: 'ad970fb90e387c1427b18902baffa70b032b3d4ad993a4a45266b385d020013d',
+            187: '0cadc5b7ba6567f19a63cc1994b874e637d2e8b224d953a39458b4a894f1954f',
+            191: '540fd5cf8a6b62ca1babfef3a40d451c8e465f6d053675fe64c289cad9efbc76',
+        },
+    },
+    'docs/PR-REVIEW-LOOP.md': {
+        blobSha: '42af2d8ba2c6b59c9b91c78e1ac0006cd0e4725d',
+        sha256: '0e797422e61c0503770a129123bd2231193e83c452e8bc5fd622291173aa989e',
+        lineCount: 165,
+        lineHashes: {
+            5: '4cbc91584d4d0effc556069bf521aac5ce7cd9ee4afd8263fc54d98cf81f18fd',
+            41: 'a040b4791335f8b7fa684e88242ccf5dc35acd16a268bd3e2ad1299fd0b2a614',
+            66: '68bf22d9235655cd8136486f68a307d426431c734a589cd09294a1f7b929fd49',
+            69: '42f87e6e1e953a656e61f724df81268625f027d19af3770317c080a1bbf5102c',
+            104: '310cfe427fa1ba1a8dc1ae5e44aaefa4847bab6e2d7790384a530797f12f7e75',
+            108: 'ca3c39fd5d0064118b7776f663c8f357487fad0314cdae8d358e9e206872796d',
+            112: '74abf55ea44d43d557a7f73da0d007d9c98485d52ab973efb28f2f2b7fe4de26',
+            123: '62df1f8d9b029d70552cf3571b97311c611fee662cb9f875601eaa74bf28bed0',
+            125: '9e79908a38c53240928120a6faa8b3f7dbeb2d7cd1da3229b743e394c377d03f',
+            136: '93a807448779d8bd576c9e0f57436de35c4c89f55031ad029b92b0b016a17120',
+            159: 'fde387fc090e9926a2a0070dc84fb88e9265c913956a193bc028a424d8c0cc7f',
+            160: '7cd99251a5eab70a763cb47e5e1c99a99124fb78bb5a7312f9fd3bc06611cbb9',
+            161: 'bbbf122aa2b2b7f4b2fb9439970d95840526123e31226f20e823d7f32e18aded',
+            162: '56e0721ad7acbfcb9b40a2f376afbde5daacf2a01309cfb9fb9e807cd995df4a',
+            164: 'f9227b605657cfbc2ba7e4e0aead7e0563ad244f745d45260086ab1125e4c112',
+        },
+    },
+    'scripts/security/check-agent-policy.mjs': {
+        blobSha: 'fd5389412d99835590237d0c23255c2b50ed6ebc',
+        sha256: 'cce4bc5ca0a560b697c1495f60c172df8075095705ec51f9fb7855a4db3e10fc',
+        lineCount: 570,
+        lineHashes: {
+            19: 'dda9dd5060e8118ebe407bb03d3e834eb66889efc53b27b54b31bc72fa734449',
+        },
+    },
+}
+const PR777_TRUSTED_SOURCE_FILES = Object.keys(PR777_TRUSTED_SOURCES)
 
 /** Bind captured PR #777 excerpts to the pinned historical commit and Git blobs. */
 export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
@@ -981,40 +1051,57 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
             'PR #777 source evidence file set differs from the pinned historical snapshot',
         )
 
-    const sourceSnapshots = new Map()
+    let gitSourceAvailable = false
+    try {
+        execFileSync('git', ['cat-file', '-e', `${PR777_TRUSTED_HEAD_SHA}^{commit}`], {
+            cwd: root,
+            stdio: 'ignore',
+        })
+        gitSourceAvailable = true
+    } catch {
+        // Branch-only and offline clones may not contain this unrelated PR's commit object.
+    }
+
     for (const file of PR777_TRUSTED_SOURCE_FILES) {
         const record = evidence.files?.[file]
         if (!record) {
             problems.push('missing immutable PR source blob evidence for ' + file)
             continue
         }
-        let snapshot
-        try {
+        const trusted = PR777_TRUSTED_SOURCES[file]
+        if (record.blob_sha !== trusted.blobSha)
+            problems.push(file + ': PR source blob SHA differs from pinned historical source')
+        if (record.sha256 !== trusted.sha256)
+            problems.push(file + ': PR source SHA-256 differs from pinned historical source')
+        if (record.line_count !== trusted.lineCount)
+            problems.push(file + ': PR source line count differs from pinned historical source')
+    }
+
+    const gitSnapshots = new Map()
+    if (gitSourceAvailable) {
+        for (const file of PR777_TRUSTED_SOURCE_FILES) {
             const gitPath = PR777_TRUSTED_HEAD_SHA + ':' + file
-            const blobSha = execFileSync('git', ['rev-parse', gitPath], {
-                cwd: root,
-                encoding: 'utf8',
-            }).trim()
-            const bytes = execFileSync('git', ['show', gitPath], { cwd: root })
-            const lines = bytes.toString('utf8').split(/\r?\n/)
-            if (lines.at(-1) === '') lines.pop()
-            snapshot = {
-                blobSha,
-                sha256: createHash('sha256').update(bytes).digest('hex'),
-                lineCount: lines.length,
-                lines,
+            try {
+                const blobSha = execFileSync('git', ['rev-parse', gitPath], {
+                    cwd: root,
+                    encoding: 'utf8',
+                }).trim()
+                const bytes = execFileSync('git', ['show', gitPath], { cwd: root })
+                const lines = bytes.toString('utf8').split(/\r?\n/)
+                if (lines.at(-1) === '') lines.pop()
+                const trusted = PR777_TRUSTED_SOURCES[file]
+                if (
+                    blobSha !== trusted.blobSha ||
+                    createHash('sha256').update(bytes).digest('hex') !== trusted.sha256 ||
+                    lines.length !== trusted.lineCount
+                ) {
+                    problems.push(file + ': pinned Git blob differs from trusted PR #777 source')
+                }
+                gitSnapshots.set(file, lines)
+            } catch {
+                problems.push('pinned PR #777 Git source blob could not be read for ' + file)
             }
-        } catch {
-            problems.push('pinned PR #777 Git source blob is unavailable for ' + file)
-            continue
         }
-        sourceSnapshots.set(file, snapshot)
-        if (record.blob_sha !== snapshot.blobSha)
-            problems.push(file + ': PR source blob SHA does not match the pinned Git object')
-        if (record.sha256 !== snapshot.sha256)
-            problems.push(file + ': PR source file hash does not match the pinned Git blob')
-        if (record.line_count !== snapshot.lineCount)
-            problems.push(file + ': PR source line count does not match the pinned Git blob')
     }
 
     for (const rule of (traceability.rules || []).filter((item) => item.source === 'PR #777')) {
@@ -1042,7 +1129,6 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
                 continue
             }
             const record = evidence.files?.[file]
-            const snapshot = sourceSnapshots.get(file)
             if (
                 !record ||
                 !/^[a-f0-9]{40}$/.test(record.blob_sha || '') ||
@@ -1051,13 +1137,13 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
                 problems.push(rule.id + ': missing immutable PR source blob evidence for ' + file)
                 continue
             }
-            if (!snapshot) continue
             if (!Number.isSafeInteger(record.line_count) || record.line_count < 1) {
                 problems.push(rule.id + ': invalid PR source blob line count for ' + file)
                 continue
             }
-            if (end > snapshot.lineCount) {
-                problems.push(rule.id + ': PR source line exceeds pinned Git blob length')
+            const trusted = PR777_TRUSTED_SOURCES[file]
+            if (end > trusted.lineCount) {
+                problems.push(rule.id + ': PR source line exceeds pinned source file length')
                 continue
             }
             for (let line = start; line <= end; line += 1) {
@@ -1070,7 +1156,28 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
                     )
                     continue
                 }
-                if (sourceLine !== snapshot.lines[line - 1]) {
+                const trustedLineHash = trusted.lineHashes[lineKey]
+                if (!trustedLineHash) {
+                    problems.push(
+                        rule.id +
+                            ': PR source line is not in pinned snapshot for ' +
+                            file +
+                            ':' +
+                            line,
+                    )
+                    continue
+                }
+                const computedHash = createHash('sha256').update(sourceLine, 'utf8').digest('hex')
+                if (computedHash !== trustedLineHash) {
+                    problems.push(
+                        rule.id +
+                            ': PR source line differs from pinned source for ' +
+                            file +
+                            ':' +
+                            line,
+                    )
+                }
+                if (gitSnapshots.has(file) && sourceLine !== gitSnapshots.get(file)[line - 1]) {
                     problems.push(
                         rule.id +
                             ': PR source line text does not match pinned Git blob for ' +
@@ -1079,7 +1186,6 @@ export function pr777EvidenceProblems(traceability, evidence, root = ROOT) {
                             line,
                     )
                 }
-                const computedHash = createHash('sha256').update(sourceLine, 'utf8').digest('hex')
                 if (computedHash !== recordedHash) {
                     problems.push(
                         rule.id + ': PR source line hash mismatch for ' + file + ':' + line,
@@ -1104,6 +1210,7 @@ export function rootAnchorProblems(rootFiles) {
             }
         }
     }
+    problems.push(...scopedInstructionConflictProblems(rootFiles))
     return problems
 }
 

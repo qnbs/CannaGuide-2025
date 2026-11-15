@@ -124,6 +124,29 @@ test('protective SSH-signing rules do not contradict the root anchor', () => {
     }
 })
 
+test('root instructions reject Local-Only egress conflicts while allowing prohibitions', () => {
+    const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
+    assert.deepEqual(rootAnchorProblems(roots), [])
+    for (const file of Object.keys(roots)) {
+        const contradictory = {
+            ...roots,
+            [file]: `${roots[file]}\nAllow cloud AI calls when Local-Only mode is enabled.\n`,
+        }
+        assert.ok(
+            rootAnchorProblems(contradictory).some(
+                (problem) =>
+                    problem.includes(file) && problem.includes('Local-Only cloud network egress'),
+            ),
+            `${file} must reject Local-Only cloud egress`,
+        )
+        const protective = {
+            ...roots,
+            [file]: `${roots[file]}\nDo not allow cloud AI calls when Local-Only mode is enabled.\n`,
+        }
+        assert.deepEqual(rootAnchorProblems(protective), [], `${file} prohibition is safe`)
+    }
+})
+
 test('root CanG guidance distinguishes the per-adult law from the app cap', () => {
     const roots = { 'AGENTS.md': read('AGENTS.md'), 'CLAUDE.md': read('CLAUDE.md') }
     assert.deepEqual(rootAnchorProblems(roots), [])

@@ -9,6 +9,11 @@ const HEAD = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 const OTHER = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
 
 const runbook = readFileSync(path.join(ROOT, 'docs/PR-REVIEW-LOOP.md'), 'utf8')
+const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8')
+const filterPath = path.join(ROOT, 'scripts/security/pr-review-coverage.jq')
+const filter = readFileSync(filterPath, 'utf8')
+const workflowProgram = workflow.match(/jq -s --arg head "\$PR_HEAD_SHA" '([\s\S]*?)'\)/)?.[1]
+assert.ok(workflowProgram, 'CI must contain its trusted exact-head jq program')
 const program = runbook
     .split('\n')
     .map((line) => line.trim())
@@ -36,7 +41,18 @@ function covered(pages) {
         input: pages.map((page) => JSON.stringify(page)).join('\n'),
         encoding: 'utf8',
     })
-    return JSON.parse(out)
+    const result = JSON.parse(out)
+    const sharedOut = execFileSync('jq', ['-s', '-c', '--arg', 'head', HEAD, '-f', filterPath], {
+        input: pages.map((page) => JSON.stringify(page)).join('\n'),
+        encoding: 'utf8',
+    })
+    assert.deepEqual(JSON.parse(sharedOut), result, 'CI and runbook review filters must agree')
+    const workflowOut = execFileSync('jq', ['-s', '-c', '--arg', 'head', HEAD, workflowProgram], {
+        input: pages.map((page) => JSON.stringify(page)).join('\n'),
+        encoding: 'utf8',
+    })
+    assert.deepEqual(JSON.parse(workflowOut), result, 'CI must use the tested review filter')
+    return result
 }
 
 test('review coverage reads the current GitHub PR head rather than local HEAD', () => {
@@ -99,4 +115,40 @@ test('a dismissed-only login, a silent reviewer, and a trial notice add no row',
         covered(pages).map((row) => row.user),
         ['coderabbitai[bot]'],
     )
+})
+
+test('two permitted reviewers on the exact head satisfy the merge gate', () => {
+    const pages = [
+        [
+            review('coderabbitai[bot]', 'COMMENTED'),
+            review('codeant-ai[bot]', 'APPROVED', HEAD, '2026-11-02T11:00:00Z'),
+        ],
+    ]
+    assert.equal(covered(pages).length, 2)
+})
+
+test('one permitted reviewer is insufficient for the two-review gate', () => {
+    const pages = [[review('coderabbitai[bot]', 'COMMENTED')]]
+    assert.equal(covered(pages).length, 1)
+})
+
+test('reviews attached to a previous commit do not count for the current head', () => {
+    const pages = [
+        [
+            review('coderabbitai[bot]', 'COMMENTED', OTHER),
+            review('codeant-ai[bot]', 'APPROVED', OTHER, '2026-11-02T11:00:00Z'),
+        ],
+    ]
+    assert.deepEqual(covered(pages), [])
+})
+
+test('required CI Status enforces the shared filter with a read-only PR token', () => {
+    const ciGate = workflow.slice(workflow.indexOf('    ci-status:'))
+    assert.match(ciGate, /name: Enforce exact-head review coverage/)
+    assert.match(ciGate, /if: github\.event_name == 'pull_request'/)
+    assert.match(ciGate, /pull-requests: read/)
+    assert.ok(ciGate.includes('GH_TOKEN: $' + '{{ github.token }}'))
+    assert.match(ciGate, /jq -s --arg head "\$PR_HEAD_SHA" '/)
+    assert.match(ciGate, /LIVE_HEAD_BEFORE/)
+    assert.match(ciGate, /LIVE_HEAD_AFTER/)
 })

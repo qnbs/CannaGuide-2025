@@ -155,6 +155,12 @@ When a major review returns an actionable finding, return to Section 2, group fi
 
 ## 6. Drive CI green — and read the right signal
 
+The required CI Status job also checks that two permitted reviewers have non-dismissed
+review objects on the exact pull-request head. If this is the only failing gate, let the reviews
+finish on that same head, then rerun only failed jobs with gh run rerun <RUN_ID> --failed.
+That rerun checks current review coverage without repeating successful build, unit, or browser
+jobs. If the head changes, use the new head's full CI and review results instead.
+
 ```bash
 until [ "$(gh pr checks <N> --json state --jq '[.[] | select(.state=="PENDING")] | length')" = "0" ]; do sleep 30; done
 gh pr checks <N> | grep -viE '\tpass\t|skipping'

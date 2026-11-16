@@ -215,6 +215,8 @@ test.describe('Single writer tab (GH #669)', () => {
             .toBe(1)
         const baseline = await readStoredSnapshot(background)
         expect(baseline?.simulation?.plants?.ids).toHaveLength(1)
+        const backgroundPlantId = baseline?.simulation?.plants?.ids?.[0]
+        expect(backgroundPlantId).toBeDefined()
 
         const foreground = await context.newPage()
         await bootFreshAppWithLegalGates(foreground, baseURL)
@@ -241,8 +243,10 @@ test.describe('Single writer tab (GH #669)', () => {
         const accepted = await readStoredSnapshot(foreground)
         const acceptedIds = accepted?.simulation?.plants?.ids ?? []
         expect(acceptedIds).toHaveLength(2)
+        expect(acceptedIds).toContain(backgroundPlantId)
         const acceptedSecondPlantId = acceptedIds[1]
         expect(acceptedSecondPlantId).toBeDefined()
+        expect(acceptedSecondPlantId).not.toBe(backgroundPlantId)
         expect(accepted?.simulation?.plants?.entities?.[acceptedSecondPlantId ?? '']).toBeDefined()
         expect(accepted?.simulation?.plantSlots).toContain(acceptedSecondPlantId)
 
@@ -250,16 +254,24 @@ test.describe('Single writer tab (GH #669)', () => {
         // persisting it would delete the foreground tab's distinct new plant.
         // The stale-page warning pauses the UI, so the test exercises its pending
         // full-snapshot save rather than trying to edit after the pause.
+        await expect.poll(() => plantCardCount(background)).toBe(1)
         const staleNotice = background.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE })
-        await expect.poll(() => background.evaluate(() => document.visibilityState)).toBe('hidden')
-        await background.bringToFront()
-        await expect.poll(() => background.evaluate(() => document.visibilityState)).toBe('visible')
-        await expect
-            .poll(async () => {
-                await background.evaluate(() => window.dispatchEvent(new Event('pagehide')))
-                return staleNoticeCount(background)
+        await background.evaluate(() => {
+            Object.defineProperty(document, 'visibilityState', {
+                configurable: true,
+                value: 'hidden',
             })
-            .toBe(1)
+            window.dispatchEvent(new Event('visibilitychange'))
+        })
+        await expect(staleNotice).toBeVisible()
+        await background.evaluate(() => {
+            Object.defineProperty(document, 'visibilityState', {
+                configurable: true,
+                value: 'visible',
+            })
+            window.dispatchEvent(new Event('visibilitychange'))
+        })
+        await expect.poll(() => staleNoticeCount(background)).toBe(1)
         await expect(staleNotice).toContainText(UNSAVED_STALE_EDITS_NOTICE)
         await expect(staleNotice.locator('button')).toBeVisible()
         await expect.poll(() => readStoredSnapshot(background)).toEqual(accepted)

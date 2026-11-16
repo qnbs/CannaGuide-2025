@@ -82,6 +82,39 @@ test('Claude post-probe readback rejects a different main commit', () => {
     )
 })
 
+test('Claude post-probe readback timestamp must follow the probe observation', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.observed_at_utc = '2026-11-15T06:00:00Z'
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('timestamp must be valid UTC and after the probe'),
+        ),
+    )
+})
+
+test('Claude post-probe readback timestamp requires an explicit UTC timestamp', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.observed_at_utc = '2026-11-16T06:23:47'
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('timestamp must be valid UTC and after the probe'),
+        ),
+    )
+})
+
+test('Claude post-probe readback rejects an invalid calendar date', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.observed_at_utc = '2026-11-31T06:23:47Z'
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('timestamp must be valid UTC and after the probe'),
+        ),
+    )
+})
+
 test('canonical traceability matrix and sidecar IDs match', () => {
     assert.equal(REQUIRED_RULE_IDS.length, 75)
     assert.deepEqual(traceabilityProblems(traceability, matrix), [])

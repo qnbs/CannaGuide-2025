@@ -620,6 +620,42 @@ export function claudePostProbeReadbackProblems(evidence, readGitTreeFile) {
         return ['Claude post-probe readback differs from the pinned main SHA']
     }
 
+    const parseUtcTimestamp = (value) => {
+        const match =
+            typeof value === 'string'
+                ? /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?Z$/u.exec(value)
+                : null
+        if (!match) return Number.NaN
+
+        const timestamp = Date.parse(value)
+        if (!Number.isFinite(timestamp)) return Number.NaN
+
+        const date = new Date(timestamp)
+        const [, year, month, day, hour, minute, second, fraction = ''] = match
+        const milliseconds = Number((fraction + '000').slice(0, 3))
+        if (
+            date.getUTCFullYear() !== Number(year) ||
+            date.getUTCMonth() + 1 !== Number(month) ||
+            date.getUTCDate() !== Number(day) ||
+            date.getUTCHours() !== Number(hour) ||
+            date.getUTCMinutes() !== Number(minute) ||
+            date.getUTCSeconds() !== Number(second) ||
+            date.getUTCMilliseconds() !== milliseconds
+        ) {
+            return Number.NaN
+        }
+        return timestamp
+    }
+    const probeTime = parseUtcTimestamp(evidence?.observed_at_utc)
+    const readbackTime = parseUtcTimestamp(readback?.observed_at_utc)
+    if (
+        !Number.isFinite(probeTime) ||
+        !Number.isFinite(readbackTime) ||
+        readbackTime <= probeTime
+    ) {
+        problems.push('Claude post-probe readback timestamp must be valid UTC and after the probe')
+    }
+
     const historicalHashes = evidence.instruction_file_sha256
     const currentHashes = readback.instruction_file_sha256
     if (!currentHashes || typeof currentHashes !== 'object' || Array.isArray(currentHashes)) {

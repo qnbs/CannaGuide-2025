@@ -251,6 +251,9 @@ test.describe('Single writer tab (GH #669)', () => {
         // The stale-page warning pauses the UI, so the test exercises its pending
         // full-snapshot save rather than trying to edit after the pause.
         const staleNotice = background.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE })
+        await expect.poll(() => background.evaluate(() => document.visibilityState)).toBe('hidden')
+        await background.bringToFront()
+        await expect.poll(() => background.evaluate(() => document.visibilityState)).toBe('visible')
         await expect
             .poll(async () => {
                 await background.evaluate(() => window.dispatchEvent(new Event('pagehide')))

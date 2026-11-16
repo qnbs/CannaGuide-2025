@@ -191,7 +191,7 @@ test.describe('Single writer tab (GH #669)', () => {
         expect(await readStoredRevision(refused)).toBe(before)
     })
 
-    test('keeps a foreground tab plant when a stale background tab saves a different plant', async ({
+    test('refuses a stale background snapshot that would delete a foreground plant', async ({
         context,
         baseURL,
     }) => {
@@ -246,9 +246,10 @@ test.describe('Single writer tab (GH #669)', () => {
         expect(accepted?.simulation?.plants?.entities?.[acceptedSecondPlantId ?? '']).toBeDefined()
         expect(accepted?.simulation?.plantSlots).toContain(acceptedSecondPlantId)
 
-        // snapshotRevision.test.ts exercises simultaneous compare-and-swap writes;
-        // this browser case proves a distinct stale-tab UI edit is refused.
-        await addPlantThroughTheUi(background, 2, 1)
+        // The stale background snapshot still contains only the baseline plant;
+        // persisting it would delete the foreground tab's distinct new plant.
+        // The stale-page warning pauses the UI, so the test exercises its pending
+        // full-snapshot save rather than trying to edit after the pause.
         const staleNotice = background.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE })
         await expect
             .poll(async () => {

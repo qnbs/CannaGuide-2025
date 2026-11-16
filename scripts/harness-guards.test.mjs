@@ -6,6 +6,7 @@ import {
     nodeSatisfiesDeclaredEngines,
     playwrightLockfileSharesMinor,
     playwrightMajorMinorMatch,
+    playwrightReleaseLineOk,
     playwrightSpecsShareMinor,
     resolvedPlaywrightVersions,
 } from './agent-doctor.mjs'
@@ -102,12 +103,14 @@ test('playwright test and component packages stay on one release line', () => {
     const testSpec = web.devDependencies['@playwright/test']
     const componentSpec = web.devDependencies['@playwright/experimental-ct-react']
     const rootSpec = root.devDependencies['@playwright/test']
-    assert.equal(playwrightSpecsShareMinor(testSpec, componentSpec), true)
-    assert.equal(playwrightSpecsShareMinor(testSpec, rootSpec), true)
-    const live = playwrightLockfileSharesMinor(
-        resolvedPlaywrightVersions(readFileSync('pnpm-lock.yaml', 'utf8')),
-    )
-    assert.equal(live.ok, true)
+    const live = playwrightReleaseLineOk({
+        testSpec,
+        componentSpec,
+        rootSpec,
+        lockText: readFileSync('pnpm-lock.yaml', 'utf8'),
+        workspaceText: readFileSync('pnpm-workspace.yaml', 'utf8'),
+    })
+    assert.equal(live.ok, true, live.detail)
 })
 
 test('matching caret specs fail when the lockfile resolved different minors', () => {

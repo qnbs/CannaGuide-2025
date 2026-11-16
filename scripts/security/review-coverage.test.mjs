@@ -13,10 +13,16 @@ const NOW = '2026-11-16T12:00:00.000Z'
 const DOC_FILES = ['docs/quickstart.md']
 const HIGH_FILES = ['docs/PR-REVIEW-LOOP.md']
 
-function review(login, state = 'COMMENTED', commit = HEAD, submitted = '2026-11-16T10:00:00Z') {
+function review(
+    login,
+    state = 'COMMENTED',
+    commit = HEAD,
+    submitted = '2026-11-16T10:00:00Z',
+    pullNumber = 857,
+) {
     return {
         id: 100,
-        pull_request_url: 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/857',
+        pull_request_url: `https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/${pullNumber}`,
         user: { login, type: 'Bot' },
         state,
         commit_id: commit,
@@ -32,6 +38,7 @@ function receipt({
     hasAnyFindings = false,
     hasUnresolvedFindings = false,
     createdAt = '2026-11-16T10:00:00Z',
+    pullNumber = 857,
 } = {}) {
     const state = {
         code_review: {
@@ -43,7 +50,7 @@ function receipt({
     }
     return {
         id: 200,
-        issue_url: 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/857',
+        issue_url: `https://api.github.com/repos/qnbs/CannaGuide-2025/issues/${pullNumber}`,
         user: { login, type },
         created_at: createdAt,
         body: `<!-- codex-pull-request-review-summary -->\n<!-- codex-review-state:v1 ${JSON.stringify(state)} -->`,
@@ -159,7 +166,7 @@ test('two qualified reviewers satisfy the gate without requesting or waiting for
 test('only low-risk work gets a one-review fallback after one evidenced bounded request', () => {
     const reviewRequest = {
         provider: 'codeant-ai[bot]',
-        pullNumber: 857,
+        pullNumber: 860,
         headSha: HEAD,
         requestCount: 1,
         requestedAt: '2026-11-16T06:00:00Z',
@@ -168,12 +175,14 @@ test('only low-risk work gets a one-review fallback after one evidenced bounded 
         reference: 'issue-comment-123',
     }
     const lowRisk = evaluate({
-        reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+        pullNumber: 860,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
         secondReviewRequest: reviewRequest,
     })
     const highRisk = evaluate({
+        pullNumber: 860,
         changedFiles: HIGH_FILES,
-        reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
         secondReviewRequest: reviewRequest,
     })
     assert.equal(lowRisk.risk, 'low')
@@ -226,4 +235,77 @@ test('head changes during collection fail closed and policy changes classify hig
     assert.equal(evaluate({ recheckedHeadSha: OTHER }).status, 'invalid_or_changed_head')
     assert.equal(evaluate({ changedFiles: HIGH_FILES }).risk, 'high')
     assert.equal(evaluate({ changedFiles: ['scripts/security/review-coverage-policy.mjs'] }).risk, 'high')
+})
+
+test('trust-boundary docs are never classified low risk', () => {
+    assert.equal(evaluate({ changedFiles: ['docs/GITHUB-SETTINGS-GUIDE.md'] }).risk, 'high')
+    assert.equal(evaluate({ changedFiles: ['docs/quickstart.md'] }).risk, 'low')
+})
+
+test('credential and security tests are not low risk', () => {
+    assert.equal(evaluate({ changedFiles: ['tests/credentials.test.ts'] }).risk, 'high')
+    assert.equal(evaluate({ changedFiles: ['apps/web/__tests__/smoke.test.ts'] }).risk, 'low')
+})
+
+test('high-risk coverage counts an exact-head Codex receipt with one formal review', () => {
+    const result = evaluate({
+        pullNumber: 860,
+        changedFiles: HIGH_FILES,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
+        issueComments: [receipt({ pullNumber: 860 })],
+    })
+    assert.equal(result.satisfied, true)
+    assert.equal(result.qualifiedReviewers.length, 2)
+})
+
+test('PR #857 transition requires two formal reviews and rejects receipts and fallback', () => {
+    const formalOnly = evaluate({
+        reviews: [
+            review('coderabbitai[bot]', 'COMMENTED'),
+            review('codeant-ai[bot]', 'APPROVED'),
+        ],
+    })
+    assert.equal(formalOnly.transitionPull, true)
+    assert.equal(formalOnly.satisfied, true)
+    assert.equal(formalOnly.fallback, false)
+
+    const receiptBypass = evaluate({
+        reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+        issueComments: [receipt()],
+    })
+    assert.equal(receiptBypass.satisfied, false)
+
+    const fallbackBypass = evaluate({
+        reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+        secondReviewRequest: {
+            provider: 'codeant-ai[bot]',
+            pullNumber: 857,
+            headSha: HEAD,
+            requestCount: 1,
+            requestedAt: '2026-11-16T06:00:00Z',
+            observedAt: '2026-11-16T06:30:00Z',
+            result: 'rate_limited',
+            reference: 'issue-comment-123',
+        },
+    })
+    assert.equal(fallbackBypass.fallback, false)
+    assert.equal(fallbackBypass.satisfied, false)
+})
+
+test('secondReviewRequest fails when pullNumber mismatches the evidence pull', () => {
+    const result = evaluate({
+        pullNumber: 860,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
+        secondReviewRequest: {
+            provider: 'codeant-ai[bot]',
+            pullNumber: 857,
+            headSha: HEAD,
+            requestCount: 1,
+            requestedAt: '2026-11-16T06:00:00Z',
+            observedAt: '2026-11-16T06:30:00Z',
+            result: 'rate_limited',
+            reference: 'issue-comment-123',
+        },
+    })
+    assert.equal(result.fallback, false)
 })

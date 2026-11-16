@@ -14,6 +14,15 @@ const SHA = /^[0-9a-f]{40}$/
 const API_ROOT = 'https://api.github.com/repos/qnbs/CannaGuide-2025'
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
+/** Until merged, PR #857 stays on formal-review-only coverage (no receipt or low-risk fallback). */
+const TRANSITION_PULL_NUMBER = 857
+
+const TRUST_BOUNDARY_DOC_PATHS = new Set([
+    'docs/GITHUB-SETTINGS-GUIDE.md',
+    'docs/DEVOPS-GATES.md',
+    'docs/release-process.md',
+    'docs/HOUSEKEEPING.md',
+])
 
 function timestamp(value) {
     const parsed = Date.parse(value ?? '')
@@ -75,6 +84,9 @@ function parseCodexReceipt(comment, headSha, pullNumber) {
 
 function lowRiskFile(file) {
     const normalized = file.replaceAll('\\', '/')
+    if (TRUST_BOUNDARY_DOC_PATHS.has(normalized)) {
+        return false
+    }
     if (
         /^docs\/PR-REVIEW-LOOP\.md$/i.test(normalized) ||
         /(^|\/)(\.github|\.husky|scripts\/security)(\/|$)/i.test(normalized) ||
@@ -91,7 +103,16 @@ function lowRiskFile(file) {
 
     if (/^(README|CHANGELOG|ROADMAP)(\.[a-z0-9-]+)?\.md$/i.test(normalized)) return true
     if (/^docs\/.+\.md$/i.test(normalized)) return true
-    return /(^|\/)(tests?|__tests__)\/[^/]+\.test\.[cm]?[jt]sx?$/i.test(normalized)
+    const isTestFile = /(^|\/)(tests?|__tests__)\/[^/]+\.test\.[cm]?[jt]sx?$/i.test(normalized)
+    if (!isTestFile) return false
+    if (
+        /(^|\/)(credentials?|secrets?|auth|signing|persist(?:ence)?|storage|multitab|recovery|privacy|security)(\/|[._-]|\.)/i.test(
+            normalized,
+        )
+    ) {
+        return false
+    }
+    return true
 }
 
 function unavailableFallback(request, pullNumber, headSha, qualifiedLogins, now) {
@@ -194,14 +215,23 @@ export function evaluateReviewCoverage(evidence) {
 
     const qualifiedLogins = new Set(qualified.keys())
     const highRisk = risk === 'high'
-    const eligibleCount = highRisk
-        ? [...formal.keys()].length
-        : [...qualified.keys()].length
-    const fallback =
-        !highRisk &&
-        eligibleCount === 1 &&
-        unavailableFallback(evidence.secondReviewRequest, pullNumber, headSha, qualifiedLogins, now)
-    const requiredReviews = fallback ? 1 : 2
+    const transitionPull = pullNumber === TRANSITION_PULL_NUMBER
+    const formalCount = formal.size
+    const qualifiedCount = qualified.size
+    let eligibleCount
+    let requiredReviews = 2
+    let fallback = false
+    if (transitionPull) {
+        eligibleCount = formalCount
+    } else if (highRisk) {
+        eligibleCount = qualifiedCount
+    } else {
+        eligibleCount = qualifiedCount
+        fallback =
+            eligibleCount === 1 &&
+            unavailableFallback(evidence.secondReviewRequest, pullNumber, headSha, qualifiedLogins, now)
+        requiredReviews = fallback ? 1 : 2
+    }
     const satisfied = eligibleCount >= requiredReviews
 
     return {
@@ -209,6 +239,7 @@ export function evaluateReviewCoverage(evidence) {
         headSha,
         risk,
         highRiskFiles,
+        transitionPull,
         qualifiedReviewers: [...qualified.values()].map(({ provider, login, source }) => ({
             provider,
             login,

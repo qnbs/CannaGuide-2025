@@ -18,7 +18,11 @@ const runtimeTabContext = globalThis as typeof globalThis & {
     __cannaguidePersistenceFailureTabId?: string
 }
 
+const openedTabClosers: Array<() => void> = []
+
 const deleteStateDatabase = async () => {
+    for (const close of openedTabClosers) close()
+    openedTabClosers.length = 0
     vi.resetModules()
     const { closeIndexedDBStorage } = await import('@/stores/indexedDBStorage')
     closeIndexedDBStorage()
@@ -26,6 +30,7 @@ const deleteStateDatabase = async () => {
         const request = indexedDB.deleteDatabase('CannaGuideStateDB')
         request.onsuccess = () => resolve()
         request.onerror = () => reject(request.error)
+        request.onblocked = () => resolve()
     })
 }
 
@@ -34,10 +39,12 @@ const deleteStateDatabase = async () => {
  */
 const openTab = async () => {
     vi.resetModules()
-    const { indexedDBStorage } = await import('@/stores/indexedDBStorage')
+    const idbModule = await import('@/stores/indexedDBStorage')
     const revision = await import('@/stores/snapshotRevision')
     const { setupPersistedStateSync } = await import('./persistence')
-    return { storage: indexedDBStorage, revision, setupPersistedStateSync }
+    const close = () => idbModule.closeIndexedDBStorage()
+    openedTabClosers.push(close)
+    return { storage: idbModule.indexedDBStorage, revision, setupPersistedStateSync, close }
 }
 
 const makeStore = (marker: string): AppStore =>

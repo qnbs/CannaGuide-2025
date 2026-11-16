@@ -100,6 +100,90 @@ export function resolvedPlaywrightVersions(lockText) {
     return entries
 }
 
+/** Unique playwright-core package versions from the lockfile packages section. */
+export function resolvedPlaywrightCoreVersions(lockText) {
+    const versions = new Set()
+    for (const match of String(lockText).matchAll(/^\s+playwright-core@(\d+\.\d+\.\d+):/gm)) {
+        versions.add(match[1])
+    }
+    return [...versions]
+}
+
+/** Major.minor from a declared caret/exact Playwright range. */
+export function playwrightMinorFromSpec(spec) {
+    const match = /(\d+)\.(\d+)\.\d+/.exec(String(spec ?? ''))
+    return match ? `${match[1]}.${match[2]}` : null
+}
+
+/** Bounded pnpm override floor for playwright-core when CT-react lags on npm. */
+export function playwrightWorkspaceCoreOverrideMinor(workspaceText) {
+    const match = String(workspaceText).match(/^\s+playwright-core:\s*'([^']+)'/m)
+    if (!match) return null
+    const floor = /(\d+)\.(\d+)\./.exec(match[1])
+    return floor ? `${floor[1]}.${floor[2]}` : null
+}
+
+/**
+ * When @playwright/experimental-ct-react lags @playwright/test on npm, require
+ * root+test alignment, workspace overrides, and a single playwright-core line.
+ */
+export function playwrightReleaseLineOk({
+    testSpec,
+    componentSpec,
+    rootSpec,
+    lockText,
+    workspaceText,
+}) {
+    const testMinor = playwrightMinorFromSpec(testSpec)
+    const rootMinor = playwrightMinorFromSpec(rootSpec)
+    if (!testMinor || testMinor !== rootMinor) {
+        return { ok: false, detail: 'root and web @playwright/test must share major.minor' }
+    }
+    if (playwrightSpecsShareMinor(testSpec, componentSpec)) {
+        const live = playwrightLockfileSharesMinor(resolvedPlaywrightVersions(lockText))
+        return live.ok ? live : { ok: false, detail: `lockfile: ${live.detail}` }
+    }
+    const overrideMinor = playwrightWorkspaceCoreOverrideMinor(workspaceText)
+    if (!overrideMinor || overrideMinor !== testMinor) {
+        return {
+            ok: false,
+            detail: 'pnpm-workspace must pin playwright-core to the test release line',
+        }
+    }
+    for (const [importer, name] of PLAYWRIGHT_LOCK_SLOTS) {
+        const hit = resolvedPlaywrightVersions(lockText).find(
+            (entry) => entry.importer === importer && entry.name === name,
+        )
+        if (!hit) {
+            return { ok: false, detail: `missing lockfile resolution for ${importer} ${name}` }
+        }
+    }
+    const coreLines = [
+        ...new Set(
+            resolvedPlaywrightCoreVersions(lockText).map((version) =>
+                playwrightMinorFromSpec(version),
+            ),
+        ),
+    ]
+    if (coreLines.length !== 1 || coreLines[0] !== testMinor) {
+        return { ok: false, detail: `playwright-core minors: ${coreLines.join(', ') || 'none'}` }
+    }
+    const testLines = [
+        ...new Set(
+            resolvedPlaywrightVersions(lockText)
+                .filter((entry) => entry.name === '@playwright/test')
+                .map((entry) => playwrightMinorFromSpec(entry.version)),
+        ),
+    ]
+    if (testLines.length !== 1 || testLines[0] !== testMinor) {
+        return { ok: false, detail: `resolved @playwright/test minors: ${testLines.join(', ')}` }
+    }
+    return {
+        ok: true,
+        detail: `CT ${componentSpec} lags; runtime playwright-core ${coreLines[0]}.x`,
+    }
+}
+
 /** Fail closed unless every required Playwright slot resolves to one major.minor. */
 export function playwrightLockfileSharesMinor(entries) {
     const described = []
@@ -216,27 +300,27 @@ function main() {
             playwright = webPkg.devDependencies?.['@playwright/test'] ?? ''
             const component = webPkg.devDependencies?.['@playwright/experimental-ct-react'] ?? ''
             const rootPlaywright = pkg.devDependencies?.['@playwright/test'] ?? ''
-            if (
-                !playwrightSpecsShareMinor(playwright, component) ||
-                !playwrightSpecsShareMinor(playwright, rootPlaywright)
-            ) {
-                problems.push(
-                    `Playwright packages must share a major.minor: test ${playwright || 'missing'}, component ${component || 'missing'}, root ${rootPlaywright || 'missing'}`,
-                )
-            } else {
-                console.log(`[OK] Playwright package ranges share ${playwright}`)
-            }
         } catch (error) {
             problems.push(`apps/web/package.json is not JSON: ${error.message}`)
         }
     }
     try {
         const lock = readFileSync(resolve('pnpm-lock.yaml'), 'utf8')
-        const resolved = playwrightLockfileSharesMinor(resolvedPlaywrightVersions(lock))
-        if (!resolved.ok) {
-            problems.push(`Playwright lockfile resolutions diverged: ${resolved.detail}`)
+        const workspace = readFileSync(resolve('pnpm-workspace.yaml'), 'utf8')
+        const webPkg = JSON.parse(readFileSync(webPkgPath, 'utf8'))
+        const component = webPkg.devDependencies?.['@playwright/experimental-ct-react'] ?? ''
+        const rootPlaywright = pkg.devDependencies?.['@playwright/test'] ?? ''
+        const aligned = playwrightReleaseLineOk({
+            testSpec: playwright,
+            componentSpec: component,
+            rootSpec: rootPlaywright,
+            lockText: lock,
+            workspaceText: workspace,
+        })
+        if (!aligned.ok) {
+            problems.push(`Playwright release line check failed: ${aligned.detail}`)
         } else {
-            console.log('[OK] Playwright lockfile resolutions share one release line')
+            console.log(`[OK] Playwright release line: ${aligned.detail}`)
         }
     } catch (error) {
         problems.push(`pnpm-lock.yaml could not be read: ${error.message}`)

@@ -2,7 +2,7 @@
 # Codespaces-optimized: system deps baked in, source cloned after build
 # Security: layer-minimized, cache-cleaned, scannable by Grype/Trivy
 
-FROM mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+FROM mcr.microsoft.com/playwright:v1.65.1-noble
 
 LABEL org.opencontainers.image.title="CannaGuide 2025 Dev Container"
 LABEL org.opencontainers.image.source="https://github.com/qnbs/CannaGuide-2025"

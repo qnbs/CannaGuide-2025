@@ -192,8 +192,9 @@
             "target": "`MOVE-SCOPED` to web toolchain guidance; canonical versions remain manifests/lockfile.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
-            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"]
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
+            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"],
+            "semantic_verification": "Equivalent: WEB-CODEX-05 and WEB-07 preserve React/react-dom alignment; versions remain canonical in apps/web/package.json and pnpm-lock.yaml rather than a stale copied version."
         },
         {
             "id": "A-012",
@@ -207,8 +208,9 @@
             "target": "`MOVE-SCOPED` to web test scope; source examples remain canonical.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
-            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"]
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
+            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"],
+            "semantic_verification": "Equivalent: WEB-CODEX-06/11 and WEB-08/17 preserve hoisted mocks, resetModules with dynamic import for import-time binding, both reference suites and isolated reruns."
         },
         {
             "id": "A-013",
@@ -273,8 +275,9 @@
             "target": "`MOVE-SCOPED` to web guidance; keep the executable file-budget gate in root command map.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
-            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"]
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
+            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"],
+            "semantic_verification": "Equivalent: WEB-CODEX-09 and WEB-14 preserve 200-700 LOC, check:file-budget and splitting guidance for oversized modules."
         },
         {
             "id": "A-017",
@@ -538,8 +541,9 @@
             "target": "`MOVE-SCOPED` to web typecheck rules; no general TS2719 suppression.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
-            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"]
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
+            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"],
+            "semantic_verification": "Equivalent: WEB-CODEX-07 and WEB-09 limit the known TS2719 filter to stores/store.ts; elsewhere it is a real error and must not be suppressed."
         },
         {
             "id": "C-005",
@@ -718,8 +722,9 @@
             "target": "`MOVE-SCOPED` to web architecture guidance.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
-            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"]
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
+            "destination_paths": ["apps/web/AGENTS.md", "apps/web/CLAUDE.md"],
+            "semantic_verification": "Corrected historical inaccuracy: WEB-CODEX-08 and WEB-03 retain Redux domain ownership, uiStateBridge and IndexedDB. apps/web/stores/useIotStore.ts at main 2d5ceba1dd59c519971f97039e62cc5459ae9bac uses persist/createJSONStorage(localStorage), partialize lines 126-132 retaining encryptedPassword and settings, never plaintext password. The source claim that all Zustand stores are never persisted is superseded; immutable source bytes remain preserved."
         },
         {
             "id": "C-017",
@@ -752,8 +757,13 @@
             "target": "`MOVE-SCOPED` to worker instructions.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
-            "destination_paths": ["apps/web/CLAUDE.md", "apps/web/services/worker-bus/CLAUDE.md"]
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
+            "destination_paths": [
+                "apps/web/AGENTS.md",
+                "apps/web/CLAUDE.md",
+                "apps/web/services/worker-bus/CLAUDE.md"
+            ],
+            "semantic_verification": "Completed: WEB-CODEX-10 and BUS-06 preserve the promise dispatcher, priority, retry, AbortController/abort, backpressure and transferable zero-copy contracts. WEB-12 retains no direct worker invocation."
         },
         {
             "id": "C-019",
@@ -1840,7 +1850,7 @@
             "target": "`MOVE-SCOPED` to web test scope; source examples remain canonical.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
@@ -1861,7 +1871,7 @@
             "target": "`MOVE-SCOPED` to web test scope; source examples remain canonical.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
@@ -1882,7 +1892,7 @@
             "target": "`MOVE-SCOPED` to web test scope; source examples remain canonical.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/AGENTS.md",
@@ -2036,7 +2046,7 @@
             "target": "`MOVE-SCOPED` to web guidance; keep the executable file-budget gate in root command map.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/AGENTS.md",
@@ -2057,7 +2067,7 @@
             "target": "`MOVE-SCOPED` to web guidance; keep the executable file-budget gate in root command map.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
@@ -3893,7 +3903,7 @@
             "target": "`MOVE-SCOPED` to web architecture guidance.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
@@ -3914,7 +3924,7 @@
             "target": "`MOVE-SCOPED` to web architecture guidance.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs verifies the immutable source blob and this rule’s exact source claims with unique parent mapping; it does not assert destination migration.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
@@ -3935,7 +3945,7 @@
             "target": "`MOVE-SCOPED` to web architecture guidance.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",
@@ -3956,7 +3966,7 @@
             "target": "`MOVE-SCOPED` to web architecture guidance.",
             "mechanical_verification": "scripts/security/check-agent-instruction-architecture.mjs: sourceClaimProblems validates this exact fragment, baseline line, parent rule, inherited priority/scope/target, and unique claim coverage.",
             "empirical_verification": "Claude Code CLI v2.1.323 local-mock probes confirmed root plus applicable nested CLAUDE.md markers in ancestor-first order across all ten recorded work directories; Codex CLI v0.169.0 prompt-input checks confirmed the expected AGENTS.md path sets in ten directories. Per-context markers and file hashes: docs/agent-instructions/claude-loader-evidence.json and codex-loader-evidence.json. This proves marker inclusion and order, not semantic execution of every rule; that rule's invariant remains subject to its listed source tests and operational gate.",
-            "status": "SOURCE_CAPTURED / LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_PENDING",
+            "status": "SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED",
             "destination_evidence": [
                 {
                     "path": "apps/web/CLAUDE.md",

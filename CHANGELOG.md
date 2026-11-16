@@ -14,7 +14,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **chore(deps):** Bump build and test tooling (#855 lane D, #849/#850): turbo 2.11.11, Vite 8.3.8, `@vitejs/plugin-react` 6.3.0, rollup-plugin-visualizer 7.1.3, Playwright 1.65.0, Vitest 5.1.0, MSW 3.0.5, and related dev test helpers. Harness and `agent:doctor` accept lagging `@playwright/experimental-ct-react` when pnpm overrides unify `playwright-core`.
+- **chore(deps):** Bump build and test tooling (#855 lane D, #849/#850): turbo 2.11.11, Vite 8.3.8, `@vitejs/plugin-react` 6.3.0, rollup-plugin-visualizer 7.1.3, Playwright 1.65.0, Vitest 5.1.0, MSW 3.0.5, and related dev test helpers. Harness and `agent:doctor` accept lagging `@playwright/experimental-ct-react` when a bounded `playwright-core` override unifies typecheck and E2E (no `playwright` package override, so CT keeps 1.62.x runner APIs).
 
 - **chore(deps):** Bump `tailwindcss` and `@tailwindcss/postcss` to 4.3.5 in `@cannaguide/web` (#855 lane C, #829) so the PostCSS pipeline uses the same compiler version.
 

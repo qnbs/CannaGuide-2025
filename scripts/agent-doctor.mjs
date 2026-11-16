@@ -150,6 +150,14 @@ export function playwrightReleaseLineOk({
             detail: 'pnpm-workspace must pin playwright-core to the test release line',
         }
     }
+    for (const [importer, name] of PLAYWRIGHT_LOCK_SLOTS) {
+        const hit = resolvedPlaywrightVersions(lockText).find(
+            (entry) => entry.importer === importer && entry.name === name,
+        )
+        if (!hit) {
+            return { ok: false, detail: `missing lockfile resolution for ${importer} ${name}` }
+        }
+    }
     const coreLines = [
         ...new Set(
             resolvedPlaywrightCoreVersions(lockText).map((version) =>

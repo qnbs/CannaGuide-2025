@@ -86,11 +86,15 @@ describe('setupPersistedStateSync across tabs (GH #669)', () => {
         const flushA = tabA.setupPersistedStateSync(makeStore('tab-a-plant'))()
         await expect(flushA).resolves.toBe(true)
 
+        const revisionAfterA = await tabA.storage.getItem(REDUX_STATE_REVISION_KEY)
+        expect(revisionAfterA).toBeTruthy()
+
         const onStaleB = vi.fn()
         const flushB = tabB.setupPersistedStateSync(makeStore('tab-b-plant'), onStaleB)
         await expect(flushB()).resolves.toBe(false)
 
         expect(onStaleB).toHaveBeenCalledOnce()
+        expect(await tabB.storage.getItem(REDUX_STATE_REVISION_KEY)).toBe(revisionAfterA)
         const onDisk = await tabB.storage.getItem(REDUX_STATE_KEY)
         expect(onDisk).toContain('tab-a-plant')
         expect(onDisk).not.toContain('tab-b-plant')
@@ -103,6 +107,8 @@ describe('setupPersistedStateSync across tabs (GH #669)', () => {
         const tabB = await openTab()
         await tabA.revision.rememberStoredRevision()
         await tabB.revision.rememberStoredRevision()
+        const sharedRevision = await tabA.storage.getItem(REDUX_STATE_REVISION_KEY)
+        expect(sharedRevision).toBe(await tabB.storage.getItem(REDUX_STATE_REVISION_KEY))
 
         const onStaleA = vi.fn()
         const onStaleB = vi.fn()
@@ -117,5 +123,30 @@ describe('setupPersistedStateSync across tabs (GH #669)', () => {
         const wonWithA = onDisk?.includes('concurrent-a') ?? false
         const wonWithB = onDisk?.includes('concurrent-b') ?? false
         expect(wonWithA !== wonWithB).toBe(true)
+        const revisionAfterRace = await tabA.storage.getItem(REDUX_STATE_REVISION_KEY)
+        expect(revisionAfterRace).toBeTruthy()
+        expect(revisionAfterRace).not.toBe(sharedRevision)
+    })
+})
+
+describe('persistenceCoordinator recovery epoch across modules (GH #669)', () => {
+    const openCoordinator = async () => {
+        vi.resetModules()
+        return import('./persistenceCoordinator')
+    }
+
+    beforeEach(() => {
+        localStorage.clear()
+    })
+
+    it('refuses writes in a module that booted before another tab committed recovery', async () => {
+        const bootedBeforeRecovery = await openCoordinator()
+        const peer = await openCoordinator()
+        expect(peer.commitRecoveryEpoch()).toBe(true)
+        const blockedWrite = vi.fn(async () => {})
+        await expect(bootedBeforeRecovery.schedulePersistenceWrite(blockedWrite)).resolves.toBe(
+            false,
+        )
+        expect(blockedWrite).not.toHaveBeenCalled()
     })
 })

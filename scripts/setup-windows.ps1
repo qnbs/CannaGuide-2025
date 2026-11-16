@@ -6,7 +6,8 @@ Write-Host '=== CannaGuide Windows Setup ===' -ForegroundColor Cyan
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
-$packageManager = (Get-Content (Join-Path $repoRoot 'package.json') -Raw | ConvertFrom-Json).packageManager
+$packageJson = Get-Content (Join-Path $repoRoot 'package.json') -Raw | ConvertFrom-Json
+$packageManager = $packageJson.packageManager
 if ($packageManager -match '^pnpm@([^+\s]+)(?:\+.+)?$') {
     $requiredPnpm = $Matches[1]
 } else {
@@ -18,8 +19,14 @@ function Test-Command($name) {
 }
 
 if (-not (Test-Command 'node')) {
-    Write-Error 'Node.js not found. Install Node 24+ from https://nodejs.org or use fnm-windows, then rerun setup.'
+    Write-Error 'Node.js not found. Install Node.js >=24.15.0 <25 from https://nodejs.org or use fnm-windows, then rerun setup.'
     exit 1
+}
+
+# Validate Node before Corepack can download pnpm or setup installs dependencies.
+node ./scripts/check-node-engine.mjs
+if ($LASTEXITCODE -ne 0) {
+    throw 'The installed Node.js does not satisfy package.json engines.node; setup stopped before installing dependencies.'
 }
 
 # Do not trust a global pnpm on PATH. Corepack resolves the repository's exact

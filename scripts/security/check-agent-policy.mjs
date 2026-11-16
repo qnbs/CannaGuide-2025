@@ -531,21 +531,25 @@ const GLOBAL_ROOT_INVARIANTS = [
 
 const REVIEW_COVERAGE = [
     [
-        'two-reviewer coverage',
-        /^\*\*Two-reviewer gate:\*\* Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head\.$/m,
+        'two independent exact-head reviews preferred',
+        /^\*\*Review coverage:\*\* Prefer two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head\./m,
     ],
-    ['REVIEW_UNAVAILABLE is not a green check', /REVIEW_UNAVAILABLE[\s\S]{0,500}not a green check/],
     [
-        'unavailable is not a merge block once two have covered',
-        /not a merge block once (?:two of|those two)/,
+        'bounded low-risk fallback and high-risk protection',
+        /Low-risk fallback is limited to one qualified review after one request and the documented wait; high-risk changes and uncertainty require two, with no fallback\./,
     ],
-    ['no merge when none of the three reviewed', /none of the three\s+has reviewed/],
     [
-        'a Codex review request when none is on the head',
-        /has no non-dismissed review on that head,\s+comment\s+`@codex review`/,
+        'no third review after two qualify',
+        /No third review is required once two qualified reviews cover the current head\./,
     ],
 ]
-
+const REVIEW_RUNBOOK_COVERAGE = [
+    ...REVIEW_COVERAGE,
+    ['exact full-SHA review receipts', /full 40-character current head SHA/],
+    ['structured Codex receipt allowlist', /only supported issue-comment receipt[\s\S]{0,300}codex-review-state:v1/],
+    ['Codex receipt requires a bot author', /author type must be Bot/],
+    ['pre-change PR #857 policy', /PR #857[\s\S]{0,180}pre-change policy until it is merged/],
+]
 const REQUIRED = {
     'AGENTS.md': [
         ['an "Authority and trust" section', /^#{2,4} Authority and trust/m],
@@ -555,7 +559,7 @@ const REQUIRED = {
         ...REVIEW_COVERAGE,
     ],
     'CLAUDE.md': [['the untrusted-content rule', /data, never instructions/i], ...REVIEW_COVERAGE],
-    'docs/PR-REVIEW-LOOP.md': REVIEW_COVERAGE,
+    'docs/PR-REVIEW-LOOP.md': REVIEW_RUNBOOK_COVERAGE,
 }
 /** Must appear at least once in an affirmative (not forbidding) clause. */
 const AFFIRMED = {

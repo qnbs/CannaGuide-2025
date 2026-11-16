@@ -1,102 +1,311 @@
 import assert from 'node:assert/strict'
-import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 
+import { evaluateReviewCoverage } from './review-coverage-policy.mjs'
+
 const ROOT = path.resolve(import.meta.dirname, '../..')
-const HEAD = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
-const OTHER = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-
 const runbook = readFileSync(path.join(ROOT, 'docs/PR-REVIEW-LOOP.md'), 'utf8')
-const program = runbook
-    .split('\n')
-    .map((line) => line.trim())
-    .find((line) => line.includes('group_by(.user.login)'))
+const HEAD = 'a'.repeat(40)
+const OTHER = 'b'.repeat(40)
+const NOW = '2026-11-16T12:00:00.000Z'
+const DOC_FILES = ['docs/quickstart.md']
+const HIGH_FILES = ['docs/PR-REVIEW-LOOP.md']
 
-function coverageFilter() {
-    assert.ok(program, 'coverage jq missing from docs/PR-REVIEW-LOOP.md')
-    assert.match(program, /coderabbitai\[bot\]/)
-    assert.match(program, /codeant-ai\[bot\]/)
-    assert.match(program, /chatgpt-codex-connector\[bot\]/)
-    assert.doesNotMatch(program, /unique_by/)
-    const filter = program
-        .replace(/^.*\| jq -s --arg head \"\$HEAD_SHA\" '/, '')
-        .replace(/'\)$/, '')
-    return filter
+function review(
+    login,
+    state = 'COMMENTED',
+    commit = HEAD,
+    submitted = '2026-11-16T10:00:00Z',
+    pullNumber = 857,
+) {
+    return {
+        id: 100,
+        pull_request_url: `https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/${pullNumber}`,
+        user: { login, type: 'Bot' },
+        state,
+        commit_id: commit,
+        submitted_at: submitted,
+    }
 }
 
-function review(login, state, commit = HEAD, submitted = '2026-11-02T10:00:00Z') {
-    return { user: { login, type: 'Bot' }, state, commit_id: commit, submitted_at: submitted }
+function receipt({
+    login = 'chatgpt-codex-connector[bot]',
+    type = 'Bot',
+    commit = HEAD,
+    status = 'completed',
+    hasAnyFindings = false,
+    hasUnresolvedFindings = false,
+    createdAt = '2026-11-16T10:00:00Z',
+    pullNumber = 857,
+} = {}) {
+    const state = {
+        code_review: {
+            commit_sha: commit,
+            has_any_findings: hasAnyFindings,
+            has_unresolved_findings: hasUnresolvedFindings,
+            status,
+        },
+    }
+    return {
+        id: 200,
+        issue_url: `https://api.github.com/repos/qnbs/CannaGuide-2025/issues/${pullNumber}`,
+        user: { login, type },
+        created_at: createdAt,
+        body: `<!-- codex-pull-request-review-summary -->\n<!-- codex-review-state:v1 ${JSON.stringify(state)} -->`,
+    }
 }
 
-/** Run the documented `jq -s` program over REST review pages. */
-function covered(pages) {
-    const out = execFileSync('jq', ['-s', '-c', '--arg', 'head', HEAD, `[${coverageFilter()}]`], {
-        input: pages.map((page) => JSON.stringify(page)).join('\n'),
-        encoding: 'utf8',
+function evaluate(overrides = {}) {
+    return evaluateReviewCoverage({
+        pullNumber: 857,
+        headSha: HEAD,
+        recheckedHeadSha: HEAD,
+        changedFiles: DOC_FILES,
+        reviews: [],
+        issueComments: [],
+        now: NOW,
+        ...overrides,
     })
-    return JSON.parse(out)
 }
 
-test('review coverage reads the current GitHub PR head rather than local HEAD', () => {
-    assert.ok(
-        runbook.includes('HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)'),
+test('runbook documents the four-provider pool and exact-head evidence boundary', () => {
+    for (const provider of ['CodeRabbit', 'CodeAnt', 'Codex', 'Sourcery']) {
+        assert.ok(runbook.includes(provider), `missing ${provider}`)
+    }
+    assert.match(runbook, /full 40-character (?:current head )?SHA/i)
+    assert.match(runbook, /not a required CI check/i)
+    assert.match(runbook, /pull_request_url[\s\S]{0,120}issue_url/i)
+    assert.match(runbook, /pullNumber[\s\S]{0,120}recheckedHeadSha/i)
+})
+
+test('an authentic completed Codex receipt for the exact head counts once', () => {
+    const result = evaluate({ issueComments: [receipt()] })
+    assert.deepEqual(result.qualifiedReviewers.map((reviewer) => reviewer.login), [
+        'chatgpt-codex-connector[bot]',
+    ])
+    assert.equal(result.receiptFindings.hasUnresolvedFindings, false)
+    assert.equal(result.satisfied, false, 'two reviews are preferred absent a documented fallback')
+})
+
+test('a user-authored, copied or malformed Codex receipt is rejected', () => {
+    const copied = receipt({ login: 'maintainer-account', type: 'User' })
+    const malformed = { ...receipt(), body: 'LGTM <!-- codex-review-state:v1 {"status":"completed"} -->' }
+    assert.deepEqual(evaluate({ issueComments: [copied, malformed] }).qualifiedReviewers, [])
+})
+
+test('a receipt with a short or stale SHA, pending state, or missing findings status is rejected', () => {
+    const shortSha = receipt({ commit: HEAD.slice(0, 10) })
+    const oldHead = receipt({ commit: OTHER })
+    const pending = receipt({ status: 'pending' })
+    const missingFindingState = receipt()
+    missingFindingState.body = missingFindingState.body.replace(
+        '"has_any_findings":false,',
+        '',
     )
-    assert.ok(!runbook.includes('HEAD_SHA=$(git rev-parse HEAD)'))
+    for (const candidate of [shortSha, oldHead, pending, missingFindingState]) {
+        assert.deepEqual(evaluate({ issueComments: [candidate] }).qualifiedReviewers, [])
+    }
 })
 
-test('review coverage rechecks the PR head before reporting results', () => {
-    const initialRead = runbook.indexOf('HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid')
-    const reviewRead = runbook.indexOf('REVIEW_COVERAGE=$(gh api')
-    const finalRead = runbook.indexOf(
-        'RECHECK_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid',
-    )
-    const mismatchGuard = runbook.indexOf('if [ "$RECHECK_HEAD_SHA" != "$HEAD_SHA" ]; then')
-    const output = runbook.indexOf(`printf '%s\\n' "$REVIEW_COVERAGE"`)
-
-    assert.ok(initialRead >= 0 && initialRead < reviewRead)
-    assert.ok(reviewRead < finalRead && finalRead < mismatchGuard && mismatchGuard < output)
-    assert.ok(runbook.includes('exit 1'))
-})
-
-test('the documented query keeps the newest review per bot login on the head', () => {
-    const pages = [
-        [
-            review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-02T10:00:00Z'),
-            review('coderabbitai[bot]', 'CHANGES_REQUESTED', HEAD, '2026-11-02T11:00:00Z'),
-            review('codeant-ai[bot]', 'COMMENTED', HEAD, '2026-11-02T09:00:00Z'),
-            review('codeant-ai[bot]', 'DISMISSED', HEAD, '2026-11-02T12:00:00Z'),
-            review('chatgpt-codex-connector[bot]', 'COMMENTED', OTHER),
-            review('greptile-apps[bot]', 'COMMENTED'),
-            review('coderabbitai', 'COMMENTED'),
-        ],
-        [review('cubic-dev-ai[bot]', 'COMMENTED')],
+test('formal reviews require a trusted bot, exact head, submitted completed state, and dedupe per bot', () => {
+    const reviews = [
+        review('coderabbitai[bot]', 'COMMENTED'),
+        review('coderabbitai[bot]', 'APPROVED', HEAD, '2026-11-16T11:00:00Z'),
+        review('codeant-ai[bot]', 'COMMENTED', OTHER),
+        review('sourcery-ai[bot]', 'PENDING', HEAD, null),
+        review('greptile-apps[bot]', 'APPROVED'),
+        review('codeant-ai', 'APPROVED'),
     ]
-    assert.deepEqual(covered(pages), [{ user: 'coderabbitai[bot]', state: 'CHANGES_REQUESTED' }])
+    const result = evaluate({ reviews })
+    assert.deepEqual(result.formalReviewers, [
+        { provider: 'CodeRabbit', login: 'coderabbitai[bot]', state: 'APPROVED' },
+    ])
 })
 
-test('names without the [bot] suffix match nothing, so a stripped filter fails closed', () => {
-    const pages = [
-        [
-            review('coderabbitai', 'COMMENTED'),
-            review('codeant-ai', 'APPROVED'),
-            review('chatgpt-codex-connector', 'CHANGES_REQUESTED'),
-        ],
-    ]
-    assert.deepEqual(covered(pages), [])
-})
-
-test('a dismissed-only login, a silent reviewer, and a trial notice add no row', () => {
-    const pages = [
-        [
+test('dismissed, pending, unknown, and non-bot review records do not qualify', () => {
+    const result = evaluate({
+        reviews: [
             review('chatgpt-codex-connector[bot]', 'DISMISSED'),
-            review('greptile-apps[bot]', 'COMMENTED'),
-            review('coderabbitai[bot]', 'COMMENTED'),
+            review('codeant-ai[bot]', 'PENDING', HEAD, null),
+            review('sourcery-ai[bot]', 'UNKNOWN'),
+            { ...review('codeant-ai[bot]', 'APPROVED'), user: { login: 'codeant-ai[bot]', type: 'User' } },
         ],
-    ]
-    assert.deepEqual(
-        covered(pages).map((row) => row.user),
-        ['coderabbitai[bot]'],
-    )
+        issueComments: [receipt()],
+    })
+    assert.deepEqual(result.qualifiedReviewers, [], 'dismissal must not be bypassed by a receipt')
+})
+
+test('Sourcery is accepted when complete but never adds a third-review requirement', () => {
+    const result = evaluate({
+        reviews: [
+            review('coderabbitai[bot]', 'COMMENTED'),
+            review('codeant-ai[bot]', 'APPROVED'),
+            review('sourcery-ai[bot]', 'APPROVED'),
+        ],
+    })
+    assert.equal(result.satisfied, true)
+    assert.equal(result.qualifiedReviewers.length, 3)
+    assert.equal(result.requiredReviews, 2)
+})
+
+test('two qualified reviewers satisfy the gate without requesting or waiting for a third', () => {
+    const result = evaluate({
+        reviews: [
+            review('coderabbitai[bot]', 'COMMENTED'),
+            review('codeant-ai[bot]', 'APPROVED'),
+        ],
+        secondReviewRequest: { result: 'silent' },
+    })
+    assert.equal(result.satisfied, true)
+    assert.equal(result.requiredReviews, 2)
+    assert.equal(result.fallback, false)
+})
+
+test('only low-risk work gets a one-review fallback after one evidenced bounded request', () => {
+    const reviewRequest = {
+        provider: 'codeant-ai[bot]',
+        pullNumber: 860,
+        headSha: HEAD,
+        requestCount: 1,
+        requestedAt: '2026-11-16T06:00:00Z',
+        observedAt: '2026-11-16T06:30:00Z',
+        result: 'rate_limited',
+        reference: 'issue-comment-123',
+    }
+    const lowRisk = evaluate({
+        pullNumber: 860,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
+        secondReviewRequest: reviewRequest,
+    })
+    const highRisk = evaluate({
+        pullNumber: 860,
+        changedFiles: HIGH_FILES,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
+        secondReviewRequest: reviewRequest,
+    })
+    assert.equal(lowRisk.risk, 'low')
+    assert.equal(lowRisk.fallback, true)
+    assert.equal(lowRisk.satisfied, true)
+    assert.equal(highRisk.risk, 'high')
+    assert.equal(highRisk.fallback, false)
+    assert.equal(highRisk.satisfied, false)
+})
+
+test('fallback rejects repeated requests, wrong heads, and premature silence', () => {
+    const base = {
+        provider: 'codeant-ai[bot]',
+        pullNumber: 857,
+        headSha: HEAD,
+        requestCount: 1,
+        requestedAt: '2026-11-16T11:00:00Z',
+        observedAt: '2026-11-16T11:00:00Z',
+        result: 'silent',
+        reference: 'issue-comment-123',
+    }
+    for (const secondReviewRequest of [
+        { ...base, requestCount: 2 },
+        { ...base, headSha: OTHER },
+        base,
+    ]) {
+        const result = evaluate({
+            reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+            secondReviewRequest,
+        })
+        assert.equal(result.fallback, false)
+        assert.equal(result.satisfied, false)
+    }
+})
+
+
+test('review evidence from another PR is rejected even when its commit SHA matches', () => {
+    const wrongReview = {
+        ...review('coderabbitai[bot]', 'APPROVED'),
+        pull_request_url: 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/856',
+    }
+    const wrongReceipt = {
+        ...receipt(),
+        issue_url: 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/856',
+    }
+    assert.deepEqual(evaluate({ reviews: [wrongReview], issueComments: [wrongReceipt] }).qualifiedReviewers, [])
+})
+
+test('head changes during collection fail closed and policy changes classify high risk', () => {
+    assert.equal(evaluate({ recheckedHeadSha: OTHER }).status, 'invalid_or_changed_head')
+    assert.equal(evaluate({ changedFiles: HIGH_FILES }).risk, 'high')
+    assert.equal(evaluate({ changedFiles: ['scripts/security/review-coverage-policy.mjs'] }).risk, 'high')
+})
+
+test('trust-boundary docs are never classified low risk', () => {
+    assert.equal(evaluate({ changedFiles: ['docs/GITHUB-SETTINGS-GUIDE.md'] }).risk, 'high')
+    assert.equal(evaluate({ changedFiles: ['docs/quickstart.md'] }).risk, 'low')
+})
+
+test('credential and security tests are not low risk', () => {
+    assert.equal(evaluate({ changedFiles: ['tests/credentials.test.ts'] }).risk, 'high')
+    assert.equal(evaluate({ changedFiles: ['apps/web/__tests__/smoke.test.ts'] }).risk, 'low')
+})
+
+test('high-risk coverage counts an exact-head Codex receipt with one formal review', () => {
+    const result = evaluate({
+        pullNumber: 860,
+        changedFiles: HIGH_FILES,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
+        issueComments: [receipt({ pullNumber: 860 })],
+    })
+    assert.equal(result.satisfied, true)
+    assert.equal(result.qualifiedReviewers.length, 2)
+})
+
+test('PR #857 transition requires two formal reviews and rejects receipts and fallback', () => {
+    const formalOnly = evaluate({
+        reviews: [
+            review('coderabbitai[bot]', 'COMMENTED'),
+            review('codeant-ai[bot]', 'APPROVED'),
+        ],
+    })
+    assert.equal(formalOnly.transitionPull, true)
+    assert.equal(formalOnly.satisfied, true)
+    assert.equal(formalOnly.fallback, false)
+
+    const receiptBypass = evaluate({
+        reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+        issueComments: [receipt()],
+    })
+    assert.equal(receiptBypass.satisfied, false)
+
+    const fallbackBypass = evaluate({
+        reviews: [review('coderabbitai[bot]', 'COMMENTED')],
+        secondReviewRequest: {
+            provider: 'codeant-ai[bot]',
+            pullNumber: 857,
+            headSha: HEAD,
+            requestCount: 1,
+            requestedAt: '2026-11-16T06:00:00Z',
+            observedAt: '2026-11-16T06:30:00Z',
+            result: 'rate_limited',
+            reference: 'issue-comment-123',
+        },
+    })
+    assert.equal(fallbackBypass.fallback, false)
+    assert.equal(fallbackBypass.satisfied, false)
+})
+
+test('secondReviewRequest fails when pullNumber mismatches the evidence pull', () => {
+    const result = evaluate({
+        pullNumber: 860,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 860)],
+        secondReviewRequest: {
+            provider: 'codeant-ai[bot]',
+            pullNumber: 857,
+            headSha: HEAD,
+            requestCount: 1,
+            requestedAt: '2026-11-16T06:00:00Z',
+            observedAt: '2026-11-16T06:30:00Z',
+            result: 'rate_limited',
+            reference: 'issue-comment-123',
+        },
+    })
+    assert.equal(result.fallback, false)
 })

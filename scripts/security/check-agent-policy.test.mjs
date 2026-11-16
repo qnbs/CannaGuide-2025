@@ -16,12 +16,14 @@ const ROOT = path.resolve(import.meta.dirname, '../..')
 const read = (rel) => readFileSync(path.join(ROOT, rel), 'utf8')
 
 const REVIEW_GATE =
-    '**Two-reviewer gate:** Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head.'
+    '**Review coverage:** Prefer two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head.'
 const REVIEW_SENTENCE = [
     REVIEW_GATE,
-    'REVIEW_UNAVAILABLE is not a green check, and it is not a merge block once two of them have covered.',
-    'Do not merge a head that none of the three has reviewed.',
-    'When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once.',
+    'Low-risk fallback is limited to one qualified review after one request and the documented wait; high-risk changes and uncertainty require two, with no fallback.',
+    'No third review is required once two qualified reviews cover the current head.',
+    'The PR #857 transition uses the pre-change policy until it is merged.',
+    'The only receipt allowed is a structured Codex receipt with a full 40-character current head SHA and a verified bot author.',
+    'The only supported issue-comment receipt uses the codex-review-state:v1 marker, and the GitHub API author type must be Bot.',
 ].join('\n')
 const SOUND_AGENTS = [
     '### Authority and trust (all agents)',
@@ -270,49 +272,31 @@ test('a CI Status requirement must name jobs ci-status actually needs', () => {
     assert.deepEqual(agentPolicyProblems({ 'docs/PR-REVIEW-LOOP.md': current }, { needs }), [])
 })
 
-test('review coverage must be a positive normative line, not quoted or fenced text', () => {
-    for (const replacement of [
-        'Do not require two of CodeRabbit, CodeAnt, and Codex to cover the exact current head.',
-        '> ' + REVIEW_GATE,
-        '```md\n' + REVIEW_GATE + '\n```',
-    ]) {
-        const fixture = REVIEW_SENTENCE.replace(REVIEW_GATE, replacement)
+test('risk-based review requirements must be positive normative root and runbook anchors', () => {
+    const weakVariants = [
+        [REVIEW_SENTENCE.replace(REVIEW_GATE, 'Do not require multiple reviews.'), 'two independent exact-head reviews preferred'],
+        [REVIEW_SENTENCE.replace(REVIEW_GATE, '> ' + REVIEW_GATE), 'two independent exact-head reviews preferred'],
+        [REVIEW_SENTENCE.replace(REVIEW_GATE, '```md\n' + REVIEW_GATE + '\n```'), 'two independent exact-head reviews preferred'],
+        [REVIEW_SENTENCE.replace('high-risk changes and uncertainty require two, with no fallback', 'high-risk changes may use one review'), 'bounded low-risk fallback and high-risk protection'],
+        [REVIEW_SENTENCE.replace('No third review is required once two qualified reviews cover the current head.', 'A third review is always required.'), 'no third review after two qualify'],
+    ]
+    for (const [fixture, label] of weakVariants) {
+        const problems = problemsOf({ 'docs/PR-REVIEW-LOOP.md': fixture })
         assert.ok(
-            problemsOf({ 'docs/PR-REVIEW-LOOP.md': fixture }).some((problem) =>
-                problem.includes('missing two-reviewer coverage'),
-            ),
-            `non-normative reviewer text passed: ${replacement}`,
+            problems.some((problem) => problem.includes(`missing ${label}`)),
+            `weakened policy did not fail for ${label}: ${problems.join('; ')}`,
         )
     }
     assert.equal(problemsOf({ 'docs/PR-REVIEW-LOOP.md': REVIEW_SENTENCE }).length, 0)
 })
 
-test('two-reviewer exact-head coverage is required in AGENTS, CLAUDE, and the review runbook', () => {
-    const weakened = REVIEW_SENTENCE.replace(
-        'two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head',
-        'one reviewer has covered',
-    )
-        .replace('REVIEW_UNAVAILABLE is not a green check', 'REVIEW_UNAVAILABLE is a green check')
-        .replace('not a merge block once two of them have covered', 'a merge block in every case')
-        .replace('none of the three has reviewed', 'at least one of the three has reviewed')
-        .replace(
-            'has no non-dismissed review on that head, comment `@codex review` once',
-            'has no review on that head and does nothing',
-        )
+test('risk-based coverage summary is required in AGENTS, CLAUDE, and the review runbook', () => {
     for (const file of ['AGENTS.md', 'CLAUDE.md', 'docs/PR-REVIEW-LOOP.md']) {
-        const problems = problemsOf({ [file]: weakened })
-        for (const label of [
-            'two-reviewer coverage',
-            'REVIEW_UNAVAILABLE is not a green check',
-            'unavailable is not a merge block once two have covered',
-            'no merge when none of the three reviewed',
-            'a Codex review request when none is on the head',
-        ]) {
-            assert.ok(
-                problems.some((problem) => problem.startsWith(`${file}: missing ${label}`)),
-                `${file}: ${label} was not required; ${problems.join('; ')}`,
-            )
-        }
+        const problems = problemsOf({ [file]: REVIEW_SENTENCE.replace('No third review is required once two qualified reviews cover the current head.', 'Require a third reviewer.') })
+        assert.ok(
+            problems.some((problem) => problem.startsWith(`${file}: missing no third review after two qualify`)),
+            `${file}: weakened third-review rule was not detected; ${problems.join('; ')}`,
+        )
     }
 })
 
@@ -321,7 +305,7 @@ test('required policy coverage inside tilde-fenced examples does not count', () 
     const agents = SOUND_AGENTS.replace(REVIEW_SENTENCE, fenced)
     const problems = problemsOf({ 'AGENTS.md': agents })
     assert.ok(
-        problems.some((problem) => problem.includes('AGENTS.md: missing two-reviewer coverage')),
+        problems.some((problem) => problem.includes('AGENTS.md: missing two independent exact-head reviews preferred')),
     )
 })
 

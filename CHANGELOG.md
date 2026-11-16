@@ -14,6 +14,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **docs(review):** Use a four-provider, exact-head review evidence policy with a bounded low-risk fallback, no fallback for high-risk changes, and deterministic local evidence validation. The evaluator is an operator aid, not a GitHub required check.
+
 - **docs(review):** Review work is collected on a stable pull-request head, with two named reviewers required on that exact head, paginated issue comments included in finding disposition, documented unavailable-review semantics, and stacked-pull budgets measured against remote refs. The policy gate and fixture test validate reviewer-coverage guidance; exact-head review coverage is verified before merge and is not asserted as an automated CI check.
 
 - **feat(hydro):** In the Hydro Monitor, readings and alerts can be cleared separately, and a clear can be undone (#685 follow-up). Next to Clear All there are now Clear readings and Clear alerts, each with its own confirmation that names exactly the list it deletes. After a confirmed clear, the Hydro Monitor shows what was deleted with an Undo button for 10 seconds; Undo puts back exactly the deleted readings and alerts, with their ids, without duplicating anything. A second clear within those 10 seconds joins the same undo and restarts the time, so the first clear is not lost. The confirmations say that the undo is available on this page for 10 seconds, and no longer that a clear is final. Five languages.

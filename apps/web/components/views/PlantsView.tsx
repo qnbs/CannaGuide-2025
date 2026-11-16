@@ -52,6 +52,7 @@ const EmptyPlantSlot: React.FC<EmptyPlantSlotProps> = memo(({ index, onSlotClick
     return (
         <Card
             onClick={handleStart}
+            data-testid="empty-plant-slot"
             aria-label={t('plantsView.emptySlot.title')}
             className="empty-slot-pulse flex h-full cursor-pointer flex-col items-center justify-center border-2 border-dashed border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] text-center transition-all hover:border-primary-400/60 hover:bg-primary-900/20"
         >

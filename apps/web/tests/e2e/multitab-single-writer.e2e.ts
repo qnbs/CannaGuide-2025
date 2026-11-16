@@ -13,6 +13,8 @@ const STALE_TAB_NOTICE =
 
 const REVISION_KEY = 'cannaguide-redux-storage-revision'
 const REDUX_STATE_KEY = 'cannaguide-redux-storage'
+const UNSAVED_STALE_EDITS_NOTICE =
+    /not saved and are lost when you reload|nicht gespeichert und gehen beim Neuladen verloren|no se han guardado y se perder\u00E1n al recargar|n'ont pas \u00E9t\u00E9 enregistr\u00E9es et seront perdues au rechargement|niet opgeslagen en gaan verloren bij het opnieuw laden/iu
 
 type StoredSnapshot = {
     simulation?: {
@@ -98,28 +100,24 @@ const readStoredSnapshot = async (page: Page): Promise<StoredSnapshot | null> =>
     return parsed
 }
 
-const addPlantThroughTheUi = async (page: Page) => {
-    await page.locator('[data-view-id="plants"]').first().click()
-    await page
-        .getByRole('button', { name: /start new grow/i })
-        .first()
-        .click()
+const plantCardCount = (page: Page) => page.locator('main [data-testid="plant-card"]').count()
 
-    await expect(page.getByRole('heading', { name: /starting a new grow/i })).toBeVisible()
-    const firstStrain = page
-        .locator('main button')
-        .filter({ has: page.locator('p.font-bold') })
-        .first()
+const addPlantThroughTheUi = async (page: Page, expectedPlantCount: number, strainIndex = 0) => {
+    await page.locator('[data-view-id="plants"]').first().click()
+    await page.getByTestId('empty-plant-slot').first().locator('button').click()
+
+    const firstStrain = page.getByTestId('strain-option').nth(strainIndex)
     await expect(firstStrain).toBeVisible()
     await firstStrain.click()
 
     const setupDialog = page.getByRole('dialog')
-    const photoperiod = setupDialog.getByText('Photoperiod', { exact: true }).first()
-    if (await photoperiod.isVisible().catch(() => false)) await photoperiod.click()
-    await setupDialog.getByRole('button', { name: /start growing/i }).click()
+    const floweringMode = setupDialog.getByTestId('flowering-mode-section')
+    if (await floweringMode.count()) await floweringMode.getByRole('button').first().click()
+    await setupDialog.getByTestId('grow-setup-confirm').click()
 
     const confirmationDialog = page.getByRole('dialog')
-    await confirmationDialog.getByRole('button', { name: /confirm & start/i }).click()
+    await confirmationDialog.getByTestId('grow-confirmation-confirm').click()
+    await expect.poll(() => plantCardCount(page)).toBe(expectedPlantCount)
 }
 
 const staleNoticeCount = (page: Page) =>
@@ -209,7 +207,7 @@ test.describe('Single writer tab (GH #669)', () => {
         const background = await context.newPage()
         await bootFreshAppWithLegalGates(background, baseURL)
         await expectShellVisible(background)
-        await addPlantThroughTheUi(background)
+        await addPlantThroughTheUi(background, 1)
         await expect
             .poll(
                 async () => (await readStoredSnapshot(background))?.simulation?.plants?.ids?.length,
@@ -221,9 +219,20 @@ test.describe('Single writer tab (GH #669)', () => {
         const foreground = await context.newPage()
         await bootFreshAppWithLegalGates(foreground, baseURL)
         await expectShellVisible(foreground)
-        await expect.poll(() => readStoredSnapshot(foreground)).toEqual(baseline)
+        await expect
+            .poll(async () => {
+                const snapshot = await readStoredSnapshot(foreground)
+                return {
+                    plants: snapshot?.simulation?.plants,
+                    plantSlots: snapshot?.simulation?.plantSlots,
+                }
+            })
+            .toEqual({
+                plants: baseline?.simulation?.plants,
+                plantSlots: baseline?.simulation?.plantSlots,
+            })
 
-        await addPlantThroughTheUi(foreground)
+        await addPlantThroughTheUi(foreground, 2)
         await expect
             .poll(
                 async () => (await readStoredSnapshot(foreground))?.simulation?.plants?.ids?.length,
@@ -232,16 +241,23 @@ test.describe('Single writer tab (GH #669)', () => {
         const accepted = await readStoredSnapshot(foreground)
         const acceptedIds = accepted?.simulation?.plants?.ids ?? []
         expect(acceptedIds).toHaveLength(2)
-        expect(accepted?.simulation?.plants?.entities).toBeDefined()
-        expect(accepted?.simulation?.plantSlots).toContain(acceptedIds[1])
+        const acceptedSecondPlantId = acceptedIds[1]
+        expect(acceptedSecondPlantId).toBeDefined()
+        expect(accepted?.simulation?.plants?.entities?.[acceptedSecondPlantId ?? '']).toBeDefined()
+        expect(accepted?.simulation?.plantSlots).toContain(acceptedSecondPlantId)
 
-        await addPlantThroughTheUi(background)
+        // snapshotRevision.test.ts exercises simultaneous compare-and-swap writes;
+        // this browser case proves a distinct stale-tab UI edit is refused.
+        await addPlantThroughTheUi(background, 2, 1)
+        const staleNotice = background.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE })
         await expect
             .poll(async () => {
                 await background.evaluate(() => window.dispatchEvent(new Event('pagehide')))
                 return staleNoticeCount(background)
             })
             .toBe(1)
+        await expect(staleNotice).toContainText(UNSAVED_STALE_EDITS_NOTICE)
+        await expect(staleNotice.locator('button')).toBeVisible()
         await expect.poll(() => readStoredSnapshot(background)).toEqual(accepted)
     })
 })

@@ -48,6 +48,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     return (
         <Card
             onClick={onInspect}
+            data-testid="plant-card"
             aria-label={plantAriaLabel}
             className="flex flex-col h-full cursor-pointer card-interactive p-3 group"
         >

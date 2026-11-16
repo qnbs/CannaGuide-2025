@@ -182,6 +182,7 @@ const DetailedStrainSelectItem: React.FC<{
     return (
         <button
             onClick={onClick}
+            data-testid="strain-option"
             className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 ring-1 ring-inset ring-white/20"
         >
             <div className="flex-shrink-0">

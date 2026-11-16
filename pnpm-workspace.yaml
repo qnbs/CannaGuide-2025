@@ -151,6 +151,10 @@ overrides:
     # JS injection). conventional-changelog-writer still depends on <=4.7.9.
     # Dev-only changelog tooling; stay on 4.x.
     handlebars: '>=4.7.10 <5'
+    # @playwright/experimental-ct-react@1.62.x still pulls playwright 1.62 while
+    # @playwright/test is on 1.65; align playwright-core for typecheck and CI.
+    playwright: '>=1.65.1 <1.66'
+    playwright-core: '>=1.65.1 <1.66'
 
 # Advisories whose patched release is not on npm yet. Each entry must also
 # exist in scripts/security/audit-exceptions.json with reachability notes and

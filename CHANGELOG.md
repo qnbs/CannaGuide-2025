@@ -14,6 +14,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **chore(deps):** Bump `zustand` to 5.0.16 in `@cannaguide/web` (#855 lane C, #833).
+
 - **chore(deps):** Bump dev lint and supply-chain tooling (#855 lane B): typescript-eslint 8.72.2, prettier 3.10.1, eslint-plugin-anti-trojan-source 1.1.8, @socketsecurity/cli 1.15.0, snyk 1.1308.4.
 
 - **docs(review):** Use a four-provider, exact-head review evidence policy with a bounded low-risk fallback, no fallback for high-risk changes, and deterministic local evidence validation. The evaluator is an operator aid, not a GitHub required check.

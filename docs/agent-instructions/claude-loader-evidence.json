@@ -888,5 +888,34 @@
     "source_hash_verified_at_utc": "2026-11-15T07:05:29.517Z",
     "source_hash_note": "Hashes were refreshed after the Codex-only apps/web/AGENTS.md clarification. The last full 10-context Claude probe remains 2026-11-15T06:58:05.781Z; it loaded no AGENTS.md content. No Claude instruction file or Claude setting changed after that probe.",
     "instruction_hashes_updated_at_utc": "2026-11-15T10:15:04.763Z",
-    "instruction_hash_note": "Hashes reflect current exact file bytes. The recorded Claude probes remain the observations at observed_at_utc; this update changed only apps/web/AGENTS.md, which is outside Claude Code instruction files."
+    "instruction_hash_note": "Hashes reflect current exact file bytes. The recorded Claude probes remain the observations at observed_at_utc; this update changed only apps/web/AGENTS.md, which is outside Claude Code instruction files.",
+    "post_probe_readback": {
+        "observed_at_utc": "2026-11-16T06:23:47Z",
+        "main_sha": "e35469ab5837be7c41223a10a1976ab2b8c54d35",
+        "instruction_file_sha256": {
+            ".github/AGENTS.md": "e2f4a34f401bde2320e84e5d5e14d90324dfe25d01c51a7cdb108982ec50c195",
+            ".github/CLAUDE.md": "b0c31c22c79502fe117d2ec38bdece64a9ce56cc42ffd8332f37ad4d86c6c005",
+            "AGENTS.md": "8971563d0a4b3a03e51c5d3ea290a706f7c12c15bdf92cfc25455ac776345c04",
+            "CLAUDE.md": "f2ebd13b30ba82275c69edb6714ae5d6685e1674d40aca3e84f439f4f41acafc",
+            "apps/desktop/AGENTS.md": "5a74b88e3822f0a06e30c1e95749e77e7ec511bfaeb5d85aee7f91ced9c5259d",
+            "apps/desktop/CLAUDE.md": "01dfcec6f4efbfd3e5e41eb409d5cbcf4030b5adf9862c7a27c08422978f46c8",
+            "apps/web/AGENTS.md": "b49c74b8e7fa8ce3c8221394f75bfd61dd2afd3c63158946457f0defd259803e",
+            "apps/web/CLAUDE.md": "0456e459c694b9709e95c58b73836a92fc37ade390b5a590194f677168da96b1",
+            "apps/web/data/strains/AGENTS.md": "8346d6adaaf62ab4c09135ca5cd7a3bc8cccb35f828afa64b089bb28176af099",
+            "apps/web/data/strains/CLAUDE.md": "5c88168dfe893e24000aeccded745c249873f428aa8cf3c192e0357f61b29976",
+            "apps/web/services/db/AGENTS.md": "1f6c4b3bf86dad6e8e6acf179747df38ec3543279bcedc0c3a727e601ea00a1d",
+            "apps/web/services/db/CLAUDE.md": "ee75a08615701076d12fb861509aa56072ae780b0dbf7e5850ed85ba91af4941",
+            "apps/web/services/local-ai/CLAUDE.md": "1a0c7b94b06b869f76101d38b4594ecb01c51ff44c23fed84d4e71ffd875c725",
+            "apps/web/services/worker-bus/CLAUDE.md": "2f7eaa3f14768e3fe9a573d3cceb51fdc8a93328b5ed5d626313f787a8375900",
+            "packages/ai-core/CLAUDE.md": "263991d451c50eaf4824e61a8e34e33a54a0c8517abd0812053d963a447c9968",
+            "scripts/AGENTS.md": "b930d34895d7bb505fcd8d696e895894cf397ebd7a469f4be1e05b6e4f6ea4d2",
+            "scripts/CLAUDE.md": "1b3afca40124a759d692e52822e84c8e12bcb4d54e4b8bd294cd9fdfabefe8e1"
+        },
+        "files_differing_from_historical_probe_hashes": [
+            "AGENTS.md",
+            "CLAUDE.md",
+            "apps/web/AGENTS.md"
+        ],
+        "clarification": "The original observation time, scope, paths, isolation details, and instruction_file_sha256 map above remain unchanged historical loader evidence. That map is not a digest of current main. This separate tree-hash map records current main bytes and does not claim that post-probe text was captured in a Claude prompt. The existing source_hash_note and instruction_hash_note describe their original update window and must not be read as claims about later or current main; three files now differ from the historical hash map. Current policy/traceability validation is separate from historical loader provenance."
+    }
 }

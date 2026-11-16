@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import test from 'node:test'
@@ -6,6 +7,7 @@ import { AGENT_FILES, agentPolicyProblems } from './check-agent-policy.mjs'
 import {
     REQUIRED_RULE_IDS,
     SCOPED_INSTRUCTION_FILES,
+    claudePostProbeReadbackProblems,
     claudeLoaderEvidenceProblems,
     codexLoaderEvidenceProblems,
     crossAgentInvariantProblems,
@@ -27,6 +29,91 @@ const traceability = JSON.parse(read('docs/agent-instructions/traceability.json'
 const matrix = read('docs/agent-instructions/TRACEABILITY.md')
 const codexLoaderEvidence = JSON.parse(read('docs/agent-instructions/codex-loader-evidence.json'))
 const claudeLoaderEvidence = JSON.parse(read('docs/agent-instructions/claude-loader-evidence.json'))
+const readPinnedGitTreeFile = (commit, file) =>
+    execFileSync('git', ['show', commit + ':' + file], { cwd: ROOT })
+
+test('Claude post-probe hashes and changed paths match the pinned main Git tree', () => {
+    assert.deepEqual(
+        claudePostProbeReadbackProblems(claudeLoaderEvidence, readPinnedGitTreeFile),
+        [],
+    )
+})
+
+test('Claude post-probe readback rejects a forged digest against the pinned Git tree', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    const file = 'AGENTS.md'
+    tampered.post_probe_readback.instruction_file_sha256[file] = '0'.repeat(64)
+    tampered.post_probe_readback.files_differing_from_historical_probe_hashes = Object.keys(
+        tampered.instruction_file_sha256,
+    )
+        .filter(
+            (path) =>
+                tampered.post_probe_readback.instruction_file_sha256[path] !==
+                tampered.instruction_file_sha256[path],
+        )
+        .sort()
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('hash differs from pinned Git tree for AGENTS.md'),
+        ),
+    )
+})
+
+test('Claude post-probe readback rejects a forged historical-difference list', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.files_differing_from_historical_probe_hashes = []
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('difference list does not match its hash maps'),
+        ),
+    )
+})
+
+test('Claude post-probe readback rejects a different main commit', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.main_sha = 'a'.repeat(40)
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('differs from the pinned main SHA'),
+        ),
+    )
+})
+
+test('Claude post-probe readback timestamp must follow the probe observation', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.observed_at_utc = '2026-11-15T06:00:00Z'
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('timestamp must be valid UTC and after the probe'),
+        ),
+    )
+})
+
+test('Claude post-probe readback timestamp requires an explicit UTC timestamp', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.observed_at_utc = '2026-11-16T06:23:47'
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('timestamp must be valid UTC and after the probe'),
+        ),
+    )
+})
+
+test('Claude post-probe readback rejects an invalid calendar date', () => {
+    const tampered = structuredClone(claudeLoaderEvidence)
+    tampered.post_probe_readback.observed_at_utc = '2026-11-31T06:23:47Z'
+
+    assert.ok(
+        claudePostProbeReadbackProblems(tampered, readPinnedGitTreeFile).some((problem) =>
+            problem.includes('timestamp must be valid UTC and after the probe'),
+        ),
+    )
+})
 
 test('canonical traceability matrix and sidecar IDs match', () => {
     assert.equal(REQUIRED_RULE_IDS.length, 75)

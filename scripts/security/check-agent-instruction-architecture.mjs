@@ -597,6 +597,7 @@ export function pr777AdoptionProblems(files, traceability) {
 
 const HISTORICAL_LOADER_HASH_MAP_SHA256 =
     '8dcc0774adb2142c844ca2f86c00c3b28ecbfd7151a9e9ffb0cddd45edd9be9c'
+const CLAUDE_POST_PROBE_MAIN_SHA = 'e35469ab5837be7c41223a10a1976ab2b8c54d35'
 
 function hasPinnedHistoricalLoaderHashes(evidence) {
     const hashes = evidence?.instruction_file_sha256
@@ -606,6 +607,68 @@ function hasPinnedHistoricalLoaderHashes(evidence) {
         createHash('sha256').update(JSON.stringify(entries)).digest('hex') ===
         HISTORICAL_LOADER_HASH_MAP_SHA256
     )
+}
+
+export function claudePostProbeReadbackProblems(evidence, readGitTreeFile) {
+    const problems = []
+    if (!hasPinnedHistoricalLoaderHashes(evidence)) {
+        return ['Claude post-probe readback cannot use an unpinned historical path map']
+    }
+
+    const readback = evidence?.post_probe_readback
+    if (readback?.main_sha !== CLAUDE_POST_PROBE_MAIN_SHA) {
+        return ['Claude post-probe readback differs from the pinned main SHA']
+    }
+
+    const historicalHashes = evidence.instruction_file_sha256
+    const currentHashes = readback.instruction_file_sha256
+    if (!currentHashes || typeof currentHashes !== 'object' || Array.isArray(currentHashes)) {
+        return ['Claude post-probe readback lacks an instruction hash map']
+    }
+
+    const expectedFiles = Object.keys(historicalHashes).sort()
+    const currentFiles = Object.keys(currentHashes).sort()
+    if (JSON.stringify(currentFiles) !== JSON.stringify(expectedFiles)) {
+        problems.push('Claude post-probe readback paths differ from the pinned historical path set')
+    }
+
+    const changedFiles = expectedFiles.filter(
+        (file) => currentHashes[file] !== historicalHashes[file],
+    )
+    const reportedChanges = readback.files_differing_from_historical_probe_hashes
+    if (
+        !Array.isArray(reportedChanges) ||
+        JSON.stringify([...reportedChanges].sort()) !== JSON.stringify(changedFiles)
+    ) {
+        problems.push('Claude post-probe readback difference list does not match its hash maps')
+    }
+
+    if (typeof readGitTreeFile !== 'function') {
+        return [...problems, 'Claude post-probe readback has no pinned Git-tree reader']
+    }
+
+    for (const file of expectedFiles) {
+        const digest = currentHashes[file]
+        if (!/^[a-f0-9]{64}$/.test(digest || '')) {
+            problems.push('Claude post-probe readback lacks a valid SHA-256 for ' + file)
+            continue
+        }
+        let sourceBytes
+        try {
+            sourceBytes = readGitTreeFile(readback.main_sha, file)
+        } catch {
+            problems.push(
+                'Claude post-probe readback source is unavailable at pinned main for ' + file,
+            )
+            continue
+        }
+        if (createHash('sha256').update(sourceBytes).digest('hex') !== digest) {
+            problems.push(
+                'Claude post-probe readback hash differs from pinned Git tree for ' + file,
+            )
+        }
+    }
+    return problems
 }
 
 export function codexLoaderEvidenceProblems(evidence, currentHashes) {
@@ -1761,6 +1824,9 @@ function main() {
             claudeLoaderEvidence,
             claudeLoaderHashes,
             traceability.baseline_commit,
+        ),
+        ...claudePostProbeReadbackProblems(claudeLoaderEvidence, (commit, file) =>
+            execFileSync('git', ['show', commit + ':' + file], { cwd: ROOT }),
         ),
         ...crossAgentInvariantProblems(traceability, claudeLoaderEvidence, loaderEvidence),
         ...pr777EvidenceProblems(traceability, pr777Evidence),

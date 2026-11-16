@@ -20,6 +20,19 @@ describe('useIotStore', () => {
         store.setConnectionStatus('disconnected')
     })
 
+    it('persists encrypted settings without serializing the runtime password', () => {
+        useIotStore.setState({
+            password: 'runtime-secret-for-test',
+            encryptedPassword: 'ciphertext-for-test',
+        })
+        const raw = localStorage.getItem('cannaguide-iot-settings')
+        expect(raw).not.toBeNull()
+        const saved = JSON.parse(raw!) as { state: Record<string, unknown> }
+        expect(saved.state.encryptedPassword).toBe('ciphertext-for-test')
+        expect(saved.state).not.toHaveProperty('password')
+        expect(raw).not.toContain('runtime-secret-for-test')
+    })
+
     describe('setters', () => {
         it('setBrokerUrl updates brokerUrl', () => {
             useIotStore.getState().setBrokerUrl('wss://example.com:8883')

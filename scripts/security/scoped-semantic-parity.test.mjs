@@ -35,10 +35,27 @@ for (const [id, patterns] of Object.entries(requirements)) {
             for (const pattern of patterns) assert.match(read(file), pattern, file + ': ' + pattern)
         }
         const row = matrix.rules.find((rule) => rule.id === id)
-        assert.match(row.status, /SEMANTIC_PARITY_REVIEWED/)
+        assert.equal(
+            row.status,
+            'SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED',
+        )
         assert.ok(row.semantic_verification)
     })
 }
+
+test('C-016 excludes runtime plaintext credentials in each agent rule', () => {
+    for (const [file, marker] of [
+        ['apps/web/AGENTS.md', 'WEB-CODEX-08:'],
+        ['apps/web/CLAUDE.md', 'WEB-03:'],
+    ]) {
+        const rule = read(file)
+            .split('\n')
+            .find((line) => line.includes(marker))
+        assert.ok(rule, marker)
+        assert.match(rule, /encryptedPassword/)
+        assert.match(rule, /never the runtime plaintext `password`/)
+    }
+})
 
 test('C-018 retains scheduling, cancellation and transfer contracts for both agents', () => {
     const patterns = [
@@ -57,18 +74,8 @@ test('C-018 retains scheduling, cancellation and transfer contracts for both age
     }
     const row = matrix.rules.find((rule) => rule.id === 'C-018')
     assert.ok(row.destination_paths.includes('apps/web/AGENTS.md'))
-    assert.match(row.status, /SEMANTIC_PARITY_REVIEWED/)
-})
-
-test('C-016 correction follows the actual IoT persisted subset', () => {
-    const store = read('apps/web/stores/useIotStore.ts')
-    assert.match(store, /storage: createJSONStorage\(\(\) => localStorage\)/)
-    const subset = store.match(/partialize: \(state\) => \(\{([\s\S]*?)\}\)/)?.[1]
-    assert.ok(subset)
-    assert.match(subset, /encryptedPassword: state.encryptedPassword/)
-    assert.doesNotMatch(subset, /\bpassword:/)
-    assert.match(
-        matrix.rules.find((rule) => rule.id === 'C-016').semantic_verification,
-        /Corrected historical inaccuracy/,
+    assert.equal(
+        row.status,
+        'SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED',
     )
 })

@@ -8,5 +8,5 @@
 | sort_by([.user.login, .submitted_at, .id])
 | group_by(.user.login)
 | map(last)
-| map(select(.state != "DISMISSED"))
+| map(select(.state | IN("APPROVED", "CHANGES_REQUESTED", "COMMENTED")))
 | map({user: .user.login, state})

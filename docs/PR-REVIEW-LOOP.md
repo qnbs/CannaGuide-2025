@@ -136,7 +136,7 @@ CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only whe
 PR_NUMBER=$(gh pr view --json number --jq .number)
 HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
 REVIEW_COVERAGE=$(gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate \
-  | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at]) | group_by(.user.login) | map(last) | map(select(.state!="DISMISSED")) | .[] | {user:.user.login, state}')
+  | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at, .id]) | group_by(.user.login) | map(last) | map(select(.state|IN("APPROVED","CHANGES_REQUESTED","COMMENTED"))) | .[] | {user:.user.login, state}')
 RECHECK_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
 if [ "$RECHECK_HEAD_SHA" != "$HEAD_SHA" ]; then
   echo "PR head changed during review coverage read; rerun against the new head." >&2
@@ -148,6 +148,10 @@ printf '%s\n' "$REVIEW_COVERAGE"
 Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once on the pull. Two other reviewers do not replace that request. A dismissed review does not count. Do not send a second `@codex review` while the first request has not attached a review on that head. A review of an older commit does not cover the current head. That comment is not a CodeRabbit full review.
 
 When two of those three have covered that head, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not merge a head that none of the three has reviewed.
+
+Dependabot bypasses only this additional bot-review count when the GitHub-provided pull-request event and both live pull-request API reads identify the author as GitHub's Dependabot bot account (login `dependabot[bot]`, account ID `49699333`, type `Bot`). Branch names, titles, labels, and bodies never identify the author. All normal CI, security, dependency, policy, and E2E checks still apply.
+
+A successful result is a point-in-time observation: later review dismissal does not invalidate it automatically. This workflow's review step is not an independent trust boundary: a pull request can edit its own workflow. Do not treat this check as protected against self-modification until an external ruleset-required workflow or independent check identity enforces it.
 
 When a major review returns an actionable finding, return to Section 2, group findings, and ship one fix. A no-code finding refutation cites the current head SHA and is dispositioned; it does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and zero threads are unresolved. A finding that lives only in a paginated issue comment counts the same way. A trial-ended notice or reviewer silence is not a finding.
 

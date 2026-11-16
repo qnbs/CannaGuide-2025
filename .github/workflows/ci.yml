@@ -944,54 +944,76 @@ jobs:
                   echo "[PASS] CI job aggregate passed (build + test + verify + security + Chromium E2E)"
 
             - name: Enforce exact-head review coverage
-              if: github.event_name == 'pull_request'
+              if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
               env:
                   GH_TOKEN: ${{ github.token }}
+                  EVENT_NAME: ${{ github.event_name }}
+                  EVENT_REF: ${{ github.ref }}
                   PR_NUMBER: ${{ github.event.pull_request.number }}
                   PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+                  PR_AUTHOR_LOGIN: ${{ github.event.pull_request.user.login }}
+                  PR_AUTHOR_ID: ${{ github.event.pull_request.user.id }}
+                  PR_AUTHOR_TYPE: ${{ github.event.pull_request.user.type }}
               run: |
                   set -euo pipefail
 
-                  if [[ ! "$PR_NUMBER" =~ ^[0-9]+$ || ! "$PR_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-                    echo "[FAIL] Pull request number or head SHA is malformed; refusing to pass."
-                    exit 1
+                  if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+                    GATE_INPUT="$(jq -n --arg eventName "$EVENT_NAME" --arg eventRef "$EVENT_REF" \
+                      '{eventName: $eventName, eventRef: $eventRef}')"
+                  else
+                    if [[ ! "$PR_NUMBER" =~ ^[0-9]+$ || ! "$PR_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+                      echo "[FAIL] Pull request number or head SHA is malformed; refusing to pass."
+                      exit 1
+                    fi
+
+                    LIVE_PR_BEFORE="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+                      --jq '{number, state, head_sha: .head.sha, user: {login: .user.login, id: .user.id, type: .user.type}}')"
+                    LIVE_HEAD_BEFORE="$(jq -r '.head_sha' <<< "$LIVE_PR_BEFORE")"
+                    if [[ "$LIVE_HEAD_BEFORE" != "$PR_HEAD_SHA" ]]; then
+                      echo "[FAIL] PR head changed before review collection; this run does not cover the current head."
+                      exit 1
+                    fi
+
+                    REVIEW_COVERAGE="$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
+                      | jq -s --arg head "$PR_HEAD_SHA" '
+                        [
+                          .[][]
+                          | select(
+                              .commit_id == $head
+                              and (.user.login | IN("coderabbitai[bot]", "codeant-ai[bot]", "chatgpt-codex-connector[bot]"))
+                            )
+                        ]
+                        | sort_by([.user.login, .submitted_at, .id])
+                        | group_by(.user.login)
+                        | map(last)
+                        | map(select(.state | IN("APPROVED", "CHANGES_REQUESTED", "COMMENTED")))
+                        | map({user: .user.login, state})
+                      ')"
+
+                    LIVE_PR_AFTER="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+                      --jq '{number, state, head_sha: .head.sha, user: {login: .user.login, id: .user.id, type: .user.type}}')"
+                    LIVE_HEAD_AFTER="$(jq -r '.head_sha' <<< "$LIVE_PR_AFTER")"
+                    if [[ "$LIVE_HEAD_AFTER" != "$PR_HEAD_SHA" ]]; then
+                      echo "[FAIL] PR head changed while review coverage was read; refusing to pass."
+                      exit 1
+                    fi
+
+                    GATE_INPUT="$(jq -n \
+                      --arg eventName "$EVENT_NAME" \
+                      --arg eventRef "$EVENT_REF" \
+                      --arg prNumber "$PR_NUMBER" \
+                      --arg prHead "$PR_HEAD_SHA" \
+                      --arg authorLogin "$PR_AUTHOR_LOGIN" \
+                      --arg authorId "$PR_AUTHOR_ID" \
+                      --arg authorType "$PR_AUTHOR_TYPE" \
+                      --argjson before "$LIVE_PR_BEFORE" \
+                      --argjson after "$LIVE_PR_AFTER" \
+                      --argjson reviews "$REVIEW_COVERAGE" \
+                      '{eventName: $eventName, eventRef: $eventRef,
+                        eventPullRequest: {number: ($prNumber | tonumber?), head: {sha: $prHead},
+                          user: {login: $authorLogin, id: ($authorId | tonumber?), type: $authorType}},
+                        livePullRequestBefore: $before, livePullRequestAfter: $after,
+                        reviews: $reviews}')"
                   fi
 
-                  LIVE_HEAD_BEFORE="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
-                  if [[ "$LIVE_HEAD_BEFORE" != "$PR_HEAD_SHA" ]]; then
-                    echo "[FAIL] PR head changed during CI; this run does not cover the current head."
-                    exit 1
-                  fi
-
-                  REVIEW_COVERAGE="$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews?per_page=100" \
-                    | jq -s --arg head "$PR_HEAD_SHA" '
-                      [
-                        .[][]
-                        | select(
-                            .commit_id == $head
-                            and (.user.login | IN("coderabbitai[bot]", "codeant-ai[bot]", "chatgpt-codex-connector[bot]"))
-                          )
-                      ]
-                      | sort_by([.user.login, .submitted_at, .id])
-                      | group_by(.user.login)
-                      | map(last)
-                      | map(select(.state != "DISMISSED"))
-                      | map({user: .user.login, state})
-                    ')"
-                  REVIEWER_COUNT="$(jq 'length' <<< "$REVIEW_COVERAGE")"
-                  echo "Exact-head reviewers: $REVIEWER_COUNT / 2"
-                  jq -r '.[].user' <<< "$REVIEW_COVERAGE"
-
-                  if [[ "$REVIEWER_COUNT" -lt 2 ]]; then
-                    echo "[FAIL] Two non-dismissed reviews from CodeRabbit, CodeAnt, or Codex are required on $PR_HEAD_SHA."
-                    echo "After reviewers finish on this same head, rerun only the failed job with: gh run rerun $GITHUB_RUN_ID --failed"
-                    exit 1
-                  fi
-
-                  LIVE_HEAD_AFTER="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
-                  if [[ "$LIVE_HEAD_AFTER" != "$PR_HEAD_SHA" ]]; then
-                    echo "[FAIL] PR head changed while review coverage was read; refusing to pass."
-                    exit 1
-                  fi
-
-                  echo "[PASS] Two or more permitted reviewers covered exact head $PR_HEAD_SHA."
+                  printf '%s\n' "$GATE_INPUT" | node scripts/security/review-coverage-policy.mjs

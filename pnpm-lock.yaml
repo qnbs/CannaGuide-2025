@@ -422,7 +422,7 @@ importers:
     optionalDependencies:
       '@mlc-ai/web-llm':
         specifier: '*'
-        version: 0.2.86
+        version: 0.2.88
       '@xenova/transformers':
         specifier: '*'
         version: 2.17.2(@types/node@26.1.1)
@@ -1935,8 +1935,17 @@ packages:
   '@lhci/utils@0.15.1':
     resolution: {integrity: sha512-WclJnUQJeOMY271JSuaOjCv/aA0pgvuHZS29NFNdIeI14id8eiFsjith85EGKYhljgoQhJ2SiW4PsVfFiakNNw==}
 
-  '@mlc-ai/web-llm@0.2.86':
-    resolution: {integrity: sha512-plciXBCYtY7iTKHzEcsqOfSO+s5u8NqMYFPnHmRbsN8CEdKcolgXIoGLPbzO6FtJHV43m7YP00x6qQ6Kb8CJJw==}
+  '@mlc-ai/web-llm@0.2.88':
+    resolution: {integrity: sha512-nuLT7aGC5VEjzu03TG7CVhlesMjtBiHsj0w/odz4XqcWlyr6tw564LTL5OyhEZ+F+1RugwpFbsRIRplZdgHBVw==}
+
+  '@mlc-ai/web-runtime@0.28.0-dev2':
+    resolution: {integrity: sha512-79SdrcL6WKwlK10gYUHhyB134cTN3fL8kFnrsr6bVt9gKFKmFvJeSPjueJcvx0br71X/L+NtD3dmCAD8WGTcrw==}
+
+  '@mlc-ai/web-tokenizers@0.1.6':
+    resolution: {integrity: sha512-A5GSqUSnMjDkPoXBFFtbbW3F/qygCixuwbi7/EUMzcpgwFOAhD9vSZZBchK3IpC0c6TKlcDqAYDYp8vpb8/4vA==}
+
+  '@mlc-ai/web-xgrammar@0.1.27':
+    resolution: {integrity: sha512-0WJvW3mjotHA2NeAfaWFE2pQkOgXH9xC2U4IQOJNcioLac0k6VjSbj14jBRprt89frnPzxLo280riaEb+ZQqbg==}
 
   '@msw/url@0.1.2':
     resolution: {integrity: sha512-DdeBLQxQ+ZrtmwEmaj7GQ7lbzPCgbbbyAqOz/I4ulo68hwBpfdNvQJ5bmihJUkAAKOeCmqCIG3OFZGosqFN4mA==}
@@ -3196,6 +3205,9 @@ packages:
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
 
+  '@types/chrome@0.0.266':
+    resolution: {integrity: sha512-QSQWJTL7NjZElvq/6/E5C1+pHgEP8UAJzwoz7M4vSJ7AECt6NNehJ+tU6snnvuTqZOBjFCivvitYo5+8tNPmhg==}
+
   '@types/d3-array@3.2.2':
     resolution: {integrity: sha512-hOLWVbm7uRza0BYXpIIW5pxfrKe0W+D5lrFiAEYR+pb6w3N2SwSMaJbXdUfSEv+dT4MfHBLtn5js0LAWaO6otw==}
 
@@ -3298,8 +3310,17 @@ packages:
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
+  '@types/filesystem@0.0.36':
+    resolution: {integrity: sha512-vPDXOZuannb9FZdxgHnqSwAG/jvdGM8Wq+6N4D/d80z+D4HWH+bItqsZaVRQykAn6WEVeEkLm2oQigyHtgb0RA==}
+
+  '@types/filewriter@0.0.33':
+    resolution: {integrity: sha512-xFU8ZXTw4gd358lb2jw25nxY9QAgqn2+bKKjKOYfNCzN4DKCFetK7sPtrlpg66Ywe3vWY9FNxprZawAh9wfJ3g==}
+
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
+
+  '@types/har-format@1.2.16':
+    resolution: {integrity: sha512-fluxdy7ryD3MV6h8pTfTYpy/xQzCFC7m89nOH9y94cNqJ1mDIDPut7MnRHI3F6qRmh/cT2fUjG1MLdCNb4hE9A==}
 
   '@types/hast@3.0.5':
     resolution: {integrity: sha512-rp/ezSWaD1m44dPKICGhiskI13nVr7qTloFwDa/IYkhhf5nzwP+zIQcIJh3WIFSBOy/H1PzB40jPjMDksN4F+g==}
@@ -3511,6 +3532,9 @@ packages:
 
   '@vue/shared@3.5.32':
     resolution: {integrity: sha512-ksNyrmRQzWJJ8n3cRDuSF7zNNontuJg1YHnmWRJd2AMu8Ij2bqwiiri2lH5rHtYPZjj4STkNcgcmiQqlOjiYGg==}
+
+  '@webgpu/types@0.1.74':
+    resolution: {integrity: sha512-lgiI4hbuLcI9unnm2cL/tvCaQU45dp0xcLWJh5uB/9MBGvIA4F8XIk7nSiBeg+K4xWGYwgZKn80LmERI5CxoTA==}
 
   '@xenova/transformers@2.17.2':
     resolution: {integrity: sha512-lZmHqzrVIkSvZdKZEx7IYY51TK0WDrC8eR0c5IMnBsO8di8are1zzw8BlLhyO2TklZKLN5UffNGs1IJwT6oOqQ==}
@@ -7277,6 +7301,9 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
+
   tsx@4.23.1:
     resolution: {integrity: sha512-GQHnkIfxyx1wYCOS/wonik5MVRZU9hi1TEZmzGZSCJB1y9YgoZ8H6itNE/u4suE+yLmOzuE4E5S4TZ/ZX2wcWQ==}
     engines: {node: '>=18.0.0'}
@@ -9528,9 +9555,25 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@mlc-ai/web-llm@0.2.86':
+  '@mlc-ai/web-llm@0.2.88':
     dependencies:
+      '@mlc-ai/web-runtime': 0.28.0-dev2
+      '@mlc-ai/web-tokenizers': 0.1.6
+      '@mlc-ai/web-xgrammar': 0.1.27
+      '@types/chrome': 0.0.266
+      '@webgpu/types': 0.1.74
       loglevel: 1.9.2
+    optional: true
+
+  '@mlc-ai/web-runtime@0.28.0-dev2':
+    dependencies:
+      tslib: 2.9.1
+    optional: true
+
+  '@mlc-ai/web-tokenizers@0.1.6':
+    optional: true
+
+  '@mlc-ai/web-xgrammar@0.1.27':
     optional: true
 
   '@msw/url@0.1.2': {}
@@ -10710,6 +10753,12 @@ snapshots:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
 
+  '@types/chrome@0.0.266':
+    dependencies:
+      '@types/filesystem': 0.0.36
+      '@types/har-format': 1.2.16
+    optional: true
+
   '@types/d3-array@3.2.2': {}
 
   '@types/d3-axis@3.0.6':
@@ -10835,7 +10884,18 @@ snapshots:
 
   '@types/estree@1.0.9': {}
 
+  '@types/filesystem@0.0.36':
+    dependencies:
+      '@types/filewriter': 0.0.33
+    optional: true
+
+  '@types/filewriter@0.0.33':
+    optional: true
+
   '@types/geojson@7946.0.16': {}
+
+  '@types/har-format@1.2.16':
+    optional: true
 
   '@types/hast@3.0.5':
     dependencies:
@@ -11080,6 +11140,9 @@ snapshots:
       '@vue/shared': 3.5.32
 
   '@vue/shared@3.5.32': {}
+
+  '@webgpu/types@0.1.74':
+    optional: true
 
   '@xenova/transformers@2.17.2(@types/node@26.1.1)':
     dependencies:
@@ -15295,6 +15358,9 @@ snapshots:
   tslib@1.14.1: {}
 
   tslib@2.8.1: {}
+
+  tslib@2.9.1:
+    optional: true
 
   tsx@4.23.1:
     dependencies:

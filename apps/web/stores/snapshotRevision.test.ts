@@ -96,6 +96,38 @@ describe('snapshot revision (GH #669)', () => {
         await expect(first.storage.getItem(REDUX_STATE_KEY)).resolves.toBe(`from the ${winner} tab`)
     })
 
+    it("preserves one tab's plant edit when a stale full snapshot from another tab is refused", async () => {
+        const first = await openTab()
+        const second = await openTab()
+        const plantSnapshot = (plantIds: string[]) =>
+            JSON.stringify({
+                version: 5,
+                simulation: {
+                    plants: {
+                        ids: plantIds,
+                        entities: Object.fromEntries(plantIds.map((id) => [id, { id, name: id }])),
+                    },
+                    plantSlots: [plantIds[0] ?? null, plantIds[1] ?? null, null],
+                },
+            })
+
+        await first.storage.setItem(REDUX_STATE_KEY, plantSnapshot(['baseline-plant']))
+        await first.revision.rememberStoredRevision()
+        await second.revision.rememberStoredRevision()
+
+        await first.revision.writeSnapshot(plantSnapshot(['baseline-plant', 'first-tab-plant']))
+        await expect(
+            second.revision.writeSnapshot(plantSnapshot(['baseline-plant', 'second-tab-plant'])),
+        ).rejects.toMatchObject({ name: 'StaleSnapshotError' })
+
+        await expect(first.storage.getItem(REDUX_STATE_KEY)).resolves.toBe(
+            plantSnapshot(['baseline-plant', 'first-tab-plant']),
+        )
+        await expect(first.storage.getItem(REDUX_STATE_KEY)).resolves.not.toBe(
+            plantSnapshot(['baseline-plant', 'second-tab-plant']),
+        )
+    })
+
     it('refuses a tab whose data was erased by another tab', async () => {
         const first = await openTab()
         await first.revision.rememberStoredRevision()

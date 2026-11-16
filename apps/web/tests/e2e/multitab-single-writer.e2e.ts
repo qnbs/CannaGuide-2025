@@ -109,8 +109,21 @@ const plantCardIds = (page: Page) =>
         }),
     )
 
+const resolveProviderConsentIfOpen = async (page: Page) => {
+    const useLocalAiButton = page.getByTestId('provider-consent-use-local-ai')
+    if (await useLocalAiButton.isVisible().catch(() => false)) {
+        await useLocalAiButton.click()
+        await expect(page.getByRole('dialog')).toHaveCount(0)
+    }
+}
+
 const addPlantThroughTheUi = async (page: Page, expectedPlantCount: number, strainIndex = 0) => {
-    await page.locator('[data-view-id="plants"]').first().click()
+    await resolveProviderConsentIfOpen(page)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+    const plantsNavigation = page.locator('[data-view-id="plants"]').first()
+    await expect(plantsNavigation).toBeVisible()
+    await expect(plantsNavigation).toBeEnabled()
+    await plantsNavigation.click()
     await page.getByTestId('empty-plant-slot').first().locator('button').click()
 
     const firstStrain = page.getByTestId('strain-option').nth(strainIndex)
@@ -125,6 +138,8 @@ const addPlantThroughTheUi = async (page: Page, expectedPlantCount: number, stra
     const confirmationDialog = page.getByRole('dialog')
     await confirmationDialog.getByTestId('grow-confirmation-confirm').click()
     await expect.poll(() => plantCardCount(page)).toBe(expectedPlantCount)
+    await resolveProviderConsentIfOpen(page)
+    await expect(page.getByRole('dialog')).toHaveCount(0)
 }
 
 const staleNoticeCount = (page: Page) =>
@@ -257,20 +272,18 @@ test.describe('Single writer tab (GH #669)', () => {
         expect(accepted?.simulation?.plants?.entities?.[acceptedSecondPlantId ?? '']).toBeDefined()
         expect(accepted?.simulation?.plantSlots).toContain(acceptedSecondPlantId)
 
-        // The background tab still owns its independently hydrated state. Its
-        // second plant is a real local edit, distinct from the foreground plant,
-        // and must not replace the accepted full snapshot when its hidden save is
-        // refused.
-        await expect.poll(() => plantCardCount(background)).toBe(1)
-        await addPlantThroughTheUi(background, 2)
+        // Each tab made a different plant change: the background tab created
+        // the baseline plant, then the foreground tab added another. The stale
+        // tab still holds only its own plant before its hidden save is refused.
         const backgroundPlantIds = await plantCardIds(background)
-        expect(backgroundPlantIds).toHaveLength(2)
+        expect(backgroundPlantIds).toHaveLength(1)
         expect(backgroundPlantIds).toContain(backgroundPlantId)
-        const backgroundSecondPlantId = backgroundPlantIds.find(
-            (plantId) => plantId !== backgroundPlantId,
-        )
-        expect(backgroundSecondPlantId).toBeDefined()
-        expect(backgroundSecondPlantId).not.toBe(acceptedSecondPlantId)
+        const foregroundPlantIds = await plantCardIds(foreground)
+        expect(foregroundPlantIds).toHaveLength(2)
+        expect(foregroundPlantIds).toEqual(acceptedIds)
+        expect(foregroundPlantIds).toContain(acceptedSecondPlantId)
+        await resolveProviderConsentIfOpen(background)
+        await expect(background.getByRole('dialog')).toHaveCount(0)
         const staleNotice = background.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE })
         await expect(staleNotice).toHaveCount(0)
         await background.evaluate(() => {

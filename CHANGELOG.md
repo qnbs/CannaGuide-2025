@@ -14,6 +14,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **chore(deps):** Bump `tailwindcss` and `@tailwindcss/postcss` to 4.3.5 in `@cannaguide/web` (#855 lane C, #829) so the PostCSS pipeline uses the same compiler version.
+
 - **chore(deps):** Bump `zustand` to 5.0.16 in `@cannaguide/web` (#855 lane C, #833).
 
 - **chore(deps):** Bump dev lint and supply-chain tooling (#855 lane B): typescript-eslint 8.72.2, prettier 3.10.1, eslint-plugin-anti-trojan-source 1.1.8, @socketsecurity/cli 1.15.0, snyk 1.1308.4.

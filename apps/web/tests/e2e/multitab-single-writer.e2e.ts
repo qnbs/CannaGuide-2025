@@ -101,6 +101,13 @@ const readStoredSnapshot = async (page: Page): Promise<StoredSnapshot | null> =>
 }
 
 const plantCardCount = (page: Page) => page.locator('main [data-testid="plant-card"]').count()
+const plantCardIds = (page: Page) =>
+    page.locator('main [data-testid="plant-card"]').evaluateAll((cards) =>
+        cards.flatMap((card) => {
+            const id = card.getAttribute('data-plant-id')
+            return id ? [id] : []
+        }),
+    )
 
 const addPlantThroughTheUi = async (page: Page, expectedPlantCount: number, strainIndex = 0) => {
     await page.locator('[data-view-id="plants"]').first().click()
@@ -250,12 +257,22 @@ test.describe('Single writer tab (GH #669)', () => {
         expect(accepted?.simulation?.plants?.entities?.[acceptedSecondPlantId ?? '']).toBeDefined()
         expect(accepted?.simulation?.plantSlots).toContain(acceptedSecondPlantId)
 
-        // The stale background snapshot still contains only the baseline plant;
-        // persisting it would delete the foreground tab's distinct new plant.
-        // The stale-page warning pauses the UI, so the test exercises its pending
-        // full-snapshot save rather than trying to edit after the pause.
+        // The background tab still owns its independently hydrated state. Its
+        // second plant is a real local edit, distinct from the foreground plant,
+        // and must not replace the accepted full snapshot when its hidden save is
+        // refused.
         await expect.poll(() => plantCardCount(background)).toBe(1)
+        await addPlantThroughTheUi(background, 2)
+        const backgroundPlantIds = await plantCardIds(background)
+        expect(backgroundPlantIds).toHaveLength(2)
+        expect(backgroundPlantIds).toContain(backgroundPlantId)
+        const backgroundSecondPlantId = backgroundPlantIds.find(
+            (plantId) => plantId !== backgroundPlantId,
+        )
+        expect(backgroundSecondPlantId).toBeDefined()
+        expect(backgroundSecondPlantId).not.toBe(acceptedSecondPlantId)
         const staleNotice = background.getByRole('alert').filter({ hasText: STALE_TAB_NOTICE })
+        await expect(staleNotice).toHaveCount(0)
         await background.evaluate(() => {
             Object.defineProperty(document, 'visibilityState', {
                 configurable: true,

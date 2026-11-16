@@ -22,7 +22,7 @@ export const GrowConfirmationModal: React.FC = () => {
             <Button variant="secondary" onClick={() => cancelNewGrow()}>
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleConfirm} glow={true}>
+            <Button onClick={handleConfirm} glow={true} data-testid="grow-confirmation-confirm">
                 {t('plantsView.confirmationModal.confirmButton')}
             </Button>
         </>

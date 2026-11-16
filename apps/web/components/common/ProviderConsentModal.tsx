@@ -38,7 +38,12 @@ const ProviderConsentModalComponent: React.FC = () => {
             size="md"
             footer={
                 <div className="flex justify-end gap-2 pt-2">
-                    <Button variant="ghost" size="sm" onClick={handleDeny}>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        data-testid="provider-consent-use-local-ai"
+                        onClick={handleDeny}
+                    >
                         {t('settingsView.security.providerConsentDeny')}
                     </Button>
                     <Button variant="primary" size="sm" onClick={handleGrant}>

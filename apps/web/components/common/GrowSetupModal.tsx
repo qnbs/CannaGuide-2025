@@ -106,7 +106,7 @@ const FloweringModeSection: React.FC<{
             icon={<PhosphorIcons.Plant />}
             defaultOpen
         >
-            <div className="sm:col-span-2">
+            <div className="sm:col-span-2" data-testid="flowering-mode-section">
                 <p className="text-xs text-slate-400 mb-2">
                     {t('plantsView.setupModal.floweringModePrompt')}
                 </p>
@@ -325,7 +325,12 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
             <Button variant="secondary" onClick={onClose}>
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleConfirm} glow disabled={confirmedSetup === undefined}>
+            <Button
+                onClick={handleConfirm}
+                glow
+                disabled={confirmedSetup === undefined}
+                data-testid="grow-setup-confirm"
+            >
                 {t('plantsView.setupModal.confirm')}
             </Button>
         </>

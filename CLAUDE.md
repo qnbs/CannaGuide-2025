@@ -179,24 +179,10 @@ pnpm run check:i18n
     git diff --name-only "$(git merge-base origin/main HEAD)"...HEAD | wc -l
     ```
 
-**Two-reviewer gate:** Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head.
+**Review coverage:** Prefer two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head. Low-risk fallback is limited to one qualified review after one request and the documented wait; high-risk changes and uncertainty require two, with no fallback. No third review is required once two qualified reviews cover the current head. PR #857 remains under its pre-change policy until merged; see `docs/PR-REVIEW-LOOP.md` for details.
 
-- **Review one stable head.** Let reviews finish, collect every finding including
-  paginated issue-comment findings and outside-diff comments, group by root cause, and ship
-  one consolidated signed fix. Request one fresh CodeRabbit full review of the final head;
-  another full review is due only after code changes. Do not merge until two of CodeRabbit,
-  CodeAnt, and Codex have covered the exact current head with non-dismissed reviews. Do not
-  merge a head that none of the three has reviewed. `REVIEW_UNAVAILABLE` (skipped, paused,
-  rate limited, quota skipped, expired trial, or no attached review) is not a green check,
-  and it is not a merge block once two of them have covered. When
-  `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment
-  `@codex review` once; do not repeat while unanswered. A dismissed or older-head review
-  does not count. Fix each valid finding at its root; refute false positives with evidence.
-  Cite the resolving commit in fix replies and the current head SHA for no-code refutations.
-  Resolve all threads and disposition paginated issue-comment findings before calling the
-  review complete. Never push during active review or checks.
-- **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the
-  rule passes honestly; the suppression ratchet gates CI.
+- **Review one stable head.** Fetch every open thread and paginated finding, fix or refute it with evidence, and resolve only after disposition. Request only missing coverage, at most once per reviewer and head. Sourcery is opportunistic. A new push invalidates prior CI and review evidence. Re-read exact-head checks and review state before merge. Never push during active checks.
+- **Never silence a finding with a new `biome-ignore` / `eslint-disable`.** Refactor so the rule passes honestly.
 - **`main` is guarded by a GitHub _ruleset_ (not classic branch protection),** so
   `gh api .../branches/main/protection` 404s -- read it via `gh api .../rules/branches/main`.
   Keep three layers apart and never state the second as fact:

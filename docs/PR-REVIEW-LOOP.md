@@ -1,27 +1,28 @@
 # PR Review Correction Loop — Runbook
 
-Standing procedure for every pull request in this repository. It applies to **all** reviewers — CodeRabbit, DeepSource, Socket Security, GitGuardian, CodeQL, and humans — and it runs **proactively**: nobody has to ask for it.
+Standing procedure for every pull request in this repository. It applies to findings from CodeRabbit, CodeAnt, Codex, Sourcery, DeepSource, Socket Security, GitGuardian, CodeQL, and humans. It is a review procedure, not a GitHub required check or an independent enforcement boundary.
 
-The loop is not "read the comments and reply". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head**, that coverage left no undispositioned finding, and **zero unresolved threads** remain from any reviewer that attached a finding. A reviewer that is expired, skipped, or silent does not add a thread or a block once those two are covered. `REVIEW_UNAVAILABLE` is not a green check and is not a merge block once two of those reviewers have covered the head. A false positive refuted with evidence and resolved without a code change is dispositioned and does not require another fresh review. Section 5 defines when one is due.
+**Review coverage:** Prefer two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head. Low-risk fallback is limited to one qualified review after one request and the documented wait; high-risk changes and uncertainty require two, with no fallback. No third review is required once two qualified reviews cover the current head.
 
-**Two-reviewer gate:** Merge only when two of CodeRabbit, CodeAnt, and Codex have non-dismissed reviews on the exact current head.
+Review evidence must bind to the full 40-character current head SHA and an allowlisted identity. Each provider counts once. A review receipt is accepted only in the explicitly supported, structured Codex format below; a free-form comment, status check, bot receipt without a full SHA, or user-authored copy does not count. All findings and relevant threads must still be dispositioned, and required GitHub checks remain mandatory.
 
-A Sourcery quota skip or CodeRabbit skip on a non-default base is a recorded availability limit, not clean review evidence; classify it as `REVIEW_UNAVAILABLE`.
+The policy change in PR #857 is transitional: evaluate that PR under the pre-change policy until it is merged. For #857, only two non-dismissed, completed GitHub pull-request review objects from CodeRabbit, CodeAnt, or Codex on the exact current head satisfy the old internal review requirement. Do not use this change to approve itself.
 
 ---
 
 ## 0. Reviewers active on this repo
 
-| Reviewer                                                              | Surface                                                                                                       | Where findings appear                             |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| **CodeRabbit** (`coderabbitai[bot]`)                                  | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment |
-| **CodeAnt** (`codeant-ai[bot]`)                                       | correctness and maintainability                                                                               | inline review threads                             |
-| **Codex** (`chatgpt-codex-connector[bot]`)                            | correctness                                                                                                   | review on the pull                                |
-| **DeepSource**                                                        | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR                                                         | check run + issue-comment                         |
-| **Socket Security**                                                   | dependency supply-chain alerts                                                                                | check run + PR alerts comment                     |
-| **GitGuardian**                                                       | secret scanning                                                                                               | check run                                         |
-| **CodeQL** (`Analyze (actions\|javascript-typescript\|python\|rust)`) | static analysis, incl. **workflow files**                                                                     | check runs                                        |
-| **Vercel / Cloudflare**                                               | preview deploys                                                                                               | check runs                                        |
+| Reviewer                                                              | Surface                                                                                                       | Where findings appear                              |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| **CodeRabbit** (`coderabbitai[bot]`)                                  | correctness, security, style; posts **outside-diff-range** comments that reference code your PR did not touch | inline review threads + one summary issue-comment  |
+| **CodeAnt** (`codeant-ai[bot]`)                                       | correctness and maintainability                                                                               | inline review threads                              |
+| **Codex** (`chatgpt-codex-connector[bot]`)                            | correctness                                                                                                   | review on the pull or supported structured receipt |
+| **Sourcery** (`sourcery-ai[bot]`)                                     | correctness and maintainability                                                                               | completed review object; opportunistic             |
+| **DeepSource**                                                        | JS/TS, Docker, Go, Rust, CSS analyzers; grades the PR                                                         | check run + issue-comment                          |
+| **Socket Security**                                                   | dependency supply-chain alerts                                                                                | check run + PR alerts comment                      |
+| **GitGuardian**                                                       | secret scanning                                                                                               | check run                                          |
+| **CodeQL** (`Analyze (actions\|javascript-typescript\|python\|rust)`) | static analysis, incl. **workflow files**                                                                     | check runs                                         |
+| **Vercel / Cloudflare**                                               | preview deploys                                                                                               | check runs                                         |
 
 `gh pr checks <N>` does **not** show inline review threads. You must query them (step 2).
 
@@ -113,45 +114,40 @@ Cite the resolving commit SHA in every reply that ships a fix. A refutation that
 
 ---
 
-## 5. One fresh review of a stable head
+## 5. Exact-head evidence, risk, and bounded review requests
 
-Do not request a full bot review after every intermediate fix.
+Keep one stable head while reviews and checks run. Request only the missing review coverage; each provider is requested at most once for that head. A code change invalidates prior-head evidence. Re-read the head and evidence immediately before merge. Do not retry a skipped, rate-limited, timed-out, quota-limited, expired, or silent bot indefinitely.
 
-1. Let reviewers that start on their own finish on one stable head. Do not push while that head is still being reviewed or tested.
-2. Collect every finding on that head, including nitpicks and outside-diff-range comments. Group findings by root cause.
-3. Ship one fail-before / green-after fix for the group, in one signed commit. Do not cascade a push per comment.
-4. Request one fresh review of that final head:
+One stable-head correction: collect findings, group them by root cause, and ship one signed corrective commit after relevant checks and reviews finish. Fetch every open thread and paginated finding, fix or refute it with evidence, and resolve only after disposition. A false positive refuted with evidence and resolved without a code change does not require another fresh review. A finding that lives only in a paginated issue comment counts the same way as an inline finding.
 
-    ```bash
-    gh pr comment <N> --body "@coderabbitai full review"
-    ```
+### Evidence accepted by the operator coverage evaluator
 
-5. Another full review is due only when the code changes. A reply or a resolution that does not change the reviewed code does not need a new full review.
+- A **GitHub pull-request review object** counts only when GitHub's API identifies one of the exact allowlisted bot logins (`coderabbitai[bot]`, `codeant-ai[bot]`, `chatgpt-codex-connector[bot]`, `sourcery-ai[bot]`), its GitHub API author type must be Bot, `commit_id` is the full exact current SHA, and the latest review for that provider on that head is submitted in `COMMENTED`, `APPROVED`, or `CHANGES_REQUESTED` state. `PENDING`, `DISMISSED`, unknown states, older heads, and unknown identities do not count. A dismissed latest review invalidates that provider's coverage.
+- The only supported issue-comment receipt uses the codex-review-state:v1 marker emitted by the authenticated Codex bot account (`chatgpt-codex-connector[bot]`): `<!-- codex-pull-request-review-summary -->` followed by exactly one `<!-- codex-review-state:v1 {JSON} -->` marker. Its `code_review.commit_sha` must be a full 40-character lowercase SHA equal to the current head; `status` must equal `completed`; and both `has_any_findings` and `has_unresolved_findings` must be booleans. GitHub API author identity is verified and its author type must be Bot. The latest marked Codex receipt is used. A current-head dismissed Codex review cannot be overridden by a receipt.
+- No other issue comment is a review receipt. In particular, free-form `LGTM`, partial-SHA summaries, copied/user-authored receipts, CodeAnt prose, status checks, reactions, and review-start notifications do not count. Findings reported by any source still require disposition regardless of whether the source counts toward coverage.
 
-`REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or a full-review request never attaches a review object to the current head. It is not a green check and is not, by itself, a merge block.
-
-CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once, keeping that login's newest review. `unique_by` would keep the oldest. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:
+Collect API evidence and pass it to the local evaluator. Its result is an operator aid, **not a required CI check** and not a substitute for GitHub rulesets, branch protection, exact-head checks, or review-thread disposition:
 
 ```bash
-PR_NUMBER=$(gh pr view --json number --jq .number)
-HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
-REVIEW_COVERAGE=$(gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate \
-  | jq -s --arg head "$HEAD_SHA" '[.[][] | select(.commit_id==$head and (.user.login|IN("coderabbitai[bot]","codeant-ai[bot]","chatgpt-codex-connector[bot]")))] | sort_by([.user.login, .submitted_at]) | group_by(.user.login) | map(last) | map(select(.state!="DISMISSED")) | .[] | {user:.user.login, state}')
-RECHECK_HEAD_SHA=$(gh pr view "$PR_NUMBER" --json headRefOid --jq .headRefOid)
-if [ "$RECHECK_HEAD_SHA" != "$HEAD_SHA" ]; then
-  echo "PR head changed during review coverage read; rerun against the new head." >&2
-  exit 1
-fi
-printf '%s\n' "$REVIEW_COVERAGE"
+gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate | jq -s 'add' > /tmp/pr-reviews.json
+gh api "repos/qnbs/CannaGuide-2025/issues/${PR_NUMBER}/comments" --paginate | jq -s 'add' > /tmp/pr-comments.json
+# Build evidence.json from the current head, its changed-file list, the two API arrays,
+# and (only if invoking the low-risk fallback) one recorded request for the current head.
+node scripts/security/review-coverage-policy.mjs < evidence.json
 ```
 
-Codex does not always attach a review to a new head. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once on the pull. Two other reviewers do not replace that request. A dismissed review does not count. Do not send a second `@codex review` while the first request has not attached a review on that head. A review of an older commit does not cover the current head. That comment is not a CodeRabbit full review.
+The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR’s `pull_request_url` and each receipt from that PR’s `issue_url`. a low-risk fallback also supplies `secondReviewRequest` with `provider`, `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only <merge-base>...<head>` for `changedFiles`; classify the actual diff, not its title or labels. The evaluator defaults uncertain files to high risk.
 
-When two of those three have covered that head, do not block on another reviewer that is expired, skipped, paused, rate limited, quota skipped, or silent, and do not send another full-review request for that gap. Do not merge a head that none of the three has reviewed.
+### Risk tiers and review count
 
-When a major review returns an actionable finding, return to Section 2, group findings, and ship one fix. A no-code finding refutation cites the current head SHA and is dispositioned; it does not demand another full review. The loop ends when, on the current head, two of the three have covered it, every finding any reviewer attached is fixed or refuted, and zero threads are unresolved. A finding that lives only in a paginated issue comment counts the same way. A trial-ended notice or reviewer silence is not a finding.
+- **High risk:** credentials, auth, secrets, persistence, multi-tab consistency, storage/recovery, migrations, privacy erasure, CI or review trust boundaries, branch/ruleset/release/signing security, dependencies, security policy, and any uncertain scope. Require two independent qualified exact-head reviews; there is no one-review fallback. For PR #857, apply the pre-change transition rule above.
+- **Low risk:** only ordinary documentation or non-security tests, with every changed path explicitly classified low by the evaluator. Two independent reviews remain preferred.
+- **Low-risk fallback:** after one regular request to one missing reviewer for the exact head, one qualified review may suffice only if the second provider is demonstrably unavailable and the bounded wait has elapsed. An explicit rate-limit, timeout, or skip requires at least 30 minutes from the single recorded request; silence requires 24 hours. Record the request reference, provider, exact SHA, timestamps, and outcome. The evaluator rejects repeated requests, wrong-head requests, absent references, or early silence. Zero qualified reviews never satisfies the fallback.
+- Sourcery is opportunistic. A completed Sourcery review counts once when available; its absence, skip, or rate limit never creates another wait. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded availability limits, not completed review evidence. Once two qualified reviews exist, request no third review, including Codex.
 
----
+### Findings and final readback
+
+A completed review may still contain findings. Fix or refute every actionable finding with evidence, reply to each thread, and resolve it only after disposition. Paginated summary comments from CodeRabbit, DeepSource, Socket, or other tools are included in the finding inventory but do not become review evidence unless they meet the supported receipt format. Re-read all review objects, receipts, threads, issue comments, exact-head checks, mergeability, and ruleset state before merge. A former green check cannot replace a current-head readback.
 
 ## 6. Drive CI green — and read the right signal
 
@@ -176,8 +172,11 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 ## 7. Definition of done (binary)
 
 - [ ] 0 unresolved review threads from reviewers that attached findings; every finding in paginated issue comments is fixed or refuted.
-- [ ] Two of CodeRabbit, CodeAnt, and Codex have covered the current head, with no undispositioned finding.
-- [ ] `REVIEW_UNAVAILABLE` is not green and does not block once two reviewers cover the head. Do not merge a head that none of the three has reviewed.
+- [ ] Risk is classified from the actual changed paths; exact-head evidence is re-read immediately before merge.
+- [ ] Two independent qualified reviewers cover high-risk changes; no fallback is allowed. Low-risk fallback, if used, meets the single-request evidence and wait rules in section 5.
+- [ ] A supported structured Codex receipt has a verified bot author, full exact SHA, completed status, and findings booleans; unsupported comments do not count.
+- [ ] Sourcery is optional; no third reviewer is requested once two qualified reviewers cover the head.
+- [ ] PR #857 itself is evaluated under the pre-change rule until merged.
 - [ ] Every finding is fixed at the root, with a reply citing the resolving commit, or refuted with evidence in-thread; a no-code refutation cites the current head SHA.
 - [ ] No new lint/type suppressions anywhere in the diff.
 - [ ] `✅ CI Status` is green for this diff, evidenced by run URL. It includes the `policy` job when agent instructions or gate docs change. Block on a failing CodeQL, Socket, GitGuardian, or DeepSource check when it ran. For a pull targeting `main`, CodeQL must be successful; on code changes unit tests and both Chromium E2E shards remain part of `✅ CI Status`. Signatures and privacy gates stay enabled.

@@ -914,8 +914,8 @@
             "source_excerpt": "**One stable-head correction.** Collect findings on one stable head, group them by root cause, and ship one fail-before/green-after fix. Then request one fresh review of that final head. Do not merge until two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not request a full bot review after every intermediate fix. Another full review only when the code changes again. A false positive that is refuted with evidence and resolved, with no code change, is dispositioned and does not require another full review. Do not push while that head is still being reviewed or tested. A new push makes the previous CI and review evidence stale. Nitpicks and \"outside diff range\" comments are in scope. Never silence a finding with a new `biome-ignore` / `eslint-disable`. Refactor so the rule passes honestly. `REVIEW_UNAVAILABLE` means a reviewer is skipped, paused, rate limited, quota skipped, on an expired trial, or never attaches a review. It is not a green check, and it is not a merge block once two of CodeRabbit, CodeAnt, and Codex have covered that head. Do not merge a head that none of the three has reviewed. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once. Two other reviewers do not replace that request. Do not send a second `@codex review` while that request has not attached a review on that head. A review of an older commit does not cover the head. Follow `docs/PR-REVIEW-LOOP.md`. | - **docs(review):** The coverage query keeps only the three bot logins on the current head, drops a dismissed review, and counts each login once, keeping the newest review. Paginated issue comments are part of completion, and the Agent Policy gate requires that two-reviewer wording in the agent docs. | - **docs(review):** When `chatgpt-codex-connector[bot]` has no non-dismissed review on the current head, comment `@codex review` once. Two other reviewers do not replace that request, and a dismissed review does not count. A second request waits until that one has attached a review on that head. The documented query matches the REST logins `coderabbitai[bot]`, `codeant-ai[bot]`, and `chatgpt-codex-connector[bot]`; names without the `[bot]` suffix match nothing. | has reviewed. When `chatgpt-codex-connector[bot]` has no non-dismissed review on that head, comment `@codex review` once. | CodeRabbit, CodeAnt, and Codex are the major reviewers. A review counts only when its `commit_id` is the current head, its author is `coderabbitai[bot]`, `codeant-ai[bot]`, or `chatgpt-codex-connector[bot]`, and its state is not `DISMISSED`. Count each login once, keeping that login's newest review. `unique_by` would keep the oldest. `gh api --paginate` cannot combine `--slurp` with `--jq`, so slurp the pages with `jq -s`:",
             "requirement": "Match canonical reviewer logins, exclude dismissed reviews, count each login once using its newest review on the current head",
             "scope": "Accept",
-            "target": "Review runbook and fixture test using paginated REST-shaped review data.",
-            "mechanical_verification": "node --test scripts/security/check-agent-instruction-architecture.test.mjs — review-coverage.test.mjs: exact-head/newest/dismissed-login cases; verifies the rule-specific adoption anchor and rejects its removal. Also run `node --test scripts/security/review-coverage.test.mjs` for exact-head, newest-per-login, canonical-login, and dismissed-only query cases.",
+            "target": "Review runbook and deterministic API-evidence evaluator with full-SHA receipts, identity, state, risk, and fallback tests.",
+            "mechanical_verification": "node --test --test-concurrency=1 scripts/security/check-agent-instruction-architecture.test.mjs and scripts/security/review-coverage.test.mjs; review-coverage.test.mjs: exact-SHA, trusted identity, state, risk and fallback cases; exact-PR/full-SHA binding, trusted bot identity, completed/dismissed/pending states, deduplication, receipt provenance, head recheck, and bounded fallback regressions.",
             "empirical_verification": "Immutable PR #777 blob evidence and cited-line hashes are recorded in `pr-777-source-evidence.json`; local adoption is checked against the current branch by the rule-specific anchor test. Reread the live PR state, reviews, and checks before integration or closure; this matrix does not claim that readback.",
             "status": "FIXED_ON_BRANCH",
             "destination_paths": ["docs/PR-REVIEW-LOOP.md"]
@@ -2257,7 +2257,7 @@
             "destination_evidence": [
                 {
                     "path": "AGENTS.md",
-                    "anchor": "Let reviews that start automatically finish on one stable head"
+                    "anchor": "Let requested reviews finish on one stable head"
                 }
             ]
         },
@@ -2278,7 +2278,7 @@
             "destination_evidence": [
                 {
                     "path": "AGENTS.md",
-                    "anchor": "Collect every finding, including paginated issue-comment findings and outside-diff comments"
+                    "anchor": "Collect every finding, including paginated issue comments, nitpicks, and outside-diff comments"
                 }
             ]
         },
@@ -2320,7 +2320,7 @@
             "destination_evidence": [
                 {
                     "path": "AGENTS.md",
-                    "anchor": "A new push makes prior CI and review evidence stale."
+                    "anchor": "A new push makes the previous CI and review evidence stale."
                 }
             ]
         },
@@ -2341,7 +2341,7 @@
             "destination_evidence": [
                 {
                     "path": "AGENTS.md",
-                    "anchor": "including paginated issue-comment findings and outside-diff comments"
+                    "anchor": "including paginated issue comments, nitpicks, and outside-diff comments"
                 }
             ]
         },
@@ -2383,7 +2383,7 @@
             "destination_evidence": [
                 {
                     "path": "docs/PR-REVIEW-LOOP.md",
-                    "anchor": "Sourcery quota skip or CodeRabbit skip on a non-default base"
+                    "anchor": "Sourcery quota skips and CodeRabbit skips on a non-default base are recorded availability limits, not completed review evidence"
                 }
             ]
         },
@@ -3571,7 +3571,7 @@
             "destination_evidence": [
                 {
                     "path": "docs/PR-REVIEW-LOOP.md",
-                    "anchor": "The loop is not \"read the comments and reply\". It ends when two of CodeRabbit, CodeAnt, and Codex have covered the **current head**"
+                    "anchor": "Fetch every open thread and paginated finding, fix or refute it with evidence, and resolve only after disposition"
                 }
             ]
         },

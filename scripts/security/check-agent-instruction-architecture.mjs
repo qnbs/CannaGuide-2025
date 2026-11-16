@@ -81,7 +81,7 @@ const ROOT_ANCHORS = {
         ],
         [
             'exact-head reviewer coverage',
-            /Review coverage[\s\S]{0,300}two of CodeRabbit, CodeAnt,? and Codex must cover the exact current head/i,
+            /Review coverage[\s\S]{0,400}two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head[\s\S]{0,400}high-risk changes and uncertainty require two, with no fallback/i,
         ],
     ],
     'CLAUDE.md': [
@@ -129,7 +129,7 @@ const ROOT_ANCHORS = {
         ],
         [
             'exact-head reviewer coverage',
-            /two of CodeRabbit,\s+CodeAnt,?\s+and Codex\s+(?:must cover|have covered)\s+the exact current head/i,
+            /two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head[\s\S]{0,400}high-risk changes and uncertainty require two, with no fallback/i,
         ],
     ],
 }
@@ -445,7 +445,7 @@ export const PR777_ADOPTION_REQUIREMENTS = [
         label: 'stable-head root-cause batching',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-001 adoption anchor',
         pattern:
-            /One stable-head correction[\s\S]{0,700}group them by root cause[\s\S]{0,400}ship one signed corrective commit/,
+            /One stable-head correction[\s\S]{0,700}group (?:them )?by root cause[\s\S]{0,400}ship one signed corrective commit/,
     },
     {
         id: 'P-002',
@@ -458,33 +458,33 @@ export const PR777_ADOPTION_REQUIREMENTS = [
     {
         id: 'P-003',
         file: 'CLAUDE.md',
-        label: 'two exact-head reviewers',
+        label: 'risk-based exact-head reviewer coverage',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-003 adoption anchor',
-        pattern: /two of CodeRabbit,\s+CodeAnt,\s+and Codex have covered the exact current head/,
+        pattern: /two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head/,
     },
     {
         id: 'P-004',
         file: 'docs/PR-REVIEW-LOOP.md',
-        label: 'unavailable review is not a merge block after coverage',
+        label: 'bounded low-risk fallback and strict high-risk coverage',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-004 adoption anchor',
         pattern:
-            /REVIEW_UNAVAILABLE[\s\S]{0,300}not a green check[\s\S]{0,200}not a merge block once two of those reviewers have covered/,
+            /Low-risk fallback is limited to one qualified review after one request and the documented wait[\s\S]{0,250}high-risk changes and uncertainty require two, with no fallback/,
     },
     {
         id: 'P-005',
         file: 'docs/PR-REVIEW-LOOP.md',
-        label: 'single Codex review request per unanswered head',
+        label: 'bounded request and no unnecessary third review',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-005 adoption anchor',
         pattern:
-            /chatgpt-codex-connector\[bot\][\s\S]{0,200}has no non-dismissed review on that head[\s\S]{0,100}comment\s+`@codex review` once[\s\S]{0,250}Do not send a second `@codex review`/,
+            /(?=[\s\S]*each provider is requested at most once for that head)(?=[\s\S]*Once two qualified reviews exist, request no third review, including Codex)[\s\S]*/,
     },
     {
         id: 'P-006',
         file: 'scripts/security/review-coverage.test.mjs',
         label: 'query behavior regression cases',
-        testRef: 'review-coverage.test.mjs: exact-head/newest/dismissed-login cases',
+        testRef: 'review-coverage.test.mjs: exact-SHA, trusted identity, state, risk and fallback cases',
         pattern:
-            /(?=[\s\S]*the documented query keeps the newest review per bot login on the head)(?=[\s\S]*names without the \[bot\] suffix match nothing)(?=[\s\S]*a dismissed-only login, a silent reviewer, and a trial notice add no row)[\s\S]*/,
+            /(?=[\s\S]*an authentic completed Codex receipt for the exact head counts once)(?=[\s\S]*a user-authored, copied or malformed Codex receipt is rejected)(?=[\s\S]*dismissed, pending, unknown, and non-bot review records do not qualify)(?=[\s\S]*only low-risk work gets a one-review fallback)[\s\S]*/,
     },
     {
         id: 'P-007',
@@ -539,7 +539,7 @@ export const PR777_ADOPTION_REQUIREMENTS = [
         label: 'unavailable review is not positive coverage',
         testRef: 'check-agent-instruction-architecture.test.mjs: P-013 adoption anchor',
         pattern:
-            /(?=[\s\S]*REVIEW_UNAVAILABLE)(?=[\s\S]*A review counts only when its `commit_id` is the current head)(?=[\s\S]*state is not `DISMISSED`)[\s\S]*/,
+            /(?=[\s\S]*A \*\*GitHub pull-request review object\*\* counts only)(?=[\s\S]*full exact current SHA)(?=[\s\S]*PENDING)(?=[\s\S]*DISMISSED)(?=[\s\S]*latest marked Codex receipt)[\s\S]*/,
     },
 ]
 

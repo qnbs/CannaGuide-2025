@@ -74,6 +74,11 @@ test('C-018 retains scheduling, cancellation and transfer contracts for both age
     }
     const row = matrix.rules.find((rule) => rule.id === 'C-018')
     assert.ok(row.destination_paths.includes('apps/web/AGENTS.md'))
+    assert.match(
+        row.semantic_verification,
+        /WEB-CODEX-10 and BUS-06 preserve the promise dispatcher, priority, retry, AbortController\/abort, backpressure and transferable zero-copy contracts/,
+    )
+    assert.match(row.semantic_verification, /WEB-12 retains no direct worker invocation/)
     assert.equal(
         row.status,
         'SOURCE_CAPTURED / HISTORICAL_LOADER_MARKERS_VERIFIED / SEMANTIC_PARITY_REVIEWED',

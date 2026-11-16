@@ -14,7 +14,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
-- **chore(deps):** Bump `tailwindcss` to 4.3.5 in `@cannaguide/web` (#855 lane C, #829).
+- **chore(deps):** Bump `tailwindcss` and `@tailwindcss/postcss` to 4.3.5 in `@cannaguide/web` (#855 lane C, #829) so the PostCSS pipeline uses the same compiler version.
 
 - **chore(deps):** Bump `zustand` to 5.0.16 in `@cannaguide/web` (#855 lane C, #833).
 

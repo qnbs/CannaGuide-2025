@@ -15,6 +15,27 @@ import { redactSnapshotSecrets, scrubSecretsInText } from '@/utils/redactSecrets
  */
 export type QuarantineResult = 'stored' | 'kept-earlier' | 'nothing' | 'failed'
 
+// Set when this start put saved data aside, so the app can say so once (#666): the
+// quarantined copy was otherwise invisible and the user only saw an empty app.
+let setAsideThisStart = false
+
+/** Whether saved data was put aside since the last call; reading clears it. */
+export const takeSetAsideNotice = (): boolean => {
+    const setAside = setAsideThisStart
+    setAsideThisStart = false
+    return setAside
+}
+
+/** The snapshot held under the quarantine key, or null (also when it cannot be read). */
+export const readQuarantinedSnapshot = async (): Promise<string | null> => {
+    try {
+        return await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)
+    } catch (error) {
+        console.error('[Store] Could not read the quarantined snapshot:', error)
+        return null
+    }
+}
+
 /**
  * Runs the operation under the exclusive cross-tab lock, so no other tab writes
  * while it checks and changes the keys. Without Web Locks the exclusive lock is
@@ -45,6 +66,7 @@ const keepOnce = async (snapshot: string): Promise<'stored' | 'kept-earlier'> =>
     if ((await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)) !== kept) {
         throw new Error('Quarantine snapshot verification failed.')
     }
+    setAsideThisStart = true
     return 'stored'
 }
 
@@ -108,6 +130,8 @@ export const discardUnreadablePrimarySnapshot = async (
             // cannot save back over the removal. This page goes on running, so it
             // follows the new revision.
             removed = await removeSnapshotIfCurrent()
+            // The app starts without this data; an earlier copy may be what is kept.
+            if (removed) setAsideThisStart = true
         })
     } catch (error) {
         console.error('[Store] Keeping the unreadable primary snapshot:', error)

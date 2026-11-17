@@ -685,6 +685,13 @@ export const settingsView = {
         importError: 'Import mislukt. Controleer of het een geldig back-upbestand is.',
         importNewerVersion:
             'Deze back-up is gemaakt met een nieuwere versie van CannaGuide. Laad de app opnieuw om de nieuwere versie te krijgen en importeer de back-up daarna opnieuw. Er is niets gewijzigd.',
+        setAside: {
+            title: 'Apart gezette gegevens',
+            description:
+                'CannaGuide kon deze opgeslagen gegevens niet laden en heeft daarom een kopie bewaard in plaats van ze te verwijderen. Download de kopie om ze veilig te bewaren. Herstellen vervangt je huidige gegevens door de kopie en werkt alleen als deze versie ze kan lezen.',
+            download: 'Kopie downloaden',
+            restore: 'Herstellen',
+        },
         restoreBlocked:
             'Gegevensherstel is tijdelijk geblokkeerd door een veilige herstelbewerking.',
         resetError:

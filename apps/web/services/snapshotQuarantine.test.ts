@@ -37,6 +37,8 @@ vi.mock('@/constants', () => ({
 import {
     discardUnreadablePrimarySnapshot,
     quarantineUnreadableSnapshot,
+    readQuarantinedSnapshot,
+    takeSetAsideNotice,
 } from './snapshotQuarantine'
 
 /** Backs the mocked storage with a plain object and returns it for inspection. */
@@ -243,5 +245,48 @@ describe('discardUnreadablePrimarySnapshot', () => {
         await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(true)
 
         expect(mocks.schedule).toHaveBeenCalledTimes(1)
+    })
+})
+
+describe('the set-aside notice and the quarantined copy (#666)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+        mocks.runExclusive.mockImplementation((operation: () => Promise<unknown>) => operation())
+        takeSetAsideNotice()
+    })
+
+    it('reports a stored copy once', async () => {
+        useMemoryStorage()
+
+        expect(takeSetAsideNotice()).toBe(false)
+        await expect(quarantineUnreadableSnapshot('{"bad":')).resolves.toBe('stored')
+
+        expect(takeSetAsideNotice()).toBe(true)
+        expect(takeSetAsideNotice()).toBe(false)
+    })
+
+    it('reports a removed primary even when an earlier copy is the one kept', async () => {
+        useMemoryStorage({ quarantine: '{"earlier":true}', primary: '{"later":' })
+
+        await expect(discardUnreadablePrimarySnapshot('{"later":')).resolves.toBe(true)
+
+        expect(takeSetAsideNotice()).toBe(true)
+    })
+
+    it('does not report anything when nothing was kept or removed', async () => {
+        useMemoryStorage({ quarantine: '{"earlier":true}' })
+
+        await expect(quarantineUnreadableSnapshot('{"later":')).resolves.toBe('kept-earlier')
+
+        expect(takeSetAsideNotice()).toBe(false)
+    })
+
+    it('reads the quarantined copy, and null when it cannot be read', async () => {
+        useMemoryStorage({ quarantine: '{"kept":true}' })
+        await expect(readQuarantinedSnapshot()).resolves.toBe('{"kept":true}')
+
+        mocks.getItem.mockRejectedValueOnce(new Error('read failed'))
+        await expect(readQuarantinedSnapshot()).resolves.toBeNull()
     })
 })

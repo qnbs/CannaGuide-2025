@@ -698,6 +698,13 @@ export const settingsView = {
             'La importacion fallo. Por favor asegurate de que sea un archivo de copia de seguridad valido.',
         importNewerVersion:
             'Esta copia de seguridad se cre\u00F3 con una versi\u00F3n m\u00E1s reciente de CannaGuide. Recarga la aplicaci\u00F3n para obtener la versi\u00F3n m\u00E1s reciente y vuelve a importar la copia. No se ha cambiado nada.',
+        setAside: {
+            title: 'Datos guardados apartados',
+            description:
+                'CannaGuide no pudo cargar estos datos guardados, as\u00ED que guard\u00F3 una copia en lugar de borrarlos. Descarga la copia para conservarla. Restaurar reemplaza tus datos actuales por ella y solo funciona si esta versi\u00F3n puede leerla.',
+            download: 'Descargar copia',
+            restore: 'Restaurar',
+        },
         restoreBlocked:
             'La restauracion de datos esta bloqueada temporalmente por una operacion de recuperacion segura.',
         resetError:

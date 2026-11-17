@@ -317,6 +317,23 @@ describe('createAppStore with a corrupt primary and a good backup (#666)', () =>
         expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(olderSnapshotWithPlant())
     })
 
+    it('quarantines a backup with a slice newer than this build, even when the primary has no slice versions', async () => {
+        // CodeRabbit on #871: the primary alone cannot show that this backup is newer.
+        const primary = JSON.stringify({ version: APP_VERSION, settings: { settings: {} } })
+        const backup = JSON.stringify({
+            version: APP_VERSION,
+            _sliceVersions: { simulation: SLICE_SCHEMA_VERSIONS.simulation + 1 },
+            simulation: { futureField: true },
+        })
+        db.data.set(REDUX_STATE_KEY, primary)
+        db.data.set(REDUX_STATE_BACKUP_KEY, backup)
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe(backup)
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(primary)
+    })
+
     it('keeps a newer backup in place when the quarantine already holds a snapshot', async () => {
         db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
         db.data.set(REDUX_STATE_BACKUP_KEY, newerOriginal())

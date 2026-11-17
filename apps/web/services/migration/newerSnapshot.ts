@@ -38,9 +38,11 @@ const isNewerVersion = (stored: unknown, current: number): stored is number =>
 const isRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
-/** Throws NewerSnapshotError when `state` was written by a newer build. */
-export const assertNotNewerSnapshot = (state: unknown): void => {
-    if (!isRecord(state)) return
+/** What in `state` is newer than this build, or null when nothing is. */
+const newerThanThisBuild = (
+    state: unknown,
+): { storedVersion: number | null; newerSlices: string[] } | null => {
+    if (!isRecord(state)) return null
     const storedVersion = isNewerVersion(state.version, APP_VERSION) ? state.version : null
     const sliceVersions = state._sliceVersions
     const newerSlices = isRecord(sliceVersions)
@@ -48,9 +50,16 @@ export const assertNotNewerSnapshot = (state: unknown): void => {
               .filter(([name, current]) => isNewerVersion(sliceVersions[name], current))
               .map(([name]) => name)
         : []
-    if (storedVersion !== null || newerSlices.length > 0) {
-        throw new NewerSnapshotError(storedVersion, newerSlices)
-    }
+    return storedVersion !== null || newerSlices.length > 0 ? { storedVersion, newerSlices } : null
+}
+
+/** True when `state` was written by a newer build than this one. */
+export const isNewerThanThisBuild = (state: unknown): boolean => newerThanThisBuild(state) !== null
+
+/** Throws NewerSnapshotError when `state` was written by a newer build. */
+export const assertNotNewerSnapshot = (state: unknown): void => {
+    const newer = newerThanThisBuild(state)
+    if (newer) throw new NewerSnapshotError(newer.storedVersion, newer.newerSlices)
 }
 
 const comparable = (stored: unknown): stored is number =>

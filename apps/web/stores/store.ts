@@ -31,7 +31,11 @@ import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
 import { rememberStoredRevision } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
-import { isNewerSnapshotError, isSnapshotNewerThan } from '@/services/migration/newerSnapshot'
+import {
+    isNewerSnapshotError,
+    isNewerThanThisBuild,
+    isSnapshotNewerThan,
+} from '@/services/migration/newerSnapshot'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
@@ -115,7 +119,14 @@ const parseOrNull = (snapshot: string): unknown => {
 const refreshStartupBackup = async (snapshot: string): Promise<void> => {
     try {
         const previous = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
-        if (previous && isSnapshotNewerThan(parseOrNull(previous), parseOrNull(snapshot))) {
+        const previousState = previous ? parseOrNull(previous) : null
+        // Newer than the primary, or newer than this build (CodeRabbit on #871): a
+        // primary without `_sliceVersions` cannot show that a backup slice is newer.
+        if (
+            previous &&
+            (isNewerThanThisBuild(previousState) ||
+                isSnapshotNewerThan(previousState, parseOrNull(snapshot)))
+        ) {
             if ((await quarantineUnreadableSnapshot(previous)) !== 'stored') return
         }
         await indexedDBStorage.setItem(REDUX_STATE_BACKUP_KEY, snapshot)

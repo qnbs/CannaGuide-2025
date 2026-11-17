@@ -104,10 +104,11 @@ test('a dispatch resolves exactly the tag its concurrency group names', (t) => {
     }
 })
 
-test('an existing release stops the run before any attestation', (t) => {
+test('an existing release stops the run before any attestation, and a failed lookup too', (t) => {
     // CodeAnt on #874: a dispatch that creates the tag also starts the tag's own run,
-    // queued behind it. That run must stop at the existing draft before it attests
-    // assets that will never be published.
+    // queued behind it; that run must stop at the existing draft before it attests.
+    // CodeRabbit on #874: `gh release view` also fails on API, auth and network
+    // errors, so a failed lookup must stop the run instead of reading as "no release".
     const name = 'Refuse an existing release before any attestation'
     const release = job('release')
     const at = release.indexOf(`- name: ${name}`)
@@ -115,27 +116,36 @@ test('an existing release stops the run before any attestation', (t) => {
     for (const { index } of release.matchAll(/uses: actions\/attest-[\w-]+@/g)) {
         assert.ok(at < index, 'attestation before the existing-release check')
     }
-    const script = runScript(release, name)
+    // Neither check may treat a gh error as "no release" again.
+    assert.doesNotMatch(release, /if gh release view/)
+    assert.equal(release.match(/if ! TAGS=\$\(gh api --paginate/g)?.length, 2)
+
     const bin = mkdtempSync(path.join(tmpdir(), 'cannaguide-fake-gh-'))
     t.after(() => rmSync(bin, { recursive: true, force: true }))
-    // A stand-in gh: `release view` succeeds only when FAKE_RELEASE_EXISTS=1.
+    // A stand-in gh that prints FAKE_TAGS for the release listing, or fails.
     writeFileSync(
         path.join(bin, 'gh'),
-        '#!/bin/sh\n[ "$1 $2" = "release view" ] && [ "$FAKE_RELEASE_EXISTS" = 1 ]\n',
+        '#!/bin/sh\n[ "$FAKE_GH_FAIL" = 1 ] && { echo "HTTP 502" >&2; exit 1; }\n[ "$1" = api ] || exit 3\nprintf "%s" "$FAKE_TAGS"\n',
     )
     chmodSync(path.join(bin, 'gh'), 0o755)
-    const run = (exists) =>
-        spawnSync('bash', ['-c', script], {
+    const script = runScript(release, name)
+    const run = (env) =>
+        spawnSync('bash', ['-eo', 'pipefail', '-c', script], {
             env: {
                 PATH: `${bin}:${process.env.PATH}`,
                 TAG: 'v1.12.0',
                 REPO: 'qnbs/CannaGuide-2025',
-                FAKE_RELEASE_EXISTS: exists ? '1' : '0',
+                ...env,
             },
             encoding: 'utf8',
         })
-    const existing = run(true)
+    const existing = run({ FAKE_TAGS: 'v1.11.0\nv1.12.0\nv1.9.0' })
     assert.equal(existing.status, 1)
     assert.match(existing.stdout, /already exists .*Nothing was attested/)
-    assert.equal(run(false).status, 0)
+    // A prefix or a longer tag is not the same release.
+    assert.equal(run({ FAKE_TAGS: 'v1.12.0-rc.1\nv1.12.00' }).status, 0)
+    assert.equal(run({ FAKE_TAGS: '' }).status, 0)
+    const failed = run({ FAKE_GH_FAIL: '1' })
+    assert.equal(failed.status, 1)
+    assert.match(failed.stdout, /Could not list the releases/)
 })

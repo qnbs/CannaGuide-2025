@@ -527,7 +527,13 @@ jobs:
                   REPO: ${{ github.repository }}
               shell: bash
               run: |
-                  if gh release view "${TAG}" --repo "${REPO}" > /dev/null 2>&1; then
+                  # Drafts are listed only with write access (this job's token). A failed
+                  # lookup is not "no release" -- stop instead of guessing (CodeRabbit on #874).
+                  if ! TAGS=$(gh api --paginate "repos/${REPO}/releases?per_page=100" --jq '.[].tag_name'); then
+                    echo "[FAIL] Could not list the releases of ${REPO}; not continuing without knowing whether ${TAG} has one."
+                    exit 1
+                  fi
+                  if grep -Fxq -- "${TAG}" <<< "${TAGS}"; then
                     echo "[FAIL] Release ${TAG} already exists (published or draft). Nothing was attested or changed."
                     echo "[FAIL] Delete a stale draft by hand, then re-run this workflow."
                     exit 1
@@ -625,8 +631,14 @@ jobs:
                   # stops the run. A stale draft from a failed run is deleted by hand.
                   # --verify-tag: never auto-create tags (tag must exist from build job)
                   # --draft: nothing is public until the owner publishes the draft.
-                  if gh release view "${TAG}" --repo "${REPO}" > /dev/null 2>&1; then
-                    echo "[FAIL] Release ${TAG} already exists. Nothing was changed."
+                  # Drafts are listed only with write access (this job's token). A failed
+                  # lookup is not "no release" -- stop instead of guessing (CodeRabbit on #874).
+                  if ! TAGS=$(gh api --paginate "repos/${REPO}/releases?per_page=100" --jq '.[].tag_name'); then
+                    echo "[FAIL] Could not list the releases of ${REPO}; not continuing without knowing whether ${TAG} has one."
+                    exit 1
+                  fi
+                  if grep -Fxq -- "${TAG}" <<< "${TAGS}"; then
+                    echo "[FAIL] Release ${TAG} already exists (published or draft). Nothing was changed."
                     echo "[FAIL] Delete a stale draft by hand, then re-run this workflow."
                     exit 1
                   fi

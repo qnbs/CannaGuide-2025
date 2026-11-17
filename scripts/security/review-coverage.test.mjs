@@ -476,17 +476,32 @@ test('PR #857 transition ignores the CodeRabbit marker too', () => {
 
 const PRIOR = OTHER
 const BASE_TIP = 'c'.repeat(40)
+const MERGE_TREE = 'e'.repeat(40)
+
+function mergeCommit(overrides = {}) {
+    return {
+        sha: HEAD,
+        parents: [PRIOR, BASE_TIP],
+        mergedParentOnBase: true,
+        tree: MERGE_TREE,
+        automaticMergeTree: MERGE_TREE,
+        cleanAutomaticMerge: true,
+        ...overrides,
+    }
+}
 
 function equivalenceProof(overrides = {}) {
     const digest = 'd'.repeat(64)
     return {
-        version: 1,
+        version: 2,
         equivalent: true,
+        baseRef: 'origin/main',
+        baseSha: BASE_TIP,
         priorHeadSha: PRIOR,
         headSha: HEAD,
         priorChangeDigest: digest,
         headChangeDigest: digest,
-        mergeCommits: [{ sha: HEAD, parents: [PRIOR, BASE_TIP], mergedParentOnBase: true }],
+        mergeCommits: [mergeCommit()],
         ...overrides,
     }
 }
@@ -521,10 +536,33 @@ test('after a pure base merge, the reviewed-head CodeRabbit marker counts with a
 })
 
 test('a head-equivalence proof that is incomplete, inconsistent, or for other commits fails closed', () => {
-    const merge = { sha: HEAD, parents: [PRIOR, BASE_TIP], mergedParentOnBase: true }
+    const merge = mergeCommit()
     const rejected = [
         ['not equivalent', equivalenceProof({ equivalent: false })],
-        ['unknown version', equivalenceProof({ version: 2 })],
+        ['version 1 (no merge-tree check)', equivalenceProof({ version: 1 })],
+        ['unknown version', equivalenceProof({ version: 3 })],
+        ['proof against a side branch', equivalenceProof({ baseRef: 'origin/side' })],
+        ['proof without a base SHA', equivalenceProof({ baseSha: undefined })],
+        [
+            'merge is not a clean automatic merge',
+            equivalenceProof({ mergeCommits: [{ ...merge, cleanAutomaticMerge: false }] }),
+        ],
+        [
+            'merge tree differs from the automatic merge',
+            equivalenceProof({ mergeCommits: [{ ...merge, automaticMergeTree: 'f'.repeat(40) }] }),
+        ],
+        [
+            'conflicted automatic merge',
+            equivalenceProof({ mergeCommits: [{ ...merge, automaticMergeTree: null }] }),
+        ],
+        [
+            'short merge tree',
+            equivalenceProof({
+                mergeCommits: [
+                    { ...merge, tree: 'e'.repeat(12), automaticMergeTree: 'e'.repeat(12) },
+                ],
+            }),
+        ],
         ['changed lines differ', equivalenceProof({ headChangeDigest: 'e'.repeat(64) })],
         [
             'short digest',

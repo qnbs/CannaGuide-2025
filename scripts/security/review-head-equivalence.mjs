@@ -11,12 +11,17 @@
  *   - the reviewed head is an ancestor of the current head;
  *   - every first-parent commit after the reviewed head is a two-parent merge whose first
  *     parent is the previous pull tip and whose second parent is already on the base ref;
+ *   - every such merge is git's clean automatic merge of its parents: `git merge-tree
+ *     --write-tree` reports no conflict and yields exactly the merge commit's tree. This
+ *     pins every byte, binary files and the location of each edit included, so a merge
+ *     cannot move or replace a reviewed change by hand;
  *   - the pull's changed lines hash the same on both heads. Each side is diffed against its
- *     own merge base with the base ref (`git diff -U0`), and only the hunk headers and
- *     `index` lines are dropped, because line numbers and blob ids shift when the base moves.
+ *     own merge base with the base ref (`git diff -U0 --binary`), and only the hunk headers
+ *     and `index` lines are dropped, because line numbers and blob ids shift when the base
+ *     moves.
  *
- * A conflict resolution or an "evil merge" that changes the pull's lines, an extra commit
- * (even an empty one), or a merge of anything not on the base ref fails the proof.
+ * A conflict resolution or an "evil merge" that changes anything, an extra commit (even an
+ * empty one), or a merge of anything not on the base ref fails the proof.
  *
  * Usage:
  *   node scripts/security/review-head-equivalence.mjs --prior <sha> --head <sha> [--base <ref>]
@@ -25,14 +30,14 @@
  * 2 = invalid arguments or a git failure. Read-only and offline: it reads local git objects
  * only, so fetch the base ref first. The base ref defaults to `origin/main`.
  */
-import { execFileSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
 const SHA = /^[0-9a-f]{40}$/
 const REF = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/
-export const PROOF_VERSION = 1
+export const PROOF_VERSION = 2
 
 export class UsageError extends Error {}
 
@@ -58,11 +63,27 @@ function isAncestor(cwd, ancestor, descendant) {
     }
 }
 
+/**
+ * The tree of git's automatic merge of `first` and `second`, or null when that merge has
+ * conflicts. `git merge-tree --write-tree` exits 0 for a clean merge and 1 for conflicts.
+ */
+function automaticMergeTree(cwd, first, second) {
+    const run = spawnSync('git', ['merge-tree', '--write-tree', '--no-messages', first, second], {
+        cwd,
+        encoding: 'utf8',
+        maxBuffer: 64 * 1024 * 1024,
+    })
+    if (run.status === 0) return run.stdout.trim().split('\n')[0]
+    if (run.status === 1) return null
+    throw new Error(`git merge-tree failed: ${(run.stderr || run.error?.message || '').trim()}`)
+}
+
 /** Changed lines of `from..to`, without hunk headers and blob ids, and their SHA-256. */
 export function changeDigest(cwd, from, to) {
     const diff = git(cwd, [
         'diff',
         '-U0',
+        '--binary',
         '--no-color',
         '--no-ext-diff',
         '--no-textconv',
@@ -124,10 +145,25 @@ export function proveHeadEquivalence({ cwd = process.cwd(), prior, head, base = 
     for (const [sha, ...parents] of chain) {
         const mergedParentOnBase =
             parents.length === 2 && parents[0] === previous && isAncestor(cwd, parents[1], baseSha)
-        result.mergeCommits.push({ sha, parents, mergedParentOnBase })
+        const tree = git(cwd, ['rev-parse', `${sha}^{tree}`]).trim()
+        const automatic = mergedParentOnBase
+            ? automaticMergeTree(cwd, parents[0], parents[1])
+            : null
+        const cleanAutomaticMerge = automatic !== null && automatic === tree
+        result.mergeCommits.push({
+            sha,
+            parents,
+            mergedParentOnBase,
+            tree,
+            automaticMergeTree: automatic,
+            cleanAutomaticMerge,
+        })
         if (parents.length !== 2) return fail(`${sha} is not a two-parent merge`)
         if (parents[0] !== previous) return fail(`${sha} does not continue the pull branch`)
         if (!mergedParentOnBase) return fail(`${sha} merges a commit that is not on ${base}`)
+        if (!cleanAutomaticMerge) {
+            return fail(`${sha} is not git's clean automatic merge of its parents`)
+        }
         previous = sha
     }
     if (previous !== head || result.mergeCommits.length === 0) {

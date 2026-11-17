@@ -12,7 +12,9 @@ const COMPLETED_REVIEW_STATES = new Set(['APPROVED', 'CHANGES_REQUESTED', 'COMME
 const UNAVAILABLE_RESULTS = new Set(['rate_limited', 'timed_out', 'skipped', 'silent'])
 const SHA = /^[0-9a-f]{40}$/
 const DIGEST = /^[0-9a-f]{64}$/
-const HEAD_EQUIVALENCE_VERSION = 1
+const HEAD_EQUIVALENCE_VERSION = 2
+/** Pulls in this repository target `main`; a proof against any other base does not count. */
+const HEAD_EQUIVALENCE_BASE_REF = 'origin/main'
 const API_ROOT = 'https://api.github.com/repos/qnbs/CannaGuide-2025'
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
@@ -92,9 +94,10 @@ const CODERABBIT_COVERAGE_PREFIX = '<!-- final_review_risk_coverage:'
 
 /**
  * Proof from scripts/security/review-head-equivalence.mjs that the head only merged the
- * base branch into an earlier reviewed head: every first-parent commit after that head is
- * a two-parent merge continuing the pull branch with a base-branch commit, and the pull's
- * changed lines hash the same on both heads. Anything else fails closed (null).
+ * base branch (`origin/main`) into an earlier reviewed head: every first-parent commit
+ * after that head is a two-parent merge continuing the pull branch with a base-branch
+ * commit, each merge is git's clean automatic merge of its parents (same tree id), and the
+ * pull's changed lines hash the same on both heads. Anything else fails closed (null).
  */
 function parseHeadEquivalence(proof, headSha) {
     if (!proof || typeof proof !== 'object') return null
@@ -102,6 +105,8 @@ function parseHeadEquivalence(proof, headSha) {
     if (
         proof.version !== HEAD_EQUIVALENCE_VERSION ||
         proof.equivalent !== true ||
+        proof.baseRef !== HEAD_EQUIVALENCE_BASE_REF ||
+        !SHA.test(proof.baseSha ?? '') ||
         proof.headSha !== headSha ||
         !SHA.test(priorHeadSha ?? '') ||
         priorHeadSha === headSha ||
@@ -120,7 +125,10 @@ function parseHeadEquivalence(proof, headSha) {
             commit.parents.length !== 2 ||
             commit.parents[0] !== previous ||
             !SHA.test(commit.parents[1] ?? '') ||
-            commit.mergedParentOnBase !== true
+            commit.mergedParentOnBase !== true ||
+            commit.cleanAutomaticMerge !== true ||
+            !SHA.test(commit.tree ?? '') ||
+            commit.automaticMergeTree !== commit.tree
         ) {
             return null
         }

@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 
-import { proveHeadEquivalence, UsageError } from './review-head-equivalence.mjs'
+import { changeDigest, proveHeadEquivalence, UsageError } from './review-head-equivalence.mjs'
 
 const SCRIPT = path.join(import.meta.dirname, 'review-head-equivalence.mjs')
 
@@ -90,6 +90,9 @@ test('a pure merge of the base branch keeps the reviewed changes equivalent', (t
     assert.equal(proof.mergeCommits[0].sha, head)
     assert.equal(proof.mergeCommits[0].parents[0], prior)
     assert.equal(proof.mergeCommits[0].mergedParentOnBase, true)
+    assert.equal(proof.mergeCommits[0].cleanAutomaticMerge, true)
+    assert.equal(proof.mergeCommits[0].tree, proof.mergeCommits[0].automaticMergeTree)
+    assert.equal(proof.version, 2)
 
     const cli = runCli(repo, env, ['--prior', prior, '--head', head, '--base', 'main'])
     assert.equal(cli.status, 0, cli.stderr)
@@ -121,8 +124,7 @@ test('a merge that also changes the pull lines (evil merge) is not equivalent', 
 
     const proof = prove(repo, prior, head)
     assert.equal(proof.equivalent, false)
-    assert.match(proof.reason, /changed lines differ/)
-    assert.notEqual(proof.priorChangeDigest, proof.headChangeDigest)
+    assert.match(proof.reason, /not git's clean automatic merge/)
 
     const cli = runCli(repo, env, ['--prior', prior, '--head', head, '--base', 'main'])
     assert.equal(cli.status, 1)
@@ -138,7 +140,81 @@ test('a merge that silently reverts a base change is not equivalent', (t) => {
 
     const proof = prove(repo, prior, head)
     assert.equal(proof.equivalent, false)
-    assert.match(proof.reason, /changed lines differ/)
+    assert.match(proof.reason, /not git's clean automatic merge/)
+})
+
+test('a merge that moves a reviewed edit to an identical line elsewhere is rejected', (t) => {
+    // Codex P1 on #870: with repeated lines, the flattened changed lines alone match.
+    const { repo, git, write, commit } = makeRepo(t)
+    git('switch', '--quiet', 'main')
+    write('flags.txt', 'allow=false\nmiddle\nallow=false\n')
+    commit('flags on main')
+    git('switch', '--quiet', 'pr')
+    git('merge', '--quiet', '--no-ff', '--no-edit', 'main')
+    write('flags.txt', 'allow=true\nmiddle\nallow=false\n')
+    const reviewed = commit('enable the first flag')
+    git('switch', '--quiet', 'main')
+    write('other.txt', 'base update\n')
+    commit('base update')
+    git('switch', '--quiet', 'pr')
+    git('merge', '--quiet', '--no-ff', '--no-commit', 'main')
+    write('flags.txt', 'allow=false\nmiddle\nallow=true\n')
+    git('add', 'flags.txt')
+    git('commit', '--quiet', '--no-edit')
+    const head = git('rev-parse', 'HEAD')
+
+    const proof = prove(repo, reviewed, head)
+    assert.equal(proof.equivalent, false)
+    assert.match(proof.reason, /not git's clean automatic merge/)
+    assert.equal(proof.mergeCommits[0].cleanAutomaticMerge, false)
+})
+
+test('a merge that replaces a reviewed binary file is rejected', (t) => {
+    // Codex P1 / CodeAnt on #870: git prints only "Binary files differ" without --binary.
+    const { repo, git, commit } = makeRepo(t)
+    writeFileSync(path.join(repo, 'blob.bin'), Buffer.from([0, 3, 4]))
+    const reviewed = commit('binary change')
+    git('merge', '--quiet', '--no-ff', '--no-commit', 'main')
+    writeFileSync(path.join(repo, 'blob.bin'), Buffer.from([0, 99, 100]))
+    git('add', 'blob.bin')
+    git('commit', '--quiet', '--no-edit')
+    const head = git('rev-parse', 'HEAD')
+
+    const proof = prove(repo, reviewed, head)
+    assert.equal(proof.equivalent, false)
+    assert.match(proof.reason, /not git's clean automatic merge/)
+})
+
+test('the changed-line digest includes binary contents', (t) => {
+    const { repo, commit, base } = makeRepo(t)
+    writeFileSync(path.join(repo, 'blob.bin'), Buffer.from([0, 3, 4]))
+    const first = commit('binary one')
+    writeFileSync(path.join(repo, 'blob.bin'), Buffer.from([0, 99, 100]))
+    const second = commit('binary two')
+    assert.notEqual(changeDigest(repo, base, first).digest, changeDigest(repo, base, second).digest)
+})
+
+test('a merge whose conflict was resolved by hand is rejected', (t) => {
+    const { repo, env, git, write, commit, prior } = makeRepo(t)
+    git('switch', '--quiet', 'main')
+    write('a.txt', 'one\ntwo on main\nthree\n')
+    commit('conflicting main change')
+    git('switch', '--quiet', 'pr')
+    const merge = spawnSync(
+        'git',
+        ['-c', 'commit.gpgsign=false', 'merge', '--no-ff', '--no-edit', 'main'],
+        { cwd: repo, env, encoding: 'utf8' },
+    )
+    assert.notEqual(merge.status, 0, 'the fixture must conflict')
+    write('a.txt', 'one\ntwo changed\nthree\n')
+    git('add', 'a.txt')
+    git('commit', '--quiet', '--no-edit')
+    const head = git('rev-parse', 'HEAD')
+
+    const proof = prove(repo, prior, head)
+    assert.equal(proof.equivalent, false)
+    assert.match(proof.reason, /not git's clean automatic merge/)
+    assert.equal(proof.mergeCommits[0].automaticMergeTree, null)
 })
 
 test('any non-merge commit after the reviewed head breaks the proof, even an empty one', (t) => {

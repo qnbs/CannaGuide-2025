@@ -134,7 +134,6 @@ const probeGpuAdapter = async (
     details: WebLlmDiagnosticResult['details'],
 ): Promise<CheckResult> => {
     try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
         const gpu = navigator.gpu as GPU
         const adapter = await Promise.race([
             gpu.requestAdapter({ powerPreference: 'high-performance' }),

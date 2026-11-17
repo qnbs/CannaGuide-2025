@@ -51,9 +51,10 @@ interface GPUSupportedLimits {
     [key: string]: unknown
 }
 
-interface Navigator {
-    readonly gpu?: GPU
-}
+// No `Navigator.gpu` augmentation here: TypeScript 7's DOM lib declares
+// `Navigator extends NavigatorGPU` with a required `gpu`, and an optional one
+// conflicts with it (TS2430). Callers check `'gpu' in navigator` first, which narrows
+// the type under TypeScript 6 as well, so neither version needs this declaration.
 
 // -- Tauri v2 optional native packages --
 

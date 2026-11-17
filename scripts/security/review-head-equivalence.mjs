@@ -98,7 +98,8 @@ function automaticMergeTree(cwd, first, second) {
 /** Changed lines of `from..to`, without hunk headers and blob ids, and their SHA-256. */
 export function changeDigest(cwd, from, to) {
     // Every option that could change the output is spelled out, so the repository's own
-    // config (diff.algorithm, diff.noprefix, diff.interHunkContext, ...) cannot change it.
+    // config (diff.algorithm, diff.noprefix, diff.interHunkContext, diff.ignoreSubmodules,
+    // diff.submodule, diff.orderFile, ...) cannot change it.
     const diff = git(cwd, [
         '-c',
         'core.quotePath=true',
@@ -115,6 +116,9 @@ export function changeDigest(cwd, from, to) {
         '--no-ext-diff',
         '--no-textconv',
         '--no-renames',
+        '--ignore-submodules=none',
+        '--submodule=short',
+        `-O${devNull}`,
         from,
         to,
     ])

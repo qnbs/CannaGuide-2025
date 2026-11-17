@@ -190,6 +190,24 @@ test('a merge that replaces a reviewed binary file is rejected', (t) => {
     assert.match(proof.reason, /not git's clean automatic merge/)
 })
 
+test('repository config cannot hide a submodule pointer change from the digest', (t) => {
+    // CodeRabbit on #870: diff.ignoreSubmodules=all would drop gitlink changes.
+    const { repo, git, base } = makeRepo(t)
+    git('config', 'diff.ignoreSubmodules', 'all')
+    git('config', 'diff.submodule', 'log')
+    const pointTo = (target, message) => {
+        git('update-index', '--add', '--cacheinfo', `160000,${target},vendor/lib`)
+        git('commit', '--quiet', '-m', message)
+        return git('rev-parse', 'HEAD')
+    }
+    const first = pointTo('1'.repeat(40), 'pin submodule')
+    const second = pointTo('2'.repeat(40), 'move submodule')
+    const before = changeDigest(repo, base, first)
+    const after = changeDigest(repo, base, second)
+    assert.notEqual(before.digest, after.digest)
+    assert.ok(before.changedLines > 0, 'the gitlink change must be in the digest')
+})
+
 test('the changed-line digest includes binary contents', (t) => {
     const { repo, commit, base } = makeRepo(t)
     writeFileSync(path.join(repo, 'blob.bin'), Buffer.from([0, 3, 4]))

@@ -900,7 +900,7 @@ export const settingsView = {
             ready: 'Version {{version}} is downloaded and its signature is verified. Installing saves your latest changes, replaces the app and restarts it.',
             install: 'Install and restart',
             cancel: 'Cancel download',
-            cancelled: 'The download was stopped.',
+            cancelled: 'The update request was stopped.',
             offline: 'You are offline. Connect to the internet to check for updates.',
             installing: 'Saving your data and installing...',
             error: 'The update failed: {{message}}',

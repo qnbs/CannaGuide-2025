@@ -4,9 +4,9 @@
 //! 1. `update_check` asks the endpoint in tauri.conf.json for a newer version.
 //! 2. `update_download` downloads the bundle; tauri-plugin-updater verifies its
 //!    minisign signature against the configured public key before returning it.
-//! 3. `update_cancel` stops a running download (the card's Cancel button).
+//! 3. `update_cancel` stops the running check or download (the card's Cancel).
 //! 4. `update_set_local_only` mirrors Local-Only mode: while it is on, check and
-//!    download refuse, and switching it on stops a running download.
+//!    download refuse, and switching it on stops the running check or download.
 //! 5. `update_install` installs the verified bundle and restarts. The frontend calls
 //!    it only after it has saved persisted state: on Windows the installer ends the
 //!    process from inside `install`.
@@ -30,7 +30,7 @@ use crate::lifecycle::{keeps_download, Busy, UPDATE_CHECK_TIMEOUT, UPDATE_DOWNLO
 
 const BUSY: &str = "another update step is still running";
 /// The frontend maps these exact texts to its own messages.
-const CANCELLED: &str = "download cancelled";
+const CANCELLED: &str = "update request cancelled";
 const LOCAL_ONLY: &str = "Local-only mode is on; the update server is not contacted";
 
 #[derive(Default)]
@@ -39,7 +39,8 @@ pub struct UpdateState {
     local_only: AtomicBool,
     pending: Mutex<Option<Update>>,
     downloaded: Mutex<Option<Vec<u8>>>,
-    download_task: Mutex<Option<async_runtime::JoinHandle<()>>>,
+    /// The running check or download; the busy guard allows only one at a time.
+    network_task: Mutex<Option<async_runtime::JoinHandle<()>>>,
 }
 
 #[derive(Serialize)]
@@ -73,15 +74,46 @@ fn refuse_when_local_only(state: &UpdateState) -> Result<(), String> {
     }
 }
 
-/// Aborts a running download; true if one was running.
-fn abort_download(state: &UpdateState) -> bool {
-    match lock(&state.download_task).take() {
+/// Aborts the running check or download; true if one was running.
+fn abort_network_step(state: &UpdateState) -> bool {
+    match lock(&state.network_task).take() {
         Some(task) => {
             task.abort();
             true
         }
         None => false,
     }
+}
+
+/// Runs a step that talks to the network as its own task, so it can be aborted:
+/// dropping the request closes the connection, which a flag checked between
+/// chunks would not, and covers a check waiting on a slow server as well.
+async fn run_abortable<T, F>(state: &UpdateState, step: F) -> Result<T, String>
+where
+    T: Send + 'static,
+    F: std::future::Future<Output = Result<T, String>> + Send + 'static,
+{
+    let (result_tx, mut result_rx) = async_runtime::channel::<Result<T, String>>(1);
+    let (start_tx, mut start_rx) = async_runtime::channel::<()>(1);
+    // The task waits for a start signal, so nothing goes out before its handle is
+    // stored. update_set_local_only sets the flag, then aborts the stored handle;
+    // this stores the handle, then reads the flag. Whichever runs second sees the
+    // other, so Local-Only switched on in between never lets the request start.
+    let task = async_runtime::spawn(async move {
+        if start_rx.recv().await.is_some() {
+            let _ = result_tx.send(step.await).await;
+        }
+    });
+    *lock(&state.network_task) = Some(task);
+    if state.local_only.load(Ordering::SeqCst) {
+        abort_network_step(state);
+        return Err(LOCAL_ONLY.into());
+    }
+    let _ = start_tx.send(()).await;
+    // An aborted task drops its sender, so recv() yields None.
+    let result = result_rx.recv().await;
+    lock(&state.network_task).take();
+    result.ok_or(CANCELLED)?
 }
 
 #[tauri::command]
@@ -91,14 +123,15 @@ pub async fn update_check(
 ) -> Result<Option<UpdateInfo>, String> {
     let _busy = state.busy.try_acquire().ok_or(BUSY)?;
     refuse_when_local_only(&state)?;
-    let update = app
+    let updater = app
         .updater_builder()
         .timeout(UPDATE_CHECK_TIMEOUT)
         .build()
-        .map_err(|error| error.to_string())?
-        .check()
-        .await
         .map_err(|error| error.to_string())?;
+    let update = run_abortable(&state, async move {
+        updater.check().await.map_err(|error| error.to_string())
+    })
+    .await?;
     let info = update.as_ref().map(|update| UpdateInfo {
         version: update.version.clone(),
         current_version: update.current_version.clone(),
@@ -130,15 +163,12 @@ pub async fn update_download(
         .ok_or("no update to download; check for updates first")?;
     // The check's deadline would cut off a large bundle on a slow link.
     update.timeout = Some(UPDATE_DOWNLOAD_TIMEOUT);
-    // The download runs as its own task so it can be aborted: dropping the request
-    // closes the connection, which a flag checked between chunks would not.
-    let (result_tx, mut result_rx) = async_runtime::channel::<Result<Vec<u8>, String>>(1);
-    let task = async_runtime::spawn(async move {
+    let bytes = run_abortable(&state, async move {
         let finished = on_event.clone();
         let mut downloaded: u64 = 0;
         // download() verifies the signature before it returns the bytes, so a
         // tampered or foreign bundle is an error here and is never kept.
-        let result = update
+        update
             .download(
                 |chunk, total| {
                     downloaded += chunk as u64;
@@ -149,30 +179,25 @@ pub async fn update_download(
                 },
             )
             .await
-            .map_err(|error| error.to_string());
-        let _ = result_tx.send(result).await;
-    });
-    *lock(&state.download_task) = Some(task);
-    // An aborted task drops its sender, so recv() yields None.
-    let result = result_rx.recv().await;
-    lock(&state.download_task).take();
-    let bytes = result.ok_or(CANCELLED)??;
+            .map_err(|error| error.to_string())
+    })
+    .await?;
     *lock(&state.downloaded) = Some(bytes);
     Ok(())
 }
 
-/// Stops a running download. Not behind the busy guard: the download holds it.
+/// Stops the running check or download. Not behind the busy guard: that step holds it.
 #[tauri::command]
 pub fn update_cancel(state: State<'_, UpdateState>) -> bool {
-    abort_download(&state)
+    abort_network_step(&state)
 }
 
-/// Mirrors Local-Only mode; switching it on also stops a running download.
+/// Mirrors Local-Only mode; switching it on also stops the running check or download.
 #[tauri::command]
 pub fn update_set_local_only(state: State<'_, UpdateState>, enabled: bool) {
     state.local_only.store(enabled, Ordering::SeqCst);
     if enabled {
-        abort_download(&state);
+        abort_network_step(&state);
     }
 }
 
@@ -186,7 +211,11 @@ pub async fn update_install(app: AppHandle, state: State<'_, UpdateState>) -> Re
         .take()
         .ok_or("the update is not downloaded yet")?;
     // On Windows install() starts the installer and ends this process itself.
-    update.install(&bytes).map_err(|error| error.to_string())?;
+    if let Err(error) = update.install(&bytes) {
+        // Nothing was installed: keep the verified bundle so Install can be retried.
+        *lock(&state.downloaded) = Some(bytes);
+        return Err(error.to_string());
+    }
     // restart() requests the exit with RESTART_EXIT_CODE, which the quit
     // handshake lets through: the frontend saved before calling this command.
     app.restart()

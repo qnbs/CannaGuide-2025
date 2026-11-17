@@ -924,7 +924,7 @@ export const settingsView = {
             ready: 'Versie {{version}} is gedownload en de handtekening is gecontroleerd. Bij het installeren worden je laatste wijzigingen opgeslagen, wordt de app vervangen en opnieuw gestart.',
             install: 'Installeren en opnieuw starten',
             cancel: 'Download annuleren',
-            cancelled: 'De download is gestopt.',
+            cancelled: 'Het updateverzoek is gestopt.',
             offline: 'Je bent offline. Maak verbinding met internet om op updates te controleren.',
             installing: 'Je gegevens worden opgeslagen en de update wordt ge\u00EFnstalleerd...',
             error: 'De update is mislukt: {{message}}',

@@ -198,11 +198,26 @@ describe('desktop updater: review fixes on #878', () => {
     it('a failed or cancelled download leaves the update available', async () => {
         const { bridge } = fakeBridge({
             update_check: () => INFO,
-            update_download: () => Promise.reject('download cancelled'),
+            update_download: () => Promise.reject('update request cancelled'),
         })
         const updater = updaterWith(bridge)
         await updater.check()
         expect(await reasonOf(updater.download(() => undefined))).toBe('cancelled')
+        expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
+    })
+
+    it('a check stopped by Local-Only is cancelled and keeps the stage it had', async () => {
+        // Codex on #878: switching Local-Only on aborts a running check, not only a download.
+        let checks = 0
+        const { bridge } = fakeBridge({
+            update_check: () => {
+                checks += 1
+                return checks === 1 ? INFO : Promise.reject('update request cancelled')
+            },
+        })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        expect(await reasonOf(updater.check())).toBe('cancelled')
         expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
     })
 

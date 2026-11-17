@@ -14,8 +14,9 @@
  * - Local-Only mode and being offline block checks and downloads, automatic or
  *   manual: both are requests to github.com. Installing an already downloaded bundle
  *   sends nothing, so it stays possible. Rust mirrors Local-Only as a second layer,
- *   and turning it on stops a running download, not only the next request.
- * - One step at a time (the Rust side enforces the same); Cancel stops a download.
+ *   and turning it on stops a running check or download, not only the next request.
+ * - One step at a time (the Rust side enforces the same); Cancel stops a check or a
+ *   download.
  * - Persisted state must be saved before the install. A save that fails or reports
  *   "not saved" stops it: on Windows the installer ends the process from inside the
  *   install command, so there is no later chance to save.
@@ -54,7 +55,7 @@ export type DesktopUpdateFailure =
 
 /** The exact error texts of update.rs, mapped to the reasons the card explains. */
 const NATIVE_REASONS: Readonly<Record<string, DesktopUpdateFailure>> = {
-    'download cancelled': 'cancelled',
+    'update request cancelled': 'cancelled',
     'Local-only mode is on; the update server is not contacted': 'local-only',
 }
 
@@ -75,7 +76,7 @@ export interface DesktopUpdater {
     check: () => Promise<DesktopUpdateInfo | null>
     download: (onProgress: (progress: DownloadProgress) => void) => Promise<void>
     installAndRestart: () => Promise<void>
-    /** Stops a running download; resolves true if one was running. */
+    /** Stops the running check or download; resolves true if one was running. */
     cancelDownload: () => Promise<boolean>
     /** The stage this launch reached, for a card that was mounted again. */
     currentStage: () => DesktopUpdateStage | null
@@ -209,7 +210,7 @@ export const desktopUpdater: DesktopUpdater = createDesktopUpdater({
 
 /**
  * Tells update.rs whether Local-Only mode is on. Rust then refuses checks and
- * downloads by itself and, when it turns on, stops a running download -- a second
+ * downloads by itself and, when it turns on, stops a running check or download -- a second
  * layer behind the checks above, for a caller that forgot them.
  */
 export const syncNativeLocalOnly = async (

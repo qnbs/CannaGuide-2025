@@ -948,7 +948,7 @@ export const settingsView = {
             ready: "La version {{version}} est t\u00E9l\u00E9charg\u00E9e et sa signature v\u00E9rifi\u00E9e. L'installation enregistre vos derni\u00E8res modifications, remplace l'application et la red\u00E9marre.",
             install: 'Installer et red\u00E9marrer',
             cancel: 'Annuler le t\u00E9l\u00E9chargement',
-            cancelled: 'Le t\u00E9l\u00E9chargement a \u00E9t\u00E9 arr\u00EAt\u00E9.',
+            cancelled: 'La requ\u00EAte de mise \u00E0 jour a \u00E9t\u00E9 arr\u00EAt\u00E9e.',
             offline:
                 'Vous \u00EAtes hors ligne. Connectez-vous \u00E0 Internet pour rechercher des mises \u00E0 jour.',
             installing: 'Enregistrement de vos donn\u00E9es et installation...',

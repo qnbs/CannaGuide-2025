@@ -164,7 +164,12 @@ tag that is already on the remote.
    installer or updater bundle is missing, an updater signature is missing or does not
    verify against the `tauri.conf.json` pubkey, or an installer carries another
    version. It writes normalized asset names, `latest.json` and `SHA256SUMS`.
-5. `release` attests the tarball and the desktop assets and creates a **draft**
+5. `release` first checks that the run's own commit is the release commit: the
+   attestation actions sign the run's commit (the OIDC `sha` claim), so a manual run
+   from `main` for an older tag would attest a commit that did not build the assets.
+   It stops instead; publish from the tag's own run, or dispatch from `main` only
+   while `main`'s HEAD is the tag commit. It then attests the tarball and the desktop
+   assets and creates a **draft**
    release with all of them. An existing release for the tag (published or draft)
    stops the run; nothing is overwritten (`--clobber` is gone). A stale draft from a
    failed run is deleted by hand before a re-run.

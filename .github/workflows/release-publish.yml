@@ -493,6 +493,27 @@ jobs:
                     exit 1
                   fi
 
+            # actions/attest-* sign the run's own commit (the OIDC `sha` claim), not
+            # the commit the assets were built from. A tag push runs on the tag
+            # commit; a manual run from main starts on main's HEAD, which is not an
+            # older tag's commit. Publishing then would attest a commit that did not
+            # produce the assets, so the run stops before any attestation.
+            - name: Refuse attestations for a commit this run did not build
+              env:
+                  RUN_COMMIT: ${{ github.sha }}
+                  RELEASE_COMMIT: ${{ needs.build.outputs.commit }}
+                  TAG: ${{ needs.build.outputs.tag }}
+              shell: bash
+              run: |
+                  if [ -z "${RELEASE_COMMIT}" ] || [ "${RUN_COMMIT}" != "${RELEASE_COMMIT}" ]; then
+                    echo "[FAIL] This run started on ${RUN_COMMIT}; ${TAG} is ${RELEASE_COMMIT:-unresolved}."
+                    echo "[FAIL] Its provenance would name a commit that did not build the release assets."
+                    echo "[FIX] Re-run the tag's own Release Publish run, or dispatch from main only"
+                    echo "[FIX] while main's HEAD is the tag commit."
+                    exit 1
+                  fi
+                  echo "[OK] Run commit ${RUN_COMMIT} is the release commit; provenance names it."
+
             - name: Download tarball
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
               with:

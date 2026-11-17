@@ -96,6 +96,7 @@ vi.mock('@/services/dbService', async (importOriginal) => {
 
 import { setupPersistedStateSync } from '@/bootstrap/persistence'
 import {
+    APP_VERSION,
     REDUX_STATE_BACKUP_KEY,
     REDUX_STATE_KEY,
     REDUX_STATE_QUARANTINE_KEY,
@@ -104,6 +105,7 @@ import {
 } from '@/constants'
 import { PlantStage } from '@/types'
 import { createAppStore } from './store'
+import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 
 const legacyPlant = () => ({
     id: 'plant-1',
@@ -264,5 +266,167 @@ describe('createAppStore with a persisted slice of another schema version', () =
 
         expect(onStale).toHaveBeenCalledOnce()
         expect(db.data.get(REDUX_STATE_KEY)).toBe('newer snapshot of the other tab')
+    })
+})
+
+describe('createAppStore with a corrupt primary and a good backup (#666)', () => {
+    beforeEach(() => {
+        db.data.clear()
+        db.reads.length = 0
+        db.beforeRead.clear()
+        db.failGet.clear()
+        db.failSet.clear()
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    it('recovers the plants from the backup instead of overwriting it with the corrupt bytes', async () => {
+        db.data.set(REDUX_STATE_KEY, '{corrupt')
+        db.data.set(REDUX_STATE_BACKUP_KEY, olderSnapshotWithPlant())
+
+        const store = await createAppStore()
+
+        expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).not.toBe('{corrupt')
+    })
+
+    it('replaces the backup only after a snapshot migrated', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, JSON.stringify({ version: 4 }))
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(olderSnapshotWithPlant())
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    // A rollback to a release without the newer-snapshot guard relabelled the primary
+    // and left the newer original in the backup (CodeAnt on #871).
+    const newerOriginal = (): string =>
+        JSON.stringify({ version: APP_VERSION + 1, original: 'from the newer build' })
+
+    it('quarantines a backup newer than the primary before replacing it', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerOriginal())
+
+        const store = await createAppStore()
+
+        expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
+        expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe(newerOriginal())
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(olderSnapshotWithPlant())
+    })
+
+    it('quarantines a backup with a slice newer than this build, even when the primary has no slice versions', async () => {
+        // CodeRabbit on #871: the primary alone cannot show that this backup is newer.
+        const primary = JSON.stringify({ version: APP_VERSION, settings: { settings: {} } })
+        const backup = JSON.stringify({
+            version: APP_VERSION,
+            _sliceVersions: { simulation: SLICE_SCHEMA_VERSIONS.simulation + 1 },
+            simulation: { futureField: true },
+        })
+        db.data.set(REDUX_STATE_KEY, primary)
+        db.data.set(REDUX_STATE_BACKUP_KEY, backup)
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe(backup)
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(primary)
+    })
+
+    it('does not refresh the backup when another tab saved after this page read the snapshot', async () => {
+        // CodeAnt on #871: without Web Locks a second tab may save in between.
+        const earlierBackup = JSON.stringify({ version: 5, earlier: true })
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, earlierBackup)
+        db.beforeRead.set(REDUX_STATE_BACKUP_KEY, () => {
+            db.data.set(REDUX_STATE_REVISION_KEY, 'saved-by-another-tab')
+        })
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(earlierBackup)
+    })
+
+    it('keeps a newer backup in place when the quarantine already holds a snapshot', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerOriginal())
+        db.data.set(REDUX_STATE_QUARANTINE_KEY, '{"earlier":true}')
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe('{"earlier":true}')
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(newerOriginal())
+    })
+})
+
+describe('createAppStore with a snapshot from a newer build (#666)', () => {
+    beforeEach(() => {
+        db.data.clear()
+        db.reads.length = 0
+        db.beforeRead.clear()
+        db.failGet.clear()
+        db.failSet.clear()
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    const newerBuildSnapshot = (): string =>
+        JSON.stringify({
+            version: APP_VERSION + 1,
+            settings: { version: APP_VERSION + 1, settings: { futureOption: true } },
+            futureSlice: { kept: true },
+        })
+
+    it('does not start from it and leaves it and the backup in place, unquarantined', async () => {
+        const earlierBackup = JSON.stringify({ version: APP_VERSION + 1, earlier: true })
+        db.data.set(REDUX_STATE_KEY, newerBuildSnapshot())
+        db.data.set(REDUX_STATE_BACKUP_KEY, earlierBackup)
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe(newerBuildSnapshot())
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(earlierBackup)
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    it('stops at a newer backup when the primary cannot be read, instead of starting empty', async () => {
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerBuildSnapshot())
+        db.failGet.add(REDUX_STATE_KEY)
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.has(REDUX_STATE_KEY)).toBe(false)
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(newerBuildSnapshot())
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    it('stops at a newer backup when the primary is corrupt, and keeps both', async () => {
+        db.data.set(REDUX_STATE_KEY, '{corrupt')
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerBuildSnapshot())
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe('{corrupt')
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(newerBuildSnapshot())
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    it('treats one slice from a newer schema the same way', async () => {
+        const newerSlice = JSON.stringify({
+            version: APP_VERSION,
+            _sliceVersions: {
+                ...SLICE_SCHEMA_VERSIONS,
+                simulation: SLICE_SCHEMA_VERSIONS.simulation + 1,
+            },
+            simulation: { plants: { ids: [], entities: {} }, futureField: [1, 2, 3] },
+        })
+        db.data.set(REDUX_STATE_KEY, newerSlice)
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe(newerSlice)
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
     })
 })

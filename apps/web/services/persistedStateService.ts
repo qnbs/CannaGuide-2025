@@ -5,6 +5,7 @@ import {
     suspendPersistenceForRecovery,
 } from '@/bootstrap/persistenceCoordinator'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
+import { isNewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { repairSnapshot, replaceSnapshot, updateSnapshot } from '@/stores/snapshotRevision'
 import { clearAllSnapshotSaveFailures } from './persistenceFailureMarker'
 
@@ -117,6 +118,9 @@ export const tryRepairPrimaryPersistedSnapshot = async (snapshot: string): Promi
         }
         return repaired
     } catch (repairError) {
+        // A newer build's backup is not a failed repair: the caller must stop, not start
+        // empty and save over it (#666).
+        if (isNewerSnapshotError(repairError)) throw repairError
         console.debug('[Store] Could not repair primary snapshot from backup:', repairError)
         return false
     }

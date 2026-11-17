@@ -79,6 +79,11 @@ export const common = {
             'De opgeslagen gegevens zijn gewijzigd door een ander tabblad of venster nadat dit tabblad was geladen. Deze pagina is verouderd en slaat niet meer op, zodat die nieuwere gegevens veilig blijven. Laad opnieuw om met de laatste gegevens verder te gaan. Wijzigingen die je in dit tabblad sinds het laden hebt gemaakt, zijn niet opgeslagen en gaan verloren bij het opnieuw laden.',
         reload: 'Opnieuw laden',
     },
+    newerSnapshot: {
+        title: 'Opgeslagen door een nieuwere versie',
+        description:
+            'Je gegevens zijn opgeslagen door een nieuwere versie van CannaGuide dan de versie die op deze pagina draait. Deze pagina heeft ze daarom niet geladen en slaat niets op, zodat die gegevens intact blijven. Laad opnieuw om de nieuwere versie te krijgen. Verschijnt deze melding opnieuw, sluit dan alle CannaGuide-tabbladen en -vensters en open de app opnieuw. Je opgeslagen gegevens zijn niet gewijzigd.',
+    },
     saveFailed:
         'Je laatste wijzigingen konden niet worden opgeslagen en gaan verloren als je de app sluit of herlaadt. Mogelijk is de browseropslag vol: maak ruimte vrij, dan probeert de app het opnieuw bij je volgende wijziging.',
     previousSaveFailed:

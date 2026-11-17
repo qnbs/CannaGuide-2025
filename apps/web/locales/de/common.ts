@@ -247,6 +247,11 @@ export const common = {
             'Die gespeicherten Daten wurden von einem anderen Tab oder Fenster geändert, nachdem dieses geladen wurde. Diese Seite ist veraltet und speichert nicht mehr, damit die neueren Daten erhalten bleiben. Lade neu, um mit den aktuellen Daten weiterzumachen. Änderungen, die du in diesem Tab seit dem Laden gemacht hast, wurden nicht gespeichert und gehen beim Neuladen verloren.',
         reload: 'Neu laden',
     },
+    newerSnapshot: {
+        title: 'Mit einer neueren Version gespeichert',
+        description:
+            'Deine Daten wurden mit einer neueren CannaGuide-Version gespeichert als der, die auf dieser Seite l\u00E4uft. Diese Seite hat sie deshalb nicht geladen und speichert nichts, damit diese Daten erhalten bleiben. Lade neu, um die neuere Version zu bekommen. Erscheint dieser Hinweis wieder, schlie\u00DFe alle CannaGuide-Tabs und -Fenster und \u00F6ffne die App erneut. Deine gespeicherten Daten wurden nicht ver\u00E4ndert.',
+    },
     saveFailed:
         'Deine letzten \u00C4nderungen konnten nicht gespeichert werden und gingen verloren, wenn du die App schlie\u00DFt oder neu l\u00E4dst. M\u00F6glicherweise ist der Browserspeicher voll: Gib Speicher frei, dann versucht die App es bei deiner n\u00E4chsten \u00C4nderung erneut.',
     previousSaveFailed:

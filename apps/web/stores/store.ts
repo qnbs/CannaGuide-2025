@@ -29,14 +29,22 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
-import { rememberStoredRevision } from './snapshotRevision'
+import { rememberStoredRevision, setItemIfSnapshotUnchanged } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
+import {
+    isNewerSnapshotError,
+    isNewerThanThisBuild,
+    isSnapshotNewerThan,
+} from '@/services/migration/newerSnapshot'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
 import type { UIState } from './useUIStore'
 import { tryRepairPrimaryPersistedSnapshot } from '@/services/persistedStateService'
-import { discardUnreadablePrimarySnapshot } from '@/services/snapshotQuarantine'
+import {
+    discardUnreadablePrimarySnapshot,
+    quarantineUnreadableSnapshot,
+} from '@/services/snapshotQuarantine'
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -92,6 +100,47 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector
  */
 export const createAppStoreSync = (): AppStore => makeStore()
 
+/** The parsed snapshot, or null when it is not JSON. */
+const parseOrNull = (snapshot: string): unknown => {
+    try {
+        return JSON.parse(snapshot) as unknown
+    } catch {
+        return null
+    }
+}
+
+/**
+ * Keeps the pre-migration bytes of a primary that has migrated as the backup (#666).
+ * Copying them before the migration replaced the last good backup with a corrupt or
+ * newer primary before anything read it. A backup newer than the primary is the
+ * original that an older release without this guard relabelled and saved over: it goes
+ * to the quarantine before it is replaced, and stays the backup if that fails.
+ */
+const refreshStartupBackup = async (snapshot: string): Promise<void> => {
+    try {
+        const previous = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
+        const previousState = previous ? parseOrNull(previous) : null
+        // Newer than the primary, or newer than this build (CodeRabbit on #871): a
+        // primary without `_sliceVersions` cannot show that a backup slice is newer.
+        if (
+            previous &&
+            (isNewerThanThisBuild(previousState) ||
+                isSnapshotNewerThan(previousState, parseOrNull(snapshot)))
+        ) {
+            if ((await quarantineUnreadableSnapshot(previous)) !== 'stored') return
+        }
+        // Only while the primary is still the one this page read: without Web Locks a
+        // second tab may have saved, and its newer data must not lose its backup.
+        if (!(await setItemIfSnapshotUnchanged(REDUX_STATE_BACKUP_KEY, snapshot))) {
+            console.debug(
+                '[Store] Backup not refreshed: the saved data changed since this page read it.',
+            )
+        }
+    } catch (backupErr) {
+        console.debug('[Store] Could not save pre-migration backup:', backupErr)
+    }
+}
+
 export const createAppStore = async (): Promise<AppStore> => {
     let preloadedState: Partial<RootState> | undefined
     let persistedUiState: Partial<UIState> | undefined
@@ -121,6 +170,8 @@ export const createAppStore = async (): Promise<AppStore> => {
             const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
             return repaired ? hydratePersistedState(backupString) : undefined
         } catch (backupError) {
+            // A newer build's backup stops the start like a newer primary does (#666).
+            if (isNewerSnapshotError(backupError)) throw backupError
             // A backup that cannot be read must not stop the start: the primary still
             // has to be quarantined before anything else touches it (#666).
             console.debug('[Store] Could not recover state from the backup:', backupError)
@@ -137,15 +188,14 @@ export const createAppStore = async (): Promise<AppStore> => {
         persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (persistedString) {
             console.debug('[Store] Hydrating state from IndexedDB.')
-            // Save a backup snapshot before migration so data can be recovered if migration fails.
-            try {
-                await indexedDBStorage.setItem(REDUX_STATE_BACKUP_KEY, persistedString)
-            } catch (backupErr) {
-                console.debug('[Store] Could not save pre-migration backup:', backupErr)
-            }
             preloadedState = hydratePersistedState(persistedString)
+            await refreshStartupBackup(persistedString)
         }
     } catch (e) {
+        // A newer build's snapshot is readable, just not by this build. The backup and
+        // quarantine path below would remove it from the primary key, and starting fresh
+        // would save over it: leave it alone and let the startup show the notice (#666).
+        if (isNewerSnapshotError(e)) throw e
         console.debug(
             "Could not load or migrate state from IndexedDB, starting fresh. A backup may be available at key '" +
                 REDUX_STATE_KEY +

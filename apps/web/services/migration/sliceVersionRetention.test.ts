@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 
 import { APP_VERSION, SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
@@ -123,19 +124,19 @@ describe('migrateState slice version mismatch', () => {
         expect(warn).not.toHaveBeenCalled()
     })
 
-    it('keeps a slice stored under a newer schema version for the shape guards', () => {
-        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-
-        const migrated = migrateState({
+    it('refuses a slice stored under a newer schema version instead of relabelling it (#666)', () => {
+        const state = {
             version: 5,
             _sliceVersions: { simulation: SLICE_SCHEMA_VERSIONS.simulation + 1 },
             simulation: populatedSimulation(),
-        } as never)
+        }
+        const original = JSON.stringify(state)
 
-        // A snapshot written by a newer build is not emptied by an older one.
-        // The stamp is rewritten to the current version on the next save
-        // (bootstrap/persistence.ts), so a later newer build revalidates it.
-        expect(migrated.simulation?.plants.ids).toEqual(['plant-1'])
+        // Keeping it for the older shape guards and stamping the current version on
+        // the next save would hand a later newer build data it migrates a second
+        // time, minus whatever the older guards dropped. It is left as it is.
+        expect(() => migrateState(state as never)).toThrow(NewerSnapshotError)
+        expect(JSON.stringify(state)).toBe(original)
     })
 
     it('still drops the transient ui slice on a version mismatch', () => {
@@ -212,18 +213,15 @@ describe('migrateState content-loss guard for a retained slice', () => {
         ).toThrow(/Persisted favorites/)
     })
 
-    it('rejects a populated slice of a newer schema that the older guards would empty', () => {
-        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-
-        // A rollback serves an older build a snapshot written by a newer one.
-        // Keeping the slice is only safe while the guards leave its data alone.
+    it('rejects a populated slice of a newer schema before any older guard runs', () => {
+        // A rollback serves an older build a snapshot written by a newer one (#666).
         expect(() =>
             migrateState({
                 version: 5,
                 _sliceVersions: { userStrains: SLICE_SCHEMA_VERSIONS.userStrains + 1 },
                 userStrains: { byId: { 'mine-1': { id: 'mine-1', name: 'My Cross' } } },
             } as never),
-        ).toThrow(/Persisted userStrains/)
+        ).toThrow(NewerSnapshotError)
     })
 
     it('accepts a mismatched slice that held nothing, because nothing is lost', () => {

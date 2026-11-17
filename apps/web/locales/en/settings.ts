@@ -664,6 +664,8 @@ export const settingsView = {
         importConfirmButton: 'Import & Overwrite',
         importSuccess: 'Data imported successfully. The app will now reload.',
         importError: 'Import failed. Please ensure it is a valid backup file.',
+        importNewerVersion:
+            'This backup was made with a newer version of CannaGuide. Reload the app to get the newer version, then import the backup again. Nothing was changed.',
         restoreBlocked: 'Data restore is temporarily blocked by a safe recovery operation.',
         resetError: 'Data reset could not be completed. Your saved data was not changed.',
         sliceResetError: 'This data section could not be reset. Your saved data was not changed.',

@@ -81,6 +81,11 @@ export const common = {
             'Los datos guardados se cambiaron en otra pesta\u00F1a o ventana despu\u00E9s de cargar esta, as\u00ED que esta p\u00E1gina est\u00E1 desactualizada y ha dejado de guardar para proteger esos datos m\u00E1s recientes. Recarga para continuar con los datos m\u00E1s recientes. Los cambios hechos en esta pesta\u00F1a desde que se carg\u00F3 no se han guardado y se perder\u00E1n al recargar.',
         reload: 'Recargar',
     },
+    newerSnapshot: {
+        title: 'Guardado por una versi\u00F3n m\u00E1s reciente',
+        description:
+            'Tus datos se guardaron con una versi\u00F3n de CannaGuide m\u00E1s reciente que la que ejecuta esta p\u00E1gina, as\u00ED que esta p\u00E1gina no los ha cargado y no guarda nada, para mantener esos datos intactos. Recarga para obtener la versi\u00F3n m\u00E1s reciente. Si este aviso vuelve a aparecer, cierra todas las pesta\u00F1as y ventanas de CannaGuide y abre la aplicaci\u00F3n de nuevo. Tus datos guardados no han cambiado.',
+    },
     saveFailed:
         'Tus \u00FAltimos cambios no se pudieron guardar y se perder\u00EDan si cierras o recargas la app. Puede que el almacenamiento del navegador est\u00E9 lleno: libera espacio y la app lo intentar\u00E1 de nuevo con tu pr\u00F3ximo cambio.',
     previousSaveFailed:

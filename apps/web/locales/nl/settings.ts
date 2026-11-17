@@ -683,6 +683,8 @@ export const settingsView = {
         importConfirmButton: 'Importeren & Overschrijven',
         importSuccess: 'Gegevens succesvol geimporteerd. De app wordt nu herladen.',
         importError: 'Import mislukt. Controleer of het een geldig back-upbestand is.',
+        importNewerVersion:
+            'Deze back-up is gemaakt met een nieuwere versie van CannaGuide. Laad de app opnieuw om de nieuwere versie te krijgen en importeer de back-up daarna opnieuw. Er is niets gewijzigd.',
         restoreBlocked:
             'Gegevensherstel is tijdelijk geblokkeerd door een veilige herstelbewerking.',
         resetError:

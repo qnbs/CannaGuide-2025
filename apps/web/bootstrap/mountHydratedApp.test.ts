@@ -3,10 +3,12 @@ import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
 import { mountHydratedApp } from './mountHydratedApp'
 import {
     renderError,
+    renderNewerSnapshotNotice,
     renderOtherTabNotice,
     renderStaleTabNotice,
     renderUnverifiedTabNotice,
 } from './render'
+import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { hydrateApplicationStores } from './store'
 import { disableSentry } from '@/services/sentryService'
 import {
@@ -64,6 +66,7 @@ vi.mock('@/stores/useUIStore', () => ({
 vi.mock('./recovery', () => ({ registerRecoveryListeners: vi.fn() }))
 vi.mock('./render', () => ({
     renderError: vi.fn(),
+    renderNewerSnapshotNotice: vi.fn(),
     renderOtherTabNotice: vi.fn(),
     renderStaleTabNotice: vi.fn(),
     renderUnverifiedTabNotice: vi.fn(),
@@ -281,6 +284,18 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(releaseWriterRole).toHaveBeenCalledOnce()
         expect(renderError).toHaveBeenCalledOnce()
+    })
+
+    it('shows the newer-version notice and saves nothing over a newer build snapshot (#666)', async () => {
+        vi.mocked(hydrateApplicationStores).mockRejectedValueOnce(new NewerSnapshotError(99, []))
+
+        await mountHydratedApp()
+
+        expect(renderNewerSnapshotNotice).toHaveBeenCalledOnce()
+        expect(renderError).not.toHaveBeenCalled()
+        expect(order).toEqual(['stop', 'release'])
+        expect(disableSentry).toHaveBeenCalled()
+        expect(setupPersistedStateSync).not.toHaveBeenCalled()
     })
 
     it('stops saving before it hands the role on, so a stale tab cannot overwrite the next', async () => {

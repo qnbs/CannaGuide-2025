@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { APP_VERSION } from '@/constants'
+import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { renderHook, act, waitFor } from '@testing-library/react'
 
 const mocks = vi.hoisted(() => ({
@@ -180,6 +182,59 @@ describe('useDataManagementActions', () => {
             message: 'settingsView.data.importError',
         })
         expect(result.current.isImportConfirmOpen).toBe(true)
+    })
+
+    it('refuses a backup from a newer version before the confirm and says why (#666)', async () => {
+        const { result } = renderHook(() => useDataManagementActions())
+        const file = new File(
+            [JSON.stringify({ version: APP_VERSION + 1, settings: { settings: {} } })],
+            'newer.json',
+            { type: 'application/json' },
+        )
+
+        act(() => {
+            result.current.handleFileChange({
+                target: { files: [file], value: '' },
+            } as unknown as Parameters<typeof result.current.handleFileChange>[0])
+        })
+
+        await waitFor(() =>
+            expect(mocks.addNotification).toHaveBeenCalledWith({
+                type: 'error',
+                message: 'settingsView.data.importNewerVersion',
+            }),
+        )
+        expect(result.current.isImportConfirmOpen).toBe(false)
+        expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+    })
+
+    it('names a newer version when the confirmed import is refused for it (#666)', async () => {
+        const { result } = renderHook(() => useDataManagementActions())
+        const file = new File(
+            [JSON.stringify({ version: APP_VERSION, settings: { settings: {} } })],
+            'ok.json',
+            {
+                type: 'application/json',
+            },
+        )
+        act(() => {
+            result.current.handleFileChange({
+                target: { files: [file], value: '' },
+            } as unknown as Parameters<typeof result.current.handleFileChange>[0])
+        })
+        await waitFor(() => expect(result.current.isImportConfirmOpen).toBe(true))
+        mocks.replacePrimaryPersistedSnapshot.mockRejectedValueOnce(
+            new NewerSnapshotError(null, ['simulation']),
+        )
+
+        await act(async () => {
+            await result.current.confirmImport()
+        })
+
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.importNewerVersion',
+        })
     })
 
     it('keeps the reset dialog open when persisted-state removal is blocked', async () => {

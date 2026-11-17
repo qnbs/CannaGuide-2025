@@ -99,6 +99,23 @@ export const rememberStoredRevision = async (): Promise<void> => {
 }
 
 /**
+ * Writes `value` under `name` in the transaction that checks that no snapshot was
+ * saved since this page read the revision, and leaves the revision as it is. False
+ * when another tab saved meanwhile or the revision is unknown. Used for the startup
+ * backup, so a stale page cannot replace a newer tab's backup (#871 review).
+ */
+export const setItemIfSnapshotUnchanged = async (name: string, value: string): Promise<boolean> => {
+    if (knownRevision === undefined) return false
+    return indexedDBStorage.setItemIfRevision(
+        name,
+        value,
+        REDUX_STATE_REVISION_KEY,
+        knownRevision,
+        knownRevision,
+    )
+}
+
+/**
  * Saves the snapshot; throws StaleSnapshotError when another tab saved since, and
  * UnverifiedSnapshotError when the check is off and this page holds no writer lock.
  */

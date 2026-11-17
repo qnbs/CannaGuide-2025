@@ -554,6 +554,14 @@ const REVIEW_RUNBOOK_COVERAGE = [
         'exact-head CodeRabbit coverage receipt',
         /final_review_risk_coverage[\s\S]{0,300}full current head SHA[\s\S]{0,120}`?kind`?\s+is\s+`?reviewed/,
     ],
+    [
+        'CodeRabbit receipt requires the CodeRabbit bot',
+        /`coderabbitai\[bot\]`,? author type Bot[\s\S]{0,200}final_review_risk_coverage/,
+    ],
+    [
+        'CodeRabbit receipt binds source and covered commits',
+        /final_review_risk_coverage[\s\S]{0,200}`?sourceCommitId`? and `?coveredCommitId`? both equal the full current head SHA/,
+    ],
     ['Codex receipt requires a bot author', /author type must be Bot/],
     ['pre-change PR #857 policy', /PR #857[\s\S]{0,180}pre-change policy until it is merged/],
 ]

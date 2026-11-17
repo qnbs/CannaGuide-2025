@@ -24,7 +24,7 @@ const REVIEW_SENTENCE = [
     'The PR #857 transition uses the pre-change policy until it is merged.',
     'The only receipt allowed is a structured Codex receipt with a full 40-character current head SHA and a verified bot author.',
     'The only supported issue-comment receipt uses the codex-review-state:v1 marker, and the GitHub API author type must be Bot.',
-    'The CodeRabbit final_review_risk_coverage marker counts only when its commits equal the full current head SHA and its kind is reviewed.',
+    'The CodeRabbit receipt needs `coderabbitai[bot]`, author type Bot, and a final_review_risk_coverage marker whose `sourceCommitId` and `coveredCommitId` both equal the full current head SHA and whose `kind` is `reviewed`.',
 ].join('\n')
 const SOUND_AGENTS = [
     '### Authority and trust (all agents)',
@@ -310,6 +310,34 @@ test('risk-based review requirements must be positive normative root and runbook
         )
     }
     assert.equal(problemsOf({ 'docs/PR-REVIEW-LOOP.md': REVIEW_SENTENCE }).length, 0)
+})
+
+test('the CodeRabbit receipt rule must keep the bot identity, both commit ids and kind', () => {
+    const weakVariants = [
+        [
+            REVIEW_SENTENCE.replace('`coderabbitai[bot]`, author type Bot, and ', ''),
+            'CodeRabbit receipt requires the CodeRabbit bot',
+        ],
+        [
+            REVIEW_SENTENCE.replace(
+                '`sourceCommitId` and `coveredCommitId` both equal',
+                'commits equal',
+            ),
+            'CodeRabbit receipt binds source and covered commits',
+        ],
+        [
+            REVIEW_SENTENCE.replace(' and whose `kind` is `reviewed`', ''),
+            'exact-head CodeRabbit coverage receipt',
+        ],
+    ]
+    for (const [fixture, label] of weakVariants) {
+        assert.notEqual(fixture, REVIEW_SENTENCE, `fixture for ${label} did not change`)
+        const problems = problemsOf({ 'docs/PR-REVIEW-LOOP.md': fixture })
+        assert.ok(
+            problems.some((problem) => problem.includes(`missing ${label}`)),
+            `weakened CodeRabbit receipt rule did not fail for ${label}: ${problems.join('; ')}`,
+        )
+    }
 })
 
 test('risk-based coverage summary is required in AGENTS, CLAUDE, and the review runbook', () => {

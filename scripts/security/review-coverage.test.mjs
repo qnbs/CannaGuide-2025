@@ -473,3 +473,124 @@ test('PR #857 transition ignores the CodeRabbit marker too', () => {
     assert.equal(result.transitionPull, true)
     assert.equal(result.satisfied, false)
 })
+
+const PRIOR = OTHER
+const BASE_TIP = 'c'.repeat(40)
+
+function equivalenceProof(overrides = {}) {
+    const digest = 'd'.repeat(64)
+    return {
+        version: 1,
+        equivalent: true,
+        priorHeadSha: PRIOR,
+        headSha: HEAD,
+        priorChangeDigest: digest,
+        headChangeDigest: digest,
+        mergeCommits: [{ sha: HEAD, parents: [PRIOR, BASE_TIP], mergedParentOnBase: true }],
+        ...overrides,
+    }
+}
+
+function evaluateEquivalent({ proof = equivalenceProof(), marker = {}, reviews = [] } = {}) {
+    return evaluate({
+        pullNumber: 868,
+        changedFiles: HIGH_FILES,
+        reviews,
+        issueComments: [
+            receipt({ pullNumber: 868 }),
+            coderabbitSummary({ pullNumber: 868, source: PRIOR, covered: PRIOR, ...marker }),
+        ],
+        headEquivalence: proof,
+    })
+}
+
+test('after a pure base merge, the reviewed-head CodeRabbit marker counts with a proof (PR 868 regression)', () => {
+    const result = evaluateEquivalent()
+    assert.equal(result.satisfied, true)
+    assert.deepEqual(
+        result.qualifiedReviewers.map(({ provider, source }) => `${provider}:${source}`).sort(),
+        ['CodeRabbit:coverage_marker_equivalent_head', 'Codex:structured_issue_comment_receipt'],
+    )
+    assert.deepEqual(result.equivalentHead, {
+        reviewedHeadSha: PRIOR,
+        changeDigest: 'd'.repeat(64),
+    })
+    const withoutProof = evaluateEquivalent({ proof: null })
+    assert.equal(withoutProof.satisfied, false)
+    assert.equal(withoutProof.equivalentHead, null)
+})
+
+test('a head-equivalence proof that is incomplete, inconsistent, or for other commits fails closed', () => {
+    const merge = { sha: HEAD, parents: [PRIOR, BASE_TIP], mergedParentOnBase: true }
+    const rejected = [
+        ['not equivalent', equivalenceProof({ equivalent: false })],
+        ['unknown version', equivalenceProof({ version: 2 })],
+        ['changed lines differ', equivalenceProof({ headChangeDigest: 'e'.repeat(64) })],
+        [
+            'short digest',
+            equivalenceProof({
+                priorChangeDigest: 'd'.repeat(40),
+                headChangeDigest: 'd'.repeat(40),
+            }),
+        ],
+        ['proof for another head', equivalenceProof({ headSha: BASE_TIP })],
+        ['prior head equals head', equivalenceProof({ priorHeadSha: HEAD })],
+        ['no merge commits', equivalenceProof({ mergeCommits: [] })],
+        [
+            'merged parent not on base',
+            equivalenceProof({ mergeCommits: [{ ...merge, mergedParentOnBase: false }] }),
+        ],
+        [
+            'chain does not start at the reviewed head',
+            equivalenceProof({ mergeCommits: [{ ...merge, parents: [BASE_TIP, PRIOR] }] }),
+        ],
+        [
+            'three parents',
+            equivalenceProof({
+                mergeCommits: [{ ...merge, parents: [PRIOR, BASE_TIP, BASE_TIP] }],
+            }),
+        ],
+        [
+            'chain ends before the head',
+            equivalenceProof({ mergeCommits: [{ ...merge, sha: BASE_TIP }] }),
+        ],
+        [
+            'short merge SHA',
+            equivalenceProof({ mergeCommits: [{ ...merge, sha: HEAD.slice(0, 12) }] }),
+        ],
+    ]
+    for (const [label, proof] of rejected) {
+        const result = evaluateEquivalent({ proof })
+        assert.equal(result.satisfied, false, `${label} must not count`)
+        assert.deepEqual(
+            result.qualifiedReviewers.map((reviewer) => reviewer.provider),
+            ['Codex'],
+            label,
+        )
+    }
+
+    const otherMarkers = [
+        ['marker names another commit', { source: BASE_TIP, covered: BASE_TIP }],
+        ['marker covered commit differs', { covered: HEAD }],
+        ['marker kind not reviewed', { kind: 'skipped' }],
+    ]
+    for (const [label, marker] of otherMarkers) {
+        const result = evaluateEquivalent({ marker })
+        assert.equal(result.satisfied, false, `${label} must not count`)
+    }
+})
+
+test('a dismissed CodeRabbit review on the reviewed head blocks the equivalent-head marker', () => {
+    const dismissed = review('coderabbitai[bot]', 'DISMISSED', PRIOR, '2026-11-16T10:45:00Z', 868)
+    const result = evaluateEquivalent({ reviews: [dismissed] })
+    assert.equal(result.satisfied, false)
+    assert.deepEqual(
+        result.qualifiedReviewers.map((reviewer) => reviewer.provider),
+        ['Codex'],
+    )
+})
+
+test('the runbook requires the head-equivalence proof for a marker on an earlier head', () => {
+    assert.match(runbook, /review-head-equivalence\.mjs/)
+    assert.match(runbook, /headEquivalence/)
+})

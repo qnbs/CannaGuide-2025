@@ -11,6 +11,8 @@ const REVIEWERS = new Map([
 const COMPLETED_REVIEW_STATES = new Set(['APPROVED', 'CHANGES_REQUESTED', 'COMMENTED'])
 const UNAVAILABLE_RESULTS = new Set(['rate_limited', 'timed_out', 'skipped', 'silent'])
 const SHA = /^[0-9a-f]{40}$/
+const DIGEST = /^[0-9a-f]{64}$/
+const HEAD_EQUIVALENCE_VERSION = 1
 const API_ROOT = 'https://api.github.com/repos/qnbs/CannaGuide-2025'
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR
@@ -89,13 +91,54 @@ const CODERABBIT_SUMMARY_MARKER =
 const CODERABBIT_COVERAGE_PREFIX = '<!-- final_review_risk_coverage:'
 
 /**
+ * Proof from scripts/security/review-head-equivalence.mjs that the head only merged the
+ * base branch into an earlier reviewed head: every first-parent commit after that head is
+ * a two-parent merge continuing the pull branch with a base-branch commit, and the pull's
+ * changed lines hash the same on both heads. Anything else fails closed (null).
+ */
+function parseHeadEquivalence(proof, headSha) {
+    if (!proof || typeof proof !== 'object') return null
+    const { priorHeadSha, priorChangeDigest, headChangeDigest, mergeCommits } = proof
+    if (
+        proof.version !== HEAD_EQUIVALENCE_VERSION ||
+        proof.equivalent !== true ||
+        proof.headSha !== headSha ||
+        !SHA.test(priorHeadSha ?? '') ||
+        priorHeadSha === headSha ||
+        !DIGEST.test(priorChangeDigest ?? '') ||
+        priorChangeDigest !== headChangeDigest ||
+        !Array.isArray(mergeCommits) ||
+        mergeCommits.length === 0
+    ) {
+        return null
+    }
+    let previous = priorHeadSha
+    for (const commit of mergeCommits) {
+        if (
+            !SHA.test(commit?.sha ?? '') ||
+            !Array.isArray(commit.parents) ||
+            commit.parents.length !== 2 ||
+            commit.parents[0] !== previous ||
+            !SHA.test(commit.parents[1] ?? '') ||
+            commit.mergedParentOnBase !== true
+        ) {
+            return null
+        }
+        previous = commit.sha
+    }
+    return previous === headSha ? { priorHeadSha, changeDigest: priorChangeDigest } : null
+}
+
+/**
  * CodeRabbit records the last commit it reviewed in its summary comment. A review that
  * finds nothing creates no GitHub review object, so without this marker a clean
  * exact-head CodeRabbit review could never count. The marker must appear exactly once
  * (a second copy, e.g. quoted from a PR description, fails closed), name the exact head
- * as both source and covered commit, and say `reviewed`.
+ * as both source and covered commit, and say `reviewed`. The one exception: CodeRabbit
+ * skips a head that only merged the base branch, so its marker may name the earlier
+ * reviewed head when a valid head-equivalence proof names that same head.
  */
-function parseCodeRabbitReceipt(comment, headSha, pullNumber) {
+function parseCodeRabbitReceipt(comment, headSha, pullNumber, equivalence = null) {
     if (
         !isReviewBot(comment?.user, CODERABBIT_LOGIN) ||
         comment.issue_url !== `${API_ROOT}/issues/${pullNumber}`
@@ -117,11 +160,16 @@ function parseCodeRabbitReceipt(comment, headSha, pullNumber) {
     } catch {
         return null
     }
+    const exactHead = payload?.coveredCommitId === headSha && payload?.sourceCommitId === headSha
+    const equivalentHead =
+        !exactHead &&
+        equivalence !== null &&
+        payload?.coveredCommitId === equivalence.priorHeadSha &&
+        payload?.sourceCommitId === equivalence.priorHeadSha
     if (
         payload?.kind !== 'reviewed' ||
-        payload.coveredCommitId !== headSha ||
-        payload.sourceCommitId !== headSha ||
-        !SHA.test(payload.coveredCommitId)
+        !SHA.test(payload.coveredCommitId ?? '') ||
+        !(exactHead || equivalentHead)
     ) {
         return null
     }
@@ -132,8 +180,21 @@ function parseCodeRabbitReceipt(comment, headSha, pullNumber) {
         login: CODERABBIT_LOGIN,
         commitSha: payload.coveredCommitId,
         createdAt: observedAt,
-        source: 'coverage_marker_issue_comment',
+        source: exactHead ? 'coverage_marker_issue_comment' : 'coverage_marker_equivalent_head',
     }
+}
+
+/** The latest CodeRabbit review object on a given commit of this pull, if any. */
+function latestCodeRabbitReviewOn(reviews, commitSha, pullNumber) {
+    return (Array.isArray(reviews) ? reviews : [])
+        .filter(
+            (review) =>
+                isReviewBot(review?.user, CODERABBIT_LOGIN) &&
+                review.commit_id === commitSha &&
+                review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}`,
+        )
+        .sort((a, b) => compareLatest(a, b, 'submitted_at'))
+        .at(-1)
 }
 
 function lowRiskFile(file) {
@@ -285,8 +346,18 @@ export function evaluateReviewCoverage(evidence) {
         )
         .sort((a, b) => compareLatest(a, b, 'updated_at'))
         .at(-1)
+    // A head-equivalence proof lets the marker of the earlier reviewed head count, unless
+    // CodeRabbit's review on that earlier head was dismissed.
+    let equivalence = parseHeadEquivalence(evidence.headEquivalence, headSha)
+    if (
+        equivalence &&
+        latestCodeRabbitReviewOn(evidence.reviews, equivalence.priorHeadSha, pullNumber)?.state ===
+            'DISMISSED'
+    ) {
+        equivalence = null
+    }
     const codeRabbitReceipt = latestCodeRabbitSummary
-        ? parseCodeRabbitReceipt(latestCodeRabbitSummary, headSha, pullNumber)
+        ? parseCodeRabbitReceipt(latestCodeRabbitSummary, headSha, pullNumber, equivalence)
         : null
 
     const qualified = new Map(formal)
@@ -345,6 +416,13 @@ export function evaluateReviewCoverage(evidence) {
                   hasUnresolvedFindings: receipt.hasUnresolvedFindings,
               }
             : null,
+        equivalentHead:
+            qualified.get(CODERABBIT_LOGIN)?.source === 'coverage_marker_equivalent_head'
+                ? {
+                      reviewedHeadSha: equivalence.priorHeadSha,
+                      changeDigest: equivalence.changeDigest,
+                  }
+                : null,
         fallback,
         requiredReviews,
         satisfied,

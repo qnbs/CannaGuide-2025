@@ -224,6 +224,27 @@ jobs:
                     git checkout --force --detach "${SHA}"
                   fi
 
+            # The desktop job hands the updater signing key to the code at this
+            # commit, and the release job attests it. Only reviewed code may get
+            # there: the commit must be on main, which takes changes only through
+            # the protected pull-request flow. The tag ruleset already limits v*
+            # tags to admins; this also stops a tag on an unmerged branch commit
+            # or one pushed with a leaked token (CodeAnt on #874).
+            - name: Require the release commit to be on main
+              env:
+                  RELEASE_COMMIT: ${{ steps.commit.outputs.sha }}
+              shell: bash
+              run: |
+                  if ! git fetch --no-tags origin "+refs/heads/main:refs/remotes/origin/main"; then
+                    echo "[FAIL] Could not fetch main; not releasing without proof that ${RELEASE_COMMIT} is on it."
+                    exit 1
+                  fi
+                  if ! git merge-base --is-ancestor "${RELEASE_COMMIT}" refs/remotes/origin/main; then
+                    echo "[FAIL] ${RELEASE_COMMIT} is not on main. Only merged, reviewed code is built with the signing key or released."
+                    exit 1
+                  fi
+                  echo "[OK] ${RELEASE_COMMIT} is on main."
+
             # -------- Tag <-> version assertion --------
             # Nothing previously tied the tag to the tree it labels. Pushing
             # v9.9.9 on a 1.10.0 checkout produced a release named

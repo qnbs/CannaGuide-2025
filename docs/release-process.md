@@ -153,7 +153,9 @@ tag that is already on the remote.
    Publish calls it, so the two cannot race.
 2. Release Gate runs pre-flight + tests + build verify; the build job waits for it
    and for CI Status on the resolved tag commit.
-3. Release Publish `build` checks the tag against every version location, then
+3. Release Publish `build` refuses a tag whose commit is not on `main`: only merged,
+   reviewed code is built with the updater signing key or released. It checks the tag
+   against every version location, then
    creates the tarball + CycloneDX SBOM.
 4. `desktop` calls `desktop-build.yml` for the resolved commit: Windows (MSI, NSIS),
    Linux (AppImage, deb) and macOS (dmg, Apple silicon and Intel), with

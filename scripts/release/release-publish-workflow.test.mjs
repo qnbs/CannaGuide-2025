@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
@@ -148,4 +148,64 @@ test('an existing release stops the run before any attestation, and a failed loo
     const failed = run({ FAKE_GH_FAIL: '1' })
     assert.equal(failed.status, 1)
     assert.match(failed.stdout, /Could not list the releases/)
+})
+
+test('only a commit on main reaches the signing key and the release', (t) => {
+    // CodeAnt on #874: a v* tag can name any commit, and CI passing does not mean
+    // reviewed. The build job -- which the desktop (signing key) and release
+    // (attestation) jobs depend on -- refuses a commit that is not on main.
+    const build = job('build')
+    const name = 'Require the release commit to be on main'
+    assert.ok(build.indexOf(`- name: ${name}`) > build.indexOf('- name: Resolve release commit'))
+    assert.match(job('desktop'), /needs: \[build\]/)
+    assert.match(job('release'), /needs: \[build, desktop\]/)
+
+    const root = mkdtempSync(path.join(tmpdir(), 'cannaguide-release-main-'))
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    const env = {
+        PATH: process.env.PATH,
+        HOME: root,
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_AUTHOR_NAME: 'test',
+        GIT_AUTHOR_EMAIL: 'test@example.invalid',
+        GIT_COMMITTER_NAME: 'test',
+        GIT_COMMITTER_EMAIL: 'test@example.invalid',
+    }
+    const work = path.join(root, 'work')
+    mkdirSync(work)
+    const git = (args, cwd = work) => {
+        const result = spawnSync('git', ['-c', 'commit.gpgsign=false', ...args], {
+            cwd,
+            env,
+            encoding: 'utf8',
+        })
+        assert.equal(result.status, 0, result.stderr)
+        return result.stdout.trim()
+    }
+    git(['init', '--bare', '-q', path.join(root, 'origin.git')], root)
+    git(['init', '-q', '-b', 'main'])
+    git(['remote', 'add', 'origin', path.join(root, 'origin.git')])
+    git(['commit', '-q', '--allow-empty', '-m', 'reviewed'])
+    git(['push', '-q', 'origin', 'HEAD:refs/heads/main'])
+    const onMain = git(['rev-parse', 'HEAD'])
+    git(['switch', '-q', '-c', 'unreviewed'])
+    git(['commit', '-q', '--allow-empty', '-m', 'not merged'])
+    const offMain = git(['rev-parse', 'HEAD'])
+
+    const script = runScript(build, name)
+    const run = (commit, cwd = work) =>
+        spawnSync('bash', ['-eo', 'pipefail', '-c', script], {
+            cwd,
+            env: { ...env, RELEASE_COMMIT: commit },
+            encoding: 'utf8',
+        })
+    assert.equal(run(onMain).status, 0)
+    const refused = run(offMain)
+    assert.equal(refused.status, 1)
+    assert.match(refused.stdout, /is not on main/)
+    // No reachable main: refuse instead of assuming.
+    git(['remote', 'set-url', 'origin', path.join(root, 'missing.git')])
+    const unreachable = run(onMain)
+    assert.equal(unreachable.status, 1)
+    assert.match(unreachable.stdout, /Could not fetch main/)
 })

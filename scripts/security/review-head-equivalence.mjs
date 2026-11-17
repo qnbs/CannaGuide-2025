@@ -32,6 +32,7 @@
  */
 import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
+import { devNull } from 'node:os'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
@@ -41,9 +42,23 @@ export const PROOF_VERSION = 2
 
 export class UsageError extends Error {}
 
+/**
+ * Git runs against the repository at `cwd` only, and personal configuration cannot change
+ * its output: every inherited GIT_* variable is dropped (GIT_DIR, GIT_WORK_TREE,
+ * GIT_CONFIG_PARAMETERS, GIT_EXTERNAL_DIFF, ...), and global and system configuration
+ * are ignored. The repository's own `.git/config` still applies, the same to both heads.
+ */
+export function gitEnvironment(env = process.env) {
+    const clean = Object.fromEntries(
+        Object.entries(env).filter(([name]) => !name.toUpperCase().startsWith('GIT_')),
+    )
+    return { ...clean, GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: devNull }
+}
+
 function git(cwd, args) {
     return execFileSync('git', args, {
         cwd,
+        env: gitEnvironment(),
         encoding: 'utf8',
         maxBuffer: 256 * 1024 * 1024,
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -54,6 +69,7 @@ function isAncestor(cwd, ancestor, descendant) {
     try {
         execFileSync('git', ['merge-base', '--is-ancestor', ancestor, descendant], {
             cwd,
+            env: gitEnvironment(),
             stdio: 'ignore',
         })
         return true
@@ -70,6 +86,7 @@ function isAncestor(cwd, ancestor, descendant) {
 function automaticMergeTree(cwd, first, second) {
     const run = spawnSync('git', ['merge-tree', '--write-tree', '--no-messages', first, second], {
         cwd,
+        env: gitEnvironment(),
         encoding: 'utf8',
         maxBuffer: 64 * 1024 * 1024,
     })
@@ -80,9 +97,19 @@ function automaticMergeTree(cwd, first, second) {
 
 /** Changed lines of `from..to`, without hunk headers and blob ids, and their SHA-256. */
 export function changeDigest(cwd, from, to) {
+    // Every option that could change the output is spelled out, so the repository's own
+    // config (diff.algorithm, diff.noprefix, diff.interHunkContext, ...) cannot change it.
     const diff = git(cwd, [
+        '-c',
+        'core.quotePath=true',
         'diff',
         '-U0',
+        '--inter-hunk-context=0',
+        '--diff-algorithm=myers',
+        '--indent-heuristic',
+        '--src-prefix=a/',
+        '--dst-prefix=b/',
+        '--no-relative',
         '--binary',
         '--no-color',
         '--no-ext-diff',

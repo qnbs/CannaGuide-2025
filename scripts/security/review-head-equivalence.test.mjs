@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { devNull, tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 
-import { changeDigest, proveHeadEquivalence, UsageError } from './review-head-equivalence.mjs'
+import {
+    changeDigest,
+    gitEnvironment,
+    proveHeadEquivalence,
+    UsageError,
+} from './review-head-equivalence.mjs'
 
 const SCRIPT = path.join(import.meta.dirname, 'review-head-equivalence.mjs')
 
@@ -255,6 +260,47 @@ test('a reviewed head that is not an ancestor of the head is rejected', (t) => {
     const proof = prove(repo, unrelated, head)
     assert.equal(proof.equivalent, false)
     assert.match(proof.reason, /not an ancestor/)
+})
+
+test('git runs without inherited GIT_* variables or personal configuration', () => {
+    const env = gitEnvironment({
+        HOME: '/home/someone',
+        PATH: '/usr/bin',
+        GIT_DIR: '/elsewhere/.git',
+        GIT_WORK_TREE: '/elsewhere',
+        Git_Index_File: '/elsewhere/index',
+        GIT_CONFIG_PARAMETERS: "'diff.noprefix'='true'",
+        GIT_EXTERNAL_DIFF: '/bin/true',
+    })
+    assert.deepEqual(env, {
+        HOME: '/home/someone',
+        PATH: '/usr/bin',
+        GIT_CONFIG_NOSYSTEM: '1',
+        GIT_CONFIG_GLOBAL: devNull,
+    })
+})
+
+test('a hostile caller environment cannot redirect or reformat the proof (CodeRabbit on #870)', (t) => {
+    const { repo, env, git, prior } = makeRepo(t)
+    git('merge', '--quiet', '--no-ff', '--no-edit', 'main')
+    const head = git('rev-parse', 'HEAD')
+    const clean = runCli(repo, env, ['--prior', prior, '--head', head, '--base', 'main'])
+    assert.equal(clean.status, 0, clean.stderr)
+
+    const hostileConfig = path.join(path.dirname(repo), 'hostile.gitconfig')
+    writeFileSync(hostileConfig, '[diff]\n\tnoprefix = true\n\talgorithm = histogram\n')
+    const hostile = {
+        ...env,
+        GIT_DIR: path.join(path.dirname(repo), 'missing.git'),
+        GIT_WORK_TREE: path.dirname(repo),
+        GIT_CONFIG_GLOBAL: hostileConfig,
+        GIT_CONFIG_COUNT: '1',
+        GIT_CONFIG_KEY_0: 'diff.mnemonicPrefix',
+        GIT_CONFIG_VALUE_0: 'true',
+    }
+    const run = runCli(repo, hostile, ['--prior', prior, '--head', head, '--base', 'main'])
+    assert.equal(run.status, 0, run.stderr)
+    assert.deepEqual(JSON.parse(run.stdout), JSON.parse(clean.stdout))
 })
 
 test('invalid arguments and unknown commits exit 2 without a proof', (t) => {

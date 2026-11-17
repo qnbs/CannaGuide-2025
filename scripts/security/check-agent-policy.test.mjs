@@ -24,6 +24,7 @@ const REVIEW_SENTENCE = [
     'The PR #857 transition uses the pre-change policy until it is merged.',
     'The only receipt allowed is a structured Codex receipt with a full 40-character current head SHA and a verified bot author.',
     'The only supported issue-comment receipt uses the codex-review-state:v1 marker, and the GitHub API author type must be Bot.',
+    'The CodeRabbit receipt needs `coderabbitai[bot]`, author type Bot, and a final_review_risk_coverage marker whose `sourceCommitId` and `coveredCommitId` both equal the full current head SHA and whose `kind` is `reviewed`.',
 ].join('\n')
 const SOUND_AGENTS = [
     '### Authority and trust (all agents)',
@@ -274,11 +275,32 @@ test('a CI Status requirement must name jobs ci-status actually needs', () => {
 
 test('risk-based review requirements must be positive normative root and runbook anchors', () => {
     const weakVariants = [
-        [REVIEW_SENTENCE.replace(REVIEW_GATE, 'Do not require multiple reviews.'), 'two independent exact-head reviews preferred'],
-        [REVIEW_SENTENCE.replace(REVIEW_GATE, '> ' + REVIEW_GATE), 'two independent exact-head reviews preferred'],
-        [REVIEW_SENTENCE.replace(REVIEW_GATE, '```md\n' + REVIEW_GATE + '\n```'), 'two independent exact-head reviews preferred'],
-        [REVIEW_SENTENCE.replace('high-risk changes and uncertainty require two, with no fallback', 'high-risk changes may use one review'), 'bounded low-risk fallback and high-risk protection'],
-        [REVIEW_SENTENCE.replace('No third review is required once two qualified reviews cover the current head.', 'A third review is always required.'), 'no third review after two qualify'],
+        [
+            REVIEW_SENTENCE.replace(REVIEW_GATE, 'Do not require multiple reviews.'),
+            'two independent exact-head reviews preferred',
+        ],
+        [
+            REVIEW_SENTENCE.replace(REVIEW_GATE, '> ' + REVIEW_GATE),
+            'two independent exact-head reviews preferred',
+        ],
+        [
+            REVIEW_SENTENCE.replace(REVIEW_GATE, '```md\n' + REVIEW_GATE + '\n```'),
+            'two independent exact-head reviews preferred',
+        ],
+        [
+            REVIEW_SENTENCE.replace(
+                'high-risk changes and uncertainty require two, with no fallback',
+                'high-risk changes may use one review',
+            ),
+            'bounded low-risk fallback and high-risk protection',
+        ],
+        [
+            REVIEW_SENTENCE.replace(
+                'No third review is required once two qualified reviews cover the current head.',
+                'A third review is always required.',
+            ),
+            'no third review after two qualify',
+        ],
     ]
     for (const [fixture, label] of weakVariants) {
         const problems = problemsOf({ 'docs/PR-REVIEW-LOOP.md': fixture })
@@ -290,11 +312,46 @@ test('risk-based review requirements must be positive normative root and runbook
     assert.equal(problemsOf({ 'docs/PR-REVIEW-LOOP.md': REVIEW_SENTENCE }).length, 0)
 })
 
+test('the CodeRabbit receipt rule must keep the bot identity, both commit ids and kind', () => {
+    const weakVariants = [
+        [
+            REVIEW_SENTENCE.replace('`coderabbitai[bot]`, author type Bot, and ', ''),
+            'CodeRabbit receipt requires the CodeRabbit bot',
+        ],
+        [
+            REVIEW_SENTENCE.replace(
+                '`sourceCommitId` and `coveredCommitId` both equal',
+                'commits equal',
+            ),
+            'CodeRabbit receipt binds source and covered commits',
+        ],
+        [
+            REVIEW_SENTENCE.replace(' and whose `kind` is `reviewed`', ''),
+            'exact-head CodeRabbit coverage receipt',
+        ],
+    ]
+    for (const [fixture, label] of weakVariants) {
+        assert.notEqual(fixture, REVIEW_SENTENCE, `fixture for ${label} did not change`)
+        const problems = problemsOf({ 'docs/PR-REVIEW-LOOP.md': fixture })
+        assert.ok(
+            problems.some((problem) => problem.includes(`missing ${label}`)),
+            `weakened CodeRabbit receipt rule did not fail for ${label}: ${problems.join('; ')}`,
+        )
+    }
+})
+
 test('risk-based coverage summary is required in AGENTS, CLAUDE, and the review runbook', () => {
     for (const file of ['AGENTS.md', 'CLAUDE.md', 'docs/PR-REVIEW-LOOP.md']) {
-        const problems = problemsOf({ [file]: REVIEW_SENTENCE.replace('No third review is required once two qualified reviews cover the current head.', 'Require a third reviewer.') })
+        const problems = problemsOf({
+            [file]: REVIEW_SENTENCE.replace(
+                'No third review is required once two qualified reviews cover the current head.',
+                'Require a third reviewer.',
+            ),
+        })
         assert.ok(
-            problems.some((problem) => problem.startsWith(`${file}: missing no third review after two qualify`)),
+            problems.some((problem) =>
+                problem.startsWith(`${file}: missing no third review after two qualify`),
+            ),
             `${file}: weakened third-review rule was not detected; ${problems.join('; ')}`,
         )
     }
@@ -305,7 +362,9 @@ test('required policy coverage inside tilde-fenced examples does not count', () 
     const agents = SOUND_AGENTS.replace(REVIEW_SENTENCE, fenced)
     const problems = problemsOf({ 'AGENTS.md': agents })
     assert.ok(
-        problems.some((problem) => problem.includes('AGENTS.md: missing two independent exact-head reviews preferred')),
+        problems.some((problem) =>
+            problem.includes('AGENTS.md: missing two independent exact-head reviews preferred'),
+        ),
     )
 })
 

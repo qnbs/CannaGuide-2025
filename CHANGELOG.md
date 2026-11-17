@@ -38,6 +38,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(review):** The operator review-coverage evaluator (`scripts/security/review-coverage-policy.mjs`) also counts CodeRabbit's `final_review_risk_coverage` marker (#867). A clean CodeRabbit review leaves no GitHub review object, so a high-risk pull it reviewed showed only one qualified review (#866). The marker counts only from `coderabbitai[bot]` (author type Bot) on the same pull, with exactly one summary marker and one coverage marker, `kind` `reviewed`, and both commit ids equal to the full current head SHA. The latest CodeRabbit summary decides, so a newer summary without a valid marker (rate limited or skipped) voids an older one. It never overrides a dismissed review, a formal CodeRabbit review on the head is not counted twice, and PR #857 still counts formal reviews only. `docs/PR-REVIEW-LOOP.md` and the policy gate describe both supported receipts; the gate fails if the runbook drops the CodeRabbit bot identity, either commit id, or `kind`.
+
 - **fix(persistence):** Journal overflow and backup-restore metadata updates now merge inside
   IndexedDB readwrite transactions, so a concurrent tab cannot overwrite newer archived entries.
   Failed update callbacks are not retried, and unknown plant ids cannot resolve to inherited

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Fails when the desktop app does not carry the release version: the root package.json
- * version must equal apps/desktop/package.json, the Tauri config (bundle and installer
+ * version must equal apps/web/package.json, apps/desktop/package.json, the Tauri config (bundle and installer
  * version), Cargo.toml and the crate's Cargo.lock entry. The desktop app shipped as
  * 0.1.0 while the release was 1.11.0, so installers and the updater disagreed.
  * Optional `--tag vX.Y.Z` also requires the tag to match. Exit 1 on drift or an
@@ -19,6 +19,7 @@ export const readDesktopVersions = (root) => {
     const cargoLock = read('apps/desktop/src-tauri/Cargo.lock')
     return {
         'package.json': JSON.parse(read('package.json')).version,
+        'apps/web/package.json': JSON.parse(read('apps/web/package.json')).version,
         'apps/desktop/package.json': JSON.parse(read('apps/desktop/package.json')).version,
         'apps/desktop/src-tauri/tauri.conf.json': JSON.parse(
             read('apps/desktop/src-tauri/tauri.conf.json'),

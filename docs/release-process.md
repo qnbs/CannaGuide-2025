@@ -174,6 +174,11 @@ tag that is already on the remote.
    stops the run; nothing is overwritten (`--clobber` is gone). A stale draft from a
    failed run is deleted by hand before a re-run.
 
+**Prefer pushing the tag.** A manual run that creates a missing tag pushes it with
+`RELEASE_PAT` (so Release Gate runs), which also starts the tag's own Release Publish
+run. That run queues behind the manual one, rebuilds, and stops at the
+existing-release check before any attestation -- correct, but a wasted build.
+
 **Desktop qualification without a release:** run Desktop Build manually on `main`.
 It builds all four targets and runs the same verification, uploading
 `desktop-release` (installers, updater bundles, signatures, `latest.json`,

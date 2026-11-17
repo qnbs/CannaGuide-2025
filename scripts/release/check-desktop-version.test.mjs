@@ -17,6 +17,7 @@ test('the repository carries one version for the web and the desktop app', () =>
 test('any drift, a missing version or a tag mismatch is reported', () => {
     const good = {
         'package.json': '1.12.0',
+        'apps/web/package.json': '1.12.0',
         'apps/desktop/package.json': '1.12.0',
         'apps/desktop/src-tauri/tauri.conf.json': '1.12.0',
         'apps/desktop/src-tauri/Cargo.toml': '1.12.0',
@@ -54,6 +55,7 @@ function fixtureRoot(t, { eol = '\n', version = '1.12.0', lock = {}, tauriConfig
         writeFileSync(path.join(root, file), text.replaceAll('\n', eol))
     }
     write('package.json', `{\n  "version": "${version}"\n}\n`)
+    write('apps/web/package.json', `{\n  "version": "${version}"\n}\n`)
     write('apps/desktop/package.json', `{\n  "version": "${version}"\n}\n`)
     write(
         'apps/desktop/src-tauri/tauri.conf.json',
@@ -111,6 +113,19 @@ test('a CRLF checkout still fails on real drift, a missing crate and malformed i
     )
     assert.equal(
         quietly(() => main([], path.join(malformed, 'does-not-exist'))),
+        1,
+    )
+})
+
+test('web-only drift fails too (CodeAnt on #874)', (t) => {
+    const root = fixtureRoot(t)
+    writeFileSync(path.join(root, 'apps/web/package.json'), '{ "version": "0.0.1" }\n')
+    assert.match(
+        desktopVersionProblems(readDesktopVersions(root)).join('\n'),
+        /apps\/web\/package\.json: 0\.0\.1 \(expected 1\.12\.0\)/,
+    )
+    assert.equal(
+        quietly(() => main([], root)),
         1,
     )
 })

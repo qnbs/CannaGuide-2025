@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
@@ -102,4 +102,40 @@ test('a dispatch resolves exactly the tag its concurrency group names', (t) => {
         assert.equal(status, 1, JSON.stringify(tag))
         assert.equal(name, undefined)
     }
+})
+
+test('an existing release stops the run before any attestation', (t) => {
+    // CodeAnt on #874: a dispatch that creates the tag also starts the tag's own run,
+    // queued behind it. That run must stop at the existing draft before it attests
+    // assets that will never be published.
+    const name = 'Refuse an existing release before any attestation'
+    const release = job('release')
+    const at = release.indexOf(`- name: ${name}`)
+    assert.notEqual(at, -1)
+    for (const { index } of release.matchAll(/uses: actions\/attest-[\w-]+@/g)) {
+        assert.ok(at < index, 'attestation before the existing-release check')
+    }
+    const script = runScript(release, name)
+    const bin = mkdtempSync(path.join(tmpdir(), 'cannaguide-fake-gh-'))
+    t.after(() => rmSync(bin, { recursive: true, force: true }))
+    // A stand-in gh: `release view` succeeds only when FAKE_RELEASE_EXISTS=1.
+    writeFileSync(
+        path.join(bin, 'gh'),
+        '#!/bin/sh\n[ "$1 $2" = "release view" ] && [ "$FAKE_RELEASE_EXISTS" = 1 ]\n',
+    )
+    chmodSync(path.join(bin, 'gh'), 0o755)
+    const run = (exists) =>
+        spawnSync('bash', ['-c', script], {
+            env: {
+                PATH: `${bin}:${process.env.PATH}`,
+                TAG: 'v1.12.0',
+                REPO: 'qnbs/CannaGuide-2025',
+                FAKE_RELEASE_EXISTS: exists ? '1' : '0',
+            },
+            encoding: 'utf8',
+        })
+    const existing = run(true)
+    assert.equal(existing.status, 1)
+    assert.match(existing.stdout, /already exists .*Nothing was attested/)
+    assert.equal(run(false).status, 0)
 })

@@ -224,8 +224,11 @@ the mode and refuses as well. Every step is a click: check, download (with Cance
 install. `tauri-plugin-updater` verifies the download against the updater key before any
 byte is kept. A finished download survives leaving the About tab and a later check of
 the same version. Checks time out after 30 seconds and downloads after 20 minutes.
-Install first saves the latest changes, repeating while changes keep arriving, and stops
-if that save fails or reports "not saved". On Windows the installer ends the process from
+Install first saves the latest changes, repeating while changes keep arriving (up to five
+rounds). It stops if that save fails, reports "not saved", or the state never settles: an
+edit made after the last save would be lost by the restart, so the install is refused and
+the user retries. The card only shows the updater's shared state, so reopening About
+during a download, or a newer release found by the startup check, updates it at once. On Windows the installer ends the process from
 inside the install command, so there is no later chance to save.
 
 The webview has no permission for the updater plugin's own commands (they would skip
@@ -236,7 +239,7 @@ the bundled app under its CSP.
 
 **Quit handshake (desktop):** the tray Quit, the close button and Cmd+Q all ask the web
 app to save first (`tauri://before-quit`). The app exits when the save has finished
-(`confirm_quit`), or after 10 seconds if the web app never answers. The listener is
+(`confirm_quit`), or after 10 seconds if the web app never answers. A save still running at that point is cut off, so the guarantee is "waits for the save, up to 10 seconds". The listener is
 registered before the slower startup work. Before, the tray quit exited after a fixed
 250 ms and the close button did not wait at all.
 

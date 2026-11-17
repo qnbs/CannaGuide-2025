@@ -23,17 +23,27 @@ const setUpDesktopLifecycle = async (
         import('@/services/desktopLifecycleService'),
         import('@/services/localOnlyModeService'),
     ])
-    // Quit and install save the same way: again while changes keep arriving.
-    const flush = flushPersistedState
-        ? lifecycle.flushUntilStable(flushPersistedState, () => hydratedStore.getState())
+    // Quit and install save again while changes keep arriving, with different rules for
+    // a store that never settles: a quit accepts the last save (its fallback ends the
+    // app anyway), an install refuses rather than restart over an unsaved edit.
+    const getState = (): unknown => hydratedStore.getState()
+    const quitFlush = flushPersistedState
+        ? lifecycle.flushUntilStable(flushPersistedState, getState)
         : undefined
-    lifecycle.registerPersistFlush(flush)
+    lifecycle.registerPersistFlush(
+        flushPersistedState
+            ? lifecycle.flushUntilStable(flushPersistedState, getState, {
+                  maxRounds: 5,
+                  whenUnsettled: 'refuse',
+              })
+            : undefined,
+    )
     try {
         const { listen } = await import('@tauri-apps/api/event')
         // The app holds every user quit until this confirms that the save has
         // finished (src-tauri/src/lib.rs request_quit), not a fixed delay.
         await listen('tauri://before-quit', () =>
-            lifecycle.flushThenConfirmQuit(flush).catch((err: unknown) => {
+            lifecycle.flushThenConfirmQuit(quitFlush).catch((err: unknown) => {
                 console.debug('[Tauri] quit confirmation failed:', err)
             }),
         )

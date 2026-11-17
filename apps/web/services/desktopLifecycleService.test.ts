@@ -21,11 +21,12 @@ const INFO: DesktopUpdateInfo = {
     notes: 'Notes',
     date: null,
 }
+const NEWER: DesktopUpdateInfo = { ...INFO, version: '1.12.1' }
+
+type Responder = (args?: Record<string, unknown>) => unknown
 
 /** A bridge that records calls; `responses` decides what each command returns. */
-const fakeBridge = (
-    responses: Record<string, (args?: Record<string, unknown>) => unknown> = {},
-) => {
+const fakeBridge = (responses: Record<string, Responder> = {}) => {
     const calls: string[] = []
     const bridge: TauriBridge = {
         invoke: async <T>(command: string, args?: Record<string, unknown>) => {
@@ -57,7 +58,7 @@ const reasonOf = async (promise: Promise<unknown>) => {
     return (error as DesktopUpdateError).reason
 }
 
-describe('desktop updater', () => {
+describe('desktop updater: rules', () => {
     it('does nothing outside the desktop app', async () => {
         const { bridge, calls } = fakeBridge()
         const updater = updaterWith(bridge, { isDesktop: () => false })
@@ -66,26 +67,25 @@ describe('desktop updater', () => {
         expect(calls).toEqual([])
     })
 
-    it('Local-Only mode blocks checks and downloads but not installing a downloaded bundle', async () => {
-        const { bridge, calls } = fakeBridge()
-        const updater = updaterWith(bridge, { isLocalOnly: () => true })
-        expect(await reasonOf(updater.check())).toBe('local-only')
-        expect(await reasonOf(updater.download(() => undefined))).toBe('local-only')
-        await updater.installAndRestart()
-        expect(calls).toEqual(['update_install'])
-    })
+    it.each([
+        ['Local-Only mode', { isLocalOnly: () => true }, 'local-only'],
+        ['offline', { isOnline: () => false }, 'offline'],
+    ] as const)(
+        '%s blocks checks and downloads but not installing a downloaded bundle',
+        async (_label, overrides, reason) => {
+            const { bridge, calls } = fakeBridge()
+            const updater = updaterWith(bridge, overrides)
+            expect(await reasonOf(updater.check())).toBe(reason)
+            expect(await reasonOf(updater.download())).toBe(reason)
+            await updater.installAndRestart()
+            expect(calls).toEqual(['update_install'])
+        },
+    )
 
-    it('reports an available update or none', async () => {
-        const available = fakeBridge({ update_check: () => INFO })
-        expect(await updaterWith(available.bridge).check()).toEqual(INFO)
-        const none = fakeBridge({ update_check: () => null })
-        expect(await updaterWith(none.bridge).check()).toBeNull()
-    })
-
-    it('runs one step at a time', async () => {
+    it('runs one step at a time, and the snapshot names the running step', async () => {
         let release: (value: unknown) => void = () => undefined
         let checks = 0
-        const { bridge, calls } = fakeBridge({
+        const { bridge } = fakeBridge({
             update_check: () => {
                 checks += 1
                 return checks === 1 ? new Promise((resolve) => (release = resolve)) : null
@@ -93,16 +93,76 @@ describe('desktop updater', () => {
         })
         const updater = updaterWith(bridge)
         const first = updater.check()
-        await vi.waitFor(() => expect(calls).toEqual(['update_check']))
-        expect(await reasonOf(updater.download(() => undefined))).toBe('busy')
+        await vi.waitFor(() => expect(updater.getSnapshot().operation).toBe('checking'))
+        expect(await reasonOf(updater.download())).toBe('busy')
         release(INFO)
         await expect(first).resolves.toEqual(INFO)
-        // Released after the first step finished.
+        expect(updater.getSnapshot().operation).toBe('idle')
         await expect(updater.check()).resolves.toBeNull()
+        expect(updater.getSnapshot().upToDate).toBe(true)
     })
 
-    it('forwards download progress and nothing else', async () => {
+    it('a command error is a failed step with the native message, shown in the snapshot', async () => {
         const { bridge } = fakeBridge({
+            update_check: () => INFO,
+            update_download: () => Promise.reject('signature verification failed'),
+        })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        expect(await reasonOf(updater.download())).toBe('failed')
+        expect(updater.getSnapshot().error).toEqual({
+            reason: 'failed',
+            message: 'signature verification failed',
+        })
+        // The stage still says what can be retried.
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'available', info: INFO })
+    })
+
+    it('maps the native Local-Only refusal to its own reason', async () => {
+        const { bridge } = fakeBridge({
+            update_check: () =>
+                Promise.reject('Local-only mode is on; the update server is not contacted'),
+        })
+        expect(await reasonOf(updaterWith(bridge).check())).toBe('local-only')
+    })
+})
+
+describe('desktop updater: one shared state for every viewer', () => {
+    it('keeps the stage for the launch; a later check of the same version keeps the download', async () => {
+        let next: DesktopUpdateInfo | null = INFO
+        const { bridge } = fakeBridge({ update_check: () => next })
+        const updater = updaterWith(bridge)
+        expect(updater.getSnapshot().stage).toBeNull()
+        await updater.check()
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'available', info: INFO })
+        await updater.download()
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'ready', info: INFO })
+        await updater.check({ background: true })
+        expect(updater.getSnapshot().stage?.kind).toBe('ready')
+        next = NEWER
+        await updater.check()
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'available', info: NEWER })
+        next = null
+        await updater.check()
+        expect(updater.getSnapshot().stage).toBeNull()
+    })
+
+    it('a startup check that finds a newer release between check and download moves everyone to it', async () => {
+        // CodeRabbit on #878: the card used to keep release A while the shared stage
+        // had moved to B.
+        let next: DesktopUpdateInfo = INFO
+        const { bridge } = fakeBridge({ update_check: () => next })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        next = NEWER
+        await updater.check({ background: true })
+        await updater.download()
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'ready', info: NEWER })
+    })
+
+    it('publishes download progress to subscribers and clears it when the step ends', async () => {
+        const { bridge } = fakeBridge({
+            update_check: () => INFO,
             update_download: (args) => {
                 const channel = args?.onEvent as { onMessage: (message: unknown) => void }
                 channel.onMessage({ event: 'progress', data: { downloaded: 10, total: 40 } })
@@ -110,26 +170,93 @@ describe('desktop updater', () => {
                 channel.onMessage({ event: 'finished' })
             },
         })
-        const progress: unknown[] = []
-        await updaterWith(bridge).download((step) => progress.push(step))
-        expect(progress).toEqual([
+        const updater = updaterWith(bridge)
+        await updater.check()
+        const seen: unknown[] = []
+        let last: unknown = null
+        const unsubscribe = updater.subscribe(() => {
+            // Subscribers hear every change (stage too); count each progress value once.
+            const { progress } = updater.getSnapshot()
+            if (progress && progress !== last) seen.push(progress)
+            last = progress
+        })
+        await updater.download()
+        unsubscribe()
+        expect(seen).toEqual([
             { downloaded: 10, total: 40 },
             { downloaded: 40, total: 40 },
         ])
+        expect(updater.getSnapshot().progress).toBeNull()
     })
 
-    it('a command error is a failed step with the native message', async () => {
+    it('a failed background check stays out of the snapshot', async () => {
+        const { bridge } = fakeBridge({ update_check: () => Promise.reject('timed out') })
+        const updater = updaterWith(bridge)
+        expect(await reasonOf(updater.check({ background: true }))).toBe('failed')
+        expect(updater.getSnapshot().error).toBeNull()
+    })
+})
+
+describe('desktop updater: stopping a running step', () => {
+    it('Local-Only switched on during a check stops it, and the stage it had stays', async () => {
+        // CodeAnt on #878: a real overlap -- the check is still waiting when the mode
+        // turns on, and the native mirror aborts exactly that request.
+        let rejectPending: (reason: unknown) => void = () => undefined
+        let checks = 0
         const { bridge } = fakeBridge({
-            update_download: () => Promise.reject('signature verification failed'),
+            update_check: () => {
+                checks += 1
+                if (checks === 1) return INFO
+                return new Promise((_resolve, reject) => (rejectPending = reject))
+            },
+            update_set_local_only: (args) => {
+                if (args?.enabled === true) rejectPending('update request cancelled')
+            },
         })
-        const error = await updaterWith(bridge)
-            .download(() => undefined)
-            .catch((caught: unknown) => caught)
-        expect(error).toBeInstanceOf(DesktopUpdateError)
-        expect((error as DesktopUpdateError).reason).toBe('failed')
-        expect((error as DesktopUpdateError).message).toBe('signature verification failed')
+        const updater = updaterWith(bridge)
+        await updater.check()
+        const pending = updater.check()
+        await vi.waitFor(() => expect(checks).toBe(2))
+        await syncNativeLocalOnly(true, async () => bridge)
+        expect(await reasonOf(pending)).toBe('cancelled')
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'available', info: INFO })
+        expect(updater.getSnapshot().operation).toBe('idle')
     })
 
+    it('Cancel reaches a running download past the one-step guard', async () => {
+        let rejectPending: (reason: unknown) => void = () => undefined
+        const { bridge, calls } = fakeBridge({
+            update_check: () => INFO,
+            update_download: () => new Promise((_resolve, reject) => (rejectPending = reject)),
+            update_cancel: () => {
+                rejectPending('update request cancelled')
+                return true
+            },
+        })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        const download = updater.download()
+        await vi.waitFor(() => expect(updater.getSnapshot().operation).toBe('downloading'))
+        await expect(updater.cancelDownload()).resolves.toBe(true)
+        expect(await reasonOf(download)).toBe('cancelled')
+        expect(calls).toContain('update_cancel')
+        expect(updater.getSnapshot().stage).toEqual({ kind: 'available', info: INFO })
+    })
+
+    it('tells update.rs about Local-Only mode', async () => {
+        const seen: unknown[] = []
+        const { bridge } = fakeBridge({
+            update_set_local_only: (args) => {
+                seen.push(args)
+            },
+        })
+        await syncNativeLocalOnly(true, async () => bridge)
+        await syncNativeLocalOnly(false, async () => bridge)
+        expect(seen).toEqual([{ enabled: true }, { enabled: false }])
+    })
+})
+
+describe('desktop updater: save before install', () => {
     it('installs only after the latest changes were saved', async () => {
         const order: string[] = []
         const { bridge, calls } = fakeBridge({ update_install: () => order.push('install') })
@@ -150,116 +277,19 @@ describe('desktop updater', () => {
                 throw new Error('QuotaExceededError')
             },
         ],
+        ['is not registered', undefined],
     ])('never installs when the save %s', async (_label, flush) => {
         const { bridge, calls } = fakeBridge()
-        const updater = updaterWith(bridge, { getFlush: () => flush as PersistFlush })
+        const updater = updaterWith(bridge, {
+            getFlush: () => flush as PersistFlush | undefined,
+        })
         expect(await reasonOf(updater.installAndRestart())).toBe('not-saved')
-        expect(calls).toEqual([])
-    })
-
-    it('never installs when no save function is registered', async () => {
-        const { bridge, calls } = fakeBridge()
-        const updater = updaterWith(bridge, { getFlush: () => undefined })
-        expect(await reasonOf(updater.installAndRestart())).toBe('not-saved')
+        expect(updater.getSnapshot().error?.reason).toBe('not-saved')
         expect(calls).toEqual([])
     })
 })
 
-describe('desktop updater: review fixes on #878', () => {
-    it('offline blocks checks and downloads but not installing a downloaded bundle', async () => {
-        const { bridge, calls } = fakeBridge()
-        const updater = updaterWith(bridge, { isOnline: () => false })
-        expect(await reasonOf(updater.check())).toBe('offline')
-        expect(await reasonOf(updater.download(() => undefined))).toBe('offline')
-        await updater.installAndRestart()
-        expect(calls).toEqual(['update_install'])
-    })
-
-    it('remembers the stage for the launch, and a later check of the same version keeps the download', async () => {
-        let next: DesktopUpdateInfo | null = INFO
-        const { bridge } = fakeBridge({ update_check: () => next })
-        const updater = updaterWith(bridge)
-        expect(updater.currentStage()).toBeNull()
-        await updater.check()
-        expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
-        await updater.download(() => undefined)
-        expect(updater.currentStage()).toEqual({ kind: 'ready', info: INFO })
-        // The startup check after a manual download (Codex and CodeRabbit on #878).
-        await updater.check()
-        expect(updater.currentStage()?.kind).toBe('ready')
-        next = { ...INFO, version: '1.12.1' }
-        await updater.check()
-        expect(updater.currentStage()).toEqual({ kind: 'available', info: next })
-        next = null
-        await updater.check()
-        expect(updater.currentStage()).toBeNull()
-    })
-
-    it('a failed or cancelled download leaves the update available', async () => {
-        const { bridge } = fakeBridge({
-            update_check: () => INFO,
-            update_download: () => Promise.reject('update request cancelled'),
-        })
-        const updater = updaterWith(bridge)
-        await updater.check()
-        expect(await reasonOf(updater.download(() => undefined))).toBe('cancelled')
-        expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
-    })
-
-    it('a check stopped by Local-Only is cancelled and keeps the stage it had', async () => {
-        // Codex on #878: switching Local-Only on aborts a running check, not only a download.
-        let checks = 0
-        const { bridge } = fakeBridge({
-            update_check: () => {
-                checks += 1
-                return checks === 1 ? INFO : Promise.reject('update request cancelled')
-            },
-        })
-        const updater = updaterWith(bridge)
-        await updater.check()
-        expect(await reasonOf(updater.check())).toBe('cancelled')
-        expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
-    })
-
-    it('maps the native Local-Only refusal to its own reason', async () => {
-        const { bridge } = fakeBridge({
-            update_check: () =>
-                Promise.reject('Local-only mode is on; the update server is not contacted'),
-        })
-        expect(await reasonOf(updaterWith(bridge).check())).toBe('local-only')
-    })
-
-    it('cancel reaches a running download past the one-step guard', async () => {
-        let finish: (value: unknown) => void = () => undefined
-        const { bridge, calls } = fakeBridge({
-            update_check: () => INFO,
-            update_download: () => new Promise((resolve) => (finish = resolve)),
-            update_cancel: () => true,
-        })
-        const updater = updaterWith(bridge)
-        await updater.check()
-        const download = updater.download(() => undefined)
-        await vi.waitFor(() => expect(calls).toContain('update_download'))
-        await expect(updater.cancelDownload()).resolves.toBe(true)
-        expect(calls).toContain('update_cancel')
-        finish(undefined)
-        await download
-    })
-
-    it('tells update.rs about Local-Only mode', async () => {
-        const seen: unknown[] = []
-        const { bridge } = fakeBridge({
-            update_set_local_only: (args) => {
-                seen.push(args)
-            },
-        })
-        await syncNativeLocalOnly(true, async () => bridge)
-        await syncNativeLocalOnly(false, async () => bridge)
-        expect(seen).toEqual([{ enabled: true }, { enabled: false }])
-    })
-})
-
-describe('save until the state settles (CodeAnt on #878)', () => {
+describe('save until the state settles (CodeAnt and CodeRabbit on #878)', () => {
     it('saves once when nothing changes during the save', async () => {
         const state = { value: 1 }
         const flush = vi.fn(async () => true)
@@ -277,17 +307,25 @@ describe('save until the state settles (CodeAnt on #878)', () => {
         expect(flush).toHaveBeenCalledTimes(2)
     })
 
-    it('stops after the last round for a store that never settles, and fails on a failed save', async () => {
+    it('for a store that never settles a quit accepts the last save and an install refuses', async () => {
         const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
         let tick = 0
         const flush = vi.fn(async () => {
             tick += 1
             return true
         })
-        await expect(flushUntilStable(flush, () => ({ tick }), 3)()).resolves.toBe(true)
+        const churn = () => ({ tick })
+        await expect(flushUntilStable(flush, churn)()).resolves.toBe(true)
         expect(flush).toHaveBeenCalledTimes(3)
-        debug.mockRestore()
 
+        flush.mockClear()
+        const install = flushUntilStable(flush, churn, { maxRounds: 5, whenUnsettled: 'refuse' })
+        await expect(install()).resolves.toBe(false)
+        expect(flush).toHaveBeenCalledTimes(5)
+        debug.mockRestore()
+    })
+
+    it('a failed save is never reported as saved', async () => {
         const failing = vi.fn(async () => false)
         await expect(flushUntilStable(failing, () => ({}))()).resolves.toBe(false)
         expect(failing).toHaveBeenCalledTimes(1)
@@ -303,7 +341,10 @@ describe('startup update check', () => {
     })
 
     const deps = (overrides: Record<string, unknown> = {}) => {
-        const check = vi.fn(async () => INFO as DesktopUpdateInfo | null)
+        const check = vi.fn(
+            async (_options?: { background?: boolean | undefined }) =>
+                INFO as DesktopUpdateInfo | null,
+        )
         const onAvailable = vi.fn()
         return {
             check,
@@ -320,12 +361,13 @@ describe('startup update check', () => {
         }
     }
 
-    it('checks once after the delay and reports an update', async () => {
+    it('checks once in the background after the delay and reports an update', async () => {
         const { check, onAvailable, deps: options } = deps()
         scheduleStartupUpdateCheck(options)
         expect(check).not.toHaveBeenCalled()
         await vi.advanceTimersByTimeAsync(1000)
         expect(check).toHaveBeenCalledTimes(1)
+        expect(check).toHaveBeenCalledWith({ background: true })
         expect(onAvailable).toHaveBeenCalledWith(INFO)
     })
 

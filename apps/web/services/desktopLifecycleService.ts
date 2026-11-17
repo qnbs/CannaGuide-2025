@@ -3,8 +3,8 @@
  * apps/desktop/src-tauri/src/{lifecycle,update}.rs.
  *
  * Quit: every user quit (tray, close button, Cmd+Q) emits `tauri://before-quit` and
- * waits; the app exits when `confirm_quit` arrives after the save, or after a timeout
- * for a frontend that never answers.
+ * waits; the app exits when `confirm_quit` arrives after the save, or after a 10 s
+ * fallback for a frontend that never answers.
  *
  * Update: Rust checks the release endpoint, downloads the bundle (tauri-plugin-updater
  * verifies its minisign signature before returning it) and installs it. This module
@@ -17,11 +17,14 @@
  *   and turning it on stops a running check or download, not only the next request.
  * - One step at a time (the Rust side enforces the same); Cancel stops a check or a
  *   download.
- * - Persisted state must be saved before the install. A save that fails or reports
- *   "not saved" stops it: on Windows the installer ends the process from inside the
- *   install command, so there is no later chance to save.
- * - The stage reached (available, downloaded) lives here for the whole launch, so
- *   leaving Settings > About and coming back does not lose a finished download.
+ * - Persisted state must be saved before the install, and the save must settle: an
+ *   install never runs while an edit is still unsaved (see flushUntilStable). On
+ *   Windows the installer ends the process from inside the install command, so there
+ *   is no later chance to save.
+ * - The updater is the single source of truth for the launch: stage, running step,
+ *   progress and the last error live here, and the card subscribes to them. Leaving
+ *   Settings > About and coming back, or a startup check finding a newer release
+ *   while the card is open, therefore never leaves the card on a stale copy.
  */
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { platform } from '@/services/platformService'
@@ -42,6 +45,21 @@ export interface DownloadProgress {
 export type DesktopUpdateStage =
     { kind: 'available'; info: DesktopUpdateInfo } | { kind: 'ready'; info: DesktopUpdateInfo }
 
+export type DesktopUpdateOperation = 'idle' | 'checking' | 'downloading' | 'installing'
+
+export type DesktopUpdateFailure =
+    'not-desktop' | 'local-only' | 'offline' | 'busy' | 'not-saved' | 'cancelled' | 'failed'
+
+export interface DesktopUpdateSnapshot {
+    stage: DesktopUpdateStage | null
+    operation: DesktopUpdateOperation
+    progress: DownloadProgress | null
+    /** The last finished check found no newer version. */
+    upToDate: boolean
+    /** The last failed step that the user started (background checks stay quiet). */
+    error: { reason: DesktopUpdateFailure; message: string } | null
+}
+
 /** Mirrors `DownloadEvent` in update.rs (serde: tag = "event", content = "data"). */
 type DownloadEvent = { event: 'progress'; data: DownloadProgress } | { event: 'finished' }
 
@@ -49,9 +67,6 @@ export interface TauriBridge {
     invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>
     channel: <T>(onMessage: (message: T) => void) => unknown
 }
-
-export type DesktopUpdateFailure =
-    'not-desktop' | 'local-only' | 'offline' | 'busy' | 'not-saved' | 'cancelled' | 'failed'
 
 /** The exact error texts of update.rs, mapped to the reasons the card explains. */
 const NATIVE_REASONS: Readonly<Record<string, DesktopUpdateFailure>> = {
@@ -73,13 +88,14 @@ export class DesktopUpdateError extends Error {
 export type PersistFlush = () => Promise<boolean>
 
 export interface DesktopUpdater {
-    check: () => Promise<DesktopUpdateInfo | null>
-    download: (onProgress: (progress: DownloadProgress) => void) => Promise<void>
+    /** `background`: a failure is not shown (the startup check). */
+    check: (options?: { background?: boolean | undefined }) => Promise<DesktopUpdateInfo | null>
+    download: () => Promise<void>
     installAndRestart: () => Promise<void>
     /** Stops the running check or download; resolves true if one was running. */
     cancelDownload: () => Promise<boolean>
-    /** The stage this launch reached, for a card that was mounted again. */
-    currentStage: () => DesktopUpdateStage | null
+    subscribe: (listener: () => void) => () => void
+    getSnapshot: () => DesktopUpdateSnapshot
 }
 
 export interface DesktopUpdaterDeps {
@@ -93,20 +109,47 @@ export interface DesktopUpdaterDeps {
 const messageOf = (error: unknown): string =>
     error instanceof Error ? error.message : typeof error === 'string' ? error : String(error)
 
-export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater => {
-    let running = false
-    let stage: DesktopUpdateStage | null = null
+const INITIAL_SNAPSHOT: DesktopUpdateSnapshot = {
+    stage: null,
+    operation: 'idle',
+    progress: null,
+    upToDate: false,
+    error: null,
+}
 
-    const run = async <T>(step: (bridge: TauriBridge) => Promise<T>): Promise<T> => {
+export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater => {
+    let snapshot = INITIAL_SNAPSHOT
+    const listeners = new Set<() => void>()
+    const update = (patch: Partial<DesktopUpdateSnapshot>): void => {
+        snapshot = { ...snapshot, ...patch }
+        for (const listener of listeners) listener()
+    }
+
+    const run = async <T>(
+        operation: Exclude<DesktopUpdateOperation, 'idle'>,
+        step: (bridge: TauriBridge) => Promise<T>,
+        showFailure = true,
+    ): Promise<T> => {
         if (!deps.isDesktop()) {
             throw new DesktopUpdateError('not-desktop', 'updates exist only in the desktop app')
         }
-        if (running) throw new DesktopUpdateError('busy', 'another update step is still running')
-        running = true
+        if (snapshot.operation !== 'idle') {
+            throw new DesktopUpdateError('busy', 'another update step is still running')
+        }
+        update({ operation, progress: null, ...(showFailure ? { error: null } : {}) })
         try {
             return await step(await deps.loadBridge())
+        } catch (error) {
+            const failure =
+                error instanceof DesktopUpdateError
+                    ? error
+                    : new DesktopUpdateError('failed', messageOf(error), error)
+            if (showFailure) {
+                update({ error: { reason: failure.reason, message: failure.message } })
+            }
+            throw failure
         } finally {
-            running = false
+            update({ operation: 'idle', progress: null })
         }
     }
 
@@ -137,29 +180,40 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
     }
 
     return {
-        check: () =>
-            run(async (bridge) => {
-                refuseNetwork()
-                const info = await invoke<DesktopUpdateInfo | null>(bridge, 'update_check')
-                // update.rs keeps the downloaded bundle for the same version, so a later
-                // check (the startup one) must not send a downloaded update back to
-                // "available".
-                const keepsDownload =
-                    stage?.kind === 'ready' && info !== null && info.version === stage.info.version
-                stage = info ? { kind: keepsDownload ? 'ready' : 'available', info } : null
-                return info
-            }),
-        download: (onProgress) =>
-            run(async (bridge) => {
+        check: (options) =>
+            run(
+                'checking',
+                async (bridge) => {
+                    refuseNetwork()
+                    const info = await invoke<DesktopUpdateInfo | null>(bridge, 'update_check')
+                    // update.rs keeps the downloaded bundle for the same version, so a later
+                    // check (the startup one) must not send a downloaded update back to
+                    // "available". A different version replaces the stage for every viewer.
+                    const current = snapshot.stage
+                    const keepsDownload =
+                        current?.kind === 'ready' &&
+                        info !== null &&
+                        info.version === current.info.version
+                    update({
+                        stage: info ? { kind: keepsDownload ? 'ready' : 'available', info } : null,
+                        upToDate: info === null,
+                    })
+                    return info
+                },
+                options?.background !== true,
+            ),
+        download: () =>
+            run('downloading', async (bridge) => {
                 refuseNetwork()
                 const onEvent = bridge.channel<DownloadEvent>((message) => {
-                    if (message.event === 'progress') onProgress(message.data)
+                    if (message.event === 'progress') update({ progress: message.data })
                 })
                 await invoke<void>(bridge, 'update_download', { onEvent })
-                if (stage) stage = { kind: 'ready', info: stage.info }
+                const current = snapshot.stage
+                if (current) update({ stage: { kind: 'ready', info: current.info } })
             }),
         installAndRestart: () =>
-            run(async (bridge) => {
+            run('installing', async (bridge) => {
                 const flush = deps.getFlush()
                 let saved = false
                 try {
@@ -175,13 +229,19 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
                 }
                 await invoke<void>(bridge, 'update_install')
             }),
-        // Outside the one-step-at-a-time guard: it has to reach a running download.
+        // Outside the one-step-at-a-time guard: it has to reach a running step.
         cancelDownload: async () => {
             if (!deps.isDesktop()) return false
             const bridge = await deps.loadBridge()
             return invoke<boolean>(bridge, 'update_cancel')
         },
-        currentStage: () => stage,
+        subscribe: (listener) => {
+            listeners.add(listener)
+            return () => {
+                listeners.delete(listener)
+            }
+        },
+        getSnapshot: () => snapshot,
     }
 }
 
@@ -195,7 +255,7 @@ const loadTauriBridge = async (): Promise<TauriBridge> => {
 
 let registeredFlush: PersistFlush | undefined
 
-/** Called once after hydration; the quit and update paths save through it. */
+/** Called once after hydration; the update install saves through it. */
 export const registerPersistFlush = (flush: PersistFlush | undefined): void => {
     registeredFlush = flush
 }
@@ -210,8 +270,8 @@ export const desktopUpdater: DesktopUpdater = createDesktopUpdater({
 
 /**
  * Tells update.rs whether Local-Only mode is on. Rust then refuses checks and
- * downloads by itself and, when it turns on, stops a running check or download -- a second
- * layer behind the checks above, for a caller that forgot them.
+ * downloads by itself and, when it turns on, stops a running check or download -- a
+ * second layer behind the checks above, for a caller that forgot them.
  */
 export const syncNativeLocalOnly = async (
     enabled: boolean,
@@ -222,24 +282,40 @@ export const syncNativeLocalOnly = async (
     await bridge.invoke<void>('update_set_local_only', { enabled })
 }
 
+export interface FlushUntilStableOptions {
+    maxRounds?: number | undefined
+    /**
+     * What a store that is still changing after the last round means:
+     * - 'accept' (quit): report the last save. The app is closing and its fallback
+     *   ends it anyway; a store that never settles must not hold a quit open.
+     * - 'refuse' (install): report "not saved". An edit made after the last save
+     *   would be lost by the restart, so the install stops and the user retries; it
+     *   is refused, not blocked, so nothing waits forever.
+     */
+    whenUnsettled?: 'accept' | 'refuse' | undefined
+}
+
 /**
  * A save for quit and install. One flush saves the state as of its write slot; a
  * change made while that save waits (on the coordinator or the async simulation
  * step) only schedules a debounced save, which a quit or an install would cut off.
- * So it saves again while the state keeps changing, up to `maxRounds`. After that it
- * reports the last save's result: a store that never settles (a running timer) must
- * not block a quit or an update forever, and the last save is at most one round old.
+ * So it saves again while the state keeps changing, up to `maxRounds`.
  */
 export const flushUntilStable =
-    (flush: PersistFlush, getState: () => unknown, maxRounds = 3): PersistFlush =>
+    (
+        flush: PersistFlush,
+        getState: () => unknown,
+        options: FlushUntilStableOptions = {},
+    ): PersistFlush =>
     async () => {
+        const maxRounds = options.maxRounds ?? 3
         for (let round = 1; ; round += 1) {
             const before = getState()
             if (!(await flush())) return false
             if (getState() === before) return true
             if (round >= maxRounds) {
                 console.debug('[DesktopLifecycle] state still changing after the last save')
-                return true
+                return options.whenUnsettled !== 'refuse'
             }
         }
     }
@@ -267,7 +343,7 @@ export const scheduleStartupUpdateCheck = (deps: StartupCheckDeps): (() => void)
     const timer = setTimeout(() => {
         if (!allowed()) return
         deps.updater
-            .check()
+            .check({ background: true })
             .then((info) => {
                 if (info) deps.onAvailable(info)
             })

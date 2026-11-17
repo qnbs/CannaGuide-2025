@@ -74,7 +74,8 @@ export const initSentry = (): void => {
             // SDK v11 dropped `sendDefaultPii` and collects everything while
             // `dataCollection` is unset: user/IP, cookies, request and response
             // bodies, headers, query strings, local variables. Error reports here
-            // need none of it, so every category is off (#834).
+            // need none of it, so every category is off (#834). Session Replay is
+            // separate and stays masked below (GH #586).
             dataCollection: {
                 userInfo: false,
                 cookies: false,

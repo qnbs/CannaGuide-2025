@@ -14,6 +14,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **fix(privacy):** Move `@sentry/browser` and `@sentry/react` together to 11.12.0 in `@cannaguide/web` (#868, replaces #834). SDK v11 removes `sendDefaultPii` and collects everything while `dataCollection` is unset, so every `dataCollection` category is now off (user info and IP, cookies, headers, bodies, query strings, local variables). `traceLifecycle` stays `static`. Session Replay is unchanged: masked text and inputs, blocked media (GH #586). A test keeps both packages on the same major.
+
+- **fix(desktop):** Bump `tauri-plugin-updater` and `@tauri-apps/plugin-updater` to 2.14.1 (#866). The desktop lockfile now resolves `zip` 9.1.3 instead of 4.6.1 (GHSA-m665-v7pm-7grj and the `zip` <9 set, Dependabot alerts 161-163). Not reachable before: `zip` only extracts Windows updater bundles after the minisign signature check, and no release publishes a desktop installer.
+
 - **chore(deps):** Bump `@mlc-ai/web-llm` to 0.2.88 in `@cannaguide/ai-core` (#855 lane E, #827).
 
 - **chore(deps):** Bump build and test tooling (#855 lane D, #849/#850): turbo 2.11.11, Vite 8.3.8, `@vitejs/plugin-react` 6.3.0, rollup-plugin-visualizer 7.1.3, Playwright 1.65.0, Vitest 5.1.0, MSW 3.0.5, and related dev test helpers. Harness and `agent:doctor` accept lagging `@playwright/experimental-ct-react` when a bounded `playwright-core` override unifies typecheck and E2E (no `playwright` package override, so CT keeps 1.62.x runner APIs).

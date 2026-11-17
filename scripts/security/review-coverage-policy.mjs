@@ -44,7 +44,8 @@ function parseCodexReceipt(comment, headSha, pullNumber) {
     if (
         !isReviewBot(comment?.user, 'chatgpt-codex-connector[bot]') ||
         comment.issue_url !== `${API_ROOT}/issues/${pullNumber}`
-    ) return null
+    )
+        return null
     const body = comment?.body
     if (typeof body !== 'string') return null
 
@@ -79,6 +80,59 @@ function parseCodexReceipt(comment, headSha, pullNumber) {
         hasUnresolvedFindings: review.has_unresolved_findings,
         createdAt: comment.created_at,
         source: 'structured_issue_comment_receipt',
+    }
+}
+
+const CODERABBIT_LOGIN = 'coderabbitai[bot]'
+const CODERABBIT_SUMMARY_MARKER =
+    '<!-- This is an auto-generated comment: summarize by coderabbit.ai -->'
+const CODERABBIT_COVERAGE_PREFIX = '<!-- final_review_risk_coverage:'
+
+/**
+ * CodeRabbit records the last commit it reviewed in its summary comment. A review that
+ * finds nothing creates no GitHub review object, so without this marker a clean
+ * exact-head CodeRabbit review could never count. The marker must appear exactly once
+ * (a second copy, e.g. quoted from a PR description, fails closed), name the exact head
+ * as both source and covered commit, and say `reviewed`.
+ */
+function parseCodeRabbitReceipt(comment, headSha, pullNumber) {
+    if (
+        !isReviewBot(comment?.user, CODERABBIT_LOGIN) ||
+        comment.issue_url !== `${API_ROOT}/issues/${pullNumber}`
+    )
+        return null
+    const body = comment?.body
+    if (typeof body !== 'string') return null
+    if (
+        body.split(CODERABBIT_SUMMARY_MARKER).length !== 2 ||
+        body.split(CODERABBIT_COVERAGE_PREFIX).length !== 2
+    )
+        return null
+    const match = body.match(/<!-- final_review_risk_coverage:(\{[^\r\n]*\}) -->/)
+    if (!match) return null
+
+    let payload
+    try {
+        payload = JSON.parse(match[1])
+    } catch {
+        return null
+    }
+    if (
+        payload?.kind !== 'reviewed' ||
+        payload.coveredCommitId !== headSha ||
+        payload.sourceCommitId !== headSha ||
+        !SHA.test(payload.coveredCommitId)
+    ) {
+        return null
+    }
+    const observedAt = comment.updated_at ?? comment.created_at
+    if (!timestamp(observedAt)) return null
+    return {
+        provider: 'CodeRabbit',
+        login: CODERABBIT_LOGIN,
+        commitSha: payload.coveredCommitId,
+        createdAt: observedAt,
+        source: 'coverage_marker_issue_comment',
     }
 }
 
@@ -130,7 +184,12 @@ function unavailableFallback(request, pullNumber, headSha, qualifiedLogins, now)
     }
     const requestedAt = timestamp(request.requestedAt)
     const observedAt = timestamp(request.observedAt)
-    if (requestedAt === null || observedAt === null || observedAt < requestedAt || now < observedAt) {
+    if (
+        requestedAt === null ||
+        observedAt === null ||
+        observedAt < requestedAt ||
+        now < observedAt
+    ) {
         return false
     }
     const elapsed = now - requestedAt
@@ -169,7 +228,8 @@ export function evaluateReviewCoverage(evidence) {
             !REVIEWERS.has(login) ||
             review.commit_id !== headSha ||
             review.pull_request_url !== `${API_ROOT}/pulls/${pullNumber}`
-        ) continue
+        )
+            continue
         if (!isReviewBot(review.user, login)) continue
         const current = reviewsByLogin.get(login)
         if (!current || compareLatest(review, current, 'submitted_at') > 0) {
@@ -206,11 +266,34 @@ export function evaluateReviewCoverage(evidence) {
         )
         .sort((a, b) => compareLatest(a, b, 'created_at'))
         .at(-1)
-    const receipt = latestCodexMarker ? parseCodexReceipt(latestCodexMarker, headSha, pullNumber) : null
+    const receipt = latestCodexMarker
+        ? parseCodexReceipt(latestCodexMarker, headSha, pullNumber)
+        : null
+
+    // CodeRabbit edits its summary in place, so the latest edit is the current state.
+    // Pick the latest summary first and only then check its marker: a newer summary
+    // without a valid marker (rate limited, skipped, failed) voids an older marker.
+    const latestCodeRabbitSummary = (
+        Array.isArray(evidence.issueComments) ? evidence.issueComments : []
+    )
+        .filter(
+            (comment) =>
+                isReviewBot(comment?.user, CODERABBIT_LOGIN) &&
+                comment.issue_url === `${API_ROOT}/issues/${pullNumber}` &&
+                typeof comment.body === 'string' &&
+                comment.body.includes(CODERABBIT_SUMMARY_MARKER),
+        )
+        .sort((a, b) => compareLatest(a, b, 'updated_at'))
+        .at(-1)
+    const codeRabbitReceipt = latestCodeRabbitSummary
+        ? parseCodeRabbitReceipt(latestCodeRabbitSummary, headSha, pullNumber)
+        : null
 
     const qualified = new Map(formal)
-    if (receipt && !formal.has(receipt.login) && !blockedByDismissal.has(receipt.login)) {
-        qualified.set(receipt.login, receipt)
+    for (const issued of [receipt, codeRabbitReceipt]) {
+        if (issued && !formal.has(issued.login) && !blockedByDismissal.has(issued.login)) {
+            qualified.set(issued.login, issued)
+        }
     }
 
     const qualifiedLogins = new Set(qualified.keys())
@@ -229,7 +312,13 @@ export function evaluateReviewCoverage(evidence) {
         eligibleCount = qualifiedCount
         fallback =
             eligibleCount === 1 &&
-            unavailableFallback(evidence.secondReviewRequest, pullNumber, headSha, qualifiedLogins, now)
+            unavailableFallback(
+                evidence.secondReviewRequest,
+                pullNumber,
+                headSha,
+                qualifiedLogins,
+                now,
+            )
         requiredReviews = fallback ? 1 : 2
     }
     const satisfied = eligibleCount >= requiredReviews

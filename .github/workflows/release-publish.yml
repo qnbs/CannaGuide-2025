@@ -422,6 +422,12 @@ jobs:
     desktop:
         name: Desktop build
         needs: [build]
+        # This job hands the signing secrets to Desktop Build, so it carries its own
+        # main ref guard: a tag push, or a manual run from main only. `needs: build`
+        # alone is not a guard (check-workflow-credential-scope.mjs).
+        if: >-
+            github.event_name == 'push' ||
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         permissions:
             contents: read
         uses: ./.github/workflows/desktop-build.yml

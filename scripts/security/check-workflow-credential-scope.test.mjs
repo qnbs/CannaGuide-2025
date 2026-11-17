@@ -289,3 +289,69 @@ jobs:
 `
     assert.deepEqual(violationsInWorkflow('label.yml', text), [])
 })
+
+/** A release workflow whose `desktop` job passes signing secrets to a reusable workflow. */
+const callerWorkflow = ({ triggers, ifLine = '' }) => `
+on:
+${triggers}
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo build
+    desktop:
+        needs: [build]
+${ifLine}        uses: ./.github/workflows/desktop-build.yml
+        with:
+            ref: \${{ needs.build.outputs.commit }}
+        secrets:
+            TAURI_SIGNING_PRIVATE_KEY: \${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            APPLE_CERTIFICATE: \${{ secrets.APPLE_CERTIFICATE }}
+`
+
+const TAG_AND_DISPATCH = `    push:
+        tags: ['v*']
+    workflow_dispatch:
+        inputs:
+            ref:
+                type: string`
+
+test('a reusable-workflow caller that passes signing secrets needs its own main ref guard (#874)', () => {
+    const unguarded = violationsInWorkflow(
+        'release.yml',
+        callerWorkflow({ triggers: TAG_AND_DISPATCH }),
+    )
+    assert.equal(unguarded.length, 1)
+    assert.match(
+        unguarded[0],
+        /release\.yml job desktop reads TAURI_SIGNING_PRIVATE_KEY, APPLE_CERTIFICATE from workflow_dispatch without a main ref guard/,
+    )
+
+    const guarded = callerWorkflow({
+        triggers: TAG_AND_DISPATCH,
+        ifLine: `        if: >-
+            github.event_name == 'push' ||
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+`,
+    })
+    assert.deepEqual(violationsInWorkflow('release.yml', guarded), [])
+})
+
+test('a tag-push-only caller may pass signing secrets without a dispatch guard', () => {
+    const tagOnly = callerWorkflow({ triggers: `    push:\n        tags: ['v*']` })
+    assert.deepEqual(violationsInWorkflow('release.yml', tagOnly), [])
+})
+
+test('a dispatch condition without the ref, or on a dispatch input, is no guard', () => {
+    for (const ifLine of [
+        `        if: github.event_name == 'workflow_dispatch'\n`,
+        `        if: github.event_name == 'push' || github.event.inputs.ref == 'refs/heads/main'\n`,
+        `        if: github.event_name == 'push' || inputs.ref == 'main'\n`,
+    ]) {
+        const problems = violationsInWorkflow(
+            'release.yml',
+            callerWorkflow({ triggers: TAG_AND_DISPATCH, ifLine }),
+        )
+        assert.match(problems.join('\n'), /without a main ref guard/, ifLine)
+    }
+})

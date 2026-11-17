@@ -17,7 +17,8 @@ on:
 
 concurrency:
     group: release-publish-${{ github.event.inputs.tag || github.ref_name }}
-    cancel-in-progress: true
+    # Queue a second run for the same tag; never cancel one that may be uploading.
+    cancel-in-progress: false
 
 permissions:
     contents: read
@@ -41,6 +42,7 @@ jobs:
             (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         outputs:
             tag: ${{ steps.tag.outputs.name }}
+            commit: ${{ steps.commit.outputs.sha }}
             tarball-name: ${{ steps.tarball.outputs.name }}
             sha256: ${{ steps.tarball.outputs.sha256 }}
         steps:
@@ -252,6 +254,15 @@ jobs:
 
                   echo "[OK] Tag, root package.json and apps/web/package.json all agree on ${PKG_VERSION}."
 
+            # The desktop app shipped as 0.1.0 while releases were 1.x: installers and
+            # the updater disagreed with the tag. Desktop package.json, Tauri config,
+            # Cargo.toml and Cargo.lock must all carry the tag's version.
+            - name: Verify the desktop app carries the release version
+              env:
+                  TAG: ${{ steps.tag.outputs.name }}
+              shell: bash
+              run: node scripts/release/check-desktop-version.mjs --tag "${TAG}"
+
             # -- CI Status guard ---------------------------------------
             # Release Publish and Release Gate both fire on the same tag push and
             # run concurrently; Actions has no cross-workflow `needs:`. Both this
@@ -401,6 +412,34 @@ jobs:
                   retention-days: 5
 
     # -----------------------------------------------------------------
+    # Job 2: Desktop -- the four Tauri targets with signed updater bundles,
+    # built from the resolved release commit, then verified fail-closed
+    # (desktop-build.yml `verify`: every target, installer and updater
+    # bundle, every signature against the tauri.conf.json pubkey, the tag's
+    # version) into the `desktop-release` artifact with latest.json and
+    # SHA256SUMS. Runs in dry-run too, so a dispatch qualifies it.
+    # -----------------------------------------------------------------
+    desktop:
+        name: Desktop build
+        needs: [build]
+        permissions:
+            contents: read
+        uses: ./.github/workflows/desktop-build.yml
+        with:
+            ref: ${{ needs.build.outputs.commit }}
+            tag: ${{ needs.build.outputs.tag }}
+        secrets:
+            TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+            TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+            WINDOWS_CERTIFICATE_THUMBPRINT: ${{ secrets.WINDOWS_CERTIFICATE_THUMBPRINT }}
+            APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+            APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+            APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+            APPLE_ID: ${{ secrets.APPLE_ID }}
+            APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+            APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+
+    # -----------------------------------------------------------------
     # Job 2: Release -- attestations (SBOM + build provenance) + publish
     # NOTE: slsa-framework/slsa-github-generator L3 removed -- its
     #   internal Go build fails on ubuntu-24.04 runners (Apr 2026).
@@ -411,7 +450,7 @@ jobs:
         name: Publish Release
         runs-on: ubuntu-latest
         timeout-minutes: 10
-        needs: [build]
+        needs: [build, desktop]
         if: >-
             (github.event_name == 'push' ||
             (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')) &&
@@ -458,6 +497,17 @@ jobs:
               with:
                   name: release-sbom
 
+            - name: Download verified desktop assets
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+              with:
+                  name: desktop-release
+                  path: desktop-release
+
+            - name: Generate desktop build provenance attestation
+              uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+              with:
+                  subject-path: desktop-release/*
+
             - name: Generate SBOM attestation
               uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
               with:
@@ -502,10 +552,17 @@ jobs:
 
                   ### Install
                   This is a Progressive Web App. Visit https://qnbs.github.io/CannaGuide-2025/
+
+                  ### Desktop (Tauri)
+                  Installers for Windows (MSI, NSIS), Linux (AppImage, deb) and macOS (dmg,
+                  Apple silicon and Intel). \`latest.json\` drives the in-app updater; every
+                  updater bundle is minisign-signed and was verified before this draft was
+                  created. \`SHA256SUMS\` lists all desktop assets. Platform code signing is
+                  applied only where certificates are provisioned.
                   "
 
                   # Collect release assets
-                  ASSETS=("${TARBALL}" "cannaguide-sbom.cyclonedx.json")
+                  ASSETS=("${TARBALL}" "cannaguide-sbom.cyclonedx.json" desktop-release/*)
                   REPO="${{ github.repository }}"
 
                   # Determine prerelease flag
@@ -514,22 +571,19 @@ jobs:
                     PRE_FLAG="--prerelease"
                   fi
 
-                  # Create or update release
+                  # Never overwrite: an existing release (published or draft) for this tag
+                  # stops the run. A stale draft from a failed run is deleted by hand.
                   # --verify-tag: never auto-create tags (tag must exist from build job)
-                  # --clobber: overwrite existing assets on retry
+                  # --draft: nothing is public until the owner publishes the draft.
                   if gh release view "${TAG}" --repo "${REPO}" > /dev/null 2>&1; then
-                    echo "[INFO] Release ${TAG} exists -- updating notes and uploading assets"
-                    gh release edit "${TAG}" --repo "${REPO}" \
-                      --title "CannaGuide ${TAG}" \
-                      --notes "${NOTES}" ${PRE_FLAG}
-                    gh release upload "${TAG}" "${ASSETS[@]}" --repo "${REPO}" --clobber
-                  else
-                    echo "[INFO] Creating new release ${TAG}"
-                    gh release create "${TAG}" "${ASSETS[@]}" \
-                      --repo "${REPO}" \
-                      --title "CannaGuide ${TAG}" \
-                      --notes "${NOTES}" \
-                      --verify-tag ${PRE_FLAG}
+                    echo "[FAIL] Release ${TAG} already exists. Nothing was changed."
+                    echo "[FAIL] Delete a stale draft by hand, then re-run this workflow."
+                    exit 1
                   fi
+                  gh release create "${TAG}" "${ASSETS[@]}" \
+                    --repo "${REPO}" \
+                    --title "CannaGuide ${TAG}" \
+                    --notes "${NOTES}" \
+                    --draft --verify-tag ${PRE_FLAG}
 
-                  echo "[OK] Release ${TAG} published with build provenance + SBOM"
+                  echo "[OK] Draft release ${TAG} created with ${#ASSETS[@]} assets. Review and publish it by hand."

@@ -36,7 +36,11 @@ examples in other documents do not override this procedure.
 4. After the concrete release decision, use the existing protected Release Publish path
    described below. A missing permission, secret or tag-protection authorization is a blocker;
    do not alter rulesets or credentials as an automatic fallback.
-5. Verify the published assets and attestations against the selected commit, then inspect
+5. Release Publish creates a **draft** release only. Review the draft (asset list,
+   `SHA256SUMS`, `latest.json` URLs, attestations) and publish it by hand; nothing is public
+   before that, and the desktop updater does not see a draft (its endpoint is
+   `releases/latest/download/latest.json`).
+6. Verify the published assets and attestations against the selected commit, then inspect
    actual deployed `version.json` bytes and platform-specific evidence. Do not rewrite
    existing release assets or tags to repair a failed publication.
 
@@ -50,10 +54,14 @@ examples in other documents do not override this procedure.
 
 ## Version Locations
 
-Both files **must** have the same version:
+All of these **must** carry the same version. `node scripts/release/check-desktop-version.mjs`
+checks the desktop files in CI and, with `--tag`, again in Release Publish:
 
 - `package.json` (root workspace)
 - `apps/web/package.json`
+- `apps/desktop/package.json`
+- `apps/desktop/src-tauri/tauri.conf.json` (`version`: installer and updater version)
+- `apps/desktop/src-tauri/Cargo.toml` and its `cannaguide-desktop` entry in `Cargo.lock`
 
 ## Supply-Chain Verification
 
@@ -140,13 +148,35 @@ tag that is already on the remote.
 
 **Workflow flow:**
 
-1. `git push --tags` triggers both `release-gate.yml` and
-   `release-publish.yml` in parallel (tag `v*`)
-2. Release Gate runs pre-flight + tests + build verify
-   (informational -- does not block publish)
-3. Release Publish build job creates tarball + CycloneDX SBOM
-4. Release Publish release job generates attestations + publishes
-   GitHub Release
+1. `git push --tags` triggers `release-gate.yml` and `release-publish.yml`
+   (tag `v*`). `desktop-build.yml` no longer runs on its own for a tag; Release
+   Publish calls it, so the two cannot race.
+2. Release Gate runs pre-flight + tests + build verify; the build job waits for it
+   and for CI Status on the resolved tag commit.
+3. Release Publish `build` checks the tag against every version location, then
+   creates the tarball + CycloneDX SBOM.
+4. `desktop` calls `desktop-build.yml` for the resolved commit: Windows (MSI, NSIS),
+   Linux (AppImage, deb) and macOS (dmg, Apple silicon and Intel), with
+   minisign-signed updater bundles (`createUpdaterArtifacts`). Its `verify` job runs
+   `scripts/release/desktop-release-manifest.mjs`, which **fails closed** when a target,
+   installer or updater bundle is missing, an updater signature is missing or does not
+   verify against the `tauri.conf.json` pubkey, or an installer carries another
+   version. It writes normalized asset names, `latest.json` and `SHA256SUMS`.
+5. `release` attests the tarball and the desktop assets and creates a **draft**
+   release with all of them. An existing release for the tag (published or draft)
+   stops the run; nothing is overwritten (`--clobber` is gone). A stale draft from a
+   failed run is deleted by hand before a re-run.
+
+**Desktop qualification without a release:** run Desktop Build manually on `main`.
+It builds all four targets and runs the same verification, uploading
+`desktop-release` (installers, updater bundles, signatures, `latest.json`,
+`SHA256SUMS`) as an Actions artifact. A Release Publish dry-run does the same for an
+existing tag's commit.
+
+**Platform signing:** the updater signature (`TAURI_SIGNING_PRIVATE_KEY`) is
+required. Windows Authenticode and macOS Developer ID / notarization run only where
+the certificates are provisioned; unsigned installers trigger OS warnings and are
+documented as such in the release notes.
 
 **CI Status Guard:** The build job queries the GitHub Checks API and
 requires the CI Status check on the resolved tag commit to be

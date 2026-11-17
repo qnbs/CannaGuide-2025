@@ -15,6 +15,14 @@
             "expiry": "2026-12-15",
             "reachability": "Dev-only via @lhci/cli 0.15.1 -> lighthouse 12.6.1 -> puppeteer-core 24.40.0 -> @puppeteer/browsers 2.13.0 -> extract-zip 2.0.1. Reached only when Lighthouse runs (the CI Lighthouse job, or `lighthouse:ci` run by hand); not imported by the browser PWA or the desktop shell. Exploitation needs a malicious zip consumed by extract-zip during a browser download.",
             "reason": "Renewed 2026-11-04 after a re-analysis: npm still has no extract-zip 2.0.2 (latest 2.0.1). The only removal path, @lhci/cli 0.16.0 -> lighthouse 13.6.0 -> puppeteer-core 25.16.0 (latest), drops extract-zip but pins chromium-bidi 157.0.8090-0, whose bundled mapper embeds Zod 4.6.5, below the GHSA-mrhx-c7xc-m3w5 floor 4.6.6. The repo's chromium-bidi@14.0.0 patch does not apply to it, so the bump would replace two dev-only extract-zip findings with an unpatched bundled Zod finding. Recheck when extract-zip 2.0.2 is published, or when a puppeteer-core release past the 24 h quarantine ships a chromium-bidi that embeds Zod >= 4.6.6."
+        },
+        {
+            "ghsa": "GHSA-fc5q-39xc-vjpf",
+            "package": "picomatch",
+            "patched": "4.0.8",
+            "expiry": "2026-12-01",
+            "reachability": "Build and dev tooling only: Vite 8.3.8, @rollup/pluginutils, rollup-plugin-visualizer, @rolldown/plugin-babel, tinyglobby, fdir, lint-staged and typescript-eslint use picomatch 4.0.7; micromatch and readdirp use 2.3.2. `pnpm why picomatch --prod -r` finds no production path, no app or package source imports picomatch or micromatch, and the built PWA bundle contains no picomatch code. Every pattern it matches comes from repository configuration (build globs, lint-staged and lint config), so an attacker-controlled extglob cannot reach it.",
+            "reason": "Added 2026-11-17: the advisory was widened on 2026-11-17 15:56Z to picomatch <=4.0.7 (CVSS 7.5, ReDoS through single-branch repeated extglobs) with no patched release; npm latest is 4.0.7, published 2026-08-24. Without this, `pnpm audit --audit-level=high` fails the Security job on main and every pull request although nothing can be updated. Short expiry: the checker fails as soon as 4.0.8 is published or on 2026-12-01, whichever comes first."
         }
     ]
 }

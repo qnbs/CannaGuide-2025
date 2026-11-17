@@ -418,6 +418,26 @@ test('the latest CodeRabbit summary edit decides, and a stale edit cannot win', 
     assert.equal(result.qualifiedReviewers.length, 0)
 })
 
+test('a newer CodeRabbit summary without a marker voids an older valid marker', () => {
+    const olderValid = coderabbitSummary({ updatedAt: '2026-11-16T10:00:00Z', id: 303 })
+    const newerWithoutMarker = coderabbitSummary({ updatedAt: '2026-11-16T11:00:00Z', id: 304 })
+    newerWithoutMarker.body = [
+        '<!-- This is an auto-generated comment: summarize by coderabbit.ai -->',
+        '<!-- This is an auto-generated comment: rate limited by coderabbit.ai -->',
+        'Review limit reached.',
+    ].join('\n')
+    const result = evaluate({
+        pullNumber: 866,
+        changedFiles: HIGH_FILES,
+        issueComments: [receipt({ pullNumber: 866 }), olderValid, newerWithoutMarker],
+    })
+    assert.equal(result.satisfied, false)
+    assert.deepEqual(
+        result.qualifiedReviewers.map((reviewer) => reviewer.provider),
+        ['Codex'],
+    )
+})
+
 test('a CodeRabbit marker never double-counts a formal review or overrides a dismissal', () => {
     const both = evaluate({
         pullNumber: 866,

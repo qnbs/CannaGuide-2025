@@ -271,7 +271,9 @@ export function evaluateReviewCoverage(evidence) {
         : null
 
     // CodeRabbit edits its summary in place, so the latest edit is the current state.
-    const latestCodeRabbitMarker = (
+    // Pick the latest summary first and only then check its marker: a newer summary
+    // without a valid marker (rate limited, skipped, failed) voids an older marker.
+    const latestCodeRabbitSummary = (
         Array.isArray(evidence.issueComments) ? evidence.issueComments : []
     )
         .filter(
@@ -279,12 +281,12 @@ export function evaluateReviewCoverage(evidence) {
                 isReviewBot(comment?.user, CODERABBIT_LOGIN) &&
                 comment.issue_url === `${API_ROOT}/issues/${pullNumber}` &&
                 typeof comment.body === 'string' &&
-                comment.body.includes(CODERABBIT_COVERAGE_PREFIX),
+                comment.body.includes(CODERABBIT_SUMMARY_MARKER),
         )
         .sort((a, b) => compareLatest(a, b, 'updated_at'))
         .at(-1)
-    const codeRabbitReceipt = latestCodeRabbitMarker
-        ? parseCodeRabbitReceipt(latestCodeRabbitMarker, headSha, pullNumber)
+    const codeRabbitReceipt = latestCodeRabbitSummary
+        ? parseCodeRabbitReceipt(latestCodeRabbitSummary, headSha, pullNumber)
         : null
 
     const qualified = new Map(formal)

@@ -71,6 +71,25 @@ export const initSentry = (): void => {
             dsn,
             environment: 'production',
             release: `cannaguide@${version}`,
+            // SDK v11 dropped `sendDefaultPii` and collects everything while
+            // `dataCollection` is unset: user/IP, cookies, request and response
+            // bodies, headers, query strings, local variables. Error reports here
+            // need none of it, so every category is off (#834).
+            dataCollection: {
+                userInfo: false,
+                cookies: false,
+                httpHeaders: false,
+                httpBodies: [],
+                urlQueryParams: false,
+                graphQL: { document: false, variables: false },
+                genAI: { inputs: false, outputs: false },
+                mcp: { inputs: false, outputs: false },
+                databaseQueryData: false,
+                queues: false,
+                stackFrameVariables: false,
+            },
+            // Keep v10's transaction model; v11 defaults to span streaming.
+            traceLifecycle: 'static',
             tracesSampleRate: 0.1,
             replaysSessionSampleRate: 0.01,
             replaysOnErrorSampleRate: 1.0,

@@ -669,7 +669,7 @@ export const settingsView = {
         setAside: {
             title: 'Saved data set aside',
             description:
-                'CannaGuide could not load this saved data, so it kept a copy instead of deleting it. Download the copy to keep it safe. Restore replaces your current data with it and works only if this version can read it.',
+                'CannaGuide could not load this saved data, so it kept a copy instead of deleting it. Download the copy to keep it safe; the download leaves out the app PIN and the sync key, so keep the sync key somewhere else as well. Restore replaces your current data with it and works only if this version can read it.',
             download: 'Download copy',
             restore: 'Restore',
         },

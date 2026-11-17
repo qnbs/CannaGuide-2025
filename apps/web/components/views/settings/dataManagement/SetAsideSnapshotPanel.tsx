@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { readQuarantinedSnapshot } from '@/services/snapshotQuarantine'
 import { redactSnapshotTextForDownload } from '@/services/persistedSnapshotFormat'
+import { backupService } from '@/services/backupService'
 
 type SetAsideSnapshotPanelProps = {
     /** Opens the import confirmation for the copy; nothing is replaced before it. */
@@ -13,16 +14,13 @@ type SetAsideSnapshotPanelProps = {
 }
 
 // The file leaves the device: no app PIN and no sync key in it (#872 review). Restore
-// uses the copy as kept, so a restored device keeps its PIN lock.
+// uses the copy as kept, so a restored device keeps its PIN lock. The shared download
+// helper revokes the object URL only after the browser has taken the file (#872 review).
 const downloadCopy = (snapshot: string): void => {
-    const url = URL.createObjectURL(
+    backupService.downloadBlob(
         new Blob([redactSnapshotTextForDownload(snapshot)], { type: 'application/json' }),
+        `cannaguide-set-aside-${new Date().toISOString().slice(0, 10)}.json`,
     )
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `cannaguide-set-aside-${new Date().toISOString().slice(0, 10)}.json`
-    link.click()
-    URL.revokeObjectURL(url)
 }
 
 /**

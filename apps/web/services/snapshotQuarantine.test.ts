@@ -253,20 +253,21 @@ describe('the set-aside notice and the quarantined copy (#666)', () => {
         vi.clearAllMocks()
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
         mocks.runExclusive.mockImplementation((operation: () => Promise<unknown>) => operation())
+        mocks.removalApplies.mockReturnValue(true)
         takeSetAsideNotice()
     })
 
-    it('reports a stored copy once', async () => {
-        useMemoryStorage()
+    it('reports once that a start went on without the unreadable primary', async () => {
+        useMemoryStorage({ primary: '{"bad":' })
 
         expect(takeSetAsideNotice()).toBe(false)
-        await expect(quarantineUnreadableSnapshot('{"bad":')).resolves.toBe('stored')
+        await expect(discardUnreadablePrimarySnapshot('{"bad":')).resolves.toBe(true)
 
         expect(takeSetAsideNotice()).toBe(true)
         expect(takeSetAsideNotice()).toBe(false)
     })
 
-    it('reports a removed primary even when an earlier copy is the one kept', async () => {
+    it('reports it when an earlier copy is the one kept', async () => {
         useMemoryStorage({ quarantine: '{"earlier":true}', primary: '{"later":' })
 
         await expect(discardUnreadablePrimarySnapshot('{"later":')).resolves.toBe(true)
@@ -274,10 +275,19 @@ describe('the set-aside notice and the quarantined copy (#666)', () => {
         expect(takeSetAsideNotice()).toBe(true)
     })
 
-    it('does not report anything when nothing was kept or removed', async () => {
-        useMemoryStorage({ quarantine: '{"earlier":true}' })
+    it('stays silent for a backup set aside while the loaded primary was kept (#872)', async () => {
+        useMemoryStorage()
 
-        await expect(quarantineUnreadableSnapshot('{"later":')).resolves.toBe('kept-earlier')
+        await expect(quarantineUnreadableSnapshot('{"newer":true}')).resolves.toBe('stored')
+
+        expect(takeSetAsideNotice()).toBe(false)
+    })
+
+    it('stays silent when no copy could be kept', async () => {
+        useMemoryStorage({ primary: '{"bad":' })
+        mocks.setItem.mockRejectedValueOnce(new Error('QuotaExceededError'))
+
+        await expect(discardUnreadablePrimarySnapshot('{"bad":')).resolves.toBe(false)
 
         expect(takeSetAsideNotice()).toBe(false)
     })

@@ -688,7 +688,7 @@ export const settingsView = {
         setAside: {
             title: 'Apart gezette gegevens',
             description:
-                'CannaGuide kon deze opgeslagen gegevens niet laden en heeft daarom een kopie bewaard in plaats van ze te verwijderen. Download de kopie om ze veilig te bewaren. Herstellen vervangt je huidige gegevens door de kopie en werkt alleen als deze versie ze kan lezen.',
+                'CannaGuide kon deze opgeslagen gegevens niet laden en heeft daarom een kopie bewaard in plaats van ze te verwijderen. Download de kopie om ze veilig te bewaren; de download bevat de app-pincode en de synchronisatiesleutel niet, dus bewaar de synchronisatiesleutel ook ergens anders. Herstellen vervangt je huidige gegevens door de kopie en werkt alleen als deze versie ze kan lezen.',
             download: 'Kopie downloaden',
             restore: 'Herstellen',
         },

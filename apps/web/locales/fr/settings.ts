@@ -704,7 +704,7 @@ export const settingsView = {
         setAside: {
             title: 'Donn\u00E9es mises de c\u00F4t\u00E9',
             description:
-                "CannaGuide n'a pas pu charger ces donn\u00E9es enregistr\u00E9es et en a donc gard\u00E9 une copie au lieu de les supprimer. T\u00E9l\u00E9chargez la copie pour la conserver. Restaurer remplace vos donn\u00E9es actuelles par celle-ci et ne fonctionne que si cette version peut la lire.",
+                "CannaGuide n'a pas pu charger ces donn\u00E9es enregistr\u00E9es et en a donc gard\u00E9 une copie au lieu de les supprimer. T\u00E9l\u00E9chargez la copie pour la conserver ; le t\u00E9l\u00E9chargement ne contient ni le code PIN de l'application ni la cl\u00E9 de synchronisation, conservez donc aussi la cl\u00E9 de synchronisation ailleurs. Restaurer remplace vos donn\u00E9es actuelles par celle-ci et ne fonctionne que si cette version peut la lire.",
             download: 'T\u00E9l\u00E9charger la copie',
             restore: 'Restaurer',
         },

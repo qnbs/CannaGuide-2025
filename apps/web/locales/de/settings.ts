@@ -689,7 +689,7 @@ export const settingsView = {
         setAside: {
             title: 'Zur\u00FCckgelegte Daten',
             description:
-                'CannaGuide konnte diese gespeicherten Daten nicht laden und hat deshalb eine Kopie aufbewahrt, statt sie zu l\u00F6schen. Lade die Kopie herunter, um sie zu sichern. Wiederherstellen ersetzt deine aktuellen Daten durch sie und funktioniert nur, wenn diese Version sie lesen kann.',
+                'CannaGuide konnte diese gespeicherten Daten nicht laden und hat deshalb eine Kopie aufbewahrt, statt sie zu l\u00F6schen. Lade die Kopie herunter, um sie zu sichern; der Download enth\u00E4lt weder die App-PIN noch den Sync-Schl\u00FCssel, bewahre den Sync-Schl\u00FCssel also zus\u00E4tzlich woanders auf. Wiederherstellen ersetzt deine aktuellen Daten durch sie und funktioniert nur, wenn diese Version sie lesen kann.',
             download: 'Kopie herunterladen',
             restore: 'Wiederherstellen',
         },

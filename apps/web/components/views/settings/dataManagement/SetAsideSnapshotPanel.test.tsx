@@ -1,13 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 
-const mocks = vi.hoisted(() => ({ readQuarantinedSnapshot: vi.fn() }))
+const mocks = vi.hoisted(() => ({ readQuarantinedSnapshot: vi.fn(), downloadBlob: vi.fn() }))
 
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }))
 vi.mock('@/services/snapshotQuarantine', () => ({
     readQuarantinedSnapshot: mocks.readQuarantinedSnapshot,
+}))
+// The shared helper revokes the object URL only after the browser took the file.
+vi.mock('@/services/backupService', () => ({
+    backupService: { downloadBlob: mocks.downloadBlob },
 }))
 
 import { SetAsideSnapshotPanel } from './SetAsideSnapshotPanel'
@@ -18,6 +22,7 @@ const KEPT = '{"version":6,"settings":{"settings":{}},"simulation":{"plants":{"i
 describe('SetAsideSnapshotPanel (#666)', () => {
     afterEach(() => {
         vi.restoreAllMocks()
+        mocks.downloadBlob.mockReset()
     })
 
     it('shows nothing while no copy was set aside', async () => {
@@ -31,10 +36,6 @@ describe('SetAsideSnapshotPanel (#666)', () => {
     it('offers the kept copy for download and for restore', async () => {
         mocks.readQuarantinedSnapshot.mockResolvedValueOnce(KEPT)
         const onRestore = vi.fn()
-        const createObjectURL = vi.fn((_blob: Blob) => 'blob:set-aside')
-        const revokeObjectURL = vi.fn()
-        Object.assign(URL, { createObjectURL, revokeObjectURL })
-        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
 
         render(<SetAsideSnapshotPanel onRestore={onRestore} />)
 
@@ -42,10 +43,10 @@ describe('SetAsideSnapshotPanel (#666)', () => {
         expect(screen.getByText('settingsView.data.setAside.description')).toBeInTheDocument()
 
         fireEvent.click(screen.getByText('settingsView.data.setAside.download'))
-        expect(createObjectURL).toHaveBeenCalledOnce()
-        await expect(createObjectURL.mock.calls[0]?.[0].text()).resolves.toBe(KEPT)
-        expect(click).toHaveBeenCalledOnce()
-        expect(revokeObjectURL).toHaveBeenCalledWith('blob:set-aside')
+        expect(mocks.downloadBlob).toHaveBeenCalledOnce()
+        const [blob, filename] = mocks.downloadBlob.mock.calls[0] as [Blob, string]
+        await expect(blob.text()).resolves.toBe(KEPT)
+        expect(filename).toMatch(/^cannaguide-set-aside-\d{4}-\d{2}-\d{2}\.json$/)
 
         fireEvent.click(screen.getByText('settingsView.data.setAside.restore'))
         expect(onRestore).toHaveBeenCalledWith(KEPT)
@@ -64,14 +65,11 @@ describe('SetAsideSnapshotPanel (#666)', () => {
         })
         mocks.readQuarantinedSnapshot.mockResolvedValueOnce(withSecrets)
         const onRestore = vi.fn()
-        const createObjectURL = vi.fn((_blob: Blob) => 'blob:set-aside')
-        Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() })
-        vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
 
         render(<SetAsideSnapshotPanel onRestore={onRestore} />)
         fireEvent.click(await screen.findByText('settingsView.data.setAside.download'))
 
-        const downloaded = (await createObjectURL.mock.calls[0]?.[0].text()) ?? ''
+        const downloaded = await (mocks.downloadBlob.mock.calls[0]?.[0] as Blob).text()
         expect(downloaded).not.toContain('4711')
         expect(downloaded).not.toContain('c2VjcmV0')
         expect(JSON.parse(downloaded)).toMatchObject({

@@ -701,7 +701,7 @@ export const settingsView = {
         setAside: {
             title: 'Datos guardados apartados',
             description:
-                'CannaGuide no pudo cargar estos datos guardados, as\u00ED que guard\u00F3 una copia en lugar de borrarlos. Descarga la copia para conservarla. Restaurar reemplaza tus datos actuales por ella y solo funciona si esta versi\u00F3n puede leerla.',
+                'CannaGuide no pudo cargar estos datos guardados, as\u00ED que guard\u00F3 una copia en lugar de borrarlos. Descarga la copia para conservarla; la descarga no incluye el PIN de la aplicaci\u00F3n ni la clave de sincronizaci\u00F3n, as\u00ED que guarda tambi\u00E9n la clave de sincronizaci\u00F3n en otro lugar. Restaurar reemplaza tus datos actuales por ella y solo funciona si esta versi\u00F3n puede leerla.',
             download: 'Descargar copia',
             restore: 'Restaurar',
         },

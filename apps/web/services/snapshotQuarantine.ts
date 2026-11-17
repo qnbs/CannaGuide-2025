@@ -15,8 +15,9 @@ import { redactSnapshotSecrets, scrubSecretsInText } from '@/utils/redactSecrets
  */
 export type QuarantineResult = 'stored' | 'kept-earlier' | 'nothing' | 'failed'
 
-// Set when this start put saved data aside, so the app can say so once (#666): the
-// quarantined copy was otherwise invisible and the user only saw an empty app.
+// Set when this start went on without the saved data it could not load and a copy is
+// kept, so the app can say so once (#666): the copy was otherwise invisible and the
+// user only saw an empty app.
 let setAsideThisStart = false
 
 /** Whether saved data was put aside since the last call; reading clears it. */
@@ -66,7 +67,6 @@ const keepOnce = async (snapshot: string): Promise<'stored' | 'kept-earlier'> =>
     if ((await indexedDBStorage.getItem(REDUX_STATE_QUARANTINE_KEY)) !== kept) {
         throw new Error('Quarantine snapshot verification failed.')
     }
-    setAsideThisStart = true
     return 'stored'
 }
 
@@ -121,6 +121,10 @@ export const discardUnreadablePrimarySnapshot = async (
     try {
         await underExclusiveLock(async () => {
             await keepOnce(snapshot)
+            // This start goes on without the saved data, and a copy (this one or an
+            // earlier one) is kept: say so. A backup set aside by a start that loaded its
+            // primary is not this case and stays silent (#872 review).
+            setAsideThisStart = true
             if ((await indexedDBStorage.getItem(REDUX_STATE_KEY)) !== snapshot) {
                 console.debug('[Store] Keeping the primary snapshot: it changed since it failed.')
                 return
@@ -130,8 +134,6 @@ export const discardUnreadablePrimarySnapshot = async (
             // cannot save back over the removal. This page goes on running, so it
             // follows the new revision.
             removed = await removeSnapshotIfCurrent()
-            // The app starts without this data; an earlier copy may be what is kept.
-            if (removed) setAsideThisStart = true
         })
     } catch (error) {
         console.error('[Store] Keeping the unreadable primary snapshot:', error)

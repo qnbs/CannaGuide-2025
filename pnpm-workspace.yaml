@@ -82,8 +82,9 @@ overrides:
     lodash-es: 4.18.1
     lodash: '>=4.18.0'
     # Retired from the unbounded legacy list. The open floor had already
-    # crossed to 6.x; 6.2.1 fixes GHSA-c475-qrg2-pj4r (quadratic list()).
-    basic-ftp: '>=6.2.1 <7'
+    # crossed to 6.x; 6.2.1 fixes GHSA-c475-qrg2-pj4r (quadratic list()),
+    # 6.2.4 fixes GHSA-5pm8-86m8-9m6r (MLSD `__proto__` fact crashes list()).
+    basic-ftp: '>=6.2.4 <7'
     # 4.2.3 fixes the October 2026 URI parsing advisory set. Stay on 4.x.
     fast-uri: '>=4.2.3 <5'
     protobufjs: '>=8.2.0'

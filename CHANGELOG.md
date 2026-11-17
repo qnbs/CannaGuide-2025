@@ -38,6 +38,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(security):** `basic-ftp` moves from 6.2.2 to 6.2.4 and its pnpm override floor from `>=6.2.1 <7` to `>=6.2.4 <7` (Dependabot #167, GHSA-5pm8-86m8-9m6r: an MLSD listing with a `__proto__` fact name throws an uncaught TypeError in `Client.list()`). It is a development-only transitive dependency of `@lhci/cli` and `@puppeteer/browsers` (`proxy-agent` -> `pac-proxy-agent` -> `get-uri`); no app or package code uses FTP.
+
 - **fix(persistence):** Journal overflow and backup-restore metadata updates now merge inside
   IndexedDB readwrite transactions, so a concurrent tab cannot overwrite newer archived entries.
   Failed update callbacks are not retried, and unknown plant ids cannot resolve to inherited

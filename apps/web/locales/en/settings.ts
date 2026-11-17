@@ -666,6 +666,13 @@ export const settingsView = {
         importError: 'Import failed. Please ensure it is a valid backup file.',
         importNewerVersion:
             'This backup was made with a newer version of CannaGuide. Reload the app to get the newer version, then import the backup again. Nothing was changed.',
+        setAside: {
+            title: 'Saved data set aside',
+            description:
+                'CannaGuide could not load this saved data, so it kept a copy instead of deleting it. Download the copy to keep it safe; the download leaves out the app PIN and the sync key, so keep the sync key somewhere else as well. Restore replaces your current data with it and works only if this version can read it.',
+            download: 'Download copy',
+            restore: 'Restore',
+        },
         restoreBlocked: 'Data restore is temporarily blocked by a safe recovery operation.',
         resetError: 'Data reset could not be completed. Your saved data was not changed.',
         sliceResetError: 'This data section could not be reset. Your saved data was not changed.',

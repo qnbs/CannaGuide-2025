@@ -4,6 +4,7 @@ import { useDataManagementActions } from './dataManagement/useDataManagementActi
 import { DataManagementDialogs } from './dataManagement/DataManagementDialogs'
 import { PersistenceSettingsPanel } from './dataManagement/PersistenceSettingsPanel'
 import { BackupRestorePanel } from './dataManagement/BackupRestorePanel'
+import { SetAsideSnapshotPanel } from './dataManagement/SetAsideSnapshotPanel'
 import { ZipBackupPanel } from './dataManagement/ZipBackupPanel'
 import { CsvExportPanel } from './dataManagement/CsvExportPanel'
 import { GrowExportPanel } from './dataManagement/GrowExportPanel'
@@ -49,6 +50,8 @@ const DataManagementTab: React.FC = () => {
                 onConfirmSliceReset={actions.handleConfirmSliceReset}
                 onEraseAll={actions.handleEraseAll}
             />
+
+            <SetAsideSnapshotPanel onRestore={actions.stageImport} />
 
             <PersistenceSettingsPanel />
 

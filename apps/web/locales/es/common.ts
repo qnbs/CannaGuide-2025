@@ -86,6 +86,8 @@ export const common = {
         description:
             'Tus datos se guardaron con una versi\u00F3n de CannaGuide m\u00E1s reciente que la que ejecuta esta p\u00E1gina, as\u00ED que esta p\u00E1gina no los ha cargado y no guarda nada, para mantener esos datos intactos. Recarga para obtener la versi\u00F3n m\u00E1s reciente. Si este aviso vuelve a aparecer, cierra todas las pesta\u00F1as y ventanas de CannaGuide y abre la aplicaci\u00F3n de nuevo. Tus datos guardados no han cambiado.',
     },
+    dataSetAside:
+        'No se pudieron cargar tus datos guardados, as\u00ED que CannaGuide se inici\u00F3 sin ellos y guard\u00F3 una copia. Abre Ajustes > Datos para descargarla o restaurarla.',
     saveFailed:
         'Tus \u00FAltimos cambios no se pudieron guardar y se perder\u00EDan si cierras o recargas la app. Puede que el almacenamiento del navegador est\u00E9 lleno: libera espacio y la app lo intentar\u00E1 de nuevo con tu pr\u00F3ximo cambio.',
     previousSaveFailed:

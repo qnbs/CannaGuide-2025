@@ -248,6 +248,8 @@ export const common = {
         description:
             'Your data was saved by a newer version of CannaGuide than the one this page runs, so this page has not loaded it and saves nothing, to keep that data intact. Reload to get the newer version. If this notice comes back, close every CannaGuide tab and window and open the app again. Your saved data has not been changed.',
     },
+    dataSetAside:
+        'Your saved data could not be loaded, so CannaGuide started without it and kept a copy. Open Settings > Data to download or restore it.',
     saveFailed:
         'Your latest changes could not be saved, so they would be lost if you close or reload the app. The browser storage may be full: free up space, and the app tries again with your next change.',
     previousSaveFailed:

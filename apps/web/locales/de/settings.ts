@@ -686,6 +686,13 @@ export const settingsView = {
             'Import fehlgeschlagen. Bitte stellen Sie sicher, dass es sich um eine gueltige Backup-Datei handelt.',
         importNewerVersion:
             'Dieses Backup wurde mit einer neueren CannaGuide-Version erstellt. Lade die App neu, um die neuere Version zu bekommen, und importiere das Backup dann erneut. Es wurde nichts ver\u00E4ndert.',
+        setAside: {
+            title: 'Zur\u00FCckgelegte Daten',
+            description:
+                'CannaGuide konnte diese gespeicherten Daten nicht laden und hat deshalb eine Kopie aufbewahrt, statt sie zu l\u00F6schen. Lade die Kopie herunter, um sie zu sichern; der Download enth\u00E4lt weder die App-PIN noch den Sync-Schl\u00FCssel, bewahre den Sync-Schl\u00FCssel also zus\u00E4tzlich woanders auf. Wiederherstellen ersetzt deine aktuellen Daten durch sie und funktioniert nur, wenn diese Version sie lesen kann.',
+            download: 'Kopie herunterladen',
+            restore: 'Wiederherstellen',
+        },
         restoreBlocked:
             'Die Datenwiederherstellung ist voruebergehend durch eine sichere Wiederherstellung blockiert.',
         resetError:

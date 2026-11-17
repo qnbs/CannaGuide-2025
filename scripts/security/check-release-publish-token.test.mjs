@@ -75,10 +75,16 @@ test('persisting the checkout token fails the policy', () => {
 })
 
 test('publishing the release with RELEASE_PAT fails the policy', () => {
-    const text = LIVE.replace(
-        'GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}',
-        'GH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}',
-    )
+    // Mutate the publish step itself: other release-job steps also read the job token.
+    const at = LIVE.indexOf('- name: Create GitHub Release')
+    assert.notEqual(at, -1)
+    const text =
+        LIVE.slice(0, at) +
+        LIVE.slice(at).replace(
+            'GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}',
+            'GH_TOKEN: ${{ secrets.RELEASE_PAT || secrets.GITHUB_TOKEN }}',
+        )
+    assert.notEqual(text, LIVE)
     const problems = problemsInReleasePublish(text)
     assert.ok(problems.some((problem) => problem.includes('Create GitHub Release')))
 })

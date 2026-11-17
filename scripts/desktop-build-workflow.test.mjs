@@ -69,3 +69,37 @@ test('macOS signing values reach only the signed build step, and only with a cer
     assert.equal(withBlock(signed), withBlock(unsigned))
     assert.match(withBlock(unsigned), /args: --target \$\{\{ matrix\.target \}\}/)
 })
+
+test('updater bundles are built and signed only by Desktop Build, through an overlay', () => {
+    // CodeRabbit on #874: with createUpdaterArtifacts in tauri.conf.json, every local
+    // `tauri build` demands TAURI_SIGNING_PRIVATE_KEY. The base config leaves it off;
+    // Desktop Build merges tauri.updater.conf.json (Tauri merges only platform-named
+    // tauri.<os>.conf.json files on its own, so this one applies only when passed).
+    const readJson = (file) => JSON.parse(readFileSync(resolve(REPO_ROOT, file), 'utf8'))
+    const base = readJson('apps/desktop/src-tauri/tauri.conf.json')
+    assert.equal(base.bundle.createUpdaterArtifacts, undefined)
+    assert.equal(typeof base.plugins.updater.pubkey, 'string')
+    assert.deepEqual(readJson('apps/desktop/src-tauri/tauri.updater.conf.json'), {
+        bundle: { createUpdaterArtifacts: true },
+    })
+
+    for (const name of ['Build Tauri', 'Build Tauri (signed macOS)']) {
+        const text = step(name)
+        const projectPath = /projectPath: (\S+)/.exec(text)?.[1]
+        const overlay = /--config (\S+)/.exec(text)?.[1]
+        assert.equal(projectPath, 'apps/desktop', name)
+        // The CLI resolves --config from the script's working directory, projectPath.
+        assert.equal(
+            resolve(REPO_ROOT, projectPath, overlay ?? ''),
+            resolve(REPO_ROOT, 'apps/desktop/src-tauri/tauri.updater.conf.json'),
+            `${name} does not load the updater overlay`,
+        )
+        assert.match(
+            text,
+            /TAURI_SIGNING_PRIVATE_KEY: \$\{\{ secrets\.TAURI_SIGNING_PRIVATE_KEY \}\}/,
+            name,
+        )
+    }
+    // A calling workflow cannot start the release build without the signing key.
+    assert.match(WORKFLOW, /TAURI_SIGNING_PRIVATE_KEY:\n\s+required: true\n/)
+})

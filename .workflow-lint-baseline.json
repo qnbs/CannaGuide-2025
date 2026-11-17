@@ -6,7 +6,7 @@
         "High dangerous-triggers": 3,
         "High unpinned-images": 1,
         "Informational template-injection": 7,
-        "Low self-repository": 38,
+        "Low self-repository": 39,
         "Medium artipacked": 38,
         "Medium dependabot-cooldown": 2
     },

@@ -914,6 +914,27 @@ export const settingsView = {
         title: 'Über die App',
         projectInfo: 'Projekt-Infos & README',
         version: 'Version',
+        update: {
+            title: 'App-Updates',
+            check: 'Nach Updates suchen',
+            checking: 'Suche nach Updates ...',
+            upToDate: 'Du hast die neueste Version.',
+            available: 'Version {{version}} ist verfügbar.',
+            notes: 'Versionshinweise',
+            download: 'Update herunterladen',
+            downloading: 'Wird heruntergeladen und geprüft ... {{percent}} %',
+            downloadingUnknown: 'Wird heruntergeladen und geprüft ...',
+            ready: 'Version {{version}} ist heruntergeladen und ihre Signatur geprüft. Beim Installieren werden deine letzten Änderungen gespeichert, die App ersetzt und neu gestartet.',
+            install: 'Installieren und neu starten',
+            installing: 'Deine Daten werden gespeichert und das Update installiert ...',
+            error: 'Das Update ist fehlgeschlagen: {{message}}',
+            notSaved:
+                'Deine letzten Änderungen konnten nicht gespeichert werden, deshalb wurde das Update nicht installiert. Versuche es erneut.',
+            localOnly:
+                'Der Nur-Lokal-Modus ist aktiv, deshalb kontaktiert die App den Update-Server nicht.',
+            notification:
+                'CannaGuide {{version}} ist verfügbar. Installiere es unter Einstellungen > Über die App.',
+        },
         whatsNew: {
             title: 'Was ist neu in v1.8',
             items: {

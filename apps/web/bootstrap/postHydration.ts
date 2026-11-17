@@ -123,18 +123,39 @@ export const runPostHydrationServices = async (
 
     const { platform } = await import('@/services/platformService')
     if (platform.isTauri) {
+        const lifecycle = await import('@/services/desktopLifecycleService')
+        // The update install saves through the same function before it restarts.
+        lifecycle.registerPersistFlush(flushPersistedState)
         try {
             const { listen } = await import('@tauri-apps/api/event')
-            await listen('tauri://before-quit', async () => {
-                try {
-                    await flushPersistedState?.()
-                } catch (err) {
-                    console.debug('[Tauri] before-quit flush failed:', err)
-                }
+            // The app holds every user quit until this confirms that the save has
+            // finished (src-tauri/src/lib.rs request_quit), not a fixed delay.
+            await listen('tauri://before-quit', () => {
+                lifecycle.flushThenConfirmQuit(flushPersistedState).catch((err: unknown) => {
+                    console.debug('[Tauri] quit confirmation failed:', err)
+                })
             })
         } catch (err) {
             console.debug('[Tauri] before-quit listener setup failed:', err)
         }
+        const [{ isLocalOnlyMode }, { getT }] = await Promise.all([
+            import('@/services/localOnlyModeService'),
+            import('@/i18n'),
+        ])
+        lifecycle.scheduleStartupUpdateCheck({
+            updater: lifecycle.desktopUpdater,
+            isDesktop: () => platform.isTauri,
+            isLocalOnly: isLocalOnlyMode,
+            isOnline: () => navigator.onLine,
+            onAvailable: (info) => {
+                getUISnapshot().addNotification({
+                    message: getT()('settingsView.about.update.notification', {
+                        version: info.version,
+                    }),
+                    type: 'info',
+                })
+            },
+        })
     }
 
     const { registerOfflineActionReplayListener } =

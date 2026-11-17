@@ -85,4 +85,10 @@ declare module '@tauri-apps/plugin-dialog' {
 
 declare module '@tauri-apps/api/core' {
     export function invoke<T = void>(cmd: string, args?: Record<string, unknown>): Promise<T>
+    /** Subset of the real class: desktopLifecycleService streams download progress. */
+    export class Channel<T = unknown> {
+        constructor(onmessage?: (response: T) => void)
+        id: number
+        onmessage: (response: T) => void
+    }
 }

@@ -7,6 +7,8 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
+import { platform } from '@/services/platformService'
+import { DesktopUpdateCard } from './DesktopUpdateCard'
 
 const InfoSection: React.FC<{
     title: string
@@ -59,6 +61,8 @@ const AboutAppContent = memo(() => {
                     </p>
                 </div>
             </Card>
+
+            {platform.isTauri ? <DesktopUpdateCard /> : null}
 
             <Card>
                 <InfoSection

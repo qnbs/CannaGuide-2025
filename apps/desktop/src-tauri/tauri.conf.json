@@ -36,7 +36,6 @@
                 "notification",
                 "tray",
                 "shortcut",
-                "updater",
                 "window-state",
                 "store"
             ]
@@ -71,7 +70,7 @@
         },
         "macOS": {
             "minimumSystemVersion": "10.15",
-            "signingIdentity": null,
+            "signingIdentity": "-",
             "providerShortName": null,
             "entitlements": null
         },

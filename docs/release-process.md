@@ -216,6 +216,28 @@ pre-release such as `-rc.1` cannot be expressed and the MSI bundling step stops 
 desktop build unless that field is set. Desktop prereleases are not supported yet;
 stable releases are.
 
+**In-app updates (desktop):** Settings > About shows an update card in the desktop
+app only. The app checks once per launch, 15 seconds after start, unless Local-Only mode
+is on or the device is offline; Local-Only mode also blocks manual checks and downloads,
+because both contact github.com. Every step is a click: check, download, install. The
+download is verified by `tauri-plugin-updater` against the updater key before any byte
+is kept. Install first saves the latest changes and stops if that save fails or reports
+"not saved" -- on Windows the installer ends the process from inside the install
+command, so there is no later chance. The webview has no updater plugin permission;
+`src-tauri/src/update.rs` is the only path.
+
+**Quit handshake (desktop):** the tray Quit, the close button and Cmd+Q all ask the web
+app to save first (`tauri://before-quit`), and the app exits when the save has finished
+(`confirm_quit`), or after 5 seconds if the web app never answers. Before, the tray quit
+exited after a fixed 250 ms and the close button did not wait at all.
+
+**Manual acceptance of a real update** (CI cannot install and relaunch a desktop app):
+install the previous signed release on each platform, publish the new draft, then in the
+installed app use Settings > About: check, download, install. The app must restart into
+the new version with all grows, plants and settings intact. Then check that a download
+with a tampered `latest.json` signature is refused, and that Local-Only mode shows the
+blocked notice instead of contacting the server.
+
 **CI Status Guard:** The build job queries the GitHub Checks API and
 requires the CI Status check on the resolved tag commit to be
 `success`, including a manual `workflow_dispatch`. A missing or

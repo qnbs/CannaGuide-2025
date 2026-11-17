@@ -25,6 +25,7 @@ const REVIEW_SENTENCE = [
     'The only receipt allowed is a structured Codex receipt with a full 40-character current head SHA and a verified bot author.',
     'The only supported issue-comment receipt uses the codex-review-state:v1 marker, and the GitHub API author type must be Bot.',
     'The CodeRabbit receipt needs `coderabbitai[bot]`, author type Bot, and a final_review_risk_coverage marker whose `sourceCommitId` and `coveredCommitId` both equal the full current head SHA and whose `kind` is `reviewed`.',
+    'A marker on an earlier head needs review-head-equivalence.mjs: every later commit is a two-parent merge of the base, each is a clean automatic merge (`git merge-tree --write-tree` yields its tree), and the changed lines have the same SHA-256 on both heads.',
 ].join('\n')
 const SOUND_AGENTS = [
     '### Authority and trust (all agents)',
@@ -328,6 +329,20 @@ test('the CodeRabbit receipt rule must keep the bot identity, both commit ids an
         [
             REVIEW_SENTENCE.replace(' and whose `kind` is `reviewed`', ''),
             'exact-head CodeRabbit coverage receipt',
+        ],
+        [
+            REVIEW_SENTENCE.replace(
+                ' and the changed lines have the same SHA-256 on both heads',
+                '',
+            ),
+            'base-only merge needs a head-equivalence proof',
+        ],
+        [
+            REVIEW_SENTENCE.replace(
+                ' each is a clean automatic merge (`git merge-tree --write-tree` yields its tree),',
+                '',
+            ),
+            'base-only merge must be a clean automatic merge',
         ],
     ]
     for (const [fixture, label] of weakVariants) {

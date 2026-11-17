@@ -562,6 +562,14 @@ const REVIEW_RUNBOOK_COVERAGE = [
         'CodeRabbit receipt binds source and covered commits',
         /final_review_risk_coverage[\s\S]{0,200}`?sourceCommitId`? and `?coveredCommitId`? both equal the full current head SHA/,
     ],
+    [
+        'base-only merge needs a head-equivalence proof',
+        /review-head-equivalence\.mjs[\s\S]{0,700}two-parent merge[\s\S]{0,600}same SHA-256 on both heads/,
+    ],
+    [
+        'base-only merge must be a clean automatic merge',
+        /review-head-equivalence\.mjs[\s\S]{0,900}clean automatic merge[\s\S]{0,200}merge-tree --write-tree/,
+    ],
     ['Codex receipt requires a bot author', /author type must be Bot/],
     ['pre-change PR #857 policy', /PR #857[\s\S]{0,180}pre-change policy until it is merged/],
 ]

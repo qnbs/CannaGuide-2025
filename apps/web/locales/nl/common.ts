@@ -84,6 +84,8 @@ export const common = {
         description:
             'Je gegevens zijn opgeslagen door een nieuwere versie van CannaGuide dan de versie die op deze pagina draait. Deze pagina heeft ze daarom niet geladen en slaat niets op, zodat die gegevens intact blijven. Laad opnieuw om de nieuwere versie te krijgen. Verschijnt deze melding opnieuw, sluit dan alle CannaGuide-tabbladen en -vensters en open de app opnieuw. Je opgeslagen gegevens zijn niet gewijzigd.',
     },
+    dataSetAside:
+        'Je opgeslagen gegevens konden niet worden geladen, dus CannaGuide is zonder ze gestart en heeft een kopie bewaard. Open Instellingen > Gegevens om die te downloaden of te herstellen.',
     saveFailed:
         'Je laatste wijzigingen konden niet worden opgeslagen en gaan verloren als je de app sluit of herlaadt. Mogelijk is de browseropslag vol: maak ruimte vrij, dan probeert de app het opnieuw bij je volgende wijziging.',
     previousSaveFailed:

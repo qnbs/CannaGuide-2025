@@ -9,6 +9,7 @@ import { i18nPromise } from '@/i18n'
 import { disableSentry } from '@/services/sentryService'
 import { registerRecoveryListeners } from './recovery'
 import { isNewerSnapshotError } from '@/services/migration/newerSnapshot'
+import { takeSetAsideNotice } from '@/services/snapshotQuarantine'
 import {
     renderError,
     renderNewerSnapshotNotice,
@@ -103,6 +104,19 @@ const notifySaveFailure = (): void => {
             getUISnapshot().addNotification({ message: getT()('common.saveFailed'), type: 'error' })
         },
     )
+}
+
+/** This start put saved data aside that it could not load (#666): say where it is. */
+const notifySetAside = async (): Promise<void> => {
+    try {
+        const [{ getT }, { getUISnapshot }] = await Promise.all([
+            import('@/i18n'),
+            import('@/stores/useUIStore'),
+        ])
+        getUISnapshot().addNotification({ message: getT()('common.dataSetAside'), type: 'error' })
+    } catch (error) {
+        console.error('[Persistence] Could not show the set-aside notice:', error)
+    }
 }
 
 /** A prior session ended after an observed save failure; the loaded snapshot is older. */
@@ -228,7 +242,9 @@ export const mountHydratedApp = async (): Promise<void> => {
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState, async () => {
             // Post-hydration restores the saved language before translating this warning.
-            if (staleSnapshotHandled || unpresentedSaveFailures.length === 0) return
+            if (staleSnapshotHandled) return
+            if (takeSetAsideNotice()) await notifySetAside()
+            if (unpresentedSaveFailures.length === 0) return
 
             const currentMarkers = getPendingSnapshotSaveFailureMarkers()
             const stillUnpresented = unpresentedSaveFailures.filter((observed) =>

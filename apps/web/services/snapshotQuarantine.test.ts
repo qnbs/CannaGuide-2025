@@ -37,6 +37,8 @@ vi.mock('@/constants', () => ({
 import {
     discardUnreadablePrimarySnapshot,
     quarantineUnreadableSnapshot,
+    readQuarantinedSnapshot,
+    takeSetAsideNotice,
 } from './snapshotQuarantine'
 
 /** Backs the mocked storage with a plain object and returns it for inspection. */
@@ -243,5 +245,58 @@ describe('discardUnreadablePrimarySnapshot', () => {
         await expect(discardUnreadablePrimarySnapshot('{"version":5}')).resolves.toBe(true)
 
         expect(mocks.schedule).toHaveBeenCalledTimes(1)
+    })
+})
+
+describe('the set-aside notice and the quarantined copy (#666)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+        mocks.runExclusive.mockImplementation((operation: () => Promise<unknown>) => operation())
+        mocks.removalApplies.mockReturnValue(true)
+        takeSetAsideNotice()
+    })
+
+    it('reports once that a start went on without the unreadable primary', async () => {
+        useMemoryStorage({ primary: '{"bad":' })
+
+        expect(takeSetAsideNotice()).toBe(false)
+        await expect(discardUnreadablePrimarySnapshot('{"bad":')).resolves.toBe(true)
+
+        expect(takeSetAsideNotice()).toBe(true)
+        expect(takeSetAsideNotice()).toBe(false)
+    })
+
+    it('reports it when an earlier copy is the one kept', async () => {
+        useMemoryStorage({ quarantine: '{"earlier":true}', primary: '{"later":' })
+
+        await expect(discardUnreadablePrimarySnapshot('{"later":')).resolves.toBe(true)
+
+        expect(takeSetAsideNotice()).toBe(true)
+    })
+
+    it('stays silent for a backup set aside while the loaded primary was kept (#872)', async () => {
+        useMemoryStorage()
+
+        await expect(quarantineUnreadableSnapshot('{"newer":true}')).resolves.toBe('stored')
+
+        expect(takeSetAsideNotice()).toBe(false)
+    })
+
+    it('stays silent when no copy could be kept', async () => {
+        useMemoryStorage({ primary: '{"bad":' })
+        mocks.setItem.mockRejectedValueOnce(new Error('QuotaExceededError'))
+
+        await expect(discardUnreadablePrimarySnapshot('{"bad":')).resolves.toBe(false)
+
+        expect(takeSetAsideNotice()).toBe(false)
+    })
+
+    it('reads the quarantined copy, and null when it cannot be read', async () => {
+        useMemoryStorage({ quarantine: '{"kept":true}' })
+        await expect(readQuarantinedSnapshot()).resolves.toBe('{"kept":true}')
+
+        mocks.getItem.mockRejectedValueOnce(new Error('read failed'))
+        await expect(readQuarantinedSnapshot()).resolves.toBeNull()
     })
 })

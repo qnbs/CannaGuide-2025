@@ -237,6 +237,29 @@ describe('useDataManagementActions', () => {
         })
     })
 
+    it('opens the import confirmation for a set-aside copy, and refuses a newer one (#666)', () => {
+        const { result } = renderHook(() => useDataManagementActions())
+
+        act(() => {
+            result.current.stageImport(
+                JSON.stringify({ version: APP_VERSION + 1, settings: { settings: {} } }),
+            )
+        })
+        expect(result.current.isImportConfirmOpen).toBe(false)
+        expect(mocks.addNotification).toHaveBeenCalledWith({
+            type: 'error',
+            message: 'settingsView.data.importNewerVersion',
+        })
+
+        act(() => {
+            result.current.stageImport(
+                JSON.stringify({ version: APP_VERSION, settings: { settings: {} } }),
+            )
+        })
+        expect(result.current.isImportConfirmOpen).toBe(true)
+        expect(mocks.replacePrimaryPersistedSnapshot).not.toHaveBeenCalled()
+    })
+
     it('keeps the reset dialog open when persisted-state removal is blocked', async () => {
         const unwrap = vi.fn().mockRejectedValue(new Error('blocked'))
         mocks.dispatch.mockReturnValueOnce({ unwrap })

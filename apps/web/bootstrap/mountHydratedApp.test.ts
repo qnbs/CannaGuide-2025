@@ -11,6 +11,7 @@ import {
 import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { hydrateApplicationStores } from './store'
 import { disableSentry } from '@/services/sentryService'
+import { takeSetAsideNotice } from '@/services/snapshotQuarantine'
 import {
     isRevisionChecked,
     setStaleSnapshotHandler,
@@ -109,6 +110,7 @@ vi.mock('@/stores/snapshotRevision', () => {
     }
 })
 vi.mock('@/services/sentryService', () => ({ disableSentry: vi.fn() }))
+vi.mock('@/services/snapshotQuarantine', () => ({ takeSetAsideNotice: vi.fn(() => false) }))
 vi.mock('./localOnlyPrivacy', () => ({
     applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
 }))
@@ -274,6 +276,19 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(renderOtherTabNotice).not.toHaveBeenCalled()
         expect(order).toEqual(['sync', 'services'])
+    })
+
+    it('says once, in the saved language, that saved data was set aside at this start (#666)', async () => {
+        vi.mocked(takeSetAsideNotice).mockReturnValueOnce(true)
+
+        await mountHydratedApp()
+
+        await vi.waitFor(() =>
+            expect(addNotification).toHaveBeenCalledWith({
+                message: 'saved:common.dataSetAside',
+                type: 'error',
+            }),
+        )
     })
 
     it('gives the writer role up when the start fails, so other tabs are not blocked', async () => {

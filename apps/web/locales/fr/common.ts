@@ -86,6 +86,8 @@ export const common = {
         description:
             "Vos donn\u00E9es ont \u00E9t\u00E9 enregistr\u00E9es par une version de CannaGuide plus r\u00E9cente que celle de cette page : cette page ne les a donc pas charg\u00E9es et n'enregistre rien, afin de pr\u00E9server ces donn\u00E9es. Rechargez pour obtenir la version plus r\u00E9cente. Si ce message r\u00E9appara\u00EEt, fermez tous les onglets et fen\u00EAtres CannaGuide, puis rouvrez l'application. Vos donn\u00E9es enregistr\u00E9es n'ont pas \u00E9t\u00E9 modifi\u00E9es.",
     },
+    dataSetAside:
+        "Vos donn\u00E9es enregistr\u00E9es n'ont pas pu \u00EAtre charg\u00E9es : CannaGuide a d\u00E9marr\u00E9 sans elles et en a gard\u00E9 une copie. Ouvrez R\u00E9glages > Donn\u00E9es pour la t\u00E9l\u00E9charger ou la restaurer.",
     saveFailed:
         "Vos derni\u00E8res modifications n'ont pas pu \u00EAtre enregistr\u00E9es et seraient perdues si vous fermez ou rechargez l'application. Le stockage du navigateur est peut-\u00EAtre plein : lib\u00E9rez de l'espace, et l'application r\u00E9essaiera \u00E0 votre prochaine modification.",
     previousSaveFailed:

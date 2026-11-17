@@ -13,6 +13,8 @@
  * installer or updater bundle is missing, an updater signature is missing or does not
  * verify against the tauri.conf.json pubkey, an installer carries another version than
  * the release, or two assets would get the same name. Exit 2 is a usage error.
+ * A prerelease version passes with a warning: the updater never offers it (see
+ * prereleaseNotice and docs/release-process.md).
  *
  * Usage: node scripts/release/desktop-release-manifest.mjs --artifacts <dir> --out <dir>
  *          --version 1.12.0 --tag v1.12.0 [--repo owner/name]
@@ -63,6 +65,20 @@ export const DESKTOP_TARGETS = {
 }
 
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/
+
+/** A version with a semver pre-release part (1.12.0-rc.1, 1.12.0-1, ...). */
+export const isPrerelease = (version) => SEMVER.test(version) && version.includes('-')
+
+/**
+ * Prereleases are GitHub prereleases, and the updater endpoint
+ * (releases/latest/download/latest.json) never resolves to one. So no installed app is
+ * offered a prerelease, and a prerelease install moves to the next stable release once
+ * that is strictly newer (the plugin's default comparator; 1.12.0 > 1.12.0-rc.1).
+ */
+export const prereleaseNotice = (version) =>
+    isPrerelease(version)
+        ? `${version} is a prerelease: its latest.json is attached to a GitHub prerelease, which releases/latest never serves, so no installed app is offered this build. Testers install it by hand.`
+        : undefined
 const SHIPPED = [/\.msi$/, /\.exe$/, /\.AppImage$/, /\.deb$/, /\.rpm$/, /\.dmg$/, /\.app\.tar\.gz$/]
 
 const filesUnder = (dir) =>
@@ -214,6 +230,8 @@ export function main(argv = process.argv.slice(2)) {
     const names = [...plan.assets.map(({ name }) => name), 'latest.json'].sort()
     const sums = names.map((name) => `${sha256(path.join(options.out, name))}  ${name}`)
     writeFileSync(path.join(options.out, 'SHA256SUMS'), `${sums.join('\n')}\n`)
+    const notice = prereleaseNotice(options.version)
+    if (notice) console.warn(`[WARN] ${notice}`)
     console.log(
         `[OK] ${plan.assets.length} desktop assets, ${Object.keys(plan.latest.platforms).length} updater platforms, latest.json and SHA256SUMS in ${options.out}`,
     )

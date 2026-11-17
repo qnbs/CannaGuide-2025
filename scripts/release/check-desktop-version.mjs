@@ -4,7 +4,8 @@
  * version must equal apps/desktop/package.json, the Tauri config (bundle and installer
  * version), Cargo.toml and the crate's Cargo.lock entry. The desktop app shipped as
  * 0.1.0 while the release was 1.11.0, so installers and the updater disagreed.
- * Optional `--tag vX.Y.Z` also requires the tag to match. Exit 1 on drift, 2 on usage.
+ * Optional `--tag vX.Y.Z` also requires the tag to match. Exit 1 on drift or an
+ * unreadable or malformed file, 2 on usage. LF and CRLF line endings are both accepted.
  */
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
@@ -12,7 +13,8 @@ import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 
 export const readDesktopVersions = (root) => {
-    const read = (file) => readFileSync(path.join(root, file), 'utf8')
+    // CRLF checkouts (core.autocrlf on Windows) must compare the same as LF ones.
+    const read = (file) => readFileSync(path.join(root, file), 'utf8').replaceAll('\r\n', '\n')
     const cargoToml = read('apps/desktop/src-tauri/Cargo.toml')
     const cargoLock = read('apps/desktop/src-tauri/Cargo.lock')
     return {
@@ -48,7 +50,13 @@ export function main(argv = process.argv.slice(2), root = process.cwd()) {
         }
         tag = argv[1]
     }
-    const versions = readDesktopVersions(root)
+    let versions
+    try {
+        versions = readDesktopVersions(root)
+    } catch (error) {
+        console.error(`[FAIL] cannot read the desktop versions: ${error.message}`)
+        return 1
+    }
     const problems = desktopVersionProblems(versions, tag)
     for (const problem of problems) console.error(`[FAIL] ${problem}`)
     if (problems.length === 0)

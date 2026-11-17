@@ -571,11 +571,14 @@ jobs:
                   ASSETS=("${TARBALL}" "cannaguide-sbom.cyclonedx.json" desktop-release/*)
                   REPO="${{ github.repository }}"
 
-                  # Determine prerelease flag
+                  # Determine prerelease flag. Every semver pre-release (v1.12.0-rc.1,
+                  # v1.12.0-1, ...) is a GitHub prerelease, so releases/latest -- the
+                  # updater endpoint -- never serves it to installed apps. Matching only
+                  # alpha|beta|rc let v1.12.0-1 become the stable latest release.
                   PRE_FLAG=""
-                  if echo "${TAG}" | grep -qE '(alpha|beta|rc)'; then
-                    PRE_FLAG="--prerelease"
-                  fi
+                  case "${TAG}" in
+                    *-*) PRE_FLAG="--prerelease" ;;
+                  esac
 
                   # Never overwrite: an existing release (published or draft) for this tag
                   # stops the run. A stale draft from a failed run is deleted by hand.

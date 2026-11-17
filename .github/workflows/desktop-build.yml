@@ -143,7 +143,10 @@ jobs:
               with:
                   projectPath: apps/desktop
                   tauriScript: pnpm tauri
-                  args: --target ${{ matrix.target }}
+                  # The overlay turns on updater bundles and their minisign
+                  # signatures for this build only; tauri.conf.json leaves them off
+                  # so a local `tauri build` needs no signing key.
+                  args: --target ${{ matrix.target }} --config src-tauri/tauri.updater.conf.json
 
             - name: Build Tauri
               if: runner.os != 'macOS' || env.HAS_APPLE_CERTIFICATE != 'true'
@@ -162,14 +165,17 @@ jobs:
               with:
                   projectPath: apps/desktop
                   tauriScript: pnpm tauri
-                  args: --target ${{ matrix.target }}
+                  # The overlay turns on updater bundles and their minisign
+                  # signatures for this build only; tauri.conf.json leaves them off
+                  # so a local `tauri build` needs no signing key.
+                  args: --target ${{ matrix.target }} --config src-tauri/tauri.updater.conf.json
 
             - name: Upload artifacts
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
                   name: desktop-${{ matrix.target }}
                   # Installers plus the updater bundles and their minisign signatures
-                  # (createUpdaterArtifacts): scripts/release/desktop-release-manifest.mjs
+                  # (tauri.updater.conf.json): scripts/release/desktop-release-manifest.mjs
                   # verifies them and writes latest.json before anything is published.
                   path: |
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.deb

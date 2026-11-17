@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 
@@ -41,4 +43,74 @@ test('the CLI exits 0 on this repository and 2 on bad arguments', () => {
     } finally {
         ;[console.log, console.error] = quiet
     }
+})
+
+/** A minimal repository with every version location, in LF or CRLF. */
+function fixtureRoot(t, { eol = '\n', version = '1.12.0', lock = {}, tauriConfig } = {}) {
+    const root = mkdtempSync(path.join(tmpdir(), 'cannaguide-desktop-version-'))
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    const write = (file, text) => {
+        mkdirSync(path.dirname(path.join(root, file)), { recursive: true })
+        writeFileSync(path.join(root, file), text.replaceAll('\n', eol))
+    }
+    write('package.json', `{\n  "version": "${version}"\n}\n`)
+    write('apps/desktop/package.json', `{\n  "version": "${version}"\n}\n`)
+    write(
+        'apps/desktop/src-tauri/tauri.conf.json',
+        tauriConfig ?? `{\n  "version": "${version}"\n}\n`,
+    )
+    write(
+        'apps/desktop/src-tauri/Cargo.toml',
+        `[package]\nname = "cannaguide-desktop"\nversion = "${version}"\n\n[dependencies]\ntauri = { version = "2.11.0" }\n`,
+    )
+    write(
+        'apps/desktop/src-tauri/Cargo.lock',
+        `version = 4\n\n[[package]]\nname = "aaa-dependency"\nversion = "9.9.9"\n\n[[package]]\nname = "${lock.name ?? 'cannaguide-desktop'}"\nversion = "${lock.version ?? version}"\n`,
+    )
+    return root
+}
+
+const quietly = (fn) => {
+    const saved = [console.log, console.error]
+    console.log = console.error = () => undefined
+    try {
+        return fn()
+    } finally {
+        ;[console.log, console.error] = saved
+    }
+}
+
+test('LF and CRLF checkouts read the same versions', (t) => {
+    for (const eol of ['\n', '\r\n']) {
+        const root = fixtureRoot(t, { eol })
+        const versions = readDesktopVersions(root)
+        assert.deepEqual(new Set(Object.values(versions)), new Set(['1.12.0']), JSON.stringify(eol))
+        assert.equal(
+            quietly(() => main(['--tag', 'v1.12.0'], root)),
+            0,
+        )
+    }
+})
+
+test('a CRLF checkout still fails on real drift, a missing crate and malformed input', (t) => {
+    const drift = readDesktopVersions(fixtureRoot(t, { eol: '\r\n', lock: { version: '1.11.0' } }))
+    assert.match(
+        desktopVersionProblems(drift).join('\n'),
+        /Cargo\.lock: 1\.11\.0 \(expected 1\.12\.0\)/,
+    )
+    // The version of another crate is never taken for ours.
+    const missing = readDesktopVersions(
+        fixtureRoot(t, { eol: '\r\n', lock: { name: 'other-crate' } }),
+    )
+    assert.match(desktopVersionProblems(missing).join('\n'), /Cargo\.lock: no version/)
+
+    const malformed = fixtureRoot(t, { eol: '\r\n', tauriConfig: '{ "version": ' })
+    assert.equal(
+        quietly(() => main([], malformed)),
+        1,
+    )
+    assert.equal(
+        quietly(() => main([], path.join(malformed, 'does-not-exist'))),
+        1,
+    )
 })

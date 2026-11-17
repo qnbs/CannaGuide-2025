@@ -157,7 +157,9 @@ tag that is already on the remote.
    creates the tarball + CycloneDX SBOM.
 4. `desktop` calls `desktop-build.yml` for the resolved commit: Windows (MSI, NSIS),
    Linux (AppImage, deb) and macOS (dmg, Apple silicon and Intel), with
-   minisign-signed updater bundles (`createUpdaterArtifacts`). Its `verify` job runs
+   minisign-signed updater bundles. `createUpdaterArtifacts` is turned on only here,
+   through `src-tauri/tauri.updater.conf.json` (`--config`); the base `tauri.conf.json`
+   leaves it off, so a local `tauri build` needs no signing key. Its `verify` job runs
    `scripts/release/desktop-release-manifest.mjs`, which **fails closed** when a target,
    installer or updater bundle is missing, an updater signature is missing or does not
    verify against the `tauri.conf.json` pubkey, or an installer carries another
@@ -177,6 +179,21 @@ existing tag's commit.
 required. Windows Authenticode and macOS Developer ID / notarization run only where
 the certificates are provisioned; unsigned installers trigger OS warnings and are
 documented as such in the release notes.
+
+**Update channels:** the updater reads `releases/latest/download/latest.json`.
+GitHub's `latest` is the newest published release that is neither a draft nor a
+prerelease, and Release Publish marks every tag with a semver pre-release part
+(`v1.12.0-rc.1`, `v1.12.0-1`, ...) as a prerelease. So a stable install is offered
+only stable releases, and no installed app is ever offered a prerelease; testers
+install one by hand (the manifest step prints a `[WARN]` for it). A prerelease install
+moves to the next stable release once that is strictly newer: the app registers
+`tauri-plugin-updater` without a custom comparator, and the default offers only a
+higher semver (`1.12.0` replaces `1.12.0-rc.1`), so an older release is never offered
+as a downgrade. Limitation: the Windows MSI ProductVersion is numeric
+(`major.minor.patch.build`, Tauri `bundle.windows.wix.version`), so a non-numeric
+pre-release such as `-rc.1` cannot be expressed and the MSI bundling step stops the
+desktop build unless that field is set. Desktop prereleases are not supported yet;
+stable releases are.
 
 **CI Status Guard:** The build job queries the GitHub Checks API and
 requires the CI Status check on the resolved tag commit to be

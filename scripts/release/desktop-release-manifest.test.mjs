@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -7,8 +8,10 @@ import { test } from 'node:test'
 import {
     assetName,
     DESKTOP_TARGETS,
+    isPrerelease,
     main,
     planDesktopRelease,
+    prereleaseNotice,
 } from './desktop-release-manifest.mjs'
 import { makeSigner } from './test-signer.mjs'
 
@@ -229,4 +232,64 @@ test('usage errors exit 2', () => {
     } finally {
         console.error = quiet
     }
+})
+
+test('every semver pre-release is a prerelease, stable versions are not', () => {
+    for (const version of [
+        '1.12.0-rc.1',
+        '1.12.0-beta',
+        '1.12.0-alpha.2',
+        '1.12.0-1',
+        '1.12.0-preview.3',
+    ]) {
+        assert.equal(isPrerelease(version), true, version)
+        assert.match(prereleaseNotice(version), /releases\/latest never serves/, version)
+    }
+    for (const version of ['1.12.0', '2.0.0', 'v1.12.0-rc.1', '1.12']) {
+        assert.equal(isPrerelease(version), false, version)
+        assert.equal(prereleaseNotice(version), undefined, version)
+    }
+})
+
+test('the CLI warns for a prerelease and stays quiet for a stable release', (t) => {
+    for (const [version, warns] of [
+        ['1.12.0-rc.1', true],
+        ['1.12.0', false],
+    ]) {
+        const { root, artifactsDir, pubkey } = makeArtifacts(t, { version })
+        const config = path.join(root, 'tauri.conf.json')
+        writeFileSync(config, JSON.stringify({ plugins: { updater: { pubkey } } }))
+        const warnings = []
+        const saved = [console.warn, console.log]
+        console.warn = (line) => warnings.push(line)
+        console.log = () => undefined
+        try {
+            const args = ['--artifacts', artifactsDir, '--out', path.join(root, 'out')]
+            args.push('--version', version, '--tag', `v${version}`, '--tauri-config', config)
+            assert.equal(main(args), 0, version)
+        } finally {
+            ;[console.warn, console.log] = saved
+        }
+        assert.equal(warnings.length, warns ? 1 : 0, version)
+        if (warns) assert.match(warnings[0], /^\[WARN\] 1\.12\.0-rc\.1 is a prerelease/)
+    }
+})
+
+test('Release Publish marks every pre-release tag as a GitHub prerelease', () => {
+    // Runs the workflow's own shell snippet: a tag that became the stable release would
+    // be what releases/latest -- the updater endpoint -- serves to every installed app.
+    const workflow = readFileSync(
+        path.join(import.meta.dirname, '../../.github/workflows/release-publish.yml'),
+        'utf8',
+    )
+    const start = workflow.indexOf('PRE_FLAG=""')
+    const end = workflow.indexOf('esac', start)
+    assert.ok(start !== -1 && end !== -1, 'prerelease flag block not found')
+    const snippet = `${workflow.slice(start, end + 'esac'.length)}\nprintf %s "$PRE_FLAG"`
+    const flag = (tag) =>
+        execFileSync('bash', ['-c', snippet], { env: { TAG: tag }, encoding: 'utf8' })
+    for (const tag of ['v1.12.0-rc.1', 'v1.12.0-beta', 'v1.12.0-1', 'v1.12.0-preview.3']) {
+        assert.equal(flag(tag), '--prerelease', tag)
+    }
+    for (const tag of ['v1.12.0', 'v2.0.0']) assert.equal(flag(tag), '', tag)
 })

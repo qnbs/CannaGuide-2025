@@ -4,7 +4,7 @@ Standing procedure for every pull request in this repository. It applies to find
 
 **Review coverage:** Prefer two independent qualified reviews from CodeRabbit, CodeAnt, Codex, and Sourcery on the exact current head. Low-risk fallback is limited to one qualified review after one request and the documented wait; high-risk changes and uncertainty require two, with no fallback. No third review is required once two qualified reviews cover the current head.
 
-Review evidence must bind to the full 40-character current head SHA and an allowlisted identity. Each provider counts once. A review receipt is accepted only in the explicitly supported, structured Codex format below; a free-form comment, status check, bot receipt without a full SHA, or user-authored copy does not count. All findings and relevant threads must still be dispositioned, and required GitHub checks remain mandatory.
+Review evidence must bind to the full 40-character current head SHA and an allowlisted identity. Each provider counts once. A review receipt is accepted only in the two explicitly supported, structured formats below (the Codex receipt and the exact-head CodeRabbit coverage marker); a free-form comment, status check, bot receipt without a full SHA, or user-authored copy does not count. All findings and relevant threads must still be dispositioned, and required GitHub checks remain mandatory.
 
 The policy change in PR #857 is transitional: evaluate that PR under the pre-change policy until it is merged. For #857, only two non-dismissed, completed GitHub pull-request review objects from CodeRabbit, CodeAnt, or Codex on the exact current head satisfy the old internal review requirement. Do not use this change to approve itself.
 
@@ -177,6 +177,7 @@ Every "green" claim in a PR description cites a **CI run URL + artifact**, never
 - [ ] Risk is classified from the actual changed paths; exact-head evidence is re-read immediately before merge.
 - [ ] Two independent qualified reviewers cover high-risk changes; no fallback is allowed. Low-risk fallback, if used, meets the single-request evidence and wait rules in section 5.
 - [ ] A supported structured Codex receipt has a verified bot author, full exact SHA, completed status, and findings booleans; unsupported comments do not count.
+- [ ] A CodeRabbit coverage-marker receipt comes from `coderabbitai[bot]` (type Bot), has exactly one `final_review_risk_coverage` marker, names the full exact head SHA as source and covered commit, and has kind `reviewed`.
 - [ ] Sourcery is optional; no third reviewer is requested once two qualified reviewers cover the head.
 - [ ] PR #857 itself is evaluated under the pre-change rule until merged.
 - [ ] Every finding is fixed at the root, with a reply citing the resolving commit, or refuted with evidence in-thread; a no-code refutation cites the current head SHA.

@@ -204,6 +204,8 @@ pub fn run() {
             confirm_quit,
             update::update_check,
             update::update_download,
+            update::update_cancel,
+            update::update_set_local_only,
             update::update_install,
         ])
         .build(tauri::generate_context!())

@@ -3,20 +3,24 @@
  * apps/desktop/src-tauri/src/{lifecycle,update}.rs.
  *
  * Quit: every user quit (tray, close button, Cmd+Q) emits `tauri://before-quit` and
- * waits; the app exits when `confirm_quit` arrives after the flush, or after a
- * timeout for a frontend that never answers.
+ * waits; the app exits when `confirm_quit` arrives after the save, or after a timeout
+ * for a frontend that never answers.
  *
  * Update: Rust checks the release endpoint, downloads the bundle (tauri-plugin-updater
  * verifies its minisign signature before returning it) and installs it. This module
  * owns the rules the web app knows about:
  *
  * - Nothing runs outside the desktop app; browser and PWA builds never call it.
- * - Local-Only mode blocks checks and downloads, automatic or manual: both are
- *   requests to github.com. Installing an already downloaded bundle sends nothing.
- * - One step at a time (the Rust side enforces the same).
- * - Persisted state must be saved before the install. A flush that fails or reports
+ * - Local-Only mode and being offline block checks and downloads, automatic or
+ *   manual: both are requests to github.com. Installing an already downloaded bundle
+ *   sends nothing, so it stays possible. Rust mirrors Local-Only as a second layer,
+ *   and turning it on stops a running download, not only the next request.
+ * - One step at a time (the Rust side enforces the same); Cancel stops a download.
+ * - Persisted state must be saved before the install. A save that fails or reports
  *   "not saved" stops it: on Windows the installer ends the process from inside the
  *   install command, so there is no later chance to save.
+ * - The stage reached (available, downloaded) lives here for the whole launch, so
+ *   leaving Settings > About and coming back does not lose a finished download.
  */
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { platform } from '@/services/platformService'
@@ -33,6 +37,10 @@ export interface DownloadProgress {
     total: number | null
 }
 
+/** How far this launch got: an update was found, or it is downloaded and verified. */
+export type DesktopUpdateStage =
+    { kind: 'available'; info: DesktopUpdateInfo } | { kind: 'ready'; info: DesktopUpdateInfo }
+
 /** Mirrors `DownloadEvent` in update.rs (serde: tag = "event", content = "data"). */
 type DownloadEvent = { event: 'progress'; data: DownloadProgress } | { event: 'finished' }
 
@@ -41,7 +49,14 @@ export interface TauriBridge {
     channel: <T>(onMessage: (message: T) => void) => unknown
 }
 
-export type DesktopUpdateFailure = 'not-desktop' | 'local-only' | 'busy' | 'not-saved' | 'failed'
+export type DesktopUpdateFailure =
+    'not-desktop' | 'local-only' | 'offline' | 'busy' | 'not-saved' | 'cancelled' | 'failed'
+
+/** The exact error texts of update.rs, mapped to the reasons the card explains. */
+const NATIVE_REASONS: Readonly<Record<string, DesktopUpdateFailure>> = {
+    'download cancelled': 'cancelled',
+    'Local-only mode is on; the update server is not contacted': 'local-only',
+}
 
 export class DesktopUpdateError extends Error {
     readonly reason: DesktopUpdateFailure
@@ -60,11 +75,16 @@ export interface DesktopUpdater {
     check: () => Promise<DesktopUpdateInfo | null>
     download: (onProgress: (progress: DownloadProgress) => void) => Promise<void>
     installAndRestart: () => Promise<void>
+    /** Stops a running download; resolves true if one was running. */
+    cancelDownload: () => Promise<boolean>
+    /** The stage this launch reached, for a card that was mounted again. */
+    currentStage: () => DesktopUpdateStage | null
 }
 
 export interface DesktopUpdaterDeps {
     isDesktop: () => boolean
     isLocalOnly: () => boolean
+    isOnline: () => boolean
     loadBridge: () => Promise<TauriBridge>
     getFlush: () => PersistFlush | undefined
 }
@@ -74,6 +94,7 @@ const messageOf = (error: unknown): string =>
 
 export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater => {
     let running = false
+    let stage: DesktopUpdateStage | null = null
 
     const run = async <T>(step: (bridge: TauriBridge) => Promise<T>): Promise<T> => {
         if (!deps.isDesktop()) {
@@ -96,32 +117,45 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
         try {
             return await bridge.invoke<T>(command, args)
         } catch (error) {
-            throw new DesktopUpdateError('failed', messageOf(error), error)
+            const message = messageOf(error)
+            throw new DesktopUpdateError(NATIVE_REASONS[message] ?? 'failed', message, error)
         }
     }
 
-    const refuseWhenLocalOnly = (): void => {
+    /** Both requests leave the device; neither may run in Local-Only mode or offline. */
+    const refuseNetwork = (): void => {
         if (deps.isLocalOnly()) {
             throw new DesktopUpdateError(
                 'local-only',
                 'Local-only mode is on; the update server is not contacted',
             )
         }
+        if (!deps.isOnline()) {
+            throw new DesktopUpdateError('offline', 'the device is offline')
+        }
     }
 
     return {
         check: () =>
             run(async (bridge) => {
-                refuseWhenLocalOnly()
-                return invoke<DesktopUpdateInfo | null>(bridge, 'update_check')
+                refuseNetwork()
+                const info = await invoke<DesktopUpdateInfo | null>(bridge, 'update_check')
+                // update.rs keeps the downloaded bundle for the same version, so a later
+                // check (the startup one) must not send a downloaded update back to
+                // "available".
+                const keepsDownload =
+                    stage?.kind === 'ready' && info !== null && info.version === stage.info.version
+                stage = info ? { kind: keepsDownload ? 'ready' : 'available', info } : null
+                return info
             }),
         download: (onProgress) =>
             run(async (bridge) => {
-                refuseWhenLocalOnly()
+                refuseNetwork()
                 const onEvent = bridge.channel<DownloadEvent>((message) => {
                     if (message.event === 'progress') onProgress(message.data)
                 })
                 await invoke<void>(bridge, 'update_download', { onEvent })
+                if (stage) stage = { kind: 'ready', info: stage.info }
             }),
         installAndRestart: () =>
             run(async (bridge) => {
@@ -140,6 +174,13 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
                 }
                 await invoke<void>(bridge, 'update_install')
             }),
+        // Outside the one-step-at-a-time guard: it has to reach a running download.
+        cancelDownload: async () => {
+            if (!deps.isDesktop()) return false
+            const bridge = await deps.loadBridge()
+            return invoke<boolean>(bridge, 'update_cancel')
+        },
+        currentStage: () => stage,
     }
 }
 
@@ -147,9 +188,7 @@ const loadTauriBridge = async (): Promise<TauriBridge> => {
     const { invoke, Channel } = await import('@tauri-apps/api/core')
     return {
         invoke: <T>(command: string, args?: Record<string, unknown>) => invoke<T>(command, args),
-        channel: <T>(onMessage: (message: T) => void) => {
-            return new Channel<T>(onMessage)
-        },
+        channel: <T>(onMessage: (message: T) => void) => new Channel<T>(onMessage),
     }
 }
 
@@ -163,9 +202,46 @@ export const registerPersistFlush = (flush: PersistFlush | undefined): void => {
 export const desktopUpdater: DesktopUpdater = createDesktopUpdater({
     isDesktop: () => platform.isTauri,
     isLocalOnly: isLocalOnlyMode,
+    isOnline: () => navigator.onLine,
     loadBridge: loadTauriBridge,
     getFlush: () => registeredFlush,
 })
+
+/**
+ * Tells update.rs whether Local-Only mode is on. Rust then refuses checks and
+ * downloads by itself and, when it turns on, stops a running download -- a second
+ * layer behind the checks above, for a caller that forgot them.
+ */
+export const syncNativeLocalOnly = async (
+    enabled: boolean,
+    loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
+): Promise<void> => {
+    if (!platform.isTauri) return
+    const bridge = await loadBridge()
+    await bridge.invoke<void>('update_set_local_only', { enabled })
+}
+
+/**
+ * A save for quit and install. One flush saves the state as of its write slot; a
+ * change made while that save waits (on the coordinator or the async simulation
+ * step) only schedules a debounced save, which a quit or an install would cut off.
+ * So it saves again while the state keeps changing, up to `maxRounds`. After that it
+ * reports the last save's result: a store that never settles (a running timer) must
+ * not block a quit or an update forever, and the last save is at most one round old.
+ */
+export const flushUntilStable =
+    (flush: PersistFlush, getState: () => unknown, maxRounds = 3): PersistFlush =>
+    async () => {
+        for (let round = 1; ; round += 1) {
+            const before = getState()
+            if (!(await flush())) return false
+            if (getState() === before) return true
+            if (round >= maxRounds) {
+                console.debug('[DesktopLifecycle] state still changing after the last save')
+                return true
+            }
+        }
+    }
 
 export interface StartupCheckDeps {
     updater: Pick<DesktopUpdater, 'check'>
@@ -173,7 +249,7 @@ export interface StartupCheckDeps {
     isLocalOnly: () => boolean
     isOnline: () => boolean
     onAvailable: (info: DesktopUpdateInfo) => void
-    delayMs?: number
+    delayMs?: number | undefined
 }
 
 /** Default delay, so the check never competes with startup work. */

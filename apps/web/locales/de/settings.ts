@@ -926,6 +926,9 @@ export const settingsView = {
             downloadingUnknown: 'Wird heruntergeladen und geprüft ...',
             ready: 'Version {{version}} ist heruntergeladen und ihre Signatur geprüft. Beim Installieren werden deine letzten Änderungen gespeichert, die App ersetzt und neu gestartet.',
             install: 'Installieren und neu starten',
+            cancel: 'Download abbrechen',
+            cancelled: 'Der Download wurde gestoppt.',
+            offline: 'Du bist offline. Verbinde dich mit dem Internet, um nach Updates zu suchen.',
             installing: 'Deine Daten werden gespeichert und das Update installiert ...',
             error: 'Das Update ist fehlgeschlagen: {{message}}',
             notSaved:

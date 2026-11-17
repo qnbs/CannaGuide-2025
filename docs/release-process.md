@@ -217,26 +217,45 @@ desktop build unless that field is set. Desktop prereleases are not supported ye
 stable releases are.
 
 **In-app updates (desktop):** Settings > About shows an update card in the desktop
-app only. The app checks once per launch, 15 seconds after start, unless Local-Only mode
-is on or the device is offline; Local-Only mode also blocks manual checks and downloads,
-because both contact github.com. Every step is a click: check, download, install. The
-download is verified by `tauri-plugin-updater` against the updater key before any byte
-is kept. Install first saves the latest changes and stops if that save fails or reports
-"not saved" -- on Windows the installer ends the process from inside the install
-command, so there is no later chance. The webview has no updater plugin permission;
-`src-tauri/src/update.rs` is the only path.
+app only. The app checks once per launch, 15 seconds after start. Local-Only mode and
+being offline block every check and download, automatic or manual, because both contact
+github.com. Turning Local-Only mode on stops a running download, and `update.rs` mirrors
+the mode and refuses as well. Every step is a click: check, download (with Cancel),
+install. `tauri-plugin-updater` verifies the download against the updater key before any
+byte is kept. A finished download survives leaving the About tab and a later check of
+the same version. Checks time out after 30 seconds and downloads after 20 minutes.
+Install first saves the latest changes, repeating while changes keep arriving, and stops
+if that save fails or reports "not saved". On Windows the installer ends the process from
+inside the install command, so there is no later chance to save.
+
+The webview has no permission for the updater plugin's own commands (they would skip
+both the question and the save). The app's update commands in `src-tauri/src/update.rs`
+are callable by code in the webview, like every app command in Tauri v2, so they are no
+security boundary against code running there. That boundary is the webview's content:
+the bundled app under its CSP.
 
 **Quit handshake (desktop):** the tray Quit, the close button and Cmd+Q all ask the web
-app to save first (`tauri://before-quit`), and the app exits when the save has finished
-(`confirm_quit`), or after 5 seconds if the web app never answers. Before, the tray quit
-exited after a fixed 250 ms and the close button did not wait at all.
+app to save first (`tauri://before-quit`). The app exits when the save has finished
+(`confirm_quit`), or after 10 seconds if the web app never answers. The listener is
+registered before the slower startup work. Before, the tray quit exited after a fixed
+250 ms and the close button did not wait at all.
 
-**Manual acceptance of a real update** (CI cannot install and relaunch a desktop app):
-install the previous signed release on each platform, publish the new draft, then in the
-installed app use Settings > About: check, download, install. The app must restart into
-the new version with all grows, plants and settings intact. Then check that a download
-with a tampered `latest.json` signature is refused, and that Local-Only mode shows the
-blocked notice instead of contacting the server.
+**Manual acceptance of a real update** (CI cannot install and relaunch a desktop app;
+deferred by the owner, not yet done). 1.12.0 is the first version with a working
+updater, so the first qualification needs two updater-capable builds:
+
+1. Install the published 1.12.0 (the baseline) on each platform and create some data.
+2. Publish the next release (1.12.1 or later) through this process, or, without
+   publishing, build a test bundle with a higher version and serve its `latest.json`
+   from a local server that a test build of the baseline points to
+   (`plugins.updater.endpoints` through an extra `--config` overlay).
+3. In the installed app use Settings > About: check, download, install. The app must
+   restart into the new version with all grows, plants and settings intact.
+4. Check that a bundle with a tampered signature is refused, that Local-Only mode shows
+   the blocked notice instead of contacting the server, and that tray Quit, the close
+   button and Cmd+Q keep a change made just before quitting.
+
+Later releases repeat steps 1 and 3 from the previous release.
 
 **CI Status Guard:** The build job queries the GitHub Checks API and
 requires the CI Status check on the resolved tag commit to be

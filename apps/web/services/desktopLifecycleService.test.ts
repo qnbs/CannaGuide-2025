@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+vi.mock('@/services/platformService', () => ({ platform: { isTauri: true } }))
+
 import {
     createDesktopUpdater,
     DesktopUpdateError,
     flushThenConfirmQuit,
+    flushUntilStable,
     scheduleStartupUpdateCheck,
+    syncNativeLocalOnly,
     type DesktopUpdateInfo,
     type DesktopUpdaterDeps,
     type PersistFlush,
@@ -38,6 +42,7 @@ const updaterWith = (bridge: TauriBridge, overrides: Partial<DesktopUpdaterDeps>
     createDesktopUpdater({
         isDesktop: () => true,
         isLocalOnly: () => false,
+        isOnline: () => true,
         loadBridge: async () => bridge,
         getFlush: () => async () => true,
         ...overrides,
@@ -157,6 +162,120 @@ describe('desktop updater', () => {
         const updater = updaterWith(bridge, { getFlush: () => undefined })
         expect(await reasonOf(updater.installAndRestart())).toBe('not-saved')
         expect(calls).toEqual([])
+    })
+})
+
+describe('desktop updater: review fixes on #878', () => {
+    it('offline blocks checks and downloads but not installing a downloaded bundle', async () => {
+        const { bridge, calls } = fakeBridge()
+        const updater = updaterWith(bridge, { isOnline: () => false })
+        expect(await reasonOf(updater.check())).toBe('offline')
+        expect(await reasonOf(updater.download(() => undefined))).toBe('offline')
+        await updater.installAndRestart()
+        expect(calls).toEqual(['update_install'])
+    })
+
+    it('remembers the stage for the launch, and a later check of the same version keeps the download', async () => {
+        let next: DesktopUpdateInfo | null = INFO
+        const { bridge } = fakeBridge({ update_check: () => next })
+        const updater = updaterWith(bridge)
+        expect(updater.currentStage()).toBeNull()
+        await updater.check()
+        expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
+        await updater.download(() => undefined)
+        expect(updater.currentStage()).toEqual({ kind: 'ready', info: INFO })
+        // The startup check after a manual download (Codex and CodeRabbit on #878).
+        await updater.check()
+        expect(updater.currentStage()?.kind).toBe('ready')
+        next = { ...INFO, version: '1.12.1' }
+        await updater.check()
+        expect(updater.currentStage()).toEqual({ kind: 'available', info: next })
+        next = null
+        await updater.check()
+        expect(updater.currentStage()).toBeNull()
+    })
+
+    it('a failed or cancelled download leaves the update available', async () => {
+        const { bridge } = fakeBridge({
+            update_check: () => INFO,
+            update_download: () => Promise.reject('download cancelled'),
+        })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        expect(await reasonOf(updater.download(() => undefined))).toBe('cancelled')
+        expect(updater.currentStage()).toEqual({ kind: 'available', info: INFO })
+    })
+
+    it('maps the native Local-Only refusal to its own reason', async () => {
+        const { bridge } = fakeBridge({
+            update_check: () =>
+                Promise.reject('Local-only mode is on; the update server is not contacted'),
+        })
+        expect(await reasonOf(updaterWith(bridge).check())).toBe('local-only')
+    })
+
+    it('cancel reaches a running download past the one-step guard', async () => {
+        let finish: (value: unknown) => void = () => undefined
+        const { bridge, calls } = fakeBridge({
+            update_check: () => INFO,
+            update_download: () => new Promise((resolve) => (finish = resolve)),
+            update_cancel: () => true,
+        })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        const download = updater.download(() => undefined)
+        await vi.waitFor(() => expect(calls).toContain('update_download'))
+        await expect(updater.cancelDownload()).resolves.toBe(true)
+        expect(calls).toContain('update_cancel')
+        finish(undefined)
+        await download
+    })
+
+    it('tells update.rs about Local-Only mode', async () => {
+        const seen: unknown[] = []
+        const { bridge } = fakeBridge({
+            update_set_local_only: (args) => {
+                seen.push(args)
+            },
+        })
+        await syncNativeLocalOnly(true, async () => bridge)
+        await syncNativeLocalOnly(false, async () => bridge)
+        expect(seen).toEqual([{ enabled: true }, { enabled: false }])
+    })
+})
+
+describe('save until the state settles (CodeAnt on #878)', () => {
+    it('saves once when nothing changes during the save', async () => {
+        const state = { value: 1 }
+        const flush = vi.fn(async () => true)
+        await expect(flushUntilStable(flush, () => state)()).resolves.toBe(true)
+        expect(flush).toHaveBeenCalledTimes(1)
+    })
+
+    it('saves again when the state changed during the save', async () => {
+        let state = { value: 1 }
+        const flush = vi.fn(async () => {
+            if (flush.mock.calls.length === 1) state = { value: 2 }
+            return true
+        })
+        await expect(flushUntilStable(flush, () => state)()).resolves.toBe(true)
+        expect(flush).toHaveBeenCalledTimes(2)
+    })
+
+    it('stops after the last round for a store that never settles, and fails on a failed save', async () => {
+        const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        let tick = 0
+        const flush = vi.fn(async () => {
+            tick += 1
+            return true
+        })
+        await expect(flushUntilStable(flush, () => ({ tick }), 3)()).resolves.toBe(true)
+        expect(flush).toHaveBeenCalledTimes(3)
+        debug.mockRestore()
+
+        const failing = vi.fn(async () => false)
+        await expect(flushUntilStable(failing, () => ({}))()).resolves.toBe(false)
+        expect(failing).toHaveBeenCalledTimes(1)
     })
 })
 

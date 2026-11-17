@@ -9,6 +9,63 @@ import { ttsService } from '@/services/ttsService'
 import { Sentry } from '@/services/sentryService'
 import type { FlushPersistedState } from './persistence'
 
+/**
+ * Desktop (Tauri) only: the quit handshake, the save used by quit and update install,
+ * the Local-Only stop for a running update download, and the startup update check.
+ */
+const setUpDesktopLifecycle = async (
+    hydratedStore: AppStore,
+    flushPersistedState?: FlushPersistedState,
+): Promise<void> => {
+    const { platform } = await import('@/services/platformService')
+    if (!platform.isTauri) return
+    const [lifecycle, { isLocalOnlyMode, onLocalOnlyModeChange }] = await Promise.all([
+        import('@/services/desktopLifecycleService'),
+        import('@/services/localOnlyModeService'),
+    ])
+    // Quit and install save the same way: again while changes keep arriving.
+    const flush = flushPersistedState
+        ? lifecycle.flushUntilStable(flushPersistedState, () => hydratedStore.getState())
+        : undefined
+    lifecycle.registerPersistFlush(flush)
+    try {
+        const { listen } = await import('@tauri-apps/api/event')
+        // The app holds every user quit until this confirms that the save has
+        // finished (src-tauri/src/lib.rs request_quit), not a fixed delay.
+        await listen('tauri://before-quit', () =>
+            lifecycle.flushThenConfirmQuit(flush).catch((err: unknown) => {
+                console.debug('[Tauri] quit confirmation failed:', err)
+            }),
+        )
+    } catch (err) {
+        console.debug('[Tauri] before-quit listener setup failed:', err)
+    }
+    // update.rs mirrors Local-Only: it refuses checks and downloads while the mode is
+    // on, and turning it on stops a running download, not only the next one.
+    const syncNative = (enabled: boolean): void => {
+        lifecycle.syncNativeLocalOnly(enabled).catch((err: unknown) => {
+            console.debug('[Tauri] Local-Only sync to the updater failed:', err)
+        })
+    }
+    syncNative(isLocalOnlyMode())
+    onLocalOnlyModeChange(syncNative)
+    const { getT } = await import('@/i18n')
+    lifecycle.scheduleStartupUpdateCheck({
+        updater: lifecycle.desktopUpdater,
+        isDesktop: () => platform.isTauri,
+        isLocalOnly: isLocalOnlyMode,
+        isOnline: () => navigator.onLine,
+        onAvailable: (info) => {
+            getUISnapshot().addNotification({
+                message: getT()('settingsView.about.update.notification', {
+                    version: info.version,
+                }),
+                type: 'info',
+            })
+        },
+    })
+}
+
 export const runPostHydrationServices = async (
     hydratedStore: AppStore,
     flushPersistedState?: FlushPersistedState,
@@ -36,6 +93,10 @@ export const runPostHydrationServices = async (
         const { disableSentry } = await import('@/services/sentryService')
         disableSentry()
     }
+
+    // Before any slower startup work: every desktop quit waits for this listener's
+    // confirmation, so it has to exist as soon as there is state to save.
+    await setUpDesktopLifecycle(hydratedStore, flushPersistedState)
 
     await strainService.init()
     hydratedStore.dispatch(initializeSimulation())
@@ -119,43 +180,6 @@ export const runPostHydrationServices = async (
             .catch(() => {
                 // Non-fatal
             })
-    }
-
-    const { platform } = await import('@/services/platformService')
-    if (platform.isTauri) {
-        const lifecycle = await import('@/services/desktopLifecycleService')
-        // The update install saves through the same function before it restarts.
-        lifecycle.registerPersistFlush(flushPersistedState)
-        try {
-            const { listen } = await import('@tauri-apps/api/event')
-            // The app holds every user quit until this confirms that the save has
-            // finished (src-tauri/src/lib.rs request_quit), not a fixed delay.
-            await listen('tauri://before-quit', () => {
-                lifecycle.flushThenConfirmQuit(flushPersistedState).catch((err: unknown) => {
-                    console.debug('[Tauri] quit confirmation failed:', err)
-                })
-            })
-        } catch (err) {
-            console.debug('[Tauri] before-quit listener setup failed:', err)
-        }
-        const [{ isLocalOnlyMode }, { getT }] = await Promise.all([
-            import('@/services/localOnlyModeService'),
-            import('@/i18n'),
-        ])
-        lifecycle.scheduleStartupUpdateCheck({
-            updater: lifecycle.desktopUpdater,
-            isDesktop: () => platform.isTauri,
-            isLocalOnly: isLocalOnlyMode,
-            isOnline: () => navigator.onLine,
-            onAvailable: (info) => {
-                getUISnapshot().addNotification({
-                    message: getT()('settingsView.about.update.notification', {
-                        version: info.version,
-                    }),
-                    type: 'info',
-                })
-            },
-        })
     }
 
     const { registerOfflineActionReplayListener } =

@@ -114,9 +114,10 @@ test('macOS builds carry at least an ad-hoc signature, and the webview cannot dr
         '-',
     )
 
-    // src-tauri/src/update.rs is the only way to download or install an update: it
-    // runs after the user's consent and a confirmed save. No capability may hand the
-    // webview the plugin's own updater commands, which would skip both.
+    // The app updates only through src-tauri/src/update.rs, after the user's consent
+    // and a confirmed save. The plugin's own updater commands would skip both, so no
+    // capability may grant them to the webview. (App commands stay callable by code
+    // in the webview; that is no boundary, see the trust note in update.rs.)
     const dir = 'apps/desktop/src-tauri/capabilities'
     // tauri.conf.json lists capabilities by identifier; a listed one without a file
     // fails the build script ("capability with identifier ... not found").

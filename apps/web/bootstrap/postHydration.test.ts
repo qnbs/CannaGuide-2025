@@ -19,6 +19,8 @@ const mockSetAppReady = vi.fn()
 const platformMocks = vi.hoisted(() => ({
     isTauri: false,
     listen: vi.fn(),
+    invoke: vi.fn(),
+    order: [] as string[],
 }))
 
 vi.mock('@/services/strainService', () => ({
@@ -81,6 +83,11 @@ vi.mock('@tauri-apps/api/event', () => ({
     listen: platformMocks.listen,
 }))
 
+vi.mock('@tauri-apps/api/core', () => ({
+    invoke: platformMocks.invoke,
+    Channel: class {},
+}))
+
 vi.mock('@/services/offlineActionReplayService', () => ({
     registerOfflineActionReplayListener: vi.fn(),
 }))
@@ -108,6 +115,8 @@ describe('runPostHydrationServices', () => {
         mockLoadPersistedPassword.mockResolvedValue(undefined)
         platformMocks.isTauri = false
         platformMocks.listen.mockReset()
+        platformMocks.invoke.mockReset()
+        platformMocks.order.length = 0
         document.body.removeAttribute('data-app-ready')
     })
 
@@ -176,5 +185,38 @@ describe('runPostHydrationServices', () => {
             expect.any(Function),
         )
         expect(flushPersistedState).toHaveBeenCalledOnce()
+    })
+
+    it('registers the quit listener before slower startup work and confirms only after the save', async () => {
+        const store = createTestStore()
+        const flushPersistedState = vi.fn(async () => {
+            platformMocks.order.push('save')
+            return true
+        })
+        let beforeQuit: (() => Promise<void>) | undefined
+        platformMocks.isTauri = true
+        platformMocks.listen.mockImplementation(
+            async (_event: string, callback: () => Promise<void>) => {
+                platformMocks.order.push('listen')
+                beforeQuit = callback
+                return () => {}
+            },
+        )
+        mockStrainInit.mockImplementation(async () => {
+            platformMocks.order.push('strains')
+        })
+        platformMocks.invoke.mockImplementation(async (command: string) => {
+            platformMocks.order.push(command)
+        })
+
+        await runPostHydrationServices(store, flushPersistedState)
+        // CodeAnt on #878: a quit during the slower startup steps found no listener.
+        expect(platformMocks.order.indexOf('listen')).toBeLessThan(
+            platformMocks.order.indexOf('strains'),
+        )
+
+        platformMocks.order.length = 0
+        await beforeQuit?.()
+        expect(platformMocks.order).toEqual(['save', 'confirm_quit'])
     })
 })

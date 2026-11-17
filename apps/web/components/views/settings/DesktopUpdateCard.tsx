@@ -6,11 +6,16 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import {
     desktopUpdater as defaultUpdater,
     DesktopUpdateError,
+    type DesktopUpdateFailure,
     type DesktopUpdateInfo,
     type DesktopUpdater,
+    type DesktopUpdateStage,
     type DownloadProgress,
 } from '@/services/desktopLifecycleService'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+
+/** Which step a failed one offers again. */
+type Retry = 'check' | 'download' | 'install'
 
 type Status =
     | { kind: 'idle' }
@@ -20,15 +25,26 @@ type Status =
     | { kind: 'downloading'; info: DesktopUpdateInfo; progress: DownloadProgress | null }
     | { kind: 'ready'; info: DesktopUpdateInfo }
     | { kind: 'installing'; info: DesktopUpdateInfo }
-    | { kind: 'error'; message: string; info: DesktopUpdateInfo | null }
+    | { kind: 'error'; message: string; info: DesktopUpdateInfo | null; retry: Retry }
 
 interface DesktopUpdateCardProps {
-    updater?: DesktopUpdater
-    localOnly?: () => boolean
+    updater?: DesktopUpdater | undefined
+    localOnly?: (() => boolean) | undefined
 }
 
 const percentOf = ({ downloaded, total }: DownloadProgress): number | null =>
     total && total > 0 ? Math.min(100, Math.round((downloaded / total) * 100)) : null
+
+/** A card mounted again (after leaving Settings > About) resumes where it was. */
+const statusFromStage = (stage: DesktopUpdateStage | null): Status =>
+    stage ? { kind: stage.kind, info: stage.info } : { kind: 'idle' }
+
+const REASON_MESSAGE_KEYS: Partial<Record<DesktopUpdateFailure, string>> = {
+    'not-saved': 'settingsView.about.update.notSaved',
+    'local-only': 'settingsView.about.update.localOnly',
+    offline: 'settingsView.about.update.offline',
+    cancelled: 'settingsView.about.update.cancelled',
+}
 
 /**
  * Desktop-only: check for, download and install an app update. Every step is a
@@ -37,18 +53,21 @@ const percentOf = ({ downloaded, total }: DownloadProgress): number | null =>
 export const DesktopUpdateCard = memo(
     ({ updater = defaultUpdater, localOnly = isLocalOnlyMode }: DesktopUpdateCardProps) => {
         const { t } = useTranslation()
-        const [status, setStatus] = useState<Status>({ kind: 'idle' })
+        const [status, setStatus] = useState<Status>(() => statusFromStage(updater.currentStage()))
         const blocked = localOnly()
 
         const failed = useCallback(
-            (error: unknown, info: DesktopUpdateInfo | null) => {
-                const message =
-                    error instanceof DesktopUpdateError && error.reason === 'not-saved'
-                        ? t('settingsView.about.update.notSaved')
-                        : t('settingsView.about.update.error', {
-                              message: error instanceof Error ? error.message : String(error),
-                          })
-                setStatus({ kind: 'error', message, info })
+            (error: unknown, info: DesktopUpdateInfo | null, retry: Retry) => {
+                const key =
+                    error instanceof DesktopUpdateError
+                        ? REASON_MESSAGE_KEYS[error.reason]
+                        : undefined
+                const message = key
+                    ? t(key)
+                    : t('settingsView.about.update.error', {
+                          message: error instanceof Error ? error.message : String(error),
+                      })
+                setStatus({ kind: 'error', message, info, retry })
             },
             [t],
         )
@@ -57,9 +76,10 @@ export const DesktopUpdateCard = memo(
             setStatus({ kind: 'checking' })
             try {
                 const info = await updater.check()
-                setStatus(info ? { kind: 'available', info } : { kind: 'upToDate' })
+                const stage = updater.currentStage()
+                setStatus(info ? statusFromStage(stage) : { kind: 'upToDate' })
             } catch (error) {
-                failed(error, null)
+                failed(error, null, 'check')
             }
         }, [updater, failed])
 
@@ -72,11 +92,17 @@ export const DesktopUpdateCard = memo(
                     )
                     setStatus({ kind: 'ready', info })
                 } catch (error) {
-                    failed(error, info)
+                    failed(error, info, 'download')
                 }
             },
             [updater, failed],
         )
+
+        const cancel = useCallback(() => {
+            updater.cancelDownload().catch((error: unknown) => {
+                console.debug('[DesktopUpdate] cancel failed:', error)
+            })
+        }, [updater])
 
         const install = useCallback(
             async (info: DesktopUpdateInfo) => {
@@ -86,7 +112,8 @@ export const DesktopUpdateCard = memo(
                     // from inside the command; Windows exits during the install).
                     await updater.installAndRestart()
                 } catch (error) {
-                    failed(error, info)
+                    // Nothing was installed: offer the install again, the bundle is kept.
+                    failed(error, info, 'install')
                 }
             },
             [updater, failed],
@@ -125,6 +152,10 @@ export const DesktopUpdateCard = memo(
         }
 
         const info = 'info' in status ? status.info : null
+        const retry = status.kind === 'error' ? status.retry : null
+        const offerDownload = status.kind === 'available' || (retry === 'download' && info !== null)
+        const offerInstall = status.kind === 'ready' || (retry === 'install' && info !== null)
+        const offerCheck = !offerDownload && !offerInstall && status.kind !== 'downloading'
         const text = statusText()
 
         return (
@@ -133,7 +164,7 @@ export const DesktopUpdateCard = memo(
                     <PhosphorIcons.ArrowClockwise />
                     {t('settingsView.about.update.title')}
                 </h3>
-                {blocked ? (
+                {blocked && status.kind !== 'error' ? (
                     <p className="text-sm text-slate-300">
                         {t('settingsView.about.update.localOnly')}
                     </p>
@@ -154,8 +185,7 @@ export const DesktopUpdateCard = memo(
                     </details>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
-                    {status.kind === 'available' ||
-                    (status.kind === 'error' && status.info && !blocked) ? (
+                    {offerDownload ? (
                         <Button
                             onClick={() => {
                                 if (info) void download(info)
@@ -165,12 +195,22 @@ export const DesktopUpdateCard = memo(
                             {t('settingsView.about.update.download')}
                         </Button>
                     ) : null}
-                    {status.kind === 'ready' ? (
-                        <Button onClick={() => void install(status.info)} disabled={busy}>
+                    {status.kind === 'downloading' ? (
+                        <Button variant="secondary" onClick={cancel}>
+                            {t('settingsView.about.update.cancel')}
+                        </Button>
+                    ) : null}
+                    {offerInstall ? (
+                        <Button
+                            onClick={() => {
+                                if (info) void install(info)
+                            }}
+                            disabled={busy}
+                        >
                             {t('settingsView.about.update.install')}
                         </Button>
                     ) : null}
-                    {status.kind !== 'ready' && status.kind !== 'available' ? (
+                    {offerCheck ? (
                         <Button
                             variant="secondary"
                             onClick={() => void check()}

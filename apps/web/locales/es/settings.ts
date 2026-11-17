@@ -941,6 +941,10 @@ export const settingsView = {
             downloadingUnknown: 'Descargando y verificando...',
             ready: 'La versi\u00F3n {{version}} est\u00E1 descargada y su firma verificada. Al instalarla se guardan tus \u00FAltimos cambios, se reemplaza la app y se reinicia.',
             install: 'Instalar y reiniciar',
+            cancel: 'Cancelar descarga',
+            cancelled: 'La descarga se detuvo.',
+            offline:
+                'Est\u00E1s sin conexi\u00F3n. Con\u00E9ctate a internet para buscar actualizaciones.',
             installing: 'Guardando tus datos e instalando...',
             error: 'La actualizaci\u00F3n fall\u00F3: {{message}}',
             notSaved:

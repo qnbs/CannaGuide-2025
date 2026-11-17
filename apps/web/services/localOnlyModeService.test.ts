@@ -1,5 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { setLocalOnlyMode, isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import {
+    setLocalOnlyMode,
+    isLocalOnlyMode,
+    onLocalOnlyModeChange,
+} from '@/services/localOnlyModeService'
 
 describe('localOnlyModeService', () => {
     beforeEach(() => {
@@ -26,5 +30,38 @@ describe('localOnlyModeService', () => {
         setLocalOnlyMode(true)
         setLocalOnlyMode(true)
         expect(isLocalOnlyMode()).toBe(true)
+    })
+})
+
+describe('localOnlyModeService change listeners', () => {
+    beforeEach(() => {
+        setLocalOnlyMode(false)
+    })
+
+    it('notifies only on a real change and stops after unsubscribing', () => {
+        const seen: boolean[] = []
+        const unsubscribe = onLocalOnlyModeChange((enabled) => seen.push(enabled))
+        setLocalOnlyMode(false)
+        setLocalOnlyMode(true)
+        setLocalOnlyMode(true)
+        setLocalOnlyMode(false)
+        unsubscribe()
+        setLocalOnlyMode(true)
+        expect(seen).toEqual([true, false])
+    })
+
+    it('a failing listener does not stop the others or the change', () => {
+        const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        const seen: boolean[] = []
+        const first = onLocalOnlyModeChange(() => {
+            throw new Error('boom')
+        })
+        const second = onLocalOnlyModeChange((enabled) => seen.push(enabled))
+        setLocalOnlyMode(true)
+        expect(isLocalOnlyMode()).toBe(true)
+        expect(seen).toEqual([true])
+        first()
+        second()
+        debug.mockRestore()
     })
 })

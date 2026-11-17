@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 import { parsePublicKey, parseSignature, verifyMinisign } from './minisign.mjs'
@@ -54,4 +55,18 @@ test('malformed keys and signatures are reported, not thrown', () => {
         assert.equal(typeof result.reason, 'string')
     }
     assert.throws(() => parsePublicKey(b64('untrusted comment: x\nAAAA\n')), /not a minisign/)
+})
+
+test('the configured updater key is the one whose private key is the signing secret', () => {
+    // Pinned so a key swap is a deliberate, reviewed change: installed apps verify
+    // every update against this key, and only its private key (the
+    // TAURI_SIGNING_PRIVATE_KEY secret, generated 2026-11-17) can sign for them.
+    const config = JSON.parse(
+        readFileSync(
+            new URL('../../apps/desktop/src-tauri/tauri.conf.json', import.meta.url),
+            'utf8',
+        ),
+    )
+    const { keyId } = parsePublicKey(config.plugins.updater.pubkey)
+    assert.equal(Buffer.from(keyId).reverse().toString('hex').toUpperCase(), 'F1B0337766BB36BD')
 })

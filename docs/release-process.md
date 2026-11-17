@@ -180,6 +180,15 @@ It builds all four targets and runs the same verification, uploading
 `SHA256SUMS`) as an Actions artifact. A Release Publish dry-run does the same for an
 existing tag's commit.
 
+**Updater key:** installed apps verify every update against the minisign public key
+in `tauri.conf.json` (key ID `F1B0337766BB36BD`, generated 2026-11-17). Its private
+key and password are the `TAURI_SIGNING_PRIVATE_KEY` and
+`TAURI_SIGNING_PRIVATE_KEY_PASSWORD` repository secrets; the owner keeps an offline
+backup. Without that key no update can be signed for installed apps, so losing it
+strands every installation on its version. A rotation ships the new public key in an
+update signed with the old key. `minisign.test.mjs` pins the key ID, so a swap is a
+deliberate change.
+
 **Platform signing:** the updater signature (`TAURI_SIGNING_PRIVATE_KEY`) is
 required. Windows Authenticode and macOS Developer ID / notarization run only where
 the certificates are provisioned; unsigned installers trigger OS warnings and are

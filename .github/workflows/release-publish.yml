@@ -74,8 +74,10 @@ jobs:
                     # push event -- github.ref_name is the tag (e.g. v1.7.0)
                     TAG="${REF_NAME}"
                   fi
-                  # Strip refs/tags/ prefix if present
-                  TAG="${TAG#refs/tags/}"
+                  # No refs/tags/ stripping: the concurrency group keys on the raw
+                  # input, so a stripped "refs/tags/v1.x.y" would run in another group
+                  # than the tag push for the same release and race it. The shape
+                  # check below rejects the prefixed form instead.
 
                   # Shape is validated HERE, before "Ensure tag exists" can create
                   # anything, so a malformed workflow_dispatch input never becomes

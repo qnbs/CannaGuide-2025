@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { test } from 'node:test'
 
@@ -61,4 +62,44 @@ test('the guard passes only when the run commit is the release commit', () => {
 
     const unresolved = run({ RUN_COMMIT: tagCommit, RELEASE_COMMIT: '' })
     assert.equal(unresolved.status, 1)
+})
+
+test('a dispatch resolves exactly the tag its concurrency group names', (t) => {
+    // CodeAnt on #874: the group keys on the raw input. Stripping "refs/tags/" put a
+    // dispatch for v1.11.0 in another group than the v1.11.0 tag push, so both could
+    // run at once. The prefixed form is now refused; an accepted input is the tag.
+    assert.match(
+        WORKFLOW,
+        /group: release-publish-\$\{\{ github\.event\.inputs\.tag \|\| github\.ref_name \}\}/,
+    )
+    const script = runScript(job('build'), 'Resolve tag name')
+    const dir = mkdtempSync(path.join(tmpdir(), 'cannaguide-release-tag-'))
+    t.after(() => rmSync(dir, { recursive: true, force: true }))
+    const resolve = (env) => {
+        const output = path.join(dir, `out-${Math.random().toString(36).slice(2)}`)
+        const result = spawnSync('bash', ['-c', script], {
+            env: { PATH: process.env.PATH, GITHUB_OUTPUT: output, ...env },
+            encoding: 'utf8',
+        })
+        let name
+        try {
+            name = /^name=(.*)$/m.exec(readFileSync(output, 'utf8'))?.[1]
+        } catch {}
+        return { status: result.status, name }
+    }
+    for (const tag of ['v1.11.0', 'v1.12.0-rc.1']) {
+        assert.deepEqual(resolve({ EVENT_NAME: 'workflow_dispatch', INPUT_TAG: tag }), {
+            status: 0,
+            name: tag,
+        })
+    }
+    assert.deepEqual(resolve({ EVENT_NAME: 'push', REF_NAME: 'v1.11.0' }), {
+        status: 0,
+        name: 'v1.11.0',
+    })
+    for (const tag of ['refs/tags/v1.11.0', '1.11.0', 'v1.11', 'v1.11.0 ']) {
+        const { status, name } = resolve({ EVENT_NAME: 'workflow_dispatch', INPUT_TAG: tag })
+        assert.equal(status, 1, JSON.stringify(tag))
+        assert.equal(name, undefined)
+    }
 })

@@ -86,7 +86,7 @@
             "endpoints": [
                 "https://github.com/qnbs/CannaGuide-2025/releases/latest/download/latest.json"
             ],
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUyNkExNTVGRUZFNDJDQjgKUldTNExPVHZYeFZxVXBWeC9BVGZ6Zk1MMC8velBla2Q5Y3U2Y2FUZmJOL1lja0hTUjV3Zk5ncXYK"
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYxQjAzMzc3NjZCQjM2QkQKUldTOU5ydG1kek93OFJUWHE5QVB5SW1GZEt5V2lwYXlKS3c1U2c4ekdWZ09pQVN5enZjd0hpZXgK"
         },
         "window-state": {
             "all": true

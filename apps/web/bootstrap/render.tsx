@@ -104,6 +104,20 @@ export const renderStaleTabNotice = (reload: () => void): void => {
     )
 }
 
+/**
+ * Shown instead of the app when the saved data was written by a newer CannaGuide
+ * version (#666). This page did not read it into the app and saves nothing over it.
+ */
+export const renderNewerSnapshotNotice = (reload: () => void): void => {
+    const translate = getT()
+    renderTabNotice(
+        String(translate('common.newerSnapshot.title')),
+        String(translate('common.newerSnapshot.description')),
+        String(translate('common.staleTab.reload')),
+        reload,
+    )
+}
+
 /** This page cannot check for other tabs' saves and holds no writer lock (GH #669). */
 export const renderUnverifiedTabNotice = (reload: () => void): void => {
     const translate = getT()

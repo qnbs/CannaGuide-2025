@@ -96,6 +96,7 @@ vi.mock('@/services/dbService', async (importOriginal) => {
 
 import { setupPersistedStateSync } from '@/bootstrap/persistence'
 import {
+    APP_VERSION,
     REDUX_STATE_BACKUP_KEY,
     REDUX_STATE_KEY,
     REDUX_STATE_QUARANTINE_KEY,
@@ -104,6 +105,7 @@ import {
 } from '@/constants'
 import { PlantStage } from '@/types'
 import { createAppStore } from './store'
+import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 
 const legacyPlant = () => ({
     id: 'plant-1',
@@ -264,5 +266,51 @@ describe('createAppStore with a persisted slice of another schema version', () =
 
         expect(onStale).toHaveBeenCalledOnce()
         expect(db.data.get(REDUX_STATE_KEY)).toBe('newer snapshot of the other tab')
+    })
+})
+
+describe('createAppStore with a snapshot from a newer build (#666)', () => {
+    beforeEach(() => {
+        db.data.clear()
+        db.reads.length = 0
+        db.beforeRead.clear()
+        db.failGet.clear()
+        db.failSet.clear()
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    const newerBuildSnapshot = (): string =>
+        JSON.stringify({
+            version: APP_VERSION + 1,
+            settings: { version: APP_VERSION + 1, settings: { futureOption: true } },
+            futureSlice: { kept: true },
+        })
+
+    it('does not start from it and leaves it in place, unquarantined', async () => {
+        db.data.set(REDUX_STATE_KEY, newerBuildSnapshot())
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe(newerBuildSnapshot())
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    it('treats one slice from a newer schema the same way', async () => {
+        const newerSlice = JSON.stringify({
+            version: APP_VERSION,
+            _sliceVersions: {
+                ...SLICE_SCHEMA_VERSIONS,
+                simulation: SLICE_SCHEMA_VERSIONS.simulation + 1,
+            },
+            simulation: { plants: { ids: [], entities: {} }, futureField: [1, 2, 3] },
+        })
+        db.data.set(REDUX_STATE_KEY, newerSlice)
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe(newerSlice)
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
     })
 })

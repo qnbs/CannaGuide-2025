@@ -8,8 +8,10 @@ import {
 import { i18nPromise } from '@/i18n'
 import { disableSentry } from '@/services/sentryService'
 import { registerRecoveryListeners } from './recovery'
+import { isNewerSnapshotError } from '@/services/migration/newerSnapshot'
 import {
     renderError,
+    renderNewerSnapshotNotice,
     renderOtherTabNotice,
     renderStaleTabNotice,
     renderUnverifiedTabNotice,
@@ -244,6 +246,11 @@ export const mountHydratedApp = async (): Promise<void> => {
             }
         })
     } catch (error) {
+        // The saved data is a newer build's: nothing here may save over it (#666).
+        if (isNewerSnapshotError(error)) {
+            stopAsStale(renderNewerSnapshotNotice)
+            return
+        }
         await showStartupError(error)
     }
 }

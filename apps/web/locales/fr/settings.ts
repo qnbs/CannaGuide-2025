@@ -699,6 +699,8 @@ export const settingsView = {
         importSuccess: "Donnees importees avec succes. L'application va maintenant se recharger.",
         importError:
             "L'importation a echoue. Veuillez vous assurer qu'il s'agit d'un fichier de sauvegarde valide.",
+        importNewerVersion:
+            "Cette sauvegarde a \u00E9t\u00E9 cr\u00E9\u00E9e avec une version plus r\u00E9cente de CannaGuide. Rechargez l'application pour obtenir la version plus r\u00E9cente, puis importez \u00E0 nouveau la sauvegarde. Rien n'a \u00E9t\u00E9 modifi\u00E9.",
         restoreBlocked:
             'La restauration des donnees est temporairement bloquee par une operation de recuperation securisee.',
         resetError:

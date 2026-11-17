@@ -28,6 +28,7 @@ let renderError: typeof import('./render').renderError
 let renderOtherTabNotice: typeof import('./render').renderOtherTabNotice
 let renderStaleTabNotice: typeof import('./render').renderStaleTabNotice
 let renderUnverifiedTabNotice: typeof import('./render').renderUnverifiedTabNotice
+let renderNewerSnapshotNotice: typeof import('./render').renderNewerSnapshotNotice
 
 describe('renderError', () => {
     beforeEach(async () => {
@@ -91,6 +92,28 @@ describe('renderStaleTabNotice', () => {
         const notice = screen.getByRole('alert')
         expect(notice).toHaveTextContent('common.staleTab.title')
         expect(notice).toHaveTextContent('common.staleTab.description')
+        fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
+        expect(reload).toHaveBeenCalledOnce()
+    })
+})
+
+describe('renderNewerSnapshotNotice', () => {
+    beforeEach(async () => {
+        vi.resetModules()
+        ;({ renderNewerSnapshotNotice } = await import('./render'))
+    })
+
+    it('says a newer version saved the data and lets the user reload (#666)', () => {
+        document.body.innerHTML = '<div id="root"></div>'
+        const reload = vi.fn()
+
+        act(() => {
+            renderNewerSnapshotNotice(reload)
+        })
+
+        const notice = screen.getByRole('alert')
+        expect(notice).toHaveTextContent('common.newerSnapshot.title')
+        expect(notice).toHaveTextContent('common.newerSnapshot.description')
         fireEvent.click(screen.getByRole('button', { name: 'Reload this tab' }))
         expect(reload).toHaveBeenCalledOnce()
     })

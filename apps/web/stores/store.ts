@@ -31,6 +31,7 @@ import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
 import { rememberStoredRevision } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
+import { isNewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY } from '@/constants'
 import { getUISnapshot, initialUIState } from './useUIStore'
 import { initUIStateBridgeFull } from '../services/uiStateBridge'
@@ -146,6 +147,10 @@ export const createAppStore = async (): Promise<AppStore> => {
             preloadedState = hydratePersistedState(persistedString)
         }
     } catch (e) {
+        // A newer build's snapshot is readable, just not by this build. The backup and
+        // quarantine path below would remove it from the primary key, and starting fresh
+        // would save over it: leave it alone and let the startup show the notice (#666).
+        if (isNewerSnapshotError(e)) throw e
         console.debug(
             "Could not load or migrate state from IndexedDB, starting fresh. A backup may be available at key '" +
                 REDUX_STATE_KEY +

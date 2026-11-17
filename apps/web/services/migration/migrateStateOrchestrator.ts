@@ -3,6 +3,7 @@ import type { PersistedState } from '@/services/migration/migrationTypes'
 import { createSnapshotDiff } from '@/services/migration/snapshotDiff'
 import { ensureSimulationShape } from '@/services/migration/simulationShapeGuard'
 import { ensureGenealogyShape } from '@/services/migration/genealogyShapeGuard'
+import { assertNotNewerSnapshot } from '@/services/migration/newerSnapshot'
 import {
     ensureUserStrainsShape,
     ensureSavedItemsShape,
@@ -164,6 +165,8 @@ const assertRetainedSlicesKeptData = (
  * Orchestrates the migration of a persisted state object to the current app version.
  */
 export const migrateState = (persistedState: PersistedState): PersistedState => {
+    // Before anything is changed: a newer build's snapshot is left as it is (#666).
+    assertNotNewerSnapshot(persistedState)
     const stateVersion = persistedState.version || 1
     const snapshotBeforeMigration = JSON.parse(JSON.stringify(persistedState)) as PersistedState
 

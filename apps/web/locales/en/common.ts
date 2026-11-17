@@ -243,6 +243,11 @@ export const common = {
             'The saved data was changed by another tab or window after this one loaded, so this page is out of date and has stopped saving to keep that newer data safe. Reload to continue with the latest data. Edits made in this tab since it loaded are not saved and are lost when you reload.',
         reload: 'Reload',
     },
+    newerSnapshot: {
+        title: 'Saved by a newer version',
+        description:
+            'Your data was saved by a newer version of CannaGuide than the one this page runs, so this page has not loaded it and saves nothing, to keep that data intact. Reload to get the newer version. If this notice comes back, close every CannaGuide tab and window and open the app again. Your saved data has not been changed.',
+    },
     saveFailed:
         'Your latest changes could not be saved, so they would be lost if you close or reload the app. The browser storage may be full: free up space, and the app tries again with your next change.',
     previousSaveFailed:

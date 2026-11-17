@@ -684,6 +684,8 @@ export const settingsView = {
         importSuccess: 'Daten erfolgreich importiert. Die App wird neu geladen.',
         importError:
             'Import fehlgeschlagen. Bitte stellen Sie sicher, dass es sich um eine gueltige Backup-Datei handelt.',
+        importNewerVersion:
+            'Dieses Backup wurde mit einer neueren CannaGuide-Version erstellt. Lade die App neu, um die neuere Version zu bekommen, und importiere das Backup dann erneut. Es wurde nichts ver\u00E4ndert.',
         restoreBlocked:
             'Die Datenwiederherstellung ist voruebergehend durch eine sichere Wiederherstellung blockiert.',
         resetError:

@@ -74,6 +74,24 @@ export function useDataManagementActions() {
         })
     }
 
+    /**
+     * Checks a snapshot and opens the import confirmation for it: a chosen backup file
+     * or the copy of saved data that was set aside (#666). Nothing is replaced before
+     * the user confirms.
+     */
+    const stageImport = (content: string) => {
+        try {
+            const parsed: unknown = JSON.parse(content)
+            if (!isImportableSnapshot(parsed)) throw new Error('Invalid file structure')
+            // Refuse a newer version's backup up front, not after the confirm (#666).
+            assertNotNewerSnapshot(parsed)
+            setFileToImport(content)
+            setIsImportConfirmOpen(true)
+        } catch (error) {
+            notifyImportFailure(error)
+        }
+    }
+
     const handleImportClick = () => {
         document.getElementById('import-file-input')?.click()
     }
@@ -85,19 +103,7 @@ export function useDataManagementActions() {
             reader.onload = (event) => {
                 const content = event.target?.result
                 if (typeof content === 'string') {
-                    try {
-                        const parsed: unknown = JSON.parse(content)
-                        if (isImportableSnapshot(parsed)) {
-                            // Refuse a newer version's backup up front, not after the confirm (#666).
-                            assertNotNewerSnapshot(parsed)
-                            setFileToImport(content)
-                            setIsImportConfirmOpen(true)
-                        } else {
-                            throw new Error('Invalid file structure')
-                        }
-                    } catch (error) {
-                        notifyImportFailure(error)
-                    }
+                    stageImport(content)
                 }
             }
             reader.readAsText(file)
@@ -358,6 +364,7 @@ export function useDataManagementActions() {
         resetPhrase,
         isResetDisabled,
         handleImportClick,
+        stageImport,
         handleFileChange,
         confirmImport,
         handleExportGrow,

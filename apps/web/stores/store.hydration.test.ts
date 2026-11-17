@@ -334,6 +334,20 @@ describe('createAppStore with a corrupt primary and a good backup (#666)', () =>
         expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(primary)
     })
 
+    it('does not refresh the backup when another tab saved after this page read the snapshot', async () => {
+        // CodeAnt on #871: without Web Locks a second tab may save in between.
+        const earlierBackup = JSON.stringify({ version: 5, earlier: true })
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, earlierBackup)
+        db.beforeRead.set(REDUX_STATE_BACKUP_KEY, () => {
+            db.data.set(REDUX_STATE_REVISION_KEY, 'saved-by-another-tab')
+        })
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(earlierBackup)
+    })
+
     it('keeps a newer backup in place when the quarantine already holds a snapshot', async () => {
         db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
         db.data.set(REDUX_STATE_BACKUP_KEY, newerOriginal())

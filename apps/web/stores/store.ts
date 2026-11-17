@@ -29,7 +29,7 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
-import { rememberStoredRevision } from './snapshotRevision'
+import { rememberStoredRevision, setItemIfSnapshotUnchanged } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
     isNewerSnapshotError,
@@ -129,7 +129,13 @@ const refreshStartupBackup = async (snapshot: string): Promise<void> => {
         ) {
             if ((await quarantineUnreadableSnapshot(previous)) !== 'stored') return
         }
-        await indexedDBStorage.setItem(REDUX_STATE_BACKUP_KEY, snapshot)
+        // Only while the primary is still the one this page read: without Web Locks a
+        // second tab may have saved, and its newer data must not lose its backup.
+        if (!(await setItemIfSnapshotUnchanged(REDUX_STATE_BACKUP_KEY, snapshot))) {
+            console.debug(
+                '[Store] Backup not refreshed: the saved data changed since this page read it.',
+            )
+        }
     } catch (backupErr) {
         console.debug('[Store] Could not save pre-migration backup:', backupErr)
     }

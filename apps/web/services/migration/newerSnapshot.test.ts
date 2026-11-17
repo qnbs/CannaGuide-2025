@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { APP_VERSION, SLICE_SCHEMA_VERSIONS } from '@/constants'
-import { assertNotNewerSnapshot, NewerSnapshotError } from './newerSnapshot'
+import { assertNotNewerSnapshot, isSnapshotNewerThan, NewerSnapshotError } from './newerSnapshot'
 import { migratePersistedSnapshot, parseAndMigratePersistedSnapshot } from './persistedSnapshot'
 
 const caught = (run: () => void): unknown => {
@@ -84,5 +84,31 @@ describe('snapshots written by a newer build (#666)', () => {
             JSON.stringify({ version: APP_VERSION, _sliceVersions: { ...SLICE_SCHEMA_VERSIONS } }),
         )
         expect(migrated.version).toBe(APP_VERSION)
+    })
+})
+
+describe('isSnapshotNewerThan (#666)', () => {
+    it('compares state and slice versions both snapshots carry', () => {
+        expect(isSnapshotNewerThan({ version: 7 }, { version: 6 })).toBe(true)
+        expect(isSnapshotNewerThan({ version: 6 }, { version: 6 })).toBe(false)
+        expect(isSnapshotNewerThan({ version: 5 }, { version: 6 })).toBe(false)
+        expect(
+            isSnapshotNewerThan(
+                { version: 6, _sliceVersions: { simulation: 4 } },
+                { version: 6, _sliceVersions: { simulation: 3 } },
+            ),
+        ).toBe(true)
+    })
+
+    it('does not guess when a version is missing or not a number', () => {
+        expect(isSnapshotNewerThan({ version: 7 }, {})).toBe(false)
+        expect(isSnapshotNewerThan({ _sliceVersions: { simulation: 4 } }, { version: 6 })).toBe(
+            false,
+        )
+        expect(
+            isSnapshotNewerThan({ _sliceVersions: { simulation: 4 } }, { _sliceVersions: {} }),
+        ).toBe(false)
+        expect(isSnapshotNewerThan({ version: '9' }, { version: 6 })).toBe(false)
+        expect(isSnapshotNewerThan(null, { version: 6 })).toBe(false)
     })
 })

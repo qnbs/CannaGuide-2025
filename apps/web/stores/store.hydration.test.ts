@@ -293,10 +293,39 @@ describe('createAppStore with a corrupt primary and a good backup (#666)', () =>
 
     it('replaces the backup only after a snapshot migrated', async () => {
         db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, JSON.stringify({ version: 4 }))
 
         await createAppStore()
 
         expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(olderSnapshotWithPlant())
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    // A rollback to a release without the newer-snapshot guard relabelled the primary
+    // and left the newer original in the backup (CodeAnt on #871).
+    const newerOriginal = (): string =>
+        JSON.stringify({ version: APP_VERSION + 1, original: 'from the newer build' })
+
+    it('quarantines a backup newer than the primary before replacing it', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerOriginal())
+
+        const store = await createAppStore()
+
+        expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
+        expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe(newerOriginal())
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(olderSnapshotWithPlant())
+    })
+
+    it('keeps a newer backup in place when the quarantine already holds a snapshot', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerOriginal())
+        db.data.set(REDUX_STATE_QUARANTINE_KEY, '{"earlier":true}')
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe('{"earlier":true}')
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(newerOriginal())
     })
 })
 

@@ -17,8 +17,12 @@ export class NewerSnapshotError extends Error {
         /** Slices whose schema version is newer than this build's. */
         readonly newerSlices: readonly string[],
     ) {
+        const details = [
+            storedVersion === null ? null : `state version ${String(storedVersion)}`,
+            newerSlices.length > 0 ? `newer slices: ${newerSlices.join(', ')}` : null,
+        ].filter((detail) => detail !== null)
         super(
-            `The saved data was written by a newer CannaGuide version (state ${String(storedVersion ?? APP_VERSION)}, this build ${String(APP_VERSION)}${newerSlices.length > 0 ? `; newer slices: ${newerSlices.join(', ')}` : ''}). It is left unchanged.`,
+            `The saved data was written by a newer CannaGuide version (${details.join('; ')}; this build is version ${String(APP_VERSION)}). It is left unchanged.`,
         )
     }
 }

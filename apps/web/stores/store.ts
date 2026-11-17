@@ -122,6 +122,8 @@ export const createAppStore = async (): Promise<AppStore> => {
             const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
             return repaired ? hydratePersistedState(backupString) : undefined
         } catch (backupError) {
+            // A newer build's backup stops the start like a newer primary does (#666).
+            if (isNewerSnapshotError(backupError)) throw backupError
             // A backup that cannot be read must not stop the start: the primary still
             // has to be quarantined before anything else touches it (#666).
             console.debug('[Store] Could not recover state from the backup:', backupError)
@@ -138,13 +140,16 @@ export const createAppStore = async (): Promise<AppStore> => {
         persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (persistedString) {
             console.debug('[Store] Hydrating state from IndexedDB.')
-            // Save a backup snapshot before migration so data can be recovered if migration fails.
+            preloadedState = hydratePersistedState(persistedString)
+            // Keep the pre-migration bytes as the backup only once they have migrated.
+            // Copying them first replaced the last good backup with a corrupt or newer
+            // primary before it was read, so the recovery below got the same bytes back
+            // and a newer build's backup was lost (#666).
             try {
                 await indexedDBStorage.setItem(REDUX_STATE_BACKUP_KEY, persistedString)
             } catch (backupErr) {
                 console.debug('[Store] Could not save pre-migration backup:', backupErr)
             }
-            preloadedState = hydratePersistedState(persistedString)
         }
     } catch (e) {
         // A newer build's snapshot is readable, just not by this build. The backup and

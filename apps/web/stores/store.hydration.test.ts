@@ -269,6 +269,37 @@ describe('createAppStore with a persisted slice of another schema version', () =
     })
 })
 
+describe('createAppStore with a corrupt primary and a good backup (#666)', () => {
+    beforeEach(() => {
+        db.data.clear()
+        db.reads.length = 0
+        db.beforeRead.clear()
+        db.failGet.clear()
+        db.failSet.clear()
+        vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    it('recovers the plants from the backup instead of overwriting it with the corrupt bytes', async () => {
+        db.data.set(REDUX_STATE_KEY, '{corrupt')
+        db.data.set(REDUX_STATE_BACKUP_KEY, olderSnapshotWithPlant())
+
+        const store = await createAppStore()
+
+        expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).not.toBe('{corrupt')
+    })
+
+    it('replaces the backup only after a snapshot migrated', async () => {
+        db.data.set(REDUX_STATE_KEY, olderSnapshotWithPlant())
+
+        await createAppStore()
+
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(olderSnapshotWithPlant())
+    })
+})
+
 describe('createAppStore with a snapshot from a newer build (#666)', () => {
     beforeEach(() => {
         db.data.clear()
@@ -288,12 +319,37 @@ describe('createAppStore with a snapshot from a newer build (#666)', () => {
             futureSlice: { kept: true },
         })
 
-    it('does not start from it and leaves it in place, unquarantined', async () => {
+    it('does not start from it and leaves it and the backup in place, unquarantined', async () => {
+        const earlierBackup = JSON.stringify({ version: APP_VERSION + 1, earlier: true })
         db.data.set(REDUX_STATE_KEY, newerBuildSnapshot())
+        db.data.set(REDUX_STATE_BACKUP_KEY, earlierBackup)
 
         await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
 
         expect(db.data.get(REDUX_STATE_KEY)).toBe(newerBuildSnapshot())
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(earlierBackup)
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    it('stops at a newer backup when the primary cannot be read, instead of starting empty', async () => {
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerBuildSnapshot())
+        db.failGet.add(REDUX_STATE_KEY)
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.has(REDUX_STATE_KEY)).toBe(false)
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(newerBuildSnapshot())
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
+    })
+
+    it('stops at a newer backup when the primary is corrupt, and keeps both', async () => {
+        db.data.set(REDUX_STATE_KEY, '{corrupt')
+        db.data.set(REDUX_STATE_BACKUP_KEY, newerBuildSnapshot())
+
+        await expect(createAppStore()).rejects.toBeInstanceOf(NewerSnapshotError)
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe('{corrupt')
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(newerBuildSnapshot())
         expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
     })
 

@@ -41,6 +41,9 @@ describe('snapshots written by a newer build (#666)', () => {
         expect(error).toBeInstanceOf(NewerSnapshotError)
         expect((error as NewerSnapshotError).storedVersion).toBeNull()
         expect((error as NewerSnapshotError).newerSlices).toEqual(['simulation'])
+        // Only what is actually newer is named: no invented state version.
+        expect((error as NewerSnapshotError).message).toContain('newer slices: simulation')
+        expect((error as NewerSnapshotError).message).not.toContain('state version')
     })
 
     it('accepts current and older versions and ignores values that are not version numbers', () => {

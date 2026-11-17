@@ -82,16 +82,20 @@ test('runbook documents the four-provider pool and exact-head evidence boundary'
 
 test('an authentic completed Codex receipt for the exact head counts once', () => {
     const result = evaluate({ issueComments: [receipt()] })
-    assert.deepEqual(result.qualifiedReviewers.map((reviewer) => reviewer.login), [
-        'chatgpt-codex-connector[bot]',
-    ])
+    assert.deepEqual(
+        result.qualifiedReviewers.map((reviewer) => reviewer.login),
+        ['chatgpt-codex-connector[bot]'],
+    )
     assert.equal(result.receiptFindings.hasUnresolvedFindings, false)
     assert.equal(result.satisfied, false, 'two reviews are preferred absent a documented fallback')
 })
 
 test('a user-authored, copied or malformed Codex receipt is rejected', () => {
     const copied = receipt({ login: 'maintainer-account', type: 'User' })
-    const malformed = { ...receipt(), body: 'LGTM <!-- codex-review-state:v1 {"status":"completed"} -->' }
+    const malformed = {
+        ...receipt(),
+        body: 'LGTM <!-- codex-review-state:v1 {"status":"completed"} -->',
+    }
     assert.deepEqual(evaluate({ issueComments: [copied, malformed] }).qualifiedReviewers, [])
 })
 
@@ -100,10 +104,7 @@ test('a receipt with a short or stale SHA, pending state, or missing findings st
     const oldHead = receipt({ commit: OTHER })
     const pending = receipt({ status: 'pending' })
     const missingFindingState = receipt()
-    missingFindingState.body = missingFindingState.body.replace(
-        '"has_any_findings":false,',
-        '',
-    )
+    missingFindingState.body = missingFindingState.body.replace('"has_any_findings":false,', '')
     for (const candidate of [shortSha, oldHead, pending, missingFindingState]) {
         assert.deepEqual(evaluate({ issueComments: [candidate] }).qualifiedReviewers, [])
     }
@@ -130,7 +131,10 @@ test('dismissed, pending, unknown, and non-bot review records do not qualify', (
             review('chatgpt-codex-connector[bot]', 'DISMISSED'),
             review('codeant-ai[bot]', 'PENDING', HEAD, null),
             review('sourcery-ai[bot]', 'UNKNOWN'),
-            { ...review('codeant-ai[bot]', 'APPROVED'), user: { login: 'codeant-ai[bot]', type: 'User' } },
+            {
+                ...review('codeant-ai[bot]', 'APPROVED'),
+                user: { login: 'codeant-ai[bot]', type: 'User' },
+            },
         ],
         issueComments: [receipt()],
     })
@@ -152,10 +156,7 @@ test('Sourcery is accepted when complete but never adds a third-review requireme
 
 test('two qualified reviewers satisfy the gate without requesting or waiting for a third', () => {
     const result = evaluate({
-        reviews: [
-            review('coderabbitai[bot]', 'COMMENTED'),
-            review('codeant-ai[bot]', 'APPROVED'),
-        ],
+        reviews: [review('coderabbitai[bot]', 'COMMENTED'), review('codeant-ai[bot]', 'APPROVED')],
         secondReviewRequest: { result: 'silent' },
     })
     assert.equal(result.satisfied, true)
@@ -218,7 +219,6 @@ test('fallback rejects repeated requests, wrong heads, and premature silence', (
     }
 })
 
-
 test('review evidence from another PR is rejected even when its commit SHA matches', () => {
     const wrongReview = {
         ...review('coderabbitai[bot]', 'APPROVED'),
@@ -228,13 +228,19 @@ test('review evidence from another PR is rejected even when its commit SHA match
         ...receipt(),
         issue_url: 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/856',
     }
-    assert.deepEqual(evaluate({ reviews: [wrongReview], issueComments: [wrongReceipt] }).qualifiedReviewers, [])
+    assert.deepEqual(
+        evaluate({ reviews: [wrongReview], issueComments: [wrongReceipt] }).qualifiedReviewers,
+        [],
+    )
 })
 
 test('head changes during collection fail closed and policy changes classify high risk', () => {
     assert.equal(evaluate({ recheckedHeadSha: OTHER }).status, 'invalid_or_changed_head')
     assert.equal(evaluate({ changedFiles: HIGH_FILES }).risk, 'high')
-    assert.equal(evaluate({ changedFiles: ['scripts/security/review-coverage-policy.mjs'] }).risk, 'high')
+    assert.equal(
+        evaluate({ changedFiles: ['scripts/security/review-coverage-policy.mjs'] }).risk,
+        'high',
+    )
 })
 
 test('trust-boundary docs are never classified low risk', () => {
@@ -260,10 +266,7 @@ test('high-risk coverage counts an exact-head Codex receipt with one formal revi
 
 test('PR #857 transition requires two formal reviews and rejects receipts and fallback', () => {
     const formalOnly = evaluate({
-        reviews: [
-            review('coderabbitai[bot]', 'COMMENTED'),
-            review('codeant-ai[bot]', 'APPROVED'),
-        ],
+        reviews: [review('coderabbitai[bot]', 'COMMENTED'), review('codeant-ai[bot]', 'APPROVED')],
     })
     assert.equal(formalOnly.transitionPull, true)
     assert.equal(formalOnly.satisfied, true)
@@ -308,4 +311,165 @@ test('secondReviewRequest fails when pullNumber mismatches the evidence pull', (
         },
     })
     assert.equal(result.fallback, false)
+})
+
+function coderabbitSummary({
+    login = 'coderabbitai[bot]',
+    type = 'Bot',
+    source = HEAD,
+    covered = HEAD,
+    kind = 'reviewed',
+    pullNumber = 866,
+    updatedAt = '2026-11-16T10:30:00Z',
+    extra = '',
+    id = 300,
+} = {}) {
+    const coverage = JSON.stringify({ sourceCommitId: source, coveredCommitId: covered, kind })
+    return {
+        id,
+        issue_url: `https://api.github.com/repos/qnbs/CannaGuide-2025/issues/${pullNumber}`,
+        user: { login, type },
+        created_at: '2026-11-16T09:00:00Z',
+        updated_at: updatedAt,
+        body: [
+            '<!-- This is an auto-generated comment: summarize by coderabbit.ai -->',
+            'No actionable comments were generated in the recent review.',
+            `<!-- final_review_risk_coverage:${coverage} -->`,
+            extra,
+        ].join('\n'),
+    }
+}
+
+test('a clean exact-head CodeRabbit coverage marker counts as CodeRabbit (PR 866 regression)', () => {
+    // PR 866: Codex receipt plus a clean CodeRabbit pass on the head, no review object.
+    const result = evaluate({
+        pullNumber: 866,
+        changedFiles: HIGH_FILES,
+        issueComments: [receipt({ pullNumber: 866 }), coderabbitSummary()],
+    })
+    assert.equal(result.risk, 'high')
+    assert.equal(result.satisfied, true)
+    assert.deepEqual(
+        result.qualifiedReviewers.map(({ provider, source }) => `${provider}:${source}`).sort(),
+        ['CodeRabbit:coverage_marker_issue_comment', 'Codex:structured_issue_comment_receipt'],
+    )
+})
+
+test('a CodeRabbit marker for another head, kind, author, PR, or body shape is rejected', () => {
+    const rejected = [
+        ['older covered commit', coderabbitSummary({ covered: OTHER })],
+        ['older source commit', coderabbitSummary({ source: OTHER })],
+        ['short SHA', coderabbitSummary({ source: HEAD.slice(0, 8), covered: HEAD.slice(0, 8) })],
+        ['not reviewed', coderabbitSummary({ kind: 'skipped' })],
+        ['user-authored copy', coderabbitSummary({ login: 'qnbs', type: 'User' })],
+        ['impostor type', coderabbitSummary({ type: 'User' })],
+        ['other PR', coderabbitSummary({ pullNumber: 865 })],
+        [
+            'duplicated marker',
+            coderabbitSummary({
+                extra: `<!-- final_review_risk_coverage:${JSON.stringify({ sourceCommitId: HEAD, coveredCommitId: HEAD, kind: 'reviewed' })} -->`,
+            }),
+        ],
+    ]
+    for (const [label, comment] of rejected) {
+        const result = evaluate({
+            pullNumber: 866,
+            changedFiles: HIGH_FILES,
+            issueComments: [receipt({ pullNumber: 866 }), comment],
+        })
+        assert.equal(result.satisfied, false, `${label} must not count`)
+        assert.deepEqual(
+            result.qualifiedReviewers.map((reviewer) => reviewer.provider),
+            ['Codex'],
+            label,
+        )
+    }
+
+    const noSummary = coderabbitSummary()
+    noSummary.body = noSummary.body.replace(
+        '<!-- This is an auto-generated comment: summarize by coderabbit.ai -->',
+        '',
+    )
+    const malformed = coderabbitSummary()
+    malformed.body = malformed.body.replace('"kind":"reviewed"}', '"kind":"reviewed"')
+    for (const comment of [noSummary, malformed]) {
+        const result = evaluate({
+            pullNumber: 866,
+            changedFiles: HIGH_FILES,
+            issueComments: [comment],
+        })
+        assert.equal(result.qualifiedReviewers.length, 0)
+    }
+})
+
+test('the latest CodeRabbit summary edit decides, and a stale edit cannot win', () => {
+    const current = coderabbitSummary({
+        covered: OTHER,
+        source: OTHER,
+        updatedAt: '2026-11-16T11:00:00Z',
+        id: 301,
+    })
+    const older = coderabbitSummary({ updatedAt: '2026-11-16T10:00:00Z', id: 302 })
+    const result = evaluate({
+        pullNumber: 866,
+        changedFiles: HIGH_FILES,
+        issueComments: [older, current],
+    })
+    assert.equal(result.qualifiedReviewers.length, 0)
+})
+
+test('a newer CodeRabbit summary without a marker voids an older valid marker', () => {
+    const olderValid = coderabbitSummary({ updatedAt: '2026-11-16T10:00:00Z', id: 303 })
+    const newerWithoutMarker = coderabbitSummary({ updatedAt: '2026-11-16T11:00:00Z', id: 304 })
+    newerWithoutMarker.body = [
+        '<!-- This is an auto-generated comment: summarize by coderabbit.ai -->',
+        '<!-- This is an auto-generated comment: rate limited by coderabbit.ai -->',
+        'Review limit reached.',
+    ].join('\n')
+    const result = evaluate({
+        pullNumber: 866,
+        changedFiles: HIGH_FILES,
+        issueComments: [receipt({ pullNumber: 866 }), olderValid, newerWithoutMarker],
+    })
+    assert.equal(result.satisfied, false)
+    assert.deepEqual(
+        result.qualifiedReviewers.map((reviewer) => reviewer.provider),
+        ['Codex'],
+    )
+})
+
+test('a CodeRabbit marker never double-counts a formal review or overrides a dismissal', () => {
+    const both = evaluate({
+        pullNumber: 866,
+        changedFiles: HIGH_FILES,
+        reviews: [review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T10:00:00Z', 866)],
+        issueComments: [coderabbitSummary()],
+    })
+    assert.deepEqual(
+        both.qualifiedReviewers.map(({ source }) => source),
+        ['github_pull_request_review'],
+    )
+    assert.equal(both.satisfied, false)
+
+    const dismissed = evaluate({
+        pullNumber: 866,
+        changedFiles: HIGH_FILES,
+        reviews: [review('coderabbitai[bot]', 'DISMISSED', HEAD, '2026-11-16T10:00:00Z', 866)],
+        issueComments: [receipt({ pullNumber: 866 }), coderabbitSummary()],
+    })
+    assert.deepEqual(
+        dismissed.qualifiedReviewers.map(({ provider }) => provider),
+        ['Codex'],
+    )
+    assert.equal(dismissed.satisfied, false)
+})
+
+test('PR #857 transition ignores the CodeRabbit marker too', () => {
+    const result = evaluate({
+        changedFiles: HIGH_FILES,
+        reviews: [review('sourcery-ai[bot]')],
+        issueComments: [coderabbitSummary({ pullNumber: 857 })],
+    })
+    assert.equal(result.transitionPull, true)
+    assert.equal(result.satisfied, false)
 })

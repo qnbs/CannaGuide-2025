@@ -5,14 +5,19 @@ import { FormSection } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { readQuarantinedSnapshot } from '@/services/snapshotQuarantine'
+import { redactSnapshotTextForDownload } from '@/services/persistedSnapshotFormat'
 
 type SetAsideSnapshotPanelProps = {
     /** Opens the import confirmation for the copy; nothing is replaced before it. */
     onRestore: (snapshot: string) => void
 }
 
+// The file leaves the device: no app PIN and no sync key in it (#872 review). Restore
+// uses the copy as kept, so a restored device keeps its PIN lock.
 const downloadCopy = (snapshot: string): void => {
-    const url = URL.createObjectURL(new Blob([snapshot], { type: 'application/json' }))
+    const url = URL.createObjectURL(
+        new Blob([redactSnapshotTextForDownload(snapshot)], { type: 'application/json' }),
+    )
     const link = document.createElement('a')
     link.href = url
     link.download = `cannaguide-set-aside-${new Date().toISOString().slice(0, 10)}.json`

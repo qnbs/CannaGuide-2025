@@ -11,6 +11,7 @@ vi.mock('@/services/snapshotQuarantine', () => ({
 }))
 
 import { SetAsideSnapshotPanel } from './SetAsideSnapshotPanel'
+import { redactSnapshotTextForDownload } from '@/services/persistedSnapshotFormat'
 
 const KEPT = '{"version":6,"settings":{"settings":{}},"simulation":{"plants":{"ids":["p1"]}}}'
 
@@ -48,5 +49,61 @@ describe('SetAsideSnapshotPanel (#666)', () => {
 
         fireEvent.click(screen.getByText('settingsView.data.setAside.restore'))
         expect(onRestore).toHaveBeenCalledWith(KEPT)
+    })
+
+    it('leaves the app PIN and the sync key out of the download, but restores the copy as kept (#872)', async () => {
+        const withSecrets = JSON.stringify({
+            version: 6,
+            settings: {
+                settings: {
+                    privacy: { pin: '4711', localOnly: true },
+                    data: { cloudSync: { encryptionKeyBase64: 'c2VjcmV0', enabled: false } },
+                },
+            },
+            simulation: { plants: { ids: ['p1'] } },
+        })
+        mocks.readQuarantinedSnapshot.mockResolvedValueOnce(withSecrets)
+        const onRestore = vi.fn()
+        const createObjectURL = vi.fn((_blob: Blob) => 'blob:set-aside')
+        Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() })
+        vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
+
+        render(<SetAsideSnapshotPanel onRestore={onRestore} />)
+        fireEvent.click(await screen.findByText('settingsView.data.setAside.download'))
+
+        const downloaded = (await createObjectURL.mock.calls[0]?.[0].text()) ?? ''
+        expect(downloaded).not.toContain('4711')
+        expect(downloaded).not.toContain('c2VjcmV0')
+        expect(JSON.parse(downloaded)).toMatchObject({
+            settings: {
+                settings: {
+                    privacy: { pin: null, localOnly: true },
+                    data: { cloudSync: { encryptionKeyBase64: null, enabled: false } },
+                },
+            },
+            simulation: { plants: { ids: ['p1'] } },
+        })
+
+        fireEvent.click(screen.getByText('settingsView.data.setAside.restore'))
+        expect(onRestore).toHaveBeenCalledWith(withSecrets)
+    })
+})
+
+describe('redactSnapshotTextForDownload (#872)', () => {
+    it('scrubs the PIN and the sync key from a copy that is not valid JSON', () => {
+        const truncated =
+            '{"settings":{"settings":{"privacy":{"pin":"4711"},"data":{"cloudSync":{"encryptionKeyBase64":"c2Vj'
+        const scrubbed = redactSnapshotTextForDownload(truncated)
+
+        expect(scrubbed).not.toContain('4711')
+        expect(scrubbed).not.toContain('c2Vj')
+        expect(scrubbed).toContain('"pin":null')
+    })
+
+    it('leaves a copy without those fields unchanged in content', () => {
+        expect(JSON.parse(redactSnapshotTextForDownload('{"version":6,"notes":[1]}'))).toEqual({
+            version: 6,
+            notes: [1],
+        })
     })
 })

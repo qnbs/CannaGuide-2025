@@ -2,7 +2,11 @@ import type { RootState } from '@/stores/store'
 import type { PersistedState } from '@/services/migration/migrationTypes'
 import { SLICE_SCHEMA_VERSIONS } from '@/constants'
 import { getUISnapshot } from '@/stores/useUIStore'
-import { redactSettingsSecrets, type SecretSettingPath } from '@/utils/redactSecrets'
+import {
+    redactSettingsSecrets,
+    scrubSecretsInText,
+    type SecretSettingPath,
+} from '@/utils/redactSecrets'
 
 /**
  * The persisted snapshot: what the app saves to IndexedDB
@@ -95,4 +99,48 @@ export const redactForExport = (snapshot: PersistedState): PersistedState => {
             },
         },
     }
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+
+/** Fields that never leave the device, in addition to the redacted credentials. */
+const DOWNLOAD_ONLY_REDACTED_FIELDS = ['pin', 'encryptionKeyBase64'] as const
+
+const nullField = (holder: unknown, field: string): void => {
+    if (isRecord(holder) && field in holder) holder[field] = null
+}
+
+/**
+ * Prepares a set-aside snapshot (#666) for a download, which leaves the device: the
+ * app PIN and the sync key are removed like `redactForExport` does for the JSON export
+ * (#872 review). The copy may be partial or not even JSON, which is why it was set
+ * aside, so this neither assumes the settings shape nor fails: text that does not
+ * parse is scrubbed field by field instead.
+ */
+export const redactSnapshotTextForDownload = (text: string): string => {
+    try {
+        const parsed: unknown = JSON.parse(text)
+        if (isRecord(parsed)) {
+            const settings = isRecord(parsed.settings) ? parsed.settings.settings : undefined
+            if (isRecord(settings)) {
+                nullField(settings.privacy, 'pin')
+                nullField(
+                    isRecord(settings.data) ? settings.data.cloudSync : undefined,
+                    'encryptionKeyBase64',
+                )
+            }
+            return JSON.stringify(parsed)
+        }
+    } catch {
+        // Not JSON: scrub the text below.
+    }
+    return DOWNLOAD_ONLY_REDACTED_FIELDS.reduce(
+        (scrubbed, field) =>
+            scrubbed.replace(
+                new RegExp(`("${field}"\\s*:\\s*)"(?:[^"\\\\]|\\\\.)*\\\\?(?:"|$)`, 'g'),
+                '$1null',
+            ),
+        scrubSecretsInText(text),
+    )
 }

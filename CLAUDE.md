@@ -262,8 +262,9 @@ them (`docs/DEVOPS-GATES.md` is the full inventory):
 - **`check:doc-metrics`** (in the `quality` CI gate _and_ pre-push): every README metric badge
   -- release version, TypeScript, Vite, coverage, and the **CI-workflow count** -- must match
   source (`package.json`, `apps/web/vite.config.ts`, the `.github/workflows/*.yml` count). So
-  **adding a workflow means bumping the count in ~6 README spots** (EN + DE badges, header,
-  both stat lines, the table) or CI goes red on a change that looks unrelated.
+  **adding a workflow means bumping the count in 3 README spots** (the inline "NN CI workflows",
+  the "CI/CD Workflows (NN)" heading, and that table's named rows plus its "+ NN more" row) or CI
+  goes red on a change that looks unrelated. The README is English-only since #740.
 - **`check:a11y-ratchet`** (CI `quality` only -- runs its own AST-only ESLint, so it is light):
   jsx-a11y warnings may not exceed `.a11y-baseline.json` (currently 79). Fixing warnings lets
   you _lower_ it with `node scripts/check-a11y-ratchet.mjs --update` in the same PR; never raise

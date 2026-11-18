@@ -9,8 +9,13 @@
 //   1. README release badge     == package.json version
 //   2. README TypeScript badge   == root devDep `typescript` major
 //   3. README Vite badge         == apps/web devDep `vite` major
-//   4. README coverage badges    == apps/web/vite.config.ts `lines` threshold (EN + DE)
-//   5. README CI-workflow count  == number of .github/workflows/*.yml files (badges + inline, EN + DE)
+//   4. README coverage badge     == apps/web/vite.config.ts `lines` threshold
+//   5. README CI-workflow count  == number of .github/workflows/*.yml files: the inline
+//      "NN CI workflows", the "CI/CD Workflows (NN)" heading and its table sum (required),
+//      plus a "CI workflows-NN" badge if one is present
+//
+// The README is English-only since the 2026-11-18 rework (#740); the German spots this gate
+// used to require (DE badges, the "| **CI/CD** | NN Workflows" row) no longer exist.
 //
 // NOT checked here: the test-count badge -- it cannot be derived from the tree
 // without running the suite. It is synced by `docs:sync-metrics` (from a CI-run
@@ -68,7 +73,7 @@ const assertPresent = (matches, label) => {
     return matches
 }
 
-// 2. TypeScript badge (appears twice: EN + DE)
+// 2. TypeScript badge
 for (const m of assertPresent([...readme.matchAll(/TypeScript-(\d+)\.x-/g)], 'TypeScript badge')) {
     if (m[1] !== tsMajor) {
         fail(
@@ -77,7 +82,7 @@ for (const m of assertPresent([...readme.matchAll(/TypeScript-(\d+)\.x-/g)], 'Ty
     }
 }
 
-// 3. Vite badge (EN + DE)
+// 3. Vite badge
 for (const m of assertPresent([...readme.matchAll(/Vite-(\d+)-/g)], 'Vite badge')) {
     if (m[1] !== viteMajor) {
         fail(
@@ -86,9 +91,9 @@ for (const m of assertPresent([...readme.matchAll(/Vite-(\d+)-/g)], 'Vite badge'
     }
 }
 
-// 4. Coverage badges (EN "coverage-NN%..lines", DE "Coverage-NN%..Zeilen")
+// 4. Coverage badge ("coverage-NN%25%20lines")
 for (const m of assertPresent(
-    [...readme.matchAll(/[Cc]overage-(\d+)%25%20(?:lines|Zeilen)/g)],
+    [...readme.matchAll(/[Cc]overage-(\d+)%25%20lines/g)],
     'coverage badge',
 )) {
     if (m[1] !== coverageLines) {
@@ -98,13 +103,10 @@ for (const m of assertPresent(
     }
 }
 
-// 5. CI-workflow count (EN + DE badges, EN/DE inline "NN CI workflows"/"NN CI-Workflows",
-//    the "CI/CD Workflows (NN)" heading and the DE "**CI/CD** | NN Workflows" table row)
+// 5. CI-workflow count: the inline "NN CI workflows", the "CI/CD Workflows (NN)" heading and
+//    its table are required; a "CI workflows-NN" badge is optional but must agree if present.
 const wf = String(workflowCount)
-for (const m of assertPresent(
-    [...readme.matchAll(/CI%20[Ww]orkflows-(\d+)-/g)],
-    'CI-workflow badge',
-)) {
+for (const m of readme.matchAll(/CI%20[Ww]orkflows-(\d+)-/g)) {
     if (m[1] !== wf) fail(`CI-workflow badge: README "${m[1]}" != actual .yml count "${wf}"`)
 }
 for (const m of assertPresent(
@@ -113,19 +115,13 @@ for (const m of assertPresent(
 )) {
     if (m[1] !== wf) fail(`CI-workflow inline: README "${m[1]}" != actual .yml count "${wf}"`)
 }
-// The section heading "CI/CD Workflows (NN)" and the DE table row "| **CI/CD** | NN Workflows":
-// both drifted past the two checks above when a workflow was removed (PR #880).
+// The section heading "CI/CD Workflows (NN)" drifted past the checks above when a workflow
+// was removed (PR #880).
 for (const m of assertPresent(
     [...readme.matchAll(/CI\/CD Workflows \((\d+)\)/g)],
     'CI/CD workflows heading',
 )) {
     if (m[1] !== wf) fail(`CI/CD workflows heading: README "${m[1]}" != actual .yml count "${wf}"`)
-}
-for (const m of assertPresent(
-    [...readme.matchAll(/\|\s*\*\*CI\/CD\*\*\s*\|\s*(\d+) Workflows/g)],
-    'CI/CD table row',
-)) {
-    if (m[1] !== wf) fail(`CI/CD table row: README "${m[1]}" != actual .yml count "${wf}"`)
 }
 // The workflow table under that heading: its named rows plus "+ NN more" must add up too
 // (it said 13 + 15 = 28 under a heading of 30 before PR #880).

@@ -8,6 +8,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Fixed
 
+- **fix(desktop):** The desktop crate no longer declares `chrono`, which nothing in it used (cargo reported it as an unused dependency). `chrono` stays in `Cargo.lock` through `serde_with`, now without the WebAssembly-only `js-sys` and `wasm-bindgen` our default features pulled in; no version changes.
+
 - **fix(ci):** A manual Release Publish run that has to create the tag no longer builds the release twice. It creates and pushes the tag in a new `tag` job and stops there; the run the tag push starts builds, verifies and publishes. Before, the tag's own run queued behind the manual one, rebuilt everything (including the four desktop targets) and then stopped at the existing-release check.
 
 ## [1.12.0] - 2026-11-18

@@ -481,42 +481,54 @@ describe('startup update check', () => {
     })
 })
 
+/** A save that stays pending until the test resolves it. */
+const deferredSave = () => {
+    let finish: (saved: boolean) => void = () => undefined
+    const flush: PersistFlush = () => new Promise<boolean>((resolve) => (finish = resolve))
+    return { flush, finish: (saved: boolean) => finish(saved) }
+}
+
+/** Lets pending promise callbacks run. */
+const settle = () => new Promise((resolve) => setTimeout(resolve, 0))
+
 describe('final save before an install ends the process', () => {
-    it('confirms only after the save finished, and also after a failed save', async () => {
+    it('confirms only once the save has finished', async () => {
+        // CodeRabbit on #878: with a save that resolves at once, a handler that did
+        // not await it would pass too.
+        const save = deferredSave()
+        const { bridge, calls } = fakeBridge()
+        const done = flushThenConfirmFinalSave(save.flush, async () => bridge)
+        await settle()
+        expect(calls).not.toContain('confirm_final_save')
+        save.finish(true)
+        await done
+        expect(calls).toEqual(['confirm_final_save'])
+    })
+
+    it('still confirms after a failed save, once it has finished', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
-        const order: string[] = []
-        const { bridge } = fakeBridge({ confirm_final_save: () => order.push('confirm') })
-        await flushThenConfirmFinalSave(
-            async () => {
-                order.push('save')
-                return true
-            },
-            async () => bridge,
-        )
-        await flushThenConfirmFinalSave(
-            async () => {
-                order.push('save')
-                return false
-            },
-            async () => bridge,
-        )
-        expect(order).toEqual(['save', 'confirm', 'save', 'confirm'])
+        const save = deferredSave()
+        const { bridge, calls } = fakeBridge()
+        const done = flushThenConfirmFinalSave(save.flush, async () => bridge)
+        await settle()
+        expect(calls).toEqual([])
+        save.finish(false)
+        await done
+        expect(calls).toEqual(['confirm_final_save'])
         warn.mockRestore()
     })
 })
 
 describe('quit after flush', () => {
-    it('confirms the quit only after the save finished', async () => {
-        const order: string[] = []
-        const { bridge } = fakeBridge({ confirm_quit: () => order.push('confirm') })
-        await flushThenConfirmQuit(
-            async () => {
-                order.push('flush')
-                return true
-            },
-            async () => bridge,
-        )
-        expect(order).toEqual(['flush', 'confirm'])
+    it('confirms the quit only once the save has finished', async () => {
+        const save = deferredSave()
+        const { bridge, calls } = fakeBridge()
+        const done = flushThenConfirmQuit(save.flush, async () => bridge)
+        await settle()
+        expect(calls).not.toContain('confirm_quit')
+        save.finish(true)
+        await done
+        expect(calls).toEqual(['confirm_quit'])
     })
 
     it('still quits when the save fails, after it has finished', async () => {

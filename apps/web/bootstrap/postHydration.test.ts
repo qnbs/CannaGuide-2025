@@ -166,6 +166,22 @@ describe('runPostHydrationServices', () => {
         expect(mockScheduleIdlePreload).toHaveBeenCalled()
     })
 
+    /** Holds a save open until the test releases it. */
+    const saveGate = (() => {
+        let held: Promise<void> | null = null
+        let release: () => void = () => undefined
+        return {
+            hold: () => {
+                held = new Promise<void>((resolve) => (release = resolve))
+            },
+            release: () => {
+                release()
+                held = null
+            },
+            wait: () => held ?? Promise.resolve(),
+        }
+    })()
+
     /** Collects the Tauri event listeners by event name. */
     const captureListeners = (onListen?: (event: string) => void) => {
         const listeners = new Map<string, () => Promise<void>>()
@@ -201,6 +217,7 @@ describe('runPostHydrationServices', () => {
         const store = createAppStoreSync()
         const flushPersistedState = vi.fn(async () => {
             platformMocks.order.push('save')
+            await saveGate.wait()
             return true
         })
         platformMocks.isTauri = true
@@ -218,8 +235,14 @@ describe('runPostHydrationServices', () => {
             platformMocks.order.indexOf('strains'),
         )
 
+        // The listener must wait for the save, not only start it (CodeRabbit on #878).
         platformMocks.order.length = 0
-        await listeners.get('tauri://before-quit')?.()
+        saveGate.hold()
+        const quitting = listeners.get('tauri://before-quit')?.()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+        expect(platformMocks.order).toEqual(['save'])
+        saveGate.release()
+        await quitting
         expect(platformMocks.order).toEqual(['save', 'confirm_quit'])
     })
 
@@ -230,6 +253,7 @@ describe('runPostHydrationServices', () => {
         const store = createAppStoreSync()
         const flushPersistedState = vi.fn(async () => {
             platformMocks.order.push('save')
+            await saveGate.wait()
             return true
         })
         platformMocks.isTauri = true
@@ -242,7 +266,12 @@ describe('runPostHydrationServices', () => {
         const finalSave = listeners.get('cannaguide://save-before-restart')
         expect(finalSave).toBeDefined()
         platformMocks.order.length = 0
-        await finalSave?.()
+        saveGate.hold()
+        const saving = finalSave?.()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+        expect(platformMocks.order).toEqual(['save'])
+        saveGate.release()
+        await saving
         expect(platformMocks.order).toEqual(['save', 'confirm_final_save'])
     })
 })

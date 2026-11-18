@@ -165,7 +165,7 @@ tag that is already on the remote.
    `scripts/release/desktop-release-manifest.mjs`, which **fails closed** when a target,
    installer or updater bundle is missing, an updater signature is missing or does not
    verify against the `tauri.conf.json` pubkey, or an installer carries another
-   version. It writes normalized asset names, `latest.json` and `SHA256SUMS`.
+   version. It writes normalized asset names, `latest.json` and `SHA256SUMS`. `latest.json` has an entry per install type (`windows-x86_64-nsis`, `-msi`, `linux-x86_64-appimage`, `-deb`, `darwin-*-app`), because `tauri-plugin-updater` looks up `{os}-{arch}-{bundle_type}` before `{os}-{arch}`; the base keys point to NSIS, AppImage and the app bundle. Every one of these bundles needs a signature that verifies.
 5. `release` first checks that the run's own commit is the release commit: the
    attestation actions sign the run's commit (the OIDC `sha` claim), so a manual run
    from `main` for an older tag would attest a commit that did not build the assets.

@@ -26,7 +26,7 @@ const LAYOUT = {
     },
     'x86_64-unknown-linux-gnu': {
         'appimage/CannaGuide 2025_VER_amd64.AppImage': true,
-        'deb/CannaGuide 2025_VER_amd64.deb': false,
+        'deb/CannaGuide 2025_VER_amd64.deb': true,
     },
     'aarch64-apple-darwin': {
         'dmg/CannaGuide 2025_VER_aarch64.dmg': false,
@@ -78,9 +78,15 @@ test('a complete, signed build produces normalized assets and latest.json for al
     assert.deepEqual(result.problems, [])
     assert.deepEqual(Object.keys(result.latest.platforms).sort(), [
         'darwin-aarch64',
+        'darwin-aarch64-app',
         'darwin-x86_64',
+        'darwin-x86_64-app',
         'linux-x86_64',
+        'linux-x86_64-appimage',
+        'linux-x86_64-deb',
         'windows-x86_64',
+        'windows-x86_64-msi',
+        'windows-x86_64-nsis',
     ])
     assert.equal(result.latest.version, VERSION)
     assert.equal(
@@ -120,7 +126,7 @@ test('the CLI writes the assets, latest.json and SHA256SUMS', (t) => {
     )
 
     const latest = JSON.parse(readFileSync(path.join(out, 'latest.json'), 'utf8'))
-    assert.equal(Object.keys(latest.platforms).length, 4)
+    assert.equal(Object.keys(latest.platforms).length, 10)
     const sums = readFileSync(path.join(out, 'SHA256SUMS'), 'utf8').trim().split('\n')
     assert.ok(sums.some((line) => line.endsWith('  latest.json')))
     assert.ok(sums.every((line) => /^[0-9a-f]{64} {2}\S+$/.test(line)))
@@ -292,4 +298,41 @@ test('Release Publish marks every pre-release tag as a GitHub prerelease', () =>
         assert.equal(flag(tag), '--prerelease', tag)
     }
     for (const tag of ['v1.12.0', 'v2.0.0']) assert.equal(flag(tag), '', tag)
+})
+
+test('deb and MSI installs get their own updater entry; the base entry stays the fallback', (t) => {
+    // CodeRabbit on #879: tauri-plugin-updater looks up {os}-{arch}-{bundle_type} first.
+    // With only the base entry, a deb install got the AppImage and an MSI install the
+    // NSIS setup, which their installers cannot apply.
+    const { artifactsDir, pubkey } = makeArtifacts(t)
+    const { platforms } = plan(artifactsDir, pubkey).latest
+    const base = `https://github.com/qnbs/CannaGuide-2025/releases/download/${TAG}`
+    assert.equal(platforms['linux-x86_64-deb'].url, `${base}/CannaGuide-2025_${VERSION}_amd64.deb`)
+    assert.equal(
+        platforms['windows-x86_64-msi'].url,
+        `${base}/CannaGuide-2025_${VERSION}_x64_en-US.msi`,
+    )
+    assert.deepEqual(platforms['linux-x86_64'], platforms['linux-x86_64-appimage'])
+    assert.deepEqual(platforms['windows-x86_64'], platforms['windows-x86_64-nsis'])
+    assert.deepEqual(platforms['darwin-aarch64'], platforms['darwin-aarch64-app'])
+    assert.notEqual(platforms['linux-x86_64-deb'].signature, platforms['linux-x86_64'].signature)
+})
+
+test('an unsigned deb fails the release, like any updater bundle', (t) => {
+    const { artifactsDir, pubkey } = makeArtifacts(t, {
+        mutate: (dir) =>
+            rmSync(
+                path.join(
+                    dir,
+                    'desktop-x86_64-unknown-linux-gnu',
+                    'deb',
+                    `CannaGuide 2025_${VERSION}_amd64.deb.sig`,
+                ),
+            ),
+    })
+    const { problems } = plan(artifactsDir, pubkey)
+    assert.ok(
+        problems.some((problem) => /amd64\.deb has no signature/.test(problem)),
+        problems.join('; '),
+    )
 })

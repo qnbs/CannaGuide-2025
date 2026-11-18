@@ -136,9 +136,7 @@ test('scoped rules match their files and skip unrelated ones', () => {
     )
     assert.ok(matches('.github/workflows/ci.yml').includes('.cursor/rules/30-ci-security-deps.mdc'))
     assert.ok(matches('package.json').includes('.cursor/rules/30-ci-security-deps.mdc'))
-    assert.ok(
-        matches('apps/web/package.json').includes('.cursor/rules/30-ci-security-deps.mdc'),
-    )
+    assert.ok(matches('apps/web/package.json').includes('.cursor/rules/30-ci-security-deps.mdc'))
     assert.deepEqual(matches('scripts/codegraph.mjs'), [
         '.cursor/rules/00-repository-governance.mdc',
     ])
@@ -192,7 +190,12 @@ test('agent docs name the lease and the current stack', () => {
     assert.match(section7, /not the current repository path/)
     assert.equal(guide.includes('Cursor project MCP'), false)
     const copilot = read('.github/copilot-instructions.md')
-    assert.match(copilot, /\*\*Version:\*\* 1\.11\.0/)
+    // The stated version follows the root package.json, so a release does not break this.
+    const { version } = JSON.parse(read('package.json'))
+    assert.ok(
+        copilot.includes(`**Version:** ${version} `),
+        `copilot instructions do not state ${version}`,
+    )
     assert.match(copilot, /Vite 8/)
     assert.match(copilot, /pnpm 11\.19\.0/)
     assert.equal(/Cloudflare Pages[^\n]*PAUSED/.test(copilot), false)
@@ -216,5 +219,8 @@ test('the doctor warns on an old graph and requires the launcher entry', () => {
     )
     assert.equal(selectsGraphifyNodeLauncher(['scripts/other.mjs']), false)
     assert.equal(selectsGraphifyNodeLauncher([]), false)
-    assert.match(read('docs/GRAPHIFY-COMPLETE-GUIDE.md'), /warns when `graph\.json` is older than HEAD/)
+    assert.match(
+        read('docs/GRAPHIFY-COMPLETE-GUIDE.md'),
+        /warns when `graph\.json` is older than HEAD/,
+    )
 })

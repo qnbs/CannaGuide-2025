@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-11-18
+
+Web/PWA and first desktop release. The desktop app carries the release version for the first time, and every release now ships installers for Windows (MSI, NSIS setup), Linux (AppImage, deb) and macOS (dmg for Apple silicon and Intel), built and verified in one fail-closed flow with minisign-signed updater bundles, `latest.json` and `SHA256SUMS`. The desktop app checks for updates (never in Local-Only mode or offline) and installs them only after saving. Not code-signed: Windows installers carry no Authenticode signature and macOS builds no Developer ID or notarization (macOS bundles get an ad-hoc signature), so the operating systems warn on first install. A real in-app update between two signed releases is not yet qualified; 1.12.0 is the first version that can receive one.
+
 - **docs(agent-context):** establish scoped Claude/Codex guidance for web, persistence, AI, workers and repository automation; preserve global safeguards and traceability.
 
 ### Added

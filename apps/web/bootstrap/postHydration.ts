@@ -36,6 +36,12 @@ const setUpDesktopLifecycle = async (
     const quitFlush = flushPersistedState
         ? lifecycle.flushUntilStable(flushPersistedState, getState, { isSame })
         : undefined
+    // The final save before an update restart: the new version is already in place,
+    // so it cannot refuse; it saves for more rounds than a quit (update.rs waits up to
+    // 10 s for it) to leave as little as possible unsaved (CodeAnt on #878).
+    const finalFlush = flushPersistedState
+        ? lifecycle.flushUntilStable(flushPersistedState, getState, { isSame, maxRounds: 8 })
+        : undefined
     lifecycle.registerPersistFlush(
         flushPersistedState
             ? lifecycle.flushUntilStable(flushPersistedState, getState, {
@@ -57,7 +63,7 @@ const setUpDesktopLifecycle = async (
         // Right before an install ends the process, update.rs asks for one more save,
         // so an edit made while the install ran is not lost to the restart.
         await listen(lifecycle.SAVE_BEFORE_RESTART_EVENT, () =>
-            lifecycle.flushThenConfirmFinalSave(quitFlush).catch((err: unknown) => {
+            lifecycle.flushThenConfirmFinalSave(finalFlush).catch((err: unknown) => {
                 console.debug('[Tauri] final save confirmation failed:', err)
             }),
         )

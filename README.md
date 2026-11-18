@@ -375,7 +375,7 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | CSP check       | pass                                                                   |
 | full E2E        | Chromium is required inside CI Status; Firefox/WebKit remain advisory. |
 
-### CI/CD Workflows (30)
+### CI/CD Workflows (29)
 
 | Workflow                | Trigger            | Purpose                                                                             |
 | ----------------------- | ------------------ | ----------------------------------------------------------------------------------- |
@@ -628,7 +628,7 @@ keine nativen Desktop-Installer. Siehe [CONTRIBUTING.md](CONTRIBUTING.md),
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                           |
 | **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                 |
-| **CI/CD**        | 30 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, Fuzzing (`fuzzing.yml`), OpenSSF Scorecard; Graphify-Doctor in CI |
+| **CI/CD**        | 29 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, Fuzzing (`fuzzing.yml`), OpenSSF Scorecard; Graphify-Doctor in CI |
 | **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                            |
 | **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                                  |
 

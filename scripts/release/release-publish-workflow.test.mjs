@@ -75,8 +75,10 @@ test('a dispatch resolves exactly the tag its concurrency group names', (t) => {
     const script = runScript(job('tag'), 'Resolve tag name')
     const dir = mkdtempSync(path.join(tmpdir(), 'cannaguide-release-tag-'))
     t.after(() => rmSync(dir, { recursive: true, force: true }))
+    let resolved = 0
     const resolve = (env) => {
-        const output = path.join(dir, `out-${Math.random().toString(36).slice(2)}`)
+        resolved += 1
+        const output = path.join(dir, `out-${resolved}`)
         const result = spawnSync('bash', ['-c', script], {
             env: { PATH: process.env.PATH, GITHUB_OUTPUT: output, ...env },
             encoding: 'utf8',
@@ -250,8 +252,10 @@ test('Ensure tag exists reports created only for a tag it pushed', (t) => {
     writeFileSync(path.join(bin, 'gh'), '#!/bin/sh\necho true\n')
     chmodSync(path.join(bin, 'git'), 0o755)
     chmodSync(path.join(bin, 'gh'), 0o755)
+    let runs = 0
     const run = (env) => {
-        const output = path.join(bin, `out-${Math.random().toString(36).slice(2)}`)
+        runs += 1
+        const output = path.join(bin, `out-${runs}`)
         writeFileSync(output, '')
         const result = spawnSync('bash', ['-eo', 'pipefail', '-c', script], {
             env: {

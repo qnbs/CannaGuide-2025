@@ -179,9 +179,9 @@ tag that is already on the remote.
 **Manual run that creates the tag:** a Release Publish run dispatched from `main` for a
 missing tag creates it in its `tag` job and pushes it with `RELEASE_PAT` (so Release Gate
 runs). That push starts the tag's own Release Publish run, which builds, verifies and
-publishes; the manual run stops after the tag (`build` needs `created != 'true'`), so
-nothing is built twice. With an existing tag, or in dry-run, the manual run builds as
-before.
+creates the **draft** release; publishing it stays the owner's step, as for any tag. The
+manual run stops after the tag (`build` needs `created != 'true'`), so nothing is built
+twice. With an existing tag, or in dry-run, the manual run builds as before.
 
 **Desktop qualification without a release:** run Desktop Build manually on `main`.
 It builds all four targets and runs the same verification, uploading

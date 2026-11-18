@@ -35,7 +35,7 @@ jobs:
     # Job 0: Tag -- resolves the tag; a manual run creates it when it is missing
     # -----------------------------------------------------------------
     # A manual run that creates the tag pushes it with RELEASE_PAT, which starts this
-    # workflow for the tag. That run does the release; this one stops after the tag
+    # workflow for the tag. That run builds and creates the draft; this one stops after the tag
     # (build needs created != 'true'), so nothing is built twice. The concurrency
     # group queues the tag's run behind this short one.
     tag:
@@ -176,7 +176,7 @@ jobs:
                   if [[ ${PUSH_CODE} -eq 0 ]]; then
                     echo "[OK] Tag ${TAG} created and pushed"
                     # The push starts this workflow for the tag; that run builds and
-                    # publishes. This run hands off instead of building it a second time.
+                    # creates the draft release. This run hands off instead of building twice.
                     echo "created=true" >> "$GITHUB_OUTPUT"
                     exit 0
                   fi
@@ -214,7 +214,7 @@ jobs:
               shell: bash
               run: |
                   echo "[OK] Created ${TAG}. Its own Release Publish run (queued behind this one)"
-                  echo "[OK] builds, verifies and publishes the release; this run stops here."
+                  echo "[OK] builds, verifies and creates the draft release; this run stops here."
 
     build:
         name: Build + SBOM

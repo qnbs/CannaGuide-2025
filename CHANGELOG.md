@@ -6,12 +6,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+## [1.12.1] - 2026-11-18
+
 Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their built-in updater cannot run either. Install this release manually over v1.12.0. App data stays in the same per-user folder (`com.cannaguide.desktop`), and v1.12.0 never wrote any, because it never started. The web app (PWA) was not affected.
 
 ### Fixed
 
 - **fix(desktop):** The desktop apps start again. Every v1.12.0 desktop build (Windows NSIS and MSI, macOS Apple Silicon and Intel, Linux .deb and AppImage) exited at startup with `PluginInitialization("window-state", ... invalid type: map, expected unit)`. Since April, `tauri.conf.json` had configured `window-state` (`{"all": true}`) and `store` (`{}`), but neither plugin takes a configuration there. Both entries are removed; window-state still saves every window property by default. A Rust test now checks each `plugins` entry against the configuration type of the plugin version in `Cargo.lock`, and it rejects both old entries.
 - **fix(desktop):** Only one instance runs per user. A second launch makes the open app show its window again and exits. Before, it started a second app on the same storage: a second writer that the web app's writer lock cannot see across processes. On Linux the first instance is found over the D-Bus session bus; without one, the app starts normally.
+- **fix(desktop):** A second launch that cannot ask the open app to show itself now exits with a failure status instead of 0. A launch that finds the open app just quitting waits briefly and then starts itself, instead of exiting with no app left running.
 
 ### Added
 

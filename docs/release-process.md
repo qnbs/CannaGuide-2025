@@ -249,11 +249,12 @@ registered before the slower startup work. While an update installs, no quit pat
 250 ms and the close button did not wait at all.
 
 **Manual acceptance of a real update** (CI cannot install and relaunch a desktop app;
-deferred by the owner, not yet done). 1.12.0 is the first version with a working
-updater, so the first qualification needs two updater-capable builds:
+deferred by the owner, not yet done). 1.12.1 is the first version with a working
+updater (1.12.0 does not start, so its updater never runs), so the first qualification
+needs two updater-capable builds:
 
-1. Install the published 1.12.0 (the baseline) on each platform and create some data.
-2. Publish the next release (1.12.1 or later) through this process, or, without
+1. Install the published 1.12.1 (the baseline) on each platform and create some data.
+2. Publish the next release (1.12.2 or later) through this process, or, without
    publishing, build a test bundle with a higher version and serve its `latest.json`
    from a local server that a test build of the baseline points to
    (`plugins.updater.endpoints` through an extra `--config` overlay).

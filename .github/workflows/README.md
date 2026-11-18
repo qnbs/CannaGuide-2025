@@ -54,7 +54,6 @@ and stacked pull requests receive the same CI graph as pull requests targeting `
 | [`benchmark.yml`](./benchmark.yml)               | Performance benchmarks. |
 | [`mutation-testing.yml`](./mutation-testing.yml) | Stryker mutation tests. |
 | [`fuzzing.yml`](./fuzzing.yml)                   | Property fuzz tests.    |
-| [`cflite_pr.yml`](./cflite_pr.yml)               | ClusterFuzzLite on PRs. |
 
 ## Paused / manual-only
 

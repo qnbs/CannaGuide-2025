@@ -6,6 +6,14 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **ci:** The ClusterFuzzLite workflow (`cflite_pr.yml`) and its `.clusterfuzzlite/` setup are removed. ClusterFuzzLite rejects every sanitizer for JavaScript projects, so its only job failed on each weekly run by design and was kept from blocking only by `continue-on-error`. Fuzzing stays in `fuzzing.yml` (fast-check property tests on pull requests and weekly). README, architecture and security docs no longer describe it as PR fuzzing, and the workflow count is 29.
+
+- **fix(desktop):** The desktop crate no longer declares `chrono`, which nothing in it used (cargo reported it as an unused dependency). `chrono` stays in `Cargo.lock` through `serde_with`, now without the WebAssembly-only `js-sys` and `wasm-bindgen` our default features pulled in; no version changes.
+
+- **fix(ci):** A manual Release Publish run that has to create the tag no longer builds the release twice. It creates and pushes the tag in a new `tag` job and stops there; the run the tag push starts builds, verifies and creates the draft release, which the owner publishes as before. Before, the tag's own run queued behind the manual one, rebuilt everything (including the four desktop targets) and then stopped at the existing-release check.
+
 ## [1.12.0] - 2026-11-18
 
 Web/PWA and first desktop release. The desktop app carries the release version for the first time, and every release now ships installers for Windows (MSI, NSIS setup), Linux (AppImage, deb) and macOS (dmg for Apple silicon and Intel), built and verified in one fail-closed flow with minisign-signed updater bundles, `latest.json` and `SHA256SUMS`. The desktop app checks for updates (never in Local-Only mode or offline) and installs them only after saving. Not code-signed: Windows installers carry no Authenticode signature and macOS builds no Developer ID or notarization (macOS bundles get an ad-hoc signature), so the operating systems warn on first install. A real in-app update between two signed releases is not yet qualified; 1.12.0 is the first version that can receive one.

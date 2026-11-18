@@ -177,7 +177,7 @@ for (let attempt = 0; attempt < 30; attempt++) {
 console.log('\x1b[36m→ CI checks detected — watching for completion...\x1b[0m')
 
 // Checks with continue-on-error that should not block the merge
-const IGNORABLE_CHECKS = new Set(['PR Fuzzing', 'PR Fuzzing (none)', 'Build & Push'])
+const IGNORABLE_CHECKS = new Set(['Build & Push'])
 
 // Poll check status instead of --watch (avoids alternate buffer / TUI issues)
 let checksPass = false
@@ -195,7 +195,7 @@ for (let attempt = 0; attempt < 120; attempt++) {
         try {
             const checks = JSON.parse(raw)
             const completed = checks.filter((c) => c.s === 'COMPLETED')
-            // Failures in ignorable checks (e.g. ClusterFuzzLite) do not block
+            // Failures in ignorable checks do not block
             const realFailed = completed.filter(
                 (c) =>
                     (c.c === 'FAILURE' ||

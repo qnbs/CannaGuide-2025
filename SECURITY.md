@@ -212,7 +212,7 @@ GitHub Actions are restricted to a curated allowlist (`allowed_actions: selected
 
 - GitHub-owned actions (e.g., `actions/*`, `github/*`, `docker/*`)
 - Verified marketplace creators
-- Explicitly approved third-party: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `Swatinem/*`, `dtolnay/*`, `google/clusterfuzzlite/*`, `peter-evans/*`, `slsa-framework/*`
+- Explicitly approved third-party: `anchore/*`, `gitleaks/*`, `ossf/*`, `snyk/*`, `Swatinem/*`, `dtolnay/*`, `peter-evans/*`, `slsa-framework/*`
 
 Adding a new third-party action requires updating the allowlist via repository Settings > Actions > General.
 

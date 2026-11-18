@@ -30,7 +30,6 @@ enabled = true
 
 [analyzers.meta]
 dockerfile_paths = [
-    ".clusterfuzzlite/Dockerfile",
     ".devcontainer/Dockerfile",
 ]
 

@@ -72,7 +72,7 @@
 [![Redux Slices](https://img.shields.io/badge/Redux%20slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI Workflows](https://img.shields.io/badge/CI%20workflows-30-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
+[![CI Workflows](https://img.shields.io/badge/CI%20workflows-29-yellow)](https://github.com/qnbs/CannaGuide-2025/blob/main/.github/workflows/README.md)
 [![Custom Hooks](https://img.shields.io/badge/hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n Namespaces](https://img.shields.io/badge/i18n%20namespaces-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -118,7 +118,7 @@ in [#579 / U12](https://github.com/qnbs/CannaGuide-2025/issues/579).
 
 ## Project Overview
 
-776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 30 CI workflows
+776 strains · 2812 tests · 130 services · 19 Redux slices + 9 Zustand stores · 28 hooks · 12 i18n namespaces · 9 themes · 29 CI workflows
 
 | Category        | Technology                           | Purpose                                     |
 | --------------- | ------------------------------------ | ------------------------------------------- |
@@ -338,14 +338,14 @@ Multi-grow management retains the app's global active-plant limit of 3 across gr
 
 ### Testing (2812 tests, 0 failures)
 
-| Type                  | Framework       | Scope                                           |
-| --------------------- | --------------- | ----------------------------------------------- |
-| **Unit/Integration**  | Vitest          | 2812 tests, colocated `*.test.ts(x)`            |
-| **E2E**               | Playwright      | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
-| **Component**         | Playwright CT   | `tests/ct/*.ct.tsx`                             |
-| **Mutation**          | Stryker         | Redux slices, 50% break threshold               |
-| **Visual Regression** | Playwright      | Theme screenshots, `tests/e2e/__screenshots__/` |
-| **Fuzzing**           | ClusterFuzzLite | PR-triggered continuous fuzzing                 |
+| Type                  | Framework                 | Scope                                           |
+| --------------------- | ------------------------- | ----------------------------------------------- |
+| **Unit/Integration**  | Vitest                    | 2812 tests, colocated `*.test.ts(x)`            |
+| **E2E**               | Playwright                | Chromium + Firefox (CI), `tests/e2e/*.e2e.ts`   |
+| **Component**         | Playwright CT             | `tests/ct/*.ct.tsx`                             |
+| **Mutation**          | Stryker                   | Redux slices, 50% break threshold               |
+| **Visual Regression** | Playwright                | Theme screenshots, `tests/e2e/__screenshots__/` |
+| **Fuzzing**           | fast-check property tests | `fuzzing.yml`: PRs and weekly                   |
 
 ### Security
 
@@ -375,24 +375,24 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 | CSP check       | pass                                                                   |
 | full E2E        | Chromium is required inside CI Status; Firefox/WebKit remain advisory. |
 
-### CI/CD Workflows (30)
+### CI/CD Workflows (29)
 
-| Workflow           | Trigger            | Purpose                                                                             |
-| ------------------ | ------------------ | ----------------------------------------------------------------------------------- |
-| CI                 | push, PR           | Lint, typecheck, 2812 tests, build, security, E2E, IoT                              |
-| CodeQL             | push, PR, weekly   | SAST (JavaScript/TypeScript)                                                        |
-| Deploy             | push to main       | GitHub Pages + Lighthouse budget gate                                               |
-| Release Publish    | tag v\*            | GitHub build attestation + CycloneDX SBOM + GitHub Release                          |
-| Release Gate       | tag v\*            | Pre-release quality gate (typecheck, tests, build, audit)                           |
-| Security Full      | push, PR, weekly   | Comprehensive security scan suite                                                   |
-| Snyk               | push, PR           | Vulnerability scanning                                                              |
-| ClusterFuzzLite    | PR                 | Continuous fuzzing                                                                  |
-| Scorecard          | push, weekly       | OpenSSF Scorecard                                                                   |
-| Config Guard       | push, PR           | RCE pattern scanning in configs                                                     |
-| Mutation Testing   | push, PR           | Stryker Redux slice mutation testing                                                |
-| Preview Validation | deploy             | Playwright + Lighthouse on deploy previews (paused)                                 |
-| Graphify Update    | schedule, dispatch | Generates a pinned, validated `graphify-out/` artifact for human-reviewed promotion |
-| + 15 more          | various            | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy         |
+| Workflow                | Trigger            | Purpose                                                                                                                                                                         |
+| ----------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI                      | push, PR           | Lint, typecheck, 2812 tests, build, security, E2E, IoT                                                                                                                          |
+| CodeQL                  | push, PR, weekly   | SAST (JavaScript/TypeScript)                                                                                                                                                    |
+| Deploy                  | push to main       | GitHub Pages + Lighthouse budget gate                                                                                                                                           |
+| Release Publish         | tag v\*            | GitHub build attestation + CycloneDX SBOM + GitHub Release                                                                                                                      |
+| Release Gate            | tag v\*            | Pre-release quality gate (typecheck, tests, build, audit)                                                                                                                       |
+| Security Full           | push, PR, weekly   | Comprehensive security scan suite                                                                                                                                               |
+| Snyk                    | push, PR           | Vulnerability scanning                                                                                                                                                          |
+| Fuzzing (`fuzzing.yml`) | PR, weekly         | fast-check property tests                                                                                                                                                       |
+| Scorecard               | push, weekly       | OpenSSF Scorecard                                                                                                                                                               |
+| Config Guard            | push, PR           | RCE pattern scanning in configs                                                                                                                                                 |
+| Mutation Testing        | push, PR           | Stryker Redux slice mutation testing                                                                                                                                            |
+| Preview Validation      | deploy             | Playwright + Lighthouse on deploy previews (paused)                                                                                                                             |
+| Graphify Update         | schedule, dispatch | Generates a pinned, validated `graphify-out/` artifact for human-reviewed promotion                                                                                             |
+| + 16 more               | various            | Desktop build, Cloudflare deploy and previews, IoT integration, security scan, dependency health, docs CI, benchmarks, strains, Dependabot, labeler, stale, cleanup, provenance |
 
 ### Graphify knowledge graph & MCP
 
@@ -450,7 +450,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 
 ## Acknowledgments
 
-**AI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web · **Strain Data:** AI-assisted research (Gemini, Opus) based on publicly available breeder/seedbank/community information · **Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand · **Security:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, ClusterFuzzLite, OpenSSF Scorecard · **Infrastructure:** GitHub Pages, Vercel, Cloudflare Pages, TurboRepo · **Icons:** Phosphor Icons
+**AI & ML:** Google Gemini API, OpenAI API, Anthropic API, xAI/Grok API, Hugging Face Transformers.js, MLC WebLLM, TensorFlow.js, ONNX Runtime Web · **Strain Data:** AI-assisted research (Gemini, Opus) based on publicly available breeder/seedbank/community information · **Frontend:** React, Vite, Tailwind CSS, Radix UI, Recharts, D3.js, i18next, Zod, Redux Toolkit, Zustand · **Security:** DOMPurify, Sentry, Semgrep, Gitleaks, Grype, Snyk, CodeQL, Fuzzing (`fuzzing.yml`), OpenSSF Scorecard · **Infrastructure:** GitHub Pages, Vercel, Cloudflare Pages, TurboRepo · **Icons:** Phosphor Icons
 
 ### Development Journey
 
@@ -541,7 +541,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. AP
 [![Redux Slices](https://img.shields.io/badge/Redux%20Slices-19-764ABC)](https://qnbs.github.io/CannaGuide-2025/)
 [![Zustand Stores](https://img.shields.io/badge/Zustand%20Stores-9-443E38)](https://qnbs.github.io/CannaGuide-2025/)
 [![Themes](https://img.shields.io/badge/Themes-9-blueviolet)](https://qnbs.github.io/CannaGuide-2025/)
-[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-30-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
+[![CI-Workflows](https://img.shields.io/badge/CI%20Workflows-29-yellow)](https://github.com/qnbs/CannaGuide-2025/actions)
 [![Custom Hooks](https://img.shields.io/badge/Hooks-28-orange)](https://qnbs.github.io/CannaGuide-2025/)
 [![i18n-Namensraeume](https://img.shields.io/badge/i18n%20Namensraeume-12-orange)](https://qnbs.github.io/CannaGuide-2025/)
 
@@ -553,7 +553,7 @@ KI-gestuetzte, offline-first Progressive Web App fuer Cannabis-Anbau-Management.
 
 ### Ueberblick
 
-776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 30 CI-Workflows
+776 Sorten · 2812 Tests · 130 Services · 19 Redux Slices + 9 Zustand Stores · 28 Hooks · 12 i18n-Namensraeume · 9 Themes · 29 CI-Workflows
 
 | Kategorie      | Technologie                          | Zweck                                         |
 | -------------- | ------------------------------------ | --------------------------------------------- |
@@ -624,13 +624,13 @@ keine nativen Desktop-Installer. Siehe [CONTRIBUTING.md](CONTRIBUTING.md),
 
 ### CI/CD, Testing & Sicherheit
 
-| Bereich          | Details                                                                                                         |
-| ---------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                   |
-| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM         |
-| **CI/CD**        | 30 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, ClusterFuzzLite, OpenSSF Scorecard; Graphify-Doctor in CI |
-| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                    |
-| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                          |
+| Bereich          | Details                                                                                                                 |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Tests**        | 2812 (Vitest + Playwright E2E + Komponenten + Stryker Mutation + Visual Regression + Fuzzing)                           |
+| **Sicherheit**   | DOMPurify, 30+ Prompt-Injection-Filter, AES-256-GCM, gehaertete CSP, GitHub Attestation, CycloneDX SBOM                 |
+| **CI/CD**        | 29 Workflows, CodeQL, Grype, Snyk, Semgrep, Gitleaks, Fuzzing (`fuzzing.yml`), OpenSSF Scorecard; Graphify-Doctor in CI |
+| **Supply Chain** | GitHub Build Attestation + CycloneDX SBOM + SHA-gepinnte Actions + Allowlist                                            |
+| **Distribution** | GitHub Pages (Push auf main), Vercel, Cloudflare Pages                                                                  |
 
 > Details: [SECURITY.md](SECURITY.md) · [Audit-Backlog](docs/AUDIT_BACKLOG.md) · [Release-Prozess](docs/release-process.md)
 

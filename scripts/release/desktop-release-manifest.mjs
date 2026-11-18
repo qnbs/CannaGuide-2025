@@ -36,31 +36,40 @@ import { pathToFileURL } from 'node:url'
 
 import { verifyMinisign } from './minisign.mjs'
 
-/** The four supported targets: required installers and the bundle the updater installs. */
+/**
+ * The four supported targets: required installers, and the updater bundle per install
+ * type. tauri-plugin-updater looks up `{os}-{arch}-{bundle_type}` first and only then
+ * `{os}-{arch}` (`fallback`). A deb or MSI install that found only the base entry got
+ * the AppImage or the NSIS setup, which its installer cannot apply (CodeRabbit on #879).
+ */
 export const DESKTOP_TARGETS = {
     'x86_64-pc-windows-msvc': {
         platform: 'windows-x86_64',
         arch: 'x64',
         installers: [/\.msi$/, /-setup\.exe$/],
-        updater: /-setup\.exe$/,
+        updaters: { nsis: /-setup\.exe$/, msi: /\.msi$/ },
+        fallback: 'nsis',
     },
     'x86_64-unknown-linux-gnu': {
         platform: 'linux-x86_64',
         arch: 'amd64',
         installers: [/\.AppImage$/, /\.deb$/],
-        updater: /\.AppImage$/,
+        updaters: { appimage: /\.AppImage$/, deb: /\.deb$/ },
+        fallback: 'appimage',
     },
     'aarch64-apple-darwin': {
         platform: 'darwin-aarch64',
         arch: 'aarch64',
         installers: [/\.dmg$/],
-        updater: /\.app\.tar\.gz$/,
+        updaters: { app: /\.app\.tar\.gz$/ },
+        fallback: 'app',
     },
     'x86_64-apple-darwin': {
         platform: 'darwin-x86_64',
         arch: 'x64',
         installers: [/\.dmg$/],
-        updater: /\.app\.tar\.gz$/,
+        updaters: { app: /\.app\.tar\.gz$/ },
+        fallback: 'app',
     },
 }
 
@@ -131,29 +140,33 @@ export const planDesktopRelease = ({ artifactsDir, version, tag, repo, pubkey, n
             if (existsSync(`${file}.sig`))
                 assets.push({ source: `${file}.sig`, name: `${name}.sig` })
         }
-        const updater = shipped.filter((file) => spec.updater.test(file))
-        if (updater.length !== 1) {
-            problems.push(
-                `${target}: expected one updater bundle matching ${spec.updater}, found ${updater.length}`,
-            )
-            continue
-        }
-        const [bundle] = updater
-        if (!existsSync(`${bundle}.sig`)) {
-            problems.push(`${target}: updater bundle ${path.basename(bundle)} has no signature`)
-            continue
-        }
-        const signature = readFileSync(`${bundle}.sig`, 'utf8').trim()
-        const verified = verifyMinisign(readFileSync(bundle), signature, pubkey)
-        if (!verified.ok) {
-            problems.push(
-                `${target}: updater signature of ${path.basename(bundle)} ${verified.reason}`,
-            )
-            continue
-        }
-        platforms[spec.platform] = {
-            signature,
-            url: `${baseUrl}/${encodeURIComponent(assetName(bundle, version, spec.arch))}`,
+        for (const [bundle, pattern] of Object.entries(spec.updaters)) {
+            const matches = shipped.filter((file) => pattern.test(file))
+            if (matches.length !== 1) {
+                problems.push(
+                    `${target}: expected one ${bundle} updater bundle matching ${pattern}, found ${matches.length}`,
+                )
+                continue
+            }
+            const [file] = matches
+            if (!existsSync(`${file}.sig`)) {
+                problems.push(`${target}: updater bundle ${path.basename(file)} has no signature`)
+                continue
+            }
+            const signature = readFileSync(`${file}.sig`, 'utf8').trim()
+            const verified = verifyMinisign(readFileSync(file), signature, pubkey)
+            if (!verified.ok) {
+                problems.push(
+                    `${target}: updater signature of ${path.basename(file)} ${verified.reason}`,
+                )
+                continue
+            }
+            const entry = {
+                signature,
+                url: `${baseUrl}/${encodeURIComponent(assetName(file, version, spec.arch))}`,
+            }
+            platforms[`${spec.platform}-${bundle}`] = entry
+            if (bundle === spec.fallback) platforms[spec.platform] = entry
         }
     }
 

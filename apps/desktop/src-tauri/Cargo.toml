@@ -1,6 +1,6 @@
 [package]
 name = "cannaguide-desktop"
-version = "1.11.0"
+version = "1.12.0"
 description = "CannaGuide 2025 Desktop App"
 authors = ["CannaGuide Team"]
 edition = "2021"

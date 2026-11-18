@@ -27,6 +27,7 @@
  *   Settings > About and coming back, or a startup check finding a newer release
  *   while the card is open, therefore never leaves the card on a stale copy.
  */
+import { suspendPersistenceForQuit } from '@/bootstrap/persistenceCoordinator'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { platform } from '@/services/platformService'
 
@@ -244,7 +245,15 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
                         'the latest changes could not be saved; the update was not installed',
                     )
                 }
-                await invoke<void>(bridge, 'update_install')
+                try {
+                    await invoke<void>(bridge, 'update_install')
+                } catch (error) {
+                    // The installer did not start and the app stays open: the hold
+                    // from the final save must not swallow the user's next edits. Only
+                    // that hold: a quit that started meanwhile keeps its own.
+                    releaseWriteHold('final-save')
+                    throw error
+                }
             }),
         // Outside the one-step-at-a-time guard: it has to reach a running step.
         cancelDownload: async () => {
@@ -397,20 +406,75 @@ export const SAVE_BEFORE_RESTART_EVENT = 'cannaguide://save-before-restart'
  * confirms even when the save fails: the new version is already in place (or the
  * installer is starting), and update.rs would go on after its fallback anyway.
  */
+/** After this long the page is evidently still here: the quit or restart did not happen. */
+export const LAST_SAVE_HOLD_MS = 10_000
+
+type SuspendPersistence = () => Promise<(() => void) | null>
+
+/**
+ * No write may start after the last save before a quit or restart: the native side
+ * releases the profile lock first and then closes or hides the window, and the
+ * `visibilitychange` save that triggers could land after a new instance took the
+ * profile (CodeRabbit on #881). A page still here after LAST_SAVE_HOLD_MS was not
+ * ended: saving resumes and catches up with one save.
+ */
+type HoldKind = 'quit' | 'final-save'
+
+let activeHold: { kind: HoldKind; release: () => void } | undefined
+
+/**
+ * Ends a write hold early: the update install failed and the app stays open, or a new
+ * quit is starting and needs its save. Saving resumes and catches up with one save.
+ * With `kind`, only a hold of that kind is ended -- a failed install must not end the
+ * hold of a quit that started meanwhile. Does nothing when no matching hold is active.
+ */
+export const releaseWriteHold = (kind?: HoldKind): void => {
+    const hold = activeHold
+    if (!hold || (kind && hold.kind !== kind)) return
+    activeHold = undefined
+    hold.release()
+}
+
+const holdWritesAfterLastSave = async (
+    flush: PersistFlush | undefined,
+    suspend: SuspendPersistence,
+    kind: HoldKind,
+): Promise<void> => {
+    let resume: (() => void) | null = null
+    try {
+        resume = await suspend()
+    } catch (error) {
+        console.warn('[Desktop] could not hold writes after the last save:', messageOf(error))
+    }
+    if (!resume) return
+    const resumeWrites = resume
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const release = (): void => {
+        clearTimeout(timer)
+        resumeWrites()
+        void flush?.().catch(() => undefined)
+    }
+    activeHold = { kind, release }
+    timer = setTimeout(() => releaseWriteHold(kind), LAST_SAVE_HOLD_MS)
+}
+
 export const flushThenConfirmFinalSave = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
+    suspend: SuspendPersistence = suspendPersistenceForQuit,
 ): Promise<void> => {
     // Loaded before the save, so after its last comparison only the confirmation's
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
+    releaseWriteHold()
     try {
         const saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopUpdate] latest changes not saved before the restart')
     } catch (error) {
         console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
     }
+    await holdWritesAfterLastSave(flush, suspend, 'final-save')
     const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_final_save')
 }
@@ -423,17 +487,24 @@ export const flushThenConfirmFinalSave = async (
 export const flushThenConfirmQuit = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
+    suspend: SuspendPersistence = suspendPersistenceForQuit,
 ): Promise<void> => {
     // Loaded before the save, so after its last comparison only the confirmation's
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
+    // A hold left by a failed update install would refuse this quit's save.
+    releaseWriteHold()
+    let saved = false
     try {
-        const saved = flush ? await flush() : false
+        saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopQuit] latest changes not saved before quit')
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
+    await holdWritesAfterLastSave(flush, suspend, 'quit')
     const bridge = await pendingBridge
-    await bridge.invoke<void>('confirm_quit')
+    // The quit goes on either way; `saved` tells the native side (and the runtime smoke
+    // test) whether this run's last changes reached storage.
+    await bridge.invoke<void>('confirm_quit', { saved })
 }

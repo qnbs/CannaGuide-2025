@@ -6,13 +6,27 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their built-in updater cannot run either. Install this release manually over v1.12.0. App data stays in the same per-user folder (`com.cannaguide.desktop`), and v1.12.0 never wrote any, because it never started. The web app (PWA) was not affected.
+
 ### Fixed
 
-- **ci:** The ClusterFuzzLite workflow (`cflite_pr.yml`) and its `.clusterfuzzlite/` setup are removed. ClusterFuzzLite rejects every sanitizer for JavaScript projects, so its only job failed on each weekly run by design and was kept from blocking only by `continue-on-error`. Fuzzing stays in `fuzzing.yml` (fast-check property tests on pull requests and weekly). README, architecture and security docs no longer describe it as PR fuzzing, and the workflow count is 29.
+- **fix(desktop):** The desktop apps start again. Every v1.12.0 desktop build (Windows NSIS and MSI, macOS Apple Silicon and Intel, Linux .deb and AppImage) exited at startup with `PluginInitialization("window-state", ... invalid type: map, expected unit)`. Since April, `tauri.conf.json` had configured `window-state` (`{"all": true}`) and `store` (`{}`), but neither plugin takes a configuration there. Both entries are removed; window-state still saves every window property by default. A Rust test now checks each `plugins` entry against the configuration type of the plugin version in `Cargo.lock`, and it rejects both old entries.
+- **fix(desktop):** Only one instance runs per user. A second launch makes the open app show its window again and exits. Before, it started a second app on the same storage: a second writer that the web app's writer lock cannot see across processes. On Linux the first instance is found over the D-Bus session bus; without one, the app starts normally.
 
-- **fix(desktop):** The desktop crate no longer declares `chrono`, which nothing in it used (cargo reported it as an unused dependency). `chrono` stays in `Cargo.lock` through `serde_with`, now without the WebAssembly-only `js-sys` and `wasm-bindgen` our default features pulled in; no version changes.
+### Added
 
-- **fix(ci):** A manual Release Publish run that has to create the tag no longer builds the release twice. It creates and pushes the tag in a new `tag` job and stops there; the run the tag push starts builds, verifies and creates the draft release, which the owner publishes as before. Before, the tag's own run queued behind the manual one, rebuilt everything (including the four desktop targets) and then stopped at the existing-release check.
+- **ci(desktop):** Desktop runtime smoke test. `scripts/desktop-smoke.mjs` launches the packaged app in isolated, temporary profiles. It passes only if:
+    - the native side starts;
+    - the bundled frontend reports its start over IPC (`frontend_ready`), after its startup writes have settled, with native and frontend versions;
+    - a view is rendered and visible and, on Linux, the app window is painted;
+    - a second launch hands over, exits and shows the hidden window again;
+    - two cold launches at once (three rounds) start only one instance, which then shows its window;
+    - each quit is acknowledged by `confirm_quit` with a successful save and exits 0;
+    - the first run saved its window state (checked where the profile starts empty), and a restart loads the saved snapshot (not merely finds it on disk).
+
+    Desktop Build runs it on every target (installed .deb, AppImage, NSIS install and uninstall, the MSI on the clean machine at the folder its log records, each exit code checked, and the macOS .app; the Intel build fails if Rosetta 2 cannot be installed) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell, the web app's start or its snapshot storage run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
+
+- **fix(desktop):** One instance per profile, also without a D-Bus session bus (Linux) and for two cold launches at once (macOS): an exclusive lock on a file in the app data folder, taken before any window exists. It is released before an updater restart. A launch that loses the race still makes the running app show its window again.
 
 ## [1.12.0] - 2026-11-18
 

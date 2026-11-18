@@ -121,6 +121,13 @@ export const schedulePersistenceWrite = async (write: () => Promise<void>): Prom
 }
 
 /**
+ * Resolves once every write scheduled so far has settled, without scheduling one.
+ * The desktop startup report waits for it, so a start is reported from the state its
+ * startup saves left behind (a refused save makes the page stale first).
+ */
+export const whenPersistenceIdle = (): Promise<void> => activeWrite
+
+/**
  * Stop new persistence writes and wait for the current one to finish. The caller
  * must resume after a failed recovery; successful recovery stays suspended until reload.
  */
@@ -137,6 +144,15 @@ export const suspendPersistenceForRecovery = async (): Promise<ResumePersistence
         persistenceSuspended = false
     }
 }
+
+/**
+ * After the last save before a desktop quit or update restart: the native side then
+ * releases the profile lock and closes or hides the window, whose `visibilitychange`
+ * handler would save again -- possibly after a new instance has taken the profile.
+ * Same contract as the recovery suspension: wait for a running write, start none,
+ * and resume through the returned function (null while already suspended).
+ */
+export const suspendPersistenceForQuit = suspendPersistenceForRecovery
 
 /**
  * This page must not save any more because another tab may own the data now

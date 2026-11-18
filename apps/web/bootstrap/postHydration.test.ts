@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { runPostHydrationServices } from './postHydration'
 import { createAppStoreSync } from '@/stores/store'
+import { releaseWriteHold } from '@/services/desktopLifecycleService'
 import type { AppStore } from '@/stores/store'
 import settingsReducer, { setSetting } from '@/stores/slices/settingsSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
@@ -108,6 +109,9 @@ const createTestStore = (): AppStore =>
             simulation: simulationReducer,
         }),
     }) as unknown as AppStore
+
+// A quit's write hold must not leak into the next test's quit or final save.
+afterEach(() => releaseWriteHold())
 
 describe('runPostHydrationServices', () => {
     beforeEach(() => {

@@ -1,4 +1,6 @@
+mod instance_lock;
 mod lifecycle;
+mod startup;
 mod update;
 
 use lifecycle::{QuitDecision, QuitGate, QUIT_FLUSH_TIMEOUT};
@@ -123,9 +125,12 @@ pub(crate) fn request_quit(app: &AppHandle) {
     }
 }
 
-/// Called by the frontend once `flushPersistedState` has finished.
+/// Called by the frontend once `flushPersistedState` has finished. `saved` is whether
+/// that save succeeded (absent from a frontend that predates it); the quit goes on
+/// either way, and the smoke test checks it.
 #[tauri::command]
-fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>) {
+fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>, saved: Option<bool>) {
+    startup::record_quit_ack(saved);
     if gate.confirm() {
         app.exit(0);
     }
@@ -134,8 +139,25 @@ fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
+        .manage(startup::ProcessStart::default())
         .manage(QuitGate::default())
         .manage(update::UpdateState::default())
+        // First plugin, as the plugin requires: a second launch hands over to this
+        // instance and exits before anything else starts. Without a session bus
+        // (Linux) it logs a warning and launches normally.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            // When two launches race the window may not exist yet; the lock holder then
+            // shows it as soon as it does (instance_lock.rs).
+            if !instance_lock::focus_main_window(app) {
+                if let Ok(dir) = app.path().app_data_dir() {
+                    let _ = instance_lock::request_focus(&dir);
+                }
+            }
+        }))
+        // Before any window exists: a process that cannot lock this profile exits, which
+        // covers what the plugin above cannot (no D-Bus session bus, two cold launches
+        // at once on macOS). See instance_lock.rs.
+        .plugin(instance_lock::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
@@ -186,7 +208,16 @@ pub fn run() {
                     window.open_devtools();
                 }
             }
+            startup::trace(app.handle(), "native setup done");
             Ok(())
+        })
+        // Smoke-harness trace only: whether the webview started and finished loading.
+        .on_page_load(|webview, payload| {
+            let milestone = match payload.event() {
+                tauri::webview::PageLoadEvent::Started => "page load started",
+                tauri::webview::PageLoadEvent::Finished => "page load finished",
+            };
+            startup::trace(webview.app_handle(), milestone);
         })
         // Closing the main window quits the app, so it waits for the flush too.
         .on_window_event(|window, event| {
@@ -204,6 +235,7 @@ pub fn run() {
             open_log_dir,
             clear_native_cache,
             confirm_quit,
+            startup::frontend_ready,
             update::update_check,
             update::update_download,
             update::update_cancel,
@@ -227,4 +259,76 @@ pub fn run() {
             }
         }
     });
+}
+
+/// `plugins` in tauri.conf.json is handed to each plugin at startup, and a value its
+/// config type does not accept makes `build()` fail before any window opens: v1.12.0
+/// shipped `"window-state": {"all": true}` and `"store": {}`, and every desktop build
+/// exited with PluginInitialization. Plugins built with `Builder::new(name)` and no
+/// config type take `()`, which only an absent entry (null) satisfies.
+#[cfg(test)]
+mod plugin_config_tests {
+    use serde_json::Value;
+
+    const CONFIG: &str = include_str!("../tauri.conf.json");
+    /// Every plugin `run()` registers; none of them but the updater has a config type.
+    const UNIT_CONFIG_PLUGINS: &[&str] = &[
+        "single-instance",
+        "instance-lock",
+        "dialog",
+        "fs",
+        "notification",
+        "global-shortcut",
+        "shell",
+        "process",
+        "window-state",
+        "store",
+    ];
+
+    fn plugins() -> serde_json::Map<String, Value> {
+        let config: Value = serde_json::from_str(CONFIG).expect("tauri.conf.json is JSON");
+        config["plugins"].as_object().cloned().unwrap_or_default()
+    }
+
+    #[test]
+    fn the_updater_configuration_parses_as_the_updater_plugin_reads_it() {
+        let updater = plugins()
+            .remove("updater")
+            .expect("plugins.updater is required");
+        let parsed: tauri_plugin_updater::Config = serde_json::from_value(updater)
+            .expect("plugins.updater matches tauri_plugin_updater::Config");
+        assert!(
+            !parsed.endpoints.is_empty(),
+            "the updater needs an endpoint"
+        );
+    }
+
+    #[test]
+    fn plugins_without_a_config_type_have_no_entry() {
+        for (name, value) in plugins() {
+            if name == "updater" {
+                continue;
+            }
+            // The same call Tauri makes for a plugin whose config type is ().
+            let accepted = serde_json::from_value::<()>(value.clone());
+            assert!(
+                accepted.is_ok(),
+                "plugins.{name} = {value} fails at startup: {}",
+                accepted.unwrap_err()
+            );
+            assert!(
+                UNIT_CONFIG_PLUGINS.contains(&name.as_str()),
+                "plugins.{name} configures a plugin run() does not register"
+            );
+        }
+    }
+
+    #[test]
+    fn the_v1_12_0_entries_are_what_this_test_rejects() {
+        for value in [serde_json::json!({ "all": true }), serde_json::json!({})] {
+            let error = serde_json::from_value::<()>(value).unwrap_err().to_string();
+            assert!(error.contains("expected unit"), "{error}");
+        }
+        assert!(serde_json::from_value::<()>(Value::Null).is_ok());
+    }
 }

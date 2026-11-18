@@ -81,6 +81,8 @@ vi.mock('./writerOwnership', () => ({
     }),
     watchForCacheRestore: vi.fn(() => vi.fn()),
 }))
+const reportDesktopStartup = vi.hoisted(() => vi.fn(async (_outcome: unknown) => undefined))
+vi.mock('@/services/desktopStartupReport', () => ({ reportDesktopStartup }))
 vi.mock('./persistenceCoordinator', () => ({
     stopPersistenceForOwnershipLoss: vi.fn(() => {
         order.push('stop')
@@ -472,5 +474,41 @@ describe('mountHydratedApp without a revision check (GH #669)', () => {
         expect(order).toEqual(['stop', 'release'])
         expect(renderUnverifiedTabNotice).toHaveBeenCalledOnce()
         expect(renderStaleTabNotice).not.toHaveBeenCalled()
+    })
+})
+
+describe('the desktop startup report from the mount (CodeRabbit on #881)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        order.length = 0
+        vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
+        vi.stubGlobal('location', { reload: vi.fn() })
+    })
+
+    afterEach(() => vi.unstubAllGlobals())
+
+    const reportedOutcome = (): unknown => {
+        const outcome = reportDesktopStartup.mock.calls.at(-1)?.[0]
+        return typeof outcome === 'function' ? (outcome as () => unknown)() : outcome
+    }
+
+    it('reports started when no save was refused', async () => {
+        await mountHydratedApp()
+        expect(reportedOutcome()).toBe('started')
+    })
+
+    it('reports unverified, not stale, for a save that could not check its revision', async () => {
+        await mountHydratedApp()
+        const onStale = vi.mocked(setupPersistedStateSync).mock.calls[0]?.[1]
+        onStale?.(new UnverifiedSnapshotError())
+        expect(renderUnverifiedTabNotice).toHaveBeenCalledOnce()
+        expect(reportedOutcome()).toBe('unverified')
+    })
+
+    it('reports stale for a save refused because another tab saved newer data', async () => {
+        await mountHydratedApp()
+        const onStale = vi.mocked(setupPersistedStateSync).mock.calls[0]?.[1]
+        onStale?.(new StaleSnapshotError())
+        expect(reportedOutcome()).toBe('stale')
     })
 })

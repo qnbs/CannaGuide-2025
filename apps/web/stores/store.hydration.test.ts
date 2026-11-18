@@ -104,7 +104,7 @@ import {
     SLICE_SCHEMA_VERSIONS,
 } from '@/constants'
 import { PlantStage } from '@/types'
-import { createAppStore } from './store'
+import { createAppStore, getStartupHydration } from './store'
 import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 
 const legacyPlant = () => ({
@@ -173,6 +173,8 @@ describe('createAppStore with a persisted slice of another schema version', () =
 
         const first = await createAppStore()
         expect(first.getState().simulation.plants.ids).toEqual(['plant-1'])
+        // The desktop startup report sends this; the runtime smoke test requires it.
+        expect(getStartupHydration()).toBe('snapshot')
 
         const save = setupPersistedStateSync(first)
         await expect(save()).resolves.toBe(true)
@@ -196,6 +198,8 @@ describe('createAppStore with a persisted slice of another schema version', () =
         expect(store.getState().userStrains.ids).toEqual([])
         expect(db.data.get(REDUX_STATE_QUARANTINE_KEY)).toBe(unreadableSnapshot())
         expect(db.data.has(REDUX_STATE_KEY)).toBe(false)
+        // A stored but unreadable snapshot is not a loaded one.
+        expect(getStartupHydration()).toBe('fresh')
     })
 
     it('keeps the first quarantined snapshot when a later one also fails', async () => {
@@ -288,6 +292,7 @@ describe('createAppStore with a corrupt primary and a good backup (#666)', () =>
         const store = await createAppStore()
 
         expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
+        expect(getStartupHydration()).toBe('backup')
         expect(db.data.get(REDUX_STATE_BACKUP_KEY)).not.toBe('{corrupt')
     })
 

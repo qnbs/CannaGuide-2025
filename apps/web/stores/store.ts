@@ -141,7 +141,20 @@ const refreshStartupBackup = async (snapshot: string): Promise<void> => {
     }
 }
 
+/**
+ * Where the last `createAppStore()` took its state from: the saved snapshot, the
+ * startup backup, or nothing (a first start, or data that could not be read). The
+ * desktop startup report sends it, so the runtime smoke test can tell a restart that
+ * loaded the first run's data from one that only found it on disk.
+ */
+export type StartupHydration = 'snapshot' | 'backup' | 'fresh'
+
+let startupHydration: StartupHydration = 'fresh'
+
+export const getStartupHydration = (): StartupHydration => startupHydration
+
 export const createAppStore = async (): Promise<AppStore> => {
+    startupHydration = 'fresh'
     let preloadedState: Partial<RootState> | undefined
     let persistedUiState: Partial<UIState> | undefined
 
@@ -189,6 +202,7 @@ export const createAppStore = async (): Promise<AppStore> => {
         if (persistedString) {
             console.debug('[Store] Hydrating state from IndexedDB.')
             preloadedState = hydratePersistedState(persistedString)
+            startupHydration = 'snapshot'
             await refreshStartupBackup(persistedString)
         }
     } catch (e) {
@@ -202,7 +216,9 @@ export const createAppStore = async (): Promise<AppStore> => {
                 "-backup'.",
             e,
         )
+        startupHydration = 'fresh'
         preloadedState = await tryLoadBackupState()
+        if (preloadedState) startupHydration = 'backup'
         if (!preloadedState) {
             // The startup backup is replaced on every start, so the original bytes
             // are quarantined first, and the primary stays if that fails (#666).

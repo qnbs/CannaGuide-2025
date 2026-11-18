@@ -134,3 +134,82 @@ test('macOS builds carry at least an ad-hoc signature, and the webview cannot dr
         }
     }
 })
+
+test('every desktop build is launched before its bundles are kept, on PRs too', () => {
+    // v1.12.0 compiled, bundled, signed and passed verify, then exited at startup on
+    // every platform (PluginInitialization). A runtime smoke now gates the upload.
+    const jobBlock = (name) => {
+        const start = WORKFLOW.indexOf(`\n    ${name}:\n`)
+        assert.notEqual(start, -1, `missing job ${name}`)
+        const next = WORKFLOW.slice(start + 1).search(/\n    [a-z-]+:\n/)
+        return next === -1 ? WORKFLOW.slice(start) : WORKFLOW.slice(start, start + 1 + next)
+    }
+    const stepIn = (block, name) => {
+        const at = block.indexOf(`- name: ${name}\n`)
+        assert.notEqual(at, -1, `missing step ${name}`)
+        const next = block.indexOf('\n            - name: ', at + 1)
+        return { at, text: next === -1 ? block.slice(at) : block.slice(at, next) }
+    }
+    const runsTheSmoke =
+        /run: node scripts\/desktop-smoke-ci\.mjs --target "\$TARGET" --bundle-dir /
+
+    const build = jobBlock('build')
+    const smoke = stepIn(build, 'Runtime smoke')
+    const upload = stepIn(build, 'Upload artifacts')
+    assert.ok(smoke.at < upload.at, 'smoke runs before the upload')
+    assert.match(smoke.text, runsTheSmoke)
+    // The step has no continue-on-error: a failed launch fails the job.
+    assert.doesNotMatch(smoke.text, /continue-on-error/)
+
+    const pr = jobBlock('pr-smoke')
+    assert.match(pr, /if: github\.event_name == 'pull_request'/)
+    // CodeRabbit on #881: the PR smoke must block too, and run before its upload.
+    const prSmoke = stepIn(pr, 'Runtime smoke')
+    const prUpload = stepIn(pr, 'Upload smoke evidence and bundles')
+    assert.ok(prSmoke.at < prUpload.at, 'PR smoke before upload')
+    assert.match(prSmoke.text, runsTheSmoke)
+    assert.doesNotMatch(prSmoke.text, /continue-on-error/)
+    assert.doesNotMatch(pr, /secrets\./, 'the pull request smoke reads no secrets')
+    assert.doesNotMatch(pr, /tauri\.updater\.conf\.json/, 'no updater bundles, so nothing to sign')
+    // No workspace-relative action in the new job (zizmor self-repository ratchet).
+    assert.doesNotMatch(pr, /uses: \.\//)
+    for (const target of [
+        'x86_64-unknown-linux-gnu',
+        'x86_64-pc-windows-msvc',
+        'aarch64-apple-darwin',
+    ]) {
+        assert.match(pr, new RegExp(`target: ${target}\\n`), target)
+    }
+
+    // A skipped smoke would upload untested bundles (CodeRabbit on #881).
+    assert.doesNotMatch(smoke.text, /\n\s+if:/, 'the release smoke step always runs')
+    assert.doesNotMatch(prSmoke.text, /\n\s+if:/, 'the PR smoke step always runs')
+
+    const orchestrator = readFileSync(resolve(REPO_ROOT, 'scripts/desktop-smoke-ci.mjs'), 'utf8')
+    const fn = (name) => {
+        const at = orchestrator.indexOf(`function ${name}(`)
+        assert.notEqual(at, -1, `missing ${name}()`)
+        // Line comments removed: a flag or a branch that is only commented out is absent.
+        return orchestrator
+            .slice(at, orchestrator.indexOf('\n}\n', at))
+            .replace(/^\s*\/\/.*$/gm, '')
+    }
+    for (const label of ['-deb', '-appimage', '-nsis', '-msi', '-app']) {
+        assert.ok(orchestrator.includes(`\`\${target}${label}\``), label)
+    }
+    // Fail closed, checked on the branches themselves:
+    // - Intel macOS without Rosetta returns failure right after saying so;
+    assert.match(fn('macos'), /\[FAIL\] Rosetta 2 unavailable[^\n]*\n[^\n]*\n\s*return false/)
+    // - the Linux harness arguments carry --require-screenshot;
+    assert.match(fn('linux'), /const common = \[[^\]]*'--require-screenshot'[^\]]*\]/)
+    // - a failed NSIS or MSI install, or NSIS uninstall, returns on the very next line:
+    //   the sequence stops, so nothing this run did not install is launched (marking the
+    //   run failed and carrying on would not be enough).
+    for (const failure of ['NSIS install exited', 'MSI install exited', 'NSIS uninstall:']) {
+        assert.match(fn('windows'), new RegExp(`${failure}[^\\n]*\\n\\s*return false\\n`), failure)
+    }
+    // The orchestrator refuses to run outside a disposable runner (it resets app folders).
+    assert.match(orchestrator, /if \(!isDisposableRunner\(\)\) \{/)
+    // - and main() turns a failed platform run into exit 1.
+    assert.match(orchestrator, /return passed \? 0 : 1/)
+})

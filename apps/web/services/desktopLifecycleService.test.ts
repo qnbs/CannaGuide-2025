@@ -14,6 +14,8 @@ import {
     type DesktopUpdaterDeps,
     type PersistFlush,
     type TauriBridge,
+    LAST_SAVE_HOLD_MS,
+    releaseWriteHold,
 } from './desktopLifecycleService'
 
 const INFO: DesktopUpdateInfo = {
@@ -27,6 +29,9 @@ const NEWER: DesktopUpdateInfo = { ...INFO, version: '1.12.1' }
 type Responder = (args?: Record<string, unknown>) => unknown
 
 /** A bridge that records calls; `responses` decides what each command returns. */
+// A write hold left by one test must not change the next one.
+afterEach(() => releaseWriteHold())
+
 const fakeBridge = (responses: Record<string, Responder> = {}) => {
     const calls: string[] = []
     const bridge: TauriBridge = {
@@ -531,6 +536,81 @@ describe('quit after flush', () => {
         expect(calls).toEqual(['confirm_quit'])
     })
 
+    it('holds every write between the last save and the exit, and catches up if the page lives on', async () => {
+        // CodeRabbit on #881: the native side releases the profile lock before it hides
+        // the window, and hiding fires the visibilitychange save.
+        vi.useFakeTimers()
+        try {
+            const order: string[] = []
+            const resume = vi.fn(() => order.push('resume'))
+            const flush = vi.fn(async () => {
+                order.push('save')
+                return true
+            })
+            const { bridge } = fakeBridge({ confirm_quit: () => order.push('confirm') })
+            await flushThenConfirmQuit(
+                flush,
+                async () => bridge,
+                async () => {
+                    order.push('hold')
+                    return resume
+                },
+            )
+            expect(order).toEqual(['save', 'hold', 'confirm'])
+            await vi.advanceTimersByTimeAsync(LAST_SAVE_HOLD_MS)
+            // Still here: the quit did not end the page, so saving resumes and catches up.
+            expect(order).toEqual(['save', 'hold', 'confirm', 'resume', 'save'])
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('holds writes after the final save before an update restart as well', async () => {
+        const order: string[] = []
+        const { bridge } = fakeBridge({ confirm_final_save: () => order.push('confirm') })
+        await flushThenConfirmFinalSave(
+            async () => {
+                order.push('save')
+                return true
+            },
+            async () => bridge,
+            async () => {
+                order.push('hold')
+                return null
+            },
+        )
+        expect(order).toEqual(['save', 'hold', 'confirm'])
+    })
+
+    it('tells the native side whether this quit saved', async () => {
+        // The runtime smoke test requires a quit that saved; exit 0 alone proves nothing.
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        const sent: unknown[] = []
+        const { bridge } = fakeBridge({ confirm_quit: (args) => sent.push(args) })
+        await flushThenConfirmQuit(
+            async () => true,
+            async () => bridge,
+        )
+        await flushThenConfirmQuit(
+            async () => false,
+            async () => bridge,
+        )
+        await flushThenConfirmQuit(
+            async () => {
+                throw new Error('IndexedDB closed')
+            },
+            async () => bridge,
+        )
+        await flushThenConfirmQuit(undefined, async () => bridge)
+        expect(sent).toEqual([
+            { saved: true },
+            { saved: false },
+            { saved: false },
+            { saved: false },
+        ])
+        warn.mockRestore()
+    })
+
     it('still quits when the save fails, after it has finished', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
         const order: string[] = []
@@ -543,7 +623,123 @@ describe('quit after flush', () => {
             async () => bridge,
         )
         await flushThenConfirmQuit(undefined, async () => bridge)
-        expect(order).toEqual(['flush', 'confirm', 'confirm'])
+        // The second quit first ends the first one's write hold, whose catch-up save
+        // runs the first save function again.
+        expect(order).toEqual(['flush', 'confirm', 'flush', 'confirm'])
         warn.mockRestore()
+    })
+})
+
+describe('the write hold after the last save (CodeRabbit on #881)', () => {
+    it('holds writes only after the save has finished, never while it runs', async () => {
+        const save = deferredSave()
+        const order: string[] = []
+        const { bridge } = fakeBridge({ confirm_quit: () => order.push('confirm') })
+        const done = flushThenConfirmQuit(
+            save.flush,
+            async () => bridge,
+            async () => {
+                order.push('hold')
+                return () => undefined
+            },
+        )
+        await settle()
+        expect(order).toEqual([])
+        save.finish(true)
+        await done
+        expect(order).toEqual(['hold', 'confirm'])
+    })
+
+    it('the final save also holds writes only after it has finished', async () => {
+        const save = deferredSave()
+        const order: string[] = []
+        const { bridge } = fakeBridge({ confirm_final_save: () => order.push('confirm') })
+        const done = flushThenConfirmFinalSave(
+            save.flush,
+            async () => bridge,
+            async () => {
+                order.push('hold')
+                return () => undefined
+            },
+        )
+        await settle()
+        expect(order).toEqual([])
+        save.finish(true)
+        await done
+        expect(order).toEqual(['hold', 'confirm'])
+    })
+
+    it('releases the hold when the update installer fails to start, and catches up', async () => {
+        // As in the app: the final save (and its hold) happens while update_install
+        // runs, then the installer fails to start. A save under the hold is refused.
+        const order: string[] = []
+        let held = false
+        const flush = vi.fn(async () => {
+            order.push(held ? 'save refused' : 'save')
+            return !held
+        })
+        const suspend = async () => {
+            held = true
+            return () => {
+                held = false
+                order.push('resume')
+            }
+        }
+        const { bridge: finalBridge } = fakeBridge()
+        const { bridge } = fakeBridge({
+            update_install: async () => {
+                await flushThenConfirmFinalSave(flush, async () => finalBridge, suspend)
+                throw new Error('installer could not start')
+            },
+        })
+        const updater = updaterWith(bridge, { getFlush: () => flush })
+        expect(await reasonOf(updater.installAndRestart())).toBe('failed')
+        // Install save, final save, hold; the failure ends the hold and saving catches up.
+        expect(order).toEqual(['save', 'save', 'resume', 'save'])
+    })
+
+    it('a failed install leaves a quit hold that started meanwhile alone', async () => {
+        const order: string[] = []
+        const { bridge: quitBridge } = fakeBridge()
+        const { bridge } = fakeBridge({
+            update_install: async () => {
+                // A quit (its save and hold) happens while the install is pending.
+                await flushThenConfirmQuit(
+                    async () => true,
+                    async () => quitBridge,
+                    async () => () => order.push('quit hold released'),
+                )
+                throw new Error('installer could not start')
+            },
+        })
+        const updater = updaterWith(bridge, { getFlush: () => async () => true })
+        expect(await reasonOf(updater.installAndRestart())).toBe('failed')
+        expect(order).toEqual([])
+        releaseWriteHold()
+        expect(order).toEqual(['quit hold released'])
+    })
+
+    it('a quit during a hold releases it before its own save', async () => {
+        const order: string[] = []
+        const { bridge: finalBridge } = fakeBridge()
+        await flushThenConfirmFinalSave(
+            async () => true,
+            async () => finalBridge,
+            async () => () => order.push('resume'),
+        )
+        const { bridge } = fakeBridge({ confirm_quit: () => order.push('confirm') })
+        await flushThenConfirmQuit(
+            async () => {
+                order.push('save')
+                return true
+            },
+            async () => bridge,
+            async () => {
+                order.push('hold')
+                return () => undefined
+            },
+        )
+        expect(order.slice(0, 2)).toEqual(['resume', 'save'])
+        expect(order.slice(-2)).toEqual(['hold', 'confirm'])
     })
 })

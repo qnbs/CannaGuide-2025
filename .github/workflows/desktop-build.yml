@@ -3,7 +3,28 @@ name: Desktop Build (Tauri v2)
 # Release Publish calls this workflow for a tag and verifies its output before any
 # release exists; it no longer runs on its own for a tag, so the two cannot race.
 # A manual run on main is a build qualification only (Actions artifacts, no release).
+# Every build is launched for real (desktop runtime smoke) before its bundles are
+# kept: v1.12.0 compiled, bundled, signed and verified, and then exited at startup on
+# every platform. A pull request that touches the desktop shell or the web app's
+# start gets the same smoke on an unsigned build (pr-smoke, no secrets).
 on:
+    pull_request:
+        branches: [main]
+        paths:
+            - 'apps/desktop/**'
+            - 'apps/web/bootstrap/**'
+            - 'apps/web/services/desktop*.ts'
+            # The startup report reads the hydration source and the snapshot from these.
+            - 'apps/web/stores/indexedDBStorage.ts'
+            - 'apps/web/stores/store.ts'
+            - 'apps/web/bootstrap/persistenceCoordinator.ts'
+            # The quit save decides when it has settled by comparing these inputs.
+            - 'apps/web/services/persistedSnapshotFormat.ts'
+            - 'apps/web/index.html'
+            - 'scripts/desktop-smoke.mjs'
+            - 'scripts/desktop-smoke-ci.mjs'
+            - 'scripts/desktop-smoke-profile.mjs'
+            - '.github/workflows/desktop-build.yml'
     workflow_dispatch:
     workflow_call:
         inputs:
@@ -170,6 +191,23 @@ jobs:
                   # so a local `tauri build` needs no signing key.
                   args: --target ${{ matrix.target }} --config src-tauri/tauri.updater.conf.json
 
+            - name: Runtime smoke
+              # Release gate: a bundle that does not start is never uploaded, so verify
+              # and Release Publish (which needs verify) stop here.
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+              run: node scripts/desktop-smoke-ci.mjs --target "$TARGET" --bundle-dir "apps/desktop/src-tauri/target/$TARGET/release/bundle"
+
+            - name: Upload runtime smoke evidence
+              if: always()
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: desktop-smoke-${{ matrix.target }}
+                  path: desktop-smoke/
+                  if-no-files-found: warn
+                  retention-days: 14
+
             - name: Upload artifacts
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
@@ -187,6 +225,133 @@ jobs:
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/**/*.sig
                   if-no-files-found: error
                   retention-days: 14
+
+    # -----------------------------------------------------------------
+    # Runtime smoke for a pull request -- unsigned build, no secrets
+    # -----------------------------------------------------------------
+    # The same launch test as the build job, on Linux (.deb, AppImage), Windows
+    # (NSIS, MSI) and Apple Silicon, before the change merges. No updater overlay, so
+    # nothing is signed and no secret is read; the bundles are kept for 7 days for a
+    # manual check on a real desktop.
+    pr-smoke:
+        name: Runtime smoke (${{ matrix.target }})
+        if: github.event_name == 'pull_request'
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - platform: ubuntu-22.04
+                      target: x86_64-unknown-linux-gnu
+                      bundles: deb,appimage
+                    - platform: windows-latest
+                      target: x86_64-pc-windows-msvc
+                      bundles: nsis,msi
+                    - platform: macos-latest
+                      target: aarch64-apple-darwin
+                      bundles: app
+        runs-on: ${{ matrix.platform }}
+        timeout-minutes: 60
+        permissions:
+            contents: read
+        concurrency:
+            group: desktop-smoke-${{ github.event.pull_request.number }}-${{ matrix.target }}
+            cancel-in-progress: true
+
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: Install Rust stable
+              uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+              with:
+                  toolchain: stable
+                  targets: ${{ matrix.target }}
+
+            - name: Rust cache
+              uses: swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+              with:
+                  workspaces: apps/desktop/src-tauri
+
+            - name: Install Linux system deps
+              if: runner.os == 'Linux'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y \
+                    libwebkit2gtk-4.1-dev \
+                    libappindicator3-dev \
+                    librsvg2-dev \
+                    patchelf \
+                    libgtk-3-dev \
+                    libsoup-3.0-dev \
+                    libjavascriptcoregtk-4.1-dev
+
+            # The same steps as .github/actions/setup-node-ci, inline: a workspace-relative
+            # `uses:` would add a zizmor self-repository finding, and actionlint 1.7.12
+            # does not accept the `$/` form zizmor asks for.
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+              with:
+                  node-version: 24
+                  cache: pnpm
+
+            - name: Install dependencies
+              shell: bash
+              run: |
+                  node ./scripts/check-pnpm-lockfile.mjs
+                  pnpm install --frozen-lockfile
+
+            - name: Build unsigned bundles
+              working-directory: apps/desktop
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+                  BUNDLES: ${{ matrix.bundles }}
+              run: pnpm tauri build --target "$TARGET" --bundles "$BUNDLES"
+
+            - name: Runtime smoke
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+              run: node scripts/desktop-smoke-ci.mjs --target "$TARGET" --bundle-dir "apps/desktop/src-tauri/target/$TARGET/release/bundle"
+
+            # tar keeps the executable bits and the bundle layout a zip of the folder loses.
+            - name: Archive the macOS app for a manual check
+              if: always() && runner.os == 'macOS'
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+              run: |
+                  set -euo pipefail
+                  bundle="apps/desktop/src-tauri/target/$TARGET/release/bundle/macos"
+                  app="$(find "$bundle" -maxdepth 1 -name '*.app' -print -quit)"
+                  [[ -n "$app" ]] || { echo "[WARN] no .app to archive"; exit 0; }
+                  mkdir -p desktop-bundles
+                  tar -czf "desktop-bundles/$TARGET.app.tar.gz" -C "$bundle" "$(basename "$app")"
+
+            - name: Upload smoke evidence and bundles
+              if: always()
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: desktop-smoke-pr-${{ matrix.target }}
+                  path: |
+                      desktop-smoke/
+                      apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb
+                      apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
+                      apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*-setup.exe
+                      apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+                      desktop-bundles/
+                  if-no-files-found: warn
+                  retention-days: 7
 
     # -----------------------------------------------------------------
     # Verify desktop assets -- fail closed before any release exists:

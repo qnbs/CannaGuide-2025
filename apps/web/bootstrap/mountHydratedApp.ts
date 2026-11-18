@@ -37,6 +37,7 @@ import { initializeCrdtLayer } from './crdt'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
+import { reportDesktopStartup } from '@/services/desktopStartupReport'
 
 /**
  * A reader tab never starts the store, so nothing in it can save: it shows why
@@ -73,6 +74,8 @@ const takeWriterRole = async (): Promise<boolean> => {
 }
 
 let staleSnapshotHandled = false
+/** Why a save was refused, for the desktop startup report: the notice shown says the same. */
+let refusalOutcome: 'stale' | 'unverified' | undefined
 
 /**
  * Stop saving, give the role up so the next page can take it, and show
@@ -92,10 +95,16 @@ const stopAsStale = (renderNotice: (reload: () => void) => void): void => {
 }
 
 /** A save was refused because another tab saved newer data: this page is out of date. */
-const handleStaleSnapshot = (): void => stopAsStale(renderStaleTabNotice)
+const handleStaleSnapshot = (): void => {
+    refusalOutcome ??= 'stale'
+    stopAsStale(renderStaleTabNotice)
+}
 
 /** A save was refused, or would be, because this page cannot check for other tabs' saves. */
-const handleUnverifiedSnapshot = (): void => stopAsStale(renderUnverifiedTabNotice)
+const handleUnverifiedSnapshot = (): void => {
+    refusalOutcome ??= 'unverified'
+    stopAsStale(renderUnverifiedTabNotice)
+}
 
 /** A save failed (storage full, IndexedDB error): say so, the changes are only in memory. */
 const notifySaveFailure = (): void => {
@@ -214,10 +223,14 @@ const showStartupError = async (error: unknown): Promise<void> => {
 
 export const mountHydratedApp = async (): Promise<void> => {
     staleSnapshotHandled = false
+    refusalOutcome = undefined
     setStaleSnapshotHandler(handleStaleSnapshot)
     setUncheckedWritePermit(holdsWriterRole)
     try {
-        if (!(await takeWriterRole())) return
+        if (!(await takeWriterRole())) {
+            void reportDesktopStartup('reader')
+            return
+        }
         activatePersistenceFailureTab(getPersistenceFailureMarkerTabId())
 
         registerRecoveryListeners()
@@ -225,7 +238,10 @@ export const mountHydratedApp = async (): Promise<void> => {
         await i18nPromise
 
         const { hydratedStore } = await hydrateApplicationStores()
-        if (!mayStartSaving()) return
+        if (!mayStartSaving()) {
+            void reportDesktopStartup('unverified')
+            return
+        }
         const previousSaveFailures = getPendingSnapshotSaveFailureMarkers()
         const unpresentedSaveFailures = previousSaveFailures.filter(
             ({ warningState }) => warningState === 'unpresented',
@@ -261,12 +277,18 @@ export const mountHydratedApp = async (): Promise<void> => {
                 stillUnpresented.forEach((marker) => markSnapshotSaveFailurePresented(marker))
             }
         })
+        // Read once the start's own writes have settled: a refused one makes it stale.
+        void reportDesktopStartup(
+            () => refusalOutcome ?? (staleSnapshotHandled ? 'stale' : 'started'),
+        )
     } catch (error) {
         // The saved data is a newer build's: nothing here may save over it (#666).
         if (isNewerSnapshotError(error)) {
             stopAsStale(renderNewerSnapshotNotice)
+            void reportDesktopStartup('newer-snapshot')
             return
         }
         await showStartupError(error)
+        void reportDesktopStartup('error', error)
     }
 }

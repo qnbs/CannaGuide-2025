@@ -30,5 +30,9 @@ tauri-plugin-shell = "2"
 tauri-plugin-process = "2"
 tauri-plugin-window-state = "2"
 tauri-plugin-store = "2"
+# One instance per profile: a second launch would be a second writer on the same
+# WebKit storage, which the web app's writer lock (navigator.locks) cannot see
+# across processes. Linux finds the first instance over the D-Bus session bus.
+tauri-plugin-single-instance = "2.5.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

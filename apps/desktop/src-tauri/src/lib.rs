@@ -136,6 +136,16 @@ pub fn run() {
     let app = tauri::Builder::default()
         .manage(QuitGate::default())
         .manage(update::UpdateState::default())
+        // First plugin, as the plugin requires: a second launch hands over to this
+        // instance and exits before anything else starts. Without a session bus
+        // (Linux) it logs a warning and launches normally.
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
@@ -241,6 +251,7 @@ mod plugin_config_tests {
     const CONFIG: &str = include_str!("../tauri.conf.json");
     /// Every plugin `run()` registers; none of them but the updater has a config type.
     const UNIT_CONFIG_PLUGINS: &[&str] = &[
+        "single-instance",
         "dialog",
         "fs",
         "notification",

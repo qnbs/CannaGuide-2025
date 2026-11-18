@@ -152,6 +152,14 @@ export function uninstallNsis(
     { spawn = spawnSync, exists = existsSync, wait = waitUntil, removalMs = 60_000 } = {},
 ) {
     const nsisDir = dirname(nsisApp)
+    // `_?=` has to stay unquoted, so a folder with cmd.exe metacharacters would split
+    // the line. The runner's install folder has none; any other folder is refused.
+    if (/[&|<>^%!"]/.test(nsisDir)) {
+        return {
+            removed: false,
+            detail: `install folder ${nsisDir} has characters cmd.exe would interpret`,
+        }
+    }
     const result = spawn(`"${join(nsisDir, 'uninstall.exe')}" /S _?=${nsisDir}`, {
         shell: true,
         stdio: 'inherit',

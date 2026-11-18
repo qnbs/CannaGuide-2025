@@ -38,6 +38,9 @@ use tauri::{
 const LOCK_FILE: &str = ".instance.lock";
 const FOCUS_REQUEST: &str = ".focus-request";
 const FOCUS_POLL: Duration = Duration::from_millis(500);
+/// Exit status of a launch whose handover failed: the running app was not asked to
+/// show itself, so nothing the user can see happened -- a failed launch, not a clean one.
+const HANDOVER_FAILED: i32 = 1;
 
 struct InstanceLock {
     _file: File,
@@ -63,6 +66,26 @@ pub(crate) fn try_acquire(dir: &Path) -> io::Result<Option<File>> {
 /// Asks the process that holds the lock to show its window.
 pub(crate) fn request_focus(dir: &Path) -> io::Result<()> {
     fs::write(dir.join(FOCUS_REQUEST), b"")
+}
+
+/// A launch that found the profile taken asks the running app to show itself, and
+/// returns its own exit status: 0 once the request is written, `HANDOVER_FAILED` when
+/// it could not be (the running app then has nothing to act on and stays hidden).
+fn hand_over(dir: &Path) -> i32 {
+    match request_focus(dir) {
+        Ok(()) => {
+            eprintln!(
+                "[instance] another CannaGuide process holds this profile; asked it to show itself"
+            );
+            0
+        }
+        Err(error) => {
+            eprintln!(
+                "[instance] another CannaGuide process holds this profile, but it could not be asked to show itself: {error}"
+            );
+            HANDOVER_FAILED
+        }
+    }
 }
 
 /// Consumes a pending focus request; true only for the caller that removed it.
@@ -109,15 +132,7 @@ pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
                     // shows the window this start shows anyway.
                     watch_focus_requests(app.clone(), dir);
                 }
-                Ok(None) => {
-                    if let Err(error) = request_focus(&dir) {
-                        eprintln!(
-                            "[instance] could not ask the running app to show itself: {error}"
-                        );
-                    }
-                    eprintln!("[instance] another CannaGuide process holds this profile; exiting");
-                    std::process::exit(0);
-                }
+                Ok(None) => std::process::exit(hand_over(&dir)),
                 // A folder that cannot hold a lock file must not stop the start; the
                 // single-instance plugin still covers the usual second launch.
                 Err(error) => {
@@ -182,6 +197,24 @@ mod tests {
             assert_eq!(winners, 1, "round {round}: {winners} holders");
         }
         fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_handover_exits_cleanly_only_when_the_running_app_was_asked() {
+        // Written: exit 0, and the holder finds exactly one request to act on.
+        let dir = scratch("handover-ok");
+        fs::create_dir_all(&dir).unwrap();
+        assert_eq!(hand_over(&dir), 0);
+        assert!(take_focus_request(&dir), "the holder sees the request");
+        assert!(!take_focus_request(&dir));
+        fs::remove_dir_all(&dir).unwrap();
+
+        // Not written (here: the folder is gone): a failed launch, and no request.
+        let missing = scratch("handover-failed");
+        let _ = fs::remove_dir_all(&missing);
+        assert_eq!(hand_over(&missing), HANDOVER_FAILED);
+        assert_ne!(HANDOVER_FAILED, 0);
+        assert!(!take_focus_request(&missing));
     }
 
     #[test]

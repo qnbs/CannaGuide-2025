@@ -69,15 +69,21 @@ test('the installed program is found by its exact name within the depth limit', 
     assert.equal(findInstalled([undefined, root], 'other.exe'), undefined)
 })
 
-test('the executable inside a .app bundle is the one with an exec bit', (t) => {
-    const root = tree(t)
-    const app = join(root, 'CannaGuide 2025.app')
-    mkdirSync(join(app, 'Contents', 'MacOS'), { recursive: true })
-    writeFileSync(join(app, 'Contents', 'MacOS', 'cannaguide-desktop'), '')
-    chmodSync(join(app, 'Contents', 'MacOS', 'cannaguide-desktop'), 0o755)
-    assert.equal(appBinary(app), join(app, 'Contents', 'MacOS', 'cannaguide-desktop'))
-    assert.equal(appBinary(join(root, 'missing.app')), undefined)
-})
+// Windows has no POSIX execute bits, so chmod cannot set one there; the macOS bundle
+// this test models is only ever looked at on macOS.
+test(
+    'the executable inside a .app bundle is the one with an exec bit',
+    { skip: process.platform === 'win32' && 'no POSIX execute bits on Windows' },
+    (t) => {
+        const root = tree(t)
+        const app = join(root, 'CannaGuide 2025.app')
+        mkdirSync(join(app, 'Contents', 'MacOS'), { recursive: true })
+        writeFileSync(join(app, 'Contents', 'MacOS', 'cannaguide-desktop'), '')
+        chmodSync(join(app, 'Contents', 'MacOS', 'cannaguide-desktop'), 0o755)
+        assert.equal(appBinary(app), join(app, 'Contents', 'MacOS', 'cannaguide-desktop'))
+        assert.equal(appBinary(join(root, 'missing.app')), undefined)
+    },
+)
 
 test('missing arguments are a usage error', (t) => {
     t.mock.method(console, 'error', () => {})
@@ -183,6 +189,14 @@ test('the NSIS uninstaller runs in place, and every way it can fail stops the se
             detail,
         })
     }
+    // A folder cmd.exe would split (& | < > ^ % ! ") is refused before anything runs.
+    const before = calls.length
+    const odd = join('/opt', 'A&B', 'cannaguide-desktop.exe')
+    assert.deepEqual(uninstallNsis(odd, { spawn: spawn({ status: 0 }), ...gone }), {
+        removed: false,
+        detail: `install folder ${join('/opt', 'A&B')} has characters cmd.exe would interpret`,
+    })
+    assert.equal(calls.length, before, 'the uninstaller was not started')
     // Exit 0 while the program stays: the uninstaller did not finish its job.
     const stays = uninstallNsis(app, {
         spawn: spawn({ status: 0 }),

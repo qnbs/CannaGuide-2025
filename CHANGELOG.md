@@ -6,7 +6,24 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their built-in updater cannot run either. Install this release manually over v1.12.0. App data stays in the same per-user folder (`com.cannaguide.desktop`), and v1.12.0 never wrote any, because it never started. The web app (PWA) was not affected.
+
 ### Fixed
+
+- **fix(desktop):** The desktop apps start again. Every v1.12.0 desktop build (Windows NSIS and MSI, macOS Apple Silicon and Intel, Linux .deb and AppImage) exited at startup with `PluginInitialization("window-state", ... invalid type: map, expected unit)`. Since April, `tauri.conf.json` had configured `window-state` (`{"all": true}`) and `store` (`{}`), but neither plugin takes a configuration there. Both entries are removed; window-state still saves every window property by default. A Rust test now checks each `plugins` entry against the configuration type of the plugin version in `Cargo.lock`, and it rejects both old entries.
+- **fix(desktop):** Only one instance runs per user. A second launch brings the open window to the front and exits. Before, it started a second app on the same storage: a second writer that the web app's writer lock cannot see across processes. On Linux the first instance is found over the D-Bus session bus; without one, the app starts normally.
+
+### Added
+
+- **ci(desktop):** Desktop runtime smoke test. `scripts/desktop-smoke.mjs` launches the packaged app in an isolated profile. It passes only if:
+    - the native side starts;
+    - the bundled frontend reports its start over IPC (`frontend_ready`, with native and frontend versions);
+    - a view is rendered and, on Linux, the window is painted;
+    - a second launch hands over;
+    - the quit waits for the frontend's save and exits 0;
+    - a restart finds the saved data and the window state.
+
+    Desktop Build runs it on every target (installed .deb, AppImage, NSIS and MSI installs, and the macOS .app) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell or the web app's start run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
 
 - **ci:** The ClusterFuzzLite workflow (`cflite_pr.yml`) and its `.clusterfuzzlite/` setup are removed. ClusterFuzzLite rejects every sanitizer for JavaScript projects, so its only job failed on each weekly run by design and was kept from blocking only by `continue-on-error`. Fuzzing stays in `fuzzing.yml` (fast-check property tests on pull requests and weekly). README, architecture and security docs no longer describe it as PR fuzzing, and the workflow count is 29.
 

@@ -72,7 +72,7 @@ test('a dispatch resolves exactly the tag its concurrency group names', (t) => {
         WORKFLOW,
         /group: release-publish-\$\{\{ github\.event\.inputs\.tag \|\| github\.ref_name \}\}/,
     )
-    const script = runScript(job('build'), 'Resolve tag name')
+    const script = runScript(job('tag'), 'Resolve tag name')
     const dir = mkdtempSync(path.join(tmpdir(), 'cannaguide-release-tag-'))
     t.after(() => rmSync(dir, { recursive: true, force: true }))
     const resolve = (env) => {
@@ -208,4 +208,67 @@ test('only a commit on main reaches the signing key and the release', (t) => {
     const unreachable = run(onMain)
     assert.equal(unreachable.status, 1)
     assert.match(unreachable.stdout, /Could not fetch main/)
+})
+
+test('a manual run that creates the tag hands off to the tag run instead of building twice', () => {
+    const tag = job('tag')
+    assert.match(tag, /created: \$\{\{ steps\.ensure\.outputs\.created \}\}/)
+    // The tag job reads RELEASE_PAT, so it carries the main ref guard.
+    assert.match(
+        tag,
+        /github\.event_name == 'workflow_dispatch' && github\.ref == 'refs\/heads\/main'/,
+    )
+    const build = job('build')
+    assert.match(build, /needs: \[tag\]/)
+    assert.match(build, /needs\.tag\.outputs\.created != 'true'/)
+    assert.match(build, /tag: \$\{\{ needs\.tag\.outputs\.name \}\}/)
+    assert.doesNotMatch(build, /steps\.tag\.outputs/)
+    // desktop and release follow build, so they are skipped with it.
+    assert.match(job('desktop'), /needs: \[build\]/)
+    assert.match(job('release'), /needs: \[build, desktop\]/)
+})
+
+test('Ensure tag exists reports created only for a tag it pushed', (t) => {
+    const script = runScript(job('tag'), 'Ensure tag exists')
+    const bin = mkdtempSync(path.join(tmpdir(), 'cannaguide-fake-git-'))
+    t.after(() => rmSync(bin, { recursive: true, force: true }))
+    // Stand-ins: ls-remote finds the tag only when FAKE_TAG_EXISTS=1, push fails
+    // when FAKE_PUSH_FAILS=1, and gh reports write access.
+    writeFileSync(
+        path.join(bin, 'git'),
+        [
+            '#!/bin/sh',
+            'case "$1" in',
+            '  ls-remote) [ "$FAKE_TAG_EXISTS" = 1 ] && echo "abc refs/tags/$TAG"; exit 0 ;;',
+            '  push) [ "$FAKE_PUSH_FAILS" = 1 ] && { echo "HTTP 403" >&2; exit 1; }; exit 0 ;;',
+            '  config) [ "$2" = "--local" ] && [ "$3" = "--name-only" ] && exit 1; exit 0 ;;',
+            '  *) exit 0 ;;',
+            'esac',
+            '',
+        ].join('\n'),
+    )
+    writeFileSync(path.join(bin, 'gh'), '#!/bin/sh\necho true\n')
+    chmodSync(path.join(bin, 'git'), 0o755)
+    chmodSync(path.join(bin, 'gh'), 0o755)
+    const run = (env) => {
+        const output = path.join(bin, `out-${Math.random().toString(36).slice(2)}`)
+        writeFileSync(output, '')
+        const result = spawnSync('bash', ['-eo', 'pipefail', '-c', script], {
+            env: {
+                PATH: `${bin}:${process.env.PATH}`,
+                TAG: 'v1.13.0',
+                REPO: 'qnbs/CannaGuide-2025',
+                RELEASE_PAT: 'token-for-test',
+                GITHUB_OUTPUT: output,
+                ...env,
+            },
+            encoding: 'utf8',
+        })
+        return { status: result.status, output: readFileSync(output, 'utf8') }
+    }
+    assert.deepEqual(run({ FAKE_TAG_EXISTS: '1' }), { status: 0, output: 'created=false\n' })
+    assert.deepEqual(run({}), { status: 0, output: 'created=true\n' })
+    const failed = run({ FAKE_PUSH_FAILS: '1' })
+    assert.equal(failed.status, 1)
+    assert.equal(failed.output, '')
 })

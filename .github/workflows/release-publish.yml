@@ -31,20 +31,25 @@ env:
 # Job 1: Build -- produces tarball + CycloneDX SBOM + hash digest
 # -----------------------------------------------------------------
 jobs:
-    build:
-        name: Build + SBOM
+    # -----------------------------------------------------------------
+    # Job 0: Tag -- resolves the tag; a manual run creates it when it is missing
+    # -----------------------------------------------------------------
+    # A manual run that creates the tag pushes it with RELEASE_PAT, which starts this
+    # workflow for the tag. That run does the release; this one stops after the tag
+    # (build needs created != 'true'), so nothing is built twice. The concurrency
+    # group queues the tag's run behind this short one.
+    tag:
+        name: Resolve and ensure tag
         runs-on: ubuntu-latest
-        timeout-minutes: 45
+        timeout-minutes: 10
         permissions:
             contents: read
         if: >-
             github.event_name == 'push' ||
             (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         outputs:
-            tag: ${{ steps.tag.outputs.name }}
-            commit: ${{ steps.commit.outputs.sha }}
-            tarball-name: ${{ steps.tarball.outputs.name }}
-            sha256: ${{ steps.tarball.outputs.sha256 }}
+            name: ${{ steps.tag.outputs.name }}
+            created: ${{ steps.ensure.outputs.created }}
         steps:
             - name: Harden runner
               uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
@@ -92,6 +97,7 @@ jobs:
                   echo "[INFO] Resolved tag: ${TAG}"
 
             - name: Ensure tag exists
+              id: ensure
               # Dry-run must not push. A tag push starts the v* workflow, and
               # that run has no dry-run input, so it would publish the release.
               if: github.event_name == 'workflow_dispatch' && github.event.inputs.dry-run != 'true'
@@ -103,6 +109,7 @@ jobs:
               run: |
                   if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "refs/tags/${TAG}"; then
                     echo "[OK] Tag ${TAG} already exists on remote"
+                    echo "created=false" >> "$GITHUB_OUTPUT"
                     exit 0
                   fi
                   redact() {
@@ -168,6 +175,9 @@ jobs:
                   SAFE_PUSH=$(redact "${PUSH_OUT}" "${RELEASE_PAT}")
                   if [[ ${PUSH_CODE} -eq 0 ]]; then
                     echo "[OK] Tag ${TAG} created and pushed"
+                    # The push starts this workflow for the tag; that run builds and
+                    # publishes. This run hands off instead of building it a second time.
+                    echo "created=true" >> "$GITHUB_OUTPUT"
                     exit 0
                   fi
                   echo "[FAIL] Could not push tag ${TAG}."
@@ -197,6 +207,47 @@ jobs:
                   echo "[FAIL] Push the tag first, or re-run without dry-run."
                   exit 1
 
+            - name: Hand off to the tag's own run
+              if: steps.ensure.outputs.created == 'true'
+              env:
+                  TAG: ${{ steps.tag.outputs.name }}
+              shell: bash
+              run: |
+                  echo "[OK] Created ${TAG}. Its own Release Publish run (queued behind this one)"
+                  echo "[OK] builds, verifies and publishes the release; this run stops here."
+
+    build:
+        name: Build + SBOM
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        needs: [tag]
+        permissions:
+            contents: read
+        # Skipped when the tag job just created the tag: the tag's own run builds.
+        if: >-
+            needs.tag.outputs.created != 'true' &&
+            (github.event_name == 'push' ||
+            (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'))
+        outputs:
+            tag: ${{ needs.tag.outputs.name }}
+            commit: ${{ steps.commit.outputs.sha }}
+            tarball-name: ${{ steps.tarball.outputs.name }}
+            sha256: ${{ steps.tarball.outputs.sha256 }}
+        steps:
+            - name: Harden runner
+              uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
+              with:
+                  egress-policy: audit
+
+            - name: Checkout
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  fetch-depth: 0
+                  # Do not persist the read-only job token. checkout stores it as
+                  # an extraheader that can override the RELEASE_PAT push URL.
+                  persist-credentials: false
+                  token: ${{ github.token }}
+
             # -- Resolve the commit the tag actually points at ---------
             # Everything downstream must judge THAT commit, not the ref the
             # workflow happened to be dispatched from. Previously a
@@ -207,7 +258,7 @@ jobs:
             - name: Resolve release commit
               id: commit
               env:
-                  TAG: ${{ steps.tag.outputs.name }}
+                  TAG: ${{ needs.tag.outputs.name }}
               shell: bash
               run: |
                   git fetch --force --tags origin "refs/tags/${TAG}:refs/tags/${TAG}" 2>/dev/null || true
@@ -254,7 +305,7 @@ jobs:
             # ship rather than whatever ref the run started on.
             - name: Verify tag matches package.json version
               env:
-                  TAG: ${{ steps.tag.outputs.name }}
+                  TAG: ${{ needs.tag.outputs.name }}
               shell: bash
               run: |
                   TAG_VERSION="${TAG#v}"
@@ -282,7 +333,7 @@ jobs:
             # Cargo.toml and Cargo.lock must all carry the tag's version.
             - name: Verify the desktop app carries the release version
               env:
-                  TAG: ${{ steps.tag.outputs.name }}
+                  TAG: ${{ needs.tag.outputs.name }}
               shell: bash
               run: node scripts/release/check-desktop-version.mjs --tag "${TAG}"
 
@@ -401,7 +452,7 @@ jobs:
               id: tarball
               shell: bash
               env:
-                  RELEASE_TAG: ${{ steps.tag.outputs.name }}
+                  RELEASE_TAG: ${{ needs.tag.outputs.name }}
               run: |
                   TARBALL="cannaguide-${RELEASE_TAG}-dist.tar.gz"
                   tar -czf "${TARBALL}" -C apps/web/dist .

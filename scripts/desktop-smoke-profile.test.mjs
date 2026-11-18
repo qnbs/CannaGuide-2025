@@ -45,8 +45,9 @@ test('only a GitHub-hosted runner counts as disposable: its environment and its 
     ]) {
         assert.equal(isDisposableRunner(env, 'runneradmin'), false, JSON.stringify(env))
     }
-    // The runner's variables set in a person's own shell are not enough.
-    for (const account of ['pc', 'alice', '', undefined]) {
+    // The runner's variables set in a person's own shell are not enough. (An omitted
+    // account means the real one, so every case here passes one explicitly.)
+    for (const account of ['pc', 'alice', '', null]) {
         assert.equal(isDisposableRunner(RUNNER_ENV, account), false, String(account))
     }
 })

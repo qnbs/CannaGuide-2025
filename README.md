@@ -377,22 +377,22 @@ Audit summary, applied fixes, local gate results, and remaining risks: **[`.gith
 
 ### CI/CD Workflows (29)
 
-| Workflow                | Trigger            | Purpose                                                                             |
-| ----------------------- | ------------------ | ----------------------------------------------------------------------------------- |
-| CI                      | push, PR           | Lint, typecheck, 2812 tests, build, security, E2E, IoT                              |
-| CodeQL                  | push, PR, weekly   | SAST (JavaScript/TypeScript)                                                        |
-| Deploy                  | push to main       | GitHub Pages + Lighthouse budget gate                                               |
-| Release Publish         | tag v\*            | GitHub build attestation + CycloneDX SBOM + GitHub Release                          |
-| Release Gate            | tag v\*            | Pre-release quality gate (typecheck, tests, build, audit)                           |
-| Security Full           | push, PR, weekly   | Comprehensive security scan suite                                                   |
-| Snyk                    | push, PR           | Vulnerability scanning                                                              |
-| Fuzzing (`fuzzing.yml`) | PR, weekly         | fast-check property tests                                                           |
-| Scorecard               | push, weekly       | OpenSSF Scorecard                                                                   |
-| Config Guard            | push, PR           | RCE pattern scanning in configs                                                     |
-| Mutation Testing        | push, PR           | Stryker Redux slice mutation testing                                                |
-| Preview Validation      | deploy             | Playwright + Lighthouse on deploy previews (paused)                                 |
-| Graphify Update         | schedule, dispatch | Generates a pinned, validated `graphify-out/` artifact for human-reviewed promotion |
-| + 15 more               | various            | Benchmarks, strains, Dependabot, labeler, stale, cleanup, Cloudflare deploy         |
+| Workflow                | Trigger            | Purpose                                                                                                                                                                         |
+| ----------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CI                      | push, PR           | Lint, typecheck, 2812 tests, build, security, E2E, IoT                                                                                                                          |
+| CodeQL                  | push, PR, weekly   | SAST (JavaScript/TypeScript)                                                                                                                                                    |
+| Deploy                  | push to main       | GitHub Pages + Lighthouse budget gate                                                                                                                                           |
+| Release Publish         | tag v\*            | GitHub build attestation + CycloneDX SBOM + GitHub Release                                                                                                                      |
+| Release Gate            | tag v\*            | Pre-release quality gate (typecheck, tests, build, audit)                                                                                                                       |
+| Security Full           | push, PR, weekly   | Comprehensive security scan suite                                                                                                                                               |
+| Snyk                    | push, PR           | Vulnerability scanning                                                                                                                                                          |
+| Fuzzing (`fuzzing.yml`) | PR, weekly         | fast-check property tests                                                                                                                                                       |
+| Scorecard               | push, weekly       | OpenSSF Scorecard                                                                                                                                                               |
+| Config Guard            | push, PR           | RCE pattern scanning in configs                                                                                                                                                 |
+| Mutation Testing        | push, PR           | Stryker Redux slice mutation testing                                                                                                                                            |
+| Preview Validation      | deploy             | Playwright + Lighthouse on deploy previews (paused)                                                                                                                             |
+| Graphify Update         | schedule, dispatch | Generates a pinned, validated `graphify-out/` artifact for human-reviewed promotion                                                                                             |
+| + 16 more               | various            | Desktop build, Cloudflare deploy and previews, IoT integration, security scan, dependency health, docs CI, benchmarks, strains, Dependabot, labeler, stale, cleanup, provenance |
 
 ### Graphify knowledge graph & MCP
 

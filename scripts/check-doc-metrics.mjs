@@ -126,6 +126,23 @@ for (const m of assertPresent(
 )) {
     if (m[1] !== wf) fail(`CI/CD table row: README "${m[1]}" != actual .yml count "${wf}"`)
 }
+// The workflow table under that heading: its named rows plus "+ NN more" must add up too
+// (it said 13 + 15 = 28 under a heading of 30 before PR #880).
+const workflowSection = readme.match(/### CI\/CD Workflows \(\d+\)\n([\s\S]*?)\n#/)?.[1] ?? ''
+const tableRows = workflowSection.split('\n').filter((line) => line.startsWith('| '))
+const moreRow = tableRows.map((line) => /^\|\s*\+\s*(\d+) more\s*\|/.exec(line)).find(Boolean)
+if (tableRows.length < 4 || !moreRow) {
+    fail('CI/CD workflow table or its "+ NN more" row not found in README (format drifted)')
+} else {
+    // Header and separator rows, one row per named workflow, then the "+ NN more" row.
+    const named = tableRows.length - 3
+    const listed = named + Number(moreRow[1])
+    if (String(listed) !== wf) {
+        fail(
+            `CI/CD workflow table: ${named} named + ${moreRow[1]} more = ${listed} != actual .yml count "${wf}"`,
+        )
+    }
+}
 
 // --- report --------------------------------------------------------------
 console.log('=== DOC-METRIC TRUTH CHECK ===')

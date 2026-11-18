@@ -650,28 +650,73 @@ describe('the write hold after the last save (CodeRabbit on #881)', () => {
         expect(order).toEqual(['hold', 'confirm'])
     })
 
-    it('releases the hold when the update installer fails to start, and catches up', async () => {
+    it('the final save also holds writes only after it has finished', async () => {
+        const save = deferredSave()
         const order: string[] = []
-        const flush = vi.fn(async () => {
-            order.push('save')
-            return true
-        })
-        const { bridge: finalBridge } = fakeBridge()
-        await flushThenConfirmFinalSave(
-            flush,
-            async () => finalBridge,
-            async () => () => order.push('resume'),
+        const { bridge } = fakeBridge({ confirm_final_save: () => order.push('confirm') })
+        const done = flushThenConfirmFinalSave(
+            save.flush,
+            async () => bridge,
+            async () => {
+                order.push('hold')
+                return () => undefined
+            },
         )
-        order.length = 0
+        await settle()
+        expect(order).toEqual([])
+        save.finish(true)
+        await done
+        expect(order).toEqual(['hold', 'confirm'])
+    })
+
+    it('releases the hold when the update installer fails to start, and catches up', async () => {
+        // As in the app: the final save (and its hold) happens while update_install
+        // runs, then the installer fails to start. A save under the hold is refused.
+        const order: string[] = []
+        let held = false
+        const flush = vi.fn(async () => {
+            order.push(held ? 'save refused' : 'save')
+            return !held
+        })
+        const suspend = async () => {
+            held = true
+            return () => {
+                held = false
+                order.push('resume')
+            }
+        }
+        const { bridge: finalBridge } = fakeBridge()
         const { bridge } = fakeBridge({
-            update_install: () => {
+            update_install: async () => {
+                await flushThenConfirmFinalSave(flush, async () => finalBridge, suspend)
                 throw new Error('installer could not start')
             },
         })
         const updater = updaterWith(bridge, { getFlush: () => flush })
         expect(await reasonOf(updater.installAndRestart())).toBe('failed')
-        // The install's own save, then the hold ends and saving catches up.
-        expect(order).toEqual(['save', 'resume', 'save'])
+        // Install save, final save, hold; the failure ends the hold and saving catches up.
+        expect(order).toEqual(['save', 'save', 'resume', 'save'])
+    })
+
+    it('a failed install leaves a quit hold that started meanwhile alone', async () => {
+        const order: string[] = []
+        const { bridge: quitBridge } = fakeBridge()
+        const { bridge } = fakeBridge({
+            update_install: async () => {
+                // A quit (its save and hold) happens while the install is pending.
+                await flushThenConfirmQuit(
+                    async () => true,
+                    async () => quitBridge,
+                    async () => () => order.push('quit hold released'),
+                )
+                throw new Error('installer could not start')
+            },
+        })
+        const updater = updaterWith(bridge, { getFlush: () => async () => true })
+        expect(await reasonOf(updater.installAndRestart())).toBe('failed')
+        expect(order).toEqual([])
+        releaseWriteHold()
+        expect(order).toEqual(['quit hold released'])
     })
 
     it('a quit during a hold releases it before its own save', async () => {

@@ -22,6 +22,7 @@ import {
     evaluateExit,
     evaluateQuitAck,
     evaluateRecord,
+    hangTasklist,
     isolatedEnv,
     pixelSpread,
     REPORT_SCHEMA,
@@ -482,6 +483,10 @@ test('the build target is checked against what the binary reports about itself',
     assert.deepEqual(targetPlatform('aarch64-apple-darwin'), { os: 'macos', arch: 'aarch64' })
     assert.deepEqual(targetPlatform('x86_64-unknown-linux-gnu'), { os: 'linux', arch: 'x86_64' })
     assert.equal(targetPlatform('wasm32-unknown-unknown'), undefined)
+    // Only shipped targets: a look-alike or an empty value is no target at all.
+    for (const triple of ['x86_64-notlinux', 'aarch64-unknown-linux-gnu', '', undefined]) {
+        assert.equal(targetPlatform(triple), undefined, String(triple))
+    }
     const target = targetPlatform('x86_64-apple-darwin')
     const intel = { ...record(), os: 'macos', arch: 'x86_64' }
     assert.deepEqual(
@@ -494,4 +499,24 @@ test('the build target is checked against what the binary reports about itself',
         failed(evaluateRecord(arm, { version: '1.12.1', run: 'first-start', target })),
         ['first-start: built for the expected target'],
     )
+})
+
+test('a hang snapshot keeps only the app and WebView2, without user name or window title', () => {
+    const csv = [
+        '"Image Name","PID","Session Name","Session#","Mem Usage","Status","User Name","CPU Time","Window Title"',
+        '"cannaguide-desktop.exe","4120","Console","1","98,304 K","Not Responding","RUNNER\\runneradmin","0:00:03","CannaGuide 2025"',
+        '"msedgewebview2.exe","4200","Console","1","61,440 K","Unknown","RUNNER\\runneradmin","0:00:01","N/A"',
+        '"chrome.exe","5000","Console","1","200,000 K","Running","HOST\\someone","0:01:00","CannaGuide - private notes"',
+    ].join('\r\n')
+    const kept = hangTasklist(csv)
+    assert.equal(
+        kept,
+        [
+            '"Image Name","PID","Mem Usage","Status","CPU Time"',
+            '"cannaguide-desktop.exe","4120","98,304 K","Not Responding","0:00:03"',
+            '"msedgewebview2.exe","4200","61,440 K","Unknown","0:00:01"',
+        ].join('\n'),
+    )
+    assert.doesNotMatch(kept, /runneradmin|someone|private notes/)
+    assert.equal(hangTasklist(''), '"Image Name","PID","Mem Usage","Status","CPU Time"')
 })

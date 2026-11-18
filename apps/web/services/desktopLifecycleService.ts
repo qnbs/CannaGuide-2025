@@ -249,8 +249,9 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
                     await invoke<void>(bridge, 'update_install')
                 } catch (error) {
                     // The installer did not start and the app stays open: the hold
-                    // from the final save must not swallow the user's next edits.
-                    releaseWriteHold()
+                    // from the final save must not swallow the user's next edits. Only
+                    // that hold: a quit that started meanwhile keeps its own.
+                    releaseWriteHold('final-save')
                     throw error
                 }
             }),
@@ -417,22 +418,27 @@ type SuspendPersistence = () => Promise<(() => void) | null>
  * profile (CodeRabbit on #881). A page still here after LAST_SAVE_HOLD_MS was not
  * ended: saving resumes and catches up with one save.
  */
-let releaseActiveHold: (() => void) | undefined
+type HoldKind = 'quit' | 'final-save'
+
+let activeHold: { kind: HoldKind; release: () => void } | undefined
 
 /**
  * Ends a write hold early: the update install failed and the app stays open, or a new
  * quit is starting and needs its save. Saving resumes and catches up with one save.
- * Does nothing when no hold is active.
+ * With `kind`, only a hold of that kind is ended -- a failed install must not end the
+ * hold of a quit that started meanwhile. Does nothing when no matching hold is active.
  */
-export const releaseWriteHold = (): void => {
-    const release = releaseActiveHold
-    releaseActiveHold = undefined
-    release?.()
+export const releaseWriteHold = (kind?: HoldKind): void => {
+    const hold = activeHold
+    if (!hold || (kind && hold.kind !== kind)) return
+    activeHold = undefined
+    hold.release()
 }
 
 const holdWritesAfterLastSave = async (
     flush: PersistFlush | undefined,
     suspend: SuspendPersistence,
+    kind: HoldKind,
 ): Promise<void> => {
     let resume: (() => void) | null = null
     try {
@@ -448,8 +454,8 @@ const holdWritesAfterLastSave = async (
         resumeWrites()
         void flush?.().catch(() => undefined)
     }
-    releaseActiveHold = release
-    timer = setTimeout(releaseWriteHold, LAST_SAVE_HOLD_MS)
+    activeHold = { kind, release }
+    timer = setTimeout(() => releaseWriteHold(kind), LAST_SAVE_HOLD_MS)
 }
 
 export const flushThenConfirmFinalSave = async (
@@ -468,7 +474,7 @@ export const flushThenConfirmFinalSave = async (
     } catch (error) {
         console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
     }
-    await holdWritesAfterLastSave(flush, suspend)
+    await holdWritesAfterLastSave(flush, suspend, 'final-save')
     const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_final_save')
 }
@@ -496,7 +502,7 @@ export const flushThenConfirmQuit = async (
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
-    await holdWritesAfterLastSave(flush, suspend)
+    await holdWritesAfterLastSave(flush, suspend, 'quit')
     const bridge = await pendingBridge
     // The quit goes on either way; `saved` tells the native side (and the runtime smoke
     // test) whether this run's last changes reached storage.

@@ -112,21 +112,65 @@ export function appBinary(app) {
     return name ? join(dir, name) : undefined
 }
 
-/** Polls `predicate` without leaving the synchronous flow, for at most `ms`. */
-export function waitUntil(predicate, ms, stepMs = 500) {
-    const pause = new Int32Array(new SharedArrayBuffer(4))
-    const deadline = Date.now() + ms
-    while (!predicate()) {
-        if (Date.now() >= deadline) return false
-        Atomics.wait(pause, 0, 0, stepMs)
+const pause = new Int32Array(new SharedArrayBuffer(4))
+const sleepSync = (ms) => Atomics.wait(pause, 0, 0, ms)
+
+/**
+ * Polls `predicate` without leaving the synchronous flow. True only when it holds at a
+ * check made by the deadline: no sleep runs past it, and a state first seen after it
+ * does not count.
+ */
+export function waitUntil(predicate, ms, stepMs = 500, { now = Date.now, sleep = sleepSync } = {}) {
+    const deadline = now() + ms
+    for (;;) {
+        if (predicate()) return true
+        const remaining = deadline - now()
+        if (remaining <= 0) return false
+        sleep(Math.min(stepMs, remaining))
+        if (now() > deadline) return false
     }
-    return true
 }
 
 const run = (command, args, options = {}) =>
     spawnSync(command, args, { stdio: 'inherit', encoding: 'utf8', ...options })
 
 const ok = (result) => !result.error && result.status === 0
+
+/** An uninstaller that is not done after this is stuck: it is killed and the step fails. */
+const UNINSTALL_TIMEOUT_MS = 5 * 60_000
+
+/**
+ * Runs the NSIS uninstaller of `nsisApp` in place and waits until the program is gone.
+ * NSIS reads `_?=` only as the last argument and unquoted, even with spaces in the
+ * path; Node would quote "CannaGuide 2025", the flag would be ignored, and the
+ * uninstaller would copy itself away and return 0 at once (Windows run on 152d3e43).
+ * So the line goes through cmd.exe as written -- the program path quoted, `_?=` bare
+ * and last; both paths come from this run's own install.
+ */
+export function uninstallNsis(
+    nsisApp,
+    { spawn = spawnSync, exists = existsSync, wait = waitUntil, removalMs = 60_000 } = {},
+) {
+    const nsisDir = dirname(nsisApp)
+    const result = spawn(`"${join(nsisDir, 'uninstall.exe')}" /S _?=${nsisDir}`, {
+        shell: true,
+        stdio: 'inherit',
+        timeout: UNINSTALL_TIMEOUT_MS,
+        killSignal: 'SIGKILL',
+    })
+    if (!ok(result)) {
+        const how = result.error
+            ? result.error.message
+            : result.signal
+              ? `killed by ${result.signal}`
+              : `exited ${result.status}`
+        return { removed: false, detail: `uninstaller ${how}` }
+    }
+    if (!wait(() => !exists(nsisApp), removalMs)) {
+        return { removed: false, detail: `exited 0, but ${nsisApp} is still there` }
+    }
+    return { removed: true, detail: 'removed' }
+}
 
 function smoke(args, wrap = []) {
     const [command, ...prefix] = wrap.length > 0 ? wrap : [process.execPath]
@@ -287,22 +331,9 @@ function windows({ bundle, target, version, evidence }) {
     // The MSI is tested on a clean machine: with an NSIS install present it reuses that
     // folder (Tauri's MSI looks the previous install location up), and the NSIS
     // uninstaller is qualified on the way. `_?=` makes it run in place and wait.
-    const nsisDir = dirname(nsisApp)
-    // NSIS reads `_?=` only as the last argument and unquoted, even with spaces in the
-    // path; Node would quote "CannaGuide 2025", the flag would be ignored, and the
-    // uninstaller would copy itself away and return 0 at once (Windows run on
-    // 152d3e43). So the command line is passed verbatim, and the removal is awaited.
-    // cmd.exe passes the line as written: the program path quoted, `_?=` last and bare.
-    // Both paths come from this run's own install.
-    const uninstall = spawnSync(`"${join(nsisDir, 'uninstall.exe')}" /S _?=${nsisDir}`, {
-        shell: true,
-        stdio: 'inherit',
-    })
-    const removed = ok(uninstall) && waitUntil(() => !existsSync(nsisApp), 60_000)
-    if (!removed) {
-        console.log(
-            `[FAIL] NSIS uninstall exited ${uninstall.status ?? uninstall.error?.message}; program still there: ${existsSync(nsisApp)}`,
-        )
+    const uninstall = uninstallNsis(nsisApp)
+    if (!uninstall.removed) {
+        console.log(`[FAIL] NSIS uninstall: ${uninstall.detail}`)
         return false
     }
 

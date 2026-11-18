@@ -101,13 +101,14 @@ const info = (name, detail) => ({ name, status: 'INFO', detail })
 
 /** `x86_64-pc-windows-msvc` -> { os: 'windows', arch: 'x86_64' }, as Rust reports them. */
 export function targetPlatform(triple) {
-    if (!triple) return undefined
-    const arch = triple.split('-')[0]
-    let os
-    if (triple.includes('windows')) os = 'windows'
-    else if (triple.includes('apple-darwin')) os = 'macos'
-    else if (triple.includes('linux')) os = 'linux'
-    return os ? { os, arch } : undefined
+    // Only the targets the desktop build ships; anything else is not a target to expect.
+    const known = {
+        'x86_64-unknown-linux-gnu': { os: 'linux', arch: 'x86_64' },
+        'aarch64-apple-darwin': { os: 'macos', arch: 'aarch64' },
+        'x86_64-apple-darwin': { os: 'macos', arch: 'x86_64' },
+        'x86_64-pc-windows-msvc': { os: 'windows', arch: 'x86_64' },
+    }
+    return Object.hasOwn(known, triple ?? '') ? { ...known[triple] } : undefined
 }
 
 /** Checks one startup report against what this build must show. */
@@ -315,8 +316,13 @@ async function stopTree(run) {
 async function waitForExit(run, timeoutMs, onTimeout) {
     let result = await within(run.exited, timeoutMs)
     if (result.timedOut) {
-        // While the stuck process still exists: what it and its webview were doing.
-        onTimeout?.()
+        // While the stuck process still exists: what it and its webview were doing. A
+        // failed capture is reported, never a reason to leave the process running.
+        try {
+            onTimeout?.()
+        } catch (error) {
+            console.log(`[WARN] hang snapshot failed: ${error.message}`)
+        }
         const stopped = await stopTree(run)
         result = { code: null, signal: null, timedOut: true, killFailed: !stopped }
     }
@@ -461,17 +467,35 @@ async function screenshot(evidence, name, required, group) {
 /** WebView2 writes chrome_debug.log into its user data folder with this (smoke only). */
 const WEBVIEW2_LOGGING = '--enable-logging --v=1'
 
+/** Image names a hang snapshot keeps; every other process stays out of the evidence. */
+const HANG_IMAGES = new Set(['cannaguide-desktop.exe', 'msedgewebview2.exe'])
+
 /**
- * Windows, before a stuck run is killed: the process list with window titles and
- * states, and the WebView2 log of the app's user data folder.
+ * The rows of `tasklist /v /fo csv` for the app and WebView2, reduced to image name,
+ * PID, memory, status and CPU time: the user name and window title columns can name a
+ * person or what they have open, so they are never kept.
+ */
+export function hangTasklist(csv) {
+    const rows = String(csv)
+        .split(/\r?\n/)
+        .map((line) => [...line.matchAll(/"((?:[^"]|"")*)"/g)].map((match) => match[1]))
+        .filter((fields) => fields.length >= 8 && HANG_IMAGES.has(fields[0].toLowerCase()))
+        .map((fields) => [0, 1, 4, 5, 7].map((index) => `"${fields[index]}"`).join(','))
+    return ['"Image Name","PID","Mem Usage","Status","CPU Time"', ...rows].join('\n')
+}
+
+/**
+ * Windows on a disposable runner, before a stuck run is killed: the app's and its
+ * WebView2's processes (redacted) and the WebView2 log of the app's user data folder.
+ * Never on a person's machine, whose log and process list are not evidence to keep.
  */
 function windowsHangSnapshot(evidence, name) {
-    if (process.platform !== 'win32') return
+    if (process.platform !== 'win32' || !isDisposableRunner()) return
     const tasks = spawnSync('tasklist', ['/v', '/fo', 'csv'], { encoding: 'utf8', timeout: 15_000 })
-    const relevant = String(tasks.stdout ?? '')
-        .split('\n')
-        .filter((line, index) => index === 0 || /cannaguide|msedgewebview2/i.test(line))
-    writeFileSync(join(evidence, `${name}.hang-tasklist.csv`), `${relevant.join('\n')}\n`)
+    writeFileSync(
+        join(evidence, `${name}.hang-tasklist.csv`),
+        `${hangTasklist(tasks.stdout ?? '')}\n`,
+    )
     const log = join(process.env.LOCALAPPDATA ?? '', IDENTIFIER, 'EBWebView', 'chrome_debug.log')
     if (existsSync(log))
         writeFileSync(join(evidence, `${name}.chrome_debug.log`), readFileSync(log))
@@ -577,6 +601,18 @@ async function concurrentRound(ctx, round) {
     // Windows app folders cannot be redirected: each round starts them fresh instead,
     // and only on a verified disposable runner, never on a person's profile.
     const fresh = process.platform === 'win32' ? await resetWindowsAppFolders() : { state: 'fresh' }
+    // A round that could not start clean is not run; its failed reset fails the check.
+    if (fresh.state === 'failed') {
+        return {
+            fresh,
+            started: 0,
+            loserGone: false,
+            shown: false,
+            winnerOk: false,
+            saved: false,
+            exits: [],
+        }
+    }
     const reports = ['a', 'b'].map((name) => join(profile, `concurrent-${name}.json`))
     const runs = reports.map((report, index) =>
         track(
@@ -658,7 +694,10 @@ async function concurrentRound(ctx, round) {
  */
 async function resetWindowsAppFolders() {
     if (!isDisposableRunner()) return { state: 'unavailable' }
-    await waitFor(() => webviewProcesses().length === 0, 30_000, 500)
+    // A WebView2 still running may still write: no reset under it, and no fresh claim.
+    if (!(await waitFor(() => webviewProcesses().length === 0, 30_000, 500))) {
+        return { state: 'failed', detail: 'WebView2 still running after 30 s' }
+    }
     for (const base of [process.env.APPDATA, process.env.LOCALAPPDATA]) {
         const result = removeAppFolder(base)
         if (!result.removed) return { state: 'failed', detail: `${base}: ${result.reason}` }
@@ -736,7 +775,9 @@ function profileEnv(profile, options) {
         if (env[key] && env[key] !== process.env[key]) mkdirSync(env[key], { recursive: true })
     }
     if (options.appimage) env.APPIMAGE_EXTRACT_AND_RUN = '1'
-    if (process.platform === 'win32') env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = WEBVIEW2_LOGGING
+    if (process.platform === 'win32' && isDisposableRunner()) {
+        env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = WEBVIEW2_LOGGING
+    }
     return env
 }
 
@@ -946,7 +987,7 @@ function parseOptions(argv) {
     if (!Number.isInteger(concurrentRounds) || concurrentRounds < 1) {
         throw new Error('--concurrent-rounds must be a whole number of at least 1')
     }
-    if (values['expect-target'] && !targetPlatform(values['expect-target'])) {
+    if (values['expect-target'] !== undefined && !targetPlatform(values['expect-target'])) {
         throw new Error(`--expect-target ${values['expect-target']} is not a known target triple`)
     }
     return {

@@ -12,6 +12,7 @@ import {
     msiInstallDir,
     readMsiLog,
     rosettaPlan,
+    uninstallNsis,
     waitUntil,
 } from './desktop-smoke-ci.mjs'
 
@@ -128,17 +129,66 @@ test('outside a disposable GitHub-hosted runner it refuses before touching anyth
     }
 })
 
-test('waiting for an uninstall ends when the program is gone, or at the deadline', () => {
-    let checks = 0
+test('waiting ends when the condition holds, and a late one does not count', () => {
+    // A clock the test controls; each sleep overshoots by 5 ms, as real sleeps can.
+    let now = 0
+    const clock = { now: () => now, sleep: (ms) => (now += ms + 5) }
     assert.equal(
-        waitUntil(() => ++checks >= 3, 5000, 10),
+        waitUntil(() => now >= 50, 100, 40, clock),
         true,
     )
-    assert.equal(checks, 3)
-    const started = Date.now()
+    now = 0
+    // True from 100 ms on: first seen at 105 ms, after the deadline -- not accepted.
     assert.equal(
-        waitUntil(() => false, 120, 20),
+        waitUntil(() => now >= 100, 100, 40, clock),
         false,
     )
-    assert.ok(Date.now() - started >= 100, 'it waited up to the deadline')
+    assert.ok(now <= 105, 'no sleep ran past the deadline by more than its overshoot')
+    now = 0
+    assert.equal(
+        waitUntil(() => true, 0, 40, clock),
+        true,
+        'a state already there counts',
+    )
+})
+
+test('the NSIS uninstaller runs in place, and every way it can fail stops the sequence', () => {
+    const app = join('/opt', 'CannaGuide 2025', 'cannaguide-desktop.exe')
+    const calls = []
+    const spawn = (result) => (command, options) => {
+        calls.push({ command, options })
+        return result
+    }
+    const gone = { exists: () => false, wait: (predicate) => predicate() }
+    assert.deepEqual(uninstallNsis(app, { spawn: spawn({ status: 0 }), ...gone }), {
+        removed: true,
+        detail: 'removed',
+    })
+    // `_?=` last and unquoted, the program path quoted, bounded in time.
+    assert.match(calls[0].command, /^"[^"]+uninstall\.exe" \/S _\?=\/opt\/CannaGuide 2025$/)
+    assert.equal(calls[0].options.shell, true)
+    assert.ok(calls[0].options.timeout > 0)
+
+    const failures = [
+        [{ status: 2 }, 'uninstaller exited 2'],
+        [{ status: null, signal: 'SIGKILL' }, 'uninstaller killed by SIGKILL'],
+        [
+            { status: null, error: new Error('spawnSync cmd.exe ETIMEDOUT') },
+            'uninstaller spawnSync cmd.exe ETIMEDOUT',
+        ],
+    ]
+    for (const [result, detail] of failures) {
+        assert.deepEqual(uninstallNsis(app, { spawn: spawn(result), ...gone }), {
+            removed: false,
+            detail,
+        })
+    }
+    // Exit 0 while the program stays: the uninstaller did not finish its job.
+    const stays = uninstallNsis(app, {
+        spawn: spawn({ status: 0 }),
+        exists: () => true,
+        wait: (predicate) => predicate(),
+    })
+    assert.equal(stays.removed, false)
+    assert.match(stays.detail, /exited 0, but .* is still there/)
 })

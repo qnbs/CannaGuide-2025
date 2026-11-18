@@ -189,7 +189,10 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
     const fn = (name) => {
         const at = orchestrator.indexOf(`function ${name}(`)
         assert.notEqual(at, -1, `missing ${name}()`)
-        return orchestrator.slice(at, orchestrator.indexOf('\n}\n', at))
+        // Line comments removed: a flag or a branch that is only commented out is absent.
+        return orchestrator
+            .slice(at, orchestrator.indexOf('\n}\n', at))
+            .replace(/^\s*\/\/.*$/gm, '')
     }
     for (const label of ['-deb', '-appimage', '-nsis', '-msi', '-app']) {
         assert.ok(orchestrator.includes(`\`\${target}${label}\``), label)
@@ -199,12 +202,13 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
     assert.match(fn('macos'), /\[FAIL\] Rosetta 2 unavailable[^\n]*\n[^\n]*\n\s*return false/)
     // - the Linux harness arguments carry --require-screenshot;
     assert.match(fn('linux'), /const common = \[[^\]]*'--require-screenshot'[^\]]*\]/)
-    // - a failed NSIS or MSI install, or NSIS uninstall, marks the run failed.
-    // ...and stops the sequence, so nothing this run did not install is launched.
-    for (const failure of ['NSIS install exited', 'MSI install exited', 'NSIS uninstall exited']) {
+    // - a failed NSIS or MSI install, or NSIS uninstall, returns at once: the sequence
+    //   stops, so nothing this run did not install is launched (marking the run failed
+    //   and carrying on would not be enough).
+    for (const failure of ['NSIS install exited', 'MSI install exited', 'NSIS uninstall:']) {
         assert.match(
             fn('windows'),
-            new RegExp(`${failure}[\\s\\S]{0,240}?\\n\\s*(?:return false|passed = false)`),
+            new RegExp(`${failure}[^\\n]*\\n(?:[^\\n]*\\n){0,2}?\\s*return false\\n`),
             failure,
         )
     }

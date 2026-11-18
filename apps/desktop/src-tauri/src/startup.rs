@@ -116,23 +116,14 @@ struct SmokeRecord<'a> {
     frontend: &'a FrontendReport,
 }
 
-/// A version as the build stamps it ("1.12.1", "1.13.0-rc.1"); anything else the
-/// webview sends is recorded as "invalid", so the record never holds free text.
-fn version_label(raw: &str) -> String {
-    let (core, suffix) = raw.split_once(['-', '+']).unwrap_or((raw, ""));
-    let parts: Vec<&str> = core.split('.').collect();
-    let numeric = parts.len() == 3
-        && parts.iter().all(|part| {
-            !part.is_empty() && part.len() <= 9 && part.bytes().all(|b| b.is_ascii_digit())
-        });
-    let suffix_ok = suffix.len() <= 40
-        && suffix
-            .bytes()
-            .all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-');
-    if numeric && suffix_ok {
-        raw.to_owned()
+/// The frontend's build version, recorded only as the native version it has to equal:
+/// anything else the webview sends -- also text shaped like a version -- becomes
+/// "mismatch", so the record never holds a string the webview chose.
+fn version_label(frontend: &str, native: &str) -> String {
+    if frontend == native {
+        native.to_owned()
     } else {
-        "invalid".to_owned()
+        "mismatch".to_owned()
     }
 }
 
@@ -203,7 +194,7 @@ fn smoke_record_bytes(
     ready_after_ms: u128,
 ) -> serde_json::Result<Vec<u8>> {
     let report = FrontendReport {
-        frontend_version: version_label(&report.frontend_version),
+        frontend_version: version_label(&report.frontend_version, env!("CARGO_PKG_VERSION")),
         error_code: report.error_code.as_deref().map(diagnostic_code),
         ..report.clone()
     };
@@ -349,19 +340,18 @@ mod tests {
     }
 
     #[test]
-    fn only_a_stamped_version_reaches_the_record() {
-        for good in ["1.12.1", "1.13.0-rc.1", "2.0.0+build.7"] {
-            assert_eq!(version_label(good), good);
-        }
-        for bad in [
+    fn only_the_native_version_reaches_the_record() {
+        let native = "1.12.1";
+        assert_eq!(version_label("1.12.1", native), "1.12.1");
+        for other in [
+            "1.12.1-private-notes",
             "my notes",
-            "1.12",
-            "1.12.1.4",
+            "1.12.0",
             "",
-            "1.x.0",
-            &format!("1.0.0-{}", "a".repeat(41)),
+            "1.12.1 ",
+            "1.12.1+x",
         ] {
-            assert_eq!(version_label(bad), "invalid", "{bad}");
+            assert_eq!(version_label(other, native), "mismatch", "{other}");
         }
     }
 

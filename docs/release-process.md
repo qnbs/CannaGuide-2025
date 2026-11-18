@@ -323,10 +323,13 @@ in three rounds of two simultaneous cold launches.
   7 days for a check on a real desktop.
 
 **Profile safety:** `scripts/desktop-smoke-ci.mjs` installs system-wide and resets the
-Windows app folders, so it refuses to run anywhere but a GitHub-hosted runner
-(`GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`; `CI` alone does not count).
-Every deletion goes through `scripts/desktop-smoke-profile.mjs`, which also refuses a base
-folder reached through a link and an app folder that is a link or resolves outside its base.
+Windows app folders, so it refuses to run anywhere but a GitHub-hosted runner. That takes
+two independent signals: the runner environment (`GITHUB_ACTIONS=true` and
+`RUNNER_ENVIRONMENT=github-hosted`; `CI` alone does not count) and the OS account the
+hosted images run as (`runner`, on Windows `runneradmin`). Every deletion goes through
+`scripts/desktop-smoke-profile.mjs`, which also refuses a base folder reached through a
+link and an app folder that is a link (also a dangling one) or resolves outside its base.
+On Windows, the WebView2 log and a redacted process list are kept as evidence only there.
 
 **Lock fallback:** if the profile lock file cannot be opened at all, the app logs it and
 starts without the lock; one instance per profile then rests on the single-instance plugin

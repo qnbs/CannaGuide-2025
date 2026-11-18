@@ -17,7 +17,7 @@
 //! claim; a crash releases it with the process. It is an OS lock (`flock` /
 //! `LockFileEx`) on an open file, so there is no stale lock and no PID to check.
 //!
-//! A process that cannot take the lock still brings the running app forward: it writes
+//! A process that cannot take the lock still makes the running app show itself: it writes
 //! `.focus-request` next to the lock, and the holder, which polls for it, shows its main
 //! window once that exists. The single-instance callback uses the same request when two
 //! launches race and the window is not created yet.
@@ -78,7 +78,10 @@ pub(crate) fn focus_main_window<R: Runtime>(app: &AppHandle<R>) -> bool {
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_focus();
-    crate::startup::record_restore(window.is_visible().unwrap_or(false));
+    crate::startup::record_restore(
+        window.is_visible().unwrap_or(false),
+        window.is_focused().unwrap_or(false),
+    );
     true
 }
 
@@ -100,8 +103,9 @@ pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
             match try_acquire(&dir) {
                 Ok(Some(file)) => {
                     app.resources_table().add(InstanceLock { _file: file });
-                    // A request left by a process that ran before this one is stale.
-                    take_focus_request(&dir);
+                    // A pending request is kept, not cleared: a launch racing this one may
+                    // have just written it (Codex on #881). One left by an earlier run only
+                    // shows the window this start shows anyway.
                     watch_focus_requests(app.clone(), dir);
                 }
                 Ok(None) => {

@@ -116,6 +116,26 @@ struct SmokeRecord<'a> {
     frontend: &'a FrontendReport,
 }
 
+/// A version as the build stamps it ("1.12.1", "1.13.0-rc.1"); anything else the
+/// webview sends is recorded as "invalid", so the record never holds free text.
+fn version_label(raw: &str) -> String {
+    let (core, suffix) = raw.split_once(['-', '+']).unwrap_or((raw, ""));
+    let parts: Vec<&str> = core.split('.').collect();
+    let numeric = parts.len() == 3
+        && parts.iter().all(|part| {
+            !part.is_empty() && part.len() <= 9 && part.bytes().all(|b| b.is_ascii_digit())
+        });
+    let suffix_ok = suffix.len() <= 40
+        && suffix
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-');
+    if numeric && suffix_ok {
+        raw.to_owned()
+    } else {
+        "invalid".to_owned()
+    }
+}
+
 /// An error's class name ("TypeError", "QuotaExceededError") passes; anything else --
 /// a message, a path, user text -- becomes a fixed code.
 fn diagnostic_code(raw: &str) -> String {
@@ -169,6 +189,7 @@ fn smoke_record_bytes(
     ready_after_ms: u128,
 ) -> serde_json::Result<Vec<u8>> {
     let report = FrontendReport {
+        frontend_version: version_label(&report.frontend_version),
         error_code: report.error_code.as_deref().map(diagnostic_code),
         ..report.clone()
     };
@@ -196,10 +217,13 @@ pub(crate) fn record_quit_ack(saved: Option<bool>) {
     }
 }
 
-/// Called from the single-instance callback once it has shown the window again.
-pub(crate) fn record_restore(visible: bool) {
+/// Called once a second launch has made the running app show its window again. Focus
+/// is recorded apart from visibility: a window manager may refuse it, and the smoke
+/// test claims only that the window is shown again.
+pub(crate) fn record_restore(visible: bool, focused: bool) {
     if let Some(report) = smoke_target() {
-        let record = serde_json::json!({ "schema": REPORT_SCHEMA, "visible": visible });
+        let record =
+            serde_json::json!({ "schema": REPORT_SCHEMA, "visible": visible, "focused": focused });
         write_beside_report(&report, ".restored", &record);
     }
 }
@@ -307,6 +331,23 @@ mod tests {
             &"A".repeat(65),
         ] {
             assert_eq!(diagnostic_code(raw), "UnrecognizedError", "{raw}");
+        }
+    }
+
+    #[test]
+    fn only_a_stamped_version_reaches_the_record() {
+        for good in ["1.12.1", "1.13.0-rc.1", "2.0.0+build.7"] {
+            assert_eq!(version_label(good), good);
+        }
+        for bad in [
+            "my notes",
+            "1.12",
+            "1.12.1.4",
+            "",
+            "1.x.0",
+            &format!("1.0.0-{}", "a".repeat(41)),
+        ] {
+            assert_eq!(version_label(bad), "invalid", "{bad}");
         }
     }
 

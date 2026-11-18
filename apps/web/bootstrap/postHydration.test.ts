@@ -33,8 +33,13 @@ vi.mock('@/services/ttsService', () => ({
     ttsService: { init: () => mockTtsInit() },
 }))
 
+const mockResolveSentry = vi.hoisted(() => vi.fn())
+
 vi.mock('@/services/sentryService', () => ({
     Sentry: { captureException: vi.fn() },
+    resolveSentryAfterHydration: (localOnly: boolean) => mockResolveSentry(localOnly),
+    disableSentry: vi.fn(),
+    enableSentry: vi.fn(),
 }))
 
 vi.mock('@/stores/useUIStore', () => ({
@@ -156,6 +161,17 @@ describe('runPostHydrationServices', () => {
         expect(mockSetAppReady).toHaveBeenCalledWith(true)
         expect(document.body.getAttribute('data-app-ready')).toBe('true')
     })
+
+    it.each([false, true])(
+        'decides error reporting from the saved Local-Only setting (local-only: %s)',
+        async (localOnly) => {
+            const store = createTestStore()
+            if (localOnly)
+                store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
+            await runPostHydrationServices(store)
+            expect(mockResolveSentry).toHaveBeenCalledExactlyOnceWith(localOnly)
+        },
+    )
 
     it('does not preload offline models when the opt-in is off (default)', async () => {
         const store = createTestStore()

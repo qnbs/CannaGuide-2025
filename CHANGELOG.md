@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(privacy):** With Local-Only mode saved, no error report leaves the device during startup either. Sentry used to start as the very first step, before the saved settings were loaded, so an error in the first moments of a session could be reported although Local-Only was on; it was switched off only once hydration had finished. Error reporting now starts only after the saved setting is known. Errors from before that are kept in memory, then sent (Local-Only off) or dropped (Local-Only on). Session Replay and tracing do not start before then either ([#586](https://github.com/qnbs/CannaGuide-2025/issues/586)).
+
 ## [1.12.1] - 2026-11-18
 
 Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their built-in updater cannot run either. Install this release manually over v1.12.0. App data stays in the same per-user folder (`com.cannaguide.desktop`), and v1.12.0 never wrote any, because it never started. The web app (PWA) was not affected.

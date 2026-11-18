@@ -6,6 +6,21 @@ let _sentry: SentryModule | null = null
 let _initPromise: Promise<void> | null = null
 let _sentryDisabledByLocalOnly = false
 
+/**
+ * Until the saved Local-Only setting is known (after hydration), nothing may leave the
+ * device: the SDK is not started, and errors are only remembered here, in memory. Once
+ * the setting is known they are sent (Local-Only off) or dropped (Local-Only on), see
+ * resolveSentryAfterHydration (GH #586).
+ */
+const EARLY_ERROR_LIMIT = 20
+let _localOnlyKnown = false
+let _earlyErrors: unknown[] = []
+let _stopEarlyCapture: (() => void) | null = null
+
+const rememberEarlyError = (error: unknown): void => {
+    if (_earlyErrors.length < EARLY_ERROR_LIMIT) _earlyErrors.push(error)
+}
+
 type SentryFrameLike = { filename?: string }
 type SentryExceptionValueLike = { stacktrace?: { frames?: SentryFrameLike[] } }
 type SentryEventLike = { exception?: { values?: SentryExceptionValueLike[] } }
@@ -34,6 +49,45 @@ export const disableSentry = (): void => {
         _sentry.close()
         _sentry = null
     }
+}
+
+/**
+ * Bootstrap step, before anything else runs: remember uncaught errors and rejections
+ * in memory, but start no SDK, because the saved Local-Only setting is not known yet.
+ */
+export const captureEarlyErrors = (): void => {
+    if (_localOnlyKnown || _stopEarlyCapture || typeof window === 'undefined') return
+    const onError = (event: ErrorEvent): void => rememberEarlyError(event.error ?? event.message)
+    const onRejection = (event: PromiseRejectionEvent): void => rememberEarlyError(event.reason)
+    window.addEventListener('error', onError)
+    window.addEventListener('unhandledrejection', onRejection)
+    _stopEarlyCapture = () => {
+        window.removeEventListener('error', onError)
+        window.removeEventListener('unhandledrejection', onRejection)
+        _stopEarlyCapture = null
+    }
+}
+
+/**
+ * The saved Local-Only setting is known. With Local-Only on, error reporting stays off
+ * and what was remembered is dropped; with it off, Sentry starts and the remembered
+ * errors are sent once the SDK is ready. A page whose hydration never completes never
+ * starts Sentry: without the saved setting, nothing is sent.
+ */
+export const resolveSentryAfterHydration = (localOnly: boolean): void => {
+    _localOnlyKnown = true
+    _stopEarlyCapture?.()
+    const early = _earlyErrors
+    _earlyErrors = []
+    if (localOnly) {
+        disableSentry()
+        return
+    }
+    _sentryDisabledByLocalOnly = false
+    initSentry()
+    void _initPromise?.then(() => {
+        for (const error of early) Sentry.captureException(error)
+    })
 }
 
 /** Re-enables Sentry. Takes effect only if DSN is configured and in production. */
@@ -128,6 +182,10 @@ export const initSentry = (): void => {
 export const Sentry = {
     captureException(error: unknown, hint?: Parameters<SentryModule['captureException']>[1]): void {
         if (_sentryDisabledByLocalOnly) return
+        if (!_localOnlyKnown) {
+            rememberEarlyError(error)
+            return
+        }
         _sentry?.captureException(error, hint)
     },
     captureMessage(message: string, level?: Parameters<SentryModule['captureMessage']>[1]): void {

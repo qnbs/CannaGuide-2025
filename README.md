@@ -48,7 +48,7 @@ The app uses the network only for these:
 - the desktop update check;
 - masked crash reports from production builds.
 
-**Local-Only mode** turns these off. The last model-download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
+**Local-Only mode** turns these off. Error reporting starts only after the app has loaded your saved settings, so nothing is sent before it knows them. The last model-download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
 
 - **Web app (PWA):** installable from the browser, and works offline after the first visit.
 - **Desktop app:** a [Tauri 2](https://v2.tauri.app/) shell for Windows, macOS (Apple silicon and Intel) and Linux, with signed in-app updates.
@@ -102,7 +102,7 @@ The installers are not code-signed with a Windows or Apple developer certificate
 ## Privacy and data
 
 - **No backend and no account.**
-- **Error reports.** Production builds send crash reports to Sentry with all personal-data collection switched off: no user or IP, cookies, headers, request bodies or local variables. Session Replay masks all text and inputs and blocks media. Local-Only mode turns error reporting off.
+- **Error reports.** Production builds send crash reports to Sentry with all personal-data collection switched off: no user or IP, cookies, headers, request bodies or local variables. Session Replay masks all text and inputs and blocks media. Error reporting starts only after your saved settings are loaded; errors from before that are kept in memory until then. Local-Only mode keeps it off.
 - **Your data stays local.** Plant data lives in IndexedDB on your device. Export and import are explicit JSON files.
 - **BYOK.** Cloud AI uses _your_ provider key, encrypted at rest with AES-GCM (Web Crypto). Requests go from your device directly to the provider you choose; nothing passes through a CannaGuide server.
 - **Local-Only mode** keeps AI on the device and stops cloud requests. Enforcement for every on-demand model download is being completed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).

@@ -117,12 +117,10 @@ export const runPostHydrationServices = async (
     const localOnly =
         (hydratedStore.getState() as RootState).settings.settings.privacy?.localOnlyMode === true
     setLocalOnlyMode(localOnly)
-    if (localOnly) {
-        // Mirrors syncLocalOnlyMode() in listenerMiddleware: the flag alone does
-        // not stop Sentry, which is initialised before hydration runs.
-        const { disableSentry } = await import('@/services/sentryService')
-        disableSentry()
-    }
+    // Error reporting waits for this point: Sentry starts now only if Local-Only is off,
+    // and drops what it remembered if it is on (GH #586).
+    const { resolveSentryAfterHydration } = await import('@/services/sentryService')
+    resolveSentryAfterHydration(localOnly)
 
     // Before any slower startup work: every desktop quit waits for this listener's
     // confirmation, so it has to exist as soon as there is state to save.

@@ -14,6 +14,10 @@ on:
             - 'apps/desktop/**'
             - 'apps/web/bootstrap/**'
             - 'apps/web/services/desktop*.ts'
+            # The startup report reads the hydration source and the snapshot from these.
+            - 'apps/web/stores/indexedDBStorage.ts'
+            - 'apps/web/stores/store.ts'
+            - 'apps/web/bootstrap/persistenceCoordinator.ts'
             - 'apps/web/index.html'
             - 'scripts/desktop-smoke.mjs'
             - '.github/actions/desktop-runtime-smoke/**'
@@ -199,7 +203,7 @@ jobs:
                   name: desktop-smoke-${{ matrix.target }}
                   path: desktop-smoke/
                   if-no-files-found: warn
-                  retention-days: 30
+                  retention-days: 14
 
             - name: Upload artifacts
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -304,6 +308,20 @@ jobs:
                   target: ${{ matrix.target }}
                   bundle-dir: apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle
 
+            # tar keeps the executable bits and the bundle layout a zip of the folder loses.
+            - name: Archive the macOS app for a manual check
+              if: always() && runner.os == 'macOS'
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+              run: |
+                  set -euo pipefail
+                  bundle="apps/desktop/src-tauri/target/$TARGET/release/bundle/macos"
+                  app="$(find "$bundle" -maxdepth 1 -name '*.app' -print -quit)"
+                  [[ -n "$app" ]] || { echo "[WARN] no .app to archive"; exit 0; }
+                  mkdir -p desktop-bundles
+                  tar -czf "desktop-bundles/$TARGET.app.tar.gz" -C "$bundle" "$(basename "$app")"
+
             - name: Upload smoke evidence and bundles
               if: always()
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -315,6 +333,7 @@ jobs:
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*-setup.exe
                       apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
+                      desktop-bundles/
                   if-no-files-found: warn
                   retention-days: 7
 

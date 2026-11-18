@@ -161,6 +161,15 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
     const pr = jobBlock('pr-smoke')
     assert.match(pr, /if: github\.event_name == 'pull_request'/)
     assert.match(pr, /uses: \.\/\.github\/actions\/desktop-runtime-smoke/)
+    // CodeRabbit on #881: the PR smoke must block too, and run before its upload.
+    const prSmokeAt = pr.indexOf('- name: Runtime smoke\n')
+    const prUploadAt = pr.indexOf('- name: Upload smoke evidence and bundles\n')
+    assert.ok(
+        prSmokeAt !== -1 && prUploadAt !== -1 && prSmokeAt < prUploadAt,
+        'PR smoke before upload',
+    )
+    const prSmokeStep = pr.slice(prSmokeAt, pr.indexOf('\n            - name: ', prSmokeAt + 1))
+    assert.doesNotMatch(prSmokeStep, /continue-on-error/)
     assert.doesNotMatch(pr, /secrets\./, 'the pull request smoke reads no secrets')
     assert.doesNotMatch(pr, /tauri\.updater\.conf\.json/, 'no updater bundles, so nothing to sign')
     for (const target of [
@@ -183,4 +192,10 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
         )
     }
     assert.match(action, /node scripts\/desktop-smoke\.mjs/)
+    // Fail closed: an Intel bundle without Rosetta fails, never NOT_RUN-and-pass, and the
+    // Linux painted-window check must run.
+    assert.match(action, /\[FAIL\] Rosetta 2 unavailable/)
+    assert.doesNotMatch(action, /did NOT run"\s*\n\s*exit 0/)
+    assert.match(action, /--require-screenshot/)
+    assert.match(action, /\$nsisRun\.ExitCode -ne 0/)
 })

@@ -44,17 +44,20 @@ runs:
               [[ -n "$deb" && -n "$appimage" ]] || { echo "[FAIL] .deb or AppImage missing in $BUNDLE"; exit 1; }
               sudo apt-get install -y "$(realpath "$deb")"
               chmod +x "$appimage"
+              # --require-screenshot: on a Linux runner the painted-window check must run and
+              # pass; a window it cannot find fails instead of being NOT_RUN.
               smoke() {
                 dbus-run-session -- xvfb-run -a -s '-screen 0 1280x800x24' \
-                  node scripts/desktop-smoke.mjs --expect-version "$VERSION" --evidence "$EVIDENCE" "$@"
+                  node scripts/desktop-smoke.mjs --expect-version "$VERSION" --evidence "$EVIDENCE" \
+                  --require-screenshot "$@"
               }
               status=0
               smoke --app /usr/bin/cannaguide-desktop --label "$TARGET-deb" || status=1
               smoke --app "$(realpath "$appimage")" --appimage --label "$TARGET-appimage" || status=1
               exit "$status"
 
-        # An x86_64 build on an arm64 runner needs Rosetta 2. Without it the launch is
-        # recorded as not run, never as passed.
+        # An x86_64 build on an arm64 runner needs Rosetta 2. It is installed when missing;
+        # if that fails the step fails: an Intel bundle is never qualified without a launch.
         - name: macOS -- the .app
           if: runner.os == 'macOS'
           shell: bash
@@ -69,10 +72,9 @@ runs:
               [[ -n "$app" ]] || { echo "[FAIL] no .app in $BUNDLE/macos"; exit 1; }
               binary="$(find "$app/Contents/MacOS" -type f -perm -u+x -print -quit)"
               if [[ "$TARGET" == x86_64-apple-darwin && "$(uname -m)" == arm64 ]] && ! arch -x86_64 /usr/bin/true 2>/dev/null; then
-                mkdir -p "$EVIDENCE"
-                echo "{\"label\":\"$TARGET-app\",\"results\":[{\"name\":\"runtime smoke\",\"status\":\"NOT_RUN\",\"detail\":\"Rosetta 2 unavailable on this runner\"}]}" > "$EVIDENCE/$TARGET-app-smoke.json"
-                echo "::warning::Rosetta 2 is not available on this runner; the $TARGET runtime smoke did NOT run"
-                exit 0
+                echo "[INFO] Rosetta 2 missing; installing it to launch the $TARGET build"
+                sudo softwareupdate --install-rosetta --agree-to-license || true
+                arch -x86_64 /usr/bin/true || { echo "[FAIL] Rosetta 2 unavailable: the $TARGET build cannot be launched, so it is not qualified"; exit 1; }
               fi
               node scripts/desktop-smoke.mjs --app "$binary" --expect-version "$VERSION" --evidence "$EVIDENCE" --label "$TARGET-app"
 
@@ -93,30 +95,49 @@ runs:
                       if (Test-Path $dir) { Remove-Item -Recurse -Force $dir }
                   }
               }
-              function Find-InstalledApp([string] $root) {
-                  Get-ChildItem -Path $root -Recurse -Depth 3 -Filter '*.exe' -ErrorAction SilentlyContinue |
-                      Where-Object { $_.DirectoryName -like '*CannaGuide*' -and $_.Name -notmatch 'uninstall' } |
-                      Select-Object -First 1
+              # The installed program, by its exact name, under the given folders.
+              function Find-InstalledApp([string[]] $roots) {
+                  foreach ($root in $roots) {
+                      if (-not (Test-Path $root)) { continue }
+                      $found = Get-ChildItem -Path $root -Recurse -Depth 3 -Filter 'cannaguide-desktop.exe' -ErrorAction SilentlyContinue |
+                          Select-Object -First 1
+                      if ($found) { return $found }
+                  }
+              }
+              # For the evidence: where Windows says each installer put the app.
+              function Write-UninstallEntries([string] $file) {
+                  Get-ItemProperty -ErrorAction SilentlyContinue `
+                      'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
+                      'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*',
+                      'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' |
+                      Where-Object { $_.DisplayName -like 'CannaGuide*' } |
+                      Select-Object DisplayName, DisplayVersion, InstallLocation, DisplayIcon, UninstallString |
+                      Format-List | Out-File -FilePath $file -Encoding utf8
               }
               $nsis = Get-ChildItem "$env:BUNDLE\nsis\*-setup.exe" | Select-Object -First 1
               $msi = Get-ChildItem "$env:BUNDLE\msi\*.msi" | Select-Object -First 1
               if (-not $nsis -or -not $msi) { Write-Output "[FAIL] NSIS or MSI installer missing in $env:BUNDLE"; exit 1 }
               $status = 0
 
+              New-Item -ItemType Directory -Force -Path $env:EVIDENCE | Out-Null
               Reset-AppProfile
-              Start-Process -FilePath $nsis.FullName -ArgumentList '/S' -Wait
-              $installed = Find-InstalledApp $env:LOCALAPPDATA
-              if (-not $installed) { Write-Output '[FAIL] NSIS install: app not found under LOCALAPPDATA'; $status = 1 }
+              $nsisRun = Start-Process -FilePath $nsis.FullName -ArgumentList '/S' -Wait -PassThru
+              if ($nsisRun.ExitCode -ne 0) { Write-Output "[FAIL] NSIS install exited $($nsisRun.ExitCode)"; $status = 1 }
+              Write-UninstallEntries "$env:EVIDENCE\uninstall-after-nsis.txt"
+              $installed = Find-InstalledApp @($env:LOCALAPPDATA, "$env:LOCALAPPDATA\Programs")
+              if (-not $installed) { Write-Output '[FAIL] NSIS install: cannaguide-desktop.exe not found (see uninstall-after-nsis.txt)'; $status = 1 }
               else {
                   node scripts/desktop-smoke.mjs --app $installed.FullName --expect-version $env:VERSION --evidence $env:EVIDENCE --label "$env:TARGET-nsis"
                   if ($LASTEXITCODE -ne 0) { $status = 1 }
               }
 
               Reset-AppProfile
-              $install = Start-Process -FilePath msiexec.exe -ArgumentList '/i', "`"$($msi.FullName)`"", '/qn', '/norestart' -Wait -PassThru
+              $msiLog = Join-Path (Resolve-Path $env:EVIDENCE) 'msi-install.log'
+              $install = Start-Process -FilePath msiexec.exe -ArgumentList '/i', "`"$($msi.FullName)`"", '/qn', '/norestart', '/l*v', "`"$msiLog`"" -Wait -PassThru
               if ($install.ExitCode -ne 0) { Write-Output "[FAIL] MSI install exited $($install.ExitCode)"; $status = 1 }
-              $installed = Find-InstalledApp $env:ProgramFiles
-              if (-not $installed) { Write-Output '[FAIL] MSI install: app not found under Program Files'; $status = 1 }
+              Write-UninstallEntries "$env:EVIDENCE\uninstall-after-msi.txt"
+              $installed = Find-InstalledApp @($env:ProgramFiles, ${env:ProgramFiles(x86)}, "$env:LOCALAPPDATA\Programs")
+              if (-not $installed) { Write-Output '[FAIL] MSI install: cannaguide-desktop.exe not found (see uninstall-after-msi.txt, msi-install.log)'; $status = 1 }
               else {
                   node scripts/desktop-smoke.mjs --app $installed.FullName --expect-version $env:VERSION --evidence $env:EVIDENCE --label "$env:TARGET-msi"
                   if ($LASTEXITCODE -ne 0) { $status = 1 }

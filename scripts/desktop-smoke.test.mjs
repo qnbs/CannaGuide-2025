@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
@@ -7,15 +7,17 @@ import { test } from 'node:test'
 import {
     appWindowId,
     evaluateExit,
+    evaluateQuitAck,
     evaluateRecord,
     isolatedEnv,
     pixelSpread,
+    REPORT_SCHEMA,
     runSmoke,
     windowStateFile,
 } from './desktop-smoke.mjs'
 
 const record = (frontend = {}) => ({
-    schema: 1,
+    schema: REPORT_SCHEMA,
     nativeVersion: '1.12.1',
     os: 'linux',
     arch: 'x86_64',
@@ -24,8 +26,10 @@ const record = (frontend = {}) => ({
         outcome: 'started',
         frontendVersion: '1.12.1',
         view: 'dialog',
+        visible: true,
+        hydration: 'snapshot',
         localOnly: false,
-        savedSnapshotPresent: false,
+        savedSnapshotPresent: true,
         ...frontend,
     },
 })
@@ -44,66 +48,107 @@ test('a good first-start record passes; every field that matters can fail it', (
         {
             ...record({
                 outcome: 'error',
-                detail: 'boom',
+                errorCode: 'TypeError',
                 view: 'none',
                 frontendVersion: '1.12.0',
             }),
             nativeVersion: '1.12.0',
+            schema: 1,
         },
         { version: '1.12.1', run: 'first-start' },
     )
     assert.deepEqual(failed(bad), [
+        'first-start: report schema',
         'first-start: native version',
         'first-start: bundled frontend version',
         'first-start: frontend start outcome',
         'first-start: rendered view',
     ])
-    assert.match(bad.find((r) => r.name.endsWith('outcome')).detail, /error: boom/)
+    assert.match(bad.find((r) => r.name.endsWith('outcome')).detail, /error \(TypeError\)/)
 })
 
-test('a restart must find the first run saved snapshot', () => {
+test('a window that starts hidden fails, even with a rendered view', () => {
     assert.deepEqual(
         failed(
-            evaluateRecord(record({ savedSnapshotPresent: true }), {
-                version: '1.12.1',
-                run: 'restart',
-            }),
+            evaluateRecord(record({ visible: false }), { version: '1.12.1', run: 'first-start' }),
         ),
-        [],
+        ['first-start: window visible'],
     )
-    assert.deepEqual(failed(evaluateRecord(record(), { version: '1.12.1', run: 'restart' })), [
-        'restart: saved snapshot from the first run found',
-    ])
 })
 
-test('the exit checks catch a non-zero exit, a timeout, a flush timeout and a panic', () => {
-    const ok = evaluateExit({ run: 'r', exit: { code: 0, signal: null }, stderr: '' })
-    assert.deepEqual(failed(ok), [])
+test('a restart must load the saved snapshot; finding it on disk is not enough', () => {
+    assert.deepEqual(failed(evaluateRecord(record(), { version: '1.12.1', run: 'restart' })), [])
+    for (const hydration of ['fresh', 'backup', undefined]) {
+        assert.deepEqual(
+            failed(
+                evaluateRecord(record({ hydration, savedSnapshotPresent: true }), {
+                    version: '1.12.1',
+                    run: 'restart',
+                }),
+            ),
+            ['restart: state loaded from the saved snapshot'],
+            String(hydration),
+        )
+    }
+})
+
+test('only an acknowledged quit with a successful save passes', () => {
+    assert.equal(evaluateQuitAck({ schema: 2, saved: true }, 'r').status, 'PASS')
+    assert.equal(evaluateQuitAck({ schema: 2, saved: false }, 'r').status, 'FAIL')
+    assert.equal(evaluateQuitAck({ schema: 2, saved: null }, 'r').status, 'FAIL')
+    const missing = evaluateQuitAck(undefined, 'r')
+    assert.equal(missing.status, 'FAIL')
+    assert.match(missing.detail, /did not go through confirm_quit/)
+})
+
+test('the exit checks catch a non-zero exit, a timeout, a failed kill, a flush timeout and a panic', () => {
+    assert.deepEqual(
+        failed(evaluateExit({ run: 'r', exit: { code: 0, signal: null }, stderr: '' })),
+        [],
+    )
     const bad = evaluateExit({
         run: 'r',
-        exit: { code: null, signal: null, timedOut: true },
+        exit: { code: null, signal: null, timedOut: true, killFailed: true },
         stderr: "[quit] no flush confirmation from the frontend; exiting anyway\nthread 'main' panicked at src/lib.rs:1:1",
     })
     assert.deepEqual(failed(bad), [
         'r: quit exits with code 0',
-        'r: quit waited for the frontend flush',
+        'r: quit not ended by the flush timeout',
         'r: no panic',
     ])
+    assert.equal(bad[0].detail, 'still running after a kill')
 })
 
 test('isolation points every Linux and macOS app folder into the profile', () => {
-    const linux = isolatedEnv('linux', '/p', { HOME: '/home/real', PATH: '/bin' })
-    assert.equal(linux.HOME, '/p/home')
-    for (const key of ['XDG_DATA_HOME', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME', 'XDG_STATE_HOME']) {
-        assert.ok(linux[key].startsWith('/p/'), key)
+    const profile = join(tmpdir(), 'profile')
+    const linux = isolatedEnv('linux', profile, { HOME: join(tmpdir(), 'real'), PATH: '/bin' })
+    assert.equal(linux.HOME, join(profile, 'home'))
+    for (const [key, dir] of [
+        ['XDG_DATA_HOME', 'data'],
+        ['XDG_CONFIG_HOME', 'config'],
+        ['XDG_CACHE_HOME', 'cache'],
+        ['XDG_STATE_HOME', 'state'],
+    ]) {
+        assert.equal(linux[key], join(profile, dir), key)
     }
     assert.equal(linux.PATH, '/bin')
-    const mac = isolatedEnv('darwin', '/p', { HOME: '/Users/real' })
-    assert.equal(mac.HOME, '/p/home')
-    assert.equal(mac.CFFIXED_USER_HOME, '/p/home')
+    const mac = isolatedEnv('darwin', profile, { HOME: join(tmpdir(), 'real') })
+    assert.equal(mac.HOME, join(profile, 'home'))
+    assert.equal(mac.CFFIXED_USER_HOME, join(profile, 'home'))
     assert.equal(
-        windowStateFile('linux', '/p'),
-        '/p/config/com.cannaguide.desktop/.window-state.json',
+        windowStateFile('linux', profile),
+        join(profile, 'config', 'com.cannaguide.desktop', '.window-state.json'),
+    )
+    assert.equal(
+        windowStateFile('darwin', profile),
+        join(
+            profile,
+            'home',
+            'Library',
+            'Application Support',
+            'com.cannaguide.desktop',
+            '.window-state.json',
+        ),
     )
 })
 
@@ -113,44 +158,88 @@ test('pixel statistics parse, and garbage is not a number', () => {
     assert.equal(pixelSpread('convert: not found'), undefined)
 })
 
-// A stand-in for the packaged app, driven by FAKE_MODE. It follows the same contract
-// as startup.rs: report to CANNAGUIDE_SMOKE_REPORT, hold until <report>.quit, and a
-// second launch on a live profile hands over and exits 0 (single instance).
+test('the screenshot targets the largest app window by title, never the root window', () => {
+    const tree = [
+        'xwininfo: Window id: 0x5c5 (the root window) (has no name)',
+        '  Root window id: 0x5c5 (the root window) (has no name)',
+        '     0x1e00003 "Terminal": ("mate-terminal" "Mate-terminal")  800x600+10+10  +10+10',
+        '     0x3a00001 "CannaGuide 2025": ("cannaguide-desktop" "Cannaguide-desktop")  10x10+0+0  +0+0',
+        '     0x3a00007 "CannaGuide 2025": ("cannaguide-desktop" "Cannaguide-desktop")  1280x800+0+0  +0+0',
+    ].join('\n')
+    assert.equal(appWindowId(tree), '0x3a00007')
+    assert.equal(appWindowId('     0x1e00003 "Terminal": ()'), undefined)
+    assert.equal(appWindowId(''), undefined)
+})
+
+// A stand-in for the packaged app, driven by FAKE_MODE. It follows the contract of
+// startup.rs and instance_lock.rs: report to CANNAGUIDE_SMOKE_REPORT; one instance per
+// profile (an exclusive lock file; a later launch asks the first to show itself and
+// exits 0); with HOLD it hides on .hide, records the restore, quits on .quit; a quit
+// writes .quit-ack with the save result; a restart loads what the quit saved.
 const FAKE_APP = `
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 const mode = process.env.FAKE_MODE
 const report = process.env.CANNAGUIDE_SMOKE_REPORT
-const config = join(process.env.XDG_CONFIG_HOME, 'com.cannaguide.desktop')
-const live = join(process.env.HOME, 'instance.lock')
-const saved = join(process.env.HOME, 'saved')
+const home = process.env.HOME
+const configDir = process.platform === 'darwin'
+    ? join(home, 'Library', 'Application Support', 'com.cannaguide.desktop')
+    : join(process.env.XDG_CONFIG_HOME, 'com.cannaguide.desktop')
+const lock = join(home, 'instance.lock')
+const focus = join(home, 'focus')
+const saved = join(home, 'saved')
 if (mode === 'panic') {
     console.error("thread 'main' panicked at src/lib.rs:215:10:\\nerror while building tauri application")
     process.exit(101)
 }
-if (existsSync(live) && mode !== 'no-single-instance') process.exit(0)
-writeFileSync(live, '')
+if (mode !== 'no-single-instance') {
+    try {
+        openSync(lock, 'wx')
+    } catch {
+        writeFileSync(focus, '')
+        process.exit(0)
+    }
+}
+const hydration = mode === 'fresh-restart' ? 'fresh' : existsSync(saved) ? 'snapshot' : 'fresh'
 writeFileSync(report, JSON.stringify({
-    schema: 1, nativeVersion: '1.12.1', os: 'linux', arch: 'x86_64', readyAfterMs: 5,
-    frontend: { outcome: 'started', frontendVersion: '1.12.1', view: 'app', localOnly: false,
-        savedSnapshotPresent: existsSync(saved) },
+    schema: ${REPORT_SCHEMA}, nativeVersion: '1.12.1', os: process.platform, arch: process.arch, readyAfterMs: 5,
+    frontend: { outcome: 'started', frontendVersion: '1.12.1', view: 'app', visible: true, hydration,
+        localOnly: false, savedSnapshotPresent: existsSync(saved) },
 }))
 const quit = () => {
-    if (mode === 'flush-timeout') console.error('[quit] no flush confirmation from the frontend; exiting anyway')
+    if (mode === 'flush-timeout') {
+        console.error('[quit] no flush confirmation from the frontend; exiting anyway')
+    } else {
+        writeFileSync(report + '.quit-ack', JSON.stringify({ schema: ${REPORT_SCHEMA}, saved: mode !== 'unsaved' }))
+    }
     writeFileSync(saved, '')
-    mkdirSync(config, { recursive: true })
-    writeFileSync(join(config, '.window-state.json'), '{}')
-    rmSync(live, { force: true })
+    mkdirSync(configDir, { recursive: true })
+    writeFileSync(join(configDir, '.window-state.json'), '{}')
+    rmSync(lock, { force: true })
     process.exit(0)
 }
 if (process.env.CANNAGUIDE_SMOKE_HOLD) {
-    const timer = setInterval(() => { if (existsSync(report + '.quit')) { clearInterval(timer); quit() } }, 50)
+    let hidden = false
+    const timer = setInterval(() => {
+        if (!hidden && existsSync(report + '.hide')) {
+            hidden = true
+            writeFileSync(report + '.hidden', JSON.stringify({ visible: false }))
+        }
+        if (existsSync(focus) && mode !== 'no-restore') {
+            rmSync(focus, { force: true })
+            writeFileSync(report + '.restored', JSON.stringify({ visible: true }))
+        }
+        if (existsSync(report + '.quit')) {
+            clearInterval(timer)
+            quit()
+        }
+    }, 50)
 } else {
     setTimeout(quit, 50)
 }
 `
 
-const withFakeApp = async (t, mode) => {
+const withFakeApp = async (t, mode, extra = {}) => {
     const dir = mkdtempSync(join(tmpdir(), 'cannaguide-fake-desktop-'))
     t.after(() => rmSync(dir, { recursive: true, force: true }))
     writeFileSync(join(dir, 'fake.mjs'), FAKE_APP)
@@ -165,71 +254,123 @@ const withFakeApp = async (t, mode) => {
     t.after(() => {
         if (display !== undefined) process.env.DISPLAY = display
     })
-    return runSmoke({
+    const isProfile = (name) => name.startsWith('cannaguide-smoke-profile-')
+    const before = new Set(readdirSync(tmpdir()).filter(isProfile))
+    const result = await runSmoke({
         app,
         expectVersion: '1.12.1',
         label: `fake-${mode}`,
         evidence: join(dir, 'evidence'),
         appimage: false,
         reportTimeoutSeconds: 10,
+        requireScreenshot: false,
+        // How long the concurrent run waits for a second start; the stand-in starts in ms.
+        settleMs: 2000,
+        concurrentRounds: 2,
+        ...extra,
     })
+    const leftover = readdirSync(tmpdir()).filter((name) => isProfile(name) && !before.has(name))
+    const evidenceKept = existsSync(join(dir, 'evidence', `fake-${mode}-smoke.json`))
+    return { ...result, leftover, evidenceKept }
 }
 
 const skipOnWindows = {
     skip: process.platform === 'win32' ? 'the stand-in app is a shell script' : false,
 }
 
-test('a cooperating app passes both runs', skipOnWindows, async (t) => {
-    const { summary, passed } = await withFakeApp(t, 'good')
-    assert.deepEqual(failed(summary.results), [])
-    assert.ok(passed)
-    const names = summary.results.map((r) => r.name)
-    for (const expected of [
-        'second instance: hands over and exits',
-        'first-start: quit exits with code 0',
-        'restart: saved snapshot from the first run found',
-        'restart: window state saved by the first run',
-    ]) {
-        assert.ok(names.includes(expected), expected)
-    }
-    assert.equal(
-        summary.results.find((r) => r.name === 'first-start: window painted').status,
-        'NOT_RUN',
-    )
-})
+test(
+    'a cooperating app passes every run, and the profiles are removed',
+    skipOnWindows,
+    async (t) => {
+        const { summary, passed, leftover, evidenceKept } = await withFakeApp(t, 'good')
+        assert.deepEqual(failed(summary.results), [])
+        assert.ok(passed)
+        const names = summary.results.map((r) => r.name)
+        for (const expected of [
+            'second instance: first window hidden before the second launch',
+            'second instance: hands over and exits 0',
+            'second instance: first window shown again',
+            'first-start: quit acknowledged after a successful save',
+            'first-start: window state saved on quit',
+            'restart: state loaded from the saved snapshot',
+            'restart: quit acknowledged after a successful save',
+            'concurrent launch: exactly one instance started',
+            'concurrent launch: the running instance showed its window for the other',
+        ]) {
+            assert.ok(names.includes(expected), expected)
+        }
+        assert.equal(
+            summary.results.find((r) => r.name === 'first-start: window painted').status,
+            'NOT_RUN',
+        )
+        assert.deepEqual(leftover, [], 'no temporary profile stays behind')
+        assert.ok(evidenceKept, 'the evidence stays')
+    },
+)
 
 test('the v1.12.0 startup panic fails the smoke test', skipOnWindows, async (t) => {
     const { summary, passed } = await withFakeApp(t, 'panic')
     assert.equal(passed, false)
-    assert.deepEqual(failed(summary.results), [
-        'first-start: startup report written',
-        'first-start: quit exits with code 0',
-        'first-start: no panic',
-    ])
-    assert.equal(summary.results.at(-1).status, 'NOT_RUN')
+    assert.ok(failed(summary.results).includes('first-start: startup report written'))
+    assert.ok(failed(summary.results).includes('first-start: no panic'))
+    assert.equal(summary.results.find((r) => r.name === 'restart').status, 'NOT_RUN')
 })
 
-test('a second instance that starts its own frontend fails', skipOnWindows, async (t) => {
-    const { summary } = await withFakeApp(t, 'no-single-instance')
-    assert.deepEqual(failed(summary.results), ['second instance: hands over and exits'])
-})
+test(
+    'without single-instance protection both the second and the concurrent launch fail',
+    skipOnWindows,
+    async (t) => {
+        const { summary } = await withFakeApp(t, 'no-single-instance')
+        const fails = failed(summary.results)
+        assert.ok(fails.includes('second instance: hands over and exits 0'), fails.join(', '))
+        assert.ok(
+            fails.includes('concurrent launch: exactly one instance started'),
+            fails.join(', '),
+        )
+    },
+)
+
+test(
+    'a handover that does not show the running window fails, also for concurrent launches',
+    skipOnWindows,
+    async (t) => {
+        const { summary } = await withFakeApp(t, 'no-restore')
+        assert.deepEqual(failed(summary.results), [
+            'second instance: first window shown again',
+            'concurrent launch: the running instance showed its window for the other',
+        ])
+    },
+)
 
 test('a quit that only ends by the flush timeout fails', skipOnWindows, async (t) => {
     const { summary } = await withFakeApp(t, 'flush-timeout')
+    const fails = failed(summary.results)
+    for (const run of ['first-start', 'restart']) {
+        assert.ok(fails.includes(`${run}: quit not ended by the flush timeout`), run)
+        assert.ok(fails.includes(`${run}: quit acknowledged after a successful save`), run)
+    }
+})
+
+test('a quit whose save failed fails, even with exit 0', skipOnWindows, async (t) => {
+    const { summary } = await withFakeApp(t, 'unsaved')
     assert.deepEqual(failed(summary.results), [
-        'first-start: quit waited for the frontend flush',
-        'restart: quit waited for the frontend flush',
+        'first-start: quit acknowledged after a successful save',
+        'restart: quit acknowledged after a successful save',
     ])
 })
 
-test('the screenshot targets the app window by title, never the root window', () => {
-    const tree = [
-        'xwininfo: Window id: 0x5c5 (the root window) (has no name)',
-        '  Root window id: 0x5c5 (the root window) (has no name)',
-        '     0x1e00003 "Terminal": ("mate-terminal" "Mate-terminal")  800x600+10+10  +10+10',
-        '     0x3a00007 "CannaGuide 2025": ("cannaguide-desktop" "Cannaguide-desktop")  1280x800+0+0  +0+0',
-    ].join('\n')
-    assert.equal(appWindowId(tree), '0x3a00007')
-    assert.equal(appWindowId('     0x1e00003 "Terminal": ()'), undefined)
-    assert.equal(appWindowId(''), undefined)
+test(
+    'a restart that starts fresh fails although the snapshot is on disk',
+    skipOnWindows,
+    async (t) => {
+        const { summary } = await withFakeApp(t, 'fresh-restart')
+        assert.deepEqual(failed(summary.results), ['restart: state loaded from the saved snapshot'])
+    },
+)
+
+test('a required screenshot that cannot run fails instead of NOT_RUN', skipOnWindows, async (t) => {
+    const { summary } = await withFakeApp(t, 'good', { requireScreenshot: true })
+    const painted = summary.results.find((r) => r.name === 'first-start: window painted')
+    assert.equal(painted.status, 'FAIL')
+    assert.match(painted.detail, /required but not run/)
 })

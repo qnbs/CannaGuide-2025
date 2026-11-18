@@ -444,7 +444,7 @@ export interface AppSettings {
         requirePinOnLaunch: boolean
         pin: string | null
         clearAiHistoryOnExit: boolean
-        /** When true, blocks ALL outbound network requests (Sentry, cloud AI, Gist sync). */
+        /** When true, blocks ALL outbound network requests (cloud AI, Gist sync, model downloads). */
         localOnlyMode: boolean
     }
 }

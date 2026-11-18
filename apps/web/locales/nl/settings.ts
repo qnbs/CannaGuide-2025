@@ -975,7 +975,6 @@ export const settingsView = {
             radixUi: 'Toegankelijke UI-primitieven door Radix UI.',
             recharts: 'Grafiekvisualisaties door Recharts en D3.js.',
             tailwind: 'Utility-first stijlen door Tailwind CSS.',
-            sentry: 'Foutopsporing door Sentry.',
             vite: 'Build-tooling door Vite en TurboRepo.',
         },
         githubLinkText: 'Project bekijken op GitHub',

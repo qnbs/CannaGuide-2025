@@ -73,7 +73,6 @@ updates:
           supply-chain:
               patterns:
                   - 'dompurify'
-                  - '@sentry/*'
                   - 'snyk'
                   - '@socketsecurity/*'
               update-types:

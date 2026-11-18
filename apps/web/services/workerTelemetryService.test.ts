@@ -13,16 +13,12 @@ vi.mock('./workerBus', () => {
             getPoolMetrics: vi.fn(() => ({})),
             exportTelemetry: vi.fn(() => ({})),
             _getListeners: () => listeners,
-            _clearListeners: () => { listeners = [] },
+            _clearListeners: () => {
+                listeners = []
+            },
         },
     }
 })
-
-// Mock Sentry
-vi.mock('@sentry/browser', () => ({
-    captureMessage: vi.fn(),
-    setContext: vi.fn(),
-}))
 
 // Mock the store slice action
 vi.mock('../stores/slices/workerMetricsSlice', () => ({

@@ -6,7 +6,6 @@ import {
     UnverifiedSnapshotError,
 } from '@/stores/snapshotRevision'
 import { i18nPromise } from '@/i18n'
-import { disableSentry } from '@/services/sentryService'
 import { registerRecoveryListeners } from './recovery'
 import { isNewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { takeSetAsideNotice } from '@/services/snapshotQuarantine'
@@ -84,10 +83,6 @@ let refusalOutcome: 'stale' | 'unverified' | undefined
 const stopAsStale = (renderNotice: (reload: () => void) => void): void => {
     if (staleSnapshotHandled) return
     staleSnapshotHandled = true
-    // The settings this page holds may be older than the ones another tab saved
-    // (local-only mode may have been switched on there), and the page is only a
-    // notice until the reload: no error reports from it.
-    disableSentry()
     stopWatchingCacheRestore?.()
     stopPersistenceForOwnershipLoss().catch(() => undefined)
     releaseWriterRole()
@@ -165,7 +160,7 @@ const mayStartSaving = (): boolean => {
 }
 
 // A page that was refused as stale is only a notice now: no service starts on it,
-// except the privacy setting, which also has to reach Sentry.
+// but the saved Local-Only setting still applies to the code already loaded.
 const runServicesUnlessStale = async (
     store: AppStore,
     flushPersistedState: FlushPersistedState,

@@ -4,13 +4,9 @@ import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 
 const mocks = vi.hoisted(() => ({
     setLocalOnlyMode: vi.fn(),
-    resolveSentryAfterHydration: vi.fn(),
 }))
 
 vi.mock('@/services/localOnlyModeService', () => ({ setLocalOnlyMode: mocks.setLocalOnlyMode }))
-vi.mock('@/services/sentryService', () => ({
-    resolveSentryAfterHydration: mocks.resolveSentryAfterHydration,
-}))
 
 const storeWith = (localOnlyMode: boolean | undefined): AppStore =>
     ({
@@ -20,18 +16,18 @@ const storeWith = (localOnlyMode: boolean | undefined): AppStore =>
 describe('applyLocalOnlyPrivacy', () => {
     beforeEach(() => vi.clearAllMocks())
 
-    it('tells the service and settles Sentry as off for a local-only user', async () => {
+    it('tells the service when the saved setting is local-only', async () => {
         await applyLocalOnlyPrivacy(storeWith(true))
 
-        expect(mocks.setLocalOnlyMode).toHaveBeenCalledWith(true)
-        expect(mocks.resolveSentryAfterHydration).toHaveBeenCalledExactlyOnceWith(true)
+        expect(mocks.setLocalOnlyMode).toHaveBeenCalledExactlyOnceWith(true)
     })
 
-    it.each([false, undefined])('leaves Sentry alone when local-only is %s', async (value) => {
-        await applyLocalOnlyPrivacy(storeWith(value))
+    it.each([false, undefined])(
+        'tells the service it is off when the setting is %s',
+        async (value) => {
+            await applyLocalOnlyPrivacy(storeWith(value))
 
-        expect(mocks.setLocalOnlyMode).toHaveBeenCalledWith(false)
-        // A stale page is only a notice until the reload: Sentry is not started for it.
-        expect(mocks.resolveSentryAfterHydration).not.toHaveBeenCalled()
-    })
+            expect(mocks.setLocalOnlyMode).toHaveBeenCalledExactlyOnceWith(false)
+        },
+    )
 })

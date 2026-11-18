@@ -39,7 +39,7 @@ vi.mock('../core/infrastructureService', () => ({
     recordCacheMiss: vi.fn(),
 }))
 
-vi.mock('../../sentryService', () => ({
+vi.mock('../../errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

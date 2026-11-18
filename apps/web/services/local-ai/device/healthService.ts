@@ -20,7 +20,7 @@ import {
     getDeviceMemoryGB,
     getGpuAdapterDescription,
 } from '@/utils/browserApis'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 
 /**
  * Local AI Health Service — monitors the health, performance, and resource

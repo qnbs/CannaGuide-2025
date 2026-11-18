@@ -1,5 +1,5 @@
 import { loadWebLlmEngine } from './webLlmService'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import type { LocalAiModelManager } from './modelManager'
 import { isMobileDevice, getBatteryManager, checkStorageQuota } from '@/utils/browserApis'
 

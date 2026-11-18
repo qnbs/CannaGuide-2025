@@ -1,5 +1,5 @@
 import { enqueueInference, isWorkerAvailable } from '../inference/inferenceQueue'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 
 /**
  * Local AI Embedding Service — computes vector embeddings using a

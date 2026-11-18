@@ -55,7 +55,7 @@ export const PERMISSIONS_POLICY = [
 /**
  * W-03: Cross-Origin Embedder Policy.
  * `credentialless` enables SharedArrayBuffer without breaking CDN-hosted
- * resources (AI models, ONNX WASM, Sentry). Preferred over `require-corp`
+ * resources (AI models, ONNX WASM). Preferred over `require-corp`
  * which would break third-party fetches. See ADR-0009.
  *
  * GitHub Pages does not support custom HTTP headers -- SAB is only

@@ -16,7 +16,7 @@
 import type { HydroReading, HydroForecast, HydroForecastTrend } from '@/types'
 import { workerBus } from '@/services/workerBus'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 
 // ---------------------------------------------------------------------------
 // Constants

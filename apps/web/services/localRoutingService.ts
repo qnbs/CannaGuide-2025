@@ -16,7 +16,7 @@ import {
     isCriticalBattery,
 } from '@/services/local-ai'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { aiConsentService } from '@/services/aiConsentService'
 import type { AiMode } from '@/types'
 
@@ -196,5 +196,5 @@ export const withLocalService = async <T>(
     return fn(local)
 }
 
-/** Sentry error capture re-export for collocated usage. */
+/** Local error capture re-export for collocated usage. */
 export { captureLocalAiError }

@@ -11,7 +11,7 @@
  *   6. Force-WASM override check (user setting)
  */
 
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { getGpuAdapterDescription } from '@/utils/browserApis'
 
 // ─── Types ───────────────────────────────────────────────────────────────────

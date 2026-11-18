@@ -14,7 +14,7 @@
  * v2 additions:
  *   - String-based consumer registry (GpuConsumer = string, GPU_CONSUMERS constants)
  *   - Priority queue: 'high' preempts 'normal'/'low' waiters
- *   - Auto-release timeout (AUTO_RELEASE_TIMEOUT_MS) with Sentry capture
+ *   - Auto-release timeout (AUTO_RELEASE_TIMEOUT_MS) with a local error record
  *   - getQueueState() for debugging and UI feedback
  *
  * Flow:
@@ -22,13 +22,13 @@
  *   2. If another consumer holds the lock -> priority-ordered queue, wait for release
  *   3. If WebLLM holds the lock and image-gen requests it -> evict WebLLM first
  *   4. On release, highest-priority queued consumer is granted the lock
- *   5. If holder does not release within AUTO_RELEASE_TIMEOUT_MS -> auto-release + Sentry
+ *   5. If holder does not release within AUTO_RELEASE_TIMEOUT_MS -> auto-release + local error record
  *
  * Note: CLIP (localAiImageSimilarityService) runs in inference.worker.ts with the
  * WASM backend and does NOT register here -- it never touches WebGPU.
  */
 
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

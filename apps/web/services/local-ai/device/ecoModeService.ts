@@ -9,8 +9,6 @@
 // deactivated and the mode returns to 'hybrid'.
 // ---------------------------------------------------------------------------
 
-import { Sentry } from '@/services/sentryService'
-
 /** Battery level below which WebGPU/WebLLM are hard-disabled. */
 const CRITICAL_BATTERY_THRESHOLD = 0.15
 /** Battery level below which eco mode activates (<25%). */
@@ -173,7 +171,6 @@ export const applyAdaptiveMode = async (): Promise<void> => {
         _criticalBattery = critical
         if (critical) {
             console.debug('[AI] Critical battery (<15%) -- WebGPU/WebLLM hard-disabled.')
-            Sentry.captureMessage('battery_critical_gating', 'warning')
             // Only show notification once per session to avoid spam
             const alreadyNotified = sessionStorage.getItem(BATTERY_NOTIFIED_KEY) === '1'
             if (!alreadyNotified) {
@@ -224,7 +221,6 @@ export const applyAdaptiveMode = async (): Promise<void> => {
         const alreadyNotified = sessionStorage.getItem(ECO_NOTIFIED_KEY) === '1'
         if (!alreadyNotified) {
             sessionStorage.setItem(ECO_NOTIFIED_KEY, '1')
-            Sentry.captureMessage('eco_mode_auto_activated', 'info')
             _onEcoAutoActivated?.()
         }
     }

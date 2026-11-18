@@ -1,6 +1,5 @@
 import * as Y from 'yjs'
 import { IndexeddbPersistence } from 'y-indexeddb'
-import * as Sentry from '@sentry/react'
 
 const DOC_NAME = 'cannaguide-crdt-v1'
 const DOC_SIZE_WARNING_BYTES = 1_048_576 // 1 MB
@@ -31,15 +30,9 @@ export class CrdtError extends Error {
 }
 
 function reportCrdtError(error: CrdtError): void {
-    Sentry.captureException(error, {
-        tags: {
-            feature: 'crdt-sync',
-            'crdt.errorCode': error.code,
-        },
-        extra: {
-            'crdt.docSizeBytes': error.docSizeBytes,
-            'crdt.pendingOps': error.pendingOps,
-        },
+    console.debug('[CRDT]', error.code, error.message, {
+        docSizeBytes: error.docSizeBytes,
+        pendingOps: error.pendingOps,
     })
 }
 
@@ -118,11 +111,6 @@ class CrdtService {
                 CrdtErrorCode.INIT_FAILED,
             )
             reportCrdtError(crdtErr)
-            Sentry.addBreadcrumb({
-                category: 'sync',
-                message: 'crdt-fallback-activated',
-                level: 'warning',
-            })
         }
     }
 
@@ -371,7 +359,7 @@ class CrdtService {
 
     /**
      * Run a quick benchmark of CRDT encode/apply performance.
-     * Reports to Sentry if thresholds are exceeded.
+     * Logs to the debug console if thresholds are exceeded.
      */
     benchmarkSync(): BenchmarkResult {
         const doc = this.getDoc()
@@ -390,11 +378,7 @@ class CrdtService {
         tempDoc.destroy()
 
         if (encodeMs > ENCODE_WARN_MS) {
-            Sentry.addBreadcrumb({
-                category: 'sync',
-                message: `CRDT encode slow: ${encodeMs.toFixed(1)}ms (${docSizeBytes} bytes)`,
-                level: 'warning',
-            })
+            console.debug(`[CRDT] encode slow: ${encodeMs.toFixed(1)}ms (${docSizeBytes} bytes)`)
         }
 
         return { encodeMs, applyMs, docSizeBytes }
@@ -417,11 +401,7 @@ class CrdtService {
         const percent = quota > 0 ? (docBytes / quota) * 100 : 0
 
         if (docBytes > DOC_SIZE_WARNING_BYTES) {
-            Sentry.addBreadcrumb({
-                category: 'sync',
-                message: `CRDT doc large: ${docBytes} bytes`,
-                level: 'warning',
-            })
+            console.debug(`[CRDT] doc large: ${docBytes} bytes`)
         }
 
         return { crdtBytes: docBytes, quota, percent }
@@ -436,7 +416,6 @@ class CrdtService {
         if (!this.doc) return
 
         const currentState = Y.encodeStateAsUpdate(this.doc)
-        const oldSize = currentState.byteLength
 
         // Create a GC-enabled doc and apply current state
         const gcDoc = new Y.Doc({ gc: true })
@@ -446,12 +425,6 @@ class CrdtService {
 
         // Apply the compacted state back to the current doc
         Y.applyUpdate(this.doc, gcState)
-
-        Sentry.addBreadcrumb({
-            category: 'sync',
-            message: `CRDT pruned: ${oldSize} -> ${gcState.byteLength} bytes`,
-            level: 'info',
-        })
     }
 
     // -- Lifecycle ------------------------------------------------------------

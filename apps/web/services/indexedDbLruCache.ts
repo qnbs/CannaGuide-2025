@@ -3,7 +3,7 @@
  * localAiCacheService and imageGenerationCacheService.
  */
 
-import { captureLocalAiError } from './sentryService'
+import { captureLocalAiError } from './errorReporting'
 
 interface BaseCacheEntry {
     key: string

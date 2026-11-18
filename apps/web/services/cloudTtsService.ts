@@ -6,7 +6,6 @@
 // key never leaves the client. Rate-limited to 5 req/min.
 // ---------------------------------------------------------------------------
 
-import * as Sentry from '@sentry/browser'
 import type { ITTSProvider, Language, TTSSettings } from '@/types'
 import { CLOUD_TTS_MAX_CHARS, CLOUD_TTS_TIMEOUT_MS, CLOUD_TTS_RATE_LIMIT } from '@/constants'
 import { cloudTtsKeyService } from '@/services/cloudTtsKeyService'
@@ -186,7 +185,6 @@ class CloudTtsService implements ITTSProvider {
                 console.debug('[CloudTTS] Request aborted')
             } else {
                 console.error('[CloudTTS] Speak error:', err instanceof Error ? err.message : err)
-                Sentry.captureException(err, { tags: { service: 'cloudTts' } })
             }
             activeSource = null
             void activeAudioContext?.close()

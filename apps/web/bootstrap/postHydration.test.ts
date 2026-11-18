@@ -33,15 +33,6 @@ vi.mock('@/services/ttsService', () => ({
     ttsService: { init: () => mockTtsInit() },
 }))
 
-const mockResolveSentry = vi.hoisted(() => vi.fn())
-
-vi.mock('@/services/sentryService', () => ({
-    Sentry: { captureException: vi.fn() },
-    resolveSentryAfterHydration: (localOnly: boolean) => mockResolveSentry(localOnly),
-    disableSentry: vi.fn(),
-    enableSentry: vi.fn(),
-}))
-
 vi.mock('@/stores/useUIStore', () => ({
     getUISnapshot: () => ({ setAppReady: mockSetAppReady }),
 }))
@@ -163,13 +154,16 @@ describe('runPostHydrationServices', () => {
     })
 
     it.each([false, true])(
-        'decides error reporting from the saved Local-Only setting (local-only: %s)',
+        'restores the saved Local-Only setting before any service starts (local-only: %s)',
         async (localOnly) => {
+            const { isLocalOnlyMode, setLocalOnlyMode } =
+                await import('@/services/localOnlyModeService')
+            setLocalOnlyMode(!localOnly)
             const store = createTestStore()
             if (localOnly)
                 store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
             await runPostHydrationServices(store)
-            expect(mockResolveSentry).toHaveBeenCalledExactlyOnceWith(localOnly)
+            expect(isLocalOnlyMode()).toBe(localOnly)
         },
     )
 

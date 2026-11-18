@@ -152,16 +152,15 @@ The most important tests are:
 - preload state persistence
 - WebLLM fallback behavior when WebGPU is unavailable
 
-## Sentry Error Attribution
+## Error Attribution
 
-All local AI failures are reported via `captureLocalAiError()` in `services/sentryService.ts`. Structured tags enable filtering in the Sentry dashboard:
+All handled local AI failures are recorded via `captureLocalAiError()` in `services/errorReporting.ts`. Nothing is sent off the device: the entry goes to `console.debug` as `[local-ai] <stage> failed`, with the context below, and production builds drop it.
 
-| Tag            | Values                                                 | Purpose                       |
+| Field          | Values                                                 | Purpose                       |
 | -------------- | ------------------------------------------------------ | ----------------------------- |
-| `feature`      | `local-ai`                                             | Separate from cloud AI errors |
-| `ai.stage`     | `preload`, `inference`, `vision`, `webllm`, `fallback` | Identify failure layer        |
-| `ai.model`     | Model ID string                                        | Track per-model error rates   |
-| `ai.backend`   | `webgpu`, `wasm`                                       | Correlate backend with issues |
+| `stage`        | `preload`, `inference`, `vision`, `webllm`, `fallback` | Identify failure layer        |
+| `model`        | Model ID string                                        | Identify the model            |
+| `backend`      | `webgpu`, `wasm`                                       | Correlate backend with issues |
 | `retryAttempt` | `0`, `1`, `2`                                          | Track retry depth             |
 
 ## Settings UI Integration

@@ -8,7 +8,7 @@ import {
 } from './modelLoader'
 import { disposeWebLlm } from './webLlmService'
 import { VISION_MODEL_ID } from '../vision/diagnosisService'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { clearInferenceCache } from '../core/inferenceRouter'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 

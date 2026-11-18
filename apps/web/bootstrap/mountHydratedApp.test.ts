@@ -10,7 +10,6 @@ import {
 } from './render'
 import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
 import { hydrateApplicationStores } from './store'
-import { disableSentry } from '@/services/sentryService'
 import { takeSetAsideNotice } from '@/services/snapshotQuarantine'
 import {
     isRevisionChecked,
@@ -111,7 +110,6 @@ vi.mock('@/stores/snapshotRevision', () => {
         UnverifiedSnapshotError,
     }
 })
-vi.mock('@/services/sentryService', () => ({ disableSentry: vi.fn() }))
 vi.mock('@/services/snapshotQuarantine', () => ({ takeSetAsideNotice: vi.fn(() => false) }))
 vi.mock('./localOnlyPrivacy', () => ({
     applyLocalOnlyPrivacy: vi.fn(() => Promise.resolve()),
@@ -311,7 +309,6 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
         expect(renderNewerSnapshotNotice).toHaveBeenCalledOnce()
         expect(renderError).not.toHaveBeenCalled()
         expect(order).toEqual(['stop', 'release'])
-        expect(disableSentry).toHaveBeenCalled()
         expect(setupPersistedStateSync).not.toHaveBeenCalled()
     })
 
@@ -393,7 +390,7 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(renderStaleTabNotice).toHaveBeenCalledOnce()
         expect(runPostHydrationServices).not.toHaveBeenCalled()
-        // The privacy setting still reaches Sentry on the stale page.
+        // The saved Local-Only setting still applies on the stale page.
         expect(applyLocalOnlyPrivacy).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
     })
@@ -418,8 +415,6 @@ describe('mountHydratedApp in a tab that is not the writer (GH #669)', () => {
 
         expect(order).toEqual(['stop', 'release'])
         expect(renderStaleTabNotice).toHaveBeenCalledOnce()
-        // The stale page may hold older settings than another tab: no error reports.
-        expect(disableSentry).toHaveBeenCalledOnce()
         vi.unstubAllGlobals()
     })
 })
@@ -451,7 +446,6 @@ describe('mountHydratedApp without a revision check (GH #669)', () => {
         expect(setupPersistedStateSync).not.toHaveBeenCalled()
         expect(runPostHydrationServices).not.toHaveBeenCalled()
         expect(order).toEqual(['stop', 'release'])
-        expect(disableSentry).toHaveBeenCalledOnce()
     })
 
     it('starts normally while it holds the writer lock', async () => {

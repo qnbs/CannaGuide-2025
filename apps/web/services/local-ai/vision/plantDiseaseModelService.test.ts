@@ -4,7 +4,7 @@ import { describe, expect, it, vi, afterEach } from 'vitest'
 // Mocks (before imports)
 // ---------------------------------------------------------------------------
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

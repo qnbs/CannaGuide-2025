@@ -37,11 +37,12 @@
 - If models are already loaded, they continue using the backend they were initialized with.
 - To force a full reset, reload the page after toggling.
 
-## Sentry shows local AI errors
+## Local AI errors in the console
 
-- Local AI errors are tagged with `feature: local-ai` in Sentry.
-- Check `ai.stage` to identify which layer failed (preload, inference, vision, webllm).
+- In a development build, local AI errors appear in the browser console (Verbose level) as `[local-ai] <stage> failed`.
+- Check `stage` to identify which layer failed (preload, inference, vision, webllm).
 - `retryAttempt` indicates whether the failure occurred after retries (0 = first attempt, 2 = final attempt before heuristic fallback).
+
 ## Local diagnosis looks too generic
 
 - The local heuristic fallback is intentionally conservative.

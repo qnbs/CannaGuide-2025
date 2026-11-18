@@ -25,7 +25,6 @@ import {
 } from '@/stores/slices/nutrientPlannerSlice'
 import type { TypedStartListening } from '@reduxjs/toolkit'
 import type { AppDispatch } from '@/stores/store'
-import * as Sentry from '@sentry/react'
 
 /**
  * Origin tag used when the bridge writes to Y.Doc from Redux changes.
@@ -73,15 +72,10 @@ export function reportCrdtTelemetry(update: Partial<CrdtTelemetryState>): void {
         crdtTelemetry.divergenceCount >= CRITICAL_DIVERGENCE_THRESHOLD &&
         prevDivergence < CRITICAL_DIVERGENCE_THRESHOLD
     ) {
-        Sentry.addBreadcrumb({
-            category: 'crdt-sync',
-            level: 'warning',
-            message: 'Critical CRDT divergence threshold reached',
-            data: {
-                divergenceCount: crdtTelemetry.divergenceCount,
-                threshold: CRITICAL_DIVERGENCE_THRESHOLD,
-                syncPayloadBytes: crdtTelemetry.syncPayloadBytes,
-            },
+        console.debug('[CRDT] Critical divergence threshold reached', {
+            divergenceCount: crdtTelemetry.divergenceCount,
+            threshold: CRITICAL_DIVERGENCE_THRESHOLD,
+            syncPayloadBytes: crdtTelemetry.syncPayloadBytes,
         })
     }
 
@@ -130,15 +124,9 @@ function checkLoopDetector(): boolean {
             crdtService.getDocSizeBytes(),
             recentDispatchCount,
         )
-        Sentry.captureException(err, {
-            tags: {
-                feature: 'crdt-sync',
-                'crdt.errorCode': CrdtErrorCode.BRIDGE_LOOP_DETECTED,
-            },
-            extra: {
-                'crdt.docSizeBytes': err.docSizeBytes,
-                'crdt.pendingOps': err.pendingOps,
-            },
+        console.debug('[CRDT]', err.code, err.message, {
+            docSizeBytes: err.docSizeBytes,
+            pendingOps: err.pendingOps,
         })
         loopCooldownTimer = setTimeout(() => {
             bridgeDisabled = false

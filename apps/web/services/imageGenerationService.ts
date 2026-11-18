@@ -18,7 +18,7 @@ import type { Strain } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
 import type { ImageGenPayload, ImageGenProgressMessage } from '@/workers/imageGeneration.worker'
 import { secureRandom } from '@/utils/random'
-import { captureLocalAiError } from './sentryService'
+import { captureLocalAiError } from './errorReporting'
 import { detectOnnxBackend } from '@/services/local-ai'
 import {
     classifyDevice,

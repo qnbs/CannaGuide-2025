@@ -12,7 +12,7 @@ import { createIndexedDbLruCache } from '../../indexedDbLruCache'
 import { embedText, isEmbeddingModelReady } from './embeddingService'
 import { isWorkerAvailable } from '../inference/inferenceQueue'
 import { isEcoMode } from '../device/ecoModeService'
-import { captureLocalAiError } from '../../sentryService'
+import { captureLocalAiError } from '../../errorReporting'
 import type { Plant, JournalEntry } from '@/types'
 import DOMPurify from 'dompurify'
 

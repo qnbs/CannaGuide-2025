@@ -2,7 +2,6 @@ import React, { ReactNode, ErrorInfo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
-import { Sentry } from '@/services/sentryService'
 
 interface ErrorBoundaryProps {
     children: ReactNode
@@ -52,7 +51,6 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     // This lifecycle method is used for logging error information.
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error:', error, errorInfo)
-        Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } })
     }
 
     private readonly requestSafeRecovery = () => {

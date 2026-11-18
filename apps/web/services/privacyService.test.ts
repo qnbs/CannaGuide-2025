@@ -6,11 +6,6 @@ import {
 } from 'fake-indexeddb'
 import { DELETE_DATABASE_TIMEOUT_MS, EXPORT_OPEN_TIMEOUT_MS } from './privacyDatabaseRegistry'
 
-// Mock Sentry before importing the service
-vi.mock('@sentry/browser', () => ({
-    captureException: vi.fn(),
-}))
-
 describe('privacyService', () => {
     beforeEach(() => {
         vi.clearAllMocks()

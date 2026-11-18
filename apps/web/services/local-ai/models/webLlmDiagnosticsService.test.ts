@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { diagnoseWebLlm, getDiagnosticI18nKey } from './webLlmDiagnosticsService'
 
-vi.mock('../../sentryService', () => ({
+vi.mock('../../errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

@@ -6,9 +6,9 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
-### Fixed
+### Removed
 
-- **fix(privacy):** With Local-Only mode saved, no error report leaves the device during startup either. Sentry used to start as the very first step, before the saved settings were loaded, so an error in the first moments of a session could be reported although Local-Only was on; it was switched off only once hydration had finished. Error reporting now starts only after the saved setting is known. Errors from before that are kept in memory, then sent (Local-Only off) or dropped (Local-Only on). Session Replay and tracing do not start before then either ([#586](https://github.com/qnbs/CannaGuide-2025/issues/586)).
+- **refactor(privacy):** Sentry is gone. The app runs no crash reporting and no analytics and sends error reports nowhere. Handled errors are written to the browser console and stay on the device; failures of the local AI stack keep their stage, model and backend at debug level, which production builds drop (`services/errorReporting.ts`). Sentry could not send anything in practice: no build set a DSN, and no Content-Security-Policy (`vercel.json`, `index.html`, `securityHeaders.ts`) allowed a Sentry host. It still shipped its SDK, a Local-Only switch and a startup path that could have reported errors before the saved Local-Only setting was known. Removed: `@sentry/browser` and `@sentry/react`, `sentryService.ts` and its tests, the bootstrap step, the Local-Only wiring, `VITE_SENTRY_DSN` and the About credit ([#586](https://github.com/qnbs/CannaGuide-2025/issues/586)).
 
 ## [1.12.1] - 2026-11-18
 

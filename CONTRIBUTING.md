@@ -352,7 +352,7 @@ When proposing significant changes, please follow these guidelines:
 - **State management**: Domain/persistent data in Redux, ephemeral UI state is transient.
 - **AI calls**: All AI API calls go through the provider abstraction in `services/`.
 - **Security**: All user-facing HTML must use DOMPurify. All external links need `rel="noopener noreferrer"`.
-- **Error tracking**: Runtime errors are captured by Sentry. Use `Sentry.captureException()` for explicit error reporting.
+- **Error tracking**: There is no crash reporting; errors never leave the device. Log error details with `console.debug` (production builds drop it); record handled local AI failures with `captureLocalAiError()` from `services/errorReporting.ts`.
 - **Testing**: Component tests use Playwright (`tests/ct/`), unit tests use Vitest, E2E tests use Playwright (`tests/e2e/`).
 
 ---

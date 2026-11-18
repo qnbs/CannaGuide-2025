@@ -19,7 +19,6 @@ import { getMaxPoolSize } from '@/utils/deviceCapabilities'
 import { AtomicsChannel } from '@/utils/atomicsChannel'
 import { LockFreeRingBuffer } from '@/utils/lockFreeRingBuffer'
 import { getPerformanceMemory } from '@/utils/browserApis'
-import { Sentry } from '@/services/sentryService'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -336,7 +335,6 @@ export class WorkerPool {
             console.debug(
                 `[WorkerPool] CRITICAL memory pressure (${(ratio * 100).toFixed(1)}%) -- terminating all non-hot workers`,
             )
-            Sentry.captureMessage(`worker_oom_critical: heap at ${heapPercent}%`, 'error')
             this.onMemoryPressureHook?.('critical', heapPercent)
             this.terminateNonHotWorkers()
         } else {
@@ -344,7 +342,6 @@ export class WorkerPool {
             console.debug(
                 `[WorkerPool] Memory pressure (${(ratio * 100).toFixed(1)}%) -- terminating idle workers`,
             )
-            Sentry.captureMessage(`worker_oom_warn: heap at ${heapPercent}%`, 'warning')
             this.onMemoryPressureHook?.('warn', heapPercent)
             this.terminateIdleWorkers()
         }

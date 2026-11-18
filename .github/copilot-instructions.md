@@ -24,7 +24,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **i18n:** i18next (EN + DE + ES + FR + NL, 12 source files per language, single aggregated namespace)
 - **Testing:** Vitest (2812 tests) + Playwright E2E + Playwright Component Tests
 - **Desktop:** Tauri v2 (apps/desktop/) -- 99% code sharing with PWA, CI/CD matrix builds
-- **Error Tracking:** Sentry (browser SDK)
+- **Error Tracking:** none -- no crash reporting or analytics; errors stay in the local console (`services/errorReporting.ts`)
 - **Security Scanning:** Semgrep, Gitleaks, Grype, Trojan-source, npm audit, Snyk, GitGuardian, CodeAnt AI, Config Guard
 - **Distribution:** GitHub Pages, Vercel, and Cloudflare Pages (GitHub Actions when CLOUDFLARE_* secrets are set); Netlify GitHub Actions deploys stay paused -- see `docs/distribution.md`; Tauri Desktop (Linux/macOS/Windows)
 
@@ -53,7 +53,7 @@ apps/
     simulation.worker.ts # VPD simulation Web Worker
     components/          # React components: common/, icons/, navigation/, ui/, views/
     stores/              # Redux: slices/, selectors/, middleware, store config
-    services/            # Business logic: AI, simulation, database, crypto, IoT, Sentry
+    services/            # Business logic: AI, simulation, database, crypto, IoT
     hooks/               # Custom React hooks (28)
     data/                # Static data: 776 strains, FAQ, lexicon (91 entries), guides, diseases (22 entries), learningPaths (5 paths)
     locales/             # i18n: en/, de/, es/, fr/, nl/ (12 source files each)
@@ -229,7 +229,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - **Local-only mode guard**: All outbound network services must check `isLocalOnlyMode()` before fetch
 - **No `console.log`** in production — use `console.debug` (stripped) or `console.warn`/`console.error`
 - **No `console.warn`** for error detail logging — use `console.debug` to prevent info leaks
-- **Sentry** captures runtime errors — use `Sentry.captureException()` for explicit reporting
+- **No crash reporting**: errors are never sent off the device; never add an error-reporting or analytics SDK
 - **Security scanners**: Semgrep, Gitleaks, Trojan-source all pass with 0 findings
 - **`secureRandom()`** via `utils/random.ts` replaces `Math.random()` everywhere (Web Crypto)
 - **OpenSSF Scorecard**: branch protection, signed commits, pinned deps, SAST, fuzzing, SLSA provenance
@@ -290,7 +290,7 @@ happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = *
 - Use `responseSchema` for structured JSON output
 - RAG via `growLogRagService.ts` for journal context
 - Local AI fallback when API unreachable (3-layer: WebLLM → Transformers.js → Heuristics)
-- All local AI services use `captureLocalAiError()` for Sentry error tracking
+- All local AI services record handled failures with `captureLocalAiError()` (`services/errorReporting.ts`, debug console only)
 - Input validation: DOMPurify sanitization + length limits on all user-facing AI inputs
 - Image inputs: MIME type allow-listing, size validation, EXIF stripping
 
@@ -320,7 +320,7 @@ happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = *
 
 - Conventional Commits: `<type>(<scope>): <description>`
 - Types: feat, fix, docs, refactor, test, perf, chore, ci, build, revert, style, a11y, i18n
-- Scopes: ai, plants, strains, equipment, knowledge, settings, help, genealogy, pwa, ci, security, ui, sentry
+- Scopes: ai, plants, strains, equipment, knowledge, settings, help, genealogy, pwa, ci, security, ui
 - **Commit message rules (enforced by commitlint):**
     - Subject (type, scope, description) **must be lowercase** -- e.g. `feat(ai): add embedding cache` not `Add Embedding Cache`
     - Body lines **max 100 characters** -- wrap longer lines
@@ -436,14 +436,11 @@ pnpm exec stryker run                   # Stryker mutation testing (Redux slices
 
 ## Error Tracking
 
-Sentry is integrated for runtime error monitoring. Configuration is in `services/sentryService.ts`.
+There is none, by design: CannaGuide runs no crash-reporting or analytics service and sends error reports nowhere (Sentry was removed).
 
-- Errors are auto-captured via `Sentry.init()` in the app bootstrap
-- Use `Sentry.captureException(error)` for explicit error reporting
-- Use `Sentry.captureMessage(msg)` for non-error events
-- Performance traces are sampled at 10% in production
-- Session replay captures 1% of sessions, 100% on error
-- Source maps are uploaded during CI build for readable stack traces
+- Handled local AI failures go through `captureLocalAiError()` in `services/errorReporting.ts`, which writes to `console.debug` only
+- Use `console.debug` for error details; production builds drop it (`pure` in `vite.config.ts`)
+- Do not add an error-reporting, tracing or session-replay SDK without an explicit owner decision
 
 ---
 
@@ -591,7 +588,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/workers/visionInferenceWorker.ts`                                     | Off-main-thread ONNX inference: 38-class PlantVillage labels, `CANNABIS_MAP`, `autoWhiteBalance()` (Gray World), `preprocessImage()` (ImageNet CHW), WorkerBus               |
 | `apps/web/components/views/plants/LeafDiagnosisPanel.tsx`                       | Leaf diagnosis UI: model status bar, drag-zone upload, camera capture, analyze button, results card with severity badge and RAG recommendations                              |
 | `apps/web/services/equipmentCalculatorService.ts`                               | Pure-formula calculator service: CO2 enrichment, Humidity Deficit (Buck SVP), Light Hanging Height (Zod-validated)                                                           |
-| `apps/web/services/sentryService.ts`                                            | Sentry error tracking initialization                                                                                                                                         |
+| `apps/web/services/errorReporting.ts`                                           | Local-only error log for handled local AI failures (debug console, nothing sent)                                                                                             |
 | `apps/web/services/pluginService.ts`                                            | Plugin architecture (nutrient, hardware, grow)                                                                                                                               |
 | `apps/web/services/seedbankService.ts`                                          | Deterministic mock seed pricing (SeedFinder removed)                                                                                                                         |
 | `apps/web/services/crdtService.ts`                                              | Y.Doc lifecycle, sync transport (encode/apply/detectDivergence), state vectors                                                                                               |
@@ -607,7 +604,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/services/workerPool.ts`                                               | Centralized Worker lifecycle: lazy spawning via `getOrCreate()`, 45s idle timeout, hot-worker exemption (VPD, voice), device-aware pool sizing, SAB hot-path init (ADR-0010) |
 | `apps/web/services/workerFactories.ts`                                          | Centralized factory registry for 10 workers (name -> factory + hot flag + priority)                                                                                          |
 | `apps/web/services/workerStateSyncService.ts`                                   | Framework-agnostic handler registry -- auto-wires WorkerBus results to Redux/Zustand                                                                                         |
-| `apps/web/services/workerTelemetryService.ts`                                   | Sentry 10% error-rate alerts + 5s debounced Redux DevTools metrics flush                                                                                                     |
+| `apps/web/services/workerTelemetryService.ts`                                   | 10% error-rate debug note + 5s debounced Redux DevTools metrics flush                                                                                                        |
 | `apps/web/services/proactiveCoachService.ts`                                    | Smart coach: threshold monitoring + AI advice + cooldown                                                                                                                     |
 | `apps/web/services/voiceOrchestratorService.ts`                                 | Central voice state machine (IDLE/LISTENING/PROCESSING/SPEAKING/CONFIRMATION), command matching, confirmation loops, error recovery                                          |
 | `apps/web/services/porcupineWakeWordService.ts`                                 | Porcupine WASM wake-word detection: BYOK AccessKey, 11 built-in keywords, on-device only                                                                                     |
@@ -644,7 +641,7 @@ After implementation is complete with all validations passing, update **all affe
 | `apps/web/workers/hydroForecastWorker.ts`                                       | Off-main-thread ONNX hydro inference: pH/EC/Temp prediction, WASM backend, weighted moving average fallback                                                                  |
 | `apps/web/components/views/settings/LlmModelSelector.tsx`                       | Card-based WebLLM model selector UI: auto/manual model selection, GPU tier awareness, download progress                                                                      |
 | `apps/web/hooks/useStreamingResponse.ts`                                        | Shared RAF-debounced streaming hook used by MentorChatView, AiTab (advisor + diagnosis)                                                                                      |
-| `apps/web/hooks/usePredictiveAnalytics.ts`                                      | Predictive analytics hook: auto-refresh 5min, stable plantsKey, worst-risk, Sentry breadcrumbs                                                                               |
+| `apps/web/hooks/usePredictiveAnalytics.ts`                                      | Predictive analytics hook: auto-refresh 5min, stable plantsKey, worst-risk                                                                                                   |
 | `apps/web/hooks/useVpdSabStream.ts`                                             | Main-thread SAB consumer: polls VPD AtomicsChannel signals + LockFreeRingBuffer values at 250ms intervals                                                                    |
 | `apps/web/hooks/useStateHealthCheck.ts`                                         | Dev-only hook: detects Redux<->Zustand state inconsistencies; zero production overhead (tree-shaken)                                                                         |
 | `apps/web/simulation.worker.ts`                                                 | VPD simulation Web Worker                                                                                                                                                    |

@@ -14,7 +14,7 @@ vi.mock('@/services/localOnlyModeService', () => ({
     isLocalOnlyMode: vi.fn(() => false),
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

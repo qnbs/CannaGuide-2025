@@ -11,7 +11,6 @@ import { FlagDE, FlagEN, FlagES, FlagFR, FlagNL } from '@/components/icons/Flags
 import { changeAppLanguage } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { consentService } from '@/services/consentService'
-import * as Sentry from '@sentry/react'
 
 // Wizard steps: 0 = legal gate, 1 = language, 2-6 = feature slides, 7 = experience, 8 = goal, 9 = setup
 const FEATURE_STEP_START = 2
@@ -135,9 +134,7 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
             try {
                 await changeAppLanguage(lang)
             } catch (err) {
-                Sentry.captureException(err, {
-                    extra: { context: 'onboarding:changeAppLanguage', lang },
-                })
+                console.debug('[Onboarding] Could not load language', lang, err)
                 getUISnapshot().addNotification({
                     type: 'error',
                     message: t('onboarding.languageLoadFailed'),
@@ -210,11 +207,6 @@ export const OnboardingModal: React.FC<Readonly<OnboardingModalProps>> = ({ onCl
         } catch {
             /* ignore */
         }
-        Sentry.addBreadcrumb({
-            category: 'onboarding',
-            message: 'completed',
-            data: { step, experience, growGoal, spaceSize, budget },
-        })
         dispatch(setSetting({ path: 'onboardingCompletedAt', value: new Date().toISOString() }))
         useUIStore.getState().setOnboardingCompleted(true)
         onClose()

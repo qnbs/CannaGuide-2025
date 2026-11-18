@@ -6,8 +6,6 @@
 // Falls back to regex hotword when unavailable or unconfigured.
 // ---------------------------------------------------------------------------
 
-import * as Sentry from '@sentry/browser'
-
 // Lazy-loaded Porcupine types (optional dependency)
 type PorcupineWorker = {
     start: () => Promise<void>
@@ -83,7 +81,6 @@ class PorcupineWakeWordService {
 
             const processErrorCallback = (error: Error): void => {
                 console.error('[Porcupine] Processing error:', error.message)
-                Sentry.captureException(error, { tags: { service: 'porcupine' } })
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- SDK dynamic import
@@ -102,7 +99,6 @@ class PorcupineWakeWordService {
         } catch (err) {
             this.state = 'error'
             console.error('[Porcupine] Init failed:', err instanceof Error ? err.message : err)
-            Sentry.captureException(err, { tags: { service: 'porcupine' } })
             return false
         }
     }

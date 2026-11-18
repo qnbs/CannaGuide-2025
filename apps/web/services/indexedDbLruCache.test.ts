@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 
-vi.mock('./sentryService', () => ({
+vi.mock('./errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

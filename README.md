@@ -45,10 +45,9 @@ The app uses the network only for these:
 
 - cloud AI requests, sent directly to the provider you choose with your own key;
 - the one-time download of on-device models;
-- the desktop update check;
-- masked crash reports from production builds.
+- the desktop update check.
 
-**Local-Only mode** turns these off. Error reporting starts only after the app has loaded your saved settings, so nothing is sent before it knows them. The last model-download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
+**Local-Only mode** turns off the cloud AI requests and the update check, and loads Transformers.js models from the browser cache only. It does **not yet** cover every on-device model download: the remaining download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
 
 - **Web app (PWA):** installable from the browser, and works offline after the first visit.
 - **Desktop app:** a [Tauri 2](https://v2.tauri.app/) shell for Windows, macOS (Apple silicon and Intel) and Linux, with signed in-app updates.
@@ -102,7 +101,7 @@ The installers are not code-signed with a Windows or Apple developer certificate
 ## Privacy and data
 
 - **No backend and no account.**
-- **Error reports.** Production builds send crash reports to Sentry with all personal-data collection switched off: no user or IP, cookies, headers, request bodies or local variables. Session Replay masks all text and inputs and blocks media. Error reporting starts only after your saved settings are loaded; errors from before that are kept in memory until then. Local-Only mode keeps it off.
+- **No crash reporting, no analytics.** Errors are written to your browser's console and stay on your device; the app sends error reports nowhere.
 - **Your data stays local.** Plant data lives in IndexedDB on your device. Export and import are explicit JSON files.
 - **BYOK.** Cloud AI uses _your_ provider key, encrypted at rest with AES-GCM (Web Crypto). Requests go from your device directly to the provider you choose; nothing passes through a CannaGuide server.
 - **Local-Only mode** keeps AI on the device and stops cloud requests. Enforcement for every on-demand model download is being completed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
@@ -222,7 +221,7 @@ Contributions are welcome:
 2. [Open an issue](https://github.com/qnbs/CannaGuide-2025/issues) to discuss your change.
 3. Then send a focused pull request. Commits follow [Conventional Commits](https://www.conventionalcommits.org/) and must be signed.
 
-**Acknowledgments:** the AI and ML runtimes from MLC WebLLM, Hugging Face Transformers.js and ONNX Runtime Web; React, Vite, Tailwind CSS, Radix UI, Redux Toolkit, Zustand, i18next, Zod, Recharts, D3 and Three.js; Tauri; and the security tooling of DOMPurify, Sentry, CodeQL, Semgrep, Gitleaks, Snyk and OpenSSF Scorecard. Strain data was compiled with AI-assisted research from publicly available breeder, seedbank and community information.
+**Acknowledgments:** the AI and ML runtimes from MLC WebLLM, Hugging Face Transformers.js and ONNX Runtime Web; React, Vite, Tailwind CSS, Radix UI, Redux Toolkit, Zustand, i18next, Zod, Recharts, D3 and Three.js; Tauri; and the security tooling of DOMPurify, CodeQL, Semgrep, Gitleaks, Snyk and OpenSSF Scorecard. Strain data was compiled with AI-assisted research from publicly available breeder, seedbank and community information.
 
 Licensed under the [MIT License](LICENSE).
 

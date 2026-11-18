@@ -12,7 +12,7 @@ vi.mock('dompurify', () => ({
     },
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 
@@ -223,8 +223,9 @@ describe('localAiDiagnosisService', () => {
         it('returns null when i18n has no translation for the key', async () => {
             const i18n = await import('@/i18n')
             const originalGetT = i18n.getT
-            vi.spyOn(i18n, 'getT').mockReturnValue((() =>
-                'plantsView.diagnosis.ironDeficiency') as ReturnType<typeof originalGetT>)
+            vi.spyOn(i18n, 'getT').mockReturnValue(
+                (() => 'plantsView.diagnosis.ironDeficiency') as ReturnType<typeof originalGetT>,
+            )
 
             expect(mapIssueLabel('iron deficiency', 'en')).toBeNull()
 
@@ -514,9 +515,8 @@ describe('localAiDiagnosisService', () => {
         })
 
         it('returns ONNX worker results when the model is cached', async () => {
-            const { isModelCached, ensureWorkerRegistered } = await import(
-                './plantDiseaseModelService'
-            )
+            const { isModelCached, ensureWorkerRegistered } =
+                await import('./plantDiseaseModelService')
             vi.mocked(isModelCached).mockResolvedValueOnce(true)
             mockWorkerDispatch.mockResolvedValueOnce({
                 label: 'spider_mites',

@@ -12,7 +12,7 @@ vi.mock('dompurify', () => ({
     },
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 
@@ -515,8 +515,8 @@ describe('localAiPromptHandlers', () => {
             expect(result.content).toBeTruthy()
         })
 
-        it('reports validation errors to Sentry on schema-invalid JSON', async () => {
-            const { captureLocalAiError: mockCapture } = await import('@/services/sentryService')
+        it('records validation errors locally on schema-invalid JSON', async () => {
+            const { captureLocalAiError: mockCapture } = await import('@/services/errorReporting')
             ;(mockCapture as ReturnType<typeof vi.fn>).mockClear()
             // Valid JSON but missing required field "content"
             mockGenerate.mockResolvedValue(JSON.stringify({ title: 'Only title' }))

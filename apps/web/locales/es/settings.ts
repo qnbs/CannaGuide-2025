@@ -994,7 +994,6 @@ export const settingsView = {
             radixUi: 'Primitivas de UI accesibles por Radix UI.',
             recharts: 'Visualizaciones de graficos por Recharts y D3.js.',
             tailwind: 'Estilos utility-first por Tailwind CSS.',
-            sentry: 'Seguimiento de errores por Sentry.',
             vite: 'Herramientas de build por Vite y TurboRepo.',
         },
         githubLinkText: 'Ver Proyecto en GitHub',

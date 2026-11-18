@@ -60,11 +60,6 @@ vi.mock('@/services/persistedStateService', () => ({
     replacePrimaryPersistedSnapshot: mocks.replacePrimaryPersistedSnapshot,
 }))
 
-vi.mock('@sentry/react', () => ({
-    withScope: (fn: (scope: { setTag: () => void }) => void) => fn({ setTag: vi.fn() }),
-    captureMessage: vi.fn(),
-}))
-
 let useDataManagementActions: typeof import('./useDataManagementActions').useDataManagementActions
 
 describe('useDataManagementActions', () => {

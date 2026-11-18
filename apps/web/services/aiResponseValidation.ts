@@ -1,5 +1,4 @@
 import type { z } from 'zod'
-import { Sentry } from '@/services/sentryService'
 import { runRouted } from '@/services/localRoutingService'
 
 export class AiResponseValidationError extends Error {
@@ -14,7 +13,7 @@ export class AiResponseValidationError extends Error {
 
 /**
  * Validates structured AI output before it reaches Redux or persistence.
- * Logs schema failures to Sentry without storing invalid payloads.
+ * Records schema failures in the debug console without storing invalid payloads.
  */
 export const validateAiResponse = <T>(
     schema: z.ZodSchema<T>,
@@ -30,9 +29,7 @@ export const validateAiResponse = <T>(
         `AI response validation failed (${context})`,
         context,
     )
-    Sentry.captureException(error, {
-        extra: { zodError: result.error.format() },
-    })
+    console.debug('[ai-validation]', context, result.error.format())
     throw error
 }
 
@@ -58,21 +55,9 @@ export const runRoutedValidated = async <T>(
         return fallbackResult.data
     }
 
-    const primaryErr = new AiResponseValidationError(
-        `AI response validation failed (${context})`,
-        context,
-    )
-    Sentry.captureException(primaryErr, {
-        extra: {
-            context,
-            fallbackAlsoFailed: true,
-            primaryZodError: primaryResult.error.format(),
-            fallbackZodError: fallbackResult.error.format(),
-        },
-        fingerprint: [`ai-validation-${context}`],
+    console.debug('[ai-validation] primary and fallback failed', context, {
+        primary: primaryResult.error.format(),
+        fallback: fallbackResult.error.format(),
     })
-    throw new AiResponseValidationError(
-        `AI validation failed on all paths (${context})`,
-        context,
-    )
+    throw new AiResponseValidationError(`AI validation failed on all paths (${context})`, context)
 }

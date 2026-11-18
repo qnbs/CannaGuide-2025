@@ -38,7 +38,7 @@ vi.mock('../device/ecoModeService', () => ({
     isEcoMode: vi.fn(() => false),
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

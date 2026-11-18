@@ -93,11 +93,6 @@ vi.mock('@/services/localOnlyModeService', () => ({
     isLocalOnlyMode: vi.fn(() => true),
 }))
 
-vi.mock('@/services/sentryService', () => ({
-    disableSentry: vi.fn(),
-    enableSentry: vi.fn(),
-}))
-
 vi.mock('@/services/local-ai/models/modelLoader', async (importOriginal) => ({
     ...(await importOriginal<typeof import('@/services/local-ai/models/modelLoader')>()),
     enforceLocalOnlyOnTransformers: vi.fn(() => Promise.resolve()),
@@ -141,11 +136,6 @@ vi.mock('@/services/ttsService', () => ({
 vi.mock('@/services/voiceCommandRegistry', () => ({
     buildVoiceCommands: vi.fn(() => []),
     matchVoiceCommand: vi.fn(() => null),
-}))
-
-vi.mock('@sentry/react', () => ({
-    captureException: vi.fn(),
-    addBreadcrumb: vi.fn(),
 }))
 
 // ---------------------------------------------------------------------------
@@ -283,15 +273,13 @@ describe('listenerMiddleware', () => {
             })
         })
 
-        it('syncs local-only mode and disables sentry when enabled', async () => {
+        it('syncs local-only mode when enabled', async () => {
             const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
-            const { disableSentry } = await import('@/services/sentryService')
 
             store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: true }))
 
             await vi.waitFor(() => {
                 expect(setLocalOnlyMode).toHaveBeenCalledWith(true)
-                expect(disableSentry).toHaveBeenCalled()
             })
         })
 
@@ -322,13 +310,14 @@ describe('listenerMiddleware', () => {
             })
         })
 
-        it('still closes blocked MQTT connections when the Sentry step fails', async () => {
-            const { disableSentry } = await import('@/services/sentryService')
+        it('still closes blocked MQTT connections when the local AI step fails', async () => {
+            const { enforceLocalOnlyOnTransformers } =
+                await import('@/services/local-ai/models/modelLoader')
             const { mqttSensorService } = await import('@/services/mqttSensorService')
-            vi.mocked(disableSentry).mockClear()
-            vi.mocked(disableSentry).mockImplementationOnce(() => {
-                throw new Error('sentry unavailable')
-            })
+            vi.mocked(enforceLocalOnlyOnTransformers).mockClear()
+            vi.mocked(enforceLocalOnlyOnTransformers).mockRejectedValueOnce(
+                new Error('cache unavailable'),
+            )
             vi.mocked(mqttSensorService.enforceLocalOnlyMode).mockClear()
             const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined)
 
@@ -336,10 +325,10 @@ describe('listenerMiddleware', () => {
 
             await vi.waitFor(() => {
                 // The injected failure did happen in this dispatch, and was reported...
-                expect(disableSentry).toHaveBeenCalledOnce()
+                expect(enforceLocalOnlyOnTransformers).toHaveBeenCalledOnce()
                 expect(logged).toHaveBeenCalledWith(
                     '[Privacy] Could not apply Local-Only Mode:',
-                    expect.objectContaining({ message: 'sentry unavailable' }),
+                    expect.objectContaining({ message: 'cache unavailable' }),
                 )
                 // ...and the MQTT step ran anyway.
                 expect(mqttSensorService.enforceLocalOnlyMode).toHaveBeenCalled()
@@ -356,16 +345,6 @@ describe('listenerMiddleware', () => {
             await vi.waitFor(() => {
                 expect(mqttClientService.resumeAfterLocalOnlyMode).toHaveBeenCalled()
                 expect(mqttSensorService.resumeAfterLocalOnlyMode).toHaveBeenCalled()
-            })
-        })
-
-        it('enables sentry when local-only mode is disabled', async () => {
-            const { enableSentry } = await import('@/services/sentryService')
-
-            store.dispatch(setSetting({ path: 'privacy.localOnlyMode', value: false }))
-
-            await vi.waitFor(() => {
-                expect(enableSentry).toHaveBeenCalled()
             })
         })
 

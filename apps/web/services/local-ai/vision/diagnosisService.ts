@@ -14,7 +14,7 @@ import type {
     LeafDiagnosisResult,
     DiseaseRecommendation,
 } from '@/types'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { diagnosePlant as diagnoseWithRules } from '../fallback/fallbackService'
 import type { LocalAiPipeline } from '../models/modelLoader'
 import { diseaseAtlas } from '@/data/diseases'

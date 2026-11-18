@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 // The flag behind the setting. Services that leave the app go through the
 // egress gate in services/net/egress.ts, which reads it; some older call sites
-// still check it directly. When enabled: Sentry disabled, cloud AI blocked,
+// still check it directly. When enabled: cloud AI blocked,
 // Gist sync blocked, MQTT limited to LAN brokers, cloud TTS skipped, browser
 // speech recognition off (the UI reads selectLocalOnlyMode for that), transformers.js
 // models from the browser cache only (prepareTransformersLoad). Not every

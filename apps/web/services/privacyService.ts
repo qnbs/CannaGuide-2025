@@ -6,7 +6,6 @@
 // failure, not a success.
 // ---------------------------------------------------------------------------
 
-import * as Sentry from '@sentry/browser'
 import {
     APPLICATION_DATABASE_NAMES,
     DELETE_DATABASE_TIMEOUT_MS,
@@ -183,7 +182,7 @@ export const eraseSingleDatabase = async (dbName: string): Promise<boolean> => {
         deleted = outcome === 'deleted' && !(await namedDatabasesStillPresent([dbName]))
         return deleted
     } catch (error) {
-        Sentry.captureException(error)
+        console.debug('[privacyService] eraseSingleDatabase failed:', error)
         return false
     } finally {
         await releaseOwnedConnections()
@@ -256,7 +255,6 @@ export const eraseAllData = async (): Promise<boolean> => {
         return true
     } catch (error) {
         databasesDeleted = false
-        Sentry.captureException(error)
         console.debug('[privacyService] eraseAllData failed:', error)
         return false
     } finally {

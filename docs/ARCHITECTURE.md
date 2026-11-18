@@ -56,7 +56,7 @@ apps/web/                 Main PWA (@cannaguide/web)
   vite.config.ts          Vite build + optionalMlPlugin() for ML stub fallback
   tsconfig.json           strict, baseUrl ".", @/* path alias
   index.tsx               Thin entry (styles + `bootstrap/index.ts`)
-  bootstrap/              App bootstrap (index, sentry, recovery, serviceWorker, store, workers, render, …)
+  bootstrap/              App bootstrap (index, recovery, serviceWorker, store, workers, render, …)
   constants.ts            App-wide constants
   types.ts                Core TypeScript types + AppSettings interface
   i18n.ts                 i18next initialization (5 languages)
@@ -115,7 +115,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     cryptoService.ts      AES-256-GCM key encryption at rest
     privacyService.ts     GDPR Art. 17/20 -- full erasure + data export
     pluginService.ts      Plugin architecture (nutrient, hardware, grow)
-    sentryService.ts      Sentry error tracking
+    errorReporting.ts     Local-only error log (debug console, nothing sent)
     consentService.ts     GDPR consent cookie management
 
   data/                   Static data: 776 strains, FAQ, lexicon (91 entries, 6 categories), guides, diseases (22 entries), learningPaths (5 paths)
@@ -267,7 +267,7 @@ The `workerBus.ts` singleton provides centralized, promise-based communication w
 - **Abort Support:** AbortController per dispatch, automatic cleanup on cancel
 - **Transferable Objects:** zero-copy transfers for ArrayBuffer/ImageBitmap payloads
 - **State Sync:** `workerStateSyncService.ts` auto-wires dispatch results to Redux/Zustand via handler registry
-- **Telemetry Service:** `workerTelemetryService.ts` connects to Sentry (10% error-rate alerts) and Redux DevTools (5s debounced `workerMetricsSlice`)
+- **Telemetry Service:** `workerTelemetryService.ts` writes a debug note at a 10% worker error rate and feeds Redux DevTools (5s debounced `workerMetricsSlice`)
 
 Workers: VPD simulation, genealogy, scenario, inference, image generation, hydro forecast, terpene, vision inference, calculation, voice, simulation.
 

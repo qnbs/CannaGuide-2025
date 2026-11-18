@@ -3,13 +3,12 @@
  *
  * Connects WorkerBus dispatch-complete events to:
  *  1. Redux DevTools -- debounced 5-second metrics snapshots via workerMetricsSlice
- *  2. Sentry -- alerts when any worker's error rate exceeds 10 %
+ *  2. The debug console -- a note when any worker's error rate exceeds 10 %
  *
  * Call `initWorkerTelemetry(dispatch)` once in index.tsx after store hydration.
  * The function is idempotent -- safe to call multiple times.
  */
 
-import * as Sentry from '@sentry/browser'
 import { workerBus, type DispatchCompleteEvent } from './workerBus'
 import { updateWorkerMetrics } from '../stores/slices/workerMetricsSlice'
 import type { AppDispatch } from '../stores/store'
@@ -20,7 +19,6 @@ import type { AppDispatch } from '../stores/store'
 
 const DEBOUNCE_MS = 5_000
 const ERROR_RATE_THRESHOLD = 0.1 // 10 %
-const SENTRY_CONTEXT_INTERVAL_MS = 60_000 // 1 min
 
 // ---------------------------------------------------------------------------
 // Internal state
@@ -28,7 +26,6 @@ const SENTRY_CONTEXT_INTERVAL_MS = 60_000 // 1 min
 
 let initialised = false
 let debounceTimer: ReturnType<typeof setTimeout> | undefined
-let sentryContextTimer: ReturnType<typeof setInterval> | undefined
 
 // ---------------------------------------------------------------------------
 // Private helpers
@@ -57,9 +54,8 @@ const checkErrorRate = (workerName: string): void => {
 
     const rate = totalErrors / totalDispatches
     if (rate > ERROR_RATE_THRESHOLD) {
-        Sentry.captureMessage(
-            `WorkerBus error rate ${(rate * 100).toFixed(1)}% for worker "${workerName}" (${totalErrors}/${totalDispatches})`,
-            'warning',
+        console.debug(
+            `[WorkerBus] error rate ${(rate * 100).toFixed(1)}% for worker "${workerName}" (${totalErrors}/${totalDispatches})`,
         )
     }
 }
@@ -95,16 +91,6 @@ export const initWorkerTelemetry = (dispatch: AppDispatch): void => {
         // Success -- debounced flush is sufficient
         flushMetrics(dispatch)
     })
-
-    // W-03: Periodically attach telemetry export as Sentry context
-    sentryContextTimer = setInterval(() => {
-        try {
-            const snapshot = workerBus.exportTelemetry()
-            Sentry.setContext('workerBusTelemetry', { ...snapshot })
-        } catch {
-            // Sentry context is best-effort, never block
-        }
-    }, SENTRY_CONTEXT_INTERVAL_MS)
 }
 
 /**
@@ -114,7 +100,5 @@ export const initWorkerTelemetry = (dispatch: AppDispatch): void => {
 export const resetWorkerTelemetry = (): void => {
     initialised = false
     clearTimeout(debounceTimer)
-    clearInterval(sentryContextTimer)
     debounceTimer = undefined
-    sentryContextTimer = undefined
 }

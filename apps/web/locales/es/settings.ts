@@ -926,7 +926,7 @@ export const settingsView = {
         unlockButton: 'Desbloquear',
     },
     about: {
-        title: 'Acerca de la Aplicacion',
+        title: 'Acerca de la Aplicaci\u00F3n',
         projectInfo: 'Informacion del Proyecto y README',
         version: 'Version',
         update: {
@@ -952,7 +952,7 @@ export const settingsView = {
             localOnly:
                 'El Modo Solo Local est\u00E1 activo, as\u00ED que la app no contacta con el servidor de actualizaciones.',
             notification:
-                'CannaGuide {{version}} est\u00E1 disponible. Inst\u00E1lala desde Ajustes > Acerca de la Aplicacion.',
+                'CannaGuide {{version}} est\u00E1 disponible. Inst\u00E1lala desde Ajustes > Acerca de la Aplicaci\u00F3n.',
         },
         whatsNew: {
             title: 'Novedades en v1.8',

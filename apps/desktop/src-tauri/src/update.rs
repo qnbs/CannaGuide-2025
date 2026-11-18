@@ -29,7 +29,8 @@ use tauri::{async_runtime, ipc::Channel, AppHandle, Emitter, Manager, State};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 use crate::lifecycle::{
-    keeps_download, Busy, QUIT_FLUSH_TIMEOUT, UPDATE_CHECK_TIMEOUT, UPDATE_DOWNLOAD_TIMEOUT,
+    keeps_download, AfterInstall, Busy, QuitGate, QUIT_FLUSH_TIMEOUT, UPDATE_CHECK_TIMEOUT,
+    UPDATE_DOWNLOAD_TIMEOUT,
 };
 
 /// Asks the web app for a last save before an install ends the process.
@@ -50,16 +51,6 @@ pub struct UpdateState {
     network_task: Mutex<Option<async_runtime::JoinHandle<()>>>,
     /// Waits for `confirm_final_save` while an install is about to end the process.
     final_save: Mutex<Option<mpsc::Sender<()>>>,
-    /// An install is running; a user quit is held until it ends (CodeAnt on #878).
-    installing: AtomicBool,
-}
-
-impl UpdateState {
-    /// Whether a user quit must wait: the install ends in a restart (or the Windows
-    /// installer) anyway, and quitting in between would skip its final save.
-    pub fn is_installing(&self) -> bool {
-        self.installing.load(Ordering::SeqCst)
-    }
 }
 
 #[derive(Serialize)]
@@ -267,13 +258,22 @@ pub async fn update_install(app: AppHandle, state: State<'_, UpdateState>) -> Re
     let bytes = lock(&state.downloaded)
         .take()
         .ok_or("the update is not downloaded yet")?;
-    state.installing.store(true, Ordering::SeqCst);
+    // While the install runs no quit path may end the process (QuitGate holds them).
+    let gate = app.state::<QuitGate>();
+    if !gate.begin_install() {
+        *lock(&state.downloaded) = Some(bytes);
+        return Err("the app is quitting; the update was not installed".into());
+    }
     // On Windows install() starts the installer and ends this process itself.
     if let Err(error) = update.install(&bytes) {
         // Nothing was installed: keep the verified bundle so Install can be retried,
-        // and let quits through again.
+        // and hand back the quits that arrived meanwhile.
         *lock(&state.downloaded) = Some(bytes);
-        state.installing.store(false, Ordering::SeqCst);
+        match gate.install_failed() {
+            AfterInstall::Exit => app.exit(0),
+            AfterInstall::Request => crate::request_quit(&app),
+            AfterInstall::Nothing => {}
+        }
         return Err(error.to_string());
     }
     // macOS and Linux: the new version is in place. Save once more -- an edit made

@@ -1,5 +1,5 @@
 export const settingsView = {
-    title: 'Parametres',
+    title: 'Param\u00E8tres',
     searchPlaceholder: 'Rechercher dans les parametres...',
     saveSuccess: 'Parametres enregistres !',
     categories: {
@@ -932,7 +932,7 @@ export const settingsView = {
         unlockButton: 'Deverrouiller',
     },
     about: {
-        title: "A propos de l'application",
+        title: "\u00C0 propos de l'application",
         projectInfo: 'Infos du projet & README',
         version: 'Version',
         update: {
@@ -958,7 +958,7 @@ export const settingsView = {
             localOnly:
                 "Le mode local uniquement est actif : l'application ne contacte donc pas le serveur de mises \u00E0 jour.",
             notification:
-                "CannaGuide {{version}} est disponible. Installez-la depuis Parametres > A propos de l'application.",
+                "CannaGuide {{version}} est disponible. Installez-la depuis Param\u00E8tres > \u00C0 propos de l'application.",
         },
         whatsNew: {
             title: 'Nouveautes de la v1.8',

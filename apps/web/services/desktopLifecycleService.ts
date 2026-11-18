@@ -401,13 +401,17 @@ export const flushThenConfirmFinalSave = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
 ): Promise<void> => {
+    // Loaded before the save, so after its last comparison only the confirmation's
+    // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
+    const pendingBridge = loadBridge()
+    pendingBridge.catch(() => undefined)
     try {
         const saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopUpdate] latest changes not saved before the restart')
     } catch (error) {
         console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
     }
-    const bridge = await loadBridge()
+    const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_final_save')
 }
 
@@ -420,12 +424,16 @@ export const flushThenConfirmQuit = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
 ): Promise<void> => {
+    // Loaded before the save, so after its last comparison only the confirmation's
+    // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
+    const pendingBridge = loadBridge()
+    pendingBridge.catch(() => undefined)
     try {
         const saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopQuit] latest changes not saved before quit')
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
-    const bridge = await loadBridge()
+    const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_quit')
 }

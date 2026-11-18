@@ -239,7 +239,7 @@ the bundled app under its CSP.
 **Quit handshake (desktop):** the tray Quit, the close button and Cmd+Q all ask the web
 app to save first (`tauri://before-quit`). The app exits when the save has finished
 (`confirm_quit`), or after 10 seconds if the web app never answers. A save still running at that point is cut off, so the guarantee is "waits for the save, up to 10 seconds". The listener is
-registered before the slower startup work. While an update installs, a quit is held: the install ends in a restart (or the Windows installer) with its own final save, which a quit would cut off. Before, the tray quit exited after a fixed
+registered before the slower startup work. While an update installs, no quit path may end the process: a new quit, and the confirmation or timeout of a quit that started before the install, are held, because the install ends in a restart (or the Windows installer) with its own final save. If the install fails, the held quit goes on (`QuitGate::install_failed`). After the last state comparison, only the confirmation's round trip remains before the exit; an edit in that window is not covered, for quit as for restart. Before, the tray quit exited after a fixed
 250 ms and the close button did not wait at all.
 
 **Manual acceptance of a real update** (CI cannot install and relaunch a desktop app;

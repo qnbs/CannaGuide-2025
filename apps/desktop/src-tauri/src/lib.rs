@@ -103,17 +103,12 @@ fn clear_native_cache(app_handle: tauri::AppHandle) -> Result<u64, String> {
 
 /// Holds a user-initiated quit until the frontend has flushed persisted state
 /// (`confirm_quit`), or until QUIT_FLUSH_TIMEOUT for a frontend that never answers.
-fn request_quit(app: &AppHandle) {
-    // An install ends in a restart (or the Windows installer) with its own final
-    // save; a quit in between would cut it off. The window close and the exit
-    // request are already prevented by their handlers, so ignoring is enough.
-    if app.state::<update::UpdateState>().is_installing() {
-        eprintln!("[quit] held: an update is installing and will restart the app");
-        return;
-    }
+pub(crate) fn request_quit(app: &AppHandle) {
     match app.state::<QuitGate>().request() {
         QuitDecision::Exit => app.exit(0),
-        QuitDecision::Wait => {}
+        // Held: an update is installing and ends the process itself after its final
+        // save; the gate hands the quit back if the install fails (QuitGate).
+        QuitDecision::Wait | QuitDecision::Held => {}
         QuitDecision::AskFrontend => {
             let _ = app.emit("tauri://before-quit", ());
             let app = app.clone();

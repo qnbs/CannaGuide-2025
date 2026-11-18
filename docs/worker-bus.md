@@ -264,7 +264,7 @@ Initialized via `initWorkerStateSync()` in `index.tsx` after store hydration.
 `services/workerTelemetryService.ts` connects WorkerBus dispatch-complete events to:
 
 1. **Redux DevTools** -- debounced 5s metrics snapshot via `workerMetricsSlice`
-2. **Debug console** -- a note when any worker error rate exceeds 10%
+2. **Debug console** -- a note when any worker error rate exceeds 10% (development builds only; production builds drop `console.debug`)
 
 `stores/slices/workerMetricsSlice.ts` is runtime-only (not persisted to IndexedDB).
 

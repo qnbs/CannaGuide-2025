@@ -51,14 +51,15 @@ export type LocalAiErrorStage =
     | 'webllm-storage-check'
     | 'response-validation'
 
+/** Optional fields accept an explicit `undefined` (exactOptionalPropertyTypes). */
 export interface LocalAiErrorContext {
-    model?: string
+    model?: string | undefined
     stage: LocalAiErrorStage
-    backend?: 'webgpu' | 'wasm'
-    retryAttempt?: number
-    batchItem?: number
-    candidateIndex?: number
-    consumer?: string
+    backend?: 'webgpu' | 'wasm' | undefined
+    retryAttempt?: number | undefined
+    batchItem?: number | undefined
+    candidateIndex?: number | undefined
+    consumer?: string | undefined
 }
 
 /**

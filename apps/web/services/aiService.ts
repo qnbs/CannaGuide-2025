@@ -5,6 +5,7 @@ import {
     getGeminiService,
     getLocalAiService,
     shouldRouteLocally,
+    withLocalFallback,
     withLocalService,
     captureLocalAiError,
 } from '@/services/localRoutingService'
@@ -595,16 +596,18 @@ export const aiService = {
             }),
             confidence: 0.5,
         }
-        try {
-            const gemini = await getGeminiService()
-            return validateAiResponse(
-                AIResponseSchema,
-                await gemini.getTrendAnalysis(prompt, title, lang),
-                'geneticTrendAnalysis',
-            )
-        } catch {
-            return fallback
-        }
+        // Through withLocalFallback like every other cloud call: no request in
+        // Local-Only Mode or the local/eco AI modes, none without provider
+        // consent, and the fallback on any failure.
+        return withLocalFallback(
+            async () =>
+                validateAiResponse(
+                    AIResponseSchema,
+                    await (await getGeminiService()).getTrendAnalysis(prompt, title, lang),
+                    'geneticTrendAnalysis',
+                ),
+            () => fallback,
+        )
     },
 
     /** Recommend grow technology based on current grow setup. */
@@ -649,15 +652,17 @@ export const aiService = {
             }),
             confidence: 0.5,
         }
-        try {
-            const gemini = await getGeminiService()
-            return validateAiResponse(
-                AIResponseSchema,
-                await gemini.getTrendAnalysis(prompt, title, lang),
-                'growTechRecommendation',
-            )
-        } catch {
-            return fallback
-        }
+        // Through withLocalFallback like every other cloud call: no request in
+        // Local-Only Mode or the local/eco AI modes, none without provider
+        // consent, and the fallback on any failure.
+        return withLocalFallback(
+            async () =>
+                validateAiResponse(
+                    AIResponseSchema,
+                    await (await getGeminiService()).getTrendAnalysis(prompt, title, lang),
+                    'growTechRecommendation',
+                ),
+            () => fallback,
+        )
     },
 }

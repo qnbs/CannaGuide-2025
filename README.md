@@ -44,10 +44,11 @@ CannaGuide 2025 runs **client-side**: there is no CannaGuide backend and no acco
 The app uses the network only for these:
 
 - cloud AI requests, sent directly to the provider you choose with your own key;
+- cloud text-to-speech (ElevenLabs), only when you turn it on and store your own key;
 - the one-time download of on-device models;
 - the desktop update check.
 
-**Local-Only mode** turns off the cloud AI requests and the update check, and loads Transformers.js models from the browser cache only. It does **not yet** cover every on-device model download: the remaining download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
+**Local-Only mode** turns off the cloud AI and text-to-speech requests and the update check, and loads Transformers.js models from the browser cache only. It does **not yet** cover every on-device model download: the remaining download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
 
 - **Web app (PWA):** installable from the browser, and works offline after the first visit.
 - **Desktop app:** a [Tauri 2](https://v2.tauri.app/) shell for Windows, macOS (Apple silicon and Intel) and Linux, with signed in-app updates.

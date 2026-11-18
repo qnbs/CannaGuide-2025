@@ -1,6 +1,6 @@
 # CannaGuide 2025
 
-**An offline-first grow companion for home cannabis cultivation: plan, track, simulate and learn, with optional AI, entirely on your own device.**
+**An offline-first grow companion for home cannabis cultivation: plan, track, simulate and learn on your own device, with optional AI.**
 
 [![Ask DeepWiki](https://img.shields.io/badge/Ask-DeepWiki-1f6feb)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
@@ -39,7 +39,16 @@
 
 ## What it is
 
-CannaGuide 2025 runs **100% client-side**. There is no CannaGuide backend and no account. Your grows, plants, journals and settings live in your browser's or desktop app's local storage (IndexedDB).
+CannaGuide 2025 runs **client-side**: there is no CannaGuide backend and no account. Your grows, plants, journals and settings live in your browser's or desktop app's local storage (IndexedDB).
+
+The app uses the network only for these:
+
+- cloud AI requests, sent directly to the provider you choose with your own key;
+- the one-time download of on-device models;
+- the desktop update check;
+- masked crash reports from production builds.
+
+**Local-Only mode** turns these off. The last model-download paths are being closed in [#700](https://github.com/qnbs/CannaGuide-2025/issues/700).
 
 - **Web app (PWA):** installable from the browser, and works offline after the first visit.
 - **Desktop app:** a [Tauri 2](https://v2.tauri.app/) shell for Windows, macOS (Apple silicon and Intel) and Linux, with signed in-app updates.
@@ -83,7 +92,7 @@ Download the installer for your platform from the **[latest release](https://git
 | macOS    | `…_aarch64.dmg` (Apple silicon) or `…_x64.dmg` (Intel)                                      | The app is not notarized. If macOS blocks it, open _System Settings → Privacy & Security → Open Anyway_. |
 | Linux    | `…_amd64.AppImage` (make it executable) or `…_amd64.deb` (`sudo apt install ./…_amd64.deb`) | No extra step.                                                                                           |
 
-- **Updates:** from v1.12.1 on, the app updates itself (_Settings → About_). Updates are minisign-signed and verified before install, and the app saves your data before restarting. It never checks for updates in Local-Only mode or offline.
+- **Updates:** from v1.12.1 on, the app updates itself (_Settings → About_). Updates are minisign-signed and verified before install. Before the restart, the app saves your data and waits up to 10 seconds for that save to finish. A save that takes longer is tracked in [#883](https://github.com/qnbs/CannaGuide-2025/issues/883). It never checks for updates in Local-Only mode or offline.
 - **Coming from v1.12.0?** Those desktop builds exit at startup, so they cannot update themselves. Install v1.12.1 manually over them. Your data folder stays the same.
 
 The installers are not code-signed with a Windows or Apple developer certificate yet, which is why the operating systems warn on first launch.
@@ -101,7 +110,7 @@ The installers are not code-signed with a Windows or Apple developer certificate
 
 ### Legal
 
-Germany's Cannabis Act ([KCanG §9](https://www.gesetze-im-internet.de/kcang/__9.html)) allows up to three plants per adult. CannaGuide models a single user, and **caps active plants at three across all grows**. Archived and finished plants do not count. The app shows an age gate (18+) on first use.
+Germany's Cannabis Act ([KCanG §9](https://www.gesetze-im-internet.de/kcang/__9.html)) allows up to three plants per adult. CannaGuide models a single user, and **caps active plants at three across all grows**. Every plant that is not marked _Finished_ counts, including plants in grows you have archived. The app shows an age gate (18+) on first use.
 
 ---
 

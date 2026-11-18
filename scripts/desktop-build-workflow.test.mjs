@@ -134,3 +134,53 @@ test('macOS builds carry at least an ad-hoc signature, and the webview cannot dr
         }
     }
 })
+
+test('every desktop build is launched before its bundles are kept, on PRs too', () => {
+    // v1.12.0 compiled, bundled, signed and passed verify, then exited at startup on
+    // every platform (PluginInitialization). A runtime smoke now gates the upload.
+    const jobBlock = (name) => {
+        const start = WORKFLOW.indexOf(`\n    ${name}:\n`)
+        assert.notEqual(start, -1, `missing job ${name}`)
+        const next = WORKFLOW.slice(start + 1).search(/\n    [a-z-]+:\n/)
+        return next === -1 ? WORKFLOW.slice(start) : WORKFLOW.slice(start, start + 1 + next)
+    }
+    const build = jobBlock('build')
+    const smokeAt = build.indexOf('- name: Runtime smoke\n')
+    const uploadAt = build.indexOf('- name: Upload artifacts\n')
+    assert.ok(
+        smokeAt !== -1 && uploadAt !== -1 && smokeAt < uploadAt,
+        'smoke runs before the upload',
+    )
+    assert.match(
+        build.slice(smokeAt),
+        /^- name: Runtime smoke\n(?:\s+#.*\n)*\s+uses: \.\/\.github\/actions\/desktop-runtime-smoke\n/,
+    )
+    // The step has no continue-on-error: a failed launch fails the job.
+    assert.doesNotMatch(build.slice(smokeAt, uploadAt), /continue-on-error/)
+
+    const pr = jobBlock('pr-smoke')
+    assert.match(pr, /if: github\.event_name == 'pull_request'/)
+    assert.match(pr, /uses: \.\/\.github\/actions\/desktop-runtime-smoke/)
+    assert.doesNotMatch(pr, /secrets\./, 'the pull request smoke reads no secrets')
+    assert.doesNotMatch(pr, /tauri\.updater\.conf\.json/, 'no updater bundles, so nothing to sign')
+    for (const target of [
+        'x86_64-unknown-linux-gnu',
+        'x86_64-pc-windows-msvc',
+        'aarch64-apple-darwin',
+    ]) {
+        assert.match(pr, new RegExp(`target: ${target}\\n`), target)
+    }
+
+    const action = readFileSync(
+        resolve(REPO_ROOT, '.github/actions/desktop-runtime-smoke/action.yml'),
+        'utf8',
+    )
+    for (const label of ['-deb', '-appimage', '-nsis', '-msi', '-app']) {
+        assert.ok(
+            action.includes(`--label "$TARGET${label}"`) ||
+                action.includes(`--label "$env:TARGET${label}"`),
+            label,
+        )
+    }
+    assert.match(action, /node scripts\/desktop-smoke\.mjs/)
+})

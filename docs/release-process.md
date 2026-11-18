@@ -24,6 +24,10 @@ examples in other documents do not override this procedure.
    in CI, not on the low-memory maintainer machine.
 6. **Separate platform evidence:** a passing web build does not qualify native desktop bundles,
    updater signatures or production identity. Record those limits explicitly.
+7. **Desktop runtime qualification:** a desktop bundle qualifies only once it has been
+   **launched** -- see [Desktop runtime qualification](#desktop-runtime-qualification). A
+   compile, bundle, signature or manifest check alone never does: v1.12.0 passed all four
+   and exited at startup on every platform.
 
 ## Release Steps
 
@@ -271,6 +275,52 @@ unsuccessful check aborts the release.
 > with a direct `push: tags` trigger because `workflow_run` caused
 > persistent `startup_failure` errors (timing issues, exact name
 > matching, permission inheritance).
+
+## Desktop runtime qualification
+
+`scripts/desktop-smoke.mjs` launches the packaged app the way a user would, in an isolated
+profile, and passes only when every check passes:
+
+| Run                | What it proves                                                                                                                                                                                                                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| first start (held) | native start; the bundled frontend ran and reported over IPC (`frontend_ready`); native and frontend version; a rendered view (main view, or onboarding as a dialog); a painted window (Linux screenshot pixel spread); a second launch hands over and exits; the quit waits for the frontend flush and exits 0 |
+| restart            | the saved snapshot from the first run is found; the window-state file was written; clean quit                                                                                                                                                                                                                   |
+
+The app cooperates through `apps/desktop/src-tauri/src/startup.rs`. Only with
+`CANNAGUIDE_SMOKE_REPORT` set, which the harness does and the app never does, is the
+frontend's startup report written to that file, and the app then quits through the normal
+quit handshake. Without that variable, `frontend_ready` only prints one line. The report
+has a fixed schema and holds no user data.
+
+**Where it runs (`.github/actions/desktop-runtime-smoke`):**
+
+- **Desktop Build, every target:** the smoke runs before the bundles are uploaded, so
+  `verify` and Release Publish stop on a build that does not start:
+    - **Linux:** the `.deb` installed through apt, and the AppImage extracted, both under
+      Xvfb with a D-Bus session.
+    - **Windows:** the NSIS and the MSI install.
+    - **macOS:** the `.app`. The x86_64 build is recorded as `NOT_RUN` (never as passed) on a
+      runner without Rosetta 2.
+- **Pull requests that touch the desktop shell or the web app's start** run `pr-smoke`: an
+  unsigned build with no secrets, on Linux, Windows and Apple Silicon. Its bundles are kept
+  for 7 days for a check on a real desktop.
+
+**Isolation:** on Linux, `HOME` and `XDG_*` point into a temporary profile. On macOS, `HOME`
+and `CFFIXED_USER_HOME` do. Windows app folders cannot be redirected, so the harness refuses
+to run there outside CI, and CI resets the runner's app folders before each install.
+
+**Local run on a Linux desktop**, with the real display or Xvfb. Your own app data stays
+untouched:
+
+```bash
+node scripts/desktop-smoke.mjs --app /usr/bin/cannaguide-desktop --expect-version X.Y.Z
+xvfb-run -a node scripts/desktop-smoke.mjs --app ./CannaGuide-2025_X.Y.Z_amd64.AppImage \
+  --appimage --expect-version X.Y.Z
+```
+
+**Not covered:** a real in-app update between two signed releases (manual acceptance
+above), first-run OS prompts (SmartScreen, Gatekeeper on a downloaded, quarantined app), and
+GPU-specific rendering on hardware other than the runner's.
 
 ## No Automation
 

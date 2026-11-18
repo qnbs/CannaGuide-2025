@@ -1,0 +1,124 @@
+name: Desktop runtime smoke
+description: >-
+    Installs and launches the packaged desktop app the way a user would and runs
+    scripts/desktop-smoke.mjs against it: native start, the bundled frontend reporting
+    over IPC, a painted window (Linux), single instance, the flushed quit and a
+    restart that finds the saved state. A build, bundle or signature check alone is
+    not a runtime qualification.
+inputs:
+    target:
+        description: Rust target triple of the bundle
+        required: true
+    bundle-dir:
+        description: The bundle directory, target/<target>/release/bundle
+        required: true
+    evidence-dir:
+        description: Where reports, logs and screenshots are written
+        required: false
+        default: desktop-smoke
+runs:
+    using: composite
+    steps:
+        - name: Expected version
+          id: version
+          shell: bash
+          run: echo "version=$(node -p "require('./apps/desktop/src-tauri/tauri.conf.json').version")" >> "$GITHUB_OUTPUT"
+
+        # The .deb goes through apt, so its Depends line is resolved like a user's
+        # install; the AppImage runs extracted (APPIMAGE_EXTRACT_AND_RUN), since
+        # runners have no FUSE 2. dbus-run-session gives the single-instance plugin
+        # its session bus.
+        - name: Linux -- .deb and AppImage under Xvfb
+          if: runner.os == 'Linux'
+          shell: bash
+          env:
+              BUNDLE: ${{ inputs.bundle-dir }}
+              EVIDENCE: ${{ inputs.evidence-dir }}
+              TARGET: ${{ inputs.target }}
+              VERSION: ${{ steps.version.outputs.version }}
+          run: |
+              set -euo pipefail
+              sudo apt-get install -y --no-install-recommends xvfb xauth x11-utils imagemagick dbus dbus-x11
+              deb="$(find "$BUNDLE/deb" -name '*.deb' -print -quit)"
+              appimage="$(find "$BUNDLE/appimage" -name '*.AppImage' -print -quit)"
+              [[ -n "$deb" && -n "$appimage" ]] || { echo "[FAIL] .deb or AppImage missing in $BUNDLE"; exit 1; }
+              sudo apt-get install -y "$(realpath "$deb")"
+              chmod +x "$appimage"
+              smoke() {
+                dbus-run-session -- xvfb-run -a -s '-screen 0 1280x800x24' \
+                  node scripts/desktop-smoke.mjs --expect-version "$VERSION" --evidence "$EVIDENCE" "$@"
+              }
+              status=0
+              smoke --app /usr/bin/cannaguide-desktop --label "$TARGET-deb" || status=1
+              smoke --app "$(realpath "$appimage")" --appimage --label "$TARGET-appimage" || status=1
+              exit "$status"
+
+        # An x86_64 build on an arm64 runner needs Rosetta 2. Without it the launch is
+        # recorded as not run, never as passed.
+        - name: macOS -- the .app
+          if: runner.os == 'macOS'
+          shell: bash
+          env:
+              BUNDLE: ${{ inputs.bundle-dir }}
+              EVIDENCE: ${{ inputs.evidence-dir }}
+              TARGET: ${{ inputs.target }}
+              VERSION: ${{ steps.version.outputs.version }}
+          run: |
+              set -euo pipefail
+              app="$(find "$BUNDLE/macos" -maxdepth 1 -name '*.app' -print -quit)"
+              [[ -n "$app" ]] || { echo "[FAIL] no .app in $BUNDLE/macos"; exit 1; }
+              binary="$(find "$app/Contents/MacOS" -type f -perm -u+x -print -quit)"
+              if [[ "$TARGET" == x86_64-apple-darwin && "$(uname -m)" == arm64 ]] && ! arch -x86_64 /usr/bin/true 2>/dev/null; then
+                mkdir -p "$EVIDENCE"
+                echo "{\"label\":\"$TARGET-app\",\"results\":[{\"name\":\"runtime smoke\",\"status\":\"NOT_RUN\",\"detail\":\"Rosetta 2 unavailable on this runner\"}]}" > "$EVIDENCE/$TARGET-app-smoke.json"
+                echo "::warning::Rosetta 2 is not available on this runner; the $TARGET runtime smoke did NOT run"
+                exit 0
+              fi
+              node scripts/desktop-smoke.mjs --app "$binary" --expect-version "$VERSION" --evidence "$EVIDENCE" --label "$TARGET-app"
+
+        # Windows app folders cannot be redirected, so the runner's profile is reset
+        # before each install; runners are ephemeral (desktop-smoke.mjs requires CI).
+        - name: Windows -- NSIS and MSI installs
+          if: runner.os == 'Windows'
+          shell: pwsh
+          env:
+              BUNDLE: ${{ inputs.bundle-dir }}
+              EVIDENCE: ${{ inputs.evidence-dir }}
+              TARGET: ${{ inputs.target }}
+              VERSION: ${{ steps.version.outputs.version }}
+          run: |
+              $ErrorActionPreference = 'Stop'
+              function Reset-AppProfile {
+                  foreach ($dir in "$env:APPDATA\com.cannaguide.desktop", "$env:LOCALAPPDATA\com.cannaguide.desktop") {
+                      if (Test-Path $dir) { Remove-Item -Recurse -Force $dir }
+                  }
+              }
+              function Find-InstalledApp([string] $root) {
+                  Get-ChildItem -Path $root -Recurse -Depth 3 -Filter '*.exe' -ErrorAction SilentlyContinue |
+                      Where-Object { $_.DirectoryName -like '*CannaGuide*' -and $_.Name -notmatch 'uninstall' } |
+                      Select-Object -First 1
+              }
+              $nsis = Get-ChildItem "$env:BUNDLE\nsis\*-setup.exe" | Select-Object -First 1
+              $msi = Get-ChildItem "$env:BUNDLE\msi\*.msi" | Select-Object -First 1
+              if (-not $nsis -or -not $msi) { Write-Output "[FAIL] NSIS or MSI installer missing in $env:BUNDLE"; exit 1 }
+              $status = 0
+
+              Reset-AppProfile
+              Start-Process -FilePath $nsis.FullName -ArgumentList '/S' -Wait
+              $installed = Find-InstalledApp $env:LOCALAPPDATA
+              if (-not $installed) { Write-Output '[FAIL] NSIS install: app not found under LOCALAPPDATA'; $status = 1 }
+              else {
+                  node scripts/desktop-smoke.mjs --app $installed.FullName --expect-version $env:VERSION --evidence $env:EVIDENCE --label "$env:TARGET-nsis"
+                  if ($LASTEXITCODE -ne 0) { $status = 1 }
+              }
+
+              Reset-AppProfile
+              $install = Start-Process -FilePath msiexec.exe -ArgumentList '/i', "`"$($msi.FullName)`"", '/qn', '/norestart' -Wait -PassThru
+              if ($install.ExitCode -ne 0) { Write-Output "[FAIL] MSI install exited $($install.ExitCode)"; $status = 1 }
+              $installed = Find-InstalledApp $env:ProgramFiles
+              if (-not $installed) { Write-Output '[FAIL] MSI install: app not found under Program Files'; $status = 1 }
+              else {
+                  node scripts/desktop-smoke.mjs --app $installed.FullName --expect-version $env:VERSION --evidence $env:EVIDENCE --label "$env:TARGET-msi"
+                  if ($LASTEXITCODE -ne 0) { $status = 1 }
+              }
+              exit $status

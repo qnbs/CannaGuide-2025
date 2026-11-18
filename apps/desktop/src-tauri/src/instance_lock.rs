@@ -14,20 +14,30 @@
 //!
 //! The lock lives in the resource table, so `cleanup_before_exit` releases it before a
 //! restart (the updater does one), as it does for the single-instance plugin's own
-//! claim; a crash releases it with the process.
+//! claim; a crash releases it with the process. It is an OS lock (`flock` /
+//! `LockFileEx`) on an open file, so there is no stale lock and no PID to check.
+//!
+//! A process that cannot take the lock still brings the running app forward: it writes
+//! `.focus-request` next to the lock, and the holder, which polls for it, shows its main
+//! window once that exists. The single-instance callback uses the same request when two
+//! launches race and the window is not created yet.
 
 use std::{
     fs::{self, File, OpenOptions, TryLockError},
     io,
-    path::Path,
+    path::{Path, PathBuf},
+    thread,
+    time::Duration,
 };
 
 use tauri::{
     plugin::{Builder, TauriPlugin},
-    Manager, Resource, Runtime,
+    AppHandle, Manager, Resource, Runtime,
 };
 
 const LOCK_FILE: &str = ".instance.lock";
+const FOCUS_REQUEST: &str = ".focus-request";
+const FOCUS_POLL: Duration = Duration::from_millis(500);
 
 struct InstanceLock {
     _file: File,
@@ -50,6 +60,39 @@ pub(crate) fn try_acquire(dir: &Path) -> io::Result<Option<File>> {
     }
 }
 
+/// Asks the process that holds the lock to show its window.
+pub(crate) fn request_focus(dir: &Path) -> io::Result<()> {
+    fs::write(dir.join(FOCUS_REQUEST), b"")
+}
+
+/// Consumes a pending focus request; true only for the caller that removed it.
+pub(crate) fn take_focus_request(dir: &Path) -> bool {
+    fs::remove_file(dir.join(FOCUS_REQUEST)).is_ok()
+}
+
+/// Shows and focuses the main window; false while it does not exist yet.
+pub(crate) fn focus_main_window<R: Runtime>(app: &AppHandle<R>) -> bool {
+    let Some(window) = app.get_webview_window("main") else {
+        return false;
+    };
+    let _ = window.unminimize();
+    let _ = window.show();
+    let _ = window.set_focus();
+    crate::startup::record_restore(window.is_visible().unwrap_or(false));
+    true
+}
+
+/// A request is consumed only once the window exists, so one that arrives during the
+/// start is answered as soon as the window is there.
+fn watch_focus_requests<R: Runtime>(app: AppHandle<R>, dir: PathBuf) {
+    thread::spawn(move || loop {
+        thread::sleep(FOCUS_POLL);
+        if app.get_webview_window("main").is_some() && take_focus_request(&dir) {
+            focus_main_window(&app);
+        }
+    });
+}
+
 pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("instance-lock")
         .setup(|app, _api| {
@@ -57,8 +100,16 @@ pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
             match try_acquire(&dir) {
                 Ok(Some(file)) => {
                     app.resources_table().add(InstanceLock { _file: file });
+                    // A request left by a process that ran before this one is stale.
+                    take_focus_request(&dir);
+                    watch_focus_requests(app.clone(), dir);
                 }
                 Ok(None) => {
+                    if let Err(error) = request_focus(&dir) {
+                        eprintln!(
+                            "[instance] could not ask the running app to show itself: {error}"
+                        );
+                    }
                     eprintln!("[instance] another CannaGuide process holds this profile; exiting");
                     std::process::exit(0);
                 }
@@ -97,6 +148,46 @@ mod tests {
             try_acquire(&dir).unwrap().is_some(),
             "free again once released"
         );
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn of_simultaneous_attempts_exactly_one_gets_the_lock() {
+        use std::sync::{Arc, Barrier};
+        let dir = scratch("race");
+        fs::create_dir_all(&dir).unwrap();
+        for round in 0..5 {
+            let barrier = Arc::new(Barrier::new(8));
+            let attempts: Vec<_> = (0..8)
+                .map(|_| {
+                    let barrier = Arc::clone(&barrier);
+                    let dir = dir.clone();
+                    thread::spawn(move || {
+                        barrier.wait();
+                        try_acquire(&dir).unwrap()
+                    })
+                })
+                .collect();
+            // The holders are kept alive until all attempts are in, then released.
+            let held: Vec<_> = attempts
+                .into_iter()
+                .map(|attempt| attempt.join().unwrap())
+                .collect();
+            let winners = held.iter().filter(|lock| lock.is_some()).count();
+            assert_eq!(winners, 1, "round {round}: {winners} holders");
+        }
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_focus_request_is_taken_exactly_once() {
+        let dir = scratch("focus");
+        fs::create_dir_all(&dir).unwrap();
+        assert!(!take_focus_request(&dir), "nothing pending");
+        request_focus(&dir).unwrap();
+        request_focus(&dir).unwrap();
+        assert!(take_focus_request(&dir), "the request is taken");
+        assert!(!take_focus_request(&dir), "and only once");
         fs::remove_dir_all(&dir).unwrap();
     }
 

@@ -146,11 +146,12 @@ pub fn run() {
         // instance and exits before anything else starts. Without a session bus
         // (Linux) it logs a warning and launches normally.
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.unminimize();
-                let _ = window.show();
-                let _ = window.set_focus();
-                startup::record_restore(window.is_visible().unwrap_or(false));
+            // When two launches race the window may not exist yet; the lock holder then
+            // shows it as soon as it does (instance_lock.rs).
+            if !instance_lock::focus_main_window(app) {
+                if let Ok(dir) = app.path().app_data_dir() {
+                    let _ = instance_lock::request_focus(&dir);
+                }
             }
         }))
         // Before any window exists: a process that cannot lock this profile exits, which

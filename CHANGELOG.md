@@ -11,7 +11,7 @@ Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their bu
 ### Fixed
 
 - **fix(desktop):** The desktop apps start again. Every v1.12.0 desktop build (Windows NSIS and MSI, macOS Apple Silicon and Intel, Linux .deb and AppImage) exited at startup with `PluginInitialization("window-state", ... invalid type: map, expected unit)`. Since April, `tauri.conf.json` had configured `window-state` (`{"all": true}`) and `store` (`{}`), but neither plugin takes a configuration there. Both entries are removed; window-state still saves every window property by default. A Rust test now checks each `plugins` entry against the configuration type of the plugin version in `Cargo.lock`, and it rejects both old entries.
-- **fix(desktop):** Only one instance runs per user. A second launch brings the open window to the front and exits. Before, it started a second app on the same storage: a second writer that the web app's writer lock cannot see across processes. On Linux the first instance is found over the D-Bus session bus; without one, the app starts normally.
+- **fix(desktop):** Only one instance runs per user. A second launch makes the open app show its window again and exits. Before, it started a second app on the same storage: a second writer that the web app's writer lock cannot see across processes. On Linux the first instance is found over the D-Bus session bus; without one, the app starts normally.
 
 ### Added
 
@@ -22,11 +22,11 @@ Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their bu
     - a second launch hands over, exits and shows the hidden window again;
     - two cold launches at once (three rounds) start only one instance, which then shows its window;
     - each quit is acknowledged by `confirm_quit` with a successful save and exits 0;
-    - a restart loads the saved snapshot (not merely finds it on disk) and the first run's window state.
+    - the first run's quit saved its window state, and a restart loads the saved snapshot (not merely finds it on disk).
 
-    Desktop Build runs it on every target (installed .deb, AppImage, NSIS and MSI installs with their exit codes, and the macOS .app; the Intel build fails if Rosetta 2 cannot be installed) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell, the web app's start or its snapshot storage run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
+    Desktop Build runs it on every target (installed .deb, AppImage, NSIS install and uninstall, the MSI on the clean machine at the folder its log records, each exit code checked, and the macOS .app; the Intel build fails if Rosetta 2 cannot be installed) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell, the web app's start or its snapshot storage run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
 
-- **fix(desktop):** One instance per profile, also without a D-Bus session bus (Linux) and for two cold launches at once (macOS): an exclusive lock on a file in the app data folder, taken before any window exists. It is released before an updater restart. A launch that loses the race still brings the running window to the front.
+- **fix(desktop):** One instance per profile, also without a D-Bus session bus (Linux) and for two cold launches at once (macOS): an exclusive lock on a file in the app data folder, taken before any window exists. It is released before an updater restart. A launch that loses the race still makes the running app show its window again.
 
 ## [1.12.0] - 2026-11-18
 

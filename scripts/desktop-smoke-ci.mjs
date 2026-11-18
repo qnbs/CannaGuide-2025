@@ -1,0 +1,333 @@
+#!/usr/bin/env node
+/**
+ * Runs the desktop runtime smoke (scripts/desktop-smoke.mjs) on a CI runner the way a
+ * user installs the app, for one Tauri bundle directory:
+ *
+ *   Linux   the .deb installed through apt (its Depends resolved like a user's) and the
+ *           AppImage extracted (no FUSE on runners), each under Xvfb in its own D-Bus
+ *           session, with the painted-window check required
+ *   macOS   the .app; for an x86_64 build on an arm64 runner Rosetta 2 is installed if
+ *           missing, and without it the run FAILS -- an Intel bundle is never qualified
+ *           without a launch
+ *   Windows the NSIS installer, then its silent uninstaller, then the MSI installer on the
+ *           clean machine; each exit code is checked. The NSIS program is found by name
+ *           under the per-user folder; the MSI program is taken from the MSI's own log
+ *           (INSTALLDIR), so the test launches what that installer installed -- with an
+ *           NSIS install present, the MSI reuses its folder. The app folders are reset
+ *           before each install (they cannot be redirected); the uninstall entries and
+ *           the MSI log go into the evidence
+ *
+ * Desktop Build runs this before the bundles are uploaded, so a build that does not
+ * start never reaches verify or Release Publish. It replaces a composite action, so
+ * the workflow has no workspace-relative `uses:` for it (zizmor self-repository).
+ *
+ * Usage: node scripts/desktop-smoke-ci.mjs --target <triple> --bundle-dir <dir>
+ *        [--evidence <dir>]
+ * Exit: 0 every launch passed, 1 a launch or install failed, 2 usage error.
+ */
+import { spawnSync } from 'node:child_process'
+import {
+    chmodSync,
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import process from 'node:process'
+import { pathToFileURL } from 'node:url'
+import { parseArgs } from 'node:util'
+
+const APP_ID = 'com.cannaguide.desktop'
+const PROGRAM = 'cannaguide-desktop.exe'
+const HARNESS = 'scripts/desktop-smoke.mjs'
+
+/** The first entry of `dir` whose name matches `pattern`, as a full path. */
+export function findIn(dir, pattern) {
+    if (!existsSync(dir)) return undefined
+    const name = readdirSync(dir).find((entry) => pattern.test(entry))
+    return name ? join(dir, name) : undefined
+}
+
+/** A file called `name` below one of `roots`, at most `depth` folders down. */
+export function findInstalled(roots, name, depth = 3) {
+    const walk = (dir, left) => {
+        let entries
+        try {
+            entries = readdirSync(dir, { withFileTypes: true })
+        } catch {
+            return undefined
+        }
+        const hit = entries.find(
+            (entry) => entry.isFile() && entry.name.toLowerCase() === name.toLowerCase(),
+        )
+        if (hit) return join(dir, hit.name)
+        if (left === 0) return undefined
+        for (const entry of entries) {
+            if (!entry.isDirectory()) continue
+            const found = walk(join(dir, entry.name), left - 1)
+            if (found) return found
+        }
+        return undefined
+    }
+    for (const root of roots.filter(Boolean)) {
+        const found = walk(root, depth)
+        if (found) return found
+    }
+    return undefined
+}
+
+/** INSTALLDIR as the MSI's verbose log records it; undefined when it is not there. */
+export function msiInstallDir(logText) {
+    const match = /Property\(S\): INSTALLDIR = (.+?)\s*$/m.exec(String(logText))
+    return match ? match[1] : undefined
+}
+
+/** An MSI verbose log is UTF-16 with a byte order mark; read it either way. */
+export function readMsiLog(file) {
+    if (!existsSync(file)) return ''
+    const raw = readFileSync(file)
+    const utf16 = raw.length >= 2 && raw[0] === 0xff && raw[1] === 0xfe
+    return utf16 ? raw.toString('utf16le') : raw.toString('utf8')
+}
+
+/** What an x86_64 macOS bundle needs before it can be launched on this runner. */
+export function rosettaPlan({ target, machine, rosettaWorks }) {
+    if (target !== 'x86_64-apple-darwin' || machine !== 'arm64') return 'launch'
+    return rosettaWorks ? 'launch' : 'install-rosetta'
+}
+
+/** The executable inside a macOS .app bundle. */
+export function appBinary(app) {
+    const dir = join(app, 'Contents', 'MacOS')
+    if (!existsSync(dir)) return undefined
+    const name = readdirSync(dir).find((entry) => statSync(join(dir, entry)).mode & 0o111)
+    return name ? join(dir, name) : undefined
+}
+
+const run = (command, args, options = {}) =>
+    spawnSync(command, args, { stdio: 'inherit', encoding: 'utf8', ...options })
+
+const ok = (result) => !result.error && result.status === 0
+
+function smoke(args, wrap = []) {
+    const [command, ...prefix] = wrap.length > 0 ? wrap : [process.execPath]
+    const harness = wrap.length > 0 ? [...prefix, process.execPath, HARNESS] : [HARNESS]
+    return ok(run(command, [...harness, ...args]))
+}
+
+function linux({ bundle, target, version, evidence }) {
+    if (
+        !ok(
+            run('sudo', [
+                'apt-get',
+                'install',
+                '-y',
+                '--no-install-recommends',
+                'xvfb',
+                'xauth',
+                'x11-utils',
+                'imagemagick',
+                'dbus',
+                'dbus-x11',
+            ]),
+        )
+    ) {
+        console.log('[FAIL] could not install the smoke tools')
+        return false
+    }
+    const deb = findIn(join(bundle, 'deb'), /\.deb$/)
+    const appimage = findIn(join(bundle, 'appimage'), /\.AppImage$/)
+    if (!deb || !appimage) {
+        console.log(`[FAIL] .deb or AppImage missing in ${bundle}`)
+        return false
+    }
+    // A virtual display and its own session bus per run; the window check must pass.
+    const wrap = ['dbus-run-session', '--', 'xvfb-run', '-a', '-s', '-screen 0 1280x800x24']
+    const common = ['--expect-version', version, '--evidence', evidence, '--require-screenshot']
+    let passed = true
+    if (!ok(run('sudo', ['apt-get', 'install', '-y', resolve(deb)]))) {
+        console.log('[FAIL] the .deb did not install through apt')
+        passed = false
+    } else if (
+        !smoke(
+            ['--app', '/usr/bin/cannaguide-desktop', '--label', `${target}-deb`, ...common],
+            wrap,
+        )
+    ) {
+        passed = false
+    }
+    chmodSync(appimage, 0o755)
+    if (
+        !smoke(
+            ['--app', resolve(appimage), '--appimage', '--label', `${target}-appimage`, ...common],
+            wrap,
+        )
+    ) {
+        passed = false
+    }
+    return passed
+}
+
+function macos({ bundle, target, version, evidence }) {
+    const app = findIn(join(bundle, 'macos'), /\.app$/)
+    const binary = app && appBinary(app)
+    if (!binary) {
+        console.log(`[FAIL] no .app with an executable in ${join(bundle, 'macos')}`)
+        return false
+    }
+    const machine = spawnSync('uname', ['-m'], { encoding: 'utf8' }).stdout.trim()
+    const rosettaWorks = () => ok(spawnSync('arch', ['-x86_64', '/usr/bin/true']))
+    if (rosettaPlan({ target, machine, rosettaWorks: rosettaWorks() }) === 'install-rosetta') {
+        console.log(`[INFO] Rosetta 2 missing; installing it to launch the ${target} build`)
+        run('sudo', ['softwareupdate', '--install-rosetta', '--agree-to-license'])
+        if (!rosettaWorks()) {
+            console.log(
+                `[FAIL] Rosetta 2 unavailable: the ${target} build cannot be launched, so it is not qualified`,
+            )
+            return false
+        }
+    }
+    return smoke([
+        '--app',
+        binary,
+        '--expect-version',
+        version,
+        '--evidence',
+        evidence,
+        '--label',
+        `${target}-app`,
+    ])
+}
+
+function resetWindowsProfile() {
+    for (const base of [process.env.APPDATA, process.env.LOCALAPPDATA]) {
+        if (base) rmSync(join(base, APP_ID), { recursive: true, force: true })
+    }
+}
+
+function writeUninstallEntries(file) {
+    const keys = [
+        'HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+        'HKLM\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+        'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+    ]
+    const text = keys
+        .map((key) => {
+            const query = spawnSync('reg', ['query', key, '/s', '/f', 'CannaGuide'], {
+                encoding: 'utf8',
+            })
+            return `== ${key}\n${query.stdout ?? ''}`
+        })
+        .join('\n')
+    writeFileSync(file, text)
+}
+
+function windows({ bundle, target, version, evidence }) {
+    const nsis = findIn(join(bundle, 'nsis'), /-setup\.exe$/)
+    const msi = findIn(join(bundle, 'msi'), /\.msi$/)
+    if (!nsis || !msi) {
+        console.log(`[FAIL] NSIS or MSI installer missing in ${bundle}`)
+        return false
+    }
+    const local = process.env.LOCALAPPDATA
+    const common = ['--expect-version', version, '--evidence', evidence]
+    let passed = true
+
+    resetWindowsProfile()
+    const nsisRun = run(resolve(nsis), ['/S'])
+    writeUninstallEntries(join(evidence, 'uninstall-after-nsis.txt'))
+    if (!ok(nsisRun)) {
+        console.log(`[FAIL] NSIS install exited ${nsisRun.status ?? nsisRun.error?.message}`)
+        passed = false
+    }
+    const nsisApp = findInstalled([local, local && join(local, 'Programs')], PROGRAM)
+    if (!nsisApp) {
+        console.log(`[FAIL] NSIS install: ${PROGRAM} not found (see uninstall-after-nsis.txt)`)
+        passed = false
+    } else if (!smoke(['--app', nsisApp, '--label', `${target}-nsis`, ...common])) {
+        passed = false
+    }
+
+    // The MSI is tested on a clean machine: with an NSIS install present it reuses that
+    // folder (Tauri's MSI looks the previous install location up), and the NSIS
+    // uninstaller is qualified on the way. `_?=` makes it run in place and wait.
+    if (nsisApp) {
+        const nsisDir = dirname(nsisApp)
+        const uninstall = run(join(nsisDir, 'uninstall.exe'), ['/S', `_?=${nsisDir}`])
+        if (!ok(uninstall) || existsSync(nsisApp)) {
+            console.log(
+                `[FAIL] NSIS uninstall exited ${uninstall.status ?? uninstall.error?.message}; program still there: ${existsSync(nsisApp)}`,
+            )
+            passed = false
+        }
+    }
+
+    resetWindowsProfile()
+    const msiLog = join(resolve(evidence), 'msi-install.log')
+    const msiRun = run('msiexec.exe', ['/i', resolve(msi), '/qn', '/norestart', '/l*v', msiLog])
+    writeUninstallEntries(join(evidence, 'uninstall-after-msi.txt'))
+    if (!ok(msiRun)) {
+        console.log(`[FAIL] MSI install exited ${msiRun.status ?? msiRun.error?.message}`)
+        passed = false
+    }
+    const installDir = msiInstallDir(readMsiLog(msiLog))
+    const msiApp = installDir && join(installDir, PROGRAM)
+    console.log(`[INFO] MSI INSTALLDIR: ${installDir ?? 'not in the log'}`)
+    if (!msiApp || !existsSync(msiApp)) {
+        console.log(
+            `[FAIL] MSI install: ${PROGRAM} not at INSTALLDIR ${installDir} (see msi-install.log)`,
+        )
+        passed = false
+    } else if (!smoke(['--app', msiApp, '--label', `${target}-msi`, ...common])) {
+        passed = false
+    }
+    return passed
+}
+
+export function main(argv = process.argv.slice(2)) {
+    let values
+    try {
+        ;({ values } = parseArgs({
+            args: argv,
+            options: {
+                target: { type: 'string' },
+                'bundle-dir': { type: 'string' },
+                evidence: { type: 'string', default: 'desktop-smoke' },
+            },
+            strict: true,
+            allowPositionals: false,
+        }))
+        if (!values.target || !values['bundle-dir'])
+            throw new Error('--target and --bundle-dir are required')
+    } catch (error) {
+        console.error(`[desktop-smoke-ci] ${error.message}`)
+        return 2
+    }
+    const version = JSON.parse(
+        readFileSync('apps/desktop/src-tauri/tauri.conf.json', 'utf8'),
+    ).version
+    mkdirSync(values.evidence, { recursive: true })
+    const context = {
+        bundle: values['bundle-dir'],
+        target: values.target,
+        version,
+        evidence: values.evidence,
+    }
+    const byPlatform = { linux, darwin: macos, win32: windows }
+    const platformRun = byPlatform[process.platform]
+    if (!platformRun) {
+        console.error(`[desktop-smoke-ci] no runtime smoke for ${process.platform}`)
+        return 1
+    }
+    const passed = platformRun(context)
+    console.log(`[desktop-smoke-ci] ${passed ? 'PASSED' : 'FAILED'} (${values.target}, ${version})`)
+    return passed ? 0 : 1
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+    process.exitCode = main()
+}

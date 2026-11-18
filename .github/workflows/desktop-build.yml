@@ -18,9 +18,11 @@ on:
             - 'apps/web/stores/indexedDBStorage.ts'
             - 'apps/web/stores/store.ts'
             - 'apps/web/bootstrap/persistenceCoordinator.ts'
+            # The quit save decides when it has settled by comparing these inputs.
+            - 'apps/web/services/persistedSnapshotFormat.ts'
             - 'apps/web/index.html'
             - 'scripts/desktop-smoke.mjs'
-            - '.github/actions/desktop-runtime-smoke/**'
+            - 'scripts/desktop-smoke-ci.mjs'
             - '.github/workflows/desktop-build.yml'
     workflow_dispatch:
     workflow_call:
@@ -191,10 +193,10 @@ jobs:
             - name: Runtime smoke
               # Release gate: a bundle that does not start is never uploaded, so verify
               # and Release Publish (which needs verify) stop here.
-              uses: ./.github/actions/desktop-runtime-smoke
-              with:
-                  target: ${{ matrix.target }}
-                  bundle-dir: apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+              run: node scripts/desktop-smoke-ci.mjs --target "$TARGET" --bundle-dir "apps/desktop/src-tauri/target/$TARGET/release/bundle"
 
             - name: Upload runtime smoke evidence
               if: always()
@@ -289,10 +291,23 @@ jobs:
                     libsoup-3.0-dev \
                     libjavascriptcoregtk-4.1-dev
 
-            - name: Setup Node + install dependencies
-              uses: ./.github/actions/setup-node-ci
+            # The same steps as .github/actions/setup-node-ci, inline: a workspace-relative
+            # `uses:` would add a zizmor self-repository finding, and actionlint 1.7.12
+            # does not accept the `$/` form zizmor asks for.
+            - name: Enable Corepack
+              run: corepack enable
+
+            - name: Setup Node.js
+              uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
                   node-version: 24
+                  cache: pnpm
+
+            - name: Install dependencies
+              shell: bash
+              run: |
+                  node ./scripts/check-pnpm-lockfile.mjs
+                  pnpm install --frozen-lockfile
 
             - name: Build unsigned bundles
               working-directory: apps/desktop
@@ -303,10 +318,10 @@ jobs:
               run: pnpm tauri build --target "$TARGET" --bundles "$BUNDLES"
 
             - name: Runtime smoke
-              uses: ./.github/actions/desktop-runtime-smoke
-              with:
-                  target: ${{ matrix.target }}
-                  bundle-dir: apps/desktop/src-tauri/target/${{ matrix.target }}/release/bundle
+              shell: bash
+              env:
+                  TARGET: ${{ matrix.target }}
+              run: node scripts/desktop-smoke-ci.mjs --target "$TARGET" --bundle-dir "apps/desktop/src-tauri/target/$TARGET/release/bundle"
 
             # tar keeps the executable bits and the bundle layout a zip of the folder loses.
             - name: Archive the macOS app for a manual check

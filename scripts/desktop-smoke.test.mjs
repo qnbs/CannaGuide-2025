@@ -1,11 +1,24 @@
 import assert from 'node:assert/strict'
-import { chmodSync, existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+    chmodSync,
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readdirSync,
+    rmSync,
+    writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
+import { spawn } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
 import {
     appWindowId,
+    appWindows,
+    windowPid,
     evaluateExit,
     evaluateQuitAck,
     evaluateRecord,
@@ -177,8 +190,14 @@ test('the screenshot targets the largest app window by title, never the root win
 // exits 0); with HOLD it hides on .hide, records the restore, quits on .quit; a quit
 // writes .quit-ack with the save result; a restart loads what the quit saved.
 const FAKE_APP = `
-import { existsSync, mkdirSync, openSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+// Written beside the final name and renamed, as startup.rs does.
+const publish = (file, text) => {
+    writeFileSync(file + '.partial', text)
+    renameSync(file + '.partial', file)
+}
+if (process.env.FAKE_MARKER_DIR) writeFileSync(join(process.env.FAKE_MARKER_DIR, 'started-' + process.pid), '')
 const mode = process.env.FAKE_MODE
 const report = process.env.CANNAGUIDE_SMOKE_REPORT
 const home = process.env.HOME
@@ -201,7 +220,7 @@ if (mode !== 'no-single-instance') {
     }
 }
 const hydration = mode === 'fresh-restart' ? 'fresh' : existsSync(saved) ? 'snapshot' : 'fresh'
-writeFileSync(report, JSON.stringify({
+publish(report, JSON.stringify({
     schema: ${REPORT_SCHEMA}, nativeVersion: '1.12.1', os: process.platform, arch: process.arch, readyAfterMs: 5,
     frontend: { outcome: 'started', frontendVersion: '1.12.1', view: 'app', visible: true, hydration,
         localOnly: false, savedSnapshotPresent: existsSync(saved) },
@@ -210,7 +229,7 @@ const quit = () => {
     if (mode === 'flush-timeout') {
         console.error('[quit] no flush confirmation from the frontend; exiting anyway')
     } else {
-        writeFileSync(report + '.quit-ack', JSON.stringify({ schema: ${REPORT_SCHEMA}, saved: mode !== 'unsaved' }))
+        publish(report + '.quit-ack', JSON.stringify({ schema: ${REPORT_SCHEMA}, saved: mode !== 'unsaved' }))
     }
     writeFileSync(saved, '')
     mkdirSync(configDir, { recursive: true })
@@ -223,11 +242,11 @@ if (process.env.CANNAGUIDE_SMOKE_HOLD) {
     const timer = setInterval(() => {
         if (!hidden && existsSync(report + '.hide')) {
             hidden = true
-            writeFileSync(report + '.hidden', JSON.stringify({ visible: false }))
+            publish(report + '.hidden', JSON.stringify({ visible: false }))
         }
         if (existsSync(focus) && mode !== 'no-restore') {
             rmSync(focus, { force: true })
-            writeFileSync(report + '.restored', JSON.stringify({ visible: true }))
+            publish(report + '.restored', JSON.stringify({ visible: true, focused: true }))
         }
         if (existsSync(report + '.quit')) {
             clearInterval(timer)
@@ -356,6 +375,7 @@ test('a quit whose save failed fails, even with exit 0', skipOnWindows, async (t
     assert.deepEqual(failed(summary.results), [
         'first-start: quit acknowledged after a successful save',
         'restart: quit acknowledged after a successful save',
+        'concurrent launch: its quit acknowledged a successful save',
     ])
 })
 
@@ -374,3 +394,84 @@ test('a required screenshot that cannot run fails instead of NOT_RUN', skipOnWin
     assert.equal(painted.status, 'FAIL')
     assert.match(painted.detail, /required but not run/)
 })
+
+test('the window owner comes from _NET_WM_PID, and windows are ordered by size', () => {
+    assert.equal(windowPid('_NET_WM_PID(CARDINAL) = 4242'), 4242)
+    assert.equal(windowPid('_NET_WM_PID:  not found.'), undefined)
+    const windows = appWindows(
+        [
+            '     0x3a00001 "CannaGuide 2025": ("cannaguide-desktop" "x")  10x10+0+0  +0+0',
+            '     0x3a00007 "CannaGuide 2025": ("cannaguide-desktop" "x")  1280x800+0+0  +0+0',
+            '     0x1e00003 "Terminal": ("mate-terminal" "x")  800x600+10+10  +10+10',
+        ].join('\n'),
+    )
+    assert.deepEqual(
+        windows.map((window) => window.id),
+        ['0x3a00007', '0x3a00001'],
+    )
+})
+
+test(
+    'Ctrl+C stops the held app and removes the profiles, exiting 130',
+    skipOnWindows,
+    async (t) => {
+        const dir = mkdtempSync(join(tmpdir(), 'cannaguide-fake-desktop-'))
+        t.after(() => rmSync(dir, { recursive: true, force: true }))
+        writeFileSync(join(dir, 'fake.mjs'), FAKE_APP)
+        const app = join(dir, 'app')
+        writeFileSync(
+            app,
+            `#!/bin/sh\nFAKE_MODE=good exec "${process.execPath}" "${join(dir, 'fake.mjs')}" "$@"\n`,
+        )
+        chmodSync(app, 0o755)
+        const markers = join(dir, 'markers')
+        mkdirSync(markers)
+        const isProfile = (name) => name.startsWith('cannaguide-smoke-profile-')
+        const before = new Set(readdirSync(tmpdir()).filter(isProfile))
+        const harness = fileURLToPath(new URL('./desktop-smoke.mjs', import.meta.url))
+        const env = { ...process.env, FAKE_MARKER_DIR: markers }
+        delete env.DISPLAY
+        const child = spawn(
+            process.execPath,
+            [
+                harness,
+                '--app',
+                app,
+                '--expect-version',
+                '1.12.1',
+                '--evidence',
+                join(dir, 'evidence'),
+            ],
+            { env, stdio: 'ignore' },
+        )
+        const exited = new Promise((done) => child.on('exit', (code) => done(code)))
+        // Interrupt once the first, held instance is up.
+        const deadline = Date.now() + 15_000
+        while (readdirSync(markers).length === 0 && Date.now() < deadline) {
+            await new Promise((done) => setTimeout(done, 100))
+        }
+        const started = readdirSync(markers).map((name) => Number(name.replace('started-', '')))
+        assert.ok(started.length > 0, 'the stand-in app started')
+        child.kill('SIGINT')
+        assert.equal(await exited, 130)
+        const isAlive = (pid) => {
+            try {
+                process.kill(pid, 0)
+                return true
+            } catch {
+                return false
+            }
+        }
+        // SIGKILL is sent before the harness exits; the killed process lingers only until
+        // init has reaped it.
+        const gone = Date.now() + 5000
+        while (started.some(isAlive) && Date.now() < gone) {
+            await new Promise((done) => setTimeout(done, 100))
+        }
+        assert.deepEqual(started.filter(isAlive), [], 'no stand-in app outlives the interrupt')
+        const leftover = readdirSync(tmpdir()).filter(
+            (name) => isProfile(name) && !before.has(name),
+        )
+        assert.deepEqual(leftover, [], 'no profile outlives the interrupt')
+    },
+)

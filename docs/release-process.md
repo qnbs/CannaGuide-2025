@@ -301,17 +301,19 @@ app data folder before any window exists, which covers a missing D-Bus session b
 and two cold launches at once (macOS). A process that cannot take the lock writes
 `.focus-request` next to it and exits; the holder shows its window once it exists. The
 single-instance callback uses the same request when its window is not created yet, so a
-second launch always brings the running app forward. The concurrent run tests all of this
+second launch always makes the running app show its window. Focus is recorded but not
+claimed: a window manager may refuse it. The concurrent run tests all of this
 in three rounds of two simultaneous cold launches.
 
-**Where it runs (`.github/actions/desktop-runtime-smoke`):**
+**Where it runs (`scripts/desktop-smoke-ci.mjs`, called by Desktop Build):**
 
 - **Desktop Build, every target:** the smoke runs before the bundles are uploaded, so
   `verify` and Release Publish stop on a build that does not start:
     - **Linux:** the `.deb` installed through apt, and the AppImage extracted, both under
       Xvfb with a D-Bus session; the painted-window check is required (`--require-screenshot`).
-    - **Windows:** the NSIS and the MSI install, each installer's exit code checked and the
-      program found where that installer put it.
+    - **Windows:** the NSIS install, then its silent uninstaller, then the MSI install on the
+      clean machine, each exit code checked. The MSI program is taken from the MSI's own log
+      (`INSTALLDIR`): with an NSIS install present, the MSI reuses that folder.
     - **macOS:** the `.app`. For the x86_64 build on an Apple Silicon runner, Rosetta 2 is
       installed if missing; without it the step fails. An Intel bundle is never qualified
       without a launch.

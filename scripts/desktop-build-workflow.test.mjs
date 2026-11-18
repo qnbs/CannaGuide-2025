@@ -144,34 +144,35 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
         const next = WORKFLOW.slice(start + 1).search(/\n    [a-z-]+:\n/)
         return next === -1 ? WORKFLOW.slice(start) : WORKFLOW.slice(start, start + 1 + next)
     }
+    const stepIn = (block, name) => {
+        const at = block.indexOf(`- name: ${name}\n`)
+        assert.notEqual(at, -1, `missing step ${name}`)
+        const next = block.indexOf('\n            - name: ', at + 1)
+        return { at, text: next === -1 ? block.slice(at) : block.slice(at, next) }
+    }
+    const runsTheSmoke =
+        /run: node scripts\/desktop-smoke-ci\.mjs --target "\$TARGET" --bundle-dir /
+
     const build = jobBlock('build')
-    const smokeAt = build.indexOf('- name: Runtime smoke\n')
-    const uploadAt = build.indexOf('- name: Upload artifacts\n')
-    assert.ok(
-        smokeAt !== -1 && uploadAt !== -1 && smokeAt < uploadAt,
-        'smoke runs before the upload',
-    )
-    assert.match(
-        build.slice(smokeAt),
-        /^- name: Runtime smoke\n(?:\s+#.*\n)*\s+uses: \.\/\.github\/actions\/desktop-runtime-smoke\n/,
-    )
+    const smoke = stepIn(build, 'Runtime smoke')
+    const upload = stepIn(build, 'Upload artifacts')
+    assert.ok(smoke.at < upload.at, 'smoke runs before the upload')
+    assert.match(smoke.text, runsTheSmoke)
     // The step has no continue-on-error: a failed launch fails the job.
-    assert.doesNotMatch(build.slice(smokeAt, uploadAt), /continue-on-error/)
+    assert.doesNotMatch(smoke.text, /continue-on-error/)
 
     const pr = jobBlock('pr-smoke')
     assert.match(pr, /if: github\.event_name == 'pull_request'/)
-    assert.match(pr, /uses: \.\/\.github\/actions\/desktop-runtime-smoke/)
     // CodeRabbit on #881: the PR smoke must block too, and run before its upload.
-    const prSmokeAt = pr.indexOf('- name: Runtime smoke\n')
-    const prUploadAt = pr.indexOf('- name: Upload smoke evidence and bundles\n')
-    assert.ok(
-        prSmokeAt !== -1 && prUploadAt !== -1 && prSmokeAt < prUploadAt,
-        'PR smoke before upload',
-    )
-    const prSmokeStep = pr.slice(prSmokeAt, pr.indexOf('\n            - name: ', prSmokeAt + 1))
-    assert.doesNotMatch(prSmokeStep, /continue-on-error/)
+    const prSmoke = stepIn(pr, 'Runtime smoke')
+    const prUpload = stepIn(pr, 'Upload smoke evidence and bundles')
+    assert.ok(prSmoke.at < prUpload.at, 'PR smoke before upload')
+    assert.match(prSmoke.text, runsTheSmoke)
+    assert.doesNotMatch(prSmoke.text, /continue-on-error/)
     assert.doesNotMatch(pr, /secrets\./, 'the pull request smoke reads no secrets')
     assert.doesNotMatch(pr, /tauri\.updater\.conf\.json/, 'no updater bundles, so nothing to sign')
+    // No workspace-relative action in the new job (zizmor self-repository ratchet).
+    assert.doesNotMatch(pr, /uses: \.\//)
     for (const target of [
         'x86_64-unknown-linux-gnu',
         'x86_64-pc-windows-msvc',
@@ -180,22 +181,32 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
         assert.match(pr, new RegExp(`target: ${target}\\n`), target)
     }
 
-    const action = readFileSync(
-        resolve(REPO_ROOT, '.github/actions/desktop-runtime-smoke/action.yml'),
-        'utf8',
-    )
+    // A skipped smoke would upload untested bundles (CodeRabbit on #881).
+    assert.doesNotMatch(smoke.text, /\n\s+if:/, 'the release smoke step always runs')
+    assert.doesNotMatch(prSmoke.text, /\n\s+if:/, 'the PR smoke step always runs')
+
+    const orchestrator = readFileSync(resolve(REPO_ROOT, 'scripts/desktop-smoke-ci.mjs'), 'utf8')
+    const fn = (name) => {
+        const at = orchestrator.indexOf(`function ${name}(`)
+        assert.notEqual(at, -1, `missing ${name}()`)
+        return orchestrator.slice(at, orchestrator.indexOf('\n}\n', at))
+    }
     for (const label of ['-deb', '-appimage', '-nsis', '-msi', '-app']) {
-        assert.ok(
-            action.includes(`--label "$TARGET${label}"`) ||
-                action.includes(`--label "$env:TARGET${label}"`),
-            label,
+        assert.ok(orchestrator.includes(`\`\${target}${label}\``), label)
+    }
+    // Fail closed, checked on the branches themselves:
+    // - Intel macOS without Rosetta returns failure right after saying so;
+    assert.match(fn('macos'), /\[FAIL\] Rosetta 2 unavailable[^\n]*\n[^\n]*\n\s*return false/)
+    // - the Linux harness arguments carry --require-screenshot;
+    assert.match(fn('linux'), /const common = \[[^\]]*'--require-screenshot'[^\]]*\]/)
+    // - a failed NSIS or MSI install, or NSIS uninstall, marks the run failed.
+    for (const failure of ['NSIS install exited', 'MSI install exited', 'NSIS uninstall exited']) {
+        assert.match(
+            fn('windows'),
+            new RegExp(`${failure}[^\\n]*\\n(?:[^\\n]*\\n)?\\s*passed = false`),
+            failure,
         )
     }
-    assert.match(action, /node scripts\/desktop-smoke\.mjs/)
-    // Fail closed: an Intel bundle without Rosetta fails, never NOT_RUN-and-pass, and the
-    // Linux painted-window check must run.
-    assert.match(action, /\[FAIL\] Rosetta 2 unavailable/)
-    assert.doesNotMatch(action, /did NOT run"\s*\n\s*exit 0/)
-    assert.match(action, /--require-screenshot/)
-    assert.match(action, /\$nsisRun\.ExitCode -ne 0/)
+    // - and main() turns a failed platform run into exit 1.
+    assert.match(orchestrator, /return passed \? 0 : 1/)
 })

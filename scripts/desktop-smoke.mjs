@@ -165,6 +165,11 @@ export function evaluateExit({ run, exit, stderr }) {
     return [
         check(`${run}: quit exits with code 0`, exit.code === 0, ended),
         check(
+            `${run}: output closed after the exit`,
+            !exit.drainTimedOut,
+            exit.drainTimedOut ? 'a process kept the output open; the group was killed' : 'closed',
+        ),
+        check(
             `${run}: quit not ended by the flush timeout`,
             !timedOutByFlush,
             timedOutByFlush ? 'the native 10 s flush timeout ended the quit' : 'no flush timeout',
@@ -177,23 +182,6 @@ export function evaluateExit({ run, exit, stderr }) {
 export function pixelSpread(output) {
     const value = Number.parseFloat(String(output).trim())
     return Number.isFinite(value) ? value : undefined
-}
-
-/**
- * The app window's X id: the largest window with this title (GTK can also map small
- * helper windows that carry it). Undefined when none is mapped.
- */
-export function appWindowId(xwininfoTree, title = 'CannaGuide 2025') {
-    let best
-    for (const entry of String(xwininfoTree).split('\n')) {
-        if (!entry.includes(`"${title}":`)) continue
-        const id = entry.trim().split(/\s+/)[0]
-        if (!/^0x[0-9a-f]+$/i.test(id)) continue
-        const size = /\s(\d+)x(\d+)[+-]/.exec(entry)
-        const area = size ? Number(size[1]) * Number(size[2]) : 0
-        if (!best || area > best.area) best = { id, area }
-    }
-    return best?.id
 }
 
 const readJson = (path) => {
@@ -269,56 +257,141 @@ function launch(app, env, logPrefix) {
     }
 }
 
+/** Kills whatever is left of the launched process group, even after its leader exited. */
+function killGroup(run) {
+    if (process.platform === 'win32') {
+        spawnSync('taskkill', ['/T', '/F', '/PID', String(run.child.pid)], { stdio: 'ignore' })
+        return
+    }
+    try {
+        process.kill(-run.child.pid, 'SIGKILL')
+    } catch {
+        // No process of the group is left.
+    }
+}
+
 /** Stops the process tree; returns whether the process is gone afterwards. */
 async function stopTree(run) {
-    const { child } = run
-    if (!isRunning(child)) return true
-    if (process.platform === 'win32') {
-        spawnSync('taskkill', ['/T', '/F', '/PID', String(child.pid)], { stdio: 'ignore' })
-    } else {
+    if (!isRunning(run.child)) return true
+    killGroup(run)
+    if (process.platform !== 'win32' && isRunning(run.child)) {
         try {
-            process.kill(-child.pid, 'SIGKILL')
+            run.child.kill('SIGKILL')
         } catch {
-            try {
-                child.kill('SIGKILL')
-            } catch {
-                // Already gone, or not ours to kill; the wait below decides.
-            }
+            // Already gone, or not ours to kill; the wait below decides.
         }
     }
     const result = await within(run.exited, KILL_WAIT_MS)
     return !result.timedOut
 }
 
-/** Waits for the exit (killing the tree on timeout), then for the end of its output. */
+/**
+ * Waits for the exit (killing the tree on timeout), then for the end of its output. A
+ * helper that keeps the output open past LOG_DRAIN_MS is killed with the group, the
+ * streams are closed, and the run records it as a failure.
+ */
 async function waitForExit(run, timeoutMs) {
     let result = await within(run.exited, timeoutMs)
     if (result.timedOut) {
         const stopped = await stopTree(run)
         result = { code: null, signal: null, timedOut: true, killFailed: !stopped }
     }
-    await within(run.closed, LOG_DRAIN_MS)
+    const drained = await within(run.closed, LOG_DRAIN_MS)
+    if (drained.timedOut) {
+        killGroup(run)
+        run.child.stdout?.destroy()
+        run.child.stderr?.destroy()
+        result = { ...result, drainTimedOut: true }
+    }
     return result
 }
 
-function captureSpread(display, windowId, file) {
-    const grab = spawnSync('import', ['-display', display, '-window', windowId, file], {
-        encoding: 'utf8',
-    })
-    if (grab.error || grab.status !== 0) return { error: 'ImageMagick import is not available' }
-    const stats = spawnSync('convert', [file, '-format', '%[fx:standard_deviation]', 'info:'], {
-        encoding: 'utf8',
-    })
+/** Every window with this title in an `xwininfo -root -tree` listing, with its area. */
+export function appWindows(xwininfoTree, title = 'CannaGuide 2025') {
+    const windows = []
+    for (const entry of String(xwininfoTree).split('\n')) {
+        if (!entry.includes(`"${title}":`)) continue
+        const id = entry.trim().split(/\s+/)[0]
+        if (!/^0x[0-9a-f]+$/i.test(id)) continue
+        const size = /\s(\d+)x(\d+)[+-]/.exec(entry)
+        windows.push({ id, area: size ? Number(size[1]) * Number(size[2]) : 0, line: entry.trim() })
+    }
+    return windows.sort((left, right) => right.area - left.area)
+}
+
+/** The largest window with this title (GTK can also map small helper windows). */
+export function appWindowId(xwininfoTree, title = 'CannaGuide 2025') {
+    return appWindows(xwininfoTree, title)[0]?.id
+}
+
+/** Parses `xprop -id <id> _NET_WM_PID` output. */
+export function windowPid(xpropOutput) {
+    const match = /_NET_WM_PID\(CARDINAL\) = (\d+)/.exec(String(xpropOutput))
+    return match ? Number(match[1]) : undefined
+}
+
+/** Linux: the process group of `pid` (/proc/<pid>/stat, field 5). */
+function processGroup(pid) {
+    try {
+        const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
+        return Number(stat.slice(stat.lastIndexOf(')') + 2).split(' ')[2])
+    } catch {
+        return undefined
+    }
+}
+
+/** A child process bounded by what is left of `deadline` (at most 5 s, at least 1 s). */
+function bounded(command, args, deadline) {
+    const timeout = Math.max(1000, Math.min(5000, deadline - Date.now()))
+    return spawnSync(command, args, { encoding: 'utf8', timeout, killSignal: 'SIGKILL' })
+}
+
+const toolMissing = (result) => result.error?.code === 'ENOENT'
+
+/** The launched instance's window: the largest one whose process is in its group. */
+function instanceWindow(display, tree, group, deadline) {
+    for (const candidate of appWindows(tree)) {
+        const prop = bounded(
+            'xprop',
+            ['-display', display, '-id', candidate.id, '_NET_WM_PID'],
+            deadline,
+        )
+        if (toolMissing(prop)) return { error: 'xprop is not installed' }
+        const pid = windowPid(prop.stdout)
+        if (pid !== undefined && processGroup(pid) === group) return { candidate }
+    }
+    return { error: 'no window of the launched instance found (xwininfo, xprop)' }
+}
+
+function captureSpread(display, windowId, file, deadline) {
+    const grab = bounded('import', ['-display', display, '-window', windowId, file], deadline)
+    if (toolMissing(grab)) return { error: 'ImageMagick import is not installed' }
+    if (grab.error || grab.status !== 0) {
+        return {
+            error: `capture failed (${grab.error?.code ?? `exit ${grab.status}`})`,
+            retry: true,
+        }
+    }
+    const stats = bounded(
+        'convert',
+        [file, '-format', '%[fx:standard_deviation]', 'info:'],
+        deadline,
+    )
+    if (toolMissing(stats)) return { error: 'ImageMagick convert is not installed' }
     const spread = pixelSpread(stats.stdout)
-    return spread === undefined ? { error: 'pixel statistics unavailable' } : { spread }
+    return spread === undefined
+        ? { error: 'pixel statistics unavailable', retry: true }
+        : { spread }
 }
 
 /**
- * Linux only: screenshots of the app window (never the whole screen, so a run on a
- * real desktop captures nothing else) until it is painted or PAINT_TIMEOUT_MS passes.
- * Under --require-screenshot a check that cannot run fails.
+ * Linux only: screenshots of the launched instance's window -- never the whole screen,
+ * never another CannaGuide window on the same display -- until it is painted or
+ * PAINT_TIMEOUT_MS passes. Every probe is bounded by that deadline. Under
+ * --require-screenshot a check that cannot run fails. On failure the evidence keeps
+ * only the lines of windows with the app's title, not the rest of the display.
  */
-async function screenshot(evidence, name, required) {
+async function screenshot(evidence, name, required, group) {
     const label = 'first-start: window painted'
     const cannotRun = (detail) =>
         required ? check(label, false, `required but not run: ${detail}`) : notRun(label, detail)
@@ -329,14 +402,13 @@ async function screenshot(evidence, name, required) {
     let last = {}
     let tree = ''
     for (let attempt = 1; ; attempt += 1) {
-        const listing = spawnSync('xwininfo', ['-display', display, '-root', '-tree'], {
-            encoding: 'utf8',
-        })
+        const listing = bounded('xwininfo', ['-display', display, '-root', '-tree'], deadline)
+        if (toolMissing(listing)) return cannotRun('xwininfo is not installed')
         tree = listing.status === 0 ? listing.stdout : ''
-        const windowId = appWindowId(tree)
-        last = windowId
-            ? captureSpread(display, windowId, file)
-            : { error: 'app window not found (xwininfo)' }
+        const found = instanceWindow(display, tree, group, deadline)
+        last = found.candidate
+            ? captureSpread(display, found.candidate.id, file, deadline)
+            : { ...found, retry: found.error.startsWith('no window') }
         if (last.spread !== undefined && last.spread >= MIN_PIXEL_SPREAD) {
             return check(
                 label,
@@ -344,10 +416,12 @@ async function screenshot(evidence, name, required) {
                 `pixel spread ${last.spread.toFixed(4)} after ${attempt} capture(s) (${file})`,
             )
         }
+        if (last.error && !last.retry) return cannotRun(last.error)
         if (Date.now() >= deadline) break
         await delay(1000)
     }
-    writeFileSync(join(evidence, `${name}.xwininfo.txt`), tree)
+    const titled = appWindows(tree).map((window) => window.line)
+    writeFileSync(join(evidence, `${name}.windows.txt`), `${titled.join('\n')}\n`)
     if (last.spread === undefined) return cannotRun(last.error)
     return check(
         label,
@@ -408,6 +482,11 @@ async function secondInstance(ctx, firstReport) {
                 ? `visible ${readJson(`${firstReport}.restored`)?.visible}`
                 : 'no .restored record',
         ),
+        // Focus is up to the window manager; the gate claims only that the window shows.
+        info(
+            'second instance: first window focused',
+            String(readJson(`${firstReport}.restored`)?.focused),
+        ),
     )
     return results
 }
@@ -440,6 +519,9 @@ async function concurrentRound(ctx, round) {
     const { app, options, evidence, track, newProfile } = ctx
     const profile = newProfile()
     const env = profileEnv(profile, options)
+    // Windows app folders cannot be redirected: each round starts them fresh instead,
+    // and only on CI, where they belong to the runner, never to a person.
+    const fresh = process.platform !== 'win32' || resetWindowsAppFolders()
     const reports = ['a', 'b'].map((name) => join(profile, `concurrent-${name}.json`))
     const runs = reports.map((report, index) =>
         track(
@@ -459,14 +541,52 @@ async function concurrentRound(ctx, round) {
         () => reports.every((report) => existsSync(report)),
         options.settleMs ?? SECOND_INSTANCE_WAIT_MS,
     )
-    const started = reports.filter((report) => existsSync(report))
-    const focused =
-        started.length === 1 &&
-        (await waitFor(() => readJson(`${started[0]}.restored`)?.visible === true, SIGNAL_WAIT_MS))
-    for (const report of started) writeFileSync(`${report}.quit`, '')
+    const winners = reports.filter((report) => existsSync(report))
+    const winner = winners.length === 1 ? winners[0] : undefined
+    // The other one must be gone while the winner is still held, without a report.
+    const loserRuns = runs.filter((_run, index) => reports[index] !== winner)
+    const loserExits = await Promise.all(
+        loserRuns.map((run) => waitForExit(run, SECOND_INSTANCE_WAIT_MS)),
+    )
+    const shown =
+        winner !== undefined &&
+        (await waitFor(() => readJson(`${winner}.restored`)?.visible === true, SIGNAL_WAIT_MS))
+    const record = winner && readJson(winner)
+    for (const report of winners) writeFileSync(`${report}.quit`, '')
     const exits = await Promise.all(runs.map((run) => waitForExit(run, QUIT_TIMEOUT_MS)))
     runs.forEach((run) => run.save(evidence))
-    return { started: started.length, focused, exits }
+    // Counted again after every exit: a second frontend that started late still counts.
+    const startedAfter = reports.filter((report) => existsSync(report)).length
+    const recordChecks = record
+        ? evaluateRecord(record, { version: options.expectVersion, run: `concurrent ${round}` })
+        : []
+    const ack = winner
+        ? evaluateQuitAck(readJson(`${winner}.quit-ack`), `concurrent ${round}`)
+        : undefined
+    return {
+        fresh,
+        started: startedAfter,
+        loserGone: loserExits.every((exit) => exit.code === 0 && !exit.timedOut),
+        shown,
+        winnerOk:
+            recordChecks.length > 0 && recordChecks.every((result) => result.status !== 'FAIL'),
+        saved: ack?.status === 'PASS',
+        exits,
+    }
+}
+
+/** Windows on CI: start the app folders of a concurrent round empty. */
+function resetWindowsAppFolders() {
+    if (!process.env.CI) return false
+    for (const base of [process.env.APPDATA, process.env.LOCALAPPDATA]) {
+        if (!base) continue
+        try {
+            rmSync(join(base, IDENTIFIER), { recursive: true, force: true })
+        } catch {
+            return false
+        }
+    }
+    return true
 }
 
 /** Repeated rounds, so a race that only sometimes loses is still caught. */
@@ -493,10 +613,31 @@ async function concurrentLaunch(ctx) {
             ),
         ),
         check(
-            'concurrent launch: the running instance showed its window for the other',
-            outcomes.every((outcome) => outcome.focused),
-            describe((outcome) => (outcome.focused ? 'shown' : 'not shown')),
+            'concurrent launch: the other process exits 0 while the first is still running',
+            outcomes.every((outcome) => outcome.loserGone),
+            describe((outcome) => (outcome.loserGone ? 'exited' : 'did not exit')),
         ),
+        check(
+            'concurrent launch: the running instance showed its window for the other',
+            outcomes.every((outcome) => outcome.shown),
+            describe((outcome) => (outcome.shown ? 'shown' : 'not shown')),
+        ),
+        check(
+            'concurrent launch: the started instance passed its report checks',
+            outcomes.every((outcome) => outcome.winnerOk),
+            describe((outcome) => (outcome.winnerOk ? 'passed' : 'failed')),
+        ),
+        check(
+            'concurrent launch: its quit acknowledged a successful save',
+            outcomes.every((outcome) => outcome.saved),
+            describe((outcome) => (outcome.saved ? 'saved' : 'not acknowledged')),
+        ),
+        outcomes.every((outcome) => outcome.fresh)
+            ? info('concurrent launch: fresh app folders each round', 'yes')
+            : notRun(
+                  'concurrent launch: fresh app folders each round',
+                  'Windows app folders are reset only on CI',
+              ),
     ]
 }
 
@@ -535,7 +676,12 @@ async function firstStart(ctx, results) {
     )
     if (firstRecord) {
         results.push(
-            await screenshot(evidence, `${options.label}-first-start`, options.requireScreenshot),
+            await screenshot(
+                evidence,
+                `${options.label}-first-start`,
+                options.requireScreenshot,
+                first.child.pid,
+            ),
         )
         results.push(...(await secondInstance(ctx, firstReport)))
         results.push(
@@ -606,27 +752,38 @@ export async function runSmoke(options) {
     mkdirSync(evidence, { recursive: true })
     const profiles = []
     const launched = []
-    const newProfile = () => {
-        const profile = mkdtempSync(join(tmpdir(), 'cannaguide-smoke-profile-'))
-        profiles.push(profile)
-        return profile
+    // Ctrl+C or a CI cancel must not leave a held app or a profile behind; the exit
+    // status keeps the signal (130 / 143).
+    const onSignal = (signal) => {
+        for (const run of launched) if (isRunning(run.child)) killGroup(run)
+        for (const dir of profiles) rmSync(dir, { recursive: true, force: true })
+        process.exit(signal === 'SIGINT' ? 130 : 143)
     }
-    const profile = newProfile()
-    const ctx = {
-        app: { command: resolve(options.app), args: [] },
-        env: profileEnv(profile, options),
-        evidence,
-        options,
-        profile,
-        newProfile,
-        track: (run) => {
-            launched.push(run)
-            return run
-        },
-    }
+    process.once('SIGINT', onSignal)
+    process.once('SIGTERM', onSignal)
     const results = []
     let firstRecord
+    let command
     try {
+        const newProfile = () => {
+            const profile = mkdtempSync(join(tmpdir(), 'cannaguide-smoke-profile-'))
+            profiles.push(profile)
+            return profile
+        }
+        const profile = newProfile()
+        const ctx = {
+            app: { command: resolve(options.app), args: [] },
+            env: profileEnv(profile, options),
+            evidence,
+            options,
+            profile,
+            newProfile,
+            track: (run) => {
+                launched.push(run)
+                return run
+            },
+        }
+        command = ctx.app.command
         const first = await firstStart(ctx, results)
         firstRecord = first.firstRecord
         if (first.firstRecord && first.firstExit.code === 0) {
@@ -636,6 +793,8 @@ export async function runSmoke(options) {
         }
         results.push(...(await concurrentLaunch(ctx)))
     } finally {
+        process.off('SIGINT', onSignal)
+        process.off('SIGTERM', onSignal)
         // Whatever failed above: no process outlives the run, no profile stays behind.
         for (const run of launched) {
             if (isRunning(run.child) && !(await stopTree(run))) {
@@ -650,7 +809,7 @@ export async function runSmoke(options) {
     const summary = {
         label: options.label,
         platform: `${process.platform}-${process.arch}`,
-        app: ctx.app.command,
+        app: command,
         expectVersion: options.expectVersion,
         firstRecord,
         results,

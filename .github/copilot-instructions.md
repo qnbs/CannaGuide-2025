@@ -233,7 +233,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - **Security scanners**: Semgrep, Gitleaks, Trojan-source all pass with 0 findings
 - **`secureRandom()`** via `utils/random.ts` replaces `Math.random()` everywhere (Web Crypto)
 - **OpenSSF Scorecard**: branch protection, signed commits, pinned deps, SAST, fuzzing, SLSA provenance
-- **ClusterFuzzLite**: Continuous fuzzing via `cflite_pr.yml` on PRs
+- **Fuzzing**: fast-check property tests via `fuzzing.yml` (pull requests and weekly)
 - **Config Guard**: CI workflow scans devcontainer/vscode config changes for RCE patterns
 
 ### Text Encoding (Mandatory -- Global Rule)

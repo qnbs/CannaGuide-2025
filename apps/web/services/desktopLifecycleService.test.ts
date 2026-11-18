@@ -238,6 +238,30 @@ describe('desktop updater: stopping a running step', () => {
         expect(updater.getSnapshot().operation).toBe('idle')
     })
 
+    it('Cancel is offered only once the native download reports it started', async () => {
+        // CodeAnt on #878: a Cancel shown before the task existed could miss it.
+        let started: () => void = () => undefined
+        let finish: () => void = () => undefined
+        const { bridge } = fakeBridge({
+            update_check: () => INFO,
+            update_download: (args) => {
+                const channel = args?.onEvent as { onMessage: (message: unknown) => void }
+                started = () => channel.onMessage({ event: 'started' })
+                return new Promise<void>((resolve) => (finish = resolve))
+            },
+        })
+        const updater = updaterWith(bridge)
+        await updater.check()
+        const download = updater.download()
+        await vi.waitFor(() => expect(updater.getSnapshot().operation).toBe('downloading'))
+        expect(updater.getSnapshot().cancellable).toBe(false)
+        started()
+        expect(updater.getSnapshot().cancellable).toBe(true)
+        finish()
+        await download
+        expect(updater.getSnapshot().cancellable).toBe(false)
+    })
+
     it('Cancel reaches a running download past the one-step guard', async () => {
         let rejectPending: (reason: unknown) => void = () => undefined
         const { bridge, calls } = fakeBridge({
@@ -337,6 +361,35 @@ describe('save until the state settles (CodeAnt and CodeRabbit on #878)', () => 
         const install = flushUntilStable(flush, churn, { maxRounds: 5, whenUnsettled: 'refuse' })
         await expect(install()).resolves.toBe(false)
         expect(flush).toHaveBeenCalledTimes(5)
+        debug.mockRestore()
+    })
+
+    it('compares with isSame, so a change outside the snapshot does not count', async () => {
+        let runtime = 0
+        const flush = vi.fn(async () => {
+            runtime += 1
+            return true
+        })
+        const persisted = ['grows']
+        const getState = () => ({ persisted, runtime })
+        const isSame = (a: unknown, b: unknown) =>
+            (a as { persisted: unknown }).persisted === (b as { persisted: unknown }).persisted
+        const install = flushUntilStable(flush, getState, { whenUnsettled: 'refuse', isSame })
+        await expect(install()).resolves.toBe(true)
+        expect(flush).toHaveBeenCalledTimes(1)
+    })
+
+    it('a comparison that throws never skips the save: quit saves, install refuses', async () => {
+        const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
+        const flush = vi.fn(async () => true)
+        const broken = () => {
+            throw new TypeError('cannot read the state')
+        }
+        await expect(flushUntilStable(flush, broken)()).resolves.toBe(true)
+        expect(flush).toHaveBeenCalled()
+        await expect(flushUntilStable(flush, broken, { whenUnsettled: 'refuse' })()).resolves.toBe(
+            false,
+        )
         debug.mockRestore()
     })
 

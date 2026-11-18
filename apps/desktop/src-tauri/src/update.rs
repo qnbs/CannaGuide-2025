@@ -64,7 +64,13 @@ pub struct UpdateInfo {
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase", tag = "event", content = "data")]
 pub enum DownloadEvent {
-    Progress { downloaded: u64, total: Option<u64> },
+    /// The download task is registered and running, so update_cancel reaches it from
+    /// now on; the web app shows Cancel only after this (CodeAnt on #878).
+    Started,
+    Progress {
+        downloaded: u64,
+        total: Option<u64>,
+    },
     Finished,
 }
 
@@ -202,6 +208,9 @@ pub async fn update_download(
     // The check's deadline would cut off a large bundle on a slow link.
     update.timeout = Some(UPDATE_DOWNLOAD_TIMEOUT);
     let bytes = run_abortable(&state, async move {
+        // run_abortable starts this only after the handle is stored, so a cancel
+        // from here on finds the task.
+        let _ = on_event.send(DownloadEvent::Started);
         let finished = on_event.clone();
         let mut downloaded: u64 = 0;
         // download() verifies the signature before it returns the bytes, so a

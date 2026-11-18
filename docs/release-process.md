@@ -220,12 +220,11 @@ stable releases are.
 app only. The app checks once per launch, 15 seconds after start. Local-Only mode and
 being offline block every check and download, automatic or manual, because both contact
 github.com. Turning Local-Only mode on stops a running download, and `update.rs` mirrors
-the mode and refuses as well. Every step is a click: check, download (with Cancel),
+the mode and refuses as well. Every step is a click: check, download (with Cancel, shown once the native download has started),
 install. `tauri-plugin-updater` verifies the download against the updater key before any
 byte is kept. A finished download survives leaving the About tab and a later check of
 the same version. Checks time out after 30 seconds and downloads after 20 minutes.
-Install first saves the latest changes, repeating while changes keep arriving (up to five
-rounds). It stops if that save fails, reports "not saved", or the state never settles: an
+Install first saves the latest changes, repeating while changes to the saved state keep arriving (up to five rounds; it compares only what a snapshot writes, `persistedSnapshotInputs`). It stops if that save fails, reports "not saved", or the state never settles: an
 edit made after the last save would be lost by the restart, so the install is refused and
 the user retries. Right before the process then ends -- the restart on macOS and Linux, the installer taking over on Windows (the plugin's `on_before_exit` hook) -- `update.rs` emits `cannaguide://save-before-restart` and waits up to 10 seconds for `confirm_final_save`, so an edit made while the install ran is saved too. The card only shows the updater's shared state, so reopening About
 during a download, or a newer release found by the startup check, updates it at once. On Windows the installer ends the process from

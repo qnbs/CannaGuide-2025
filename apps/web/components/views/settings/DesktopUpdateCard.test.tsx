@@ -107,7 +107,11 @@ describe('DesktopUpdateCard', () => {
         let finish: () => void = () => undefined
         const { updater } = setup({
             update_check: () => INFO,
-            update_download: () => new Promise<void>((resolve) => (finish = resolve)),
+            update_download: (args) => {
+                const channel = args?.onEvent as { onMessage: (message: unknown) => void }
+                channel.onMessage({ event: 'started' })
+                return new Promise<void>((resolve) => (finish = resolve))
+            },
         })
         await updater.check()
         const download = updater.download()
@@ -139,7 +143,11 @@ describe('DesktopUpdateCard', () => {
         let rejectPending: (reason: unknown) => void = () => undefined
         const { updater, calls } = setup({
             update_check: () => INFO,
-            update_download: () => new Promise((_resolve, reject) => (rejectPending = reject)),
+            update_download: (args) => {
+                const channel = args?.onEvent as { onMessage: (message: unknown) => void }
+                channel.onMessage({ event: 'started' })
+                return new Promise((_resolve, reject) => (rejectPending = reject))
+            },
             update_cancel: () => {
                 rejectPending('update request cancelled')
                 return true
@@ -155,6 +163,26 @@ describe('DesktopUpdateCard', () => {
         expect(alert.textContent).toBe('settingsView.about.update.cancelled')
         expect(calls).toContain('update_cancel')
         expect(button('settingsView.about.update.download')).toBeTruthy()
+    })
+
+    it('shows Cancel only after the native download reports it started', async () => {
+        let started: () => void = () => undefined
+        const { updater } = setup({
+            update_check: () => INFO,
+            update_download: (args) => {
+                const channel = args?.onEvent as { onMessage: (message: unknown) => void }
+                started = () => channel.onMessage({ event: 'started' })
+                return new Promise<void>(() => undefined)
+            },
+        })
+        render(<DesktopUpdateCard updater={updater} localOnly={() => false} />)
+        click('settingsView.about.update.check')
+        await screen.findByRole('button', { name: 'settingsView.about.update.download' })
+        click('settingsView.about.update.download')
+        await screen.findByText('settingsView.about.update.downloadingUnknown')
+        expect(queryButton('settingsView.about.update.cancel')).toBeNull()
+        act(() => started())
+        expect(button('settingsView.about.update.cancel')).toBeTruthy()
     })
 
     it('explains offline instead of a raw error', async () => {

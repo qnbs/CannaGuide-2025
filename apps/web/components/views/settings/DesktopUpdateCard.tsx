@@ -123,7 +123,7 @@ export const DesktopUpdateCard = memo(
                             {t('settingsView.about.update.download')}
                         </Button>
                     ) : null}
-                    {operation === 'downloading' ? (
+                    {operation === 'downloading' && snapshot.cancellable ? (
                         <Button variant="secondary" onClick={cancel}>
                             {t('settingsView.about.update.cancel')}
                         </Button>

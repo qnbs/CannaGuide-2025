@@ -26,15 +26,22 @@ const setUpDesktopLifecycle = async (
     // Quit and install save again while changes keep arriving, with different rules for
     // a store that never settles: a quit accepts the last save (its fallback ends the
     // app anyway), an install refuses rather than restart over an unsaved edit.
-    const getState = (): unknown => hydratedStore.getState()
+    // Only the state a save writes counts: a runtime-only slice changing must not
+    // read as "unsettled" (CodeAnt on #878).
+    const { persistedSnapshotInputs, sameSnapshotInputs } =
+        await import('@/services/persistedSnapshotFormat')
+    const getState = (): readonly unknown[] =>
+        persistedSnapshotInputs(hydratedStore.getState() as RootState)
+    const isSame = sameSnapshotInputs
     const quitFlush = flushPersistedState
-        ? lifecycle.flushUntilStable(flushPersistedState, getState)
+        ? lifecycle.flushUntilStable(flushPersistedState, getState, { isSame })
         : undefined
     lifecycle.registerPersistFlush(
         flushPersistedState
             ? lifecycle.flushUntilStable(flushPersistedState, getState, {
                   maxRounds: 5,
                   whenUnsettled: 'refuse',
+                  isSame,
               })
             : undefined,
     )

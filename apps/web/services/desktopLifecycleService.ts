@@ -55,6 +55,11 @@ export interface DesktopUpdateSnapshot {
     stage: DesktopUpdateStage | null
     operation: DesktopUpdateOperation
     progress: DownloadProgress | null
+    /**
+     * The native download task is registered, so Cancel reaches it. False until
+     * update.rs reports `started`: a Cancel shown earlier could miss the task.
+     */
+    cancellable: boolean
     /** The last finished check found no newer version. */
     upToDate: boolean
     /** The last failed step that the user started (background checks stay quiet). */
@@ -62,7 +67,8 @@ export interface DesktopUpdateSnapshot {
 }
 
 /** Mirrors `DownloadEvent` in update.rs (serde: tag = "event", content = "data"). */
-type DownloadEvent = { event: 'progress'; data: DownloadProgress } | { event: 'finished' }
+type DownloadEvent =
+    { event: 'started' } | { event: 'progress'; data: DownloadProgress } | { event: 'finished' }
 
 export interface TauriBridge {
     invoke: <T>(command: string, args?: Record<string, unknown>) => Promise<T>
@@ -114,6 +120,7 @@ const INITIAL_SNAPSHOT: DesktopUpdateSnapshot = {
     stage: null,
     operation: 'idle',
     progress: null,
+    cancellable: false,
     upToDate: false,
     error: null,
 }
@@ -137,7 +144,12 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
         if (snapshot.operation !== 'idle') {
             throw new DesktopUpdateError('busy', 'another update step is still running')
         }
-        update({ operation, progress: null, ...(showFailure ? { error: null } : {}) })
+        update({
+            operation,
+            progress: null,
+            cancellable: false,
+            ...(showFailure ? { error: null } : {}),
+        })
         try {
             return await step(await deps.loadBridge())
         } catch (error) {
@@ -150,7 +162,7 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
             }
             throw failure
         } finally {
-            update({ operation: 'idle', progress: null })
+            update({ operation: 'idle', progress: null, cancellable: false })
         }
     }
 
@@ -210,6 +222,7 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
             run('downloading', async (bridge) => {
                 refuseNetwork()
                 const onEvent = bridge.channel<DownloadEvent>((message) => {
+                    if (message.event === 'started') update({ cancellable: true })
                     if (message.event === 'progress') update({ progress: message.data })
                 })
                 await invoke<void>(bridge, 'update_download', { onEvent })
@@ -286,8 +299,14 @@ export const syncNativeLocalOnly = async (
     await bridge.invoke<void>('update_set_local_only', { enabled })
 }
 
-export interface FlushUntilStableOptions {
+export interface FlushUntilStableOptions<S> {
     maxRounds?: number | undefined
+    /**
+     * Whether two `getState` results write the same snapshot. Default: identity. The
+     * app passes the persisted inputs and sameSnapshotInputs, so a change to state
+     * the snapshot leaves out never counts as "unsettled".
+     */
+    isSame?: ((before: S, after: S) => boolean) | undefined
     /**
      * What a store that is still changing after the last round means:
      * - 'accept' (quit): report the last save. The app is closing and its fallback
@@ -306,17 +325,29 @@ export interface FlushUntilStableOptions {
  * So it saves again while the state keeps changing, up to `maxRounds`.
  */
 export const flushUntilStable =
-    (
+    <S>(
         flush: PersistFlush,
-        getState: () => unknown,
-        options: FlushUntilStableOptions = {},
+        getState: () => S,
+        options: FlushUntilStableOptions<S> = {},
     ): PersistFlush =>
     async () => {
         const maxRounds = options.maxRounds ?? 3
+        const isSame = options.isSame ?? Object.is
+        // A comparison that fails must never skip the save itself: the state then
+        // counts as unverified, so a quit still saves and an install is refused.
+        const read = (): { ok: true; value: S } | { ok: false } => {
+            try {
+                return { ok: true, value: getState() }
+            } catch (error) {
+                console.debug('[DesktopLifecycle] cannot compare the saved state:', error)
+                return { ok: false }
+            }
+        }
         for (let round = 1; ; round += 1) {
-            const before = getState()
+            const before = read()
             if (!(await flush())) return false
-            if (getState() === before) return true
+            const after = read()
+            if (before.ok && after.ok && isSame(before.value, after.value)) return true
             if (round >= maxRounds) {
                 console.debug('[DesktopLifecycle] state still changing after the last save')
                 return options.whenUnsettled !== 'refuse'

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { configureStore, combineReducers } from '@reduxjs/toolkit'
 import { runPostHydrationServices } from './postHydration'
+import { createAppStoreSync } from '@/stores/store'
 import type { AppStore } from '@/stores/store'
 import settingsReducer, { setSetting } from '@/stores/slices/settingsSlice'
 import simulationReducer from '@/stores/slices/simulationSlice'
@@ -179,7 +180,8 @@ describe('runPostHydrationServices', () => {
     }
 
     it('routes the Tauri before-quit flush through the coordinated persistence path', async () => {
-        const store = createTestStore()
+        // The real store: the desktop save compares every slice a snapshot writes.
+        const store = createAppStoreSync()
         const flushPersistedState = vi.fn().mockResolvedValue(true)
         platformMocks.isTauri = true
         const listeners = captureListeners()
@@ -195,7 +197,8 @@ describe('runPostHydrationServices', () => {
     })
 
     it('registers the quit listener before slower startup work and confirms only after the save', async () => {
-        const store = createTestStore()
+        // The real store: the desktop save compares every slice a snapshot writes.
+        const store = createAppStoreSync()
         const flushPersistedState = vi.fn(async () => {
             platformMocks.order.push('save')
             return true
@@ -223,7 +226,8 @@ describe('runPostHydrationServices', () => {
     it('saves once more right before an install restarts the app, then lets update.rs go on', async () => {
         // CodeRabbit and CodeAnt on #878: an edit made while the install ran was in no
         // earlier save. update.rs now waits for this confirmation before the restart.
-        const store = createTestStore()
+        // The real store: the desktop save compares every slice a snapshot writes.
+        const store = createAppStoreSync()
         const flushPersistedState = vi.fn(async () => {
             platformMocks.order.push('save')
             return true

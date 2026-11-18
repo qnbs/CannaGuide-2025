@@ -228,3 +228,73 @@ pub fn run() {
         }
     });
 }
+
+/// `plugins` in tauri.conf.json is handed to each plugin at startup, and a value its
+/// config type does not accept makes `build()` fail before any window opens: v1.12.0
+/// shipped `"window-state": {"all": true}` and `"store": {}`, and every desktop build
+/// exited with PluginInitialization. Plugins built with `Builder::new(name)` and no
+/// config type take `()`, which only an absent entry (null) satisfies.
+#[cfg(test)]
+mod plugin_config_tests {
+    use serde_json::Value;
+
+    const CONFIG: &str = include_str!("../tauri.conf.json");
+    /// Every plugin `run()` registers; none of them but the updater has a config type.
+    const UNIT_CONFIG_PLUGINS: &[&str] = &[
+        "dialog",
+        "fs",
+        "notification",
+        "global-shortcut",
+        "shell",
+        "process",
+        "window-state",
+        "store",
+    ];
+
+    fn plugins() -> serde_json::Map<String, Value> {
+        let config: Value = serde_json::from_str(CONFIG).expect("tauri.conf.json is JSON");
+        config["plugins"].as_object().cloned().unwrap_or_default()
+    }
+
+    #[test]
+    fn the_updater_configuration_parses_as_the_updater_plugin_reads_it() {
+        let updater = plugins()
+            .remove("updater")
+            .expect("plugins.updater is required");
+        let parsed: tauri_plugin_updater::Config = serde_json::from_value(updater)
+            .expect("plugins.updater matches tauri_plugin_updater::Config");
+        assert!(
+            !parsed.endpoints.is_empty(),
+            "the updater needs an endpoint"
+        );
+    }
+
+    #[test]
+    fn plugins_without_a_config_type_have_no_entry() {
+        for (name, value) in plugins() {
+            if name == "updater" {
+                continue;
+            }
+            // The same call Tauri makes for a plugin whose config type is ().
+            let accepted = serde_json::from_value::<()>(value.clone());
+            assert!(
+                accepted.is_ok(),
+                "plugins.{name} = {value} fails at startup: {}",
+                accepted.unwrap_err()
+            );
+            assert!(
+                UNIT_CONFIG_PLUGINS.contains(&name.as_str()),
+                "plugins.{name} configures a plugin run() does not register"
+            );
+        }
+    }
+
+    #[test]
+    fn the_v1_12_0_entries_are_what_this_test_rejects() {
+        for value in [serde_json::json!({ "all": true }), serde_json::json!({})] {
+            let error = serde_json::from_value::<()>(value).unwrap_err().to_string();
+            assert!(error.contains("expected unit"), "{error}");
+        }
+        assert!(serde_json::from_value::<()>(Value::Null).is_ok());
+    }
+}

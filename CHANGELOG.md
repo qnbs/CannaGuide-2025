@@ -15,21 +15,18 @@ Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their bu
 
 ### Added
 
-- **ci(desktop):** Desktop runtime smoke test. `scripts/desktop-smoke.mjs` launches the packaged app in an isolated profile. It passes only if:
+- **ci(desktop):** Desktop runtime smoke test. `scripts/desktop-smoke.mjs` launches the packaged app in isolated, temporary profiles. It passes only if:
     - the native side starts;
-    - the bundled frontend reports its start over IPC (`frontend_ready`, with native and frontend versions);
-    - a view is rendered and, on Linux, the window is painted;
-    - a second launch hands over;
-    - the quit waits for the frontend's save and exits 0;
-    - a restart finds the saved data and the window state.
+    - the bundled frontend reports its start over IPC (`frontend_ready`), after its startup writes have settled, with native and frontend versions;
+    - a view is rendered and visible and, on Linux, the app window is painted;
+    - a second launch hands over, exits and shows the hidden window again;
+    - two cold launches at once (three rounds) start only one instance, which then shows its window;
+    - each quit is acknowledged by `confirm_quit` with a successful save and exits 0;
+    - a restart loads the saved snapshot (not merely finds it on disk) and the first run's window state.
 
-    Desktop Build runs it on every target (installed .deb, AppImage, NSIS and MSI installs, and the macOS .app) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell or the web app's start run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
+    Desktop Build runs it on every target (installed .deb, AppImage, NSIS and MSI installs with their exit codes, and the macOS .app; the Intel build fails if Rosetta 2 cannot be installed) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell, the web app's start or its snapshot storage run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
 
-- **ci:** The ClusterFuzzLite workflow (`cflite_pr.yml`) and its `.clusterfuzzlite/` setup are removed. ClusterFuzzLite rejects every sanitizer for JavaScript projects, so its only job failed on each weekly run by design and was kept from blocking only by `continue-on-error`. Fuzzing stays in `fuzzing.yml` (fast-check property tests on pull requests and weekly). README, architecture and security docs no longer describe it as PR fuzzing, and the workflow count is 29.
-
-- **fix(desktop):** The desktop crate no longer declares `chrono`, which nothing in it used (cargo reported it as an unused dependency). `chrono` stays in `Cargo.lock` through `serde_with`, now without the WebAssembly-only `js-sys` and `wasm-bindgen` our default features pulled in; no version changes.
-
-- **fix(ci):** A manual Release Publish run that has to create the tag no longer builds the release twice. It creates and pushes the tag in a new `tag` job and stops there; the run the tag push starts builds, verifies and creates the draft release, which the owner publishes as before. Before, the tag's own run queued behind the manual one, rebuilt everything (including the four desktop targets) and then stopped at the existing-release check.
+- **fix(desktop):** One instance per profile, also without a D-Bus session bus (Linux) and for two cold launches at once (macOS): an exclusive lock on a file in the app data folder, taken before any window exists. It is released before an updater restart. A launch that loses the race still brings the running window to the front.
 
 ## [1.12.0] - 2026-11-18
 

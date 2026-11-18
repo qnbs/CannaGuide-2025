@@ -278,44 +278,62 @@ unsuccessful check aborts the release.
 
 ## Desktop runtime qualification
 
-`scripts/desktop-smoke.mjs` launches the packaged app the way a user would, in an isolated
-profile, and passes only when every check passes:
+`scripts/desktop-smoke.mjs` launches the packaged app the way a user would, in isolated
+temporary profiles that it removes afterwards (the evidence stays). It passes only when every
+check passes:
 
-| Run                | What it proves                                                                                                                                                                                                                                                                                                  |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| first start (held) | native start; the bundled frontend ran and reported over IPC (`frontend_ready`); native and frontend version; a rendered view (main view, or onboarding as a dialog); a painted window (Linux screenshot pixel spread); a second launch hands over and exits; the quit waits for the frontend flush and exits 0 |
-| restart            | the saved snapshot from the first run is found; the window-state file was written; clean quit                                                                                                                                                                                                                   |
+| Run                | What it proves                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| first start (held) | native start; the bundled frontend ran and reported over IPC (`frontend_ready`) once its startup writes had settled; native and frontend version; a rendered, visible view (main view, or onboarding as a dialog); a painted app window (Linux screenshot); the window hidden, then a second launch that hands over, exits 0 and shows it again; a quit acknowledged by `confirm_quit` with a successful save, exit 0 |
+| restart            | the window-state file from the first run (checked before the restart begins); the state loaded from the saved snapshot (`hydration: snapshot`, not merely found on disk); an acknowledged, saved quit                                                                                                                                                                                                                 |
+| concurrent launch  | three rounds of two cold launches at the same moment on a fresh profile: exactly one starts, both exit 0, and the running one shows its window for the other                                                                                                                                                                                                                                                          |
 
 The app cooperates through `apps/desktop/src-tauri/src/startup.rs`. Only with
-`CANNAGUIDE_SMOKE_REPORT` set, which the harness does and the app never does, is the
-frontend's startup report written to that file, and the app then quits through the normal
-quit handshake. Without that variable, `frontend_ready` only prints one line. The report
-has a fixed schema and holds no user data.
+`CANNAGUIDE_SMOKE_REPORT` set, which the harness does and the app never does, does it write
+the startup report, the quit acknowledgement and the hide/restore records next to that file;
+it then quits through the normal quit handshake. Without that variable, `frontend_ready` and
+`confirm_quit` only print one line each. The report has a fixed schema and no user data: an
+error appears only as its class name.
+
+**One instance per profile** has two layers: `tauri-plugin-single-instance` hands a second
+launch to the running app, and `instance_lock.rs` takes an exclusive lock on a file in the
+app data folder before any window exists, which covers a missing D-Bus session bus (Linux)
+and two cold launches at once (macOS). A process that cannot take the lock writes
+`.focus-request` next to it and exits; the holder shows its window once it exists. The
+single-instance callback uses the same request when its window is not created yet, so a
+second launch always brings the running app forward. The concurrent run tests all of this
+in three rounds of two simultaneous cold launches.
 
 **Where it runs (`.github/actions/desktop-runtime-smoke`):**
 
 - **Desktop Build, every target:** the smoke runs before the bundles are uploaded, so
   `verify` and Release Publish stop on a build that does not start:
     - **Linux:** the `.deb` installed through apt, and the AppImage extracted, both under
-      Xvfb with a D-Bus session.
-    - **Windows:** the NSIS and the MSI install.
-    - **macOS:** the `.app`. The x86_64 build is recorded as `NOT_RUN` (never as passed) on a
-      runner without Rosetta 2.
-- **Pull requests that touch the desktop shell or the web app's start** run `pr-smoke`: an
-  unsigned build with no secrets, on Linux, Windows and Apple Silicon. Its bundles are kept
-  for 7 days for a check on a real desktop.
+      Xvfb with a D-Bus session; the painted-window check is required (`--require-screenshot`).
+    - **Windows:** the NSIS and the MSI install, each installer's exit code checked and the
+      program found where that installer put it.
+    - **macOS:** the `.app`. For the x86_64 build on an Apple Silicon runner, Rosetta 2 is
+      installed if missing; without it the step fails. An Intel bundle is never qualified
+      without a launch.
+- **Pull requests that touch the desktop shell, the web app's start or its snapshot
+  storage** run `pr-smoke`: an unsigned build with no secrets, on Linux, Windows and Apple
+  Silicon. Its bundles (the macOS app as a `.tar.gz` that keeps its permissions) are kept for
+  7 days for a check on a real desktop.
 
 **Isolation:** on Linux, `HOME` and `XDG_*` point into a temporary profile. On macOS, `HOME`
 and `CFFIXED_USER_HOME` do. Windows app folders cannot be redirected, so the harness refuses
 to run there outside CI, and CI resets the runner's app folders before each install.
 
 **Local run on a Linux desktop**, with the real display or Xvfb. Your own app data stays
-untouched:
+untouched. Run it in its own D-Bus session: on the desktop's session bus, an open
+CannaGuide would take over the test's launches (single instance) and no report would be
+written.
 
 ```bash
-node scripts/desktop-smoke.mjs --app /usr/bin/cannaguide-desktop --expect-version X.Y.Z
-xvfb-run -a node scripts/desktop-smoke.mjs --app ./CannaGuide-2025_X.Y.Z_amd64.AppImage \
-  --appimage --expect-version X.Y.Z
+dbus-run-session -- node scripts/desktop-smoke.mjs --app /usr/bin/cannaguide-desktop \
+  --expect-version X.Y.Z
+dbus-run-session -- xvfb-run -a node scripts/desktop-smoke.mjs \
+  --app ./CannaGuide-2025_X.Y.Z_amd64.AppImage --appimage --expect-version X.Y.Z --require-screenshot
 ```
 
 **Not covered:** a real in-app update between two signed releases (manual acceptance

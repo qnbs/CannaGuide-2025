@@ -112,6 +112,17 @@ export function appBinary(app) {
     return name ? join(dir, name) : undefined
 }
 
+/** Polls `predicate` without leaving the synchronous flow, for at most `ms`. */
+export function waitUntil(predicate, ms, stepMs = 500) {
+    const pause = new Int32Array(new SharedArrayBuffer(4))
+    const deadline = Date.now() + ms
+    while (!predicate()) {
+        if (Date.now() >= deadline) return false
+        Atomics.wait(pause, 0, 0, stepMs)
+    }
+    return true
+}
+
 const run = (command, args, options = {}) =>
     spawnSync(command, args, { stdio: 'inherit', encoding: 'utf8', ...options })
 
@@ -277,8 +288,18 @@ function windows({ bundle, target, version, evidence }) {
     // folder (Tauri's MSI looks the previous install location up), and the NSIS
     // uninstaller is qualified on the way. `_?=` makes it run in place and wait.
     const nsisDir = dirname(nsisApp)
-    const uninstall = run(join(nsisDir, 'uninstall.exe'), ['/S', `_?=${nsisDir}`])
-    if (!ok(uninstall) || existsSync(nsisApp)) {
+    // NSIS reads `_?=` only as the last argument and unquoted, even with spaces in the
+    // path; Node would quote "CannaGuide 2025", the flag would be ignored, and the
+    // uninstaller would copy itself away and return 0 at once (Windows run on
+    // 152d3e43). So the command line is passed verbatim, and the removal is awaited.
+    // cmd.exe passes the line as written: the program path quoted, `_?=` last and bare.
+    // Both paths come from this run's own install.
+    const uninstall = spawnSync(`"${join(nsisDir, 'uninstall.exe')}" /S _?=${nsisDir}`, {
+        shell: true,
+        stdio: 'inherit',
+    })
+    const removed = ok(uninstall) && waitUntil(() => !existsSync(nsisApp), 60_000)
+    if (!removed) {
         console.log(
             `[FAIL] NSIS uninstall exited ${uninstall.status ?? uninstall.error?.message}; program still there: ${existsSync(nsisApp)}`,
         )

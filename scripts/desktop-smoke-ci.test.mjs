@@ -12,6 +12,7 @@ import {
     msiInstallDir,
     readMsiLog,
     rosettaPlan,
+    waitUntil,
 } from './desktop-smoke-ci.mjs'
 
 const tree = (t) => {
@@ -125,4 +126,19 @@ test('outside a disposable GitHub-hosted runner it refuses before touching anyth
             JSON.stringify(env),
         )
     }
+})
+
+test('waiting for an uninstall ends when the program is gone, or at the deadline', () => {
+    let checks = 0
+    assert.equal(
+        waitUntil(() => ++checks >= 3, 5000, 10),
+        true,
+    )
+    assert.equal(checks, 3)
+    const started = Date.now()
+    assert.equal(
+        waitUntil(() => false, 120, 20),
+        false,
+    )
+    assert.ok(Date.now() - started >= 100, 'it waited up to the deadline')
 })

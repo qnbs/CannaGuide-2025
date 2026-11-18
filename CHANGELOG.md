@@ -22,7 +22,7 @@ Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their bu
     - a second launch hands over, exits and shows the hidden window again;
     - two cold launches at once (three rounds) start only one instance, which then shows its window;
     - each quit is acknowledged by `confirm_quit` with a successful save and exits 0;
-    - the first run's quit saved its window state, and a restart loads the saved snapshot (not merely finds it on disk).
+    - the first run saved its window state (checked where the profile starts empty), and a restart loads the saved snapshot (not merely finds it on disk).
 
     Desktop Build runs it on every target (installed .deb, AppImage, NSIS install and uninstall, the MSI on the clean machine at the folder its log records, each exit code checked, and the macOS .app; the Intel build fails if Rosetta 2 cannot be installed) **before** the bundles are uploaded, so Release Publish cannot ship a build that does not start. Pull requests that touch the desktop shell, the web app's start or its snapshot storage run it on an unsigned build, without secrets. v1.12.0 had passed compile, bundle, signature and manifest checks; none of them launched the app.
 

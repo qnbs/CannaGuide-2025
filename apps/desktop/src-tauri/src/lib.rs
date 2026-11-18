@@ -1,4 +1,5 @@
 mod lifecycle;
+mod startup;
 mod update;
 
 use lifecycle::{QuitDecision, QuitGate, QUIT_FLUSH_TIMEOUT};
@@ -134,6 +135,7 @@ fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
+        .manage(startup::ProcessStart::default())
         .manage(QuitGate::default())
         .manage(update::UpdateState::default())
         // First plugin, as the plugin requires: a second launch hands over to this
@@ -214,6 +216,7 @@ pub fn run() {
             open_log_dir,
             clear_native_cache,
             confirm_quit,
+            startup::frontend_ready,
             update::update_check,
             update::update_download,
             update::update_cancel,

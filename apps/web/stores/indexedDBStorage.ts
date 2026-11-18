@@ -194,6 +194,10 @@ const replaceRotatingRevision = async (
     })
 }
 
+/** Whether `name` is stored, without reading its value (the snapshot can be megabytes). */
+export const hasStoredItem = async (name: string): Promise<boolean> =>
+    (await performTx('readonly', (store) => store.count(name))) > 0
+
 export type RevisionedStateStorage = StateStorage & {
     setItemIfRevision: typeof putIfRevision
     replaceItemRotatingRevision: typeof replaceRotatingRevision

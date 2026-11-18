@@ -37,6 +37,7 @@ import { initializeCrdtLayer } from './crdt'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 import { runPostHydrationServices } from './postHydration'
 import { migrateLegacySecrets, replaceBackupWithSavedSnapshot } from './secrets'
+import { reportDesktopStartup } from '@/services/desktopStartupReport'
 
 /**
  * A reader tab never starts the store, so nothing in it can save: it shows why
@@ -217,7 +218,10 @@ export const mountHydratedApp = async (): Promise<void> => {
     setStaleSnapshotHandler(handleStaleSnapshot)
     setUncheckedWritePermit(holdsWriterRole)
     try {
-        if (!(await takeWriterRole())) return
+        if (!(await takeWriterRole())) {
+            void reportDesktopStartup('reader')
+            return
+        }
         activatePersistenceFailureTab(getPersistenceFailureMarkerTabId())
 
         registerRecoveryListeners()
@@ -225,7 +229,10 @@ export const mountHydratedApp = async (): Promise<void> => {
         await i18nPromise
 
         const { hydratedStore } = await hydrateApplicationStores()
-        if (!mayStartSaving()) return
+        if (!mayStartSaving()) {
+            void reportDesktopStartup('unverified')
+            return
+        }
         const previousSaveFailures = getPendingSnapshotSaveFailureMarkers()
         const unpresentedSaveFailures = previousSaveFailures.filter(
             ({ warningState }) => warningState === 'unpresented',
@@ -261,12 +268,15 @@ export const mountHydratedApp = async (): Promise<void> => {
                 stillUnpresented.forEach((marker) => markSnapshotSaveFailurePresented(marker))
             }
         })
+        void reportDesktopStartup(staleSnapshotHandled ? 'stale' : 'started')
     } catch (error) {
         // The saved data is a newer build's: nothing here may save over it (#666).
         if (isNewerSnapshotError(error)) {
             stopAsStale(renderNewerSnapshotNotice)
+            void reportDesktopStartup('newer-snapshot')
             return
         }
         await showStartupError(error)
+        void reportDesktopStartup('error', error)
     }
 }

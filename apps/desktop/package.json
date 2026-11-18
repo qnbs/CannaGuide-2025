@@ -1,6 +1,6 @@
 {
     "name": "@cannaguide/desktop",
-    "version": "1.12.0",
+    "version": "1.12.1",
     "private": true,
     "description": "CannaGuide 2025 Desktop App (Tauri v2)",
     "scripts": {

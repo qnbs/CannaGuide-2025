@@ -152,6 +152,16 @@ export function uninstallNsis(
     { spawn = spawnSync, exists = existsSync, wait = waitUntil, removalMs = 60_000 } = {},
 ) {
     const nsisDir = dirname(nsisApp)
+    // `_?=` has to stay unquoted, so the folder must be one cmd.exe passes on as it is:
+    // only letters, digits, `_`, space, `.`, `:`, `-` and path separators -- an allow
+    // list, so `&`, parentheses, `%` and anything else cmd.exe might read are refused
+    // (Sourcery on #884). The runner's install folder is such a plain path.
+    if (!/^[\w .:\\/-]+$/.test(nsisDir)) {
+        return {
+            removed: false,
+            detail: `install folder ${nsisDir} has characters cmd.exe would interpret`,
+        }
+    }
     const result = spawn(`"${join(nsisDir, 'uninstall.exe')}" /S _?=${nsisDir}`, {
         shell: true,
         stdio: 'inherit',

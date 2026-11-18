@@ -104,3 +104,25 @@ test('the MSI program is taken from the INSTALLDIR its own log records', (t) => 
     )
     assert.equal(readMsiLog(join(root, 'missing.log')), '')
 })
+
+test('outside a disposable GitHub-hosted runner it refuses before touching anything', (t) => {
+    // CI runs these tests on a GitHub-hosted runner, so the refusal is forced here.
+    const saved = { ...process.env }
+    t.after(() => {
+        for (const key of ['GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT']) {
+            if (saved[key] === undefined) delete process.env[key]
+            else process.env[key] = saved[key]
+        }
+    })
+    t.mock.method(console, 'error', () => {})
+    for (const env of [{}, { GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'self-hosted' }]) {
+        delete process.env.GITHUB_ACTIONS
+        delete process.env.RUNNER_ENVIRONMENT
+        Object.assign(process.env, env)
+        assert.equal(
+            main(['--target', 'x86_64-pc-windows-msvc', '--bundle-dir', '/nonexistent']),
+            2,
+            JSON.stringify(env),
+        )
+    }
+})

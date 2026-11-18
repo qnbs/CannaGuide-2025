@@ -103,6 +103,7 @@ pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
             match try_acquire(&dir) {
                 Ok(Some(file)) => {
                     app.resources_table().add(InstanceLock { _file: file });
+                    crate::startup::trace(app, "profile lock taken");
                     // A pending request is kept, not cleared: a launch racing this one may
                     // have just written it (Codex on #881). One left by an earlier run only
                     // shows the window this start shows anyway.

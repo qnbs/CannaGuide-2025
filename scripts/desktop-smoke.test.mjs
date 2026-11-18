@@ -26,6 +26,7 @@ import {
     pixelSpread,
     REPORT_SCHEMA,
     runSmoke,
+    targetPlatform,
     windowStateFile,
 } from './desktop-smoke.mjs'
 
@@ -310,7 +311,7 @@ test(
             'second instance: hands over and exits 0',
             'second instance: first window shown again',
             'first-start: quit acknowledged after a successful save',
-            'first-start: window state saved on quit',
+            'first-start: window state saved by the first run',
             'restart: state loaded from the saved snapshot',
             'restart: quit acknowledged after a successful save',
             'concurrent launch: exactly one instance started',
@@ -475,3 +476,22 @@ test(
         assert.deepEqual(leftover, [], 'no profile outlives the interrupt')
     },
 )
+
+test('the build target is checked against what the binary reports about itself', () => {
+    assert.deepEqual(targetPlatform('x86_64-pc-windows-msvc'), { os: 'windows', arch: 'x86_64' })
+    assert.deepEqual(targetPlatform('aarch64-apple-darwin'), { os: 'macos', arch: 'aarch64' })
+    assert.deepEqual(targetPlatform('x86_64-unknown-linux-gnu'), { os: 'linux', arch: 'x86_64' })
+    assert.equal(targetPlatform('wasm32-unknown-unknown'), undefined)
+    const target = targetPlatform('x86_64-apple-darwin')
+    const intel = { ...record(), os: 'macos', arch: 'x86_64' }
+    assert.deepEqual(
+        failed(evaluateRecord(intel, { version: '1.12.1', run: 'first-start', target })),
+        [],
+    )
+    // An arm64 binary in the Intel bundle (or the other way round) fails.
+    const arm = { ...record(), os: 'macos', arch: 'aarch64' }
+    assert.deepEqual(
+        failed(evaluateRecord(arm, { version: '1.12.1', run: 'first-start', target })),
+        ['first-start: built for the expected target'],
+    )
+})

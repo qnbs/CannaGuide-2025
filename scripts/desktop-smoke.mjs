@@ -45,6 +45,8 @@ import { setTimeout as delay } from 'node:timers/promises'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
+import { isDisposableRunner, removeAppFolder } from './desktop-smoke-profile.mjs'
+
 export const IDENTIFIER = 'com.cannaguide.desktop'
 export const REPORT_SCHEMA = 2
 const FLUSH_TIMEOUT_LINE = '[quit] no flush confirmation from the frontend'
@@ -97,8 +99,19 @@ const notRun = (name, detail) => ({ name, status: 'NOT_RUN', detail })
 /** Diagnostic detail; never decides the result. */
 const info = (name, detail) => ({ name, status: 'INFO', detail })
 
+/** `x86_64-pc-windows-msvc` -> { os: 'windows', arch: 'x86_64' }, as Rust reports them. */
+export function targetPlatform(triple) {
+    if (!triple) return undefined
+    const arch = triple.split('-')[0]
+    let os
+    if (triple.includes('windows')) os = 'windows'
+    else if (triple.includes('apple-darwin')) os = 'macos'
+    else if (triple.includes('linux')) os = 'linux'
+    return os ? { os, arch } : undefined
+}
+
 /** Checks one startup report against what this build must show. */
-export function evaluateRecord(record, { version, run }) {
+export function evaluateRecord(record, { version, run, target }) {
     if (!record) {
         return [check(`${run}: startup report written`, false, 'no report before the timeout')]
     }
@@ -109,6 +122,15 @@ export function evaluateRecord(record, { version, run }) {
     const checks = [
         check(`${run}: report schema`, record.schema === REPORT_SCHEMA, `schema ${record.schema}`),
         check(`${run}: native version`, record.nativeVersion === version, record.nativeVersion),
+        ...(target
+            ? [
+                  check(
+                      `${run}: built for the expected target`,
+                      record.os === target.os && record.arch === target.arch,
+                      `${record.os}/${record.arch}, expected ${target.os}/${target.arch}`,
+                  ),
+              ]
+            : []),
         check(
             `${run}: bundled frontend version`,
             frontend.frontendVersion === version,
@@ -290,9 +312,11 @@ async function stopTree(run) {
  * helper that keeps the output open past LOG_DRAIN_MS is killed with the group, the
  * streams are closed, and the run records it as a failure.
  */
-async function waitForExit(run, timeoutMs) {
+async function waitForExit(run, timeoutMs, onTimeout) {
     let result = await within(run.exited, timeoutMs)
     if (result.timedOut) {
+        // While the stuck process still exists: what it and its webview were doing.
+        onTimeout?.()
         const stopped = await stopTree(run)
         result = { code: null, signal: null, timedOut: true, killFailed: !stopped }
     }
@@ -378,6 +402,10 @@ function captureSpread(display, windowId, file, deadline) {
         deadline,
     )
     if (toolMissing(stats)) return { error: 'ImageMagick convert is not installed' }
+    if (stats.error || stats.status !== 0) {
+        const reason = stats.error?.code ?? `exit ${stats.status}`
+        return { error: `pixel statistics failed (${reason})`, retry: true }
+    }
     const spread = pixelSpread(stats.stdout)
     return spread === undefined
         ? { error: 'pixel statistics unavailable', retry: true }
@@ -428,6 +456,25 @@ async function screenshot(evidence, name, required, group) {
         false,
         `pixel spread ${last.spread.toFixed(4)} after ${PAINT_TIMEOUT_MS} ms (${file})`,
     )
+}
+
+/** WebView2 writes chrome_debug.log into its user data folder with this (smoke only). */
+const WEBVIEW2_LOGGING = '--enable-logging --v=1'
+
+/**
+ * Windows, before a stuck run is killed: the process list with window titles and
+ * states, and the WebView2 log of the app's user data folder.
+ */
+function windowsHangSnapshot(evidence, name) {
+    if (process.platform !== 'win32') return
+    const tasks = spawnSync('tasklist', ['/v', '/fo', 'csv'], { encoding: 'utf8', timeout: 15_000 })
+    const relevant = String(tasks.stdout ?? '')
+        .split('\n')
+        .filter((line, index) => index === 0 || /cannaguide|msedgewebview2/i.test(line))
+    writeFileSync(join(evidence, `${name}.hang-tasklist.csv`), `${relevant.join('\n')}\n`)
+    const log = join(process.env.LOCALAPPDATA ?? '', IDENTIFIER, 'EBWebView', 'chrome_debug.log')
+    if (existsSync(log))
+        writeFileSync(join(evidence, `${name}.chrome_debug.log`), readFileSync(log))
 }
 
 /** Windows: WebView2 processes still running, for the restart diagnosis. */
@@ -498,12 +545,20 @@ async function restartRun(ctx, run) {
     const restart = track(
         launch(app, { ...env, CANNAGUIDE_SMOKE_REPORT: report }, `${options.label}-${run}`),
     )
-    const exit = await waitForExit(restart, options.reportTimeoutSeconds * 1000 + QUIT_TIMEOUT_MS)
+    const exit = await waitForExit(
+        restart,
+        options.reportTimeoutSeconds * 1000 + QUIT_TIMEOUT_MS,
+        () => windowsHangSnapshot(evidence, `${options.label}-${run}`),
+    )
     restart.save(evidence)
     return {
         exit,
         results: [
-            ...evaluateRecord(readJson(report), { version: options.expectVersion, run }),
+            ...evaluateRecord(readJson(report), {
+                version: options.expectVersion,
+                run,
+                target: targetPlatform(options.expectTarget),
+            }),
             evaluateQuitAck(readJson(`${report}.quit-ack`), run),
             ...evaluateExit({ run, exit, stderr: restart.logs().stderr }),
         ],
@@ -520,8 +575,8 @@ async function concurrentRound(ctx, round) {
     const profile = newProfile()
     const env = profileEnv(profile, options)
     // Windows app folders cannot be redirected: each round starts them fresh instead,
-    // and only on CI, where they belong to the runner, never to a person.
-    const fresh = process.platform !== 'win32' || resetWindowsAppFolders()
+    // and only on a verified disposable runner, never on a person's profile.
+    const fresh = process.platform === 'win32' ? await resetWindowsAppFolders() : { state: 'fresh' }
     const reports = ['a', 'b'].map((name) => join(profile, `concurrent-${name}.json`))
     const runs = reports.map((report, index) =>
         track(
@@ -546,19 +601,39 @@ async function concurrentRound(ctx, round) {
     // The other one must be gone while the winner is still held, without a report.
     const loserRuns = runs.filter((_run, index) => reports[index] !== winner)
     const loserExits = await Promise.all(
-        loserRuns.map((run) => waitForExit(run, SECOND_INSTANCE_WAIT_MS)),
+        loserRuns.map((run, index) =>
+            waitForExit(run, SECOND_INSTANCE_WAIT_MS, () =>
+                windowsHangSnapshot(
+                    evidence,
+                    `${options.label}-concurrent-${round}-loser-${index}`,
+                ),
+            ),
+        ),
     )
     const shown =
         winner !== undefined &&
         (await waitFor(() => readJson(`${winner}.restored`)?.visible === true, SIGNAL_WAIT_MS))
     const record = winner && readJson(winner)
     for (const report of winners) writeFileSync(`${report}.quit`, '')
-    const exits = await Promise.all(runs.map((run) => waitForExit(run, QUIT_TIMEOUT_MS)))
+    const exits = await Promise.all(
+        runs.map((run, index) =>
+            waitForExit(run, QUIT_TIMEOUT_MS, () =>
+                windowsHangSnapshot(
+                    evidence,
+                    `${options.label}-concurrent-${round}-${index ? 'b' : 'a'}`,
+                ),
+            ),
+        ),
+    )
     runs.forEach((run) => run.save(evidence))
     // Counted again after every exit: a second frontend that started late still counts.
     const startedAfter = reports.filter((report) => existsSync(report)).length
     const recordChecks = record
-        ? evaluateRecord(record, { version: options.expectVersion, run: `concurrent ${round}` })
+        ? evaluateRecord(record, {
+              version: options.expectVersion,
+              run: `concurrent ${round}`,
+              target: targetPlatform(options.expectTarget),
+          })
         : []
     const ack = winner
         ? evaluateQuitAck(readJson(`${winner}.quit-ack`), `concurrent ${round}`)
@@ -575,18 +650,31 @@ async function concurrentRound(ctx, round) {
     }
 }
 
-/** Windows on CI: start the app folders of a concurrent round empty. */
-function resetWindowsAppFolders() {
-    if (!process.env.CI) return false
+/**
+ * Windows: empties the app folders before a concurrent round -- only on a verified
+ * disposable runner, through the guard in desktop-smoke-profile.mjs, and once the last
+ * round's WebView2 processes have let go of them. A reset that fails there is a
+ * failure: the round would otherwise run on state an earlier round left.
+ */
+async function resetWindowsAppFolders() {
+    if (!isDisposableRunner()) return { state: 'unavailable' }
+    await waitFor(() => webviewProcesses().length === 0, 30_000, 500)
     for (const base of [process.env.APPDATA, process.env.LOCALAPPDATA]) {
-        if (!base) continue
-        try {
-            rmSync(join(base, IDENTIFIER), { recursive: true, force: true })
-        } catch {
-            return false
-        }
+        const result = removeAppFolder(base)
+        if (!result.removed) return { state: 'failed', detail: `${base}: ${result.reason}` }
     }
-    return true
+    return { state: 'fresh' }
+}
+
+/** Fresh app folders: required where they can be reset, NOT_RUN only where they cannot. */
+function freshCheck(states) {
+    const label = 'concurrent launch: fresh app folders each round'
+    const failedReset = states.find((fresh) => fresh.state === 'failed')
+    if (failedReset) return check(label, false, `reset failed: ${failedReset.detail}`)
+    if (states.some((fresh) => fresh.state === 'unavailable')) {
+        return notRun(label, 'Windows app folders are reset only on a GitHub-hosted runner')
+    }
+    return check(label, true, 'fresh')
 }
 
 /** Repeated rounds, so a race that only sometimes loses is still caught. */
@@ -632,12 +720,7 @@ async function concurrentLaunch(ctx) {
             outcomes.every((outcome) => outcome.saved),
             describe((outcome) => (outcome.saved ? 'saved' : 'not acknowledged')),
         ),
-        outcomes.every((outcome) => outcome.fresh)
-            ? info('concurrent launch: fresh app folders each round', 'yes')
-            : notRun(
-                  'concurrent launch: fresh app folders each round',
-                  'Windows app folders are reset only on CI',
-              ),
+        freshCheck(outcomes.map((outcome) => outcome.fresh)),
     ]
 }
 
@@ -653,12 +736,16 @@ function profileEnv(profile, options) {
         if (env[key] && env[key] !== process.env[key]) mkdirSync(env[key], { recursive: true })
     }
     if (options.appimage) env.APPIMAGE_EXTRACT_AND_RUN = '1'
+    if (process.platform === 'win32') env.WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = WEBVIEW2_LOGGING
     return env
 }
 
 async function firstStart(ctx, results) {
     const { app, env, evidence, options, profile, track } = ctx
     const firstReport = join(profile, 'first-start.json')
+    // A window-state file that is there before the first start (a Windows profile that
+    // cannot be isolated) proves nothing about this run.
+    ctx.stateBefore = existsSync(windowStateFile(process.platform, profile, env))
     const first = track(
         launch(
             app,
@@ -672,7 +759,11 @@ async function firstStart(ctx, results) {
     )
     const firstRecord = reported ? readJson(firstReport) : undefined
     results.push(
-        ...evaluateRecord(firstRecord, { version: options.expectVersion, run: 'first-start' }),
+        ...evaluateRecord(firstRecord, {
+            version: options.expectVersion,
+            run: 'first-start',
+            target: targetPlatform(options.expectTarget),
+        }),
     )
     if (firstRecord) {
         results.push(
@@ -693,7 +784,9 @@ async function firstStart(ctx, results) {
         )
         writeFileSync(`${firstReport}.quit`, '')
     }
-    const firstExit = await waitForExit(first, firstRecord ? QUIT_TIMEOUT_MS : 1000)
+    const firstExit = await waitForExit(first, firstRecord ? QUIT_TIMEOUT_MS : 1000, () =>
+        windowsHangSnapshot(evidence, `${options.label}-first-start`),
+    )
     first.save(evidence)
     if (firstRecord)
         results.push(evaluateQuitAck(readJson(`${firstReport}.quit-ack`), 'first-start'))
@@ -708,7 +801,14 @@ async function restartAfterFirst(ctx, results) {
     // Checked before run 2 starts, so a file only run 2 writes cannot pass it.
     const stateFile = windowStateFile(process.platform, profile, env)
     const savedState = existsSync(stateFile)
-    results.push(check('first-start: window state saved on quit', savedState, stateFile))
+    results.push(
+        ctx.stateBefore
+            ? info(
+                  'first-start: window state saved by the first run',
+                  'not attributable: the file existed before',
+              )
+            : check('first-start: window state saved by the first run', savedState, stateFile),
+    )
     if (savedState) {
         writeFileSync(join(evidence, `${options.label}-window-state.json`), readFileSync(stateFile))
     }
@@ -727,10 +827,6 @@ async function restartAfterFirst(ctx, results) {
     // WebView2 process has gone, which tells a slow profile handover from an app
     // that cannot start a second time. The first attempt keeps its FAIL.
     if (restart.exit.timedOut && process.platform === 'win32') {
-        writeFileSync(
-            join(evidence, `${options.label}-restart-tasklist.csv`),
-            spawnSync('tasklist', ['/v', '/fo', 'csv'], { encoding: 'utf8' }).stdout ?? '',
-        )
         const cleared = await waitFor(() => webviewProcesses().length === 0, 30_000, 500)
         results.push(
             info('restart-retry: WebView2 processes gone before the retry', String(cleared)),
@@ -833,6 +929,7 @@ function parseOptions(argv) {
             'report-timeout': { type: 'string', default: '120' },
             'require-screenshot': { type: 'boolean', default: false },
             'concurrent-rounds': { type: 'string', default: '3' },
+            'expect-target': { type: 'string' },
             'allow-real-profile': { type: 'boolean', default: false },
         },
         strict: true,
@@ -849,7 +946,11 @@ function parseOptions(argv) {
     if (!Number.isInteger(concurrentRounds) || concurrentRounds < 1) {
         throw new Error('--concurrent-rounds must be a whole number of at least 1')
     }
+    if (values['expect-target'] && !targetPlatform(values['expect-target'])) {
+        throw new Error(`--expect-target ${values['expect-target']} is not a known target triple`)
+    }
     return {
+        expectTarget: values['expect-target'],
         concurrentRounds,
         app: values.app,
         expectVersion: values['expect-version'],

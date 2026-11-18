@@ -41,7 +41,8 @@ import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
-const APP_ID = 'com.cannaguide.desktop'
+import { isDisposableRunner, removeAppFolder } from './desktop-smoke-profile.mjs'
+
 const PROGRAM = 'cannaguide-desktop.exe'
 const HARNESS = 'scripts/desktop-smoke.mjs'
 
@@ -104,7 +105,10 @@ export function rosettaPlan({ target, machine, rosettaWorks }) {
 export function appBinary(app) {
     const dir = join(app, 'Contents', 'MacOS')
     if (!existsSync(dir)) return undefined
-    const name = readdirSync(dir).find((entry) => statSync(join(dir, entry)).mode & 0o111)
+    const name = readdirSync(dir).find((entry) => {
+        const stat = statSync(join(dir, entry))
+        return stat.isFile() && stat.mode & 0o111
+    })
     return name ? join(dir, name) : undefined
 }
 
@@ -147,7 +151,15 @@ function linux({ bundle, target, version, evidence }) {
     }
     // A virtual display and its own session bus per run; the window check must pass.
     const wrap = ['dbus-run-session', '--', 'xvfb-run', '-a', '-s', '-screen 0 1280x800x24']
-    const common = ['--expect-version', version, '--evidence', evidence, '--require-screenshot']
+    const common = [
+        '--expect-version',
+        version,
+        '--expect-target',
+        target,
+        '--evidence',
+        evidence,
+        '--require-screenshot',
+    ]
     let passed = true
     if (!ok(run('sudo', ['apt-get', 'install', '-y', resolve(deb)]))) {
         console.log('[FAIL] the .deb did not install through apt')
@@ -196,6 +208,8 @@ function macos({ bundle, target, version, evidence }) {
         binary,
         '--expect-version',
         version,
+        '--expect-target',
+        target,
         '--evidence',
         evidence,
         '--label',
@@ -203,10 +217,16 @@ function macos({ bundle, target, version, evidence }) {
     ])
 }
 
+/** Empties the app folders through the guard; false (with the reason) if any check fails. */
 function resetWindowsProfile() {
     for (const base of [process.env.APPDATA, process.env.LOCALAPPDATA]) {
-        if (base) rmSync(join(base, APP_ID), { recursive: true, force: true })
+        const result = removeAppFolder(base)
+        if (!result.removed) {
+            console.log(`[FAIL] app folder under ${base} not reset: ${result.reason}`)
+            return false
+        }
     }
+    return true
 }
 
 function writeUninstallEntries(file) {
@@ -234,45 +254,46 @@ function windows({ bundle, target, version, evidence }) {
         return false
     }
     const local = process.env.LOCALAPPDATA
-    const common = ['--expect-version', version, '--evidence', evidence]
+    const common = ['--expect-version', version, '--expect-target', target, '--evidence', evidence]
     let passed = true
 
-    resetWindowsProfile()
+    // Each step needs the one before it: a failed install, uninstall or reset stops the
+    // sequence, so nothing that this run did not install is launched or removed.
+    if (!resetWindowsProfile()) return false
     const nsisRun = run(resolve(nsis), ['/S'])
     writeUninstallEntries(join(evidence, 'uninstall-after-nsis.txt'))
     if (!ok(nsisRun)) {
         console.log(`[FAIL] NSIS install exited ${nsisRun.status ?? nsisRun.error?.message}`)
-        passed = false
+        return false
     }
     const nsisApp = findInstalled([local, local && join(local, 'Programs')], PROGRAM)
     if (!nsisApp) {
         console.log(`[FAIL] NSIS install: ${PROGRAM} not found (see uninstall-after-nsis.txt)`)
-        passed = false
-    } else if (!smoke(['--app', nsisApp, '--label', `${target}-nsis`, ...common])) {
-        passed = false
+        return false
     }
+    if (!smoke(['--app', nsisApp, '--label', `${target}-nsis`, ...common])) passed = false
 
     // The MSI is tested on a clean machine: with an NSIS install present it reuses that
     // folder (Tauri's MSI looks the previous install location up), and the NSIS
     // uninstaller is qualified on the way. `_?=` makes it run in place and wait.
-    if (nsisApp) {
-        const nsisDir = dirname(nsisApp)
-        const uninstall = run(join(nsisDir, 'uninstall.exe'), ['/S', `_?=${nsisDir}`])
-        if (!ok(uninstall) || existsSync(nsisApp)) {
-            console.log(
-                `[FAIL] NSIS uninstall exited ${uninstall.status ?? uninstall.error?.message}; program still there: ${existsSync(nsisApp)}`,
-            )
-            passed = false
-        }
+    const nsisDir = dirname(nsisApp)
+    const uninstall = run(join(nsisDir, 'uninstall.exe'), ['/S', `_?=${nsisDir}`])
+    if (!ok(uninstall) || existsSync(nsisApp)) {
+        console.log(
+            `[FAIL] NSIS uninstall exited ${uninstall.status ?? uninstall.error?.message}; program still there: ${existsSync(nsisApp)}`,
+        )
+        return false
     }
 
-    resetWindowsProfile()
+    if (!resetWindowsProfile()) return false
     const msiLog = join(resolve(evidence), 'msi-install.log')
+    // Only this run's log may name the install folder.
+    rmSync(msiLog, { force: true })
     const msiRun = run('msiexec.exe', ['/i', resolve(msi), '/qn', '/norestart', '/l*v', msiLog])
     writeUninstallEntries(join(evidence, 'uninstall-after-msi.txt'))
     if (!ok(msiRun)) {
         console.log(`[FAIL] MSI install exited ${msiRun.status ?? msiRun.error?.message}`)
-        passed = false
+        return false
     }
     const installDir = msiInstallDir(readMsiLog(msiLog))
     const msiApp = installDir && join(installDir, PROGRAM)
@@ -281,10 +302,9 @@ function windows({ bundle, target, version, evidence }) {
         console.log(
             `[FAIL] MSI install: ${PROGRAM} not at INSTALLDIR ${installDir} (see msi-install.log)`,
         )
-        passed = false
-    } else if (!smoke(['--app', msiApp, '--label', `${target}-msi`, ...common])) {
-        passed = false
+        return false
     }
+    if (!smoke(['--app', msiApp, '--label', `${target}-msi`, ...common])) passed = false
     return passed
 }
 
@@ -305,6 +325,14 @@ export function main(argv = process.argv.slice(2)) {
             throw new Error('--target and --bundle-dir are required')
     } catch (error) {
         console.error(`[desktop-smoke-ci] ${error.message}`)
+        return 2
+    }
+    // It installs system-wide and resets app folders: only on a fresh GitHub-hosted
+    // machine. Locally, run scripts/desktop-smoke.mjs against an installed app.
+    if (!isDisposableRunner()) {
+        console.error(
+            '[desktop-smoke-ci] refusing: this runs only on a GitHub-hosted runner (GITHUB_ACTIONS=true, RUNNER_ENVIRONMENT=github-hosted)',
+        )
         return 2
     }
     const version = JSON.parse(

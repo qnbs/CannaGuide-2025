@@ -322,6 +322,16 @@ in three rounds of two simultaneous cold launches.
   Silicon. Its bundles (the macOS app as a `.tar.gz` that keeps its permissions) are kept for
   7 days for a check on a real desktop.
 
+**Profile safety:** `scripts/desktop-smoke-ci.mjs` installs system-wide and resets the
+Windows app folders, so it refuses to run anywhere but a GitHub-hosted runner
+(`GITHUB_ACTIONS=true` and `RUNNER_ENVIRONMENT=github-hosted`; `CI` alone does not count).
+Every deletion goes through `scripts/desktop-smoke-profile.mjs`, which also refuses a base
+folder reached through a link and an app folder that is a link or resolves outside its base.
+
+**Lock fallback:** if the profile lock file cannot be opened at all, the app logs it and
+starts without the lock; one instance per profile then rests on the single-instance plugin
+alone, which on Linux needs a D-Bus session bus.
+
 **Isolation:** on Linux, `HOME` and `XDG_*` point into a temporary profile. On macOS, `HOME`
 and `CFFIXED_USER_HOME` do. Windows app folders cannot be redirected, so the harness refuses
 to run there outside CI, and CI resets the runner's app folders before each install.

@@ -23,6 +23,7 @@ on:
             - 'apps/web/index.html'
             - 'scripts/desktop-smoke.mjs'
             - 'scripts/desktop-smoke-ci.mjs'
+            - 'scripts/desktop-smoke-profile.mjs'
             - '.github/workflows/desktop-build.yml'
     workflow_dispatch:
     workflow_call:

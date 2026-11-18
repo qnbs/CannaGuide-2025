@@ -208,7 +208,16 @@ pub fn run() {
                     window.open_devtools();
                 }
             }
+            startup::trace(app.handle(), "native setup done");
             Ok(())
+        })
+        // Smoke-harness trace only: whether the webview started and finished loading.
+        .on_page_load(|webview, payload| {
+            let milestone = match payload.event() {
+                tauri::webview::PageLoadEvent::Started => "page load started",
+                tauri::webview::PageLoadEvent::Finished => "page load finished",
+            };
+            startup::trace(webview.app_handle(), milestone);
         })
         // Closing the main window quits the app, so it waits for the flush too.
         .on_window_event(|window, event| {

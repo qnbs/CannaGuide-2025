@@ -174,6 +174,20 @@ fn smoke_target() -> Option<PathBuf> {
     env::var_os(SMOKE_REPORT_ENV).map(PathBuf::from)
 }
 
+/// Under the smoke harness only: one stderr line per start milestone, with the time
+/// since the process started, so a start that never reports shows how far it got
+/// (native setup, page load started, page load finished). Normal runs print nothing.
+pub(crate) fn trace<R: tauri::Runtime>(app: &tauri::AppHandle<R>, milestone: &str) {
+    if smoke_target().is_none() {
+        return;
+    }
+    let elapsed = app
+        .try_state::<ProcessStart>()
+        .map(|start| start.0.elapsed().as_millis())
+        .unwrap_or_default();
+    eprintln!("[startup] {milestone} after {elapsed} ms");
+}
+
 /// Writes a small smoke record next to the report; a failure is logged, never fatal.
 fn write_beside_report(report: &Path, suffix: &str, value: &serde_json::Value) {
     let written = serde_json::to_vec(value)

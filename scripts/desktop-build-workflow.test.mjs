@@ -200,13 +200,16 @@ test('every desktop build is launched before its bundles are kept, on PRs too', 
     // - the Linux harness arguments carry --require-screenshot;
     assert.match(fn('linux'), /const common = \[[^\]]*'--require-screenshot'[^\]]*\]/)
     // - a failed NSIS or MSI install, or NSIS uninstall, marks the run failed.
+    // ...and stops the sequence, so nothing this run did not install is launched.
     for (const failure of ['NSIS install exited', 'MSI install exited', 'NSIS uninstall exited']) {
         assert.match(
             fn('windows'),
-            new RegExp(`${failure}[^\\n]*\\n(?:[^\\n]*\\n)?\\s*passed = false`),
+            new RegExp(`${failure}[\\s\\S]{0,240}?\\n\\s*(?:return false|passed = false)`),
             failure,
         )
     }
+    // The orchestrator refuses to run outside a disposable runner (it resets app folders).
+    assert.match(orchestrator, /if \(!isDisposableRunner\(\)\) \{/)
     // - and main() turns a failed platform run into exit 1.
     assert.match(orchestrator, /return passed \? 0 : 1/)
 })

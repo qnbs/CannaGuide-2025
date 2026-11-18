@@ -245,7 +245,14 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
                         'the latest changes could not be saved; the update was not installed',
                     )
                 }
-                await invoke<void>(bridge, 'update_install')
+                try {
+                    await invoke<void>(bridge, 'update_install')
+                } catch (error) {
+                    // The installer did not start and the app stays open: the hold
+                    // from the final save must not swallow the user's next edits.
+                    releaseWriteHold()
+                    throw error
+                }
             }),
         // Outside the one-step-at-a-time guard: it has to reach a running step.
         cancelDownload: async () => {
@@ -410,6 +417,19 @@ type SuspendPersistence = () => Promise<(() => void) | null>
  * profile (CodeRabbit on #881). A page still here after LAST_SAVE_HOLD_MS was not
  * ended: saving resumes and catches up with one save.
  */
+let releaseActiveHold: (() => void) | undefined
+
+/**
+ * Ends a write hold early: the update install failed and the app stays open, or a new
+ * quit is starting and needs its save. Saving resumes and catches up with one save.
+ * Does nothing when no hold is active.
+ */
+export const releaseWriteHold = (): void => {
+    const release = releaseActiveHold
+    releaseActiveHold = undefined
+    release?.()
+}
+
 const holdWritesAfterLastSave = async (
     flush: PersistFlush | undefined,
     suspend: SuspendPersistence,
@@ -421,11 +441,15 @@ const holdWritesAfterLastSave = async (
         console.warn('[Desktop] could not hold writes after the last save:', messageOf(error))
     }
     if (!resume) return
-    const release = resume
-    setTimeout(() => {
-        release()
+    const resumeWrites = resume
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const release = (): void => {
+        clearTimeout(timer)
+        resumeWrites()
         void flush?.().catch(() => undefined)
-    }, LAST_SAVE_HOLD_MS)
+    }
+    releaseActiveHold = release
+    timer = setTimeout(releaseWriteHold, LAST_SAVE_HOLD_MS)
 }
 
 export const flushThenConfirmFinalSave = async (
@@ -437,6 +461,7 @@ export const flushThenConfirmFinalSave = async (
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
+    releaseWriteHold()
     try {
         const saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopUpdate] latest changes not saved before the restart')
@@ -462,6 +487,8 @@ export const flushThenConfirmQuit = async (
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
+    // A hold left by a failed update install would refuse this quit's save.
+    releaseWriteHold()
     let saved = false
     try {
         saved = flush ? await flush() : false

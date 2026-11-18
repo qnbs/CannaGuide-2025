@@ -188,6 +188,7 @@ pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
 mod tests {
     use super::*;
     use std::env;
+    use std::sync::mpsc;
 
     fn scratch(name: &str) -> std::path::PathBuf {
         env::temp_dir().join(format!("cannaguide-lock-{name}-{}", std::process::id()))
@@ -239,31 +240,44 @@ mod tests {
         fs::remove_dir_all(&dir).unwrap();
     }
 
-    /// A holder in another thread: keeps the lock, and after `after` either takes the
-    /// pending request (an app with a window) or lets the lock go (an app exiting).
-    fn holder(dir: &Path, after: Duration, takes_request: bool) -> thread::JoinHandle<()> {
+    /// A holder in another thread. It acts only once the launch has written its request
+    /// (no timing assumption, CodeRabbit on #884): it either takes the request and keeps
+    /// the lock until the test signals that the launch has seen the outcome (an app with
+    /// a window), or lets the lock go without taking it (an app exiting).
+    fn holder(dir: &Path, takes_request: bool) -> (thread::JoinHandle<()>, mpsc::Sender<()>) {
         let lock = try_acquire(dir)
             .unwrap()
             .expect("the holder takes the lock");
         let dir = dir.to_path_buf();
-        thread::spawn(move || {
-            thread::sleep(after);
+        let (seen, outcome_seen) = mpsc::channel::<()>();
+        let running = thread::spawn(move || {
+            let deadline = Instant::now() + Duration::from_secs(30);
+            while !dir.join(FOCUS_REQUEST).exists() {
+                assert!(
+                    Instant::now() < deadline,
+                    "the launch never wrote its request"
+                );
+                thread::sleep(Duration::from_millis(10));
+            }
             if takes_request {
                 assert!(take_focus_request(&dir));
-                thread::sleep(Duration::from_millis(500));
+                let _ = outcome_seen.recv();
             }
             drop(lock);
-        })
+        });
+        (running, seen)
     }
 
     #[test]
     fn a_handover_the_running_app_answers_exits_cleanly() {
         let dir = scratch("handover-answered");
         fs::create_dir_all(&dir).unwrap();
-        let running = holder(&dir, Duration::from_millis(200), true);
+        let (running, seen) = holder(&dir, true);
+        // Exit(0) whether the holder answers in time or late: the lock stays held.
         let outcome = hand_over(&dir, Duration::from_secs(3));
-        assert!(matches!(outcome, Handover::Exit(0)), "{outcome:?}");
+        seen.send(()).unwrap();
         running.join().unwrap();
+        assert!(matches!(outcome, Handover::Exit(0)), "{outcome:?}");
         fs::remove_dir_all(&dir).unwrap();
     }
 
@@ -271,8 +285,9 @@ mod tests {
     fn a_launch_takes_over_when_the_running_app_exits_meanwhile() {
         let dir = scratch("handover-exited");
         fs::create_dir_all(&dir).unwrap();
-        let exiting = holder(&dir, Duration::from_millis(200), false);
-        let outcome = hand_over(&dir, Duration::from_secs(3));
+        let (exiting, _seen) = holder(&dir, false);
+        // A long deadline: hand_over returns as soon as the lock is free.
+        let outcome = hand_over(&dir, Duration::from_secs(30));
         exiting.join().unwrap();
         let Handover::TakeOver(lock) = outcome else {
             panic!("expected a takeover, got {outcome:?}");

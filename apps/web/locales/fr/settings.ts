@@ -1,5 +1,5 @@
 export const settingsView = {
-    title: 'Parametres',
+    title: 'Param\u00E8tres',
     searchPlaceholder: 'Rechercher dans les parametres...',
     saveSuccess: 'Parametres enregistres !',
     categories: {
@@ -932,9 +932,34 @@ export const settingsView = {
         unlockButton: 'Deverrouiller',
     },
     about: {
-        title: "A propos de l'application",
+        title: "\u00C0 propos de l'application",
         projectInfo: 'Infos du projet & README',
         version: 'Version',
+        update: {
+            title: "Mises \u00E0 jour de l'application",
+            check: 'Rechercher des mises \u00E0 jour',
+            checking: 'Recherche de mises \u00E0 jour...',
+            upToDate: 'Vous utilisez la derni\u00E8re version.',
+            available: 'La version {{version}} est disponible.',
+            notes: 'Notes de version',
+            download: 'T\u00E9l\u00E9charger la mise \u00E0 jour',
+            downloading: 'T\u00E9l\u00E9chargement et v\u00E9rification... {{percent}} %',
+            downloadingUnknown: 'T\u00E9l\u00E9chargement et v\u00E9rification...',
+            ready: "La version {{version}} est t\u00E9l\u00E9charg\u00E9e et sa signature v\u00E9rifi\u00E9e. L'installation enregistre vos derni\u00E8res modifications, remplace l'application et la red\u00E9marre.",
+            install: 'Installer et red\u00E9marrer',
+            cancel: 'Annuler le t\u00E9l\u00E9chargement',
+            cancelled: 'La requ\u00EAte de mise \u00E0 jour a \u00E9t\u00E9 arr\u00EAt\u00E9e.',
+            offline:
+                'Vous \u00EAtes hors ligne. Connectez-vous \u00E0 Internet pour rechercher des mises \u00E0 jour.',
+            installing: 'Enregistrement de vos donn\u00E9es et installation...',
+            error: 'La mise \u00E0 jour a \u00E9chou\u00E9 : {{message}}',
+            notSaved:
+                "Vos derni\u00E8res modifications n'ont pas pu \u00EAtre enregistr\u00E9es, la mise \u00E0 jour n'a donc pas \u00E9t\u00E9 install\u00E9e. R\u00E9essayez.",
+            localOnly:
+                "Le mode local uniquement est actif : l'application ne contacte donc pas le serveur de mises \u00E0 jour.",
+            notification:
+                "CannaGuide {{version}} est disponible. Installez-la depuis Param\u00E8tres > \u00C0 propos de l'application.",
+        },
         whatsNew: {
             title: 'Nouveautes de la v1.8',
             items: {

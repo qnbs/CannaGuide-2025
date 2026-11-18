@@ -911,6 +911,30 @@ export const settingsView = {
         title: 'Over de app',
         projectInfo: 'Projectinfo & README',
         version: 'Versie',
+        update: {
+            title: 'App-updates',
+            check: 'Controleren op updates',
+            checking: 'Zoeken naar updates...',
+            upToDate: 'Je hebt de nieuwste versie.',
+            available: 'Versie {{version}} is beschikbaar.',
+            notes: 'Releaseopmerkingen',
+            download: 'Update downloaden',
+            downloading: 'Downloaden en controleren... {{percent}}%',
+            downloadingUnknown: 'Downloaden en controleren...',
+            ready: 'Versie {{version}} is gedownload en de handtekening is gecontroleerd. Bij het installeren worden je laatste wijzigingen opgeslagen, wordt de app vervangen en opnieuw gestart.',
+            install: 'Installeren en opnieuw starten',
+            cancel: 'Download annuleren',
+            cancelled: 'Het updateverzoek is gestopt.',
+            offline: 'Je bent offline. Maak verbinding met internet om op updates te controleren.',
+            installing: 'Je gegevens worden opgeslagen en de update wordt ge\u00EFnstalleerd...',
+            error: 'De update is mislukt: {{message}}',
+            notSaved:
+                'Je laatste wijzigingen konden niet worden opgeslagen, dus de update is niet ge\u00EFnstalleerd. Probeer het opnieuw.',
+            localOnly:
+                'De alleen-lokaal-modus staat aan, dus de app neemt geen contact op met de updateserver.',
+            notification:
+                'CannaGuide {{version}} is beschikbaar. Installeer het via Instellingen > Over de app.',
+        },
         whatsNew: {
             title: 'Nieuw in v1.8',
             items: {

@@ -1,8 +1,12 @@
+mod lifecycle;
+mod update;
+
+use lifecycle::{QuitDecision, QuitGate, QUIT_FLUSH_TIMEOUT};
 use serde::Serialize;
 use tauri::{
     menu::{MenuBuilder, MenuItemBuilder},
     tray::TrayIconBuilder,
-    Emitter, Manager,
+    AppHandle, Emitter, Manager, RunEvent, WindowEvent,
 };
 
 #[derive(Serialize)]
@@ -97,9 +101,41 @@ fn clear_native_cache(app_handle: tauri::AppHandle) -> Result<u64, String> {
     Ok(bytes_freed)
 }
 
+/// Holds a user-initiated quit until the frontend has flushed persisted state
+/// (`confirm_quit`), or until QUIT_FLUSH_TIMEOUT for a frontend that never answers.
+pub(crate) fn request_quit(app: &AppHandle) {
+    match app.state::<QuitGate>().request() {
+        QuitDecision::Exit => app.exit(0),
+        // Held: an update is installing and ends the process itself after its final
+        // save; the gate hands the quit back if the install fails (QuitGate).
+        QuitDecision::Wait | QuitDecision::Held => {}
+        QuitDecision::AskFrontend => {
+            let _ = app.emit("tauri://before-quit", ());
+            let app = app.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(QUIT_FLUSH_TIMEOUT);
+                if app.state::<QuitGate>().confirm() {
+                    eprintln!("[quit] no flush confirmation from the frontend; exiting anyway");
+                    app.exit(0);
+                }
+            });
+        }
+    }
+}
+
+/// Called by the frontend once `flushPersistedState` has finished.
+#[tauri::command]
+fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>) {
+    if gate.confirm() {
+        app.exit(0);
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let app = tauri::Builder::default()
+        .manage(QuitGate::default())
+        .manage(update::UpdateState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
@@ -137,19 +173,8 @@ pub fn run() {
                                 let _ = w.hide();
                             }
                         }
-                        "quit" => {
-                            // Notify the frontend so it can flush
-                            // Redux-Persist + IndexedDB before the process exits.
-                            let _ = app_handle.emit("tauri://before-quit", ());
-                            // Give the frontend ~250ms to react before we exit.
-                            std::thread::spawn({
-                                let app_handle = app_handle.clone();
-                                move || {
-                                    std::thread::sleep(std::time::Duration::from_millis(250));
-                                    app_handle.exit(0);
-                                }
-                            });
-                        }
+                        // Flushes persisted state first; see request_quit.
+                        "quit" => request_quit(app_handle),
                         _ => {}
                     }
                 })
@@ -163,12 +188,43 @@ pub fn run() {
             }
             Ok(())
         })
+        // Closing the main window quits the app, so it waits for the flush too.
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                let app = window.app_handle();
+                if window.label() == "main" && !app.state::<QuitGate>().is_confirmed() {
+                    api.prevent_close();
+                    request_quit(app);
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_app_version,
             get_native_capabilities,
             open_log_dir,
             clear_native_cache,
+            confirm_quit,
+            update::update_check,
+            update::update_download,
+            update::update_cancel,
+            update::update_set_local_only,
+            update::confirm_final_save,
+            update::update_install,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    app.run(|app, event| {
+        // A user quit (Cmd+Q, the last window closing) has no exit code; exit() and
+        // restart() carry one and pass. Only an unconfirmed user quit is held.
+        if let RunEvent::ExitRequested {
+            code: None, api, ..
+        } = event
+        {
+            if !app.state::<QuitGate>().is_confirmed() {
+                api.prevent_exit();
+                request_quit(app);
+            }
+        }
+    });
 }

@@ -1,4 +1,6 @@
 import 'fake-indexeddb/auto'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createAppStoreSync } from '@/stores/store'
 import { addGrow } from '@/stores/slices/growsSlice'
@@ -66,5 +68,53 @@ describe('JSON export format (persisted snapshot)', () => {
         expect(json).not.toContain('4711')
         expect(json).not.toContain('canary_sync_key_0000000000')
         expect(passesImportCheck(json)).toBe(true)
+    })
+})
+
+describe('persisted snapshot inputs (CodeAnt on #878)', () => {
+    it('follow the state a save writes and ignore the rest', async () => {
+        const { persistedSnapshotInputs, sameSnapshotInputs } =
+            await import('./persistedSnapshotFormat')
+        const store = createAppStoreSync()
+        const before = persistedSnapshotInputs(store.getState())
+        expect(sameSnapshotInputs(before, persistedSnapshotInputs(store.getState()))).toBe(true)
+        // State the snapshot leaves out does not make a save "unsettled".
+        const withRuntimeOnly = { ...store.getState(), runtimeOnly: { tick: 1 } }
+        expect(
+            sameSnapshotInputs(
+                before,
+                persistedSnapshotInputs(withRuntimeOnly as typeof withRuntimeOnly),
+            ),
+        ).toBe(true)
+        store.dispatch(setSetting({ path: 'privacy.clearAiHistoryOnExit', value: true }))
+        expect(sameSnapshotInputs(before, persistedSnapshotInputs(store.getState()))).toBe(false)
+    })
+
+    it('cover every state path buildPersistedSnapshot reads', () => {
+        const source = readFileSync(
+            resolve(process.cwd(), 'services/persistedSnapshotFormat.ts'),
+            'utf8',
+        )
+        const body = (name: string) => {
+            const start = source.indexOf(`export const ${name} = `)
+            expect(start).toBeGreaterThan(-1)
+            const next = source.indexOf('\nexport const ', start + 1)
+            return source.slice(start, next === -1 ? undefined : next)
+        }
+        const paths = (text: string, pattern: RegExp) =>
+            [...text.matchAll(pattern)].map((match) => match[1] as string)
+        const builder = body('buildPersistedSnapshot')
+        const inputs = body('persistedSnapshotInputs')
+        const inputPaths = paths(inputs, /state\.([\w.]+)/g)
+        for (const path of paths(builder, /state\.([\w.]+)/g)) {
+            const covered = inputPaths.some(
+                (input) => path === input || path.startsWith(`${input}.`),
+            )
+            expect(covered, `state.${path} is written but not compared`).toBe(true)
+        }
+        const uiInputs = paths(inputs, /ui\.(\w+)/g)
+        for (const field of paths(builder, /getUISnapshot\(\)\.(\w+)/g)) {
+            expect(uiInputs, `ui.${field} is written but not compared`).toContain(field)
+        }
     })
 })

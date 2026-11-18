@@ -68,6 +68,54 @@ export const buildPersistedSnapshot = (
 })
 
 /**
+ * Everything buildPersistedSnapshot reads, by reference. Two equal lists mean the
+ * same snapshot would be written; a change to state the snapshot leaves out (a
+ * runtime-only slice) does not count. Used to tell whether a save still covers the
+ * latest changes (desktop quit and update install, CodeAnt on #878).
+ * Keep in step with buildPersistedSnapshot: persistedSnapshotFormat.test.ts fails
+ * when the builder reads a `state.` path that this list leaves out.
+ */
+export const persistedSnapshotInputs = (state: RootState): readonly unknown[] => {
+    const ui = getUISnapshot()
+    return [
+        state.settings,
+        state.simulation,
+        state.userStrains,
+        state.favorites,
+        state.notes,
+        state.archives,
+        state.savedItems,
+        state.knowledge,
+        state.breeding,
+        state.genealogy,
+        state.nutrientPlanner.schedule,
+        state.nutrientPlanner.readings,
+        state.nutrientPlanner.alerts,
+        state.nutrientPlanner.autoAdjustEnabled,
+        state.nutrientPlanner.medium,
+        state.nutrientPlanner.activePluginId,
+        state.nutrientPlanner.activeBrandId,
+        state.nutrientPlanner.lastAiRecommendation,
+        state.nutrientPlanner.autoAdjustRecommendation,
+        state.sandbox.savedExperiments,
+        state.hydro,
+        state.grows,
+        state.metrics,
+        state.growPlanner,
+        state.diagnosisHistory,
+        state.problemTracker,
+        ui.lastActiveView,
+        ui.onboardingStep,
+        ui.equipmentViewTab,
+        ui.knowledgeViewTab,
+    ]
+}
+
+/** Whether two persistedSnapshotInputs lists would write the same snapshot. */
+export const sameSnapshotInputs = (a: readonly unknown[], b: readonly unknown[]): boolean =>
+    a.length === b.length && a.every((value, index) => Object.is(value, b[index]))
+
+/**
  * The check the JSON import applies before it restores a file: an object with a
  * numeric top-level `version`, as `buildPersistedSnapshot` writes it.
  */

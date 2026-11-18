@@ -229,7 +229,7 @@ export const nav = {
     plants: 'Plantes',
     equipment: 'Equipement',
     knowledge: 'Connaissances',
-    settings: 'Parametres',
+    settings: 'Param\u00E8tres',
     help: 'Aide',
 }
 

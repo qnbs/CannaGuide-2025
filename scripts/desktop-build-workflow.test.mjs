@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
@@ -102,4 +102,35 @@ test('updater bundles are built and signed only by Desktop Build, through an ove
     }
     // A calling workflow cannot start the release build without the signing key.
     assert.match(WORKFLOW, /TAURI_SIGNING_PRIVATE_KEY:\n\s+required: true\n/)
+})
+
+test('macOS builds carry at least an ad-hoc signature, and the webview cannot drive the updater', () => {
+    const readJson = (file) => JSON.parse(readFileSync(resolve(REPO_ROOT, file), 'utf8'))
+    // Apple silicon requires a code signature for apps downloaded from the internet.
+    // Without an Apple certificate, "-" is Tauri's ad-hoc identity (v2.tauri.app,
+    // macOS signing, "Ad-Hoc Signing"); users still allow the app once.
+    assert.equal(
+        readJson('apps/desktop/src-tauri/tauri.conf.json').bundle.macOS.signingIdentity,
+        '-',
+    )
+
+    // The app updates only through src-tauri/src/update.rs, after the user's consent
+    // and a confirmed save. The plugin's own updater commands would skip both, so no
+    // capability may grant them to the webview. (App commands stay callable by code
+    // in the webview; that is no boundary, see the trust note in update.rs.)
+    const dir = 'apps/desktop/src-tauri/capabilities'
+    // tauri.conf.json lists capabilities by identifier; a listed one without a file
+    // fails the build script ("capability with identifier ... not found").
+    const listed = readJson('apps/desktop/src-tauri/tauri.conf.json').app.security.capabilities
+    const files = readdirSync(resolve(REPO_ROOT, dir)).map(
+        (file) => readJson(`${dir}/${file}`).identifier,
+    )
+    assert.deepEqual([...listed].sort(), [...files].sort())
+    for (const file of readdirSync(resolve(REPO_ROOT, dir))) {
+        const permissions = readJson(`${dir}/${file}`).permissions ?? []
+        for (const permission of permissions) {
+            const id = typeof permission === 'string' ? permission : permission.identifier
+            assert.ok(!String(id).startsWith('updater:'), `${file} grants ${id}`)
+        }
+    }
 })

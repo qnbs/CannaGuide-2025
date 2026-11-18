@@ -121,6 +121,13 @@ export const schedulePersistenceWrite = async (write: () => Promise<void>): Prom
 }
 
 /**
+ * Resolves once every write scheduled so far has settled, without scheduling one.
+ * The desktop startup report waits for it, so a start is reported from the state its
+ * startup saves left behind (a refused save makes the page stale first).
+ */
+export const whenPersistenceIdle = (): Promise<void> => activeWrite
+
+/**
  * Stop new persistence writes and wait for the current one to finish. The caller
  * must resume after a failed recovery; successful recovery stays suspended until reload.
  */

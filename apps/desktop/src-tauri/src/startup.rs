@@ -1,17 +1,23 @@
 //! The frontend's startup report, and the hooks the desktop runtime smoke test
 //! (`scripts/desktop-smoke.mjs`) drives the packaged app through.
 //!
-//! The frontend calls `frontend_ready` once, at the end of its start
+//! The frontend calls `frontend_ready` once, after its start has settled
 //! (`apps/web/services/desktopStartupReport.ts`). Normally that only prints one line.
 //! With `CANNAGUIDE_SMOKE_REPORT` set -- by the test harness, never by the app -- the
-//! report is also written to that file, and the app then quits through the normal
-//! quit handshake (`request_quit`), or, with `CANNAGUIDE_SMOKE_HOLD` set as well, once
-//! `<report>.quit` exists. So one launch proves the native start, a rendered bundle,
-//! IPC in both directions and a flushed, clean quit.
+//! process also writes, next to that file:
 //!
-//! Trust: like every app command, `frontend_ready` is callable by webview code.
-//! Without the environment variable it only prints the outcome; the file path never
-//! comes from the webview, and the report has a fixed schema with no user data.
+//! - the report itself (`<report>`);
+//! - `<report>.quit-ack` when the frontend confirms a quit, with whether its save
+//!   succeeded, so a run proves the quit went through the save rather than a fallback;
+//! - with `CANNAGUIDE_SMOKE_HOLD`: `<report>.hidden` once `<report>.hide` appears (the
+//!   window is hidden), `<report>.restored` when a second launch shows it again, and
+//!   the quit once `<report>.quit` appears. Without HOLD the app quits right after the
+//!   report, through the normal quit handshake (`request_quit`).
+//!
+//! Trust: like every app command, `frontend_ready` is callable by webview code. Without
+//! the environment variable it only prints the outcome. The file path never comes from
+//! the webview, the report has a fixed schema, and an error is recorded only by its
+//! class name (`diagnostic_code`), never by its message.
 
 use std::{
     env, fs, io,
@@ -21,15 +27,15 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Manager, State};
 
 pub(crate) const SMOKE_REPORT_ENV: &str = "CANNAGUIDE_SMOKE_REPORT";
 pub(crate) const SMOKE_HOLD_ENV: &str = "CANNAGUIDE_SMOKE_HOLD";
 const QUIT_POLL_INTERVAL: Duration = Duration::from_millis(200);
 /// A held smoke run quits by itself after this, so a lost harness leaves no process.
 const MAX_HOLD: Duration = Duration::from_secs(600);
-const MAX_DETAIL_CHARS: usize = 300;
-const REPORT_SCHEMA: u32 = 1;
+const MAX_CODE_CHARS: usize = 64;
+const REPORT_SCHEMA: u32 = 2;
 
 /// How the frontend's start ended; mirrors `DesktopStartupOutcome` in the web app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
@@ -66,16 +72,28 @@ pub(crate) enum StartupView {
     None,
 }
 
+/// Where the started state came from; mirrors `StartupHydration` in `stores/store.ts`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum StartupHydration {
+    Snapshot,
+    Backup,
+    Fresh,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct FrontendReport {
     outcome: StartupOutcome,
     frontend_version: String,
     view: StartupView,
+    /// `document.visibilityState == "visible"`: false for a window that starts hidden.
+    visible: bool,
+    hydration: StartupHydration,
     local_only: bool,
     saved_snapshot_present: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    detail: Option<String>,
+    error_code: Option<String>,
 }
 
 /// When the process started, for the time-to-ready figure.
@@ -98,6 +116,22 @@ struct SmokeRecord<'a> {
     frontend: &'a FrontendReport,
 }
 
+/// An error's class name ("TypeError", "QuotaExceededError") passes; anything else --
+/// a message, a path, user text -- becomes a fixed code.
+fn diagnostic_code(raw: &str) -> String {
+    let mut chars = raw.chars();
+    let valid = raw.len() <= MAX_CODE_CHARS
+        && chars
+            .next()
+            .is_some_and(|first| first.is_ascii_alphabetic())
+        && chars.all(|rest| rest.is_ascii_alphanumeric());
+    if valid {
+        raw.to_owned()
+    } else {
+        "UnrecognizedError".to_owned()
+    }
+}
+
 fn with_suffix(path: &Path, suffix: &str) -> PathBuf {
     let mut name = path.as_os_str().to_owned();
     name.push(suffix);
@@ -116,15 +150,26 @@ fn write_atomically(path: &Path, bytes: &[u8]) -> io::Result<()> {
     fs::rename(&partial, path)
 }
 
+fn smoke_target() -> Option<PathBuf> {
+    env::var_os(SMOKE_REPORT_ENV).map(PathBuf::from)
+}
+
+/// Writes a small smoke record next to the report; a failure is logged, never fatal.
+fn write_beside_report(report: &Path, suffix: &str, value: &serde_json::Value) {
+    let written = serde_json::to_vec(value)
+        .map_err(io::Error::other)
+        .and_then(|bytes| write_atomically(&with_suffix(report, suffix), &bytes));
+    if let Err(error) = written {
+        eprintln!("[smoke] {suffix} record not written: {error}");
+    }
+}
+
 fn smoke_record_bytes(
     report: &FrontendReport,
     ready_after_ms: u128,
 ) -> serde_json::Result<Vec<u8>> {
     let report = FrontendReport {
-        detail: report
-            .detail
-            .as_ref()
-            .map(|detail| detail.chars().take(MAX_DETAIL_CHARS).collect()),
+        error_code: report.error_code.as_deref().map(diagnostic_code),
         ..report.clone()
     };
     serde_json::to_vec_pretty(&SmokeRecord {
@@ -137,10 +182,50 @@ fn smoke_record_bytes(
     })
 }
 
-fn quit_when_signalled(app: AppHandle, signal: PathBuf) {
+/// Called from `confirm_quit`: whether the frontend's save before the quit succeeded.
+pub(crate) fn record_quit_ack(saved: Option<bool>) {
+    let saved_text = match saved {
+        Some(true) => "yes",
+        Some(false) => "no",
+        None => "unknown",
+    };
+    eprintln!("[quit] confirmed by the frontend (saved: {saved_text})");
+    if let Some(report) = smoke_target() {
+        let ack = serde_json::json!({ "schema": REPORT_SCHEMA, "saved": saved });
+        write_beside_report(&report, ".quit-ack", &ack);
+    }
+}
+
+/// Called from the single-instance callback once it has shown the window again.
+pub(crate) fn record_restore(visible: bool) {
+    if let Some(report) = smoke_target() {
+        let record = serde_json::json!({ "schema": REPORT_SCHEMA, "visible": visible });
+        write_beside_report(&report, ".restored", &record);
+    }
+}
+
+fn hide_main_window(app: &AppHandle) -> bool {
+    let Some(window) = app.get_webview_window("main") else {
+        return false;
+    };
+    let _ = window.hide();
+    window.is_visible().unwrap_or(true)
+}
+
+fn hold_until_signalled(app: AppHandle, report: PathBuf) {
     thread::spawn(move || {
         let deadline = Instant::now() + MAX_HOLD;
-        while Instant::now() < deadline && !signal.exists() {
+        let hide = with_suffix(&report, ".hide");
+        let quit = quit_signal_path(&report);
+        let mut hidden = false;
+        while Instant::now() < deadline && !quit.exists() {
+            if !hidden && hide.exists() {
+                hidden = true;
+                let still_visible = hide_main_window(&app);
+                let record =
+                    serde_json::json!({ "schema": REPORT_SCHEMA, "visible": still_visible });
+                write_beside_report(&report, ".hidden", &record);
+            }
             thread::sleep(QUIT_POLL_INTERVAL);
         }
         crate::request_quit(&app);
@@ -159,14 +244,14 @@ pub(crate) fn frontend_ready(
         "[startup] frontend reported {} after {ready_after_ms} ms",
         report.outcome.as_str()
     );
-    let Some(target) = env::var_os(SMOKE_REPORT_ENV).map(PathBuf::from) else {
+    let Some(target) = smoke_target() else {
         return Ok(());
     };
     let bytes = smoke_record_bytes(&report, ready_after_ms).map_err(|error| error.to_string())?;
     write_atomically(&target, &bytes)
         .map_err(|error| format!("smoke report not written: {error}"))?;
     if env::var_os(SMOKE_HOLD_ENV).is_some() {
-        quit_when_signalled(app, quit_signal_path(&target));
+        hold_until_signalled(app, target);
     } else {
         crate::request_quit(&app);
     }
@@ -179,7 +264,7 @@ mod tests {
 
     fn report_json(extra: &str) -> String {
         format!(
-            r#"{{"outcome":"newer-snapshot","frontendVersion":"1.12.1","view":"dialog","localOnly":true,"savedSnapshotPresent":false{extra}}}"#
+            r#"{{"outcome":"newer-snapshot","frontendVersion":"1.12.1","view":"dialog","visible":true,"hydration":"backup","localOnly":true,"savedSnapshotPresent":false{extra}}}"#
         )
     }
 
@@ -188,9 +273,11 @@ mod tests {
         let report: FrontendReport = serde_json::from_str(&report_json("")).unwrap();
         assert_eq!(report.outcome, StartupOutcome::NewerSnapshot);
         assert_eq!(report.view, StartupView::Dialog);
+        assert_eq!(report.hydration, StartupHydration::Backup);
+        assert!(report.visible);
         assert!(report.local_only);
         assert!(!report.saved_snapshot_present);
-        assert_eq!(report.detail, None);
+        assert_eq!(report.error_code, None);
         assert_eq!(StartupOutcome::NewerSnapshot.as_str(), "newer-snapshot");
     }
 
@@ -199,32 +286,46 @@ mod tests {
         assert!(
             serde_json::from_str::<FrontendReport>(&report_json(r#","userData":"x""#)).is_err()
         );
+        // The schema-1 free-text field is gone; a caller that still sends it is refused.
+        assert!(serde_json::from_str::<FrontendReport>(&report_json(r#","detail":"x""#)).is_err());
         let unknown_outcome = report_json("").replace("newer-snapshot", "done");
         assert!(serde_json::from_str::<FrontendReport>(&unknown_outcome).is_err());
+        let unknown_hydration = report_json("").replace("backup", "cloud");
+        assert!(serde_json::from_str::<FrontendReport>(&unknown_hydration).is_err());
     }
 
     #[test]
-    fn the_record_carries_the_native_side_and_a_bounded_detail() {
-        let mut report: FrontendReport = serde_json::from_str(&report_json("")).unwrap();
-        report.detail = Some("x".repeat(MAX_DETAIL_CHARS + 50));
+    fn only_an_error_class_name_reaches_the_record() {
+        assert_eq!(diagnostic_code("TypeError"), "TypeError");
+        assert_eq!(diagnostic_code("QuotaExceededError"), "QuotaExceededError");
+        for raw in [
+            "Error: secret note",
+            "a b",
+            "",
+            "9Lives",
+            "/home/user/x",
+            &"A".repeat(65),
+        ] {
+            assert_eq!(diagnostic_code(raw), "UnrecognizedError", "{raw}");
+        }
+    }
+
+    #[test]
+    fn the_record_carries_the_native_side_and_only_a_code() {
+        let report: FrontendReport =
+            serde_json::from_str(&report_json(r#","errorCode":"Error: my plant notes""#)).unwrap();
         let record: serde_json::Value =
             serde_json::from_slice(&smoke_record_bytes(&report, 1234).unwrap()).unwrap();
         assert_eq!(record["schema"], REPORT_SCHEMA);
         assert_eq!(record["nativeVersion"], env!("CARGO_PKG_VERSION"));
         assert_eq!(record["readyAfterMs"], 1234);
         assert_eq!(record["frontend"]["outcome"], "newer-snapshot");
-        assert_eq!(
-            record["frontend"]["detail"]
-                .as_str()
-                .unwrap()
-                .chars()
-                .count(),
-            MAX_DETAIL_CHARS
-        );
+        assert_eq!(record["frontend"]["hydration"], "backup");
+        assert_eq!(record["frontend"]["errorCode"], "UnrecognizedError");
     }
 
     #[test]
-    fn the_report_file_appears_whole_and_the_quit_signal_sits_beside_it() {
+    fn the_report_file_appears_whole_and_the_signals_sit_beside_it() {
         let dir = env::temp_dir().join(format!("cannaguide-startup-test-{}", std::process::id()));
         fs::create_dir_all(&dir).unwrap();
         let target = dir.join("report.json");
@@ -232,6 +333,10 @@ mod tests {
         assert_eq!(fs::read(&target).unwrap(), b"{}");
         assert!(!with_suffix(&target, ".partial").exists());
         assert_eq!(quit_signal_path(&target), dir.join("report.json.quit"));
+        write_beside_report(&target, ".quit-ack", &serde_json::json!({ "saved": true }));
+        let ack: serde_json::Value =
+            serde_json::from_slice(&fs::read(dir.join("report.json.quit-ack")).unwrap()).unwrap();
+        assert_eq!(ack["saved"], true);
         fs::remove_dir_all(&dir).unwrap();
     }
 }

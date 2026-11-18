@@ -1,3 +1,4 @@
+mod instance_lock;
 mod lifecycle;
 mod startup;
 mod update;
@@ -124,9 +125,12 @@ pub(crate) fn request_quit(app: &AppHandle) {
     }
 }
 
-/// Called by the frontend once `flushPersistedState` has finished.
+/// Called by the frontend once `flushPersistedState` has finished. `saved` is whether
+/// that save succeeded (absent from a frontend that predates it); the quit goes on
+/// either way, and the smoke test checks it.
 #[tauri::command]
-fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>) {
+fn confirm_quit(app: AppHandle, gate: tauri::State<'_, QuitGate>, saved: Option<bool>) {
+    startup::record_quit_ack(saved);
     if gate.confirm() {
         app.exit(0);
     }
@@ -146,8 +150,13 @@ pub fn run() {
                 let _ = window.unminimize();
                 let _ = window.show();
                 let _ = window.set_focus();
+                startup::record_restore(window.is_visible().unwrap_or(false));
             }
         }))
+        // Before any window exists: a process that cannot lock this profile exits, which
+        // covers what the plugin above cannot (no D-Bus session bus, two cold launches
+        // at once on macOS). See instance_lock.rs.
+        .plugin(instance_lock::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
@@ -255,6 +264,7 @@ mod plugin_config_tests {
     /// Every plugin `run()` registers; none of them but the updater has a config type.
     const UNIT_CONFIG_PLUGINS: &[&str] = &[
         "single-instance",
+        "instance-lock",
         "dialog",
         "fs",
         "notification",

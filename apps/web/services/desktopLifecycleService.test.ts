@@ -531,6 +531,35 @@ describe('quit after flush', () => {
         expect(calls).toEqual(['confirm_quit'])
     })
 
+    it('tells the native side whether this quit saved', async () => {
+        // The runtime smoke test requires a quit that saved; exit 0 alone proves nothing.
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        const sent: unknown[] = []
+        const { bridge } = fakeBridge({ confirm_quit: (args) => sent.push(args) })
+        await flushThenConfirmQuit(
+            async () => true,
+            async () => bridge,
+        )
+        await flushThenConfirmQuit(
+            async () => false,
+            async () => bridge,
+        )
+        await flushThenConfirmQuit(
+            async () => {
+                throw new Error('IndexedDB closed')
+            },
+            async () => bridge,
+        )
+        await flushThenConfirmQuit(undefined, async () => bridge)
+        expect(sent).toEqual([
+            { saved: true },
+            { saved: false },
+            { saved: false },
+            { saved: false },
+        ])
+        warn.mockRestore()
+    })
+
     it('still quits when the save fails, after it has finished', async () => {
         const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
         const order: string[] = []

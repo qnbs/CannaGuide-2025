@@ -268,7 +268,8 @@ export const mountHydratedApp = async (): Promise<void> => {
                 stillUnpresented.forEach((marker) => markSnapshotSaveFailurePresented(marker))
             }
         })
-        void reportDesktopStartup(staleSnapshotHandled ? 'stale' : 'started')
+        // Read once the start's own writes have settled: a refused one makes it stale.
+        void reportDesktopStartup(() => (staleSnapshotHandled ? 'stale' : 'started'))
     } catch (error) {
         // The saved data is a newer build's: nothing here may save over it (#666).
         if (isNewerSnapshotError(error)) {

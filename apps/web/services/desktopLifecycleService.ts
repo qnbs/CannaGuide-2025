@@ -428,12 +428,15 @@ export const flushThenConfirmQuit = async (
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
+    let saved = false
     try {
-        const saved = flush ? await flush() : false
+        saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopQuit] latest changes not saved before quit')
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
     const bridge = await pendingBridge
-    await bridge.invoke<void>('confirm_quit')
+    // The quit goes on either way; `saved` tells the native side (and the runtime smoke
+    // test) whether this run's last changes reached storage.
+    await bridge.invoke<void>('confirm_quit', { saved })
 }

@@ -96,19 +96,26 @@ describe('desktopStartupReport', () => {
     })
 
     it('waits for the startup writes and reads the outcome only then', async () => {
-        let finishWrite: () => void = () => undefined
-        mocks.idle = new Promise<void>((resolve) => {
-            finishWrite = resolve
-        })
-        let stale = false
-        const { reportDesktopStartup } = await load()
-        const sent = reportDesktopStartup(() => (stale ? 'stale' : 'started'))
-        await Promise.resolve()
-        expect(mocks.invoke).not.toHaveBeenCalled()
-        // The startup save is refused while the report waits: the page went stale.
-        stale = true
-        finishWrite()
-        await sent
+        vi.useFakeTimers()
+        try {
+            let finishWrite: () => void = () => undefined
+            mocks.idle = new Promise<void>((resolve) => {
+                finishWrite = resolve
+            })
+            let stale = false
+            const { reportDesktopStartup, PAINT_WAIT_MS } = await load()
+            const sent = reportDesktopStartup(() => (stale ? 'stale' : 'started'))
+            // Long past the paint wait: only the pending write holds the report back.
+            await vi.advanceTimersByTimeAsync(PAINT_WAIT_MS * 3)
+            expect(mocks.invoke).not.toHaveBeenCalled()
+            // The startup save is refused while the report waits: the page went stale.
+            stale = true
+            finishWrite()
+            await vi.advanceTimersByTimeAsync(PAINT_WAIT_MS)
+            await sent
+        } finally {
+            vi.useRealTimers()
+        }
         expect(mocks.invoke).toHaveBeenCalledWith('frontend_ready', {
             report: expect.objectContaining({ outcome: 'stale' }),
         })
@@ -162,5 +169,30 @@ describe('desktopStartupReport', () => {
         await expect(reportDesktopStartup('started')).resolves.toBeUndefined()
         expect(debug).toHaveBeenCalled()
         debug.mockRestore()
+    })
+})
+
+describe('desktopStartupReport probe bound', () => {
+    beforeEach(() => {
+        vi.resetModules()
+        mocks.platform.isTauri = true
+        mocks.idle = Promise.resolve()
+        mocks.invoke.mockReset().mockResolvedValue(undefined)
+    })
+
+    it('still reports when the snapshot probe never answers (a blocked IndexedDB open)', async () => {
+        vi.useFakeTimers()
+        try {
+            mocks.hasStoredItem.mockReset().mockReturnValue(new Promise<boolean>(() => undefined))
+            const { reportDesktopStartup, SNAPSHOT_PROBE_MS, PAINT_WAIT_MS } = await load()
+            const sent = reportDesktopStartup('started')
+            await vi.advanceTimersByTimeAsync(PAINT_WAIT_MS + SNAPSHOT_PROBE_MS)
+            await sent
+            expect(mocks.invoke).toHaveBeenCalledWith('frontend_ready', {
+                report: expect.objectContaining({ savedSnapshotPresent: false }),
+            })
+        } finally {
+            vi.useRealTimers()
+        }
     })
 })

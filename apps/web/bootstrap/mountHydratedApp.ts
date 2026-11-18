@@ -74,6 +74,8 @@ const takeWriterRole = async (): Promise<boolean> => {
 }
 
 let staleSnapshotHandled = false
+/** Why a save was refused, for the desktop startup report: the notice shown says the same. */
+let refusalOutcome: 'stale' | 'unverified' | undefined
 
 /**
  * Stop saving, give the role up so the next page can take it, and show
@@ -93,10 +95,16 @@ const stopAsStale = (renderNotice: (reload: () => void) => void): void => {
 }
 
 /** A save was refused because another tab saved newer data: this page is out of date. */
-const handleStaleSnapshot = (): void => stopAsStale(renderStaleTabNotice)
+const handleStaleSnapshot = (): void => {
+    refusalOutcome ??= 'stale'
+    stopAsStale(renderStaleTabNotice)
+}
 
 /** A save was refused, or would be, because this page cannot check for other tabs' saves. */
-const handleUnverifiedSnapshot = (): void => stopAsStale(renderUnverifiedTabNotice)
+const handleUnverifiedSnapshot = (): void => {
+    refusalOutcome ??= 'unverified'
+    stopAsStale(renderUnverifiedTabNotice)
+}
 
 /** A save failed (storage full, IndexedDB error): say so, the changes are only in memory. */
 const notifySaveFailure = (): void => {
@@ -215,6 +223,7 @@ const showStartupError = async (error: unknown): Promise<void> => {
 
 export const mountHydratedApp = async (): Promise<void> => {
     staleSnapshotHandled = false
+    refusalOutcome = undefined
     setStaleSnapshotHandler(handleStaleSnapshot)
     setUncheckedWritePermit(holdsWriterRole)
     try {
@@ -269,7 +278,9 @@ export const mountHydratedApp = async (): Promise<void> => {
             }
         })
         // Read once the start's own writes have settled: a refused one makes it stale.
-        void reportDesktopStartup(() => (staleSnapshotHandled ? 'stale' : 'started'))
+        void reportDesktopStartup(
+            () => refusalOutcome ?? (staleSnapshotHandled ? 'stale' : 'started'),
+        )
     } catch (error) {
         // The saved data is a newer build's: nothing here may save over it (#666).
         if (isNewerSnapshotError(error)) {

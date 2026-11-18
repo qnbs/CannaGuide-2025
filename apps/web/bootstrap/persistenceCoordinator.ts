@@ -146,6 +146,15 @@ export const suspendPersistenceForRecovery = async (): Promise<ResumePersistence
 }
 
 /**
+ * After the last save before a desktop quit or update restart: the native side then
+ * releases the profile lock and closes or hides the window, whose `visibilitychange`
+ * handler would save again -- possibly after a new instance has taken the profile.
+ * Same contract as the recovery suspension: wait for a running write, start none,
+ * and resume through the returned function (null while already suspended).
+ */
+export const suspendPersistenceForQuit = suspendPersistenceForRecovery
+
+/**
  * This page must not save any more because another tab may own the data now
  * (the writer role was given up after a failed start, or the page came back
  * from the back/forward cache without the lock). New and queued writes are

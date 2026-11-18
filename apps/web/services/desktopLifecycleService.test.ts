@@ -14,6 +14,7 @@ import {
     type DesktopUpdaterDeps,
     type PersistFlush,
     type TauriBridge,
+    LAST_SAVE_HOLD_MS,
 } from './desktopLifecycleService'
 
 const INFO: DesktopUpdateInfo = {
@@ -529,6 +530,52 @@ describe('quit after flush', () => {
         save.finish(true)
         await done
         expect(calls).toEqual(['confirm_quit'])
+    })
+
+    it('holds every write between the last save and the exit, and catches up if the page lives on', async () => {
+        // CodeRabbit on #881: the native side releases the profile lock before it hides
+        // the window, and hiding fires the visibilitychange save.
+        vi.useFakeTimers()
+        try {
+            const order: string[] = []
+            const resume = vi.fn(() => order.push('resume'))
+            const flush = vi.fn(async () => {
+                order.push('save')
+                return true
+            })
+            const { bridge } = fakeBridge({ confirm_quit: () => order.push('confirm') })
+            await flushThenConfirmQuit(
+                flush,
+                async () => bridge,
+                async () => {
+                    order.push('hold')
+                    return resume
+                },
+            )
+            expect(order).toEqual(['save', 'hold', 'confirm'])
+            await vi.advanceTimersByTimeAsync(LAST_SAVE_HOLD_MS)
+            // Still here: the quit did not end the page, so saving resumes and catches up.
+            expect(order).toEqual(['save', 'hold', 'confirm', 'resume', 'save'])
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('holds writes after the final save before an update restart as well', async () => {
+        const order: string[] = []
+        const { bridge } = fakeBridge({ confirm_final_save: () => order.push('confirm') })
+        await flushThenConfirmFinalSave(
+            async () => {
+                order.push('save')
+                return true
+            },
+            async () => bridge,
+            async () => {
+                order.push('hold')
+                return null
+            },
+        )
+        expect(order).toEqual(['save', 'hold', 'confirm'])
     })
 
     it('tells the native side whether this quit saved', async () => {

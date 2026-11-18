@@ -58,11 +58,20 @@ export const errorCodeOf = (error: unknown): string => {
     return ERROR_CODE.test(name) ? name : 'UnrecognizedError'
 }
 
+/** A blocked IndexedDB open must not hold the report back; the flag is diagnostic only. */
+export const SNAPSHOT_PROBE_MS = 2000
+
 const snapshotPresent = async (): Promise<boolean> => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const deadline = new Promise<boolean>((resolve) => {
+        timer = setTimeout(() => resolve(false), SNAPSHOT_PROBE_MS)
+    })
     try {
-        return await hasStoredItem(REDUX_STATE_KEY)
+        return await Promise.race([hasStoredItem(REDUX_STATE_KEY), deadline])
     } catch {
         return false
+    } finally {
+        clearTimeout(timer)
     }
 }
 

@@ -27,6 +27,7 @@
  *   Settings > About and coming back, or a startup check finding a newer release
  *   while the card is open, therefore never leaves the card on a stale copy.
  */
+import { suspendPersistenceForQuit } from '@/bootstrap/persistenceCoordinator'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { platform } from '@/services/platformService'
 
@@ -397,9 +398,40 @@ export const SAVE_BEFORE_RESTART_EVENT = 'cannaguide://save-before-restart'
  * confirms even when the save fails: the new version is already in place (or the
  * installer is starting), and update.rs would go on after its fallback anyway.
  */
+/** After this long the page is evidently still here: the quit or restart did not happen. */
+export const LAST_SAVE_HOLD_MS = 10_000
+
+type SuspendPersistence = () => Promise<(() => void) | null>
+
+/**
+ * No write may start after the last save before a quit or restart: the native side
+ * releases the profile lock first and then closes or hides the window, and the
+ * `visibilitychange` save that triggers could land after a new instance took the
+ * profile (CodeRabbit on #881). A page still here after LAST_SAVE_HOLD_MS was not
+ * ended: saving resumes and catches up with one save.
+ */
+const holdWritesAfterLastSave = async (
+    flush: PersistFlush | undefined,
+    suspend: SuspendPersistence,
+): Promise<void> => {
+    let resume: (() => void) | null = null
+    try {
+        resume = await suspend()
+    } catch (error) {
+        console.warn('[Desktop] could not hold writes after the last save:', messageOf(error))
+    }
+    if (!resume) return
+    const release = resume
+    setTimeout(() => {
+        release()
+        void flush?.().catch(() => undefined)
+    }, LAST_SAVE_HOLD_MS)
+}
+
 export const flushThenConfirmFinalSave = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
+    suspend: SuspendPersistence = suspendPersistenceForQuit,
 ): Promise<void> => {
     // Loaded before the save, so after its last comparison only the confirmation's
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
@@ -411,6 +443,7 @@ export const flushThenConfirmFinalSave = async (
     } catch (error) {
         console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
     }
+    await holdWritesAfterLastSave(flush, suspend)
     const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_final_save')
 }
@@ -423,6 +456,7 @@ export const flushThenConfirmFinalSave = async (
 export const flushThenConfirmQuit = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
+    suspend: SuspendPersistence = suspendPersistenceForQuit,
 ): Promise<void> => {
     // Loaded before the save, so after its last comparison only the confirmation's
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
@@ -435,6 +469,7 @@ export const flushThenConfirmQuit = async (
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
+    await holdWritesAfterLastSave(flush, suspend)
     const bridge = await pendingBridge
     // The quit goes on either way; `saved` tells the native side (and the runtime smoke
     // test) whether this run's last changes reached storage.

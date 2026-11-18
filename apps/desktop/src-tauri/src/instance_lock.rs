@@ -27,7 +27,7 @@ use std::{
     io,
     path::{Path, PathBuf},
     thread,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 use tauri::{
@@ -41,6 +41,10 @@ const FOCUS_POLL: Duration = Duration::from_millis(500);
 /// Exit status of a launch whose handover failed: the running app was not asked to
 /// show itself, so nothing the user can see happened -- a failed launch, not a clean one.
 const HANDOVER_FAILED: i32 = 1;
+/// How long a launch that found the profile taken waits for the outcome of its request.
+/// The holder answers within one `FOCUS_POLL` once its window exists.
+const HANDOVER_WAIT: Duration = Duration::from_secs(3);
+const HANDOVER_POLL: Duration = Duration::from_millis(100);
 
 struct InstanceLock {
     _file: File,
@@ -68,24 +72,64 @@ pub(crate) fn request_focus(dir: &Path) -> io::Result<()> {
     fs::write(dir.join(FOCUS_REQUEST), b"")
 }
 
-/// A launch that found the profile taken asks the running app to show itself, and
-/// returns its own exit status: 0 once the request is written, `HANDOVER_FAILED` when
-/// it could not be (the running app then has nothing to act on and stays hidden).
-fn hand_over(dir: &Path) -> i32 {
-    match request_focus(dir) {
-        Ok(()) => {
-            eprintln!(
-                "[instance] another CannaGuide process holds this profile; asked it to show itself"
-            );
-            0
-        }
+/// What a launch that found the profile taken does next.
+#[derive(Debug)]
+enum Handover {
+    /// Leave with this exit status.
+    Exit(i32),
+    /// The holder let go meanwhile (it was on its way out): this launch holds the lock
+    /// now and starts instead.
+    TakeOver(File),
+}
+
+/// A launch that found the profile taken asks the running app to show itself, then
+/// waits at most `wait` for the outcome (Sourcery and CodeAnt on #884: the holder may
+/// be exiting, and a request nobody is left to take must not count as a handover):
+/// - the holder took the request: exit 0;
+/// - the lock became free: nobody is left to take it, so this launch takes over and
+///   its own watcher answers the request;
+/// - neither by the deadline: exit 0 if the request is written (the holder is still
+///   creating its window and answers it then), `HANDOVER_FAILED` if it could not be.
+fn hand_over(dir: &Path, wait: Duration) -> Handover {
+    let written = match request_focus(dir) {
+        Ok(()) => true,
         Err(error) => {
-            eprintln!(
-                "[instance] another CannaGuide process holds this profile, but it could not be asked to show itself: {error}"
-            );
-            HANDOVER_FAILED
+            eprintln!("[instance] could not ask the running app to show itself: {error}");
+            false
         }
+    };
+    let deadline = Instant::now() + wait;
+    loop {
+        if let Ok(Some(file)) = try_acquire(dir) {
+            eprintln!("[instance] the running app has exited meanwhile; starting instead");
+            return Handover::TakeOver(file);
+        }
+        if written && !dir.join(FOCUS_REQUEST).exists() {
+            eprintln!("[instance] the running app took the request; exiting");
+            return Handover::Exit(0);
+        }
+        if Instant::now() >= deadline {
+            break;
+        }
+        thread::sleep(HANDOVER_POLL);
     }
+    if written {
+        eprintln!("[instance] the running app holds this profile and has the request; exiting");
+        Handover::Exit(0)
+    } else {
+        eprintln!("[instance] the running app holds this profile but was not asked; exiting");
+        Handover::Exit(HANDOVER_FAILED)
+    }
+}
+
+/// This process holds the profile: keep the lock for its lifetime and answer requests.
+fn hold<R: Runtime>(app: &AppHandle<R>, dir: PathBuf, file: File) {
+    app.resources_table().add(InstanceLock { _file: file });
+    crate::startup::trace(app, "profile lock taken");
+    // A pending request is kept, not cleared: a launch racing this one may have just
+    // written it (Codex on #881). One left by an earlier run only shows the window this
+    // start shows anyway.
+    watch_focus_requests(app.clone(), dir);
 }
 
 /// Consumes a pending focus request; true only for the caller that removed it.
@@ -124,15 +168,11 @@ pub(crate) fn init<R: Runtime>() -> TauriPlugin<R> {
         .setup(|app, _api| {
             let dir = app.path().app_data_dir()?;
             match try_acquire(&dir) {
-                Ok(Some(file)) => {
-                    app.resources_table().add(InstanceLock { _file: file });
-                    crate::startup::trace(app, "profile lock taken");
-                    // A pending request is kept, not cleared: a launch racing this one may
-                    // have just written it (Codex on #881). One left by an earlier run only
-                    // shows the window this start shows anyway.
-                    watch_focus_requests(app.clone(), dir);
-                }
-                Ok(None) => std::process::exit(hand_over(&dir)),
+                Ok(Some(file)) => hold(app, dir, file),
+                Ok(None) => match hand_over(&dir, HANDOVER_WAIT) {
+                    Handover::TakeOver(file) => hold(app, dir, file),
+                    Handover::Exit(status) => std::process::exit(status),
+                },
                 // A folder that cannot hold a lock file must not stop the start; the
                 // single-instance plugin still covers the usual second launch.
                 Err(error) => {
@@ -199,22 +239,91 @@ mod tests {
         fs::remove_dir_all(&dir).unwrap();
     }
 
-    #[test]
-    fn a_handover_exits_cleanly_only_when_the_running_app_was_asked() {
-        // Written: exit 0, and the holder finds exactly one request to act on.
-        let dir = scratch("handover-ok");
-        fs::create_dir_all(&dir).unwrap();
-        assert_eq!(hand_over(&dir), 0);
-        assert!(take_focus_request(&dir), "the holder sees the request");
-        assert!(!take_focus_request(&dir));
-        fs::remove_dir_all(&dir).unwrap();
+    /// A holder in another thread: keeps the lock, and after `after` either takes the
+    /// pending request (an app with a window) or lets the lock go (an app exiting).
+    fn holder(dir: &Path, after: Duration, takes_request: bool) -> thread::JoinHandle<()> {
+        let lock = try_acquire(dir)
+            .unwrap()
+            .expect("the holder takes the lock");
+        let dir = dir.to_path_buf();
+        thread::spawn(move || {
+            thread::sleep(after);
+            if takes_request {
+                assert!(take_focus_request(&dir));
+                thread::sleep(Duration::from_millis(500));
+            }
+            drop(lock);
+        })
+    }
 
-        // Not written (here: the folder is gone): a failed launch, and no request.
-        let missing = scratch("handover-failed");
-        let _ = fs::remove_dir_all(&missing);
-        assert_eq!(hand_over(&missing), HANDOVER_FAILED);
+    #[test]
+    fn a_handover_the_running_app_answers_exits_cleanly() {
+        let dir = scratch("handover-answered");
+        fs::create_dir_all(&dir).unwrap();
+        let running = holder(&dir, Duration::from_millis(200), true);
+        let outcome = hand_over(&dir, Duration::from_secs(3));
+        assert!(matches!(outcome, Handover::Exit(0)), "{outcome:?}");
+        running.join().unwrap();
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_launch_takes_over_when_the_running_app_exits_meanwhile() {
+        let dir = scratch("handover-exited");
+        fs::create_dir_all(&dir).unwrap();
+        let exiting = holder(&dir, Duration::from_millis(200), false);
+        let outcome = hand_over(&dir, Duration::from_secs(3));
+        exiting.join().unwrap();
+        let Handover::TakeOver(lock) = outcome else {
+            panic!("expected a takeover, got {outcome:?}");
+        };
+        assert!(
+            try_acquire(&dir).unwrap().is_none(),
+            "this launch holds the lock now"
+        );
+        assert!(
+            take_focus_request(&dir),
+            "its own watcher has the request to answer"
+        );
+        drop(lock);
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_request_that_cannot_be_written_is_a_failed_launch() {
+        let dir = scratch("handover-failed");
+        fs::create_dir_all(&dir).unwrap();
+        // A directory where the request file belongs: the write fails.
+        fs::create_dir_all(dir.join(FOCUS_REQUEST)).unwrap();
+        let lock = try_acquire(&dir)
+            .unwrap()
+            .expect("a running app holds the profile");
+        let outcome = hand_over(&dir, Duration::from_millis(300));
+        assert!(
+            matches!(outcome, Handover::Exit(HANDOVER_FAILED)),
+            "{outcome:?}"
+        );
         assert_ne!(HANDOVER_FAILED, 0);
-        assert!(!take_focus_request(&missing));
+        drop(lock);
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn a_written_request_for_an_app_still_starting_exits_cleanly() {
+        // The holder has no window yet, so it does not take the request in time.
+        let dir = scratch("handover-starting");
+        fs::create_dir_all(&dir).unwrap();
+        let lock = try_acquire(&dir)
+            .unwrap()
+            .expect("a running app holds the profile");
+        let outcome = hand_over(&dir, Duration::from_millis(300));
+        assert!(matches!(outcome, Handover::Exit(0)), "{outcome:?}");
+        assert!(
+            take_focus_request(&dir),
+            "the request waits for the holder's window"
+        );
+        drop(lock);
+        fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]

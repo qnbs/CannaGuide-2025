@@ -171,7 +171,9 @@ test('the NSIS uninstaller runs in place, and every way it can fail stops the se
         detail: 'removed',
     })
     // `_?=` last and unquoted, the program path quoted, bounded in time.
-    assert.match(calls[0].command, /^"[^"]+uninstall\.exe" \/S _\?=\/opt\/CannaGuide 2025$/)
+    // Built with the same join() as the code, so it holds on Windows separators too.
+    const nsisDir = join('/opt', 'CannaGuide 2025')
+    assert.equal(calls[0].command, `"${join(nsisDir, 'uninstall.exe')}" /S _?=${nsisDir}`)
     assert.equal(calls[0].options.shell, true)
     assert.ok(calls[0].options.timeout > 0)
 
@@ -189,14 +191,19 @@ test('the NSIS uninstaller runs in place, and every way it can fail stops the se
             detail,
         })
     }
-    // A folder cmd.exe would split (& | < > ^ % ! ") is refused before anything runs.
+    // A folder cmd.exe might read (here & and parentheses) is refused before anything runs.
     const before = calls.length
-    const odd = join('/opt', 'A&B', 'cannaguide-desktop.exe')
-    assert.deepEqual(uninstallNsis(odd, { spawn: spawn({ status: 0 }), ...gone }), {
-        removed: false,
-        detail: `install folder ${join('/opt', 'A&B')} has characters cmd.exe would interpret`,
-    })
+    for (const folder of ['A&B', 'Program Files (x86)', '100%', 'a^b']) {
+        const odd = join('/opt', folder, 'cannaguide-desktop.exe')
+        assert.deepEqual(uninstallNsis(odd, { spawn: spawn({ status: 0 }), ...gone }), {
+            removed: false,
+            detail: `install folder ${join('/opt', folder)} has characters cmd.exe would interpret`,
+        })
+    }
     assert.equal(calls.length, before, 'the uninstaller was not started')
+    // The runner's own folder shape passes.
+    const plain = String.raw`C:\Users\runneradmin\AppData\Local\CannaGuide 2025`
+    assert.ok(/^[\w .:\\/-]+$/.test(plain))
     // Exit 0 while the program stays: the uninstaller did not finish its job.
     const stays = uninstallNsis(app, {
         spawn: spawn({ status: 0 }),

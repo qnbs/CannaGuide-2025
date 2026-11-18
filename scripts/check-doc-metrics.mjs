@@ -35,7 +35,8 @@ const majorOf = (range) => {
     return m ? m[1] : null
 }
 
-const readme = readFileSync(README, 'utf8')
+// Normalized to LF: a Windows checkout (core.autocrlf) must not read as drift (CodeRabbit, #880).
+const readme = readFileSync(README, 'utf8').replace(/\r\n?/g, '\n')
 
 // --- sources -------------------------------------------------------------
 const rootPkg = readJson('package.json')

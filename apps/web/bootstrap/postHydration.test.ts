@@ -165,20 +165,27 @@ describe('runPostHydrationServices', () => {
         expect(mockScheduleIdlePreload).toHaveBeenCalled()
     })
 
-    it('routes the Tauri before-quit flush through the coordinated persistence path', async () => {
-        const store = createTestStore()
-        const flushPersistedState = vi.fn().mockResolvedValue(true)
-        let beforeQuit: (() => Promise<void>) | undefined
-        platformMocks.isTauri = true
+    /** Collects the Tauri event listeners by event name. */
+    const captureListeners = (onListen?: (event: string) => void) => {
+        const listeners = new Map<string, () => Promise<void>>()
         platformMocks.listen.mockImplementation(
-            async (_event: string, callback: () => Promise<void>) => {
-                beforeQuit = callback
+            async (event: string, callback: () => Promise<void>) => {
+                onListen?.(event)
+                listeners.set(event, callback)
                 return () => {}
             },
         )
+        return listeners
+    }
+
+    it('routes the Tauri before-quit flush through the coordinated persistence path', async () => {
+        const store = createTestStore()
+        const flushPersistedState = vi.fn().mockResolvedValue(true)
+        platformMocks.isTauri = true
+        const listeners = captureListeners()
 
         await runPostHydrationServices(store, flushPersistedState)
-        await beforeQuit?.()
+        await listeners.get('tauri://before-quit')?.()
 
         expect(platformMocks.listen).toHaveBeenCalledWith(
             'tauri://before-quit',
@@ -193,15 +200,8 @@ describe('runPostHydrationServices', () => {
             platformMocks.order.push('save')
             return true
         })
-        let beforeQuit: (() => Promise<void>) | undefined
         platformMocks.isTauri = true
-        platformMocks.listen.mockImplementation(
-            async (_event: string, callback: () => Promise<void>) => {
-                platformMocks.order.push('listen')
-                beforeQuit = callback
-                return () => {}
-            },
-        )
+        const listeners = captureListeners((event) => platformMocks.order.push(`listen ${event}`))
         mockStrainInit.mockImplementation(async () => {
             platformMocks.order.push('strains')
         })
@@ -211,12 +211,34 @@ describe('runPostHydrationServices', () => {
 
         await runPostHydrationServices(store, flushPersistedState)
         // CodeAnt on #878: a quit during the slower startup steps found no listener.
-        expect(platformMocks.order.indexOf('listen')).toBeLessThan(
+        expect(platformMocks.order.indexOf('listen tauri://before-quit')).toBeLessThan(
             platformMocks.order.indexOf('strains'),
         )
 
         platformMocks.order.length = 0
-        await beforeQuit?.()
+        await listeners.get('tauri://before-quit')?.()
         expect(platformMocks.order).toEqual(['save', 'confirm_quit'])
+    })
+
+    it('saves once more right before an install restarts the app, then lets update.rs go on', async () => {
+        // CodeRabbit and CodeAnt on #878: an edit made while the install ran was in no
+        // earlier save. update.rs now waits for this confirmation before the restart.
+        const store = createTestStore()
+        const flushPersistedState = vi.fn(async () => {
+            platformMocks.order.push('save')
+            return true
+        })
+        platformMocks.isTauri = true
+        const listeners = captureListeners()
+        platformMocks.invoke.mockImplementation(async (command: string) => {
+            platformMocks.order.push(command)
+        })
+
+        await runPostHydrationServices(store, flushPersistedState)
+        const finalSave = listeners.get('cannaguide://save-before-restart')
+        expect(finalSave).toBeDefined()
+        platformMocks.order.length = 0
+        await finalSave?.()
+        expect(platformMocks.order).toEqual(['save', 'confirm_final_save'])
     })
 })

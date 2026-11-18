@@ -18,9 +18,10 @@
  * - One step at a time (the Rust side enforces the same); Cancel stops a check or a
  *   download.
  * - Persisted state must be saved before the install, and the save must settle: an
- *   install never runs while an edit is still unsaved (see flushUntilStable). On
- *   Windows the installer ends the process from inside the install command, so there
- *   is no later chance to save.
+ *   install never runs while an edit is still unsaved (see flushUntilStable). Right
+ *   before the process then ends -- the restart, or on Windows the installer taking
+ *   over -- update.rs asks for one more save (SAVE_BEFORE_RESTART_EVENT) and waits
+ *   for it, so an edit made while the install ran is saved as well.
  * - The updater is the single source of truth for the launch: stage, running step,
  *   progress and the last error live here, and the card subscribes to them. Leaving
  *   Settings > About and coming back, or a startup check finding a newer release
@@ -194,9 +195,12 @@ export const createDesktopUpdater = (deps: DesktopUpdaterDeps): DesktopUpdater =
                         current?.kind === 'ready' &&
                         info !== null &&
                         info.version === current.info.version
+                    // A finished check is the newest word, so an older failure no longer
+                    // describes the state (CodeAnt on #878).
                     update({
                         stage: info ? { kind: keepsDownload ? 'ready' : 'available', info } : null,
                         upToDate: info === null,
+                        error: null,
                     })
                     return info
                 },
@@ -352,6 +356,28 @@ export const scheduleStartupUpdateCheck = (deps: StartupCheckDeps): (() => void)
             })
     }, deps.delayMs ?? STARTUP_UPDATE_CHECK_DELAY_MS)
     return () => clearTimeout(timer)
+}
+
+/** Emitted by update.rs right before an install ends the process. */
+export const SAVE_BEFORE_RESTART_EVENT = 'cannaguide://save-before-restart'
+
+/**
+ * The SAVE_BEFORE_RESTART_EVENT handler: save, then tell update.rs to go on. It
+ * confirms even when the save fails: the new version is already in place (or the
+ * installer is starting), and update.rs would go on after its fallback anyway.
+ */
+export const flushThenConfirmFinalSave = async (
+    flush: PersistFlush | undefined,
+    loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
+): Promise<void> => {
+    try {
+        const saved = flush ? await flush() : false
+        if (!saved) console.warn('[DesktopUpdate] latest changes not saved before the restart')
+    } catch (error) {
+        console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
+    }
+    const bridge = await loadBridge()
+    await bridge.invoke<void>('confirm_final_save')
 }
 
 /**

@@ -5,6 +5,7 @@ vi.mock('@/services/platformService', () => ({ platform: { isTauri: true } }))
 import {
     createDesktopUpdater,
     DesktopUpdateError,
+    flushThenConfirmFinalSave,
     flushThenConfirmQuit,
     flushUntilStable,
     scheduleStartupUpdateCheck,
@@ -187,6 +188,20 @@ describe('desktop updater: one shared state for every viewer', () => {
             { downloaded: 40, total: 40 },
         ])
         expect(updater.getSnapshot().progress).toBeNull()
+    })
+
+    it('a successful check, also in the background, clears an older failure', async () => {
+        // CodeAnt on #878: the card kept showing a failure the newer check had resolved.
+        let fail = true
+        const { bridge } = fakeBridge({
+            update_check: () => (fail ? Promise.reject('timed out') : INFO),
+        })
+        const updater = updaterWith(bridge)
+        await reasonOf(updater.check())
+        expect(updater.getSnapshot().error?.message).toBe('timed out')
+        fail = false
+        await updater.check({ background: true })
+        expect(updater.getSnapshot().error).toBeNull()
     })
 
     it('a failed background check stays out of the snapshot', async () => {
@@ -410,6 +425,30 @@ describe('startup update check', () => {
         scheduleStartupUpdateCheck(cancelled.deps)()
         await vi.advanceTimersByTimeAsync(1000)
         expect(cancelled.check).not.toHaveBeenCalled()
+    })
+})
+
+describe('final save before an install ends the process', () => {
+    it('confirms only after the save finished, and also after a failed save', async () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+        const order: string[] = []
+        const { bridge } = fakeBridge({ confirm_final_save: () => order.push('confirm') })
+        await flushThenConfirmFinalSave(
+            async () => {
+                order.push('save')
+                return true
+            },
+            async () => bridge,
+        )
+        await flushThenConfirmFinalSave(
+            async () => {
+                order.push('save')
+                return false
+            },
+            async () => bridge,
+        )
+        expect(order).toEqual(['save', 'confirm', 'save', 'confirm'])
+        warn.mockRestore()
     })
 })
 

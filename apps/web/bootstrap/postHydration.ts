@@ -47,6 +47,13 @@ const setUpDesktopLifecycle = async (
                 console.debug('[Tauri] quit confirmation failed:', err)
             }),
         )
+        // Right before an install ends the process, update.rs asks for one more save,
+        // so an edit made while the install ran is not lost to the restart.
+        await listen(lifecycle.SAVE_BEFORE_RESTART_EVENT, () =>
+            lifecycle.flushThenConfirmFinalSave(quitFlush).catch((err: unknown) => {
+                console.debug('[Tauri] final save confirmation failed:', err)
+            }),
+        )
     } catch (err) {
         console.debug('[Tauri] before-quit listener setup failed:', err)
     }

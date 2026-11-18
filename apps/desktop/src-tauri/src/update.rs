@@ -8,8 +8,10 @@
 //! 4. `update_set_local_only` mirrors Local-Only mode: while it is on, check and
 //!    download refuse, and switching it on stops the running check or download.
 //! 5. `update_install` installs the verified bundle and restarts. The frontend calls
-//!    it only after it has saved persisted state: on Windows the installer ends the
-//!    process from inside `install`.
+//!    it only after a settled save; right before the process ends -- the restart, or
+//!    on Windows the installer taking over -- the app asks for one more save and
+//!    waits for `confirm_final_save` (or QUIT_FLUSH_TIMEOUT), so an edit made while
+//!    the install ran is saved too.
 //!
 //! Trust boundary: these are app commands, and Tauri lets any code running in the
 //! webview call them (the webview has no permission for the plugin's own commands,
@@ -20,13 +22,18 @@
 //! frontend's job and cannot be proven at this boundary.
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{mpsc, Mutex, MutexGuard};
 
 use serde::Serialize;
-use tauri::{async_runtime, ipc::Channel, AppHandle, State};
+use tauri::{async_runtime, ipc::Channel, AppHandle, Emitter, Manager, State};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
-use crate::lifecycle::{keeps_download, Busy, UPDATE_CHECK_TIMEOUT, UPDATE_DOWNLOAD_TIMEOUT};
+use crate::lifecycle::{
+    keeps_download, Busy, QUIT_FLUSH_TIMEOUT, UPDATE_CHECK_TIMEOUT, UPDATE_DOWNLOAD_TIMEOUT,
+};
+
+/// Asks the web app for a last save before an install ends the process.
+const SAVE_BEFORE_RESTART: &str = "cannaguide://save-before-restart";
 
 const BUSY: &str = "another update step is still running";
 /// The frontend maps these exact texts to its own messages.
@@ -41,6 +48,8 @@ pub struct UpdateState {
     downloaded: Mutex<Option<Vec<u8>>>,
     /// The running check or download; the busy guard allows only one at a time.
     network_task: Mutex<Option<async_runtime::JoinHandle<()>>>,
+    /// Waits for `confirm_final_save` while an install is about to end the process.
+    final_save: Mutex<Option<mpsc::Sender<()>>>,
 }
 
 #[derive(Serialize)]
@@ -116,6 +125,29 @@ where
     result.ok_or(CANCELLED)?
 }
 
+/// Blocks until the web app confirms its last save, or QUIT_FLUSH_TIMEOUT. Runs on a
+/// worker thread (the install hook, or spawn_blocking), never on the main thread,
+/// which has to keep the webview running for the save.
+fn await_final_save(app: &AppHandle) -> bool {
+    let (confirmed_tx, confirmed_rx) = mpsc::channel::<()>();
+    *lock(&app.state::<UpdateState>().final_save) = Some(confirmed_tx);
+    let confirmed = app.emit(SAVE_BEFORE_RESTART, ()).is_ok()
+        && confirmed_rx.recv_timeout(QUIT_FLUSH_TIMEOUT).is_ok();
+    lock(&app.state::<UpdateState>().final_save).take();
+    if !confirmed {
+        eprintln!("[update] no save confirmation before the restart; continuing");
+    }
+    confirmed
+}
+
+/// Called by the web app once the save requested by `await_final_save` finished.
+#[tauri::command]
+pub fn confirm_final_save(state: State<'_, UpdateState>) {
+    if let Some(confirmed_tx) = lock(&state.final_save).take() {
+        let _ = confirmed_tx.send(());
+    }
+}
+
 #[tauri::command]
 pub async fn update_check(
     app: AppHandle,
@@ -123,9 +155,15 @@ pub async fn update_check(
 ) -> Result<Option<UpdateInfo>, String> {
     let _busy = state.busy.try_acquire().ok_or(BUSY)?;
     refuse_when_local_only(&state)?;
+    let before_exit = app.clone();
     let updater = app
         .updater_builder()
         .timeout(UPDATE_CHECK_TIMEOUT)
+        // Windows: install() runs this right before it starts the installer and ends
+        // the process, so the last save happens before the process is gone.
+        .on_before_exit(move || {
+            await_final_save(&before_exit);
+        })
         .build()
         .map_err(|error| error.to_string())?;
     let update = run_abortable(&state, async move {
@@ -216,7 +254,10 @@ pub async fn update_install(app: AppHandle, state: State<'_, UpdateState>) -> Re
         *lock(&state.downloaded) = Some(bytes);
         return Err(error.to_string());
     }
-    // restart() requests the exit with RESTART_EXIT_CODE, which the quit
-    // handshake lets through: the frontend saved before calling this command.
+    // macOS and Linux: the new version is in place. Save once more -- an edit made
+    // while install() ran is in no earlier save -- then restart. restart() requests
+    // the exit with RESTART_EXIT_CODE, which the quit handshake lets through.
+    let waiter = app.clone();
+    let _ = async_runtime::spawn_blocking(move || await_final_save(&waiter)).await;
     app.restart()
 }

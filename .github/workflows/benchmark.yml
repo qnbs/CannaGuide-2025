@@ -11,9 +11,6 @@ on:
 permissions:
     contents: read
 
-env:
-    NODE_VERSION: '24'
-
 jobs:
     hygiene:
         name: Dependency hygiene
@@ -33,11 +30,15 @@ jobs:
             - name: Enable Corepack
               run: corepack enable
 
-            - name: Setup Node ${{ env.NODE_VERSION }}
+            - name: Setup pinned Node.js
               uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
-                  node-version: ${{ env.NODE_VERSION }}
+                  node-version-file: .node-version
                   cache: pnpm
+
+            - name: Validate pinned Node.js
+              shell: bash
+              run: node ./scripts/check-node-engine.mjs --pinned
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
@@ -66,11 +67,15 @@ jobs:
             - name: Enable Corepack
               run: corepack enable
 
-            - name: Setup Node ${{ env.NODE_VERSION }}
+            - name: Setup pinned Node.js
               uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
-                  node-version: ${{ env.NODE_VERSION }}
+                  node-version-file: .node-version
                   cache: pnpm
+
+            - name: Validate pinned Node.js
+              shell: bash
+              run: node ./scripts/check-node-engine.mjs --pinned
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile

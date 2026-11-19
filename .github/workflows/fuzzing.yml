@@ -34,9 +34,6 @@ concurrency:
 permissions:
     contents: read
 
-env:
-    NODE_VERSION: '24'
-
 jobs:
     url-service-fuzz:
         name: Property Fuzz Tests
@@ -53,8 +50,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Run fuzz test suite
               run: pnpm --filter @cannaguide/web run test:fuzz

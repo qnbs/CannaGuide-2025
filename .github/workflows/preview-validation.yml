@@ -19,9 +19,6 @@ on:
 permissions:
     contents: read
 
-env:
-    NODE_VERSION: '24'
-
 jobs:
     # -------------------------------------------------------------------------
     # GATE -- only run when Netlify deploy-preview succeeds
@@ -71,8 +68,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Cache Playwright Chromium
               id: playwright-cache
@@ -126,8 +121,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Lighthouse CI (preview URL)
               env:

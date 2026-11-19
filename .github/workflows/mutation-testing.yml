@@ -14,7 +14,6 @@ permissions:
     contents: read
 
 env:
-    NODE_VERSION: '24'
     TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -33,8 +32,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Restore Stryker incremental cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

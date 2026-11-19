@@ -3,6 +3,8 @@
 # A failed frozen install must fail container creation.
 set -euo pipefail
 
+node ./scripts/check-node-engine.mjs --pinned
+
 echo "[setup] Enabling Corepack for pnpm..."
 corepack enable
 

@@ -1,7 +1,8 @@
 {
     "name": "CannaGuide 2025 (Lite Mode)",
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "context": ".."
     },
     "remoteUser": "root",
     "hostRequirements": {

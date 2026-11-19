@@ -58,8 +58,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: '24'
 
             - name: Update graph
               # Same pins as scripts/graphify-pins.mjs (enforced by

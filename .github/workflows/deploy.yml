@@ -28,7 +28,6 @@ concurrency:
 # Shared env
 # ---------------------------------------------------------------------------
 env:
-    NODE_VERSION: '24'
     PAGES_URL: https://qnbs.github.io/CannaGuide-2025/
     # The commit this deployment is FOR. On `workflow_run`, `github.sha` is the
     # default branch head at dispatch time, not the commit whose CI succeeded --
@@ -75,16 +74,14 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Restore Turbo cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
-                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ env.DEPLOY_SHA }}
+                  key: turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-${{ env.DEPLOY_SHA }}
                   restore-keys: |
-                      turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-gh-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-
                       turbo-${{ runner.os }}-
 
             # -- Build -----------------------------------------------------------
@@ -205,8 +202,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             # Cache Playwright browser binaries (~200 MB) -- key on Playwright version
             - name: Cache Playwright Chromium
@@ -274,8 +269,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Wait for GitHub Pages before Lighthouse
               id: pages_ready

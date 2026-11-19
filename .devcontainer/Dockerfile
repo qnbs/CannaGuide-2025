@@ -34,4 +34,24 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
+# The browser image follows Playwright's Node line. Install the project's pinned
+# Node distribution ahead of it on PATH for Corepack, setup and terminal tasks.
+COPY .node-version /tmp/cannaguide-node-version
+RUN set -eu; \
+    cd /tmp; \
+    version="$(node -e 'const version = require("node:fs").readFileSync("cannaguide-node-version", "utf8").trim(); if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error("Invalid .node-version"); console.log(version)')"; \
+    case "$(dpkg --print-architecture)" in \
+        amd64) arch=x64 ;; \
+        arm64) arch=arm64 ;; \
+        *) echo 'Unsupported Node.js architecture' >&2; exit 1 ;; \
+    esac; \
+    archive="node-v${version}-linux-${arch}.tar.gz"; \
+    base="https://nodejs.org/dist/v${version}"; \
+    curl -fsSLO "${base}/${archive}"; \
+    curl -fsSLO "${base}/SHASUMS256.txt"; \
+    awk -v archive="$archive" '$2 == archive' SHASUMS256.txt | sha256sum --check -; \
+    tar -xzf "$archive" --strip-components=1 -C /usr/local; \
+    test "$(node --version)" = "v${version}"; \
+    rm "$archive" SHASUMS256.txt cannaguide-node-version
+
 WORKDIR /workspaces/CannaGuide-2025

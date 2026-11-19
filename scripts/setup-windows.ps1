@@ -19,14 +19,14 @@ function Test-Command($name) {
 }
 
 if (-not (Test-Command 'node')) {
-    Write-Error 'Node.js not found. Install Node.js >=24.15.0 <25 from https://nodejs.org or use fnm-windows, then rerun setup.'
+    Write-Error 'Node.js not found. Install the version in .node-version from https://nodejs.org or use fnm-windows, then rerun setup.'
     exit 1
 }
 
 # Validate Node before Corepack can download pnpm or setup installs dependencies.
 node ./scripts/check-node-engine.mjs
 if ($LASTEXITCODE -ne 0) {
-    throw 'The installed Node.js does not satisfy package.json engines.node; setup stopped before installing dependencies.'
+    throw 'Node.js engine or pin validation failed; setup stopped before installing dependencies.'
 }
 
 # Do not trust a global pnpm on PATH. Corepack resolves the repository's exact

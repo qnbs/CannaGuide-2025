@@ -52,7 +52,7 @@ This project follows the [Contributor Covenant Code of Conduct](https://www.cont
 
 ### Prerequisites
 
-- **Node.js** >=24.15.0 <25; use an existing repository-specific version manager and verify `node --version` before package commands.
+- **Node.js** `>=24.15.0 <25`. The exact GitHub Actions version is in `.node-version`. Use it with your version manager for parity, for example with `fnm use`, and verify `node --version` before package commands.
 - **pnpm** exactly as pinned in root `package.json` (`packageManager`), invoked through Corepack. See [AGENTS.md](AGENTS.md#nodejs-version-required) for the cloud-host PATH setup; a native host may already have a compatible Node through another version manager.
 - On the low-memory maintainer host, run one task at a time and follow [the binding verification rules](AGENTS.md#local-verification-on-low-end-hardware-binding). The web server uses `/CannaGuide-2025/` on port 5173.
 

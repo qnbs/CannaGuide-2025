@@ -24,6 +24,8 @@ on:
             - 'scripts/desktop-smoke.mjs'
             - 'scripts/desktop-smoke-ci.mjs'
             - 'scripts/desktop-smoke-profile.mjs'
+            - '.node-version'
+            - '.github/actions/setup-node-ci/action.yml'
             - '.github/workflows/desktop-build.yml'
     workflow_dispatch:
     workflow_call:
@@ -132,8 +134,6 @@ jobs:
             # workflow fail at startup, including the v1.8.2-v1.10.0 tag pushes.
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: 24
 
             # tauri-bundler starts macOS code signing as soon as APPLE_CERTIFICATE is
             # set -- even to the empty string an unconfigured secret expands to -- and
@@ -301,8 +301,12 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
-                  node-version: 24
+                  node-version-file: .node-version
                   cache: pnpm
+
+            - name: Validate pinned Node.js
+              shell: bash
+              run: node ./scripts/check-node-engine.mjs --pinned
 
             - name: Install dependencies
               shell: bash
@@ -381,10 +385,14 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
               with:
-                  node-version: 24
+                  node-version-file: .node-version
                   # No dependency cache in a release workflow (cache poisoning); the
                   # manifest script needs Node only, no packages.
                   package-manager-cache: false
+
+            - name: Validate pinned Node.js
+              shell: bash
+              run: node ./scripts/check-node-engine.mjs --pinned
 
             - name: Download desktop builds
               uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2

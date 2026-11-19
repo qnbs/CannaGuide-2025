@@ -20,9 +20,6 @@ concurrency:
 permissions:
     contents: read
 
-env:
-    NODE_VERSION: '24'
-
 jobs:
     # -------------------------------------------------------------------------
     # NOTE: E2E tests removed -- they run in ci.yml (quality -> e2e job).
@@ -47,8 +44,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Start ESP32 Mock
               run: |

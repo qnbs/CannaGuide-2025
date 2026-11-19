@@ -57,6 +57,19 @@ test('declared node engines accept 24.15 through 24.x and reject 24.14 and 25', 
     assert.equal(nodeSatisfiesDeclaredEngines('22.0.0', '>=24'), false)
 })
 
+test('the devcontainer installs the checked-in Node version before running its setup', () => {
+    const { build } = JSON.parse(readFileSync('.devcontainer/devcontainer.json', 'utf8'))
+    const dockerfile = readFileSync('.devcontainer/Dockerfile', 'utf8')
+    const context = readFileSync('.devcontainer/Dockerfile.dockerignore', 'utf8').replace(/\r\n/g, '\n').trim()
+    const setup = readFileSync('.devcontainer/setup.sh', 'utf8')
+
+    assert.equal(build.context, '..')
+    assert.equal(context, '*\n!.node-version')
+    assert.match(dockerfile, /COPY \.node-version \/tmp\/cannaguide-node-version/)
+    assert.match(dockerfile, /sha256sum --check -;[\s\S]+tar -xzf "\$archive"/)
+    assert.match(setup, /check-node-engine\.mjs --pinned[\s\S]+pnpm install --frozen-lockfile/)
+})
+
 test('Windows doctor and setup enforce the repository Node engine range', () => {
     const rootPackage = JSON.parse(readFileSync('package.json', 'utf8'))
     const windowsDoctor = readFileSync('scripts/windows-doctor.mjs', 'utf8')
@@ -69,7 +82,7 @@ test('Windows doctor and setup enforce the repository Node engine range', () => 
     assert.match(windowsDoctor, /const enginesNode = packageJson\.engines\?\.node/)
     assert.match(windowsDoctor, /nodeSatisfiesDeclaredEngines\(\s*nodeVer,\s*enginesNode\s*\)/)
     assert.doesNotMatch(windowsDoctor, /major\s*>=\s*24/)
-    assert.match(windowsSetup, /Node\.js >=24\.15\.0 <25/)
+    assert.match(windowsSetup, /Install the version in \.node-version/)
     assert.doesNotMatch(windowsSetup, /Node 24\+/)
     assert.match(
         nodeEngineCheck,

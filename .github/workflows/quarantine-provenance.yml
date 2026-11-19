@@ -30,7 +30,5 @@ jobs:
                   persist-credentials: false
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: '24'
             - name: Verify provenance attestations
               run: node scripts/verify-quarantine-excludes.mjs

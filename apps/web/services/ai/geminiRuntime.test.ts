@@ -206,3 +206,38 @@ describe('Local-Only refusals of Gemini requests', () => {
         expect(generateContent).toHaveBeenCalledTimes(2)
     })
 })
+
+describe('the request-time gate of every Gemini request', () => {
+    beforeEach(() => setLocalOnlyMode(false))
+
+    it('refuses the first request in Local-Only Mode, after the client was created', async () => {
+        const generateContent = vi.fn()
+        const ai = { models: { generateContent } } as unknown as Parameters<
+            typeof generateWithGeminiFallback
+        >[0]['ai']
+        setLocalOnlyMode(true)
+        await expect(
+            generateWithGeminiFallback({ ai, model: 'gemini-2.5-flash', contents: 'x' }),
+        ).rejects.toBeInstanceOf(EgressBlockedError)
+        expect(generateContent).not.toHaveBeenCalled()
+        setLocalOnlyMode(false)
+    })
+
+    it('refuses a streamed request in Local-Only Mode', async () => {
+        const generateContentStream = vi.fn()
+        const ai = {
+            models: { generateContent: vi.fn(), generateContentStream },
+        } as unknown as GeminiClient
+        setLocalOnlyMode(true)
+        await expect(
+            generateGeminiTextStreamed({
+                ai,
+                model: 'gemini-2.5-flash',
+                contents: 'x',
+                reservation,
+            }),
+        ).rejects.toBeInstanceOf(EgressBlockedError)
+        expect(generateContentStream).not.toHaveBeenCalled()
+        setLocalOnlyMode(false)
+    })
+})

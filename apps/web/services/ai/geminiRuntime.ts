@@ -130,13 +130,14 @@ export const parseGeminiJsonResponse = <T>(
 export const GEMINI_API_ORIGIN = 'https://generativelanguage.googleapis.com'
 
 /**
- * Every Gemini SDK request of the AI features starts from this client (the API-key
- * test in Settings, apiKeyService.validateApiKey, has its own Local-Only check before
- * and after loading the SDK). The SDK sends its own requests,
- * outside egressFetch, so the egress gate is checked here, after the last await
- * before a request (the key read): Local-Only Mode switched on at any point until
- * then refuses the call with EgressBlockedError, which the callers treat as a
- * reason for the local fallback.
+ * Creates the client for the AI features' Gemini requests. The SDK sends its own
+ * requests, outside egressFetch, so the egress gate is checked here (after the key
+ * read) and again right before every request in generateWithGeminiFallback and
+ * generateGeminiTextStreamed, the only places that send one. Local-Only Mode
+ * switched on at any point until a request leaves refuses it with
+ * EgressBlockedError, which the callers treat as a reason for the local fallback.
+ * The API-key test in Settings (apiKeyService.validateApiKey) builds its own client
+ * and has its own check before and after loading the SDK.
  */
 export const createGeminiClient = async (): Promise<GoogleGenAI> => {
     const apiKey = await apiKeyService.getApiKey()
@@ -201,6 +202,8 @@ export const generateWithGeminiFallback = async ({
     config,
     fallbackModel,
 }: GenerateContentInput) => {
+    // The request-time check: callers may await between creating the client and here.
+    assertEgressAllowed(GEMINI_API_ORIGIN)
     try {
         return await ai.models.generateContent({
             model,
@@ -259,6 +262,8 @@ export const generateGeminiTextStreamed = async ({
         }
     }
     type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<StreamChunk> }
+    // The request-time check, as in generateWithGeminiFallback.
+    assertEgressAllowed(GEMINI_API_ORIGIN)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const streamResult = (await streamFn.call(ai.models, {
         model,

@@ -60,7 +60,7 @@ test('declared node engines accept 24.15 through 24.x and reject 24.14 and 25', 
 test('the devcontainer installs the checked-in Node version before running its setup', () => {
     const { build } = JSON.parse(readFileSync('.devcontainer/devcontainer.json', 'utf8'))
     const dockerfile = readFileSync('.devcontainer/Dockerfile', 'utf8')
-    const context = readFileSync('.devcontainer/Dockerfile.dockerignore', 'utf8').trim()
+    const context = readFileSync('.devcontainer/Dockerfile.dockerignore', 'utf8').replace(/\r\n/g, '\n').trim()
     const setup = readFileSync('.devcontainer/setup.sh', 'utf8')
 
     assert.equal(build.context, '..')

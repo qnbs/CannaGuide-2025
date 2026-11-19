@@ -1,4 +1,4 @@
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { ModelDownloadBlockedError, prepareTransformersLoad } from '@cannaguide/ai-core/ml'
 // The main thread's one memoized transformers.js module: each loadTransformers()
 // call resets allowLocalModels, which would undo the Local-Only policy under a

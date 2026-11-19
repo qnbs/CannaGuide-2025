@@ -8,6 +8,7 @@ import type { Language } from '@/types'
 import { apiKeyService } from '@/services/apiKeyService'
 import { aiRateLimiter, type MonthlyBudgetReservation } from '@/services/aiRateLimiter'
 import { PROVIDER_CONFIGS } from '@cannaguide/ai-core'
+import { assertEgressAllowed, EgressBlockedError } from '@/services/net/egress'
 
 export const GEMINI_SAFETY_SETTINGS = [
     {
@@ -38,12 +39,22 @@ export const getEducationalUseOnlyInstruction = (lang: Language): string => {
     return instructions[lang] ?? instructions['en']
 }
 
+/**
+ * The config of every Gemini request of the AI features: the safety settings, and
+ * automatic continuation off. @google/genai 2.x turns continuation on by default: a
+ * response that ends with finish reason CONTINUATION (the per-request token limit
+ * was reached) makes the SDK send the same request again, inside the SDK, past the
+ * egress gate checked before each call and past the output-token caps and budget
+ * this app sets. With it off, every SDK call sends exactly one request; a cut-off
+ * answer stays cut off, and a structured answer that no longer parses falls back.
+ */
 export const withGeminiSafety = <T extends Record<string, unknown>>(
     config?: T,
-): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } => ({
+): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS; automaticContinuation: false } => ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     ...(config ?? ({} as T)),
     safetySettings: GEMINI_SAFETY_SETTINGS,
+    automaticContinuation: false,
 })
 
 export const sanitizeGeminiValue = <T>(value: T): T => {
@@ -68,6 +79,8 @@ export const sanitizeGeminiValue = <T>(value: T): T => {
 }
 
 export const rethrowKnownGeminiError = (error: unknown, fallbackErrorKey: string): never => {
+    // A Local-Only refusal stays itself: shouldUseLocalFallback recognises it.
+    if (error instanceof EgressBlockedError) throw error
     if (error instanceof Error) {
         if (AI_ERROR_KEYS.has(error.message)) throw error
         if (error.message.startsWith('ai.error.rateLimited')) throw error
@@ -123,8 +136,23 @@ export const parseGeminiJsonResponse = <T>(
     return parseGeminiJsonFromText(text, errorKey, schema)
 }
 
+/** Where the Gemini SDK sends its requests. */
+export const GEMINI_API_ORIGIN = 'https://generativelanguage.googleapis.com'
+
+/**
+ * Creates the client for the AI features' Gemini requests. The SDK sends its own
+ * requests, outside egressFetch, so the egress gate is checked here (after the key
+ * read) and again right before every request in generateWithGeminiFallback and
+ * generateGeminiTextStreamed, the only places that send one. Each of those SDK calls
+ * sends exactly one request, because withGeminiSafety turns automatic continuation
+ * off. Local-Only Mode switched on before a call refuses it with EgressBlockedError,
+ * which the callers treat as a reason for the local fallback.
+ * The API-key test in Settings (apiKeyService.validateApiKey) builds its own client
+ * and has its own check before and after loading the SDK.
+ */
 export const createGeminiClient = async (): Promise<GoogleGenAI> => {
     const apiKey = await apiKeyService.getApiKey()
+    assertEgressAllowed(GEMINI_API_ORIGIN)
     if (!apiKey) {
         throw new Error('ai.error.missingApiKey')
     }
@@ -185,6 +213,8 @@ export const generateWithGeminiFallback = async ({
     config,
     fallbackModel,
 }: GenerateContentInput) => {
+    // The request-time check: callers may await between creating the client and here.
+    assertEgressAllowed(GEMINI_API_ORIGIN)
     try {
         return await ai.models.generateContent({
             model,
@@ -199,6 +229,8 @@ export const generateWithGeminiFallback = async ({
             `[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`,
             primaryError,
         )
+        // The retry is a new request, after an await: the gate is checked again.
+        assertEgressAllowed(GEMINI_API_ORIGIN)
         return ai.models.generateContent({
             model: fallbackModel,
             contents,
@@ -241,6 +273,8 @@ export const generateGeminiTextStreamed = async ({
         }
     }
     type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<StreamChunk> }
+    // The request-time check, as in generateWithGeminiFallback.
+    assertEgressAllowed(GEMINI_API_ORIGIN)
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     const streamResult = (await streamFn.call(ai.models, {
         model,

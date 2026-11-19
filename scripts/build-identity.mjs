@@ -3,7 +3,7 @@
  *
  * Production may deploy every green main commit without a new git tag.
  * The semantic package version stays the last release. The build version
- * appends the full commit so About, Sentry, and version.json can tell
+ * appends the full commit so About and version.json can tell
  * 1.9.0 apart from 1.9.0+<sha>.
  */
 

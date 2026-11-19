@@ -279,8 +279,8 @@ interface WorkerTelemetrySnapshot extends WorkerBusMetrics {
 }
 ```
 
-JSON-serializable telemetry export. Suitable for Sentry custom context
-or external dashboards.
+JSON-serializable telemetry export, for diagnostics and the Redux DevTools.
+Nothing sends it off the device.
 
 ### CRDT Metrics
 

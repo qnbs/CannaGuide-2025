@@ -12,10 +12,6 @@ vi.mock('@/services/predictiveAnalyticsService', () => ({
     },
 }))
 
-vi.mock('@sentry/browser', () => ({
-    addBreadcrumb: vi.fn(),
-}))
-
 const mockAnalyze = vi.mocked(predictiveAnalyticsService.analyze)
 
 const makePlant = (id: string, name: string): Plant =>

@@ -4,10 +4,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { SyncConflictModal } from './SyncConflictModal'
 import type { DivergenceInfo } from '@/services/crdtService'
 
-vi.mock('@sentry/react', () => ({
-    addBreadcrumb: vi.fn(),
-}))
-
 vi.mock('react-i18next', () => ({
     useTranslation: () => ({
         t: (key: string) => key,

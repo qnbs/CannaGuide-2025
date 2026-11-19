@@ -21,16 +21,9 @@ import { PlantStage, StrainType, JournalEntryType } from '@/types'
 import type { NutrientScheduleEntry } from '@/stores/slices/nutrientPlannerSlice'
 import type { AppStore } from '@/stores/store'
 
-const sentryMocks = vi.hoisted(() => ({
-    captureException: vi.fn(),
-    addBreadcrumb: vi.fn(),
-}))
-
 // ---------------------------------------------------------------------------
 // Mock crdtService with an in-memory Y.Doc (no IndexedDB)
 // ---------------------------------------------------------------------------
-
-vi.mock('@sentry/react', () => sentryMocks)
 
 const testDoc = new Y.Doc()
 
@@ -661,9 +654,8 @@ describe('crdtSyncBridge', () => {
     // -- Loop detector threshold breach ---------------------------------------
 
     describe('loop detector threshold breach', () => {
-        it('disables bridge and reports to Sentry after >50 dispatches', async () => {
-            const Sentry = await import('@sentry/react')
-            const captureExceptionSpy = vi.spyOn(Sentry, 'captureException')
+        it('disables bridge and logs it after >50 dispatches', () => {
+            const warn = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
 
             const plantsMap = testDoc.getMap('plants') as Y.Map<Y.Map<unknown>>
 
@@ -682,7 +674,13 @@ describe('crdtSyncBridge', () => {
 
             const state = _getLoopDetectorState()
             expect(state.bridgeDisabled).toBe(true)
-            expect(captureExceptionSpy).toHaveBeenCalled()
+            expect(warn).toHaveBeenCalledWith(
+                '[CRDT]',
+                'CRDT_BRIDGE_LOOP_DETECTED',
+                expect.stringContaining('loop detected'),
+                expect.objectContaining({ pendingOps: expect.any(Number) }),
+            )
+            warn.mockRestore()
         })
     })
 
@@ -829,20 +827,19 @@ describe('crdtSyncBridge', () => {
             expect(state.divergenceCount).toBe(0)
         })
 
-        it('adds Sentry breadcrumb when divergence crosses critical threshold', () => {
-            sentryMocks.addBreadcrumb.mockClear()
+        it('logs it when divergence crosses critical threshold', () => {
+            const warn = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
             _resetCrdtTelemetry()
             reportCrdtTelemetry({ divergenceCount: 4 })
             expect(_getCrdtTelemetryState().divergenceCount).toBe(4)
-            expect(sentryMocks.addBreadcrumb).not.toHaveBeenCalled()
+            expect(warn).not.toHaveBeenCalled()
             reportCrdtTelemetry({ divergenceCount: 1 })
             expect(_getCrdtTelemetryState().divergenceCount).toBe(5)
-            expect(sentryMocks.addBreadcrumb).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    category: 'crdt-sync',
-                    message: 'Critical CRDT divergence threshold reached',
-                }),
+            expect(warn).toHaveBeenCalledWith(
+                '[CRDT] Critical divergence threshold reached',
+                expect.objectContaining({ divergenceCount: 5, threshold: 5 }),
             )
+            warn.mockRestore()
         })
     })
 })

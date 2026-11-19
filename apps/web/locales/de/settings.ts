@@ -978,7 +978,6 @@ export const settingsView = {
             radixUi: 'Barrierefreie UI-Primitiven von Radix UI.',
             recharts: 'Diagramm-Visualisierungen durch Recharts und D3.js.',
             tailwind: 'Utility-First-Styling durch Tailwind CSS.',
-            sentry: 'Fehler-Tracking durch Sentry.',
             vite: 'Build-Tooling durch Vite und TurboRepo.',
         },
         githubLinkText: 'Projekt auf GitHub ansehen',

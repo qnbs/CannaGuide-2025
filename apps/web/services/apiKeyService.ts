@@ -132,6 +132,7 @@ export const apiKeyService = {
             await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: 'Healthcheck: reply with OK only.',
+                config: { automaticContinuation: false },
             })
         } catch {
             throw new Error('settingsView.security.testError')

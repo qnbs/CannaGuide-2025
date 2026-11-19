@@ -5,7 +5,7 @@
  * with batch-mode fallback via Transformers.js.
  */
 
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import {
     getCachedInference,
     setCachedInference,

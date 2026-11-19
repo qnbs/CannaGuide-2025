@@ -1,5 +1,5 @@
 import { enqueueInference, isWorkerAvailable } from '../inference/inferenceQueue'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import DOMPurify from 'dompurify'
 
 /**

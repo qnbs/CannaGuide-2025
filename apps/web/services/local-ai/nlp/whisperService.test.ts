@@ -17,7 +17,7 @@ vi.mock('../device/gpuResourceManager', () => ({
     releaseGpu: vi.fn(),
 }))
 const captureLocalAiError = vi.hoisted(() => vi.fn())
-vi.mock('@/services/sentryService', () => ({ captureLocalAiError }))
+vi.mock('@/services/errorReporting', () => ({ captureLocalAiError }))
 
 describe('whisperService in Local-Only Mode (GH #700)', () => {
     afterEach(() => {

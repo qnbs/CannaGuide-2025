@@ -6,7 +6,6 @@ import { getUISnapshot } from '@/stores/useUIStore'
 import { strainService } from '@/services/strainService'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
 import { ttsService } from '@/services/ttsService'
-import { Sentry } from '@/services/sentryService'
 import type { FlushPersistedState } from './persistence'
 
 /**
@@ -109,20 +108,14 @@ export const runPostHydrationServices = async (
     // dispatches no `privacy.localOnlyMode` action, so nothing ever told the
     // service. After every reload the flag read false while the user's setting
     // said true -- and isLocalOnlyMode() is exactly what cansativaService,
-    // communityShareService, dailyStrainsService and the Sentry enable/disable
-    // branch consult before going out. A privacy setting the user had switched on
-    // was therefore inert for the whole session, until they happened to toggle it
-    // again. No attacker required; the setting simply was not restored.
+    // communityShareService and dailyStrainsService consult before going out. A
+    // privacy setting the user had switched on was therefore inert for the whole
+    // session, until they happened to toggle it again. No attacker required; the
+    // setting simply was not restored.
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     const localOnly =
         (hydratedStore.getState() as RootState).settings.settings.privacy?.localOnlyMode === true
     setLocalOnlyMode(localOnly)
-    if (localOnly) {
-        // Mirrors syncLocalOnlyMode() in listenerMiddleware: the flag alone does
-        // not stop Sentry, which is initialised before hydration runs.
-        const { disableSentry } = await import('@/services/sentryService')
-        disableSentry()
-    }
 
     // Before any slower startup work: every desktop quit waits for this listener's
     // confirmation, so it has to exist as soon as there is state to save.
@@ -149,9 +142,7 @@ export const runPostHydrationServices = async (
         try {
             await changeAppLanguage(persistedLang)
         } catch (err) {
-            Sentry.captureException(err, {
-                extra: { context: 'postHydration:changeAppLanguage', lang: persistedLang },
-            })
+            console.debug('[i18n] Could not apply the saved language', persistedLang, err)
         }
     }
 
@@ -180,7 +171,7 @@ export const runPostHydrationServices = async (
     try {
         await useIotStore.getState().loadPersistedPassword()
     } catch (err) {
-        Sentry.captureException(err, { extra: { context: 'postHydration:loadPersistedPassword' } })
+        console.debug('[IoT] Could not load the saved MQTT password:', err)
     }
 
     const { initializeWorkerInfrastructure } = await import('./workers')

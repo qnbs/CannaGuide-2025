@@ -6,6 +6,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Fixed
+
+- **fix(privacy):** The Genetic Trends and Grow Tech AI answers honour Local-Only mode again, as well as the local and eco AI modes and the provider consent. `getGeneticTrendAnalysis` and `getGrowTechRecommendation` called Gemini directly instead of going through `withLocalFallback`, so with a Gemini key stored they sent their prompt (a trend category, or the grow setup's medium and light) to Google while Local-Only was on and without asking for consent. They now use the same routing as every other cloud call and answer with their built-in fallback when cloud AI is off. Found by CodeRabbit on #886.
+- **fix(privacy):** A cloud AI call no longer goes out when Local-Only mode or a local AI mode is switched on while its provider-consent dialog is open. `withLocalFallback` checked the mode only before the consent step, which can wait on the user; it now checks again after it. Every Gemini SDK request of the AI features is now also refused at its own boundary in Local-Only mode, because the SDK sends its own requests outside `egressFetch`. The egress gate is checked when the client is created and again right before every request (`generateWithGeminiFallback`, including its fallback-model retry, and `generateGeminiTextStreamed`). Automatic continuation of `@google/genai` (on by default in 2.x) is turned off, so each SDK call sends exactly one request: a response cut off at the per-request token limit can no longer make the SDK resend the prompt past the gate and past the app's output-token caps. The refusal now reaches the local fallback instead of being replaced by a generic error. The API-key test in Settings builds its own client and keeps its own check before and after loading the SDK.
+
+### Removed
+
+- **refactor(privacy):** Sentry is gone. The app runs no crash reporting and no analytics and sends error reports nowhere. Handled errors are written to the browser console and stay on the device; failures of the local AI stack keep their stage, model and backend at debug level, which production builds drop (`services/errorReporting.ts`). Sentry could not send anything in practice: no build set a DSN, and no Content-Security-Policy (`vercel.json`, `index.html`, `securityHeaders.ts`) allowed a Sentry host. It still shipped its SDK, a Local-Only switch and a startup path that could have reported errors before the saved Local-Only setting was known. Removed: `@sentry/browser` and `@sentry/react`, `sentryService.ts` and its tests, the bootstrap step, the Local-Only wiring, `VITE_SENTRY_DSN` and the About credit ([#586](https://github.com/qnbs/CannaGuide-2025/issues/586)).
+
 ## [1.12.1] - 2026-11-18
 
 Desktop recovery release. **The v1.12.0 desktop apps do not start**, so their built-in updater cannot run either. Install this release manually over v1.12.0. App data stays in the same per-user folder (`com.cannaguide.desktop`), and v1.12.0 never wrote any, because it never started. The web app (PWA) was not affected.

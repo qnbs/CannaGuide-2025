@@ -82,12 +82,6 @@ const applyLocalOnlyModeToLocalAi = async (): Promise<void> => {
     await enforceLocalOnlyOnTransformers()
 }
 
-const syncSentry = async (localOnly: boolean): Promise<void> => {
-    const { disableSentry, enableSentry } = await import('@/services/sentryService')
-    if (localOnly) disableSentry()
-    else enableSentry()
-}
-
 const syncLocalOnlyMode = async (enabled: boolean) => {
     const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
     setLocalOnlyMode(enabled)
@@ -96,7 +90,6 @@ const syncLocalOnlyMode = async (enabled: boolean) => {
     // the live mode.
     const results = await Promise.allSettled([
         applyLocalOnlyModeToMqtt(enabled),
-        syncSentry(enabled),
         applyLocalOnlyModeToLocalAi(),
     ])
     for (const result of results) {

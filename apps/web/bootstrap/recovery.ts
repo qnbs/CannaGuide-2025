@@ -1,7 +1,6 @@
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { replaceSnapshot } from '@/stores/snapshotRevision'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY, REDUX_STATE_ROLLBACK_KEY } from '@/constants'
-import { Sentry } from '@/services/sentryService'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
     commitRecoveryEpoch,
@@ -76,9 +75,6 @@ export const triggerSafeRecovery = async (
                 }
 
                 console.debug(`[SafeRecovery] Triggered by: ${reason}`, error)
-                if (error instanceof Error) {
-                    Sentry.captureException(error, { tags: { recovery: reason } })
-                }
 
                 primarySnapshotChanged = true
                 await replaceSnapshot(migratedBackupSnapshot)

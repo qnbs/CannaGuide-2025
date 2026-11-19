@@ -10,7 +10,7 @@ import { recordFallbackEvent } from '../telemetry/telemetryService'
 import { enqueueInference, isWorkerAvailable } from '../inference/inferenceQueue'
 import { generateWithWebLlm, type WebLlmDeps } from '../models/webLlmService'
 import { detectOnnxBackend, getResolvedProfile, type LocalAiPipeline } from '../models/modelLoader'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { isMobileDevice } from '@/utils/browserApis'
 
 // -- Constants ----------------------------------------------------------------

@@ -12,11 +12,6 @@ vi.mock('y-indexeddb', () => ({
     },
 }))
 
-vi.mock('@sentry/react', () => ({
-    captureException: vi.fn(),
-    addBreadcrumb: vi.fn(),
-}))
-
 // Import AFTER mocks
 const { crdtService, CrdtError, CrdtErrorCode } = await import('./crdtService')
 

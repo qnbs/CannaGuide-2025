@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppStore } from '@/stores/store'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
 
-const mocks = vi.hoisted(() => ({ setLocalOnlyMode: vi.fn(), disableSentry: vi.fn() }))
+const mocks = vi.hoisted(() => ({
+    setLocalOnlyMode: vi.fn(),
+}))
 
 vi.mock('@/services/localOnlyModeService', () => ({ setLocalOnlyMode: mocks.setLocalOnlyMode }))
-vi.mock('@/services/sentryService', () => ({ disableSentry: mocks.disableSentry }))
 
 const storeWith = (localOnlyMode: boolean | undefined): AppStore =>
     ({
@@ -15,17 +16,18 @@ const storeWith = (localOnlyMode: boolean | undefined): AppStore =>
 describe('applyLocalOnlyPrivacy', () => {
     beforeEach(() => vi.clearAllMocks())
 
-    it('tells the service and switches Sentry off for a local-only user', async () => {
+    it('tells the service when the saved setting is local-only', async () => {
         await applyLocalOnlyPrivacy(storeWith(true))
 
-        expect(mocks.setLocalOnlyMode).toHaveBeenCalledWith(true)
-        expect(mocks.disableSentry).toHaveBeenCalledOnce()
+        expect(mocks.setLocalOnlyMode).toHaveBeenCalledExactlyOnceWith(true)
     })
 
-    it.each([false, undefined])('leaves Sentry alone when local-only is %s', async (value) => {
-        await applyLocalOnlyPrivacy(storeWith(value))
+    it.each([false, undefined])(
+        'tells the service it is off when the setting is %s',
+        async (value) => {
+            await applyLocalOnlyPrivacy(storeWith(value))
 
-        expect(mocks.setLocalOnlyMode).toHaveBeenCalledWith(false)
-        expect(mocks.disableSentry).not.toHaveBeenCalled()
-    })
+            expect(mocks.setLocalOnlyMode).toHaveBeenCalledExactlyOnceWith(false)
+        },
+    )
 })

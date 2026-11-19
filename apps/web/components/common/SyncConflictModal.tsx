@@ -11,7 +11,6 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import * as Sentry from '@sentry/react'
 
 interface SyncConflictModalProps {
     open: boolean
@@ -30,38 +29,16 @@ const SyncConflictModal: React.FC<SyncConflictModalProps> = memo(
         const [isUseCloudConfirmOpen, setIsUseCloudConfirmOpen] = useState(false)
 
         const handleMerge = (): void => {
-            Sentry.addBreadcrumb({
-                category: 'sync',
-                message: 'conflict-resolved: merge',
-                data: {
-                    conflicting: conflictInfo.conflictingKeys.length,
-                    localOnly: conflictInfo.localOnlyChanges,
-                    remoteOnly: conflictInfo.remoteOnlyChanges,
-                },
-                level: 'info',
-            })
             onMerge()
             onClose()
         }
 
         const handleKeepLocal = (): void => {
-            Sentry.addBreadcrumb({
-                category: 'sync',
-                message: 'conflict-resolved: keep-local',
-                data: { conflicting: conflictInfo.conflictingKeys.length },
-                level: 'warning',
-            })
             onKeepLocal()
             onClose()
         }
 
         const handleUseCloud = (): void => {
-            Sentry.addBreadcrumb({
-                category: 'sync',
-                message: 'conflict-resolved: use-cloud',
-                data: { conflicting: conflictInfo.conflictingKeys.length },
-                level: 'warning',
-            })
             onUseCloud()
             onClose()
         }

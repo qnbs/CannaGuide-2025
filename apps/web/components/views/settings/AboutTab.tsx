@@ -151,8 +151,7 @@ const AboutAppContent = memo(() => {
                                 {t('settingsView.about.credits.corsProxies')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Wrench />}>
-                                <strong>Build/Ops:</strong> {t('settingsView.about.credits.vite')}{' '}
-                                {t('settingsView.about.credits.sentry')}
+                                <strong>Build/Ops:</strong> {t('settingsView.about.credits.vite')}
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.CommandLine />}>
                                 <Button asChild variant="secondary" size="sm">

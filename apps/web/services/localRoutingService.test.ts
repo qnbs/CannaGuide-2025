@@ -14,7 +14,7 @@ vi.mock('@/services/localOnlyModeService', () => ({
     isLocalOnlyMode: vi.fn(() => false),
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 
@@ -111,6 +111,21 @@ describe('localRoutingService', () => {
         const result = await withLocalFallback(cloudFn, fallbackFn)
         expect(result).toBe('fallback')
         expect(cloudFn).not.toHaveBeenCalled()
+    })
+
+    it('withLocalFallback re-checks the mode after the consent step', async () => {
+        const { withLocalFallback, setAiMode } = await import('./localRoutingService')
+        const { isLocalOnlyMode } = await import('@/services/localOnlyModeService')
+        setAiMode('cloud')
+        // Off when the call starts, switched on while the consent step was pending.
+        vi.mocked(isLocalOnlyMode).mockReturnValueOnce(false).mockReturnValue(true)
+        const cloudFn = vi.fn().mockResolvedValue('cloud')
+        const fallbackFn = vi.fn().mockReturnValue('fallback')
+
+        const result = await withLocalFallback(cloudFn, fallbackFn)
+        expect(result).toBe('fallback')
+        expect(cloudFn).not.toHaveBeenCalled()
+        vi.mocked(isLocalOnlyMode).mockReturnValue(false)
     })
 
     it('withLocalFallback catches cloud errors and falls back', async () => {

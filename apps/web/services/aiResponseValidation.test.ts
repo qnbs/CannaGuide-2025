@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { z } from 'zod'
 
-const { mockCaptureException, mockRunRouted } = vi.hoisted(() => ({
-    mockCaptureException: vi.fn(),
+const { mockRunRouted } = vi.hoisted(() => ({
     mockRunRouted: vi.fn(
         async <T>(
             local: () => Promise<T>,
@@ -10,10 +9,6 @@ const { mockCaptureException, mockRunRouted } = vi.hoisted(() => ({
             _fallback: () => Promise<T> | T,
         ) => local(),
     ),
-}))
-
-vi.mock('@/services/sentryService', () => ({
-    Sentry: { captureException: mockCaptureException },
 }))
 
 vi.mock('@/services/localRoutingService', () => ({
@@ -42,11 +37,13 @@ describe('validateAiResponse', () => {
         expect(data.title).toBe('Ok')
     })
 
-    it('throws AiResponseValidationError when schema fails', () => {
+    it('throws AiResponseValidationError when schema fails and records it locally', () => {
+        const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
         expect(() => validateAiResponse(TestSchema, { title: '' }, 'test')).toThrow(
             AiResponseValidationError,
         )
-        expect(mockCaptureException).toHaveBeenCalledTimes(1)
+        expect(debug).toHaveBeenCalledExactlyOnceWith('[ai-validation]', 'test', expect.anything())
+        debug.mockRestore()
     })
 })
 
@@ -73,7 +70,8 @@ describe('runRoutedValidated', () => {
         expect(result.content).toBe('Safe')
     })
 
-    it('captures Sentry once when both primary and fallback fail validation', async () => {
+    it('records one local entry when both primary and fallback fail validation', async () => {
+        const debug = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
         await expect(
             runRoutedValidated(
                 TestSchema,
@@ -84,16 +82,11 @@ describe('runRoutedValidated', () => {
             ),
         ).rejects.toThrow(AiResponseValidationError)
 
-        expect(mockCaptureException).toHaveBeenCalledTimes(1)
-        expect(mockCaptureException).toHaveBeenCalledWith(
-            expect.any(AiResponseValidationError),
-            expect.objectContaining({
-                extra: expect.objectContaining({
-                    context: 'mentor',
-                    fallbackAlsoFailed: true,
-                }),
-                fingerprint: ['ai-validation-mentor'],
-            }),
+        expect(debug).toHaveBeenCalledExactlyOnceWith(
+            '[ai-validation] primary and fallback failed',
+            'mentor',
+            expect.objectContaining({ primary: expect.anything(), fallback: expect.anything() }),
         )
+        debug.mockRestore()
     })
 })

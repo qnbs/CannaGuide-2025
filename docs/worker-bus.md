@@ -264,7 +264,7 @@ Initialized via `initWorkerStateSync()` in `index.tsx` after store hydration.
 `services/workerTelemetryService.ts` connects WorkerBus dispatch-complete events to:
 
 1. **Redux DevTools** -- debounced 5s metrics snapshot via `workerMetricsSlice`
-2. **Sentry** -- alert when any worker error rate exceeds 10%
+2. **Debug console** -- a note when any worker error rate exceeds 10% (development builds only; production builds drop `console.debug`)
 
 `stores/slices/workerMetricsSlice.ts` is runtime-only (not persisted to IndexedDB).
 
@@ -308,7 +308,7 @@ sequenceDiagram
 ### Resolved (v1.5)
 
 - ~~No per-worker-type rate limiting~~ -- DONE (W-01, Session 94): `setRateLimit()` sliding-window API
-- ~~Telemetry Redux DevTools only~~ -- DONE (W-03, Session 94): `exportTelemetry()` + Sentry context
+- ~~Telemetry Redux DevTools only~~ -- DONE (W-03, Session 94): `exportTelemetry()` (the Sentry context it once fed was removed)
 - ~~Priority is queue-order only (no preemption)~~ -- DONE (W-02): AbortController-based preemption + re-queue
 - ~~No cross-worker communication~~ -- DONE (W-04): MessageChannel-based `createChannel()` / `closeChannel()` + generic typed dispatch (ADR-0008)
 

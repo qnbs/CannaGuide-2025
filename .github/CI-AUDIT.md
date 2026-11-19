@@ -57,7 +57,7 @@ Historical snapshot. Chromium E2E later became blocking. Do not treat this table
 | Area          | Change                                                            |
 | ------------- | ----------------------------------------------------------------- |
 | Bootstrap     | `postHydration.ts` parallel imports; unit tests                   |
-| AI validation | Single Sentry event on dual-path failure + fingerprint            |
+| AI validation | Single debug-console entry on dual-path failure                   |
 | Coverage      | Thresholds 40/40/30/40 (Stufe A)                                  |
 | CI E2E        | WebKit job advisory in `ci.yml`                                   |
 | Windows       | `windows:doctor`, `setup:windows`, MCP Node launchers, `.vscode/` |

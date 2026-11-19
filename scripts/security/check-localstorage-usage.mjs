@@ -38,7 +38,6 @@ const ALLOWED_PATTERNS = [
     /^cg\.ui\./,
     /^redux-persist:/,
     /^debug:/,
-    /^sentry/,
 ]
 
 const SCAN_DIRS = ['services', 'stores', 'components', 'hooks', 'bootstrap', 'utils']

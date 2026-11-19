@@ -55,10 +55,6 @@ vi.mock('@/services/crdtService', () => ({
     },
 }))
 
-vi.mock('@sentry/react', () => ({
-    addBreadcrumb: vi.fn(),
-}))
-
 vi.mock('@/services/crdtSyncBridge', () => ({
     reportCrdtTelemetry: vi.fn(),
 }))

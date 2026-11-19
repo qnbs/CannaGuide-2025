@@ -159,5 +159,5 @@ Cloud AI call
 
 - All cloud call failures are caught by `withLocalFallback()` and routed to local AI
 - Rate-limit errors (429) trigger a user notification via `useUIStore.addNotification()`
-- Local AI failures are captured via `captureLocalAiError()` -> Sentry
+- Local AI failures are recorded via `captureLocalAiError()` -> debug console only (`services/errorReporting.ts`)
 - Streaming responses are Zod-validated; invalid JSON falls through to plain-text wrapping

@@ -34,7 +34,7 @@ vi.mock('../models/modelLoader', () => ({
     })),
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

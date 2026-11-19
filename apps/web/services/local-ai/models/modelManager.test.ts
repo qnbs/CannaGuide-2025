@@ -19,7 +19,7 @@ vi.mock('../vision/diagnosisService', () => ({
     VISION_MODEL_ID: 'test-vision-model',
 }))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: vi.fn(),
 }))
 

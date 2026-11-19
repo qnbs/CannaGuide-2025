@@ -14,7 +14,7 @@
  * - Battery-aware GPU gating
  */
 
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { getBatteryManager, getGpuAdapterInfo, isMobileDevice } from '@/utils/browserApis'
 
 // --------------------------------------------------------------------------

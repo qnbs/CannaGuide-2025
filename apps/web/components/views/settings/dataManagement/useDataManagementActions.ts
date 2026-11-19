@@ -17,7 +17,6 @@ import {
     eraseSingleDatabase,
     getKnownDatabaseNames,
 } from '@/services/privacyService'
-import * as Sentry from '@sentry/react'
 import { pruneOnQuotaThreshold } from '@/services/indexedDbPruneService'
 import { replacePrimaryPersistedSnapshot } from '@/services/persistedStateService'
 import { isImportableSnapshot } from '@/services/persistedSnapshotFormat'
@@ -254,11 +253,6 @@ export function useDataManagementActions() {
     const handleEraseSingleDb = useCallback(
         async (dbName: string) => {
             const ok = await eraseSingleDatabase(dbName)
-            Sentry.withScope((scope) => {
-                scope.setTag('database', dbName)
-                scope.setTag('success', String(ok))
-                Sentry.captureMessage('gdpr.single_db_delete', 'info')
-            })
             if (ok) {
                 getUISnapshot().addNotification({
                     type: 'success',

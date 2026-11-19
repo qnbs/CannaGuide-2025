@@ -10,7 +10,6 @@ import type { CrdtSyncResult, DivergenceInfo } from '@/services/crdtService'
 import { reportCrdtTelemetry } from '@/services/crdtSyncBridge'
 import { CLOUD_SYNC_DISABLED } from '@/constants'
 import * as Y from 'yjs'
-import * as Sentry from '@sentry/react'
 
 const SYNC_FILE_NAME = 'cannaguide-sync.json'
 const CRDT_FORMAT_VERSION = 'crdt-v1'
@@ -59,12 +58,7 @@ function isCrdtPayload(parsed: unknown): parsed is CrdtGistPayload {
 }
 
 function logSyncDecision(action: string, details?: Record<string, unknown>): void {
-    Sentry.addBreadcrumb({
-        category: 'sync',
-        message: action,
-        data: details ?? {},
-        level: 'info',
-    })
+    console.debug('[sync]', action, details ?? {})
 }
 
 // ---------------------------------------------------------------------------
@@ -241,10 +235,7 @@ class SyncService {
             crdtService.applySyncPayload(parsed.payload)
 
             // Store remote state vector for differential encoding on next push
-            crdtService.setRemoteStateVector(
-                 
-                Y.encodeStateVector(crdtService.getDoc()),
-            )
+            crdtService.setRemoteStateVector(Y.encodeStateVector(crdtService.getDoc()))
 
             logSyncDecision('pull-crdt', {
                 localOnly: divergenceInfo.localOnlyChanges,

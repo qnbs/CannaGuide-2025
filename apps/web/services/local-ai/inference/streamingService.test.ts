@@ -1,21 +1,28 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 
 // ---------------------------------------------------------------------------
-// Mocks (hoisted so full-suite runs keep a stable sentry mock reference)
+// Mocks (hoisted so full-suite runs keep a stable error-log mock reference)
 // ---------------------------------------------------------------------------
 
-const { mockCaptureLocalAiError, mockGetCachedInference, mockSetCachedInference, mockCreateInferenceTimer, mockRecordCacheHit, mockRecordCacheMiss, mockDebouncedPersistSnapshot } =
-    vi.hoisted(() => ({
-        mockCaptureLocalAiError: vi.fn(),
-        mockGetCachedInference: vi.fn(),
-        mockSetCachedInference: vi.fn(),
-        mockCreateInferenceTimer: vi.fn(),
-        mockRecordCacheHit: vi.fn(),
-        mockRecordCacheMiss: vi.fn(),
-        mockDebouncedPersistSnapshot: vi.fn(),
-    }))
+const {
+    mockCaptureLocalAiError,
+    mockGetCachedInference,
+    mockSetCachedInference,
+    mockCreateInferenceTimer,
+    mockRecordCacheHit,
+    mockRecordCacheMiss,
+    mockDebouncedPersistSnapshot,
+} = vi.hoisted(() => ({
+    mockCaptureLocalAiError: vi.fn(),
+    mockGetCachedInference: vi.fn(),
+    mockSetCachedInference: vi.fn(),
+    mockCreateInferenceTimer: vi.fn(),
+    mockRecordCacheHit: vi.fn(),
+    mockRecordCacheMiss: vi.fn(),
+    mockDebouncedPersistSnapshot: vi.fn(),
+}))
 
-vi.mock('@/services/sentryService', () => ({
+vi.mock('@/services/errorReporting', () => ({
     captureLocalAiError: mockCaptureLocalAiError,
 }))
 

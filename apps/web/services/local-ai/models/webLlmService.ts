@@ -5,7 +5,7 @@
  * GPU mutex coordination for the @mlc-ai/web-llm runtime.
  */
 
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { loadWebLlm } from '@cannaguide/ai-core/ml'
 import { getResolvedProfile } from './modelLoader'
 import { createInferenceTimer } from '../core/infrastructureService'

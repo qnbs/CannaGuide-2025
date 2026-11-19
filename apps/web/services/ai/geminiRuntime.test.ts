@@ -28,7 +28,16 @@ vi.mock('@cannaguide/ai-core', () => ({
     },
 }))
 
-import { generateGeminiTextStreamed } from '@/services/ai/geminiRuntime'
+import {
+    createGeminiClient,
+    generateGeminiTextStreamed,
+    generateWithGeminiFallback,
+    rethrowKnownGeminiError,
+    withGeminiSafety,
+} from '@/services/ai/geminiRuntime'
+import { apiKeyService } from '@/services/apiKeyService'
+import { setLocalOnlyMode } from '@/services/localOnlyModeService'
+import { EgressBlockedError } from '@/services/net/egress'
 
 type GeminiClient = Parameters<typeof generateGeminiTextStreamed>[0]['ai']
 
@@ -115,4 +124,177 @@ describe('generateGeminiTextStreamed usage reconciliation', () => {
             reservation,
         )
     })
+})
+
+describe('createGeminiClient (the request boundary of every Gemini SDK call)', () => {
+    beforeEach(() => {
+        setLocalOnlyMode(false)
+        vi.mocked(apiKeyService.getApiKey).mockReset()
+    })
+
+    it('creates a client when Local-Only Mode is off', async () => {
+        vi.mocked(apiKeyService.getApiKey).mockResolvedValue('key')
+        await expect(createGeminiClient()).resolves.toBeDefined()
+    })
+
+    it('refuses in Local-Only Mode', async () => {
+        vi.mocked(apiKeyService.getApiKey).mockResolvedValue('key')
+        setLocalOnlyMode(true)
+        await expect(createGeminiClient()).rejects.toBeInstanceOf(EgressBlockedError)
+        setLocalOnlyMode(false)
+    })
+
+    it('refuses when Local-Only Mode is switched on while the key is read', async () => {
+        vi.mocked(apiKeyService.getApiKey).mockImplementation(async () => {
+            setLocalOnlyMode(true)
+            return 'key'
+        })
+        await expect(createGeminiClient()).rejects.toBeInstanceOf(EgressBlockedError)
+        setLocalOnlyMode(false)
+    })
+})
+
+describe('Local-Only refusals of Gemini requests', () => {
+    beforeEach(() => setLocalOnlyMode(false))
+
+    it('keeps an EgressBlockedError instead of replacing it with a generic error key', () => {
+        const refusal = new EgressBlockedError('https://generativelanguage.googleapis.com')
+        expect(() => rethrowKnownGeminiError(refusal, 'ai.error.generic')).toThrow(refusal)
+        expect(() => rethrowKnownGeminiError(new Error('boom'), 'ai.error.generic')).toThrow(
+            'ai.error.generic',
+        )
+    })
+
+    it('checks the gate again before the fallback model retry', async () => {
+        const generateContent = vi.fn().mockImplementationOnce(async () => {
+            // Local-Only is switched on while the primary request fails.
+            setLocalOnlyMode(true)
+            throw new Error('overloaded')
+        })
+        const ai = { models: { generateContent } } as unknown as Parameters<
+            typeof generateWithGeminiFallback
+        >[0]['ai']
+
+        await expect(
+            generateWithGeminiFallback({
+                ai,
+                model: 'gemini-2.5-pro',
+                contents: 'x',
+                fallbackModel: 'gemini-2.5-flash',
+            }),
+        ).rejects.toBeInstanceOf(EgressBlockedError)
+        expect(generateContent).toHaveBeenCalledTimes(1)
+        setLocalOnlyMode(false)
+    })
+
+    it('still retries with the fallback model when Local-Only stays off', async () => {
+        const generateContent = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('overloaded'))
+            .mockResolvedValueOnce({ text: 'ok' })
+        const ai = { models: { generateContent } } as unknown as Parameters<
+            typeof generateWithGeminiFallback
+        >[0]['ai']
+
+        await expect(
+            generateWithGeminiFallback({
+                ai,
+                model: 'gemini-2.5-pro',
+                contents: 'x',
+                fallbackModel: 'gemini-2.5-flash',
+            }),
+        ).resolves.toEqual({ text: 'ok' })
+        expect(generateContent).toHaveBeenCalledTimes(2)
+    })
+})
+
+describe('the request-time gate of every Gemini request', () => {
+    beforeEach(() => setLocalOnlyMode(false))
+
+    it('refuses the first request in Local-Only Mode, after the client was created', async () => {
+        const generateContent = vi.fn()
+        const ai = { models: { generateContent } } as unknown as Parameters<
+            typeof generateWithGeminiFallback
+        >[0]['ai']
+        setLocalOnlyMode(true)
+        await expect(
+            generateWithGeminiFallback({ ai, model: 'gemini-2.5-flash', contents: 'x' }),
+        ).rejects.toBeInstanceOf(EgressBlockedError)
+        expect(generateContent).not.toHaveBeenCalled()
+        setLocalOnlyMode(false)
+    })
+
+    it('refuses a streamed request in Local-Only Mode', async () => {
+        const generateContentStream = vi.fn()
+        const ai = {
+            models: { generateContent: vi.fn(), generateContentStream },
+        } as unknown as GeminiClient
+        setLocalOnlyMode(true)
+        await expect(
+            generateGeminiTextStreamed({
+                ai,
+                model: 'gemini-2.5-flash',
+                contents: 'x',
+                reservation,
+            }),
+        ).rejects.toBeInstanceOf(EgressBlockedError)
+        expect(generateContentStream).not.toHaveBeenCalled()
+        setLocalOnlyMode(false)
+    })
+})
+
+describe('one request per Gemini SDK call', () => {
+    beforeEach(() => setLocalOnlyMode(false))
+
+    it('keeps output caps and prevents callers from enabling continuation', () => {
+        expect(withGeminiSafety({ maxOutputTokens: 10 })).toMatchObject({
+            maxOutputTokens: 10,
+            automaticContinuation: false,
+        })
+        expect(withGeminiSafety({ automaticContinuation: true })).toMatchObject({
+            automaticContinuation: false,
+        })
+    })
+
+    it.each(['unary', 'streaming'])(
+        'does not resend the prompt after a %s continuation',
+        async (mode) => {
+            const { GoogleGenAI } =
+                await vi.importActual<typeof import('@google/genai')>('@google/genai')
+            const fetch = vi.fn(async (): Promise<Response> => {
+                const firstRequest = fetch.mock.calls.length === 1
+                setLocalOnlyMode(true)
+                const response = {
+                    candidates: [
+                        {
+                            content: { role: 'model', parts: [{ text: 'partial answer' }] },
+                            finishReason: firstRequest ? 'CONTINUATION' : 'STOP',
+                            ...(firstRequest ? { continuationToken: 'next-hop' } : {}),
+                        },
+                    ],
+                }
+                return mode === 'streaming'
+                    ? new Response(`data: ${JSON.stringify(response)}\n\n`, {
+                          headers: { 'Content-Type': 'text/event-stream' },
+                      })
+                    : Response.json(response)
+            })
+            const ai = new GoogleGenAI({ apiKey: 'test-key', httpOptions: { fetch } })
+            const input = { ai, model: 'gemini-2.5-flash', contents: 'test prompt' }
+
+            try {
+                if (mode === 'streaming') {
+                    await expect(
+                        generateGeminiTextStreamed({ ...input, reservation }),
+                    ).resolves.toBe('partial answer')
+                } else {
+                    const response = await generateWithGeminiFallback(input)
+                    expect(response.text).toBe('partial answer')
+                }
+                expect(fetch).toHaveBeenCalledTimes(1)
+            } finally {
+                setLocalOnlyMode(false)
+            }
+        },
+    )
 })

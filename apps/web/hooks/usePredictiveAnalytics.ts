@@ -13,7 +13,6 @@ import {
     type PredictiveInsight,
     type RiskLevel,
 } from '@/services/predictiveAnalyticsService'
-import * as Sentry from '@sentry/browser'
 
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000
 
@@ -66,18 +65,12 @@ export function usePredictiveAnalytics(
 
         const currentRun = ++runIdRef.current
         setLoading(true)
-        const start = performance.now()
 
         const promises = currentPlants.map((plant) =>
             predictiveAnalyticsService
                 .analyze(plant, deviceId)
                 .then((result) => [plant.id, result] as const)
                 .catch((err: unknown) => {
-                    Sentry.addBreadcrumb({
-                        category: 'predictive-analytics',
-                        message: `Analysis failed for plant ${plant.id}`,
-                        level: 'warning',
-                    })
                     console.debug('[PredictiveAnalytics] Analysis failed for plant', plant.id, err)
                     return null
                 }),
@@ -94,13 +87,6 @@ export function usePredictiveAnalytics(
             }
             setInsights(map)
             setLoading(false)
-
-            const elapsed = performance.now() - start
-            Sentry.addBreadcrumb({
-                category: 'predictive-analytics',
-                message: `Analyzed ${map.size}/${currentPlants.length} plants in ${elapsed.toFixed(0)}ms`,
-                level: 'info',
-            })
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [plantsKey, deviceId])

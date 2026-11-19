@@ -33,7 +33,7 @@ CannaGuide-2025/
       index.tsx             # App bootstrap, SW registration, safe recovery
       components/           # React components
       stores/               # Redux slices, selectors, middleware
-      services/             # Business logic (AI, DB, crypto, IoT, Sentry)
+      services/             # Business logic (AI, DB, crypto, IoT)
       hooks/                # Custom React hooks (28)
       data/                 # Static data: 776 strains, FAQ, lexicon
       locales/              # i18n: en/, de/, es/, fr/, nl/ (12 namespaces)

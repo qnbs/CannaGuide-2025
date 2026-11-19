@@ -13,7 +13,7 @@
  */
 
 import type { ModelStatus } from '@/types'
-import { captureLocalAiError } from '@/services/sentryService'
+import { captureLocalAiError } from '@/services/errorReporting'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { opfsStorage } from '@/utils/opfsStorage'
 

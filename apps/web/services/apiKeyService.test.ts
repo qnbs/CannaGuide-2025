@@ -66,6 +66,25 @@ describe('apiKeyService', () => {
 })
 
 describe('apiKeyService key test in Local-Only Mode', () => {
+    it('disables SDK follow-up requests for the key test', async () => {
+        const generateContent = vi.fn().mockResolvedValue({ text: 'OK' })
+        vi.doMock('@google/genai', () => ({
+            GoogleGenAI: class {
+                models = { generateContent }
+            },
+        }))
+        try {
+            await apiKeyService.validateApiKey('AIzaSyB1234567890abcdefghijklmnopqrstu')
+            expect(generateContent).toHaveBeenCalledExactlyOnceWith({
+                model: 'gemini-2.5-flash',
+                contents: 'Healthcheck: reply with OK only.',
+                config: { automaticContinuation: false },
+            })
+        } finally {
+            vi.doUnmock('@google/genai')
+        }
+    })
+
     it('sends no Gemini request and says why', async () => {
         const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
         const generateContent = vi.fn()

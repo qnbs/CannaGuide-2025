@@ -33,6 +33,7 @@ import {
     generateGeminiTextStreamed,
     generateWithGeminiFallback,
     rethrowKnownGeminiError,
+    withGeminiSafety,
 } from '@/services/ai/geminiRuntime'
 import { apiKeyService } from '@/services/apiKeyService'
 import { setLocalOnlyMode } from '@/services/localOnlyModeService'
@@ -240,4 +241,60 @@ describe('the request-time gate of every Gemini request', () => {
         expect(generateContentStream).not.toHaveBeenCalled()
         setLocalOnlyMode(false)
     })
+})
+
+describe('one request per Gemini SDK call', () => {
+    beforeEach(() => setLocalOnlyMode(false))
+
+    it('keeps output caps and prevents callers from enabling continuation', () => {
+        expect(withGeminiSafety({ maxOutputTokens: 10 })).toMatchObject({
+            maxOutputTokens: 10,
+            automaticContinuation: false,
+        })
+        expect(withGeminiSafety({ automaticContinuation: true })).toMatchObject({
+            automaticContinuation: false,
+        })
+    })
+
+    it.each(['unary', 'streaming'])(
+        'does not resend the prompt after a %s continuation',
+        async (mode) => {
+            const { GoogleGenAI } =
+                await vi.importActual<typeof import('@google/genai')>('@google/genai')
+            const fetch = vi.fn(async (): Promise<Response> => {
+                const firstRequest = fetch.mock.calls.length === 1
+                setLocalOnlyMode(true)
+                const response = {
+                    candidates: [
+                        {
+                            content: { role: 'model', parts: [{ text: 'partial answer' }] },
+                            finishReason: firstRequest ? 'CONTINUATION' : 'STOP',
+                            ...(firstRequest ? { continuationToken: 'next-hop' } : {}),
+                        },
+                    ],
+                }
+                return mode === 'streaming'
+                    ? new Response(`data: ${JSON.stringify(response)}\n\n`, {
+                          headers: { 'Content-Type': 'text/event-stream' },
+                      })
+                    : Response.json(response)
+            })
+            const ai = new GoogleGenAI({ apiKey: 'test-key', httpOptions: { fetch } })
+            const input = { ai, model: 'gemini-2.5-flash', contents: 'test prompt' }
+
+            try {
+                if (mode === 'streaming') {
+                    await expect(
+                        generateGeminiTextStreamed({ ...input, reservation }),
+                    ).resolves.toBe('partial answer')
+                } else {
+                    const response = await generateWithGeminiFallback(input)
+                    expect(response.text).toBe('partial answer')
+                }
+                expect(fetch).toHaveBeenCalledTimes(1)
+            } finally {
+                setLocalOnlyMode(false)
+            }
+        },
+    )
 })

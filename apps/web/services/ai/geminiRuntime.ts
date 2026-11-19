@@ -39,12 +39,22 @@ export const getEducationalUseOnlyInstruction = (lang: Language): string => {
     return instructions[lang] ?? instructions['en']
 }
 
+/**
+ * The config of every Gemini request of the AI features: the safety settings, and
+ * automatic continuation off. @google/genai 2.x turns continuation on by default: a
+ * response that ends with finish reason CONTINUATION (the per-request token limit
+ * was reached) makes the SDK send the same request again, inside the SDK, past the
+ * egress gate checked before each call and past the output-token caps and budget
+ * this app sets. With it off, every SDK call sends exactly one request; a cut-off
+ * answer stays cut off, and a structured answer that no longer parses falls back.
+ */
 export const withGeminiSafety = <T extends Record<string, unknown>>(
     config?: T,
-): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } => ({
+): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS; automaticContinuation: false } => ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     ...(config ?? ({} as T)),
     safetySettings: GEMINI_SAFETY_SETTINGS,
+    automaticContinuation: false,
 })
 
 export const sanitizeGeminiValue = <T>(value: T): T => {
@@ -133,9 +143,10 @@ export const GEMINI_API_ORIGIN = 'https://generativelanguage.googleapis.com'
  * Creates the client for the AI features' Gemini requests. The SDK sends its own
  * requests, outside egressFetch, so the egress gate is checked here (after the key
  * read) and again right before every request in generateWithGeminiFallback and
- * generateGeminiTextStreamed, the only places that send one. Local-Only Mode
- * switched on at any point until a request leaves refuses it with
- * EgressBlockedError, which the callers treat as a reason for the local fallback.
+ * generateGeminiTextStreamed, the only places that send one. Each of those SDK calls
+ * sends exactly one request, because withGeminiSafety turns automatic continuation
+ * off. Local-Only Mode switched on before a call refuses it with EgressBlockedError,
+ * which the callers treat as a reason for the local fallback.
  * The API-key test in Settings (apiKeyService.validateApiKey) builds its own client
  * and has its own check before and after loading the SDK.
  */

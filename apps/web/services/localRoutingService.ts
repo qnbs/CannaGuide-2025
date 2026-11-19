@@ -161,6 +161,9 @@ export const withLocalFallback = async <T>(
             console.debug('[AI] Provider consent denied, falling back to local AI.')
             return localFallback()
         }
+        // The consent step can wait on the user's answer. If Local-Only Mode or a
+        // local AI mode was switched on meanwhile, nothing may go out.
+        if (isCloudDisabled()) return localFallback()
 
         return await cloudFn()
     } catch (error) {

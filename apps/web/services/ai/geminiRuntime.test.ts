@@ -28,7 +28,12 @@ vi.mock('@cannaguide/ai-core', () => ({
     },
 }))
 
-import { createGeminiClient, generateGeminiTextStreamed } from '@/services/ai/geminiRuntime'
+import {
+    createGeminiClient,
+    generateGeminiTextStreamed,
+    generateWithGeminiFallback,
+    rethrowKnownGeminiError,
+} from '@/services/ai/geminiRuntime'
 import { apiKeyService } from '@/services/apiKeyService'
 import { setLocalOnlyMode } from '@/services/localOnlyModeService'
 import { EgressBlockedError } from '@/services/net/egress'
@@ -145,5 +150,59 @@ describe('createGeminiClient (the request boundary of every Gemini SDK call)', (
         })
         await expect(createGeminiClient()).rejects.toBeInstanceOf(EgressBlockedError)
         setLocalOnlyMode(false)
+    })
+})
+
+describe('Local-Only refusals of Gemini requests', () => {
+    beforeEach(() => setLocalOnlyMode(false))
+
+    it('keeps an EgressBlockedError instead of replacing it with a generic error key', () => {
+        const refusal = new EgressBlockedError('https://generativelanguage.googleapis.com')
+        expect(() => rethrowKnownGeminiError(refusal, 'ai.error.generic')).toThrow(refusal)
+        expect(() => rethrowKnownGeminiError(new Error('boom'), 'ai.error.generic')).toThrow(
+            'ai.error.generic',
+        )
+    })
+
+    it('checks the gate again before the fallback model retry', async () => {
+        const generateContent = vi.fn().mockImplementationOnce(async () => {
+            // Local-Only is switched on while the primary request fails.
+            setLocalOnlyMode(true)
+            throw new Error('overloaded')
+        })
+        const ai = { models: { generateContent } } as unknown as Parameters<
+            typeof generateWithGeminiFallback
+        >[0]['ai']
+
+        await expect(
+            generateWithGeminiFallback({
+                ai,
+                model: 'gemini-2.5-pro',
+                contents: 'x',
+                fallbackModel: 'gemini-2.5-flash',
+            }),
+        ).rejects.toBeInstanceOf(EgressBlockedError)
+        expect(generateContent).toHaveBeenCalledTimes(1)
+        setLocalOnlyMode(false)
+    })
+
+    it('still retries with the fallback model when Local-Only stays off', async () => {
+        const generateContent = vi
+            .fn()
+            .mockRejectedValueOnce(new Error('overloaded'))
+            .mockResolvedValueOnce({ text: 'ok' })
+        const ai = { models: { generateContent } } as unknown as Parameters<
+            typeof generateWithGeminiFallback
+        >[0]['ai']
+
+        await expect(
+            generateWithGeminiFallback({
+                ai,
+                model: 'gemini-2.5-pro',
+                contents: 'x',
+                fallbackModel: 'gemini-2.5-flash',
+            }),
+        ).resolves.toEqual({ text: 'ok' })
+        expect(generateContent).toHaveBeenCalledTimes(2)
     })
 })

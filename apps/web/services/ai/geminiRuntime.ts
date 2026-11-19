@@ -8,7 +8,7 @@ import type { Language } from '@/types'
 import { apiKeyService } from '@/services/apiKeyService'
 import { aiRateLimiter, type MonthlyBudgetReservation } from '@/services/aiRateLimiter'
 import { PROVIDER_CONFIGS } from '@cannaguide/ai-core'
-import { assertEgressAllowed } from '@/services/net/egress'
+import { assertEgressAllowed, EgressBlockedError } from '@/services/net/egress'
 
 export const GEMINI_SAFETY_SETTINGS = [
     {
@@ -69,6 +69,8 @@ export const sanitizeGeminiValue = <T>(value: T): T => {
 }
 
 export const rethrowKnownGeminiError = (error: unknown, fallbackErrorKey: string): never => {
+    // A Local-Only refusal stays itself: shouldUseLocalFallback recognises it.
+    if (error instanceof EgressBlockedError) throw error
     if (error instanceof Error) {
         if (AI_ERROR_KEYS.has(error.message)) throw error
         if (error.message.startsWith('ai.error.rateLimited')) throw error
@@ -128,7 +130,9 @@ export const parseGeminiJsonResponse = <T>(
 export const GEMINI_API_ORIGIN = 'https://generativelanguage.googleapis.com'
 
 /**
- * Every Gemini SDK request starts from this client. The SDK sends its own requests,
+ * Every Gemini SDK request of the AI features starts from this client (the API-key
+ * test in Settings, apiKeyService.validateApiKey, has its own Local-Only check before
+ * and after loading the SDK). The SDK sends its own requests,
  * outside egressFetch, so the egress gate is checked here, after the last await
  * before a request (the key read): Local-Only Mode switched on at any point until
  * then refuses the call with EgressBlockedError, which the callers treat as a
@@ -211,6 +215,8 @@ export const generateWithGeminiFallback = async ({
             `[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`,
             primaryError,
         )
+        // The retry is a new request, after an await: the gate is checked again.
+        assertEgressAllowed(GEMINI_API_ORIGIN)
         return ai.models.generateContent({
             model: fallbackModel,
             contents,

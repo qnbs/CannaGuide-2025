@@ -305,8 +305,8 @@ importers:
         specifier: ^9.6.1
         version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@26.1.1)(supports-color@10.2.2))(typescript@6.0.3)
       '@stryker-mutator/vitest-runner':
-        specifier: ^9.6.1
-        version: 9.6.1(@stryker-mutator/core@9.6.1(@types/node@26.1.1)(supports-color@10.2.2))(vitest@5.1.0)
+        specifier: ^10.1.1
+        version: 10.1.1(@stryker-mutator/core@9.6.1(@types/node@26.1.1)(supports-color@10.2.2))(vitest@5.1.0)
       '@tailwindcss/postcss':
         specifier: 4.3.5
         version: 4.3.5
@@ -2834,6 +2834,10 @@ packages:
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
+  '@stryker-mutator/api@10.1.1':
+    resolution: {integrity: sha512-3s/ECsrD1Tf1WEB7amBk0HxjN7zgkabKvmqnI2C831rTNszJ6o2HoV9PVxtElDEWxb2+t4iavK5x25G+DTUOUA==}
+    engines: {node: '>=22.0.0'}
+
   '@stryker-mutator/api@9.6.1':
     resolution: {integrity: sha512-g8VNoFWQWbx0pdal3Vt8jVCZW+v3sc3gi94iI0GVtVgUGTqphAjJF6EAruPTx0lqvtonsaAxn5TD36hcG1d6Wg==}
     engines: {node: '>=20.0.0'}
@@ -2854,14 +2858,17 @@ packages:
       '@stryker-mutator/core': 9.6.1
       typescript: '>=3.6'
 
+  '@stryker-mutator/util@10.1.1':
+    resolution: {integrity: sha512-Z0zDzsmhoSykE1gT3DvD1knFxySgNMfBlpSSs1j87kWvjEMfeMqfLOk0bqEPRg/rTFIUNSEXLZapxePUhZmfZA==}
+
   '@stryker-mutator/util@9.6.1':
     resolution: {integrity: sha512-Lk/ALVctJjFv1vvwR+CFoKzDCWvsBlq7flDUnmnpuwTrGbm156EdZD1Jjq4o8KdOap0ezUZqQNE9OAI1m2+pUQ==}
 
-  '@stryker-mutator/vitest-runner@9.6.1':
-    resolution: {integrity: sha512-eyUHTCf3Ui+SUn/tpFJwzw6MV391kyBLZk/cDHFUfKFELqKMLbvd7e81axArlApKqO6cOnLfrxlwED+2SRN0ow==}
-    engines: {node: '>=14.18.0'}
+  '@stryker-mutator/vitest-runner@10.1.1':
+    resolution: {integrity: sha512-w/OmNt1vHD4Yeacy8Rxhl2Ue/9l662iyOW8XxM4rc9huixF6IySHW3cvhTs8JnMvG9tG7vS7ZZ52wUXx7xy1IQ==}
+    engines: {node: '>=22.0.0'}
     peerDependencies:
-      '@stryker-mutator/core': 9.6.1
+      '@stryker-mutator/core': 10.1.1
       vitest: '>=2.0.0'
 
   '@tailwindcss/node@4.3.5':
@@ -6053,8 +6060,14 @@ packages:
   mutation-testing-metrics@3.7.3:
     resolution: {integrity: sha512-B8QrP0ZomErzTPNlhrzKWPNBln+3afwBZPHv0Q7N8wZZTYxMptzb/Gdm3ExXVmioVYrtZAtsDs7W/T/b2AixOQ==}
 
+  mutation-testing-metrics@3.8.4:
+    resolution: {integrity: sha512-DZcmndJBH6nrNs3tpiB3OcMVq9KkG2cHCpJSnDxSxPwi9qrafRmoec40xjhkbzOoX1n7/4UkDqg5tIj4A6nvCw==}
+
   mutation-testing-report-schema@3.7.3:
     resolution: {integrity: sha512-BHm3MYq+ckO+t5CtlG8zpqxc75rdJCkxVlE+fGuGJM3F7tNCQ/OW2N+TQVHN3BHsYa84+BFc6g3AwDYkUsw2MA==}
+
+  mutation-testing-report-schema@3.8.4:
+    resolution: {integrity: sha512-s4G71R6Lt/PpZ0cqeglIcgyBdzLM8E+SeCHZAPg1wkSsPtRBa4XfPzAozYKdiJk/TLbNEEb7En9t0/bveuPuxA==}
 
   mute-stream@0.0.7:
     resolution: {integrity: sha512-r65nCZhrbXXb6dXOACihYApHw2Q6pV0M3V0PSxd74N0+D8nzAdEAITq2oAjA1jVnKI+tGvEBUpqiMh0+rW6zDQ==}
@@ -6812,13 +6825,13 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.8.0:
-    resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
+  semver@7.8.5:
+    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.8.5:
-    resolution: {integrity: sha512-Y7/KDsb8LjooZpwaqGyulO6DQlksgCncchHGk+sZIY4SBvUocMBEFH5Ur1fI4dV+Jvl0w6cjvucaIi40puRioA==}
+  semver@7.8.6:
+    resolution: {integrity: sha512-9lpSSU4Mly3mrtruwLs1eLK6+gzbzqeBFwRNjIjE+9LuDpWdYctrQlQ3ej1Ilgi7gknpsTRnPoLP8DpCHqHIJw==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -7589,9 +7602,6 @@ packages:
   web-streams-polyfill@3.3.3:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
-
-  web-vitals@6.2.3:
-    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
 
   webdriver-bidi-protocol@0.4.1:
     resolution: {integrity: sha512-ARrjNjtWRRs2w4Tk7nqrf2gBI0QXWuOmMCx2hU+1jUt6d00MjMxURrhxhGbrsoiZKJrhTSTzbIrc554iKI10qw==}
@@ -8994,7 +9004,7 @@ snapshots:
 
   '@emnapi/runtime@1.11.3':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
     optional: true
 
   '@emnapi/runtime@2.0.0-beta.2':
@@ -9155,26 +9165,26 @@ snapshots:
       '@formatjs/fast-memoize': 2.2.7
       '@formatjs/intl-localematcher': 0.6.2
       decimal.js: 10.6.0
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@formatjs/fast-memoize@2.2.7':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@formatjs/icu-messageformat-parser@2.11.4':
     dependencies:
       '@formatjs/ecma402-abstract': 2.3.6
       '@formatjs/icu-skeleton-parser': 1.8.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@formatjs/icu-skeleton-parser@1.8.16':
     dependencies:
       '@formatjs/ecma402-abstract': 2.3.6
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@formatjs/intl-localematcher@0.6.2':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@gerrit0/mini-shiki@3.23.0':
     dependencies:
@@ -10336,6 +10346,13 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
+  '@stryker-mutator/api@10.1.1':
+    dependencies:
+      mutation-testing-metrics: 3.8.4
+      mutation-testing-report-schema: 3.8.4
+      tslib: 2.8.1
+      typed-inject: 5.0.0
+
   '@stryker-mutator/api@9.6.1':
     dependencies:
       mutation-testing-metrics: 3.7.3
@@ -10400,14 +10417,16 @@ snapshots:
       semver: 7.7.4
       typescript: 6.0.3
 
+  '@stryker-mutator/util@10.1.1': {}
+
   '@stryker-mutator/util@9.6.1': {}
 
-  '@stryker-mutator/vitest-runner@9.6.1(@stryker-mutator/core@9.6.1(@types/node@26.1.1)(supports-color@10.2.2))(vitest@5.1.0)':
+  '@stryker-mutator/vitest-runner@10.1.1(@stryker-mutator/core@9.6.1(@types/node@26.1.1)(supports-color@10.2.2))(vitest@5.1.0)':
     dependencies:
-      '@stryker-mutator/api': 9.6.1
+      '@stryker-mutator/api': 10.1.1
       '@stryker-mutator/core': 9.6.1(@types/node@26.1.1)(supports-color@10.2.2)
-      '@stryker-mutator/util': 9.6.1
-      semver: 7.8.0
+      '@stryker-mutator/util': 10.1.1
+      semver: 7.8.6
       tslib: 2.8.1
       vitest: 5.1.0(@types/node@26.1.1)(@vitest/coverage-v8@5.1.0)(jsdom@30.1.2)(msw@3.0.5(@types/node@26.1.1)(graphql@16.14.2)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.8(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.1)))(vite@8.3.8(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.49.0)(tsx@4.23.1)(yaml@2.9.1))
 
@@ -11158,7 +11177,7 @@ snapshots:
 
   aria-hidden@1.2.6:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   aria-query@5.3.0:
     dependencies:
@@ -11255,7 +11274,7 @@ snapshots:
 
   ast-types@0.13.4:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   ast-v8-to-istanbul@1.0.7:
     dependencies:
@@ -11408,7 +11427,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
       fast-unique-numbers: 9.0.27
-      tslib: 2.8.1
+      tslib: 2.9.1
       worker-factory: 7.0.50
 
   browser-image-compression@2.0.2:
@@ -12666,7 +12685,7 @@ snapshots:
   fast-unique-numbers@9.0.27:
     dependencies:
       '@babel/runtime': 7.29.7
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   fast-uri@4.2.3: {}
 
@@ -13180,7 +13199,7 @@ snapshots:
       '@formatjs/ecma402-abstract': 2.3.6
       '@formatjs/fast-memoize': 2.2.7
       '@formatjs/icu-messageformat-parser': 2.11.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   iobuffer@5.4.0: {}
 
@@ -13923,7 +13942,13 @@ snapshots:
     dependencies:
       mutation-testing-report-schema: 3.7.3
 
+  mutation-testing-metrics@3.8.4:
+    dependencies:
+      mutation-testing-report-schema: 3.8.4
+
   mutation-testing-report-schema@3.7.3: {}
+
+  mutation-testing-report-schema@3.8.4: {}
 
   mute-stream@0.0.7: {}
 
@@ -14406,7 +14431,7 @@ snapshots:
     dependencies:
       react: 19.2.7
       react-style-singleton: 2.2.3(@types/react@19.2.17)(react@19.2.7)
-      tslib: 2.8.1
+      tslib: 2.9.1
     optionalDependencies:
       '@types/react': 19.2.17
 
@@ -14415,7 +14440,7 @@ snapshots:
       react: 19.2.7
       react-remove-scroll-bar: 2.3.8(@types/react@19.2.17)(react@19.2.7)
       react-style-singleton: 2.2.3(@types/react@19.2.17)(react@19.2.7)
-      tslib: 2.8.1
+      tslib: 2.9.1
       use-callback-ref: 1.3.3(@types/react@19.2.17)(react@19.2.7)
       use-sidecar: 1.1.3(@types/react@19.2.17)(react@19.2.7)
     optionalDependencies:
@@ -14425,7 +14450,7 @@ snapshots:
     dependencies:
       get-nonce: 1.0.1
       react: 19.2.7
-      tslib: 2.8.1
+      tslib: 2.9.1
     optionalDependencies:
       '@types/react': 19.2.17
 
@@ -14714,7 +14739,7 @@ snapshots:
 
   rxjs@7.8.2:
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   safe-array-concat@1.1.3:
     dependencies:
@@ -14755,9 +14780,9 @@ snapshots:
 
   semver@7.7.4: {}
 
-  semver@7.8.0: {}
-
   semver@7.8.5: {}
+
+  semver@7.8.6: {}
 
   send@0.19.2(supports-color@10.2.2):
     dependencies:
@@ -15281,8 +15306,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tslib@2.9.1:
-    optional: true
+  tslib@2.9.1: {}
 
   tsx@4.23.1:
     dependencies:
@@ -15444,7 +15468,7 @@ snapshots:
   use-callback-ref@1.3.3(@types/react@19.2.17)(react@19.2.7):
     dependencies:
       react: 19.2.7
-      tslib: 2.8.1
+      tslib: 2.9.1
     optionalDependencies:
       '@types/react': 19.2.17
 
@@ -15452,7 +15476,7 @@ snapshots:
     dependencies:
       detect-node-es: 1.1.0
       react: 19.2.7
-      tslib: 2.8.1
+      tslib: 2.9.1
     optionalDependencies:
       '@types/react': 19.2.17
 
@@ -15557,8 +15581,6 @@ snapshots:
   weapon-regex@1.3.6: {}
 
   web-streams-polyfill@3.3.3: {}
-
-  web-vitals@6.2.3: {}
 
   webdriver-bidi-protocol@0.4.1: {}
 
@@ -15757,26 +15779,26 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
       fast-unique-numbers: 9.0.27
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   worker-timers-broker@8.0.18:
     dependencies:
       '@babel/runtime': 7.29.7
       broker-factory: 3.1.15
       fast-unique-numbers: 9.0.27
-      tslib: 2.8.1
+      tslib: 2.9.1
       worker-timers-worker: 9.0.15
 
   worker-timers-worker@9.0.15:
     dependencies:
       '@babel/runtime': 7.29.7
-      tslib: 2.8.1
+      tslib: 2.9.1
       worker-factory: 7.0.50
 
   worker-timers@8.0.33:
     dependencies:
       '@babel/runtime': 7.29.7
-      tslib: 2.8.1
+      tslib: 2.9.1
       worker-timers-broker: 8.0.18
       worker-timers-worker: 9.0.15
 

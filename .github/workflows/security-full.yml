@@ -32,6 +32,10 @@ jobs:
                   node-version-file: .node-version
                   cache: pnpm
 
+            - name: Validate pinned Node.js
+              shell: bash
+              run: node ./scripts/check-node-engine.mjs --pinned
+
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
@@ -124,6 +128,10 @@ jobs:
               with:
                   node-version-file: .node-version
                   cache: pnpm
+
+            - name: Validate pinned Node.js
+              shell: bash
+              run: node ./scripts/check-node-engine.mjs --pinned
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile

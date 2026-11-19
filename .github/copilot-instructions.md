@@ -398,7 +398,7 @@ done && echo "CI completed!"
     CI=1 pnpm install --frozen-lockfile
     ```
 - `postStartCommand` in `.devcontainer/start.sh` (IoT mock servers health-checked)
-- `.devcontainer/.dockerignore` excludes node_modules, .git, dist, coverage
+- `.devcontainer/Dockerfile.dockerignore` limits the image build context to `.node-version`.
 - All `.devcontainer/` files under CODEOWNERS review
 - `remoteUser: root` (solo-dev Codespaces -- container isolation sufficient)
 

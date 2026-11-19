@@ -248,3 +248,13 @@ test('setup-node-ci matches install-command against an allowlist, never runs it'
     }
     assert.match(install, /'pnpm install --frozen-lockfile'\) pnpm install --frozen-lockfile ;;/)
 })
+
+test('setup-node-ci validates the same Node pin it installs before installing dependencies', () => {
+    const action = actionFiles.find(({ name }) => name === 'actions/setup-node-ci/action.yml')
+    assert.ok(action, 'setup-node-ci missing')
+    assert.match(
+        action.text,
+        /node-version-file: \.node-version[\s\S]+run: node \.\/scripts\/check-node-engine\.mjs --pinned[\s\S]+- name: Install dependencies/,
+    )
+    assert.doesNotMatch(action.text, /^\s*node-version:/m)
+})

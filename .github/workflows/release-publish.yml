@@ -24,7 +24,6 @@ permissions:
     contents: read
 
 env:
-    NODE_VERSION: '24'
     TURBO_TELEMETRY_DISABLED: 1
 
 # -----------------------------------------------------------------
@@ -427,8 +426,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Build
               run: pnpm run build

@@ -29,7 +29,6 @@ permissions:
     contents: read
 
 env:
-    NODE_VERSION: '24'
     TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -185,15 +184,13 @@ jobs:
                   fetch-depth: 0
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
             - name: Restore Turbo cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-${{ github.sha }}
                   restore-keys: |
-                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-
                       turbo-${{ runner.os }}-
                   save-always: true
             - name: Build
@@ -240,15 +237,13 @@ jobs:
                   fetch-depth: 0
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
             - name: Restore Turbo cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-${{ github.sha }}
                   restore-keys: |
-                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-
                       turbo-${{ runner.os }}-
                   save-always: true
             - name: Test + Coverage
@@ -301,8 +296,6 @@ jobs:
                   fetch-depth: 0
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
             - name: Hook runtime regression tests
               run: node --test --test-concurrency=1 ./scripts/git-hooks/*.test.mjs
             - name: Security policy regression tests
@@ -356,9 +349,9 @@ jobs:
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-${{ github.sha }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-${{ github.sha }}
                   restore-keys: |
-                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml') }}-
+                      turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'pnpm-lock.yaml', '.node-version') }}-
                       turbo-${{ runner.os }}-
                   save-always: true
             - name: Lint changed files
@@ -456,8 +449,6 @@ jobs:
                   persist-credentials: false
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
             - name: Agent policy gate
               run: node scripts/security/check-agent-policy.mjs
             - name: Instruction architecture gate
@@ -585,8 +576,6 @@ jobs:
             - name: Setup Node + install dependencies
               id: setup
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             # Every scan below is guarded with `always() && setup succeeded` so
             # that ONE failing control no longer hides the rest. These are
@@ -683,8 +672,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Cache Playwright browsers
               id: playwright-cache
@@ -759,8 +746,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Cache Playwright browsers
               id: playwright-cache

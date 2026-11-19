@@ -88,8 +88,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: '24'
 
             - name: Confirm pinned Wrangler
               run: pnpm exec wrangler --version

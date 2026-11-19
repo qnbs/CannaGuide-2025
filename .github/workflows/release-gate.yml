@@ -13,7 +13,6 @@ permissions:
     contents: read
 
 env:
-    NODE_VERSION: '24'
     TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
@@ -37,8 +36,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Audit backlog check (blocks on open CRITICAL or HIGH items)
               run: node scripts/check-audit-backlog.mjs
@@ -71,8 +68,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Run tests
               run: pnpm --filter @cannaguide/web run test:run
@@ -95,8 +90,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Build
               run: pnpm run build

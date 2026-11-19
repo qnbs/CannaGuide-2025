@@ -41,8 +41,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: '24'
 
             - name: Audit backlog check
               run: node scripts/check-audit-backlog.mjs

@@ -144,7 +144,7 @@ More detail: [Architecture](docs/ARCHITECTURE.md) · [Monorepo](docs/monorepo-ar
 
 ## Development
 
-**Prerequisites:** Node.js `>=24.15.0 <25`, and the pnpm version pinned in `package.json` (via Corepack).
+**Prerequisites:** Node.js `>=24.15.0 <25`, and the pnpm version pinned in `package.json` (via Corepack). Use `.node-version` to match the Node.js version used in GitHub Actions.
 
 ```bash
 corepack enable pnpm

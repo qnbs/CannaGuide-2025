@@ -24,9 +24,6 @@ concurrency:
     group: cloudflare-preview-build-${{ github.event.pull_request.number }}
     cancel-in-progress: true
 
-env:
-    NODE_VERSION: '24'
-
 jobs:
     build:
         name: Build preview artifact
@@ -47,8 +44,6 @@ jobs:
 
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
 
             - name: Build for preview
               env:

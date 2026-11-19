@@ -1,10 +1,6 @@
 name: Setup Node and install deps
 description: Standardized Node setup with pnpm and deterministic install
 inputs:
-    node-version:
-        description: Node.js version to install
-        required: false
-        default: '24'
     install-command:
         description: >-
             Install command to run after setup. Only the listed commands are
@@ -21,8 +17,12 @@ runs:
         - name: Setup Node.js
           uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
           with:
-              node-version: ${{ inputs.node-version }}
+              node-version-file: .node-version
               cache: pnpm
+
+        - name: Validate pinned Node.js
+          shell: bash
+          run: node ./scripts/check-node-engine.mjs --pinned
 
         - name: Validate pnpm lockfile
           shell: bash

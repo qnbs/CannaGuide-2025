@@ -9,7 +9,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 ### Fixed
 
 - **fix(privacy):** The Genetic Trends and Grow Tech AI answers honour Local-Only mode again, as well as the local and eco AI modes and the provider consent. `getGeneticTrendAnalysis` and `getGrowTechRecommendation` called Gemini directly instead of going through `withLocalFallback`, so with a Gemini key stored they sent their prompt (a trend category, or the grow setup's medium and light) to Google while Local-Only was on and without asking for consent. They now use the same routing as every other cloud call and answer with their built-in fallback when cloud AI is off. Found by CodeRabbit on #886.
-- **fix(privacy):** A cloud AI call no longer goes out when Local-Only mode or a local AI mode is switched on while its provider-consent dialog is open. `withLocalFallback` checked the mode only before the consent step, which can wait on the user; it now checks again right before the request.
+- **fix(privacy):** A cloud AI call no longer goes out when Local-Only mode or a local AI mode is switched on while its provider-consent dialog is open. `withLocalFallback` checked the mode only before the consent step, which can wait on the user; it now checks again after it. Every Gemini SDK request is now also refused at its own boundary in Local-Only mode: `createGeminiClient` checks the egress gate after reading the key, the last await before a request, because the SDK sends its own requests outside `egressFetch`.
 
 ### Removed
 

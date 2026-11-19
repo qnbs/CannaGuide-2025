@@ -8,6 +8,7 @@ import type { Language } from '@/types'
 import { apiKeyService } from '@/services/apiKeyService'
 import { aiRateLimiter, type MonthlyBudgetReservation } from '@/services/aiRateLimiter'
 import { PROVIDER_CONFIGS } from '@cannaguide/ai-core'
+import { assertEgressAllowed } from '@/services/net/egress'
 
 export const GEMINI_SAFETY_SETTINGS = [
     {
@@ -123,8 +124,19 @@ export const parseGeminiJsonResponse = <T>(
     return parseGeminiJsonFromText(text, errorKey, schema)
 }
 
+/** Where the Gemini SDK sends its requests. */
+export const GEMINI_API_ORIGIN = 'https://generativelanguage.googleapis.com'
+
+/**
+ * Every Gemini SDK request starts from this client. The SDK sends its own requests,
+ * outside egressFetch, so the egress gate is checked here, after the last await
+ * before a request (the key read): Local-Only Mode switched on at any point until
+ * then refuses the call with EgressBlockedError, which the callers treat as a
+ * reason for the local fallback.
+ */
 export const createGeminiClient = async (): Promise<GoogleGenAI> => {
     const apiKey = await apiKeyService.getApiKey()
+    assertEgressAllowed(GEMINI_API_ORIGIN)
     if (!apiKey) {
         throw new Error('ai.error.missingApiKey')
     }

@@ -28,7 +28,10 @@ vi.mock('@cannaguide/ai-core', () => ({
     },
 }))
 
-import { generateGeminiTextStreamed } from '@/services/ai/geminiRuntime'
+import { createGeminiClient, generateGeminiTextStreamed } from '@/services/ai/geminiRuntime'
+import { apiKeyService } from '@/services/apiKeyService'
+import { setLocalOnlyMode } from '@/services/localOnlyModeService'
+import { EgressBlockedError } from '@/services/net/egress'
 
 type GeminiClient = Parameters<typeof generateGeminiTextStreamed>[0]['ai']
 
@@ -114,5 +117,33 @@ describe('generateGeminiTextStreamed usage reconciliation', () => {
             { inputPer1MTokens: 1, outputPer1MTokens: 2 },
             reservation,
         )
+    })
+})
+
+describe('createGeminiClient (the request boundary of every Gemini SDK call)', () => {
+    beforeEach(() => {
+        setLocalOnlyMode(false)
+        vi.mocked(apiKeyService.getApiKey).mockReset()
+    })
+
+    it('creates a client when Local-Only Mode is off', async () => {
+        vi.mocked(apiKeyService.getApiKey).mockResolvedValue('key')
+        await expect(createGeminiClient()).resolves.toBeDefined()
+    })
+
+    it('refuses in Local-Only Mode', async () => {
+        vi.mocked(apiKeyService.getApiKey).mockResolvedValue('key')
+        setLocalOnlyMode(true)
+        await expect(createGeminiClient()).rejects.toBeInstanceOf(EgressBlockedError)
+        setLocalOnlyMode(false)
+    })
+
+    it('refuses when Local-Only Mode is switched on while the key is read', async () => {
+        vi.mocked(apiKeyService.getApiKey).mockImplementation(async () => {
+            setLocalOnlyMode(true)
+            return 'key'
+        })
+        await expect(createGeminiClient()).rejects.toBeInstanceOf(EgressBlockedError)
+        setLocalOnlyMode(false)
     })
 })

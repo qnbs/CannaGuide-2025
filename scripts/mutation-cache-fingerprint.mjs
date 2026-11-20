@@ -29,6 +29,10 @@ function isLiteralString(node) {
     return ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node)
 }
 
+function isDeclarationFilePath(file) {
+    return /\.d\.(?:ts|mts|cts)$/i.test(file)
+}
+
 function importMetaGlobCall(node) {
     return (
         ts.isCallExpression(node) &&
@@ -102,6 +106,7 @@ function enqueueWorkspaceSpecifier(context, request) {
         request.resolution,
         request.specifier,
         request.runtimeRequired,
+        request.requestKind,
     )
     if (!workspace) return false
     if (workspace.error) {
@@ -123,7 +128,39 @@ function enqueueWorkspaceRuntime(context, request, workspace) {
     context.queue.push(...workspace.runtimePaths)
 }
 
-function addFirstPartySpecifier(context, fromFile, specifier, { runtimeRequired = true } = {}) {
+function hasProvenLocalRuntimeTarget(root, resolution) {
+    if (!resolution) return false
+    const resolvedPath = resolve(resolution)
+    if (!isWithin(root, resolvedPath)) return false
+    return !isDeclarationFilePath(resolvedPath)
+}
+
+function rejectUnprovenPackageRuntimeImport(context, request) {
+    const { fromFile, specifier, resolution, runtimeRequired } = request
+    if (!runtimeRequired) return false
+    if (!specifier.startsWith('#')) return false
+    if (hasProvenLocalRuntimeTarget(context.root, resolution)) return false
+    const resolvedPath = resolution ? resolve(resolution) : null
+    const detail = resolvedPath
+        ? `resolved only to declaration or external path ${resolution}`
+        : 'TypeScript resolution is missing'
+    recordUnresolvedImport(context, fromFile, `${specifier} runtime target is unproven (${detail})`)
+    return true
+}
+
+function enqueueResolvedFirstPartySpecifier(context, fromFile, specifier, resolution) {
+    if (enqueueResolvedModule(context, resolution)) return true
+    if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return true
+    if (specifier.startsWith('@/')) recordUnresolvedImport(context, fromFile, specifier)
+    return false
+}
+
+function addFirstPartySpecifier(
+    context,
+    fromFile,
+    specifier,
+    { runtimeRequired = true, requestKind = 'import' } = {},
+) {
     const { typescript, compilerOptions } = context
     const resolution = typescript.resolveModuleName(
         specifier,
@@ -138,14 +175,21 @@ function addFirstPartySpecifier(context, fromFile, specifier, { runtimeRequired 
             specifier,
             resolution,
             runtimeRequired,
+            requestKind,
         })
     )
         return
 
-    if (enqueueResolvedModule(context, resolution)) return
-    if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return
-
-    if (specifier.startsWith('@/')) recordUnresolvedImport(context, fromFile, specifier)
+    if (
+        rejectUnprovenPackageRuntimeImport(context, {
+            fromFile,
+            specifier,
+            resolution,
+            runtimeRequired,
+        })
+    )
+        return
+    enqueueResolvedFirstPartySpecifier(context, fromFile, specifier, resolution)
 }
 
 function describeGlobPattern(rawPattern) {
@@ -254,9 +298,11 @@ function exportRequiresRuntime(node, typescript, compilerOptions) {
 
 function visitImportOrExport(node, file, context) {
     if (!node.moduleSpecifier || !isLiteralString(node.moduleSpecifier)) return
-    const runtimeRequired = context.typescript.isImportDeclaration(node)
-        ? importRequiresRuntime(node, context.typescript, context.compilerOptions)
-        : exportRequiresRuntime(node, context.typescript, context.compilerOptions)
+    const runtimeRequired =
+        !isDeclarationFilePath(file) &&
+        (context.typescript.isImportDeclaration(node)
+            ? importRequiresRuntime(node, context.typescript, context.compilerOptions)
+            : exportRequiresRuntime(node, context.typescript, context.compilerOptions))
     addFirstPartySpecifier(context, file, node.moduleSpecifier.text, {
         runtimeRequired,
     })
@@ -265,7 +311,9 @@ function visitImportOrExport(node, file, context) {
 function visitImportEquals(node, file, context) {
     const specifier = externalModuleSpecifier(node.moduleReference, context.typescript)
     if (specifier) {
-        addFirstPartySpecifier(context, file, specifier, { runtimeRequired: !node.isTypeOnly })
+        addFirstPartySpecifier(context, file, specifier, {
+            runtimeRequired: !isDeclarationFilePath(file) && !node.isTypeOnly,
+        })
     }
 }
 
@@ -304,7 +352,11 @@ function visitDynamicImportOrRequire(node, file, context) {
         markUnsupportedDynamicImport(context, file)
         return
     }
-    addFirstPartySpecifier(context, file, argument.text)
+    const requestKind =
+        context.typescript.isIdentifier(node.expression) && node.expression.text === 'require'
+            ? 'require'
+            : 'import'
+    addFirstPartySpecifier(context, file, argument.text, { requestKind })
 }
 
 function visitCallExpression(node, file, context) {

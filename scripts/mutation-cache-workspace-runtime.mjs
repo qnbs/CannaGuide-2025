@@ -169,22 +169,29 @@ function workspaceSubpath(manifest, specifier) {
     return `.${specifier.slice(manifest.name.length)}`
 }
 
-function runtimeExportTargets(value) {
+function isActiveRuntimeCondition(condition, requestKind) {
+    if (condition === 'default') return true
+    if (condition === requestKind) return true
+    if (condition === 'import' || condition === 'require') return false
+    return RUNTIME_EXPORT_CONDITIONS.has(condition)
+}
+
+function runtimeExportTargets(value, requestKind = 'import') {
     if (typeof value === 'string') return [value]
-    if (Array.isArray(value)) return fallbackRuntimeTargets(value)
+    if (Array.isArray(value)) return fallbackRuntimeTargets(value, requestKind)
     if (!value || typeof value !== 'object') return []
     for (const [condition, target] of Object.entries(value)) {
         if (condition.startsWith('types')) continue
-        if (condition === 'default' || RUNTIME_EXPORT_CONDITIONS.has(condition)) {
-            return runtimeExportTargets(target)
+        if (isActiveRuntimeCondition(condition, requestKind)) {
+            return runtimeExportTargets(target, requestKind)
         }
     }
     return []
 }
 
-function fallbackRuntimeTargets(fallbacks) {
+function fallbackRuntimeTargets(fallbacks, requestKind) {
     for (const fallback of fallbacks) {
-        const targets = runtimeExportTargets(fallback)
+        const targets = runtimeExportTargets(fallback, requestKind)
         if (targets.length === 0) continue
         if (targets.every((target) => isValidPackageTargetForFallback(target))) return targets
     }
@@ -215,11 +222,11 @@ function isForbiddenPackageTargetSegment(segment) {
     )
 }
 
-function workspaceRuntimeTargets(workspacePackage, specifier) {
+function workspaceRuntimeTargets(workspacePackage, specifier, requestKind) {
     const { manifest } = workspacePackage
     const subpath = workspaceSubpath(manifest, specifier)
     if (Object.hasOwn(manifest, 'exports')) {
-        return runtimeExportTargets(packageExportValue(manifest.exports, subpath))
+        return runtimeExportTargets(packageExportValue(manifest.exports, subpath), requestKind)
     }
     if (subpath !== '.') return []
     return ['browser', 'module', 'main', 'source'].flatMap((field) => {
@@ -252,7 +259,7 @@ function workspaceRuntimePath(packageRoot, target) {
  */
 export function createWorkspaceRuntimeResolver(root) {
     const packages = discoverWorkspacePackages(root)
-    return (resolution, specifier, runtimeRequired) => {
+    return (resolution, specifier, runtimeRequired, requestKind = 'import') => {
         const { workspacePackage, error } = findWorkspacePackage(packages, specifier)
         if (!workspacePackage) return error ? { error } : null
 
@@ -267,7 +274,9 @@ export function createWorkspaceRuntimeResolver(root) {
         }
         if (!runtimeRequired) return result
 
-        const targets = [...new Set(workspaceRuntimeTargets(workspacePackage, specifier))]
+        const targets = [
+            ...new Set(workspaceRuntimeTargets(workspacePackage, specifier, requestKind)),
+        ]
         if (targets.length === 0)
             result.errors.push(`${specifier} (workspace package has no runtime export)`)
         for (const target of targets) {

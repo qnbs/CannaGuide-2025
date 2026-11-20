@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
+import { pathToFileURL } from 'node:url'
 import { calculateMutationDependencyFingerprint } from './mutation-cache-fingerprint.mjs'
 
 function createFixture() {
@@ -204,6 +206,162 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
     writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
     const verbatimTypeImport = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(verbatimTypeImport.files.includes('packages/runtime/src/types.ts'))
+})
+
+test('does not treat declaration-file re-exports as runtime loads', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const runtimeRoot = path.join(root, 'packages/runtime')
+    const typesRoot = path.join(root, 'packages/types')
+    mkdirSync(path.join(runtimeRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(runtimeRoot, 'src'), { recursive: true })
+    mkdirSync(path.join(typesRoot, 'dist'), { recursive: true })
+    writeFileSync(
+        path.join(runtimeRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: { '.': { types: './dist/index.d.ts', default: './src/index.ts' } },
+        }),
+    )
+    writeFileSync(
+        path.join(typesRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/types',
+            exports: { '.': { types: './dist/index.d.ts' } },
+        }),
+    )
+    writeFileSync(path.join(runtimeRoot, 'dist/index.d.ts'), "export * from '@fixture/types'\n")
+    writeFileSync(
+        path.join(typesRoot, 'dist/index.d.ts'),
+        'export interface RuntimeOptions { enabled: boolean }\n',
+    )
+    writeFileSync(path.join(runtimeRoot, 'src/index.ts'), 'export const runtime = true\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import type { RuntimeOptions } from '@fixture/runtime'\n" +
+            'export type TargetOptions = RuntimeOptions\n',
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+        '@fixture/types': ['../../packages/types/dist/index.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/dist/index.d.ts'))
+    assert.ok(result.files.includes('packages/types/dist/index.d.ts'))
+    assert.ok(!result.files.includes('packages/runtime/src/index.ts'))
+})
+
+test('selects import and require export conditions according to actual Node resolution', async (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    types: './dist/index.d.ts',
+                    import: './src/import.mjs',
+                    require: './src/require.cjs',
+                    default: './src/default.mjs',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export declare const kind: string\n')
+    const importTarget = path.join(packageRoot, 'src/import.mjs')
+    const requireTarget = path.join(packageRoot, 'src/require.cjs')
+    writeFileSync(importTarget, "export const kind = 'import'\n")
+    writeFileSync(requireTarget, "exports.kind = 'require'\n")
+
+    const scopedPackages = path.join(root, 'node_modules/@fixture')
+    mkdirSync(scopedPackages, { recursive: true })
+    symlinkSync(packageRoot, path.join(scopedPackages, 'runtime'), 'dir')
+    const esmConsumer = path.join(source, 'runtime-consumer.mjs')
+    const cjsConsumer = path.join(source, 'runtime-consumer.cjs')
+    writeFileSync(esmConsumer, "export { kind } from '@fixture/runtime'\n")
+    writeFileSync(cjsConsumer, "module.exports = require('@fixture/runtime').kind\n")
+
+    const esm = await import(pathToFileURL(esmConsumer).href)
+    assert.equal(esm.kind, 'import')
+    assert.equal(createRequire(cjsConsumer)(cjsConsumer), 'require')
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const target = path.join(source, 'target.ts')
+    writeFileSync(target, "import { kind } from '@fixture/runtime'\nvoid kind\n")
+    const esmFingerprint = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(esmFingerprint.files.includes('packages/runtime/src/import.mjs'))
+    assert.ok(!esmFingerprint.files.includes('packages/runtime/src/require.cjs'))
+
+    writeFileSync(target, "const { kind } = require('@fixture/runtime')\nvoid kind\n")
+    const cjsFingerprint = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(cjsFingerprint.files.includes('packages/runtime/src/require.cjs'))
+    assert.ok(!cjsFingerprint.files.includes('packages/runtime/src/import.mjs'))
+})
+
+test('fails closed when a runtime package import resolves only to declarations', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            imports: {
+                '#internal': { types: './dist/internal.d.ts', default: './src/internal.js' },
+            },
+            exports: { '.': { types: './dist/index.d.ts', default: './src/index.ts' } },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export declare const value: number\n')
+    writeFileSync(
+        path.join(packageRoot, 'dist/internal.d.ts'),
+        'export declare const internal: number\n',
+    )
+    writeFileSync(
+        path.join(packageRoot, 'src/index.ts'),
+        "import { internal } from '#internal'\nexport const value = internal\n",
+    )
+    writeFileSync(path.join(packageRoot, 'src/internal.js'), 'export const internal = 1\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { value } from '@fixture/runtime'\nvoid value\n",
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+        '#internal': ['../../packages/runtime/dist/internal.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Could not resolve first-party imports:[\s\S]*#internal/,
+    )
 })
 
 test('does not fall through to a later export when the first valid target file is missing', (t) => {

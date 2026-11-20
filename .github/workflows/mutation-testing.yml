@@ -39,7 +39,7 @@ jobs:
                   path: reports/mutation/.stryker-incremental.json
                   # Hash the config, toolchain and every mutation target. Exact-key restore only:
                   # a prefix fallback could load results from an older Stryker/Babel version.
-                  key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'apps/web/package.json', 'pnpm-lock.yaml', 'apps/web/stores/slices/**/*.ts', 'apps/web/services/equipmentCalculatorService.ts', 'apps/web/services/knowledgeCalculatorService.ts', 'apps/web/services/knowledgeRagService.ts', 'apps/web/utils/lockFreeRingBuffer.ts', 'apps/web/utils/atomicsChannel.ts', 'apps/web/services/workerPool.ts', 'apps/web/stores/useIotStore.ts') }}
+                  key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'apps/web/package.json', 'pnpm-lock.yaml', 'apps/web/**/*.test.ts', 'apps/web/**/*.test.tsx', 'apps/web/vite.config.ts', 'apps/web/vitest.setup.ts', 'apps/web/tsconfig*.json', 'tsconfig*.json', 'apps/web/stores/slices/**/*.ts', 'apps/web/services/equipmentCalculatorService.ts', 'apps/web/services/knowledgeCalculatorService.ts', 'apps/web/services/knowledgeRagService.ts', 'apps/web/utils/lockFreeRingBuffer.ts', 'apps/web/utils/atomicsChannel.ts', 'apps/web/services/workerPool.ts', 'apps/web/stores/useIotStore.ts') }}
 
             - name: Run Stryker
               working-directory: apps/web

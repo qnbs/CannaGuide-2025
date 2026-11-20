@@ -176,29 +176,35 @@ function isActiveRuntimeCondition(condition, requestKind) {
     return RUNTIME_EXPORT_CONDITIONS.has(condition)
 }
 
-function collectConditionalExportTargets(conditions, requestKind) {
+function collectConditionalExportTargets(conditions, requestKind, packageRoot) {
     for (const [condition, target] of Object.entries(conditions)) {
         if (condition.startsWith('types')) continue
         if (!isActiveRuntimeCondition(condition, requestKind)) continue
         if (target === null) return []
-        const nested = runtimeExportTargets(target, requestKind)
+        const nested = runtimeExportTargets(target, requestKind, packageRoot)
         if (nested.length > 0) return nested
     }
     return []
 }
 
-function runtimeExportTargets(value, requestKind = 'import') {
+function runtimeExportTargets(value, requestKind = 'import', packageRoot = null) {
     if (typeof value === 'string') return [value]
-    if (Array.isArray(value)) return fallbackRuntimeTargets(value, requestKind)
+    if (Array.isArray(value)) return fallbackRuntimeTargets(value, requestKind, packageRoot)
     if (!value || typeof value !== 'object') return []
-    return collectConditionalExportTargets(value, requestKind)
+    return collectConditionalExportTargets(value, requestKind, packageRoot)
 }
 
-function fallbackRuntimeTargets(fallbacks, requestKind) {
+function fallbackRuntimeTargets(fallbacks, requestKind, packageRoot) {
     for (const fallback of fallbacks) {
-        const targets = runtimeExportTargets(fallback, requestKind)
+        const targets = runtimeExportTargets(fallback, requestKind, packageRoot)
         if (targets.length === 0) continue
-        if (targets.every((target) => isValidPackageTargetForFallback(target))) return targets
+        if (!targets.every((target) => isValidPackageTargetForFallback(target))) continue
+        if (packageRoot) {
+            const resolvable = targets.filter((target) => workspaceRuntimePath(packageRoot, target))
+            if (resolvable.length > 0) return resolvable
+            continue
+        }
+        return targets
     }
     return []
 }
@@ -228,10 +234,14 @@ function isForbiddenPackageTargetSegment(segment) {
 }
 
 function workspaceRuntimeTargets(workspacePackage, specifier, requestKind) {
-    const { manifest } = workspacePackage
+    const { manifest, packageRoot } = workspacePackage
     const subpath = workspaceSubpath(manifest, specifier)
     if (Object.hasOwn(manifest, 'exports')) {
-        return runtimeExportTargets(packageExportValue(manifest.exports, subpath), requestKind)
+        return runtimeExportTargets(
+            packageExportValue(manifest.exports, subpath),
+            requestKind,
+            packageRoot,
+        )
     }
     if (subpath !== '.') return []
     return ['browser', 'module', 'main', 'source'].flatMap((field) => {

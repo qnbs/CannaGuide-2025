@@ -453,7 +453,7 @@ test('fails closed when a runtime package import resolves only to declarations',
     )
 })
 
-test('does not fall through to a later export when the first valid target file is missing', (t) => {
+test('uses the next package export array entry when an earlier file is missing', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))
 
@@ -481,10 +481,10 @@ test('does not fall through to a later export when the first valid target file i
         '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
     }
     writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
-    assert.throws(
-        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
-        /@fixture\/runtime runtime export \.\/dist\/missing\.js/,
-    )
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/src/available-fallback.ts'))
+    assert.ok(!result.files.some((file) => file.includes('missing.js')))
 })
 
 test('refreshes workspace package discovery between fingerprint calculations', (t) => {

@@ -7,6 +7,12 @@ import ts from 'typescript'
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs']
 const PARSEABLE_EXTENSIONS = new Set(SOURCE_EXTENSIONS)
+const DECLARATION_RUNTIME_SUFFIXES = [
+    ['.d.ts', '.js'],
+    ['.d.mts', '.mjs'],
+    ['.d.cts', '.cjs'],
+]
+const UNSUPPORTED_GLOB_MARKERS = ['{', '}', '[', ']', '(', ')']
 
 function isWithin(root, candidate) {
     const pathFromRoot = relative(root, candidate)
@@ -48,8 +54,26 @@ function enqueueResolvedModule(context, resolution) {
     if (!resolution) return false
     const resolvedPath = resolve(resolution)
     if (!isWithin(context.root, resolvedPath)) return false
-    if (!resolvedPath.split(sep).includes('node_modules')) context.queue.push(resolvedPath)
+    if (!resolvedPath.split(sep).includes('node_modules')) {
+        context.queue.push(resolvedPath)
+        enqueueRuntimeImplementation(context, resolvedPath)
+    }
     return true
+}
+
+function runtimeImplementationPath(declarationPath) {
+    const suffix = DECLARATION_RUNTIME_SUFFIXES.find(([declaration]) =>
+        declarationPath.endsWith(declaration),
+    )
+    return suffix ? `${declarationPath.slice(0, -suffix[0].length)}${suffix[1]}` : null
+}
+
+function enqueueRuntimeImplementation(context, declarationPath) {
+    const runtimePath = runtimeImplementationPath(declarationPath)
+    if (!runtimePath) return
+    if (!isWithin(context.root, runtimePath)) return
+    if (!existsSync(runtimePath)) return
+    context.queue.push(runtimePath)
 }
 
 function enqueueRelativeFirstPartyAsset(context, fromFile, specifier) {
@@ -84,7 +108,11 @@ function addFirstPartySpecifier(context, fromFile, specifier) {
 function describeGlobPattern(rawPattern) {
     const excluded = rawPattern.startsWith('!')
     const pattern = excluded ? rawPattern.slice(1) : rawPattern
-    if (!pattern.startsWith('./') && !pattern.startsWith('../')) {
+    const hasRelativePrefix = ['./', '../'].some((prefix) => pattern.startsWith(prefix))
+    if (!hasRelativePrefix) {
+        return { excluded, pattern, globIndex: -1, supported: false }
+    }
+    if (UNSUPPORTED_GLOB_MARKERS.some((marker) => pattern.includes(marker))) {
         return { excluded, pattern, globIndex: -1, supported: false }
     }
 
@@ -113,18 +141,20 @@ function addGlobPattern(file, rawPattern, context, matches) {
     const prefix = segments.slice(0, globIndex).join('/') || '.'
     const globRoot = resolve(dirname(file), prefix)
     const globPattern = segments.slice(globIndex).join('/')
-    const globMatches = context.typescript.sys.readDirectory(
-        globRoot,
-        SOURCE_EXTENSIONS,
-        undefined,
-        [globPattern],
-    )
+    const globMatches = context.typescript.sys.readDirectory(globRoot, undefined, undefined, [
+        globPattern,
+    ])
     for (const match of globMatches) {
         ;(isExclude ? matches.excluded : matches.included).add(resolve(match))
     }
 }
 
 function addStaticGlobDependencies(node, file, context) {
+    if (node.arguments.length !== 1) {
+        markUnsupportedDynamicImport(context, file)
+        return
+    }
+
     const patterns = node.arguments[0] && globArgumentPatterns(node.arguments[0])
     if (!patterns || patterns.length === 0) {
         markUnsupportedDynamicImport(context, file)

@@ -111,6 +111,31 @@ test('fails closed when a target uses dynamic module discovery', (t) => {
     )
 })
 
+test('fails closed when Vite glob syntax or options are unsupported', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    mkdirSync(path.join(source, 'modules'), { recursive: true })
+    writeFileSync(path.join(source, 'modules/helper.ts'), 'export const helper = true\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export const modules = import.meta.glob('./modules/*.{ts,tsx}')\n",
+    )
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Dynamic first-party module loading needs explicit fingerprint support/,
+    )
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export const modules = import.meta.glob('./*.ts', { base: './plugins' })\n",
+    )
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Dynamic first-party module loading needs explicit fingerprint support/,
+    )
+})
+
 test('fingerprints every literal importScripts argument and rejects dynamic ones', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))
@@ -165,19 +190,48 @@ test('fingerprints import-equals and relative URL dependencies', (t) => {
     assert.ok(result.files.includes('apps/web/src/asset.svg'))
 })
 
-test('fingerprints statically matched Vite glob modules', (t) => {
+test('fingerprints runtime implementations paired with declarations', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { value } from './legacy.js'\nexport const result = value\n",
+    )
+    writeFileSync(path.join(source, 'legacy.d.ts'), 'export declare const value: number\n')
+    const runtimeFile = path.join(source, 'legacy.js')
+    writeFileSync(runtimeFile, 'export const value = 1\n')
+
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(initial.files.includes('apps/web/src/legacy.d.ts'))
+    assert.ok(initial.files.includes('apps/web/src/legacy.js'))
+
+    writeFileSync(runtimeFile, 'export const value = 2\n')
+    const changedRuntime = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changedRuntime.fingerprint, initial.fingerprint)
+})
+
+test('fingerprints code and data files statically matched by Vite globs', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))
     const strains = path.join(root, 'apps/web/data/strains')
+    const catalog = path.join(root, 'apps/web/data/catalog')
     mkdirSync(strains, { recursive: true })
+    mkdirSync(catalog, { recursive: true })
     writeFileSync(
         path.join(source, 'target.ts'),
-        "export const modules = import.meta.glob('../data/strains/*.ts')\n",
+        "export const modules = import.meta.glob(['../data/strains/*.ts', '../data/catalog/*.json'])\n",
     )
     writeFileSync(path.join(strains, 'a.ts'), 'export const a = true\n')
     writeFileSync(path.join(strains, 'b.ts'), 'export const b = true\n')
+    const catalogFile = path.join(catalog, 'entry.json')
+    writeFileSync(catalogFile, '{"name":"first"}\n')
 
-    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
-    assert.ok(result.files.includes('apps/web/data/strains/a.ts'))
-    assert.ok(result.files.includes('apps/web/data/strains/b.ts'))
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(initial.files.includes('apps/web/data/strains/a.ts'))
+    assert.ok(initial.files.includes('apps/web/data/strains/b.ts'))
+    assert.ok(initial.files.includes('apps/web/data/catalog/entry.json'))
+
+    writeFileSync(catalogFile, '{"name":"changed"}\n')
+    const changedJson = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changedJson.fingerprint, initial.fingerprint)
 })

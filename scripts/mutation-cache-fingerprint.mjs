@@ -3,7 +3,7 @@ import { appendFileSync, existsSync, globSync, readFileSync, readdirSync, statSy
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import ts from 'typescript'
-import { resolveWorkspaceRuntimeFiles } from './mutation-cache-workspace-runtime.mjs'
+import { createWorkspaceRuntimeResolver } from './mutation-cache-workspace-runtime.mjs'
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs']
@@ -98,8 +98,7 @@ function enqueueRelativeFirstPartyAsset(context, fromFile, specifier) {
 }
 
 function enqueueWorkspaceSpecifier(context, request) {
-    const workspace = resolveWorkspaceRuntimeFiles(
-        context.root,
+    const workspace = context.resolveWorkspaceRuntime(
         request.resolution,
         request.specifier,
         request.runtimeRequired,
@@ -226,18 +225,40 @@ function addStaticGlobDependencies(node, file, context) {
     }
 }
 
-function importRequiresRuntime(node, typescript) {
-    if (node.isTypeOnly || node.importClause?.isTypeOnly) return false
-    const bindings = node.importClause?.namedBindings
+function importHasRuntimeBindings(importClause, typescript) {
+    if (!importClause || importClause.name) return true
+    const bindings = importClause.namedBindings
     if (!bindings || !typescript.isNamedImports(bindings)) return true
-    if (node.importClause.name) return true
+    if (bindings.elements.length === 0) return true
     return bindings.elements.some((element) => !element.isTypeOnly)
+}
+
+function importRequiresRuntime(node, typescript, compilerOptions) {
+    if (node.isTypeOnly || node.importClause?.isTypeOnly) return false
+    return (
+        importHasRuntimeBindings(node.importClause, typescript) ||
+        Boolean(compilerOptions.verbatimModuleSyntax)
+    )
+}
+
+function exportRequiresRuntime(node, typescript, compilerOptions) {
+    if (node.isTypeOnly) return false
+    if (!node.exportClause) return true
+    if (!typescript.isNamedExports(node.exportClause)) return true
+    if (node.exportClause.elements.length === 0) return true
+    return (
+        node.exportClause.elements.some((element) => !element.isTypeOnly) ||
+        Boolean(compilerOptions.verbatimModuleSyntax)
+    )
 }
 
 function visitImportOrExport(node, file, context) {
     if (!node.moduleSpecifier || !isLiteralString(node.moduleSpecifier)) return
+    const runtimeRequired = context.typescript.isImportDeclaration(node)
+        ? importRequiresRuntime(node, context.typescript, context.compilerOptions)
+        : exportRequiresRuntime(node, context.typescript, context.compilerOptions)
     addFirstPartySpecifier(context, file, node.moduleSpecifier.text, {
-        runtimeRequired: importRequiresRuntime(node, context.typescript),
+        runtimeRequired,
     })
 }
 
@@ -492,6 +513,7 @@ function createGraphContext(root, compilerOptions, typescript) {
         root,
         compilerOptions,
         typescript,
+        resolveWorkspaceRuntime: createWorkspaceRuntimeResolver(root),
         nodeVisitors,
         callVisitors,
         queue: [],

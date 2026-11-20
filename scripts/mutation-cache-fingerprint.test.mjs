@@ -89,9 +89,15 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
     const packageRoot = path.join(root, 'packages/runtime')
     const declarations = path.join(packageRoot, 'dist/index.d.ts')
     const mlDeclarations = path.join(packageRoot, 'dist/ml.d.ts')
+    const fallbackDeclarations = path.join(packageRoot, 'dist/fallback.d.ts')
+    const sideEffectDeclarations = path.join(packageRoot, 'dist/side-effect.d.ts')
+    const typeOnlyDeclarations = path.join(packageRoot, 'dist/types.d.ts')
     const declarationMap = `${declarations}.map`
     const runtimeEntry = path.join(packageRoot, 'src/index.ts')
     const mlRuntimeEntry = path.join(packageRoot, 'src/ml.ts')
+    const fallbackRuntime = path.join(packageRoot, 'src/fallback.ts')
+    const sideEffectRuntime = path.join(packageRoot, 'src/side-effect.ts')
+    const typeOnlyRuntime = path.join(packageRoot, 'src/types.ts')
     const transitiveRuntime = path.join(packageRoot, 'src/transitive-runtime.ts')
     const unrelatedRuntime = path.join(packageRoot, 'src/unrelated.ts')
     mkdirSync(path.dirname(declarations), { recursive: true })
@@ -103,6 +109,15 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
             exports: {
                 '.': { types: './dist/index.d.ts', default: './src/index.ts' },
                 './ml': { types: './dist/ml.d.ts', default: './src/ml.ts' },
+                './fallback': ['../outside.js', './src/fallback.ts'],
+                './types': {
+                    types: './dist/types.d.ts',
+                    default: './src/types.ts',
+                },
+                './side-effect': {
+                    types: './dist/side-effect.d.ts',
+                    default: './src/side-effect.ts',
+                },
             },
         }),
     )
@@ -122,18 +137,28 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
         }),
     )
     writeFileSync(mlDeclarations, 'export declare const mlValue: number\n')
+    writeFileSync(fallbackDeclarations, 'export declare const fallbackValue: number\n')
+    writeFileSync(sideEffectDeclarations, 'export declare const sideEffect: number\n')
+    writeFileSync(typeOnlyDeclarations, 'export interface RuntimeOptions { enabled: boolean }\n')
     writeFileSync(
         runtimeEntry,
         "import { nested } from './transitive-runtime'\nexport const value = nested\n",
     )
     writeFileSync(mlRuntimeEntry, 'export const mlValue = 2\n')
+    writeFileSync(fallbackRuntime, 'export const fallbackValue = 3\n')
+    writeFileSync(sideEffectRuntime, 'export const sideEffect = 4\n')
+    writeFileSync(typeOnlyRuntime, 'export const runtimeOnly = true\n')
     writeFileSync(transitiveRuntime, 'export const nested = 1\n')
     writeFileSync(unrelatedRuntime, 'export const unrelated = 1\n')
     writeFileSync(
         path.join(source, 'target.ts'),
         "import { value } from '@fixture/runtime'\n" +
             "import { mlValue } from '@fixture/runtime/ml'\n" +
-            'export const target = value + mlValue\n',
+            "import { fallbackValue } from '@fixture/runtime/fallback'\n" +
+            "import {} from '@fixture/runtime/side-effect'\n" +
+            "import { type RuntimeOptions } from '@fixture/runtime/types'\n" +
+            "export { type RuntimeOptions } from '@fixture/runtime/types'\n" +
+            'export const target = value + mlValue + fallbackValue\n',
     )
 
     const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
@@ -142,6 +167,9 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
     tsconfig.compilerOptions.paths = {
         '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
         '@fixture/runtime/ml': ['../../packages/runtime/dist/ml.d.ts'],
+        '@fixture/runtime/fallback': ['../../packages/runtime/dist/fallback.d.ts'],
+        '@fixture/runtime/side-effect': ['../../packages/runtime/dist/side-effect.d.ts'],
+        '@fixture/runtime/types': ['../../packages/runtime/dist/types.d.ts'],
     }
     writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
 
@@ -153,6 +181,10 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
     assert.ok(initial.files.includes('packages/runtime/src/index.ts'))
     assert.ok(initial.files.includes('packages/runtime/dist/ml.d.ts'))
     assert.ok(initial.files.includes('packages/runtime/src/ml.ts'))
+    assert.ok(initial.files.includes('packages/runtime/dist/fallback.d.ts'))
+    assert.ok(initial.files.includes('packages/runtime/src/fallback.ts'))
+    assert.ok(initial.files.includes('packages/runtime/src/side-effect.ts'))
+    assert.ok(!initial.files.includes('packages/runtime/src/types.ts'))
     assert.ok(initial.files.includes('packages/runtime/src/transitive-runtime.ts'))
     assert.ok(!initial.files.includes('packages/runtime/src/unrelated.ts'))
 
@@ -160,9 +192,195 @@ test('fingerprints exported workspace runtime graphs without unrelated package f
     const changedRuntime = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.notEqual(changedRuntime.fingerprint, initial.fingerprint)
 
+    writeFileSync(sideEffectRuntime, 'export const sideEffect = 5\n')
+    const changedSideEffect = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changedSideEffect.fingerprint, changedRuntime.fingerprint)
+
     writeFileSync(unrelatedRuntime, 'export const unrelated = 2\n')
     const changedUnrelated = calculateMutationDependencyFingerprint({ repoRoot: root })
-    assert.equal(changedUnrelated.fingerprint, changedRuntime.fingerprint)
+    assert.equal(changedUnrelated.fingerprint, changedSideEffect.fingerprint)
+
+    tsconfig.compilerOptions.verbatimModuleSyntax = true
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+    const verbatimTypeImport = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(verbatimTypeImport.files.includes('packages/runtime/src/types.ts'))
+})
+
+test('does not fall through to a later export when the first valid target file is missing', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: { '.': ['./dist/missing.js', './src/available-fallback.ts'] },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export declare const value: number\n')
+    writeFileSync(path.join(packageRoot, 'src/available-fallback.ts'), 'export const value = 6\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { value } from '@fixture/runtime'\nvoid value\n",
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /@fixture\/runtime runtime export \.\/dist\/missing\.js/,
+    )
+})
+
+test('refreshes workspace package discovery between fingerprint calculations', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export declare const value: number\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { value } from '@fixture/runtime'\nvoid value\n",
+    )
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const beforeWorkspacePackage = calculateMutationDependencyFingerprint({ repoRoot: root })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: { '.': { types: './dist/index.d.ts', default: './src/index.ts' } },
+        }),
+    )
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(path.join(packageRoot, 'src/index.ts'), 'export const value = 7\n')
+
+    const afterWorkspacePackage = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(afterWorkspacePackage.files.includes('packages/runtime/src/index.ts'))
+    assert.notEqual(afterWorkspacePackage.fingerprint, beforeWorkspacePackage.fingerprint)
+})
+
+test('uses the longest export-pattern prefix before wildcard pattern length', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'dist/wrong.d.ts'),
+        'export declare const selected: boolean\n',
+    )
+    mkdirSync(path.join(packageRoot, 'src/features'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                './features/*': {
+                    types: './dist/features/*.d.ts',
+                    default: './src/feature-*.ts',
+                },
+                './*special-long-suffix': {
+                    types: './dist/wrong.d.ts',
+                    default: './src/features/*-special-long-suffix.ts',
+                },
+            },
+        }),
+    )
+    writeFileSync(
+        path.join(packageRoot, 'src/feature-aspecial-long-suffix.ts'),
+        'export const selected = true\n',
+    )
+    writeFileSync(
+        path.join(packageRoot, 'src/features/a-special-long-suffix.ts'),
+        'export const notSelected = true\n',
+    )
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { selected } from '@fixture/runtime/features/aspecial-long-suffix'\nvoid selected\n",
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime/features/aspecial-long-suffix': [
+            '../../packages/runtime/dist/wrong.d.ts',
+        ],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/src/feature-aspecial-long-suffix.ts'))
+    assert.ok(!result.files.includes('packages/runtime/src/features/a-special-long-suffix.ts'))
+})
+
+test('ignores inactive Node export conditions for the browser test runtime', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    node: './dist/node-only-missing.js',
+                    browser: './src/browser.ts',
+                    default: './src/default.ts',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'src/browser.ts'), 'export const runtime = "browser"\n')
+    writeFileSync(path.join(packageRoot, 'src/default.ts'), 'export const runtime = "default"\n')
+    writeFileSync(path.join(source, 'target.ts'), "import '@fixture/runtime'\n")
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export {}\n')
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/src/browser.ts'))
+    assert.ok(!result.files.includes('packages/runtime/src/default.ts'))
+})
+
+test('fails closed on unsupported pnpm workspace glob patterns', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(path.join(source, 'target.ts'), 'export const target = true\n')
+    writeFileSync(
+        path.join(root, 'pnpm-workspace.yaml'),
+        "packages:\n  - 'packages/[ab]/*'\n  - 'apps/*'\n",
+    )
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Unsupported pnpm workspace pattern for runtime fingerprinting: packages\/\[ab\]\/\*/,
+    )
 })
 
 test('fingerprints filesystem fixtures and dynamic source scans used by tests', (t) => {

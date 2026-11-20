@@ -1,7 +1,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 
-const workspacePackageCache = new Map()
+const UNSUPPORTED_WORKSPACE_GLOB_MARKERS = ['!', '?', '{', '}', '[', ']', '(', ')']
+const RUNTIME_EXPORT_CONDITIONS = new Set([
+    'browser',
+    process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    'import',
+    'module',
+])
 
 function isWithin(root, candidate) {
     const pathFromRoot = relative(root, candidate)
@@ -58,7 +64,10 @@ function isSafeWorkspaceContainer(root, container) {
 }
 
 function workspacePackageContainer(root, pattern) {
-    if (!pattern.endsWith('/*')) {
+    if (
+        UNSUPPORTED_WORKSPACE_GLOB_MARKERS.some((marker) => pattern.includes(marker)) ||
+        !pattern.endsWith('/*')
+    ) {
         throw new Error(`Unsupported pnpm workspace pattern for runtime fingerprinting: ${pattern}`)
     }
     const container = pattern.slice(0, -2)
@@ -80,22 +89,13 @@ function discoverWorkspacePackages(root) {
     })
 }
 
-function workspacePackages(root) {
-    if (!workspacePackageCache.has(root)) {
-        workspacePackageCache.set(root, discoverWorkspacePackages(root))
-    }
-    return workspacePackageCache.get(root)
-}
-
 function packageSpecifierMatches(workspacePackage, specifier) {
     const { name } = workspacePackage.manifest
     return specifier === name || specifier.startsWith(`${name}/`)
 }
 
-function findWorkspacePackage(root, specifier) {
-    const matches = workspacePackages(root).filter((candidate) =>
-        packageSpecifierMatches(candidate, specifier),
-    )
+function findWorkspacePackage(packages, specifier) {
+    const matches = packages.filter((candidate) => packageSpecifierMatches(candidate, specifier))
     if (matches.length === 1) return { workspacePackage: matches[0], error: null }
     if (matches.length > 1)
         return { workspacePackage: null, error: `duplicate workspace package name ${specifier}` }
@@ -133,7 +133,15 @@ function rootExportOrNull(exports, subpath) {
 function matchingExportPattern(exports, subpath) {
     const patterns = Object.keys(exports)
         .filter((key) => key.includes('*'))
-        .sort((left, right) => right.length - left.length || left.localeCompare(right))
+        .sort((left, right) => {
+            const leftPrefixLength = left.indexOf('*')
+            const rightPrefixLength = right.indexOf('*')
+            return (
+                rightPrefixLength - leftPrefixLength ||
+                right.length - left.length ||
+                (left < right ? -1 : left > right ? 1 : 0)
+            )
+        })
     const pattern = patterns.find((candidate) => {
         const wildcard = candidate.indexOf('*')
         const prefix = candidate.slice(0, wildcard)
@@ -162,12 +170,49 @@ function workspaceSubpath(manifest, specifier) {
 }
 
 function runtimeExportTargets(value) {
-    if (typeof value === 'string') return value.startsWith('./') ? [value] : []
-    if (Array.isArray(value)) return value.flatMap(runtimeExportTargets)
+    if (typeof value === 'string') return [value]
+    if (Array.isArray(value)) return fallbackRuntimeTargets(value)
     if (!value || typeof value !== 'object') return []
-    return Object.entries(value)
-        .filter(([condition]) => !condition.startsWith('types'))
-        .flatMap(([, target]) => runtimeExportTargets(target))
+    for (const [condition, target] of Object.entries(value)) {
+        if (condition.startsWith('types')) continue
+        if (condition === 'default' || RUNTIME_EXPORT_CONDITIONS.has(condition)) {
+            return runtimeExportTargets(target)
+        }
+    }
+    return []
+}
+
+function fallbackRuntimeTargets(fallbacks) {
+    for (const fallback of fallbacks) {
+        const targets = runtimeExportTargets(fallback)
+        if (targets.length === 0) continue
+        if (targets.every((target) => isValidPackageTargetForFallback(target))) return targets
+    }
+    return []
+}
+
+function isValidPackageTargetForFallback(target) {
+    if (!target.startsWith('./')) return false
+    const segments = target.split('/').slice(1)
+    if (segments.some(isForbiddenPackageTargetSegment)) return false
+    return true
+}
+
+function isForbiddenPackageTargetSegment(segment) {
+    let decoded
+    try {
+        decoded = decodeURIComponent(segment)
+    } catch {
+        return true
+    }
+    const normalized = decoded.toLowerCase()
+    return (
+        normalized === '.' ||
+        normalized === '..' ||
+        normalized === 'node_modules' ||
+        normalized.includes('/') ||
+        normalized.includes('\\')
+    )
 }
 
 function workspaceRuntimeTargets(workspacePackage, specifier) {
@@ -201,29 +246,35 @@ function workspaceRuntimePath(packageRoot, target) {
     return runtimePath
 }
 
-/** Resolve runtime exports separately from TypeScript's declaration-file resolution. */
-export function resolveWorkspaceRuntimeFiles(root, resolution, specifier, runtimeRequired) {
-    const { workspacePackage, error } = findWorkspacePackage(root, specifier)
-    if (!workspacePackage) return error ? { error } : null
+/**
+ * Resolve runtime exports separately from TypeScript's declaration-file resolution.
+ * Package manifests are discovered once per fingerprint calculation, never across calls.
+ */
+export function createWorkspaceRuntimeResolver(root) {
+    const packages = discoverWorkspacePackages(root)
+    return (resolution, specifier, runtimeRequired) => {
+        const { workspacePackage, error } = findWorkspacePackage(packages, specifier)
+        if (!workspacePackage) return error ? { error } : null
 
-    const result = {
-        manifestPath: workspacePackage.manifestPath,
-        runtimePaths: [],
-        errors: [],
-    }
-    if (!resolution) result.errors.push(`${specifier} TypeScript resolution is missing`)
-    else if (!isWithin(root, resolve(resolution))) {
-        result.errors.push(`${specifier} TypeScript resolution is outside the repository`)
-    }
-    if (!runtimeRequired) return result
+        const result = {
+            manifestPath: workspacePackage.manifestPath,
+            runtimePaths: [],
+            errors: [],
+        }
+        if (!resolution) result.errors.push(`${specifier} TypeScript resolution is missing`)
+        else if (!isWithin(root, resolve(resolution))) {
+            result.errors.push(`${specifier} TypeScript resolution is outside the repository`)
+        }
+        if (!runtimeRequired) return result
 
-    const targets = [...new Set(workspaceRuntimeTargets(workspacePackage, specifier))]
-    if (targets.length === 0)
-        result.errors.push(`${specifier} (workspace package has no runtime export)`)
-    for (const target of targets) {
-        const runtimePath = workspaceRuntimePath(workspacePackage.packageRoot, target)
-        if (runtimePath) result.runtimePaths.push(runtimePath)
-        else result.errors.push(`${specifier} runtime export ${target}`)
+        const targets = [...new Set(workspaceRuntimeTargets(workspacePackage, specifier))]
+        if (targets.length === 0)
+            result.errors.push(`${specifier} (workspace package has no runtime export)`)
+        for (const target of targets) {
+            const runtimePath = workspaceRuntimePath(workspacePackage.packageRoot, target)
+            if (runtimePath) result.runtimePaths.push(runtimePath)
+            else result.errors.push(`${specifier} runtime export ${target}`)
+        }
+        return result
     }
-    return result
 }

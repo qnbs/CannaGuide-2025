@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, globSync, readFileSync, readdirSync, statSy
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import ts from 'typescript'
+import { resolveWorkspaceRuntimeFiles } from './mutation-cache-workspace-runtime.mjs'
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs']
@@ -53,13 +54,17 @@ function markUnsupportedDynamicImport(context, file) {
     context.unsupportedDynamicImports.add(relative(context.root, file))
 }
 
-function enqueueResolvedModule(context, resolution) {
+function recordUnresolvedImport(context, fromFile, specifier) {
+    context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
+}
+
+function enqueueResolvedModule(context, resolution, { includeAdjacentRuntime = true } = {}) {
     if (!resolution) return false
     const resolvedPath = resolve(resolution)
     if (!isWithin(context.root, resolvedPath)) return false
     if (!resolvedPath.split(sep).includes('node_modules')) {
         context.queue.push(resolvedPath)
-        enqueueRuntimeImplementation(context, resolvedPath)
+        if (includeAdjacentRuntime) enqueueRuntimeImplementation(context, resolvedPath)
     }
     return true
 }
@@ -87,12 +92,39 @@ function enqueueRelativeFirstPartyAsset(context, fromFile, specifier) {
     if (existsSync(relativePath) && isWithin(context.root, relativePath)) {
         context.queue.push(relativePath)
     } else {
-        context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
+        recordUnresolvedImport(context, fromFile, specifier)
     }
     return true
 }
 
-function addFirstPartySpecifier(context, fromFile, specifier) {
+function enqueueWorkspaceSpecifier(context, request) {
+    const workspace = resolveWorkspaceRuntimeFiles(
+        context.root,
+        request.resolution,
+        request.specifier,
+        request.runtimeRequired,
+    )
+    if (!workspace) return false
+    if (workspace.error) {
+        recordUnresolvedImport(context, request.fromFile, workspace.error)
+        return true
+    }
+
+    enqueueWorkspaceRuntime(context, request, workspace)
+    return true
+}
+
+function enqueueWorkspaceRuntime(context, request, workspace) {
+    context.queue.push(workspace.manifestPath)
+    enqueueResolvedModule(context, request.resolution, { includeAdjacentRuntime: false })
+    for (const error of workspace.errors) {
+        recordUnresolvedImport(context, request.fromFile, error)
+    }
+    if (!request.runtimeRequired) return
+    context.queue.push(...workspace.runtimePaths)
+}
+
+function addFirstPartySpecifier(context, fromFile, specifier, { runtimeRequired = true } = {}) {
     const { typescript, compilerOptions } = context
     const resolution = typescript.resolveModuleName(
         specifier,
@@ -100,12 +132,21 @@ function addFirstPartySpecifier(context, fromFile, specifier) {
         compilerOptions,
         typescript.sys,
     ).resolvedModule?.resolvedFileName
+
+    if (
+        enqueueWorkspaceSpecifier(context, {
+            fromFile,
+            specifier,
+            resolution,
+            runtimeRequired,
+        })
+    )
+        return
+
     if (enqueueResolvedModule(context, resolution)) return
     if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return
 
-    if (specifier.startsWith('@/')) {
-        context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
-    }
+    if (specifier.startsWith('@/')) recordUnresolvedImport(context, fromFile, specifier)
 }
 
 function describeGlobPattern(rawPattern) {
@@ -185,15 +226,26 @@ function addStaticGlobDependencies(node, file, context) {
     }
 }
 
+function importRequiresRuntime(node, typescript) {
+    if (node.isTypeOnly || node.importClause?.isTypeOnly) return false
+    const bindings = node.importClause?.namedBindings
+    if (!bindings || !typescript.isNamedImports(bindings)) return true
+    if (node.importClause.name) return true
+    return bindings.elements.some((element) => !element.isTypeOnly)
+}
+
 function visitImportOrExport(node, file, context) {
-    if (node.moduleSpecifier && isLiteralString(node.moduleSpecifier)) {
-        addFirstPartySpecifier(context, file, node.moduleSpecifier.text)
-    }
+    if (!node.moduleSpecifier || !isLiteralString(node.moduleSpecifier)) return
+    addFirstPartySpecifier(context, file, node.moduleSpecifier.text, {
+        runtimeRequired: importRequiresRuntime(node, context.typescript),
+    })
 }
 
 function visitImportEquals(node, file, context) {
     const specifier = externalModuleSpecifier(node.moduleReference, context.typescript)
-    if (specifier) addFirstPartySpecifier(context, file, specifier)
+    if (specifier) {
+        addFirstPartySpecifier(context, file, specifier, { runtimeRequired: !node.isTypeOnly })
+    }
 }
 
 function externalModuleSpecifier(reference, typescript) {
@@ -208,7 +260,9 @@ function visitImportType(node, file, context) {
         context.typescript.isLiteralTypeNode(node.argument) &&
         isLiteralString(node.argument.literal)
     ) {
-        addFirstPartySpecifier(context, file, node.argument.literal.text)
+        addFirstPartySpecifier(context, file, node.argument.literal.text, {
+            runtimeRequired: false,
+        })
     }
 }
 
@@ -355,11 +409,10 @@ function relativeUrlSpecifier(node, context) {
 }
 
 function enqueueModuleRelativeUrl(context, fromFile, specifier) {
-    const description = `${relative(context.root, fromFile)} -> ${specifier}`
     const resolvedPath = fileURLToPath(new URL(specifier, pathToFileURL(fromFile)))
 
     if (!isWithin(context.root, resolvedPath) || !existsSync(resolvedPath)) {
-        context.unresolvedLocalImports.add(description)
+        recordUnresolvedImport(context, fromFile, specifier)
         return
     }
     context.queue.push(resolvedPath)
@@ -503,6 +556,12 @@ function resolveMutationTargets(config, webRoot, typescript) {
     return targets
 }
 
+function resolveWorkspaceConfigPath(root) {
+    const workspaceConfigPath = resolve(root, 'pnpm-workspace.yaml')
+    if (!existsSync(workspaceConfigPath)) throw new Error('pnpm-workspace.yaml is missing')
+    return workspaceConfigPath
+}
+
 function assertCompleteGraph(context) {
     if (context.unresolvedLocalImports.size > 0) {
         throw new Error(
@@ -544,6 +603,7 @@ function resolveFingerprintInputs({
 }) {
     const strykerConfig = JSON.parse(readFileSync(strykerConfigPath, 'utf8'))
     const targets = resolveMutationTargets(strykerConfig, webRoot, typescript)
+    const workspaceConfigPath = resolveWorkspaceConfigPath(root)
     const testFiles = typescript.sys.readDirectory(
         webRoot,
         SOURCE_EXTENSIONS,
@@ -561,7 +621,7 @@ function resolveFingerprintInputs({
 
     return {
         roots,
-        additionalFiles: resolveTestReadInputs(root, webRoot),
+        additionalFiles: [...resolveTestReadInputs(root, webRoot), workspaceConfigPath],
         compilerOptions: readWebCompilerOptions(webTsconfigPath, typescript),
         targetCount: targets.length,
         testFileCount: testFiles.length,

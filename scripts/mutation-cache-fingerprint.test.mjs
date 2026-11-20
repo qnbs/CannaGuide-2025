@@ -11,6 +11,10 @@ function createFixture() {
     mkdirSync(path.join(web, 'tests'), { recursive: true })
     mkdirSync(path.join(web, 'public'), { recursive: true })
     mkdirSync(path.join(root, 'packages/ui/src'), { recursive: true })
+    writeFileSync(
+        path.join(root, 'pnpm-workspace.yaml'),
+        "packages:\n  - 'packages/*'\n  - 'apps/*'\n",
+    )
     writeFileSync(path.join(web, 'public/manifest.json'), '{"name":"fixture"}\n')
     writeFileSync(path.join(root, 'packages/ui/src/tokens.css'), ':root {}\n')
     writeFileSync(
@@ -76,6 +80,89 @@ test('fingerprint follows transitive dependencies and newly added imports', (t) 
     const changedImportGraph = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(changedImportGraph.files.includes('apps/web/src/extra.ts'))
     assert.notEqual(changedImportGraph.fingerprint, changedTransitiveSource.fingerprint)
+})
+
+test('fingerprints exported workspace runtime graphs without unrelated package files', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    const declarations = path.join(packageRoot, 'dist/index.d.ts')
+    const mlDeclarations = path.join(packageRoot, 'dist/ml.d.ts')
+    const declarationMap = `${declarations}.map`
+    const runtimeEntry = path.join(packageRoot, 'src/index.ts')
+    const mlRuntimeEntry = path.join(packageRoot, 'src/ml.ts')
+    const transitiveRuntime = path.join(packageRoot, 'src/transitive-runtime.ts')
+    const unrelatedRuntime = path.join(packageRoot, 'src/unrelated.ts')
+    mkdirSync(path.dirname(declarations), { recursive: true })
+    mkdirSync(path.dirname(runtimeEntry), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': { types: './dist/index.d.ts', default: './src/index.ts' },
+                './ml': { types: './dist/ml.d.ts', default: './src/ml.ts' },
+            },
+        }),
+    )
+    writeFileSync(
+        declarations,
+        'export declare const value: number\n//# sourceMappingURL=index.d.ts.map\n',
+    )
+    writeFileSync(
+        declarationMap,
+        JSON.stringify({
+            version: 3,
+            file: 'index.d.ts',
+            sourceRoot: '',
+            sources: ['../src/index.ts'],
+            names: [],
+            mappings: '',
+        }),
+    )
+    writeFileSync(mlDeclarations, 'export declare const mlValue: number\n')
+    writeFileSync(
+        runtimeEntry,
+        "import { nested } from './transitive-runtime'\nexport const value = nested\n",
+    )
+    writeFileSync(mlRuntimeEntry, 'export const mlValue = 2\n')
+    writeFileSync(transitiveRuntime, 'export const nested = 1\n')
+    writeFileSync(unrelatedRuntime, 'export const unrelated = 1\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { value } from '@fixture/runtime'\n" +
+            "import { mlValue } from '@fixture/runtime/ml'\n" +
+            'export const target = value + mlValue\n',
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+        '@fixture/runtime/ml': ['../../packages/runtime/dist/ml.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(initial.files.includes('pnpm-workspace.yaml'))
+    assert.ok(initial.files.includes('packages/runtime/package.json'))
+    assert.ok(initial.files.includes('packages/runtime/dist/index.d.ts'))
+    assert.ok(!initial.files.includes('packages/runtime/dist/index.d.ts.map'))
+    assert.ok(initial.files.includes('packages/runtime/src/index.ts'))
+    assert.ok(initial.files.includes('packages/runtime/dist/ml.d.ts'))
+    assert.ok(initial.files.includes('packages/runtime/src/ml.ts'))
+    assert.ok(initial.files.includes('packages/runtime/src/transitive-runtime.ts'))
+    assert.ok(!initial.files.includes('packages/runtime/src/unrelated.ts'))
+
+    writeFileSync(transitiveRuntime, 'export const nested = 2\n')
+    const changedRuntime = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changedRuntime.fingerprint, initial.fingerprint)
+
+    writeFileSync(unrelatedRuntime, 'export const unrelated = 2\n')
+    const changedUnrelated = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.equal(changedUnrelated.fingerprint, changedRuntime.fingerprint)
 })
 
 test('fingerprints filesystem fixtures and dynamic source scans used by tests', (t) => {

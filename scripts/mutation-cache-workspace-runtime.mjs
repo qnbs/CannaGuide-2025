@@ -9,6 +9,13 @@ const RUNTIME_EXPORT_CONDITIONS = new Set([
     'module',
 ])
 
+/** Returned when an active export condition is explicitly `null` (excluded). */
+const EXPORT_RESOLUTION_EXCLUDED = Symbol('mutation-export-excluded')
+
+function isExportResolutionExcluded(result) {
+    return result === EXPORT_RESOLUTION_EXCLUDED
+}
+
 function isWithin(root, candidate) {
     const pathFromRoot = relative(root, candidate)
     return (
@@ -180,8 +187,9 @@ function collectConditionalExportTargets(conditions, requestKind, packageRoot) {
     for (const [condition, target] of Object.entries(conditions)) {
         if (condition.startsWith('types')) continue
         if (!isActiveRuntimeCondition(condition, requestKind)) continue
-        if (target === null) return []
+        if (target === null) return EXPORT_RESOLUTION_EXCLUDED
         const nested = runtimeExportTargets(target, requestKind, packageRoot)
+        if (isExportResolutionExcluded(nested)) return EXPORT_RESOLUTION_EXCLUDED
         if (nested.length > 0) return nested
     }
     return []
@@ -197,6 +205,7 @@ function runtimeExportTargets(value, requestKind = 'import', packageRoot = null)
 function fallbackRuntimeTargets(fallbacks, requestKind, packageRoot) {
     for (const fallback of fallbacks) {
         const targets = runtimeExportTargets(fallback, requestKind, packageRoot)
+        if (isExportResolutionExcluded(targets)) continue
         if (targets.length === 0) continue
         if (!targets.every((target) => isValidPackageTargetForFallback(target))) continue
         // Package-export arrays are fallbacks only for syntactically invalid targets.
@@ -236,11 +245,12 @@ function workspaceRuntimeTargets(workspacePackage, specifier, requestKind) {
     const { manifest, packageRoot } = workspacePackage
     const subpath = workspaceSubpath(manifest, specifier)
     if (Object.hasOwn(manifest, 'exports')) {
-        return runtimeExportTargets(
+        const resolved = runtimeExportTargets(
             packageExportValue(manifest.exports, subpath),
             requestKind,
             packageRoot,
         )
+        return isExportResolutionExcluded(resolved) ? [] : resolved
     }
     if (subpath !== '.') return []
     return ['browser', 'module', 'main', 'source'].flatMap((field) => {

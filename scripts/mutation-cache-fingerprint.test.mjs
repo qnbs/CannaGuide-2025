@@ -520,6 +520,40 @@ test('skips a syntactically invalid export array entry to the next target', (t) 
     assert.ok(result.files.includes('packages/runtime/src/valid-entry.ts'))
 })
 
+test('export array skips an excluded conditional entry and uses the next fallback', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: [
+                { require: { default: null }, default: './wrong.cjs' },
+                './correct.cjs',
+            ],
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'wrong.cjs'), 'module.exports = { side: "wrong" }\n')
+    writeFileSync(path.join(packageRoot, 'correct.cjs'), 'module.exports = { side: "correct" }\n')
+    writeFileSync(path.join(source, 'target.ts'), "const runtime = require('@fixture/runtime')\nvoid runtime\n")
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export {}\n')
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/correct.cjs'))
+    assert.ok(!result.files.includes('packages/runtime/wrong.cjs'))
+})
+
 test('stops conditional export resolution when an active condition is null', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

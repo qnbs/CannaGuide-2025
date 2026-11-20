@@ -453,7 +453,7 @@ test('fails closed when a runtime package import resolves only to declarations',
     )
 })
 
-test('uses the next package export array entry when an earlier file is missing', (t) => {
+test('fails closed when the first valid export array target file is missing', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))
 
@@ -481,10 +481,80 @@ test('uses the next package export array entry when an earlier file is missing',
         '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
     }
     writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /@fixture\/runtime runtime export \.\/dist\/missing\.js/,
+    )
+})
+
+test('skips a syntactically invalid export array entry to the next target', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: { '.': ['./../escape.js', './src/valid-entry.ts'] },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export declare const value: number\n')
+    writeFileSync(path.join(packageRoot, 'src/valid-entry.ts'), 'export const value = 8\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import { value } from '@fixture/runtime'\nvoid value\n",
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
 
     const result = calculateMutationDependencyFingerprint({ repoRoot: root })
-    assert.ok(result.files.includes('packages/runtime/src/available-fallback.ts'))
-    assert.ok(!result.files.some((file) => file.includes('missing.js')))
+    assert.ok(result.files.includes('packages/runtime/src/valid-entry.ts'))
+})
+
+test('stops conditional export resolution when an active condition is null', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    browser: null,
+                    default: './src/default.ts',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'src/default.ts'), 'export const runtime = "default"\n')
+    writeFileSync(path.join(source, 'target.ts'), "import '@fixture/runtime'\n")
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export {}\n')
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /@fixture\/runtime \(workspace package has no runtime export\)/,
+    )
 })
 
 test('refreshes workspace package discovery between fingerprint calculations', (t) => {

@@ -199,11 +199,10 @@ function fallbackRuntimeTargets(fallbacks, requestKind, packageRoot) {
         const targets = runtimeExportTargets(fallback, requestKind, packageRoot)
         if (targets.length === 0) continue
         if (!targets.every((target) => isValidPackageTargetForFallback(target))) continue
-        if (packageRoot) {
-            const resolvable = targets.filter((target) => workspaceRuntimePath(packageRoot, target))
-            if (resolvable.length > 0) return resolvable
-            continue
-        }
+        // Package-export arrays are fallbacks only for syntactically invalid targets.
+        // A valid but missing file does not advance to the next entry (Node 24 resolves
+        // the first listed path and fails without trying later files).
+        void packageRoot
         return targets
     }
     return []

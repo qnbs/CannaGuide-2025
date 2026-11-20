@@ -132,6 +132,22 @@ test('fingerprints every literal importScripts argument and rejects dynamic ones
     )
 })
 
+test('fingerprints literal import type dependencies', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export type Imported = import('./type-dependency').Imported\n",
+    )
+    writeFileSync(
+        path.join(source, 'type-dependency.ts'),
+        'export interface Imported { value: string }\n',
+    )
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('apps/web/src/type-dependency.ts'))
+})
+
 test('fingerprints statically matched Vite glob modules', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

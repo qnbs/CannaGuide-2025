@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { test } from 'node:test'
 import { calculateMutationDependencyFingerprint } from './mutation-cache-fingerprint.mjs'
@@ -9,6 +9,10 @@ function createFixture() {
     const web = path.join(root, 'apps/web')
     mkdirSync(path.join(web, 'src'), { recursive: true })
     mkdirSync(path.join(web, 'tests'), { recursive: true })
+    mkdirSync(path.join(web, 'public'), { recursive: true })
+    mkdirSync(path.join(root, 'packages/ui/src'), { recursive: true })
+    writeFileSync(path.join(web, 'public/manifest.json'), '{"name":"fixture"}\n')
+    writeFileSync(path.join(root, 'packages/ui/src/tokens.css'), ':root {}\n')
     writeFileSync(
         path.join(root, 'stryker.conf.json'),
         JSON.stringify({
@@ -72,6 +76,43 @@ test('fingerprint follows transitive dependencies and newly added imports', (t) 
     const changedImportGraph = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(changedImportGraph.files.includes('apps/web/src/extra.ts'))
     assert.notEqual(changedImportGraph.fingerprint, changedTransitiveSource.fingerprint)
+})
+
+test('fingerprints filesystem fixtures and dynamic source scans used by tests', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(path.join(source, 'target.ts'), 'export const target = true\n')
+    const serviceWorker = path.join(root, 'apps/web/public/sw.js')
+    writeFileSync(serviceWorker, 'self.fixture = true\n')
+
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(initial.files.includes('apps/web/public/sw.js'))
+    assert.ok(initial.files.includes('apps/web/public/manifest.json'))
+    assert.ok(initial.files.includes('packages/ui/src/tokens.css'))
+
+    const newScannedSource = path.join(root, 'apps/web/services/databaseNames.ts')
+    mkdirSync(path.dirname(newScannedSource), { recursive: true })
+    writeFileSync(newScannedSource, "export const databaseName = 'first'\n")
+    const withNewSource = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(withNewSource.files.includes('apps/web/services/databaseNames.ts'))
+    assert.notEqual(withNewSource.fingerprint, initial.fingerprint)
+
+    for (const file of [
+        serviceWorker,
+        path.join(root, 'apps/web/public/manifest.json'),
+        path.join(root, 'packages/ui/src/tokens.css'),
+        newScannedSource,
+    ]) {
+        const before = readFileSync(file, 'utf8')
+        writeFileSync(file, `${before}/* changed fixture */\n`)
+        const changed = calculateMutationDependencyFingerprint({ repoRoot: root })
+        assert.notEqual(
+            changed.fingerprint,
+            withNewSource.fingerprint,
+            `${file} was not fingerprinted`,
+        )
+        writeFileSync(file, before)
+    }
 })
 
 test('fails closed when a first-party import cannot be resolved', (t) => {
@@ -180,6 +221,7 @@ test('fingerprints import-equals and relative URL dependencies', (t) => {
         path.join(source, 'target.ts'),
         "import dependency = require('./legacy-dependency')\n" +
             "export const assetUrl = new URL('./asset.svg', import.meta.url)\n" +
+            "export const remoteUrl = new URL('./health', 'https://api.example.test/')\n" +
             'export const value = dependency.value\n',
     )
     writeFileSync(path.join(source, 'legacy-dependency.ts'), 'export const value = true\n')
@@ -188,6 +230,21 @@ test('fingerprints import-equals and relative URL dependencies', (t) => {
     const result = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(result.files.includes('apps/web/src/legacy-dependency.ts'))
     assert.ok(result.files.includes('apps/web/src/asset.svg'))
+    assert.ok(!result.files.includes('apps/web/src/health'))
+})
+
+test('fails closed for relative URLs with an unknown base', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export const assetUrl = new URL('./asset.svg', dynamicBase)\n",
+    )
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Dynamic first-party module loading needs explicit fingerprint support/,
+    )
 })
 
 test('fingerprints runtime implementations paired with declarations', (t) => {
@@ -210,28 +267,77 @@ test('fingerprints runtime implementations paired with declarations', (t) => {
     assert.notEqual(changedRuntime.fingerprint, initial.fingerprint)
 })
 
+test('fingerprints modern module runtime implementations paired with declarations', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(path.join(source, 'target.ts'), "import './modern.mjs'\nimport './common.cjs'\n")
+    writeFileSync(path.join(source, 'modern.d.mts'), 'export {}\n')
+    writeFileSync(path.join(source, 'modern.mjs'), 'export const modern = true\n')
+    writeFileSync(path.join(source, 'common.d.cts'), 'export {}\n')
+    writeFileSync(path.join(source, 'common.cjs'), 'exports.common = true\n')
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('apps/web/src/modern.d.mts'))
+    assert.ok(result.files.includes('apps/web/src/modern.mjs'))
+    assert.ok(result.files.includes('apps/web/src/common.d.cts'))
+    assert.ok(result.files.includes('apps/web/src/common.cjs'))
+})
+
 test('fingerprints code and data files statically matched by Vite globs', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))
     const strains = path.join(root, 'apps/web/data/strains')
     const catalog = path.join(root, 'apps/web/data/catalog')
+    const assets = path.join(root, 'apps/web/data/assets')
     mkdirSync(strains, { recursive: true })
     mkdirSync(catalog, { recursive: true })
+    mkdirSync(assets, { recursive: true })
     writeFileSync(
         path.join(source, 'target.ts'),
-        "export const modules = import.meta.glob(['../data/strains/*.ts', '../data/catalog/*.json'])\n",
+        "export const modules = import.meta.glob(['../data/strains/*.ts', '../data/catalog/*.json', '../data/assets/*.js', '../data/assets/*.svg'])\n",
     )
     writeFileSync(path.join(strains, 'a.ts'), 'export const a = true\n')
     writeFileSync(path.join(strains, 'b.ts'), 'export const b = true\n')
     const catalogFile = path.join(catalog, 'entry.json')
     writeFileSync(catalogFile, '{"name":"first"}\n')
+    const minifiedFile = path.join(assets, 'plugin.min.js')
+    writeFileSync(minifiedFile, 'globalThis.plugin = 1\n')
+    writeFileSync(path.join(assets, 'icon.svg'), '<svg />\n')
 
     const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(initial.files.includes('apps/web/data/strains/a.ts'))
     assert.ok(initial.files.includes('apps/web/data/strains/b.ts'))
     assert.ok(initial.files.includes('apps/web/data/catalog/entry.json'))
+    assert.ok(initial.files.includes('apps/web/data/assets/plugin.min.js'))
+    assert.ok(initial.files.includes('apps/web/data/assets/icon.svg'))
 
     writeFileSync(catalogFile, '{"name":"changed"}\n')
     const changedJson = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.notEqual(changedJson.fingerprint, initial.fingerprint)
+
+    writeFileSync(minifiedFile, 'globalThis.plugin = 2\n')
+    const changedMinified = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changedMinified.fingerprint, changedJson.fingerprint)
+})
+
+test('treats literal Vite glob entries as exact filesystem matches', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    const modules = path.join(root, 'packages/ui/src/modules')
+    mkdirSync(modules, { recursive: true })
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export const modules = import.meta.glob('../../../packages/ui/src/modules/plugin.js')\n",
+    )
+    writeFileSync(path.join(modules, 'plugin.ts'), 'export const plugin = "typed"\n')
+    const exactMatch = path.join(modules, 'plugin.js')
+    writeFileSync(exactMatch, 'export const plugin = "runtime"\n')
+
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(initial.files.includes('packages/ui/src/modules/plugin.js'))
+    assert.ok(!initial.files.includes('packages/ui/src/modules/plugin.ts'))
+
+    writeFileSync(exactMatch, 'export const plugin = "changed"\n')
+    const changed = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changed.fingerprint, initial.fingerprint)
 })

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { appendFileSync, existsSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, globSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import ts from 'typescript'
@@ -7,6 +7,9 @@ import ts from 'typescript'
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs']
 const PARSEABLE_EXTENSIONS = new Set(SOURCE_EXTENSIONS)
+const TEST_SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.mjs'])
+const TEST_SOURCE_EXCLUDED_DIRECTORIES = new Set(['node_modules', 'dist', 'coverage', 'tests'])
+const TEST_READ_FIXTURES = ['apps/web/public/manifest.json', 'packages/ui/src/tokens.css']
 const DECLARATION_RUNTIME_SUFFIXES = [
     ['.d.ts', '.js'],
     ['.d.mts', '.mjs'],
@@ -123,6 +126,16 @@ function describeGlobPattern(rawPattern) {
     return { excluded, pattern, segments, globIndex, supported: true }
 }
 
+function readGlobMatches(context, file, globRoot, globPattern) {
+    if (!isWithin(context.root, globRoot)) {
+        markUnsupportedDynamicImport(context, file)
+        return []
+    }
+
+    if (!existsSync(globRoot)) return []
+    return globSync(globPattern, { cwd: globRoot }).map((match) => resolve(globRoot, match))
+}
+
 function addGlobPattern(file, rawPattern, context, matches) {
     const description = describeGlobPattern(rawPattern)
     if (!description.supported) {
@@ -134,16 +147,18 @@ function addGlobPattern(file, rawPattern, context, matches) {
     if (globIndex < 0) {
         const resolved = resolve(dirname(file), pattern)
         if (isExclude) matches.excluded.add(resolved)
-        else addFirstPartySpecifier(context, file, pattern)
+        else if (!isWithin(context.root, resolved) || !existsSync(resolved)) {
+            context.unresolvedLocalImports.add(`${relative(context.root, file)} -> ${pattern}`)
+        } else {
+            matches.included.add(resolved)
+        }
         return
     }
 
     const prefix = segments.slice(0, globIndex).join('/') || '.'
     const globRoot = resolve(dirname(file), prefix)
     const globPattern = segments.slice(globIndex).join('/')
-    const globMatches = context.typescript.sys.readDirectory(globRoot, undefined, undefined, [
-        globPattern,
-    ])
+    const globMatches = readGlobMatches(context, file, globRoot, globPattern)
     for (const match of globMatches) {
         ;(isExclude ? matches.excluded : matches.included).add(resolve(match))
     }
@@ -225,17 +240,73 @@ function visitCallExpression(node, file, context) {
     if (visitor) visitor(node, file, context)
 }
 
+function isImportMetaUrl(node, typescript) {
+    return (
+        typescript.isPropertyAccessExpression(node) &&
+        node.name.text === 'url' &&
+        typescript.isMetaProperty(node.expression) &&
+        node.expression.keywordToken === typescript.SyntaxKind.ImportKeyword &&
+        node.expression.name.text === 'meta'
+    )
+}
+
+function isUrlConstructor(node, typescript) {
+    return typescript.isIdentifier(node.expression) && node.expression.text === 'URL'
+}
+
+function isRelativeStringLiteral(node) {
+    return Boolean(node && isLiteralString(node) && node.text.startsWith('.'))
+}
+
+function isAbsoluteUrlBase(base) {
+    return !base || (isLiteralString(base) && /^[a-z][a-z\d+.-]*:/i.test(base.text))
+}
+
 function relativeUrlSpecifier(node, typescript) {
-    if (!typescript.isIdentifier(node.expression)) return null
-    if (node.expression.text !== 'URL') return null
+    if (!isUrlConstructor(node, typescript)) return null
     const firstArgument = node.arguments?.[0]
-    if (!firstArgument || !isLiteralString(firstArgument)) return null
-    return firstArgument.text.startsWith('.') ? firstArgument.text : null
+    if (!isRelativeStringLiteral(firstArgument)) return null
+
+    const base = node.arguments[1]
+    if (base && isImportMetaUrl(base, typescript)) return firstArgument.text
+    return isAbsoluteUrlBase(base) ? null : false
 }
 
 function visitNewUrl(node, file, context) {
     const specifier = relativeUrlSpecifier(node, context.typescript)
-    if (specifier) addFirstPartySpecifier(context, file, specifier)
+    if (specifier === false) markUnsupportedDynamicImport(context, file)
+    else if (specifier) addFirstPartySpecifier(context, file, specifier)
+}
+
+function readTestSourceTree(webRoot) {
+    const files = []
+    const walk = (directory) => {
+        for (const entry of readdirSync(directory)) {
+            if (TEST_SOURCE_EXCLUDED_DIRECTORIES.has(entry)) continue
+            const file = resolve(directory, entry)
+            const metadata = statSync(file)
+            if (metadata.isDirectory()) {
+                walk(file)
+                continue
+            }
+            if (entry.includes('.test.') || entry.includes('.spec.')) continue
+            if (TEST_SOURCE_EXTENSIONS.has(extname(entry))) files.push(file)
+        }
+    }
+    walk(webRoot)
+    return files
+}
+
+function resolveTestReadInputs(root, webRoot) {
+    const sourceTree = readTestSourceTree(webRoot)
+    const fixtureFiles = TEST_READ_FIXTURES.map((file) => resolve(root, file))
+    const missingFiles = fixtureFiles.filter((file) => !isWithin(root, file) || !existsSync(file))
+    if (missingFiles.length > 0) {
+        throw new Error(
+            `Configured test filesystem inputs are missing or outside the repository:\n${missingFiles.map((file) => relative(root, file)).join('\n')}`,
+        )
+    }
+    return [...sourceTree, ...fixtureFiles]
 }
 
 function visitModule(file, context) {
@@ -369,7 +440,13 @@ function fingerprintFiles(root, files) {
     }
 }
 
-function resolveFingerprintInputs({ webRoot, strykerConfigPath, webTsconfigPath, typescript }) {
+function resolveFingerprintInputs({
+    root,
+    webRoot,
+    strykerConfigPath,
+    webTsconfigPath,
+    typescript,
+}) {
     const strykerConfig = JSON.parse(readFileSync(strykerConfigPath, 'utf8'))
     const targets = resolveMutationTargets(strykerConfig, webRoot, typescript)
     const testFiles = typescript.sys.readDirectory(
@@ -389,6 +466,7 @@ function resolveFingerprintInputs({ webRoot, strykerConfigPath, webTsconfigPath,
 
     return {
         roots,
+        additionalFiles: resolveTestReadInputs(root, webRoot),
         compilerOptions: readWebCompilerOptions(webTsconfigPath, typescript),
         targetCount: targets.length,
         testFileCount: testFiles.length,
@@ -409,6 +487,7 @@ export function calculateMutationDependencyFingerprint({
     const root = resolve(repoRoot)
     const webRoot = resolve(root, 'apps/web')
     const inputs = resolveFingerprintInputs({
+        root,
         webRoot,
         strykerConfigPath,
         webTsconfigPath,
@@ -416,6 +495,7 @@ export function calculateMutationDependencyFingerprint({
     })
     const context = createGraphContext(root, inputs.compilerOptions, typescript)
     collectFirstPartyFiles(inputs.roots, context)
+    for (const file of inputs.additionalFiles) context.files.add(file)
     assertCompleteGraph(context)
 
     return {

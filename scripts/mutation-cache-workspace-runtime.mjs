@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
 import { isAbsolute, relative, resolve, sep } from 'node:path'
 
 const UNSUPPORTED_WORKSPACE_GLOB_MARKERS = ['!', '?', '{', '}', '[', ']', '(', ')']
@@ -110,7 +110,7 @@ function findWorkspacePackage(packages, specifier) {
 }
 
 function replaceExportPattern(value, capture) {
-    if (typeof value === 'string') return value.replaceAll('*', capture)
+    if (typeof value === 'string') return value.replaceAll('*', () => capture)
     if (Array.isArray(value)) return value.map((entry) => replaceExportPattern(entry, capture))
     if (value && typeof value === 'object') {
         return Object.fromEntries(
@@ -178,14 +178,8 @@ function workspaceSubpath(manifest, specifier) {
 
 const INACTIVE_REQUEST_KIND_CONDITIONS = new Set(['import', 'require'])
 
-function isNodeEnvRuntimeCondition(condition) {
-    return condition === 'development' || condition === 'production'
-}
-
 function isActiveRequireRuntimeCondition(condition) {
-    if (condition === 'node') return true
-    if (condition === 'browser' || condition === 'module') return false
-    return isNodeEnvRuntimeCondition(condition)
+    return condition === 'node'
 }
 
 function isActiveImportRuntimeCondition(condition) {
@@ -216,7 +210,10 @@ function collectConditionalExportTargets(conditions, requestKind, packageRoot) {
 
 function runtimeExportTargets(value, requestKind = 'import', packageRoot = null) {
     if (typeof value === 'string') return [value]
-    if (Array.isArray(value)) return fallbackRuntimeTargets(value, requestKind, packageRoot)
+    if (Array.isArray(value)) {
+        if (value.length === 0) return EXPORT_RESOLUTION_EXCLUDED
+        return fallbackRuntimeTargets(value, requestKind, packageRoot)
+    }
     if (!value || typeof value !== 'object') return []
     return collectConditionalExportTargets(value, requestKind, packageRoot)
 }
@@ -281,28 +278,54 @@ function workspaceRuntimeTargets(workspacePackage, specifier, requestKind) {
         return isExportResolutionExcluded(resolved) ? [] : resolved
     }
     if (subpath !== '.') return []
-    return ['browser', 'module', 'main', 'source'].flatMap((field) => {
+    return legacyEntryTargets(manifest, requestKind)
+}
+
+function legacyEntryTargets(manifest, requestKind) {
+    const fields =
+        requestKind === 'require' ? ['main'] : ['import', 'module', 'main', 'browser', 'source']
+    for (const field of fields) {
         const target = manifest[field]
-        if (typeof target !== 'string' || target.length === 0) return []
+        if (typeof target !== 'string' || target.length === 0) continue
         return [target.startsWith('./') ? target : `./${target}`]
-    })
+    }
+    return []
+}
+
+function decodeExportTarget(target) {
+    if (!target.startsWith('./')) return target
+    const decoded = target
+        .slice(2)
+        .split('/')
+        .map((segment) => {
+            try {
+                return decodeURIComponent(segment)
+            } catch {
+                return segment
+            }
+        })
+        .join('/')
+    return `./${decoded}`
 }
 
 function isDeclarationPath(file) {
     return /\.d\.(?:ts|mts|cts)$/i.test(file)
 }
 
-function isPackageRuntimePath(packageRoot, runtimePath) {
-    if (!isWithin(packageRoot, runtimePath)) return false
-    return !isDeclarationPath(runtimePath)
-}
-
-function workspaceRuntimePath(packageRoot, target) {
+function workspaceRuntimePath(packageRoot, repoRoot, target) {
     if (!target.startsWith('./')) return null
-    const runtimePath = resolve(packageRoot, target)
-    if (!isPackageRuntimePath(packageRoot, runtimePath)) return null
-    if (!existsSync(runtimePath) || !statSync(runtimePath).isFile()) return null
-    return runtimePath
+    const runtimePath = resolve(packageRoot, decodeExportTarget(target))
+    if (!existsSync(runtimePath)) return null
+    let realPath
+    try {
+        realPath = realpathSync(runtimePath)
+    } catch {
+        return null
+    }
+    if (!isWithin(repoRoot, realPath) || !isWithin(packageRoot, realPath)) return null
+    if (!statSync(realPath).isFile()) return null
+    if (isDeclarationPath(realPath)) return null
+    return realPath
 }
 
 /**
@@ -332,7 +355,7 @@ export function createWorkspaceRuntimeResolver(root) {
         if (targets.length === 0)
             result.errors.push(`${specifier} (workspace package has no runtime export)`)
         for (const target of targets) {
-            const runtimePath = workspaceRuntimePath(workspacePackage.packageRoot, target)
+            const runtimePath = workspaceRuntimePath(workspacePackage.packageRoot, root, target)
             if (runtimePath) result.runtimePaths.push(runtimePath)
             else result.errors.push(`${specifier} runtime export ${target}`)
         }

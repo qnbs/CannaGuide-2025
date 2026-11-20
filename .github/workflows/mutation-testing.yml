@@ -33,13 +33,19 @@ jobs:
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
 
+            - name: Verify and fingerprint Stryker first-party dependencies
+              id: mutation-dependency-fingerprint
+              run: |
+                  node --test scripts/mutation-cache-fingerprint.test.mjs
+                  node scripts/mutation-cache-fingerprint.mjs
+
             - name: Restore Stryker incremental cache
               uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: reports/mutation/.stryker-incremental.json
-                  # Hash the config, toolchain and every mutation target. Exact-key restore only:
-                  # a prefix fallback could load results from an older Stryker/Babel version.
-                  key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'package.json', '.node-version', 'apps/web/package.json', 'pnpm-lock.yaml', 'apps/web/**/*.test.ts', 'apps/web/**/*.test.tsx', 'apps/web/vite.config.ts', 'apps/web/vitest.setup.ts', 'apps/web/tsconfig*.json', 'tsconfig*.json', 'apps/web/stores/slices/**/*.ts', 'apps/web/services/equipmentCalculatorService.ts', 'apps/web/services/knowledgeCalculatorService.ts', 'apps/web/services/knowledgeRagService.ts', 'apps/web/utils/lockFreeRingBuffer.ts', 'apps/web/utils/atomicsChannel.ts', 'apps/web/services/workerPool.ts', 'apps/web/stores/useIotStore.ts') }}
+                  # Exact-key restore only. Hash target modules and their recursive first-party
+                  # imports via the generated fingerprint, plus tests, config and toolchain inputs.
+                  key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'package.json', '.node-version', 'apps/web/package.json', 'pnpm-lock.yaml', 'apps/web/**/*.test.ts', 'apps/web/**/*.test.tsx', 'apps/web/vite.config.ts', 'apps/web/vitest.setup.ts', 'apps/web/tsconfig*.json', 'tsconfig*.json', 'scripts/mutation-cache-fingerprint.mjs', 'scripts/mutation-cache-fingerprint.test.mjs') }}-${{ steps.mutation-dependency-fingerprint.outputs.fingerprint }}
 
             - name: Run Stryker
               working-directory: apps/web

@@ -6,6 +6,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Changed
+
+- **chore(deps):** Dependabot merges on `main` since 1.12.1: `@google/genai` 2.32.0 to 3.3.0 ([#894](https://github.com/qnbs/CannaGuide-2025/pull/894)); `dompurify` 3.4.17 to 3.4.18 ([#889](https://github.com/qnbs/CannaGuide-2025/pull/889)); `@tauri-apps/api` 2.12.4 on the desktop shell ([#901](https://github.com/qnbs/CannaGuide-2025/pull/901)); dev tooling `postcss` 8.5.33 ([#890](https://github.com/qnbs/CannaGuide-2025/pull/890)), `lint-staged` 17.6.1 ([#891](https://github.com/qnbs/CannaGuide-2025/pull/891)), `@testing-library/user-event` 14.6.12 and `msw` 3.0.6 ([#888](https://github.com/qnbs/CannaGuide-2025/pull/888)).
+- **chore(deps):** `@cannaguide/web` upgrades `vite-plugin-pwa` from 1.3.0 to 2.0.0 (dev dependency). The app still uses `injectManifest` with `public/sw.js`; no user-facing PWA behaviour change is intended beyond the major-line dependency adoption ([#905](https://github.com/qnbs/CannaGuide-2025/pull/905)).
+
 ### Fixed
 
 - **fix(privacy):** The Genetic Trends and Grow Tech AI answers honour Local-Only mode again, as well as the local and eco AI modes and the provider consent. `getGeneticTrendAnalysis` and `getGrowTechRecommendation` called Gemini directly instead of going through `withLocalFallback`, so with a Gemini key stored they sent their prompt (a trend category, or the grow setup's medium and light) to Google while Local-Only was on and without asking for consent. They now use the same routing as every other cloud call and answer with their built-in fallback when cloud AI is off. Found by CodeRabbit on #886.

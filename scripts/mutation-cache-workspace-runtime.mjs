@@ -182,9 +182,10 @@ function runtimeExportTargets(value, requestKind = 'import') {
     if (!value || typeof value !== 'object') return []
     for (const [condition, target] of Object.entries(value)) {
         if (condition.startsWith('types')) continue
-        if (isActiveRuntimeCondition(condition, requestKind)) {
-            return runtimeExportTargets(target, requestKind)
-        }
+        if (!isActiveRuntimeCondition(condition, requestKind)) continue
+        if (target === null) return []
+        const nested = runtimeExportTargets(target, requestKind)
+        if (nested.length > 0) return nested
     }
     return []
 }

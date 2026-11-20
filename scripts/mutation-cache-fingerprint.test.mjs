@@ -317,6 +317,53 @@ test('selects import and require export conditions according to actual Node reso
     assert.ok(!cjsFingerprint.files.includes('packages/runtime/src/import.mjs'))
 })
 
+test('falls back to sibling default when nested require condition has no match', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    types: './dist/index.d.ts',
+                    require: {
+                        'custom-platform': './src/custom.cjs',
+                    },
+                    default: './src/fallback.cjs',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export declare const kind: string\n')
+    writeFileSync(path.join(packageRoot, 'src/custom.cjs'), "exports.kind = 'custom'\n")
+    writeFileSync(path.join(packageRoot, 'src/fallback.cjs'), "exports.kind = 'fallback'\n")
+
+    const scopedPackages = path.join(root, 'node_modules/@fixture')
+    mkdirSync(scopedPackages, { recursive: true })
+    symlinkSync(packageRoot, path.join(scopedPackages, 'runtime'), 'dir')
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "const { kind } = require('@fixture/runtime')\nvoid kind\n",
+    )
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/src/fallback.cjs'))
+    assert.ok(!result.files.includes('packages/runtime/src/custom.cjs'))
+})
+
 test('fails closed when a runtime package import resolves only to declarations', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

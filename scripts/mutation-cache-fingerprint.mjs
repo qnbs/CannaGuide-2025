@@ -148,8 +148,14 @@ function rejectUnprovenPackageRuntimeImport(context, request) {
     return true
 }
 
-function enqueueResolvedFirstPartySpecifier(context, fromFile, specifier, resolution) {
-    if (enqueueResolvedModule(context, resolution)) return true
+function enqueueResolvedFirstPartySpecifier(
+    context,
+    fromFile,
+    specifier,
+    resolution,
+    { includeAdjacentRuntime = true } = {},
+) {
+    if (enqueueResolvedModule(context, resolution, { includeAdjacentRuntime })) return true
     if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return true
     if (specifier.startsWith('@/')) recordUnresolvedImport(context, fromFile, specifier)
     return false
@@ -189,7 +195,9 @@ function addFirstPartySpecifier(
         })
     )
         return
-    enqueueResolvedFirstPartySpecifier(context, fromFile, specifier, resolution)
+    enqueueResolvedFirstPartySpecifier(context, fromFile, specifier, resolution, {
+        includeAdjacentRuntime: runtimeRequired,
+    })
 }
 
 function describeGlobPattern(rawPattern) {

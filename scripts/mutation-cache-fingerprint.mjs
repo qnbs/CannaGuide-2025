@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { appendFileSync, existsSync, globSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import ts from 'typescript'
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
@@ -133,7 +133,9 @@ function readGlobMatches(context, file, globRoot, globPattern) {
     }
 
     if (!existsSync(globRoot)) return []
-    return globSync(globPattern, { cwd: globRoot }).map((match) => resolve(globRoot, match))
+    return globSync(globPattern, { cwd: globRoot })
+        .map((match) => resolve(globRoot, match))
+        .filter((match) => statSync(match).isFile())
 }
 
 function addGlobPattern(file, rawPattern, context, matches) {
@@ -254,8 +256,8 @@ function isUrlConstructor(node, typescript) {
     return typescript.isIdentifier(node.expression) && node.expression.text === 'URL'
 }
 
-function isRelativeStringLiteral(node) {
-    return Boolean(node && isLiteralString(node) && node.text.startsWith('.'))
+function isRelativeUrlReference(node) {
+    return Boolean(node && isLiteralString(node) && !/^(?:\/|[a-z][a-z\d+.-]*:)/i.test(node.text))
 }
 
 function isAbsoluteUrlBase(base) {
@@ -265,17 +267,28 @@ function isAbsoluteUrlBase(base) {
 function relativeUrlSpecifier(node, typescript) {
     if (!isUrlConstructor(node, typescript)) return null
     const firstArgument = node.arguments?.[0]
-    if (!isRelativeStringLiteral(firstArgument)) return null
+    if (!isRelativeUrlReference(firstArgument)) return null
 
     const base = node.arguments[1]
     if (base && isImportMetaUrl(base, typescript)) return firstArgument.text
     return isAbsoluteUrlBase(base) ? null : false
 }
 
+function enqueueModuleRelativeUrl(context, fromFile, specifier) {
+    const description = `${relative(context.root, fromFile)} -> ${specifier}`
+    const resolvedPath = fileURLToPath(new URL(specifier, pathToFileURL(fromFile)))
+
+    if (!isWithin(context.root, resolvedPath) || !existsSync(resolvedPath)) {
+        context.unresolvedLocalImports.add(description)
+        return
+    }
+    context.queue.push(resolvedPath)
+}
+
 function visitNewUrl(node, file, context) {
     const specifier = relativeUrlSpecifier(node, context.typescript)
     if (specifier === false) markUnsupportedDynamicImport(context, file)
-    else if (specifier) addFirstPartySpecifier(context, file, specifier)
+    else if (specifier) enqueueModuleRelativeUrl(context, file, specifier)
 }
 
 function readTestSourceTree(webRoot) {

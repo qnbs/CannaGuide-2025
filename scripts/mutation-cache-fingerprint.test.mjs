@@ -221,16 +221,24 @@ test('fingerprints import-equals and relative URL dependencies', (t) => {
         path.join(source, 'target.ts'),
         "import dependency = require('./legacy-dependency')\n" +
             "export const assetUrl = new URL('./asset.svg', import.meta.url)\n" +
+            "export const bareAssetUrl = new URL('bare-asset.svg', import.meta.url)\n" +
             "export const remoteUrl = new URL('./health', 'https://api.example.test/')\n" +
             'export const value = dependency.value\n',
     )
     writeFileSync(path.join(source, 'legacy-dependency.ts'), 'export const value = true\n')
     writeFileSync(path.join(source, 'asset.svg'), '<svg />\n')
+    const bareAsset = path.join(source, 'bare-asset.svg')
+    writeFileSync(bareAsset, '<svg><title>first</title></svg>\n')
 
     const result = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(result.files.includes('apps/web/src/legacy-dependency.ts'))
     assert.ok(result.files.includes('apps/web/src/asset.svg'))
+    assert.ok(result.files.includes('apps/web/src/bare-asset.svg'))
     assert.ok(!result.files.includes('apps/web/src/health'))
+
+    writeFileSync(bareAsset, '<svg><title>changed</title></svg>\n')
+    const changedBareAsset = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changedBareAsset.fingerprint, result.fingerprint)
 })
 
 test('fails closed for relative URLs with an unknown base', (t) => {
@@ -289,12 +297,13 @@ test('fingerprints code and data files statically matched by Vite globs', (t) =>
     const strains = path.join(root, 'apps/web/data/strains')
     const catalog = path.join(root, 'apps/web/data/catalog')
     const assets = path.join(root, 'apps/web/data/assets')
+    const nestedAssetDirectory = path.join(assets, 'nested/deeper')
     mkdirSync(strains, { recursive: true })
     mkdirSync(catalog, { recursive: true })
-    mkdirSync(assets, { recursive: true })
+    mkdirSync(nestedAssetDirectory, { recursive: true })
     writeFileSync(
         path.join(source, 'target.ts'),
-        "export const modules = import.meta.glob(['../data/strains/*.ts', '../data/catalog/*.json', '../data/assets/*.js', '../data/assets/*.svg'])\n",
+        "export const modules = import.meta.glob(['../data/strains/*.ts', '../data/catalog/*.json', '../data/assets/*.js', '../data/assets/*.svg', '../data/assets/**/*'])\n",
     )
     writeFileSync(path.join(strains, 'a.ts'), 'export const a = true\n')
     writeFileSync(path.join(strains, 'b.ts'), 'export const b = true\n')
@@ -303,6 +312,8 @@ test('fingerprints code and data files statically matched by Vite globs', (t) =>
     const minifiedFile = path.join(assets, 'plugin.min.js')
     writeFileSync(minifiedFile, 'globalThis.plugin = 1\n')
     writeFileSync(path.join(assets, 'icon.svg'), '<svg />\n')
+    const nestedAsset = path.join(nestedAssetDirectory, 'deep-icon.svg')
+    writeFileSync(nestedAsset, '<svg><title>nested</title></svg>\n')
 
     const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.ok(initial.files.includes('apps/web/data/strains/a.ts'))
@@ -310,6 +321,9 @@ test('fingerprints code and data files statically matched by Vite globs', (t) =>
     assert.ok(initial.files.includes('apps/web/data/catalog/entry.json'))
     assert.ok(initial.files.includes('apps/web/data/assets/plugin.min.js'))
     assert.ok(initial.files.includes('apps/web/data/assets/icon.svg'))
+    assert.ok(initial.files.includes('apps/web/data/assets/nested/deeper/deep-icon.svg'))
+    assert.ok(!initial.files.includes('apps/web/data/assets/nested'))
+    assert.ok(!initial.files.includes('apps/web/data/assets/nested/deeper'))
 
     writeFileSync(catalogFile, '{"name":"changed"}\n')
     const changedJson = calculateMutationDependencyFingerprint({ repoRoot: root })

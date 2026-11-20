@@ -317,6 +317,48 @@ test('selects import and require export conditions according to actual Node reso
     assert.ok(!cjsFingerprint.files.includes('packages/runtime/src/import.mjs'))
 })
 
+test('resolves workspace packages that declare only a require export for CommonJS', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    mkdirSync(path.join(packageRoot, 'src'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    types: './dist/index.d.ts',
+                    require: './src/only.cjs',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'dist/index.d.ts'), 'export declare const value: number\n')
+    writeFileSync(path.join(packageRoot, 'src/only.cjs'), 'exports.value = 1\n')
+
+    const scopedPackages = path.join(root, 'node_modules/@fixture')
+    mkdirSync(scopedPackages, { recursive: true })
+    symlinkSync(packageRoot, path.join(scopedPackages, 'runtime'), 'dir')
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/index.d.ts'],
+    }
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "const { value } = require('@fixture/runtime')\nvoid value\n",
+    )
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/src/only.cjs'))
+})
+
 test('falls back to sibling default when nested require condition has no match', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

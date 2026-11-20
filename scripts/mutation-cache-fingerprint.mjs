@@ -148,6 +148,10 @@ function rejectUnprovenPackageRuntimeImport(context, request) {
     return true
 }
 
+function resolutionModeForRequestKind(typescript, requestKind) {
+    return requestKind === 'require' ? typescript.ModuleKind.CommonJS : typescript.ModuleKind.ESNext
+}
+
 function enqueueResolvedFirstPartySpecifier(
     context,
     fromFile,
@@ -173,6 +177,9 @@ function addFirstPartySpecifier(
         fromFile,
         compilerOptions,
         typescript.sys,
+        undefined,
+        undefined,
+        resolutionModeForRequestKind(typescript, requestKind),
     ).resolvedModule?.resolvedFileName
 
     if (

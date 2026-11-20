@@ -176,11 +176,8 @@ function isActiveRuntimeCondition(condition, requestKind) {
     return RUNTIME_EXPORT_CONDITIONS.has(condition)
 }
 
-function runtimeExportTargets(value, requestKind = 'import') {
-    if (typeof value === 'string') return [value]
-    if (Array.isArray(value)) return fallbackRuntimeTargets(value, requestKind)
-    if (!value || typeof value !== 'object') return []
-    for (const [condition, target] of Object.entries(value)) {
+function collectConditionalExportTargets(conditions, requestKind) {
+    for (const [condition, target] of Object.entries(conditions)) {
         if (condition.startsWith('types')) continue
         if (!isActiveRuntimeCondition(condition, requestKind)) continue
         if (target === null) return []
@@ -188,6 +185,13 @@ function runtimeExportTargets(value, requestKind = 'import') {
         if (nested.length > 0) return nested
     }
     return []
+}
+
+function runtimeExportTargets(value, requestKind = 'import') {
+    if (typeof value === 'string') return [value]
+    if (Array.isArray(value)) return fallbackRuntimeTargets(value, requestKind)
+    if (!value || typeof value !== 'object') return []
+    return collectConditionalExportTargets(value, requestKind)
 }
 
 function fallbackRuntimeTargets(fallbacks, requestKind) {

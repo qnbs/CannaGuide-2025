@@ -554,6 +554,123 @@ test('export array skips an excluded conditional entry and uses the next fallbac
     assert.ok(!result.files.includes('packages/runtime/wrong.cjs'))
 })
 
+test('fails closed when a require export array ends in explicit exclusion', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    require: [null],
+                    default: './fallback.cjs',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'fallback.cjs'), 'module.exports = {}\n')
+    writeFileSync(path.join(source, 'target.ts'), "const runtime = require('@fixture/runtime')\nvoid runtime\n")
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export {}\n')
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /@fixture\/runtime \(workspace package has no runtime export\)/,
+    )
+})
+
+test('selects the node export for CommonJS require edges', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    browser: './browser.cjs',
+                    node: './node.cjs',
+                    require: './require.cjs',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'browser.cjs'), 'module.exports = { side: "browser" }\n')
+    writeFileSync(path.join(packageRoot, 'node.cjs'), 'module.exports = { side: "node" }\n')
+    writeFileSync(path.join(packageRoot, 'require.cjs'), 'module.exports = { side: "require" }\n')
+    writeFileSync(path.join(source, 'target.ts'), "const runtime = require('@fixture/runtime')\nvoid runtime\n")
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export {}\n')
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('packages/runtime/node.cjs'))
+    assert.ok(!result.files.includes('packages/runtime/browser.cjs'))
+})
+
+test('fingerprints import-equals via the require export condition', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+
+    const packageRoot = path.join(root, 'packages/runtime')
+    mkdirSync(path.join(packageRoot, 'dist'), { recursive: true })
+    writeFileSync(
+        path.join(packageRoot, 'package.json'),
+        JSON.stringify({
+            name: '@fixture/runtime',
+            exports: {
+                '.': {
+                    import: './esm.mjs',
+                    require: './cjs.cjs',
+                },
+            },
+        }),
+    )
+    writeFileSync(path.join(packageRoot, 'esm.mjs'), 'export const value = "esm"\n')
+    writeFileSync(path.join(packageRoot, 'cjs.cjs'), 'module.exports = { value: "cjs" }\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import runtime = require('@fixture/runtime')\nexport const value = runtime.value\n",
+    )
+
+    const tsconfigPath = path.join(root, 'apps/web/tsconfig.json')
+    const tsconfig = JSON.parse(readFileSync(tsconfigPath, 'utf8'))
+    tsconfig.compilerOptions.baseUrl = '.'
+    tsconfig.compilerOptions.paths = {
+        '@fixture/runtime': ['../../packages/runtime/dist/types.d.ts'],
+    }
+    writeFileSync(path.join(packageRoot, 'dist/types.d.ts'), 'export {}\n')
+    writeFileSync(tsconfigPath, JSON.stringify(tsconfig))
+
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(initial.files.includes('packages/runtime/cjs.cjs'))
+    assert.ok(!initial.files.includes('packages/runtime/esm.mjs'))
+
+    writeFileSync(path.join(packageRoot, 'cjs.cjs'), 'module.exports = { value: "cjs-changed" }\n')
+    const changed = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(changed.fingerprint, initial.fingerprint)
+})
+
 test('stops conditional export resolution when an active condition is null', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

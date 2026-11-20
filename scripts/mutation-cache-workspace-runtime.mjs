@@ -180,6 +180,12 @@ function isActiveRuntimeCondition(condition, requestKind) {
     if (condition === 'default') return true
     if (condition === requestKind) return true
     if (condition === 'import' || condition === 'require') return false
+    if (requestKind === 'require') {
+        if (condition === 'node') return true
+        if (condition === 'browser' || condition === 'module' || condition === 'import') return false
+        return condition === 'development' || condition === 'production'
+    }
+    if (condition === 'node') return false
     return RUNTIME_EXPORT_CONDITIONS.has(condition)
 }
 
@@ -203,9 +209,17 @@ function runtimeExportTargets(value, requestKind = 'import', packageRoot = null)
 }
 
 function fallbackRuntimeTargets(fallbacks, requestKind, packageRoot) {
+    let sawExclusion = false
     for (const fallback of fallbacks) {
+        if (fallback === null) {
+            sawExclusion = true
+            continue
+        }
         const targets = runtimeExportTargets(fallback, requestKind, packageRoot)
-        if (isExportResolutionExcluded(targets)) continue
+        if (isExportResolutionExcluded(targets)) {
+            sawExclusion = true
+            continue
+        }
         if (targets.length === 0) continue
         if (!targets.every((target) => isValidPackageTargetForFallback(target))) continue
         // Package-export arrays are fallbacks only for syntactically invalid targets.
@@ -214,6 +228,7 @@ function fallbackRuntimeTargets(fallbacks, requestKind, packageRoot) {
         void packageRoot
         return targets
     }
+    if (sawExclusion) return EXPORT_RESOLUTION_EXCLUDED
     return []
 }
 

@@ -328,6 +328,7 @@ function visitImportEquals(node, file, context) {
     if (specifier) {
         addFirstPartySpecifier(context, file, specifier, {
             runtimeRequired: !isDeclarationFilePath(file) && !node.isTypeOnly,
+            requestKind: 'require',
         })
     }
 }

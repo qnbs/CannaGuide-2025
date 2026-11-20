@@ -5,7 +5,11 @@ import {
     changedFilesFromPullFiles,
     combinePaginatedJsonArrays,
     filterEvidenceForPull,
+    readEvidenceSupplement,
 } from './collect-review-evidence.mjs'
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import {join} from 'node:path'
 
 const PULL = 903
 const PULL_URL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/903'
@@ -44,6 +48,30 @@ test('changedFilesFromPullFiles retains previous_filename on rename', () => {
         'scripts/security/old-collector.mjs',
         'scripts/security/review-coverage-policy.mjs',
     ])
+})
+
+test('readEvidenceSupplement accepts headEquivalence and secondReviewRequest only', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cg-evidence-'))
+    const path = join(dir, 'extra.json')
+    writeFileSync(
+        path,
+        JSON.stringify({
+            headEquivalence: { priorHeadSha: 'a'.repeat(40), changeDigest: 'deadbeef' },
+            secondReviewRequest: {
+                provider: 'CodeRabbit',
+                pullNumber: 907,
+                headSha: 'b'.repeat(40),
+                requestCount: 1,
+                requestedAt: '2026-01-01T00:00:00.000Z',
+                observedAt: '2026-01-01T12:00:00.000Z',
+                result: 'unavailable',
+                reference: 'https://github.com/qnbs/CannaGuide-2025/pull/907#issuecomment-1',
+            },
+        }),
+    )
+    const supplement = readEvidenceSupplement(path)
+    assert.equal(supplement.headEquivalence.priorHeadSha, 'a'.repeat(40))
+    assert.equal(supplement.secondReviewRequest.provider, 'CodeRabbit')
 })
 
 test('filterEvidenceForPull does not treat prose as structured receipt input', () => {

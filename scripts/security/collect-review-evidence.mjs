@@ -5,6 +5,7 @@
  * does not post comments, edit reviews, or fabricate receipts.
  */
 import { execFileSync, spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 
@@ -53,13 +54,45 @@ function ghApiJson(pathSuffix) {
     return combinePaginatedJsonArrays(out)
 }
 
+const SUPPLEMENT_KEYS = new Set(['headEquivalence', 'secondReviewRequest'])
+
+/** Optional JSON file may supply headEquivalence and secondReviewRequest only. */
+export function readEvidenceSupplement(filePath) {
+    let parsed
+    try {
+        parsed = JSON.parse(readFileSync(filePath, 'utf8'))
+    } catch {
+        console.error('--supplement must be a readable JSON file')
+        process.exit(2)
+    }
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        console.error('--supplement JSON must be an object')
+        process.exit(2)
+    }
+    const supplement = {}
+    for (const key of Object.keys(parsed)) {
+        if (!SUPPLEMENT_KEYS.has(key)) {
+            console.error(`--supplement ignores unknown key: ${key}`)
+            process.exit(2)
+        }
+        supplement[key] = parsed[key]
+    }
+    return supplement
+}
+
 function parseArgs(argv) {
     let pullNumber = null
     let expectHead = null
+    let supplementPath = null
     for (let i = 2; i < argv.length; i += 1) {
         const arg = argv[i]
         if (arg === '--expect-head' && argv[i + 1]) {
             expectHead = argv[i + 1].toLowerCase()
+            i += 1
+            continue
+        }
+        if (arg === '--supplement' && argv[i + 1]) {
+            supplementPath = argv[i + 1]
             i += 1
             continue
         }
@@ -69,7 +102,7 @@ function parseArgs(argv) {
     }
     if (!pullNumber) {
         console.error(
-            'Usage: node scripts/security/collect-review-evidence.mjs <PR_NUMBER> [--expect-head <40-char-sha>]',
+            'Usage: node scripts/security/collect-review-evidence.mjs <PR_NUMBER> [--expect-head <40-char-sha>] [--supplement <path.json>]',
         )
         process.exit(2)
     }
@@ -77,7 +110,9 @@ function parseArgs(argv) {
         console.error('--expect-head must be a full lowercase git SHA')
         process.exit(2)
     }
-    return { pullNumber, expectHead }
+    const supplement =
+        supplementPath === null ? {} : readEvidenceSupplement(resolve(supplementPath))
+    return { pullNumber, expectHead, supplement }
 }
 
 function readPrHead(pullNumber) {
@@ -143,7 +178,7 @@ export function assertHeadUnchanged(pullNumber, headSha) {
 }
 
 function main() {
-    const { pullNumber, expectHead } = parseArgs(process.argv)
+    const { pullNumber, expectHead, supplement } = parseArgs(process.argv)
     const headSha = readStableHead(pullNumber)
 
     if (expectHead !== null && headSha !== expectHead) {
@@ -167,6 +202,7 @@ function main() {
         reviews,
         issueComments,
         now: new Date().toISOString(),
+        ...supplement,
     }
 
     const policy = spawnSync(

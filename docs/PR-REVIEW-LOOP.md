@@ -132,13 +132,14 @@ One stable-head correction: collect findings, group them by root cause, and ship
 Collect API evidence and pass it to the local evaluator. Its result is an operator aid, **not a required CI check** and not a substitute for GitHub rulesets, branch protection, exact-head checks, or review-thread disposition:
 
 ```bash
+node scripts/security/collect-review-evidence.mjs "${PR_NUMBER}" [--expect-head <sha>] [--supplement evidence-extra.json]
+# Or build evidence.json manually:
 gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate | jq -s 'add' > /tmp/pr-reviews.json
 gh api "repos/qnbs/CannaGuide-2025/issues/${PR_NUMBER}/comments" --paginate | jq -s 'add' > /tmp/pr-comments.json
-# Build evidence.json from the current head, its changed-file list, the two API arrays,
-# and (only if invoking the low-risk fallback) one recorded request for the current head.
+# ... headSha, recheckedHeadSha, changedFiles, now (ISO), optional headEquivalence, optional secondReviewRequest
+node scripts/security/review-coverage-policy.mjs < evidence.json
 # Only when CodeRabbit's marker names an earlier head after base-only merges:
 node scripts/security/review-head-equivalence.mjs --prior "$REVIEWED_HEAD" --head "$HEAD_SHA" > /tmp/head-equivalence.json
-node scripts/security/review-coverage-policy.mjs < evidence.json
 ```
 
 The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR’s `pull_request_url` and each receipt from that PR’s `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only <merge-base>...<head>` for `changedFiles`; classify the actual diff, not its title or labels. The evaluator defaults uncertain files to high risk.
@@ -149,6 +150,23 @@ The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedF
 - **Low risk:** only ordinary documentation or non-security tests, with every changed path explicitly classified low by the evaluator. Two independent reviews remain preferred.
 - **Low-risk fallback:** after one regular request to one missing reviewer for the exact head, one qualified review may suffice only if the second provider is demonstrably unavailable and the bounded wait has elapsed. An explicit rate-limit, timeout, or skip requires at least 30 minutes from the single recorded request; silence requires 24 hours. Record the request reference, provider, exact SHA, timestamps, and outcome. The evaluator rejects repeated requests, wrong-head requests, absent references, or early silence. Zero qualified reviews never satisfies the fallback.
 - Sourcery is opportunistic. A completed Sourcery review counts once when available; its absence, skip, or rate limit never creates another wait. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded availability limits, not completed review evidence. Once two qualified reviews exist, request no third review, including Codex.
+
+### Provider limitations, receipt gaps, and availability (GH #906)
+
+CodeRabbit documents an **incremental** review model (`@coderabbitai review`) that re-analyzes only commits since the last review, and a separate **full** re-review (`@coderabbitai full review`) that disregards prior inline comments ([Manage code reviews](https://docs.coderabbit.ai/guides/commands)). Configuration controls when automatic incremental reviews run (`reviews.auto_review.auto_incremental_review`, `auto_pause_after_reviewed_commits`) but **does not define** a machine-readable exact-head attestation API.
+
+In this repository, the only CodeRabbit attestation accepted locally is either a formal GitHub pull request review on the exact head, or the authenticated `final_review_risk_coverage` marker in the summary issue comment naming that head (see above). Observed failure mode (PR #903, GH #906): after new feature commits, CodeRabbit can edit the summary prose to describe the commit range up to the current head while leaving `sourceCommitId` / `coveredCommitId` on an **earlier** reviewed commit. Incremental analysis in prose is **not** a receipt. The evaluator correctly stays fail-closed; base-only merge carry-forward applies only with a proven `review-head-equivalence.mjs` result, not feature commits on a stack branch.
+
+**Do not** fabricate or edit markers, relax high-risk two-review rules, or invent head equivalence. **Do not** loop `@coderabbitai review` on the same head when the bot replies that incremental mode will not re-review already reviewed commits.
+
+**Recovery without lowering quality:**
+
+1. Keep one stable head; ship one correction wave, then wait for checks and reviews on that SHA.
+2. Obtain **exact-head** qualified evidence from **CodeAnt** or **Codex** (formal review or structured Codex receipt). Two independent providers from the {CodeRabbit, CodeAnt, Codex, Sourcery} pool remain required for high risk; Sourcery is opportunistic for scheduling only, but a completed Sourcery review still counts once when present on the exact head.
+3. When CodeRabbit coverage is required on a **final** stable head and incremental mode is exhausted, the provider-supported option is a single `@coderabbitai full review` on that head (not repeated incremental pings). If even a full review leaves the marker stale, treat it as a provider limitation and cover the head with the other allowlisted reviewers.
+4. Re-read evidence with `node scripts/security/collect-review-evidence.mjs <PR> [--expect-head <sha>]` immediately before merge. The collector is read-only (`gh pr view` / `gh api` only), filters out reviews and issue comments bound to another pull, sorts API rows deterministically by id, and pipes the snapshot to `review-coverage-policy.mjs` without interpreting summary prose as receipts.
+
+**Systemic availability:** the qualified pool is {CodeRabbit, CodeAnt, Codex, Sourcery}. Any two independent qualified reviews on the exact head satisfy high-risk coverage, including a completed Sourcery review paired with any other allowlisted provider. A receipt gap from one vendor is an integration or quota limit, not permission to merge with one reviewer or human prose. Record skips in the PR thread; use the bounded low-risk fallback only when the evaluator classifies low risk and the wait rules are met.
 
 ### Findings and final readback
 

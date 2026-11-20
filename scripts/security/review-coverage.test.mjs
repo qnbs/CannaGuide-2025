@@ -402,6 +402,38 @@ test('a CodeRabbit marker for another head, kind, author, PR, or body shape is r
     }
 })
 
+test('GH #906: incremental CodeRabbit summary prose without exact-head marker does not count', () => {
+    const priorCr = '47c0abe6f21d846ba53a0c725301769a6c79f53b'
+    const head903 = 'd03a667f4db0b85df09b2fa4bd64b2dd0de62587'
+    const summary = coderabbitSummary({
+        pullNumber: 903,
+        source: priorCr,
+        covered: priorCr,
+        updatedAt: '2026-11-20T15:44:51Z',
+    })
+    summary.body = [
+        '<!-- This is an auto-generated comment: summarize by coderabbit.ai -->',
+        `Reviewing files that changed between ${priorCr} and ${head903}.`,
+        `<!-- final_review_risk_coverage:${JSON.stringify({
+            sourceCommitId: priorCr,
+            coveredCommitId: priorCr,
+            kind: 'reviewed',
+        })} -->`,
+    ].join('\n')
+    const result = evaluateReviewCoverage({
+        pullNumber: 903,
+        headSha: head903,
+        recheckedHeadSha: head903,
+        changedFiles: ['scripts/mutation-cache-fingerprint.mjs'],
+        reviews: [],
+        issueComments: [summary],
+        now: '2026-11-20T16:00:00.000Z',
+    })
+    assert.equal(result.qualifiedReviewers.length, 0)
+    assert.equal(result.satisfied, false)
+    assert.equal(result.status, 'insufficient_coverage')
+})
+
 test('the latest CodeRabbit summary edit decides, and a stale edit cannot win', () => {
     const current = coderabbitSummary({
         covered: OTHER,

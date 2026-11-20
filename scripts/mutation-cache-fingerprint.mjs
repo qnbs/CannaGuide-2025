@@ -30,6 +30,16 @@ function importMetaGlobCall(node) {
     )
 }
 
+function globArgumentPatterns(argument) {
+    if (isLiteralString(argument)) return [argument.text]
+    if (ts.isArrayLiteralExpression(argument)) {
+        return argument.elements.every(isLiteralString)
+            ? argument.elements.map((element) => element.text)
+            : null
+    }
+    return null
+}
+
 /**
  * Hash every Stryker mutation target and its recursively imported first-party modules.
  * Unresolved local imports and dynamic module discovery fail closed so a new dependency
@@ -54,6 +64,16 @@ export function calculateMutationDependencyFingerprint({
         .map((pattern) => pattern.slice(1))
     const targets = typescript.sys.readDirectory(webRoot, SOURCE_EXTENSIONS, excludes, includes)
     if (targets.length === 0) throw new Error('Stryker mutation patterns resolved to no files')
+    const testPatterns = strykerConfig.testFiles ?? []
+    const testFiles = typescript.sys.readDirectory(
+        webRoot,
+        SOURCE_EXTENSIONS,
+        undefined,
+        testPatterns,
+    )
+    const viteConfig = resolve(webRoot, strykerConfig.vitest?.configFile ?? 'vite.config.ts')
+    if (!existsSync(viteConfig))
+        throw new Error(`Configured Vitest/Vite config is missing: ${viteConfig}`)
 
     const config = typescript.readConfigFile(webTsconfigPath, typescript.sys.readFile)
     if (config.error) {
@@ -71,7 +91,9 @@ export function calculateMutationDependencyFingerprint({
         throw new Error(typescript.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
     }
 
-    const queue = [...targets]
+    const queue = [...targets, ...testFiles, viteConfig]
+    const setupFile = resolve(webRoot, 'vitest.setup.ts')
+    if (existsSync(setupFile)) queue.push(setupFile)
     const files = new Set()
     const unresolvedLocalImports = new Set()
     const unsupportedDynamicImports = new Set()
@@ -150,7 +172,56 @@ export function calculateMutationDependencyFingerprint({
                 if (isLiteralString(node.argument.literal))
                     addSpecifier(file, node.argument.literal.text)
             } else if (typescript.isCallExpression(node)) {
-                if (importMetaGlobCall(node)) unsupportedDynamicImports.add(relative(root, file))
+                if (importMetaGlobCall(node)) {
+                    const patterns = node.arguments[0] && globArgumentPatterns(node.arguments[0])
+                    if (!patterns || patterns.length === 0) {
+                        unsupportedDynamicImports.add(relative(root, file))
+                    } else {
+                        const included = new Set()
+                        const excluded = new Set()
+                        for (const rawPattern of patterns) {
+                            const isExclude = rawPattern.startsWith('!')
+                            const pattern = isExclude ? rawPattern.slice(1) : rawPattern
+                            if (!pattern.startsWith('./') && !pattern.startsWith('../')) {
+                                unsupportedDynamicImports.add(relative(root, file))
+                                continue
+                            }
+
+                            const segments = pattern.split('/')
+                            const globIndex = segments.findIndex(
+                                (segment) =>
+                                    segment.includes('*') ||
+                                    segment.includes('?') ||
+                                    segment.includes('{') ||
+                                    segment.includes('['),
+                            )
+                            if (globIndex < 0) {
+                                if (isExclude) {
+                                    excluded.add(resolve(dirname(file), pattern))
+                                } else {
+                                    addSpecifier(file, pattern)
+                                }
+                                continue
+                            }
+
+                            const prefix = segments.slice(0, globIndex).join('/') || '.'
+                            const globRoot = resolve(dirname(file), prefix)
+                            const globPattern = segments.slice(globIndex).join('/')
+                            const matches = typescript.sys.readDirectory(
+                                globRoot,
+                                SOURCE_EXTENSIONS,
+                                undefined,
+                                [globPattern],
+                            )
+                            for (const match of matches) {
+                                ;(isExclude ? excluded : included).add(resolve(match))
+                            }
+                        }
+                        for (const match of included) {
+                            if (!excluded.has(match)) queue.push(match)
+                        }
+                    }
+                }
 
                 const isDynamicImport = node.expression.kind === typescript.SyntaxKind.ImportKeyword
                 const isRequire =
@@ -159,7 +230,15 @@ export function calculateMutationDependencyFingerprint({
                     typescript.isIdentifier(node.expression) &&
                     node.expression.text === 'importScripts'
 
-                if (isDynamicImport || isRequire || isImportScripts) {
+                if (isImportScripts && node.arguments.length > 0) {
+                    for (const argument of node.arguments) {
+                        if (isLiteralString(argument)) {
+                            addSpecifier(file, argument.text)
+                        } else {
+                            unsupportedDynamicImports.add(relative(root, file))
+                        }
+                    }
+                } else if (isDynamicImport || isRequire || isImportScripts) {
                     const argument = node.arguments[0]
                     if (argument && isLiteralString(argument)) {
                         addSpecifier(file, argument.text)
@@ -213,6 +292,7 @@ export function calculateMutationDependencyFingerprint({
         fingerprint: fingerprint.digest('hex'),
         files: sortedFiles.map((file) => relative(root, file).split(sep).join('/')),
         targetCount: targets.length,
+        testFileCount: testFiles.length,
     }
 }
 
@@ -225,7 +305,7 @@ if (process.argv[1] && resolve(process.argv[1]) === SCRIPT_PATH) {
             process.stdout.write(`fingerprint=${result.fingerprint}\n`)
         }
         process.stdout.write(
-            `Stryker targets: ${result.targetCount}; first-party dependency files: ${result.files.length}\n`,
+            `Stryker targets: ${result.targetCount}; test files: ${result.testFileCount}; first-party dependency files: ${result.files.length}\n`,
         )
     } catch (error) {
         process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`)

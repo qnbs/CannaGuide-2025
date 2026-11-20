@@ -81,7 +81,12 @@ test('fingerprint follows transitive dependencies and newly added imports', (t) 
 test('fingerprints filesystem fixtures and dynamic source scans used by tests', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))
-    writeFileSync(path.join(source, 'target.ts'), 'export const target = true\n')
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "const scopeUrl = new URL('/app/', window.location.origin)\n" +
+            "const workerUrl = new URL('sw.js', scopeUrl)\n" +
+            'export const target = workerUrl.pathname\n',
+    )
     const serviceWorker = path.join(root, 'apps/web/public/sw.js')
     writeFileSync(serviceWorker, 'self.fixture = true\n')
 

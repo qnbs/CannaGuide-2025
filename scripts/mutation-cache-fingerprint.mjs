@@ -253,24 +253,70 @@ function isImportMetaUrl(node, typescript) {
 }
 
 function isUrlConstructor(node, typescript) {
-    return typescript.isIdentifier(node.expression) && node.expression.text === 'URL'
+    return (
+        typescript.isNewExpression(node) &&
+        typescript.isIdentifier(node.expression) &&
+        node.expression.text === 'URL'
+    )
 }
 
 function isRelativeUrlReference(node) {
     return Boolean(node && isLiteralString(node) && !/^(?:\/|[a-z][a-z\d+.-]*:)/i.test(node.text))
 }
 
+function propertyAccessPath(node, typescript) {
+    const properties = []
+    while (typescript.isPropertyAccessExpression(node)) {
+        properties.unshift(node.name.text)
+        node = node.expression
+    }
+    return typescript.isIdentifier(node) ? [node.text, ...properties].join('.') : ''
+}
+
+function isRuntimeOriginUrlDeclaration(node, typescript) {
+    if (!typescript.isVariableDeclaration(node) || !typescript.isIdentifier(node.name)) {
+        return false
+    }
+    const initializer = node.initializer
+    return Boolean(
+        initializer &&
+        isUrlConstructor(initializer, typescript) &&
+        initializer.arguments?.some(
+            (argument) => propertyAccessPath(argument, typescript) === 'window.location.origin',
+        ),
+    )
+}
+
+function collectRuntimeUrlBases(sourceFile, typescript) {
+    const bases = new Set()
+    const visit = (node) => {
+        if (isRuntimeOriginUrlDeclaration(node, typescript)) bases.add(node.name.text)
+        typescript.forEachChild(node, visit)
+    }
+    visit(sourceFile)
+    return bases
+}
+
 function isAbsoluteUrlBase(base) {
     return !base || (isLiteralString(base) && /^[a-z][a-z\d+.-]*:/i.test(base.text))
 }
 
-function relativeUrlSpecifier(node, typescript) {
+function isKnownRuntimeUrlBase(base, context) {
+    const { typescript } = context
+    if (propertyAccessPath(base, typescript) === 'window.location.origin') return true
+    if (!typescript.isIdentifier(base)) return false
+    return context.runtimeUrlBases.has(base.text)
+}
+
+function relativeUrlSpecifier(node, context) {
+    const { typescript } = context
     if (!isUrlConstructor(node, typescript)) return null
     const firstArgument = node.arguments?.[0]
     if (!isRelativeUrlReference(firstArgument)) return null
 
     const base = node.arguments[1]
     if (base && isImportMetaUrl(base, typescript)) return firstArgument.text
+    if (isKnownRuntimeUrlBase(base, context)) return null
     return isAbsoluteUrlBase(base) ? null : false
 }
 
@@ -286,7 +332,7 @@ function enqueueModuleRelativeUrl(context, fromFile, specifier) {
 }
 
 function visitNewUrl(node, file, context) {
-    const specifier = relativeUrlSpecifier(node, context.typescript)
+    const specifier = relativeUrlSpecifier(node, context)
     if (specifier === false) markUnsupportedDynamicImport(context, file)
     else if (specifier) enqueueModuleRelativeUrl(context, file, specifier)
 }
@@ -331,6 +377,7 @@ function visitModule(file, context) {
         true,
         file.endsWith('x') ? context.typescript.ScriptKind.TSX : context.typescript.ScriptKind.TS,
     )
+    context.runtimeUrlBases = collectRuntimeUrlBases(sourceFile, context.typescript)
 
     const visit = (node) => {
         const visitor = context.nodeVisitors.get(node.kind)
@@ -362,6 +409,7 @@ function createGraphContext(root, compilerOptions, typescript) {
         callVisitors,
         queue: [],
         files: new Set(),
+        runtimeUrlBases: new Set(),
         unresolvedLocalImports: new Set(),
         unsupportedDynamicImports: new Set(),
     }

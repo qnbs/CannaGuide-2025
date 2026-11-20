@@ -44,35 +44,40 @@ function markUnsupportedDynamicImport(context, file) {
     context.unsupportedDynamicImports.add(relative(context.root, file))
 }
 
+function enqueueResolvedModule(context, resolution) {
+    if (!resolution) return false
+    const resolvedPath = resolve(resolution)
+    if (!isWithin(context.root, resolvedPath)) return false
+    if (!resolvedPath.split(sep).includes('node_modules')) context.queue.push(resolvedPath)
+    return true
+}
+
+function enqueueRelativeFirstPartyAsset(context, fromFile, specifier) {
+    if (!specifier.startsWith('.')) return false
+    const relativePath = resolve(dirname(fromFile), specifier)
+    // Vite can import first-party assets which TypeScript does not resolve as modules.
+    // Include an existing relative file directly; unresolved source imports fail below.
+    if (existsSync(relativePath) && isWithin(context.root, relativePath)) {
+        context.queue.push(relativePath)
+    } else {
+        context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
+    }
+    return true
+}
+
 function addFirstPartySpecifier(context, fromFile, specifier) {
-    const { root, typescript, compilerOptions } = context
+    const { typescript, compilerOptions } = context
     const resolution = typescript.resolveModuleName(
         specifier,
         fromFile,
         compilerOptions,
         typescript.sys,
     ).resolvedModule?.resolvedFileName
-
-    if (resolution && isWithin(root, resolve(resolution))) {
-        const resolvedPath = resolve(resolution)
-        if (!resolvedPath.split(sep).includes('node_modules')) context.queue.push(resolvedPath)
-        return
-    }
-
-    // Vite can import first-party assets which TypeScript does not resolve as modules.
-    // Include an existing relative file directly; unresolved source imports fail below.
-    if (specifier.startsWith('.')) {
-        const relativePath = resolve(dirname(fromFile), specifier)
-        if (existsSync(relativePath) && isWithin(root, relativePath)) {
-            context.queue.push(relativePath)
-            return
-        }
-        context.unresolvedLocalImports.add(`${relative(root, fromFile)} -> ${specifier}`)
-        return
-    }
+    if (enqueueResolvedModule(context, resolution)) return
+    if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return
 
     if (specifier.startsWith('@/')) {
-        context.unresolvedLocalImports.add(`${relative(root, fromFile)} -> ${specifier}`)
+        context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
     }
 }
 
@@ -90,7 +95,7 @@ function describeGlobPattern(rawPattern) {
     return { excluded, pattern, segments, globIndex, supported: true }
 }
 
-function addGlobPattern(file, rawPattern, context, included, excluded) {
+function addGlobPattern(file, rawPattern, context, matches) {
     const description = describeGlobPattern(rawPattern)
     if (!description.supported) {
         markUnsupportedDynamicImport(context, file)
@@ -100,7 +105,7 @@ function addGlobPattern(file, rawPattern, context, included, excluded) {
     const { excluded: isExclude, pattern, segments, globIndex } = description
     if (globIndex < 0) {
         const resolved = resolve(dirname(file), pattern)
-        if (isExclude) excluded.add(resolved)
+        if (isExclude) matches.excluded.add(resolved)
         else addFirstPartySpecifier(context, file, pattern)
         return
     }
@@ -108,10 +113,15 @@ function addGlobPattern(file, rawPattern, context, included, excluded) {
     const prefix = segments.slice(0, globIndex).join('/') || '.'
     const globRoot = resolve(dirname(file), prefix)
     const globPattern = segments.slice(globIndex).join('/')
-    const matches = context.typescript.sys.readDirectory(globRoot, SOURCE_EXTENSIONS, undefined, [
-        globPattern,
-    ])
-    for (const match of matches) (isExclude ? excluded : included).add(resolve(match))
+    const globMatches = context.typescript.sys.readDirectory(
+        globRoot,
+        SOURCE_EXTENSIONS,
+        undefined,
+        [globPattern],
+    )
+    for (const match of globMatches) {
+        ;(isExclude ? matches.excluded : matches.included).add(resolve(match))
+    }
 }
 
 function addStaticGlobDependencies(node, file, context) {
@@ -121,11 +131,10 @@ function addStaticGlobDependencies(node, file, context) {
         return
     }
 
-    const included = new Set()
-    const excluded = new Set()
-    for (const pattern of patterns) addGlobPattern(file, pattern, context, included, excluded)
-    for (const match of included) {
-        if (!excluded.has(match)) context.queue.push(match)
+    const matches = { included: new Set(), excluded: new Set() }
+    for (const pattern of patterns) addGlobPattern(file, pattern, context, matches)
+    for (const match of matches.included) {
+        if (!matches.excluded.has(match)) context.queue.push(match)
     }
 }
 
@@ -136,14 +145,15 @@ function visitImportOrExport(node, file, context) {
 }
 
 function visitImportEquals(node, file, context) {
-    const reference = node.moduleReference
-    if (
-        context.typescript.isExternalModuleReference(reference) &&
-        reference.expression &&
-        isLiteralString(reference.expression)
-    ) {
-        addFirstPartySpecifier(context, file, reference.expression.text)
-    }
+    const specifier = externalModuleSpecifier(node.moduleReference, context.typescript)
+    if (specifier) addFirstPartySpecifier(context, file, specifier)
+}
+
+function externalModuleSpecifier(reference, typescript) {
+    if (!typescript.isExternalModuleReference(reference)) return null
+    const expression = reference.expression
+    if (!expression || !isLiteralString(expression)) return null
+    return expression.text
 }
 
 function visitImportType(node, file, context) {
@@ -155,46 +165,47 @@ function visitImportType(node, file, context) {
     }
 }
 
-function dynamicLoaderKind(expression, typescript) {
-    if (expression.kind === typescript.SyntaxKind.ImportKeyword) return 'import'
-    if (!typescript.isIdentifier(expression)) return null
-    if (expression.text === 'require') return 'require'
-    if (expression.text === 'importScripts') return 'importScripts'
-    return null
+function visitImportScripts(node, file, context) {
+    if (node.arguments.length === 0) {
+        markUnsupportedDynamicImport(context, file)
+        return
+    }
+    for (const argument of node.arguments) {
+        if (isLiteralString(argument)) addFirstPartySpecifier(context, file, argument.text)
+        else markUnsupportedDynamicImport(context, file)
+    }
+}
+
+function visitDynamicImportOrRequire(node, file, context) {
+    const argument = node.arguments[0]
+    if (!argument || !isLiteralString(argument)) {
+        markUnsupportedDynamicImport(context, file)
+        return
+    }
+    addFirstPartySpecifier(context, file, argument.text)
 }
 
 function visitCallExpression(node, file, context) {
     if (importMetaGlobCall(node)) addStaticGlobDependencies(node, file, context)
 
-    const loader = dynamicLoaderKind(node.expression, context.typescript)
-    if (!loader) return
-    if (loader === 'importScripts' && node.arguments.length > 0) {
-        for (const argument of node.arguments) {
-            if (isLiteralString(argument)) addFirstPartySpecifier(context, file, argument.text)
-            else markUnsupportedDynamicImport(context, file)
-        }
-        return
-    }
+    const key = context.typescript.isIdentifier(node.expression)
+        ? node.expression.text
+        : node.expression.kind
+    const visitor = context.callVisitors.get(key)
+    if (visitor) visitor(node, file, context)
+}
 
-    const argument = node.arguments[0]
-    if (argument && isLiteralString(argument)) {
-        addFirstPartySpecifier(context, file, argument.text)
-    } else {
-        markUnsupportedDynamicImport(context, file)
-    }
+function relativeUrlSpecifier(node, typescript) {
+    if (!typescript.isIdentifier(node.expression)) return null
+    if (node.expression.text !== 'URL') return null
+    const firstArgument = node.arguments?.[0]
+    if (!firstArgument || !isLiteralString(firstArgument)) return null
+    return firstArgument.text.startsWith('.') ? firstArgument.text : null
 }
 
 function visitNewUrl(node, file, context) {
-    const firstArgument = node.arguments?.[0]
-    if (
-        context.typescript.isIdentifier(node.expression) &&
-        node.expression.text === 'URL' &&
-        firstArgument &&
-        isLiteralString(firstArgument) &&
-        firstArgument.text.startsWith('.')
-    ) {
-        addFirstPartySpecifier(context, file, firstArgument.text)
-    }
+    const specifier = relativeUrlSpecifier(node, context.typescript)
+    if (specifier) addFirstPartySpecifier(context, file, specifier)
 }
 
 function visitModule(file, context) {
@@ -208,29 +219,33 @@ function visitModule(file, context) {
     )
 
     const visit = (node) => {
-        const { typescript } = context
-        if (typescript.isImportDeclaration(node) || typescript.isExportDeclaration(node)) {
-            visitImportOrExport(node, file, context)
-        } else if (typescript.isImportEqualsDeclaration(node)) {
-            visitImportEquals(node, file, context)
-        } else if (typescript.isImportTypeNode(node)) {
-            visitImportType(node, file, context)
-        } else if (typescript.isCallExpression(node)) {
-            visitCallExpression(node, file, context)
-        } else if (typescript.isNewExpression(node)) {
-            visitNewUrl(node, file, context)
-        }
-
-        typescript.forEachChild(node, visit)
+        const visitor = context.nodeVisitors.get(node.kind)
+        if (visitor) visitor(node, file, context)
+        context.typescript.forEachChild(node, visit)
     }
     visit(sourceFile)
 }
 
 function createGraphContext(root, compilerOptions, typescript) {
+    const nodeVisitors = new Map([
+        [typescript.SyntaxKind.ImportDeclaration, visitImportOrExport],
+        [typescript.SyntaxKind.ExportDeclaration, visitImportOrExport],
+        [typescript.SyntaxKind.ImportEqualsDeclaration, visitImportEquals],
+        [typescript.SyntaxKind.ImportType, visitImportType],
+        [typescript.SyntaxKind.CallExpression, visitCallExpression],
+        [typescript.SyntaxKind.NewExpression, visitNewUrl],
+    ])
+    const callVisitors = new Map([
+        [typescript.SyntaxKind.ImportKeyword, visitDynamicImportOrRequire],
+        ['require', visitDynamicImportOrRequire],
+        ['importScripts', visitImportScripts],
+    ])
     return {
         root,
         compilerOptions,
         typescript,
+        nodeVisitors,
+        callVisitors,
         queue: [],
         files: new Set(),
         unresolvedLocalImports: new Set(),
@@ -238,20 +253,25 @@ function createGraphContext(root, compilerOptions, typescript) {
     }
 }
 
+function visitQueuedFile(file, context) {
+    const resolvedFile = resolve(file)
+    const isExternal =
+        !isWithin(context.root, resolvedFile) || resolvedFile.split(sep).includes('node_modules')
+    if (isExternal || context.files.has(resolvedFile)) return
+    if (!existsSync(resolvedFile)) {
+        context.unresolvedLocalImports.add(`missing file: ${relative(context.root, resolvedFile)}`)
+        return
+    }
+
+    context.files.add(resolvedFile)
+    if (PARSEABLE_EXTENSIONS.has(extname(resolvedFile).toLowerCase())) {
+        visitModule(resolvedFile, context)
+    }
+}
+
 function collectFirstPartyFiles(roots, context) {
     context.queue.push(...roots)
-    while (context.queue.length > 0) {
-        const file = resolve(context.queue.pop())
-        const isExternal = !isWithin(context.root, file) || file.split(sep).includes('node_modules')
-        if (isExternal || context.files.has(file)) continue
-        if (!existsSync(file)) {
-            context.unresolvedLocalImports.add(`missing file: ${relative(context.root, file)}`)
-            continue
-        }
-
-        context.files.add(file)
-        if (PARSEABLE_EXTENSIONS.has(extname(file).toLowerCase())) visitModule(file, context)
-    }
+    while (context.queue.length > 0) visitQueuedFile(context.queue.pop(), context)
 }
 
 function readWebCompilerOptions(webTsconfigPath, typescript) {
@@ -319,19 +339,7 @@ function fingerprintFiles(root, files) {
     }
 }
 
-/**
- * Hash every Stryker mutation target and its recursively imported first-party modules.
- * Unresolved local imports and dynamic module discovery fail closed so a new dependency
- * cannot silently escape the cache fingerprint.
- */
-export function calculateMutationDependencyFingerprint({
-    repoRoot = process.cwd(),
-    strykerConfigPath = resolve(repoRoot, 'stryker.conf.json'),
-    webTsconfigPath = resolve(repoRoot, 'apps/web/tsconfig.json'),
-    typescript = ts,
-} = {}) {
-    const root = resolve(repoRoot)
-    const webRoot = resolve(root, 'apps/web')
+function resolveFingerprintInputs({ webRoot, strykerConfigPath, webTsconfigPath, typescript }) {
     const strykerConfig = JSON.parse(readFileSync(strykerConfigPath, 'utf8'))
     const targets = resolveMutationTargets(strykerConfig, webRoot, typescript)
     const testFiles = typescript.sys.readDirectory(
@@ -345,18 +353,45 @@ export function calculateMutationDependencyFingerprint({
         throw new Error(`Configured Vitest/Vite config is missing: ${viteConfig}`)
     }
 
-    const compilerOptions = readWebCompilerOptions(webTsconfigPath, typescript)
-    const context = createGraphContext(root, compilerOptions, typescript)
-    const setupFile = resolve(webRoot, 'vitest.setup.ts')
     const roots = [...targets, ...testFiles, viteConfig]
+    const setupFile = resolve(webRoot, 'vitest.setup.ts')
     if (existsSync(setupFile)) roots.push(setupFile)
-    collectFirstPartyFiles(roots, context)
+
+    return {
+        roots,
+        compilerOptions: readWebCompilerOptions(webTsconfigPath, typescript),
+        targetCount: targets.length,
+        testFileCount: testFiles.length,
+    }
+}
+
+/**
+ * Hash every Stryker mutation target and its recursively imported first-party modules.
+ * Unresolved local imports and dynamic module discovery fail closed so a new dependency
+ * cannot silently escape the cache fingerprint.
+ */
+export function calculateMutationDependencyFingerprint({
+    repoRoot = process.cwd(),
+    strykerConfigPath = resolve(repoRoot, 'stryker.conf.json'),
+    webTsconfigPath = resolve(repoRoot, 'apps/web/tsconfig.json'),
+    typescript = ts,
+} = {}) {
+    const root = resolve(repoRoot)
+    const webRoot = resolve(root, 'apps/web')
+    const inputs = resolveFingerprintInputs({
+        webRoot,
+        strykerConfigPath,
+        webTsconfigPath,
+        typescript,
+    })
+    const context = createGraphContext(root, inputs.compilerOptions, typescript)
+    collectFirstPartyFiles(inputs.roots, context)
     assertCompleteGraph(context)
 
     return {
         ...fingerprintFiles(root, context.files),
-        targetCount: targets.length,
-        testFileCount: testFiles.length,
+        targetCount: inputs.targetCount,
+        testFileCount: inputs.testFileCount,
     }
 }
 

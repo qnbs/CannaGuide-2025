@@ -148,6 +148,23 @@ test('fingerprints literal import type dependencies', (t) => {
     assert.ok(result.files.includes('apps/web/src/type-dependency.ts'))
 })
 
+test('fingerprints import-equals and relative URL dependencies', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "import dependency = require('./legacy-dependency')\n" +
+            "export const assetUrl = new URL('./asset.svg', import.meta.url)\n" +
+            'export const value = dependency.value\n',
+    )
+    writeFileSync(path.join(source, 'legacy-dependency.ts'), 'export const value = true\n')
+    writeFileSync(path.join(source, 'asset.svg'), '<svg />\n')
+
+    const result = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.ok(result.files.includes('apps/web/src/legacy-dependency.ts'))
+    assert.ok(result.files.includes('apps/web/src/asset.svg'))
+})
+
 test('fingerprints statically matched Vite glob modules', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

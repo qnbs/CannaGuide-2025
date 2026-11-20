@@ -164,7 +164,7 @@ In this repository, the only CodeRabbit attestation accepted locally is either a
 1. Keep one stable head; ship one correction wave, then wait for checks and reviews on that SHA.
 2. Obtain **exact-head** qualified evidence from **CodeAnt** or **Codex** (formal review or structured Codex receipt). Two independent providers from the {CodeRabbit, CodeAnt, Codex} pool remain required for high risk; Sourcery is opportunistic only.
 3. When CodeRabbit coverage is required on a **final** stable head and incremental mode is exhausted, the provider-supported option is a single `@coderabbitai full review` on that head (not repeated incremental pings). If even a full review leaves the marker stale, treat it as a provider limitation and cover the head with the other allowlisted reviewers.
-4. Re-read evidence with `node scripts/security/collect-review-evidence.mjs <PR>` immediately before merge.
+4. Re-read evidence with `node scripts/security/collect-review-evidence.mjs <PR> [--expect-head <sha>]` immediately before merge. The collector is read-only (`gh pr view` / `gh api` only), filters out reviews and issue comments bound to another pull, sorts API rows deterministically by id, and pipes the snapshot to `review-coverage-policy.mjs` without interpreting summary prose as receipts.
 
 **Systemic availability:** relying on three major bots is intentional diversity (two-of-three exact-head coverage). A receipt gap from one vendor is an integration or quota limit, not permission to merge with one reviewer or human prose. Record skips in the PR thread; use the bounded low-risk fallback only when the evaluator classifies low risk and the wait rules are met.
 

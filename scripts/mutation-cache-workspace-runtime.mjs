@@ -176,17 +176,30 @@ function workspaceSubpath(manifest, specifier) {
     return `.${specifier.slice(manifest.name.length)}`
 }
 
+const INACTIVE_REQUEST_KIND_CONDITIONS = new Set(['import', 'require'])
+
+function isNodeEnvRuntimeCondition(condition) {
+    return condition === 'development' || condition === 'production'
+}
+
+function isActiveRequireRuntimeCondition(condition) {
+    if (condition === 'node') return true
+    if (condition === 'browser' || condition === 'module') return false
+    return isNodeEnvRuntimeCondition(condition)
+}
+
+function isActiveImportRuntimeCondition(condition) {
+    if (condition === 'node') return false
+    return RUNTIME_EXPORT_CONDITIONS.has(condition)
+}
+
 function isActiveRuntimeCondition(condition, requestKind) {
     if (condition === 'default') return true
     if (condition === requestKind) return true
-    if (condition === 'import' || condition === 'require') return false
-    if (requestKind === 'require') {
-        if (condition === 'node') return true
-        if (condition === 'browser' || condition === 'module' || condition === 'import') return false
-        return condition === 'development' || condition === 'production'
-    }
-    if (condition === 'node') return false
-    return RUNTIME_EXPORT_CONDITIONS.has(condition)
+    if (INACTIVE_REQUEST_KIND_CONDITIONS.has(condition)) return false
+    return requestKind === 'require'
+        ? isActiveRequireRuntimeCondition(condition)
+        : isActiveImportRuntimeCondition(condition)
 }
 
 function collectConditionalExportTargets(conditions, requestKind, packageRoot) {

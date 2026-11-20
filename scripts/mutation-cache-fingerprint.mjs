@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, globSync, readFileSync, readdirSync, statSy
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import ts from 'typescript'
+import { createWorkspaceRuntimeResolver } from './mutation-cache-workspace-runtime.mjs'
 
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const SOURCE_EXTENSIONS = ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs']
@@ -26,6 +27,10 @@ function isWithin(root, candidate) {
 
 function isLiteralString(node) {
     return ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node)
+}
+
+function isDeclarationFilePath(file) {
+    return /\.d\.(?:ts|mts|cts)$/i.test(file)
 }
 
 function importMetaGlobCall(node) {
@@ -53,13 +58,17 @@ function markUnsupportedDynamicImport(context, file) {
     context.unsupportedDynamicImports.add(relative(context.root, file))
 }
 
-function enqueueResolvedModule(context, resolution) {
+function recordUnresolvedImport(context, fromFile, specifier) {
+    context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
+}
+
+function enqueueResolvedModule(context, resolution, { includeAdjacentRuntime = true } = {}) {
     if (!resolution) return false
     const resolvedPath = resolve(resolution)
     if (!isWithin(context.root, resolvedPath)) return false
     if (!resolvedPath.split(sep).includes('node_modules')) {
         context.queue.push(resolvedPath)
-        enqueueRuntimeImplementation(context, resolvedPath)
+        if (includeAdjacentRuntime) enqueueRuntimeImplementation(context, resolvedPath)
     }
     return true
 }
@@ -87,25 +96,115 @@ function enqueueRelativeFirstPartyAsset(context, fromFile, specifier) {
     if (existsSync(relativePath) && isWithin(context.root, relativePath)) {
         context.queue.push(relativePath)
     } else {
-        context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
+        recordUnresolvedImport(context, fromFile, specifier)
     }
     return true
 }
 
-function addFirstPartySpecifier(context, fromFile, specifier) {
+function enqueueWorkspaceSpecifier(context, request) {
+    const workspace = context.resolveWorkspaceRuntime(
+        request.resolution,
+        request.specifier,
+        request.runtimeRequired,
+        request.requestKind,
+    )
+    if (!workspace) return false
+    if (workspace.error) {
+        recordUnresolvedImport(context, request.fromFile, workspace.error)
+        return true
+    }
+
+    enqueueWorkspaceRuntime(context, request, workspace)
+    return true
+}
+
+function enqueueWorkspaceRuntime(context, request, workspace) {
+    context.queue.push(workspace.manifestPath)
+    enqueueResolvedModule(context, request.resolution, { includeAdjacentRuntime: false })
+    for (const error of workspace.errors) {
+        recordUnresolvedImport(context, request.fromFile, error)
+    }
+    if (!request.runtimeRequired) return
+    context.queue.push(...workspace.runtimePaths)
+}
+
+function hasProvenLocalRuntimeTarget(root, resolution) {
+    if (!resolution) return false
+    const resolvedPath = resolve(resolution)
+    if (!isWithin(root, resolvedPath)) return false
+    return !isDeclarationFilePath(resolvedPath)
+}
+
+function rejectUnprovenPackageRuntimeImport(context, request) {
+    const { fromFile, specifier, resolution, runtimeRequired } = request
+    if (!runtimeRequired) return false
+    if (!specifier.startsWith('#')) return false
+    if (hasProvenLocalRuntimeTarget(context.root, resolution)) return false
+    const resolvedPath = resolution ? resolve(resolution) : null
+    const detail = resolvedPath
+        ? `resolved only to declaration or external path ${resolution}`
+        : 'TypeScript resolution is missing'
+    recordUnresolvedImport(context, fromFile, `${specifier} runtime target is unproven (${detail})`)
+    return true
+}
+
+function resolutionModeForRequestKind(typescript, requestKind) {
+    return requestKind === 'require' ? typescript.ModuleKind.CommonJS : typescript.ModuleKind.ESNext
+}
+
+function enqueueResolvedFirstPartySpecifier(
+    context,
+    fromFile,
+    specifier,
+    resolution,
+    { includeAdjacentRuntime = true } = {},
+) {
+    if (enqueueResolvedModule(context, resolution, { includeAdjacentRuntime })) return true
+    if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return true
+    if (specifier.startsWith('@/')) recordUnresolvedImport(context, fromFile, specifier)
+    return false
+}
+
+function addFirstPartySpecifier(
+    context,
+    fromFile,
+    specifier,
+    { runtimeRequired = true, requestKind = 'import' } = {},
+) {
     const { typescript, compilerOptions } = context
     const resolution = typescript.resolveModuleName(
         specifier,
         fromFile,
         compilerOptions,
         typescript.sys,
+        undefined,
+        undefined,
+        resolutionModeForRequestKind(typescript, requestKind),
     ).resolvedModule?.resolvedFileName
-    if (enqueueResolvedModule(context, resolution)) return
-    if (enqueueRelativeFirstPartyAsset(context, fromFile, specifier)) return
 
-    if (specifier.startsWith('@/')) {
-        context.unresolvedLocalImports.add(`${relative(context.root, fromFile)} -> ${specifier}`)
-    }
+    if (
+        enqueueWorkspaceSpecifier(context, {
+            fromFile,
+            specifier,
+            resolution,
+            runtimeRequired,
+            requestKind,
+        })
+    )
+        return
+
+    if (
+        rejectUnprovenPackageRuntimeImport(context, {
+            fromFile,
+            specifier,
+            resolution,
+            runtimeRequired,
+        })
+    )
+        return
+    enqueueResolvedFirstPartySpecifier(context, fromFile, specifier, resolution, {
+        includeAdjacentRuntime: runtimeRequired,
+    })
 }
 
 function describeGlobPattern(rawPattern) {
@@ -185,15 +284,53 @@ function addStaticGlobDependencies(node, file, context) {
     }
 }
 
+function importHasRuntimeBindings(importClause, typescript) {
+    if (!importClause || importClause.name) return true
+    const bindings = importClause.namedBindings
+    if (!bindings || !typescript.isNamedImports(bindings)) return true
+    if (bindings.elements.length === 0) return true
+    return bindings.elements.some((element) => !element.isTypeOnly)
+}
+
+function importRequiresRuntime(node, typescript, compilerOptions) {
+    if (node.isTypeOnly || node.importClause?.isTypeOnly) return false
+    return (
+        importHasRuntimeBindings(node.importClause, typescript) ||
+        Boolean(compilerOptions.verbatimModuleSyntax)
+    )
+}
+
+function exportRequiresRuntime(node, typescript, compilerOptions) {
+    if (node.isTypeOnly) return false
+    if (!node.exportClause) return true
+    if (!typescript.isNamedExports(node.exportClause)) return true
+    if (node.exportClause.elements.length === 0) return true
+    return (
+        node.exportClause.elements.some((element) => !element.isTypeOnly) ||
+        Boolean(compilerOptions.verbatimModuleSyntax)
+    )
+}
+
 function visitImportOrExport(node, file, context) {
-    if (node.moduleSpecifier && isLiteralString(node.moduleSpecifier)) {
-        addFirstPartySpecifier(context, file, node.moduleSpecifier.text)
-    }
+    if (!node.moduleSpecifier || !isLiteralString(node.moduleSpecifier)) return
+    const runtimeRequired =
+        !isDeclarationFilePath(file) &&
+        (context.typescript.isImportDeclaration(node)
+            ? importRequiresRuntime(node, context.typescript, context.compilerOptions)
+            : exportRequiresRuntime(node, context.typescript, context.compilerOptions))
+    addFirstPartySpecifier(context, file, node.moduleSpecifier.text, {
+        runtimeRequired,
+    })
 }
 
 function visitImportEquals(node, file, context) {
     const specifier = externalModuleSpecifier(node.moduleReference, context.typescript)
-    if (specifier) addFirstPartySpecifier(context, file, specifier)
+    if (specifier) {
+        addFirstPartySpecifier(context, file, specifier, {
+            runtimeRequired: !isDeclarationFilePath(file) && !node.isTypeOnly,
+            requestKind: 'require',
+        })
+    }
 }
 
 function externalModuleSpecifier(reference, typescript) {
@@ -208,7 +345,9 @@ function visitImportType(node, file, context) {
         context.typescript.isLiteralTypeNode(node.argument) &&
         isLiteralString(node.argument.literal)
     ) {
-        addFirstPartySpecifier(context, file, node.argument.literal.text)
+        addFirstPartySpecifier(context, file, node.argument.literal.text, {
+            runtimeRequired: false,
+        })
     }
 }
 
@@ -229,7 +368,11 @@ function visitDynamicImportOrRequire(node, file, context) {
         markUnsupportedDynamicImport(context, file)
         return
     }
-    addFirstPartySpecifier(context, file, argument.text)
+    const requestKind =
+        context.typescript.isIdentifier(node.expression) && node.expression.text === 'require'
+            ? 'require'
+            : 'import'
+    addFirstPartySpecifier(context, file, argument.text, { requestKind })
 }
 
 function visitCallExpression(node, file, context) {
@@ -355,11 +498,10 @@ function relativeUrlSpecifier(node, context) {
 }
 
 function enqueueModuleRelativeUrl(context, fromFile, specifier) {
-    const description = `${relative(context.root, fromFile)} -> ${specifier}`
     const resolvedPath = fileURLToPath(new URL(specifier, pathToFileURL(fromFile)))
 
     if (!isWithin(context.root, resolvedPath) || !existsSync(resolvedPath)) {
-        context.unresolvedLocalImports.add(description)
+        recordUnresolvedImport(context, fromFile, specifier)
         return
     }
     context.queue.push(resolvedPath)
@@ -439,6 +581,7 @@ function createGraphContext(root, compilerOptions, typescript) {
         root,
         compilerOptions,
         typescript,
+        resolveWorkspaceRuntime: createWorkspaceRuntimeResolver(root),
         nodeVisitors,
         callVisitors,
         queue: [],
@@ -503,6 +646,12 @@ function resolveMutationTargets(config, webRoot, typescript) {
     return targets
 }
 
+function resolveWorkspaceConfigPath(root) {
+    const workspaceConfigPath = resolve(root, 'pnpm-workspace.yaml')
+    if (!existsSync(workspaceConfigPath)) throw new Error('pnpm-workspace.yaml is missing')
+    return workspaceConfigPath
+}
+
 function assertCompleteGraph(context) {
     if (context.unresolvedLocalImports.size > 0) {
         throw new Error(
@@ -544,6 +693,7 @@ function resolveFingerprintInputs({
 }) {
     const strykerConfig = JSON.parse(readFileSync(strykerConfigPath, 'utf8'))
     const targets = resolveMutationTargets(strykerConfig, webRoot, typescript)
+    const workspaceConfigPath = resolveWorkspaceConfigPath(root)
     const testFiles = typescript.sys.readDirectory(
         webRoot,
         SOURCE_EXTENSIONS,
@@ -561,7 +711,7 @@ function resolveFingerprintInputs({
 
     return {
         roots,
-        additionalFiles: resolveTestReadInputs(root, webRoot),
+        additionalFiles: [...resolveTestReadInputs(root, webRoot), workspaceConfigPath],
         compilerOptions: readWebCompilerOptions(webTsconfigPath, typescript),
         targetCount: targets.length,
         testFileCount: testFiles.length,

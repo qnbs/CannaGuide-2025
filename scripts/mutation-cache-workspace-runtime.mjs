@@ -1,0 +1,364 @@
+import { existsSync, readdirSync, readFileSync, realpathSync, statSync } from 'node:fs'
+import { isAbsolute, relative, resolve, sep } from 'node:path'
+
+const UNSUPPORTED_WORKSPACE_GLOB_MARKERS = ['!', '?', '{', '}', '[', ']', '(', ')']
+const RUNTIME_EXPORT_CONDITIONS = new Set([
+    'browser',
+    process.env.NODE_ENV === 'production' ? 'production' : 'development',
+    'import',
+    'module',
+])
+
+/** Returned when an active export condition is explicitly `null` (excluded). */
+const EXPORT_RESOLUTION_EXCLUDED = Symbol('mutation-export-excluded')
+
+function isExportResolutionExcluded(result) {
+    return result === EXPORT_RESOLUTION_EXCLUDED
+}
+
+function isWithin(root, candidate) {
+    const pathFromRoot = relative(root, candidate)
+    return (
+        pathFromRoot !== '..' && !pathFromRoot.startsWith(`..${sep}`) && !isAbsolute(pathFromRoot)
+    )
+}
+
+function readWorkspacePackage(packageRoot) {
+    const manifestPath = resolve(packageRoot, 'package.json')
+    if (!existsSync(manifestPath)) return null
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+    if (typeof manifest.name !== 'string') return null
+    return { packageRoot, manifestPath, manifest }
+}
+
+function parseWorkspacePattern(line) {
+    const entry = line.match(/^\s*-\s*(?:'([^']+)'|"([^"]+)"|([^\s#]+))\s*(?:#.*)?$/)
+    if (!entry) throw new Error(`Unsupported pnpm workspace entry: ${line.trim()}`)
+    return entry[1] ?? entry[2] ?? entry[3]
+}
+
+function isBlankOrComment(line) {
+    return line.trim() === '' || line.trim().startsWith('#')
+}
+
+function isTopLevelConfiguration(line) {
+    return !/^\s/.test(line)
+}
+
+function workspacePatterns(contents) {
+    const lines = contents.split(/\r?\n/)
+    const sectionStart = lines.findIndex((line) => /^packages:\s*$/.test(line))
+    if (sectionStart < 0) throw new Error('pnpm-workspace.yaml has no packages section')
+    const patterns = []
+    for (const line of lines.slice(sectionStart + 1)) {
+        if (isBlankOrComment(line)) continue
+        if (isTopLevelConfiguration(line)) break
+        patterns.push(parseWorkspacePattern(line))
+    }
+    if (patterns.length === 0) throw new Error('pnpm-workspace.yaml has no package patterns')
+    return patterns
+}
+
+function workspacePackageContainers(root) {
+    const contents = readFileSync(resolve(root, 'pnpm-workspace.yaml'), 'utf8')
+    return workspacePatterns(contents).map((pattern) => workspacePackageContainer(root, pattern))
+}
+
+function isSafeWorkspaceContainer(root, container) {
+    if (!container) return false
+    if (container.includes('*')) return false
+    return isWithin(root, resolve(root, container))
+}
+
+function workspacePackageContainer(root, pattern) {
+    if (
+        UNSUPPORTED_WORKSPACE_GLOB_MARKERS.some((marker) => pattern.includes(marker)) ||
+        !pattern.endsWith('/*')
+    ) {
+        throw new Error(`Unsupported pnpm workspace pattern for runtime fingerprinting: ${pattern}`)
+    }
+    const container = pattern.slice(0, -2)
+    if (!isSafeWorkspaceContainer(root, container)) {
+        throw new Error(`Unsafe pnpm workspace pattern for runtime fingerprinting: ${pattern}`)
+    }
+    return container
+}
+
+function discoverWorkspacePackages(root) {
+    return workspacePackageContainers(root).flatMap((container) => {
+        const directory = resolve(root, container)
+        if (!existsSync(directory)) return []
+        return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+            if (!entry.isDirectory()) return []
+            const workspacePackage = readWorkspacePackage(resolve(directory, entry.name))
+            return workspacePackage ? [workspacePackage] : []
+        })
+    })
+}
+
+function packageSpecifierMatches(workspacePackage, specifier) {
+    const { name } = workspacePackage.manifest
+    return specifier === name || specifier.startsWith(`${name}/`)
+}
+
+function findWorkspacePackage(packages, specifier) {
+    const matches = packages.filter((candidate) => packageSpecifierMatches(candidate, specifier))
+    if (matches.length === 1) return { workspacePackage: matches[0], error: null }
+    if (matches.length > 1)
+        return { workspacePackage: null, error: `duplicate workspace package name ${specifier}` }
+    return { workspacePackage: null, error: null }
+}
+
+function replaceExportPattern(value, capture) {
+    if (typeof value === 'string') return value.replaceAll('*', () => capture)
+    if (Array.isArray(value)) return value.map((entry) => replaceExportPattern(entry, capture))
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(
+            Object.entries(value).map(([key, entry]) => [
+                key,
+                replaceExportPattern(entry, capture),
+            ]),
+        )
+    }
+    return value
+}
+
+function isExportMap(value) {
+    if (!value) return false
+    if (typeof value !== 'object') return false
+    return !Array.isArray(value)
+}
+
+function hasExportSubpaths(exports) {
+    return Object.keys(exports).some((key) => key.startsWith('.'))
+}
+
+function rootExportOrNull(exports, subpath) {
+    return subpath === '.' ? exports : null
+}
+
+function matchingExportPattern(exports, subpath) {
+    const patterns = Object.keys(exports)
+        .filter((key) => key.includes('*'))
+        .sort((left, right) => {
+            const leftPrefixLength = left.indexOf('*')
+            const rightPrefixLength = right.indexOf('*')
+            return (
+                rightPrefixLength - leftPrefixLength ||
+                right.length - left.length ||
+                (left < right ? -1 : left > right ? 1 : 0)
+            )
+        })
+    const pattern = patterns.find((candidate) => {
+        const wildcard = candidate.indexOf('*')
+        const prefix = candidate.slice(0, wildcard)
+        const suffix = candidate.slice(wildcard + 1)
+        return subpath.startsWith(prefix) && subpath.endsWith(suffix)
+    })
+    if (!pattern) return null
+
+    const wildcard = pattern.indexOf('*')
+    const prefix = pattern.slice(0, wildcard)
+    const suffix = pattern.slice(wildcard + 1)
+    const end = suffix ? subpath.length - suffix.length : undefined
+    return replaceExportPattern(exports[pattern], subpath.slice(prefix.length, end))
+}
+
+function packageExportValue(exports, subpath) {
+    if (!isExportMap(exports)) return rootExportOrNull(exports, subpath)
+    if (!hasExportSubpaths(exports)) return rootExportOrNull(exports, subpath)
+    if (Object.hasOwn(exports, subpath)) return exports[subpath]
+    return matchingExportPattern(exports, subpath)
+}
+
+function workspaceSubpath(manifest, specifier) {
+    if (specifier === manifest.name) return '.'
+    return `.${specifier.slice(manifest.name.length)}`
+}
+
+const INACTIVE_REQUEST_KIND_CONDITIONS = new Set(['import', 'require'])
+
+function isActiveRequireRuntimeCondition(condition) {
+    return condition === 'node'
+}
+
+function isActiveImportRuntimeCondition(condition) {
+    if (condition === 'node') return false
+    return RUNTIME_EXPORT_CONDITIONS.has(condition)
+}
+
+function isActiveRuntimeCondition(condition, requestKind) {
+    if (condition === 'default') return true
+    if (condition === requestKind) return true
+    if (INACTIVE_REQUEST_KIND_CONDITIONS.has(condition)) return false
+    return requestKind === 'require'
+        ? isActiveRequireRuntimeCondition(condition)
+        : isActiveImportRuntimeCondition(condition)
+}
+
+function collectConditionalExportTargets(conditions, requestKind, packageRoot) {
+    for (const [condition, target] of Object.entries(conditions)) {
+        if (condition.startsWith('types')) continue
+        if (!isActiveRuntimeCondition(condition, requestKind)) continue
+        if (target === null) return EXPORT_RESOLUTION_EXCLUDED
+        const nested = runtimeExportTargets(target, requestKind, packageRoot)
+        if (isExportResolutionExcluded(nested)) return EXPORT_RESOLUTION_EXCLUDED
+        if (nested.length > 0) return nested
+    }
+    return []
+}
+
+function runtimeExportTargets(value, requestKind = 'import', packageRoot = null) {
+    if (typeof value === 'string') return [value]
+    if (Array.isArray(value)) {
+        if (value.length === 0) return EXPORT_RESOLUTION_EXCLUDED
+        return fallbackRuntimeTargets(value, requestKind, packageRoot)
+    }
+    if (!value || typeof value !== 'object') return []
+    return collectConditionalExportTargets(value, requestKind, packageRoot)
+}
+
+function fallbackRuntimeTargets(fallbacks, requestKind, packageRoot) {
+    let sawExclusion = false
+    for (const fallback of fallbacks) {
+        if (fallback === null) {
+            sawExclusion = true
+            continue
+        }
+        const targets = runtimeExportTargets(fallback, requestKind, packageRoot)
+        if (isExportResolutionExcluded(targets)) {
+            sawExclusion = true
+            continue
+        }
+        if (targets.length === 0) continue
+        if (!targets.every((target) => isValidPackageTargetForFallback(target))) continue
+        // Package-export arrays are fallbacks only for syntactically invalid targets.
+        // A valid but missing file does not advance to the next entry (Node 24 resolves
+        // the first listed path and fails without trying later files).
+        void packageRoot
+        return targets
+    }
+    if (sawExclusion) return EXPORT_RESOLUTION_EXCLUDED
+    return []
+}
+
+function isValidPackageTargetForFallback(target) {
+    if (!target.startsWith('./')) return false
+    const segments = target.split('/').slice(1)
+    if (segments.some(isForbiddenPackageTargetSegment)) return false
+    return true
+}
+
+function isForbiddenPackageTargetSegment(segment) {
+    let decoded
+    try {
+        decoded = decodeURIComponent(segment)
+    } catch {
+        return true
+    }
+    const normalized = decoded.toLowerCase()
+    return (
+        normalized === '.' ||
+        normalized === '..' ||
+        normalized === 'node_modules' ||
+        normalized.includes('/') ||
+        normalized.includes('\\')
+    )
+}
+
+function workspaceRuntimeTargets(workspacePackage, specifier, requestKind) {
+    const { manifest, packageRoot } = workspacePackage
+    const subpath = workspaceSubpath(manifest, specifier)
+    if (Object.hasOwn(manifest, 'exports')) {
+        const resolved = runtimeExportTargets(
+            packageExportValue(manifest.exports, subpath),
+            requestKind,
+            packageRoot,
+        )
+        return isExportResolutionExcluded(resolved) ? [] : resolved
+    }
+    if (subpath !== '.') return []
+    return legacyEntryTargets(manifest, requestKind)
+}
+
+function legacyEntryTargets(manifest, requestKind) {
+    const fields =
+        requestKind === 'require' ? ['main'] : ['import', 'module', 'main', 'browser', 'source']
+    for (const field of fields) {
+        const target = manifest[field]
+        if (typeof target !== 'string' || target.length === 0) continue
+        return [target.startsWith('./') ? target : `./${target}`]
+    }
+    return []
+}
+
+function decodeExportTarget(target) {
+    if (!target.startsWith('./')) return target
+    const decoded = target
+        .slice(2)
+        .split('/')
+        .map((segment) => {
+            try {
+                return decodeURIComponent(segment)
+            } catch {
+                return segment
+            }
+        })
+        .join('/')
+    return `./${decoded}`
+}
+
+function isDeclarationPath(file) {
+    return /\.d\.(?:ts|mts|cts)$/i.test(file)
+}
+
+function workspaceRuntimePath(packageRoot, repoRoot, target) {
+    if (!target.startsWith('./')) return null
+    const runtimePath = resolve(packageRoot, decodeExportTarget(target))
+    if (!existsSync(runtimePath)) return null
+    let realPath
+    try {
+        realPath = realpathSync(runtimePath)
+    } catch {
+        return null
+    }
+    if (!isWithin(repoRoot, realPath) || !isWithin(packageRoot, realPath)) return null
+    if (!statSync(realPath).isFile()) return null
+    if (isDeclarationPath(realPath)) return null
+    return realPath
+}
+
+/**
+ * Resolve runtime exports separately from TypeScript's declaration-file resolution.
+ * Package manifests are discovered once per fingerprint calculation, never across calls.
+ */
+export function createWorkspaceRuntimeResolver(root) {
+    const packages = discoverWorkspacePackages(root)
+    return (resolution, specifier, runtimeRequired, requestKind = 'import') => {
+        const { workspacePackage, error } = findWorkspacePackage(packages, specifier)
+        if (!workspacePackage) return error ? { error } : null
+
+        const result = {
+            manifestPath: workspacePackage.manifestPath,
+            runtimePaths: [],
+            errors: [],
+        }
+        if (!resolution) result.errors.push(`${specifier} TypeScript resolution is missing`)
+        else if (!isWithin(root, resolve(resolution))) {
+            result.errors.push(`${specifier} TypeScript resolution is outside the repository`)
+        }
+        if (!runtimeRequired) return result
+
+        const targets = [
+            ...new Set(workspaceRuntimeTargets(workspacePackage, specifier, requestKind)),
+        ]
+        if (targets.length === 0)
+            result.errors.push(`${specifier} (workspace package has no runtime export)`)
+        for (const target of targets) {
+            const runtimePath = workspaceRuntimePath(workspacePackage.packageRoot, root, target)
+            if (runtimePath) result.runtimePaths.push(runtimePath)
+            else result.errors.push(`${specifier} runtime export ${target}`)
+        }
+        return result
+    }
+}

@@ -83,8 +83,12 @@ test('fingerprints filesystem fixtures and dynamic source scans used by tests', 
     t.after(() => rmSync(root, { recursive: true, force: true }))
     writeFileSync(
         path.join(source, 'target.ts'),
-        "const scopeUrl = new URL('/app/', window.location.origin)\n" +
+        'const appOrigin = () => globalThis.location?.origin\n' +
+            "const scopeUrl = new URL(import.meta.env.BASE_URL || '/', window.location.origin)\n" +
             "const workerUrl = new URL('sw.js', scopeUrl)\n" +
+            'const transformerUrl = new URL(`${import.meta.env.BASE_URL}ort/`, location.href)\n' +
+            'const describedDestination = new URL(destination, globalThis.location?.origin)\n' +
+            'const parsedDestination = new URL(destination, appOrigin())\n' +
             'export const target = workerUrl.pathname\n',
     )
     const serviceWorker = path.join(root, 'apps/web/public/sw.js')
@@ -245,6 +249,7 @@ test('fingerprints import-equals and relative URL dependencies', (t) => {
         "import dependency = require('./legacy-dependency')\n" +
             "export const assetUrl = new URL('./asset.svg', import.meta.url)\n" +
             "export const bareAssetUrl = new URL('bare-asset.svg', import.meta.url)\n" +
+            "export const unbasedUrl = new URL('./not-module-relative.svg')\n" +
             "export const remoteUrl = new URL('./health', 'https://api.example.test/')\n" +
             'export const value = dependency.value\n',
     )

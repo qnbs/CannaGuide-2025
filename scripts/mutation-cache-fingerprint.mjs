@@ -243,6 +243,7 @@ function visitCallExpression(node, file, context) {
 }
 
 function isImportMetaUrl(node, typescript) {
+    if (!node) return false
     return (
         typescript.isPropertyAccessExpression(node) &&
         node.name.text === 'url' &&
@@ -273,6 +274,19 @@ function propertyAccessPath(node, typescript) {
     return typescript.isIdentifier(node) ? [node.text, ...properties].join('.') : ''
 }
 
+const RUNTIME_ORIGIN_PATHS = new Set([
+    'window.location.origin',
+    'window.location.href',
+    'location.origin',
+    'location.href',
+    'globalThis.location.origin',
+    'globalThis.location.href',
+])
+
+function isRuntimeOriginExpression(node, typescript) {
+    return RUNTIME_ORIGIN_PATHS.has(propertyAccessPath(node, typescript))
+}
+
 function isRuntimeOriginUrlDeclaration(node, typescript) {
     if (!typescript.isVariableDeclaration(node) || !typescript.isIdentifier(node.name)) {
         return false
@@ -280,10 +294,13 @@ function isRuntimeOriginUrlDeclaration(node, typescript) {
     const initializer = node.initializer
     return Boolean(
         initializer &&
-        isUrlConstructor(initializer, typescript) &&
-        initializer.arguments?.some(
-            (argument) => propertyAccessPath(argument, typescript) === 'window.location.origin',
-        ),
+        (isRuntimeOriginExpression(initializer, typescript) ||
+            (typescript.isArrowFunction(initializer) &&
+                isRuntimeOriginExpression(initializer.body, typescript)) ||
+            (isUrlConstructor(initializer, typescript) &&
+                initializer.arguments?.some((argument) =>
+                    isRuntimeOriginExpression(argument, typescript),
+                ))),
     )
 }
 
@@ -301,20 +318,21 @@ function isAbsoluteUrlBase(base) {
     return !base || (isLiteralString(base) && /^[a-z][a-z\d+.-]*:/i.test(base.text))
 }
 
+function runtimeUrlBaseName(base, typescript) {
+    if (typescript.isIdentifier(base)) return base.text
+    if (typescript.isCallExpression(base) && typescript.isIdentifier(base.expression)) {
+        return base.expression.text
+    }
+    return ''
+}
+
 function isKnownRuntimeUrlBase(base, context) {
+    if (!base) return false
     const { typescript } = context
-    if (propertyAccessPath(base, typescript) === 'window.location.origin') return true
-    if (!typescript.isIdentifier(base)) return false
-    return context.runtimeUrlBases.has(base.text)
-}
-
-function moduleRelativeUrlSpecifier(argument) {
-    if (!isLiteralString(argument)) return false
-    return isRelativeUrlReference(argument) ? argument.text : null
-}
-
-function runtimeUrlSpecifier(argument) {
-    return isLiteralString(argument) ? null : false
+    return (
+        isRuntimeOriginExpression(base, typescript) ||
+        context.runtimeUrlBases.has(runtimeUrlBaseName(base, typescript))
+    )
 }
 
 function nonLocalUrlSpecifier(argument) {
@@ -327,8 +345,11 @@ function relativeUrlSpecifier(node, context) {
     if (!isUrlConstructor(node, typescript)) return null
     const firstArgument = node.arguments?.[0]
     const base = node.arguments[1]
-    if (isImportMetaUrl(base, typescript)) return moduleRelativeUrlSpecifier(firstArgument)
-    if (isKnownRuntimeUrlBase(base, context)) return runtimeUrlSpecifier(firstArgument)
+    if (isImportMetaUrl(base, typescript)) {
+        if (!isLiteralString(firstArgument)) return false
+        return isRelativeUrlReference(firstArgument) ? firstArgument.text : null
+    }
+    if (isKnownRuntimeUrlBase(base, context)) return null
     if (isAbsoluteUrlBase(base)) return null
     return nonLocalUrlSpecifier(firstArgument)
 }

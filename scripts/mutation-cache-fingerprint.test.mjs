@@ -155,6 +155,24 @@ test('fails closed when a target uses dynamic module discovery', (t) => {
         () => calculateMutationDependencyFingerprint({ repoRoot: root }),
         /Dynamic first-party module loading needs explicit fingerprint support/,
     )
+
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export const assetUrl = new URL('./asset.svg', dynamicBase)\n",
+    )
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Dynamic first-party module loading needs explicit fingerprint support/,
+    )
+
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        'const assetUrl = new URL(`./assets/${name}.svg`, import.meta.url)\n',
+    )
+    assert.throws(
+        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
+        /Dynamic first-party module loading needs explicit fingerprint support/,
+    )
 })
 
 test('fails closed when Vite glob syntax or options are unsupported', (t) => {
@@ -244,20 +262,6 @@ test('fingerprints import-equals and relative URL dependencies', (t) => {
     writeFileSync(bareAsset, '<svg><title>changed</title></svg>\n')
     const changedBareAsset = calculateMutationDependencyFingerprint({ repoRoot: root })
     assert.notEqual(changedBareAsset.fingerprint, result.fingerprint)
-})
-
-test('fails closed for relative URLs with an unknown base', (t) => {
-    const { root, source } = createFixture()
-    t.after(() => rmSync(root, { recursive: true, force: true }))
-    writeFileSync(
-        path.join(source, 'target.ts'),
-        "export const assetUrl = new URL('./asset.svg', dynamicBase)\n",
-    )
-
-    assert.throws(
-        () => calculateMutationDependencyFingerprint({ repoRoot: root }),
-        /Dynamic first-party module loading needs explicit fingerprint support/,
-    )
 })
 
 test('fingerprints runtime implementations paired with declarations', (t) => {

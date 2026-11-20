@@ -308,16 +308,29 @@ function isKnownRuntimeUrlBase(base, context) {
     return context.runtimeUrlBases.has(base.text)
 }
 
+function moduleRelativeUrlSpecifier(argument) {
+    if (!isLiteralString(argument)) return false
+    return isRelativeUrlReference(argument) ? argument.text : null
+}
+
+function runtimeUrlSpecifier(argument) {
+    return isLiteralString(argument) ? null : false
+}
+
+function nonLocalUrlSpecifier(argument) {
+    if (!isLiteralString(argument)) return false
+    return isRelativeUrlReference(argument) ? false : null
+}
+
 function relativeUrlSpecifier(node, context) {
     const { typescript } = context
     if (!isUrlConstructor(node, typescript)) return null
     const firstArgument = node.arguments?.[0]
-    if (!isRelativeUrlReference(firstArgument)) return null
-
     const base = node.arguments[1]
-    if (base && isImportMetaUrl(base, typescript)) return firstArgument.text
-    if (isKnownRuntimeUrlBase(base, context)) return null
-    return isAbsoluteUrlBase(base) ? null : false
+    if (isImportMetaUrl(base, typescript)) return moduleRelativeUrlSpecifier(firstArgument)
+    if (isKnownRuntimeUrlBase(base, context)) return runtimeUrlSpecifier(firstArgument)
+    if (isAbsoluteUrlBase(base)) return null
+    return nonLocalUrlSpecifier(firstArgument)
 }
 
 function enqueueModuleRelativeUrl(context, fromFile, specifier) {

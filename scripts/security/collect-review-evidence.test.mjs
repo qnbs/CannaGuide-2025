@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { filterEvidenceForPull } from './collect-review-evidence.mjs'
+import {
+    changedFilesFromPullFiles,
+    combinePaginatedJsonArrays,
+    filterEvidenceForPull,
+} from './collect-review-evidence.mjs'
 
 const PULL = 903
 const PULL_URL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/903'
@@ -21,6 +25,25 @@ test('filterEvidenceForPull keeps only matching pull/issue URLs and sorts by id'
     assert.equal(reviews[0].id, 2)
     assert.equal(issueComments.length, 1)
     assert.equal(issueComments[0].id, 3)
+})
+
+test('combinePaginatedJsonArrays flattens multi-page gh api output', () => {
+    const stdout = '[{"id":1}]\n[{"id":2},{"id":3}]\n'
+    const merged = combinePaginatedJsonArrays(stdout)
+    assert.deepEqual(merged.map((entry) => entry.id), [1, 2, 3])
+})
+
+test('changedFilesFromPullFiles retains previous_filename on rename', () => {
+    const files = changedFilesFromPullFiles([
+        {
+            filename: 'scripts/security/review-coverage-policy.mjs',
+            previous_filename: 'scripts/security/old-collector.mjs',
+        },
+    ])
+    assert.deepEqual(files, [
+        'scripts/security/old-collector.mjs',
+        'scripts/security/review-coverage-policy.mjs',
+    ])
 })
 
 test('filterEvidenceForPull does not treat prose as structured receipt input', () => {

@@ -11,19 +11,46 @@ import { resolve } from 'node:path'
 const OWNER = 'qnbs'
 const REPO = 'CannaGuide-2025'
 const SHA = /^[0-9a-f]{40}$/
+const GH_MAX_BUFFER = 32 * 1024 * 1024
+
+function exitFromExecError(error) {
+    if (typeof error?.status === 'number' && error.status !== 0) {
+        process.exit(error.status)
+    }
+    if (error?.signal) {
+        process.exit(1)
+    }
+    throw error
+}
+
+function ghStdout(args) {
+    try {
+        return execFileSync('gh', args, { encoding: 'utf8', maxBuffer: GH_MAX_BUFFER })
+    } catch (error) {
+        exitFromExecError(error)
+    }
+    return ''
+}
 
 function ghJson(args) {
-    const out = execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 })
-    return JSON.parse(out)
+    return JSON.parse(ghStdout(args))
+}
+
+/** Combine newline-delimited JSON arrays from `gh api --paginate`. */
+export function combinePaginatedJsonArrays(stdout) {
+    const arrays = []
+    for (const line of stdout.trim().split('\n')) {
+        if (line.trim() === '') continue
+        const parsed = JSON.parse(line)
+        if (Array.isArray(parsed)) arrays.push(...parsed)
+        else arrays.push(parsed)
+    }
+    return arrays
 }
 
 function ghApiJson(pathSuffix) {
-    const out = execFileSync(
-        'gh',
-        ['api', pathSuffix, '--paginate'],
-        { encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
-    )
-    return JSON.parse(out)
+    const out = ghStdout(['api', pathSuffix, '--paginate'])
+    return combinePaginatedJsonArrays(out)
 }
 
 function parseArgs(argv) {
@@ -53,30 +80,41 @@ function parseArgs(argv) {
     return { pullNumber, expectHead }
 }
 
+function readPrHead(pullNumber) {
+    const headRefOid = ghJson([
+        'pr',
+        'view',
+        String(pullNumber),
+        '--repo',
+        `${OWNER}/${REPO}`,
+        '--json',
+        'headRefOid',
+    ]).headRefOid
+    if (!SHA.test(headRefOid ?? '')) {
+        console.error('PR head missing or invalid for PR', pullNumber)
+        process.exit(1)
+    }
+    return headRefOid
+}
+
 function readStableHead(pullNumber) {
-    const headBefore = ghJson([
-        'pr',
-        'view',
-        String(pullNumber),
-        '--repo',
-        `${OWNER}/${REPO}`,
-        '--json',
-        'headRefOid',
-    ]).headRefOid
-    const headAfter = ghJson([
-        'pr',
-        'view',
-        String(pullNumber),
-        '--repo',
-        `${OWNER}/${REPO}`,
-        '--json',
-        'headRefOid',
-    ]).headRefOid
-    if (!SHA.test(headBefore ?? '') || headBefore !== headAfter) {
-        console.error('PR head missing or changed while collecting evidence; retry when stable.')
+    const headBefore = readPrHead(pullNumber)
+    const headAfter = readPrHead(pullNumber)
+    if (headBefore !== headAfter) {
+        console.error('PR head changed between consecutive reads; retry when stable.')
         process.exit(1)
     }
     return headBefore
+}
+
+/** Include prior paths on rename so high-risk renames cannot downgrade risk. */
+export function changedFilesFromPullFiles(pullFiles) {
+    const names = new Set()
+    for (const entry of pullFiles) {
+        if (typeof entry?.filename === 'string') names.add(entry.filename)
+        if (typeof entry?.previous_filename === 'string') names.add(entry.previous_filename)
+    }
+    return [...names].sort()
 }
 
 /**
@@ -95,6 +133,15 @@ export function filterEvidenceForPull(pullNumber, reviews, issueComments) {
     return { reviews: stableReviews, issueComments: stableComments }
 }
 
+export function assertHeadUnchanged(pullNumber, headSha) {
+    const current = readPrHead(pullNumber)
+    if (current !== headSha) {
+        console.error('PR head advanced while collecting evidence; discard and retry on stable head.')
+        process.exit(1)
+    }
+    return current
+}
+
 function main() {
     const { pullNumber, expectHead } = parseArgs(process.argv)
     const headSha = readStableHead(pullNumber)
@@ -104,36 +151,18 @@ function main() {
         process.exit(1)
     }
 
-    const { baseRefOid: baseSha } = ghJson([
-        'pr',
-        'view',
-        String(pullNumber),
-        '--repo',
-        `${OWNER}/${REPO}`,
-        '--json',
-        'baseRefOid',
-    ])
-
-    if (!SHA.test(baseSha ?? '')) {
-        console.error('Could not read base SHA for PR', pullNumber)
-        process.exit(1)
-    }
-
-    const changedFiles = ghJson([
-        'api',
-        `repos/${OWNER}/${REPO}/compare/${baseSha}...${headSha}`,
-        '--jq',
-        '.files | map(.filename)',
-    ])
+    const pullFiles = ghApiJson(`repos/${OWNER}/${REPO}/pulls/${pullNumber}/files`)
+    const changedFiles = changedFilesFromPullFiles(pullFiles)
 
     const rawReviews = ghApiJson(`repos/${OWNER}/${REPO}/pulls/${pullNumber}/reviews`)
     const rawComments = ghApiJson(`repos/${OWNER}/${REPO}/issues/${pullNumber}/comments`)
+    const recheckedHeadSha = assertHeadUnchanged(pullNumber, headSha)
     const { reviews, issueComments } = filterEvidenceForPull(pullNumber, rawReviews, rawComments)
 
     const evidence = {
         pullNumber,
         headSha,
-        recheckedHeadSha: headSha,
+        recheckedHeadSha,
         changedFiles,
         reviews,
         issueComments,

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * Read-only operator aid: fetch GitHub pull request review evidence and pipe it
- * through review-coverage-policy.mjs. Uses `gh pr view` and `gh api` only; it
+ * through review-coverage-policy.mjs. Uses `gh api` only; it
  * does not post comments, edit reviews, or fabricate receipts.
  */
-import { execFileSync, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
@@ -14,44 +14,41 @@ const REPO = 'CannaGuide-2025'
 const SHA = /^[0-9a-f]{40}$/
 const GH_MAX_BUFFER = 32 * 1024 * 1024
 
-function exitFromExecError(error) {
-    if (typeof error?.status === 'number' && error.status !== 0) {
-        process.exit(error.status)
-    }
-    if (error?.signal) {
-        process.exit(1)
-    }
-    throw error
+function fail(message) {
+    console.error(message)
+    process.exit(1)
 }
 
-function ghStdout(args) {
+function runChild(command, args, options) {
+    const result = spawnSync(command, args, { encoding: 'utf8', ...options })
+    if (result.signal) {
+        process.kill(process.pid, result.signal)
+        return null
+    }
+    if (result.error) fail(`Could not run ${command === 'gh' ? 'gh' : 'the review policy'}.`)
+    return result
+}
+
+function ghJson(pathSuffix, flags = []) {
+    const result = runChild('gh', ['api', pathSuffix, ...flags], { maxBuffer: GH_MAX_BUFFER })
+    if (!result) return null
+    if (result.status !== 0) {
+        console.error(`gh failed with exit ${result.status}.`)
+        process.exit(result.status ?? 1)
+    }
     try {
-        return execFileSync('gh', args, { encoding: 'utf8', maxBuffer: GH_MAX_BUFFER })
-    } catch (error) {
-        exitFromExecError(error)
+        return JSON.parse(result.stdout)
+    } catch {
+        fail('GitHub did not return valid JSON.')
     }
-    return ''
 }
 
-function ghJson(args) {
-    return JSON.parse(ghStdout(args))
-}
-
-/** Combine newline-delimited JSON arrays from `gh api --paginate`. */
-export function combinePaginatedJsonArrays(stdout) {
-    const arrays = []
-    for (const line of stdout.trim().split('\n')) {
-        if (line.trim() === '') continue
-        const parsed = JSON.parse(line)
-        if (Array.isArray(parsed)) arrays.push(...parsed)
-        else arrays.push(parsed)
+function ghApiPages(pathSuffix) {
+    const pages = ghJson(pathSuffix, ['--paginate', '--slurp'])
+    if (!Array.isArray(pages) || pages.length === 0 || !pages.every(Array.isArray)) {
+        fail('GitHub did not return an array of evidence pages.')
     }
-    return arrays
-}
-
-function ghApiJson(pathSuffix) {
-    const out = ghStdout(['api', pathSuffix, '--paginate'])
-    return combinePaginatedJsonArrays(out)
+    return pages.flat()
 }
 
 const SUPPLEMENT_KEYS = new Set(['headEquivalence', 'secondReviewRequest'])
@@ -72,7 +69,7 @@ function usageAndExit() {
 function tryReadFlag(argv, index, flag) {
     if (argv[index] !== flag) return null
     const value = argv[index + 1]
-    if (!value) usageAndExit()
+    if (!value || value.startsWith('--')) usageAndExit()
     return { value, skip: 1 }
 }
 
@@ -83,17 +80,20 @@ function scanArgv(argv) {
     for (let i = 2; i < argv.length; i += 1) {
         const expect = tryReadFlag(argv, i, '--expect-head')
         if (expect) {
-            expectHead = expect.value.toLowerCase()
+            if (expectHead !== null) usageAndExit()
+            expectHead = expect.value
             i += expect.skip
             continue
         }
         const supplement = tryReadFlag(argv, i, '--supplement')
         if (supplement) {
+            if (supplementPath !== null) usageAndExit()
             supplementPath = supplement.value
             i += supplement.skip
             continue
         }
-        if (/^\d+$/.test(argv[i])) pullNumber = Number(argv[i])
+        if (pullNumber !== null || !/^[1-9]\d*$/.test(argv[i])) usageAndExit()
+        pullNumber = Number(argv[i])
     }
     return { pullNumber, expectHead, supplementPath }
 }
@@ -122,7 +122,7 @@ export function readEvidenceSupplement(filePath) {
     const supplement = {}
     for (const key of Object.keys(parsed)) {
         if (!SUPPLEMENT_KEYS.has(key)) {
-            console.error(`--supplement ignores unknown key: ${key}`)
+            console.error('--supplement contains an unsupported key')
             process.exit(2)
         }
         supplement[key] = parsed[key]
@@ -132,38 +132,38 @@ export function readEvidenceSupplement(filePath) {
 
 function parseArgs(argv) {
     const { pullNumber, expectHead, supplementPath } = scanArgv(argv)
-    if (!pullNumber) usageAndExit()
+    if (!Number.isSafeInteger(pullNumber)) usageAndExit()
     validateExpectHead(expectHead)
     const supplement =
         supplementPath === null ? {} : readEvidenceSupplement(resolve(supplementPath))
     return { pullNumber, expectHead, supplement }
 }
 
-function readPrHead(pullNumber) {
-    const headRefOid = ghJson([
-        'pr',
-        'view',
-        String(pullNumber),
-        '--repo',
-        `${OWNER}/${REPO}`,
-        '--json',
-        'headRefOid',
-    ]).headRefOid
-    if (!SHA.test(headRefOid ?? '')) {
-        console.error('PR head missing or invalid for PR', pullNumber)
-        process.exit(1)
-    }
-    return headRefOid
+function readPull(path) {
+    const pull = ghJson(path)
+    const head = pull?.head?.sha
+    const base = pull?.base?.sha
+    if (!SHA.test(head ?? '') || !SHA.test(base ?? '')) fail('Invalid pull request SHAs.')
+    return { head, base, fileCount: pull.changed_files }
 }
 
-function readStableHead(pullNumber) {
-    const headBefore = readPrHead(pullNumber)
-    const headAfter = readPrHead(pullNumber)
-    if (headBefore !== headAfter) {
-        console.error('PR head changed between consecutive reads; retry when stable.')
-        process.exit(1)
+function readChangedFiles(pullPath, fileCount) {
+    if (!Number.isInteger(fileCount) || fileCount < 1 || fileCount > 3000) {
+        fail('Invalid changed-file count or GitHub file-list limit exceeded.')
     }
-    return headBefore
+    const files = ghApiPages(`${pullPath}/files`)
+    const currentPaths = new Set(files.map((entry) => entry?.filename))
+    if (files.length !== fileCount || currentPaths.size !== fileCount) {
+        fail('GitHub returned an incomplete or duplicate changed-file list.')
+    }
+    if (files.some((entry) => !isValidFileEntry(entry))) fail('Invalid changed-file entry.')
+    return changedFilesFromPullFiles(files)
+}
+
+function isValidFileEntry(entry) {
+    if (typeof entry?.filename !== 'string' || !entry.filename) return false
+    if (entry.status !== 'renamed') return true
+    return typeof entry.previous_filename === 'string' && Boolean(entry.previous_filename)
 }
 
 /** Include prior paths on rename so high-risk renames cannot downgrade risk. */
@@ -192,30 +192,33 @@ export function filterEvidenceForPull(pullNumber, reviews, issueComments) {
     return { reviews: stableReviews, issueComments: stableComments }
 }
 
-export function assertHeadUnchanged(pullNumber, headSha) {
-    const current = readPrHead(pullNumber)
-    if (current !== headSha) {
-        console.error('PR head advanced while collecting evidence; discard and retry on stable head.')
-        process.exit(1)
+function assertPullUnchanged(path, before) {
+    const after = readPull(path)
+    if (
+        after.head !== before.head ||
+        after.base !== before.base ||
+        after.fileCount !== before.fileCount
+    ) {
+        fail('PR changed while collecting evidence; discard and retry when stable.')
     }
-    return current
+    return after.head
 }
 
 function main() {
     const { pullNumber, expectHead, supplement } = parseArgs(process.argv)
-    const headSha = readStableHead(pullNumber)
+    const repo = `repos/${OWNER}/${REPO}`
+    const pullPath = `${repo}/pulls/${pullNumber}`
+    const before = readPull(pullPath)
+    const headSha = before.head
 
     if (expectHead !== null && headSha !== expectHead) {
-        console.error(`Live head ${headSha} does not match --expect-head ${expectHead}`)
-        process.exit(1)
+        fail(`Live head ${headSha} does not match --expect-head ${expectHead}`)
     }
 
-    const pullFiles = ghApiJson(`repos/${OWNER}/${REPO}/pulls/${pullNumber}/files`)
-    const changedFiles = changedFilesFromPullFiles(pullFiles)
-
-    const rawReviews = ghApiJson(`repos/${OWNER}/${REPO}/pulls/${pullNumber}/reviews`)
-    const rawComments = ghApiJson(`repos/${OWNER}/${REPO}/issues/${pullNumber}/comments`)
-    const recheckedHeadSha = assertHeadUnchanged(pullNumber, headSha)
+    const changedFiles = readChangedFiles(pullPath, before.fileCount)
+    const rawReviews = ghApiPages(`${pullPath}/reviews`)
+    const rawComments = ghApiPages(`${repo}/issues/${pullNumber}/comments`)
+    const recheckedHeadSha = assertPullUnchanged(pullPath, before)
     const { reviews, issueComments } = filterEvidenceForPull(pullNumber, rawReviews, rawComments)
 
     const evidence = {
@@ -229,25 +232,18 @@ function main() {
         ...supplement,
     }
 
-    const policy = spawnSync(
-        process.execPath,
-        ['scripts/security/review-coverage-policy.mjs'],
-        {
-            cwd: new URL('../..', import.meta.url).pathname,
-            input: JSON.stringify(evidence),
-            encoding: 'utf8',
-        },
-    )
+    const policy = runChild(process.execPath, ['scripts/security/review-coverage-policy.mjs'], {
+        cwd: fileURLToPath(new URL('../..', import.meta.url)),
+        input: JSON.stringify(evidence),
+    })
 
-    process.stdout.write(policy.stdout ?? '')
-    if (policy.status !== 0) {
-        process.stderr.write(policy.stderr ?? '')
-        process.exit(policy.status ?? 1)
-    }
+    if (!policy) return
+    process.stdout.write(policy.stdout)
+    if (policy.status !== 0 && !policy.stdout) console.error('Review policy produced no result.')
+    process.exitCode = policy.status ?? 1
 }
 
-const isDirectRun =
-    process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isDirectRun) {
     main()
 }

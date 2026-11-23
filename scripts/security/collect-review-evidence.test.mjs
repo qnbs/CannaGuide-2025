@@ -9,30 +9,39 @@ import {
     changedFilesFromPullFiles,
     filterEvidenceForPull,
     readEvidenceSupplement,
+    runChild,
 } from './collect-review-evidence.mjs'
+import { evaluateReviewCoverage } from './review-coverage-policy.mjs'
 
 const PULL = 903
 const PULL_URL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/903'
 const ISSUE_URL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/903'
 const OTHER_PULL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/902'
 const OTHER_ISSUE = 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/902'
+const SOURCE_REF_PATH = 'repos/qnbs/CannaGuide-2025/git/ref/heads/feature/source'
 
 test('filterEvidenceForPull keeps only matching pull/issue URLs and sorts by id', () => {
     const { reviews, issueComments } = filterEvidenceForPull(
         PULL,
         [
-            { id: 2, pull_request_url: PULL_URL, user: { login: 'coderabbitai[bot]' } },
+            { id: 3, pull_request_url: PULL_URL, user: { login: 'coderabbitai[bot]' } },
+            { id: 1, pull_request_url: PULL_URL, user: { login: 'sourcery-ai[bot]' } },
             { id: 1, pull_request_url: OTHER_PULL },
         ],
         [
-            { id: 3, issue_url: ISSUE_URL, body: 'ok' },
+            { id: 4, issue_url: ISSUE_URL, body: 'later' },
+            { id: 2, issue_url: ISSUE_URL, body: 'earlier' },
             { id: 2, issue_url: OTHER_ISSUE, body: 'foreign' },
         ],
     )
-    assert.equal(reviews.length, 1)
-    assert.equal(reviews[0].id, 2)
-    assert.equal(issueComments.length, 1)
-    assert.equal(issueComments[0].id, 3)
+    assert.deepEqual(
+        reviews.map(({ id }) => id),
+        [1, 3],
+    )
+    assert.deepEqual(
+        issueComments.map(({ id }) => id),
+        [2, 4],
+    )
 })
 
 test('changedFilesFromPullFiles retains previous_filename on rename', () => {
@@ -73,6 +82,34 @@ test('readEvidenceSupplement accepts headEquivalence and secondReviewRequest onl
     assert.equal(supplement.secondReviewRequest.provider, 'CodeRabbit')
 })
 
+test('readEvidenceSupplement rejects unsupported keys', (t) => {
+    const dir = mkdtempSync(join(tmpdir(), 'cg-evidence-'))
+    t.after(() => rmSync(dir, { force: true, recursive: true }))
+    const path = join(dir, 'extra.json')
+    writeFileSync(path, JSON.stringify({ headEquivalence: {}, reviewers: ['CodeRabbit'] }))
+    const result = spawnSync(
+        process.execPath,
+        [
+            '--input-type=module',
+            '-e',
+            `
+        import { readEvidenceSupplement } from ${JSON.stringify(CLI.href)}
+        readEvidenceSupplement(${JSON.stringify(path)})
+    `,
+        ],
+        { encoding: 'utf8' },
+    )
+    assert.equal(result.status, 2)
+    assert.match(result.stderr, /unsupported key/)
+})
+
+test('runChild returns a timeout result without signaling the collector', () => {
+    const result = runChild(process.execPath, ['-e', 'setTimeout(() => {}, 1000)'], {
+        timeout: 20,
+    })
+    assert.equal(result.error?.code, 'ETIMEDOUT')
+})
+
 const HEAD = 'a'.repeat(40)
 const BASE = 'b'.repeat(40)
 const CLI = new URL('./collect-review-evidence.mjs', import.meta.url)
@@ -93,7 +130,12 @@ function review(login) {
 }
 
 function pullMetadata(head = HEAD, changedFiles = 2) {
-    return { head: { sha: head }, base: { sha: BASE }, changed_files: changedFiles }
+    return {
+        head: { sha: head, ref: 'feature/source', repo: { full_name: 'qnbs/CannaGuide-2025' } },
+        base: { sha: BASE },
+        changed_files: changedFiles,
+        updated_at: '2026-01-01T00:00:00Z',
+    }
 }
 
 function runCollector(t, overrides = {}, argv = [String(PULL), '--expect-head', HEAD]) {
@@ -105,14 +147,24 @@ function runCollector(t, overrides = {}, argv = [String(PULL), '--expect-head', 
     copyFileSync(CLI, cli)
     copyFileSync(POLICY, join(scriptDir, 'review-coverage-policy.mjs'))
     const responses = {
-        [PULL_PATH]: { values: [pullMetadata(), pullMetadata()] },
+        [PULL_PATH]: { values: [pullMetadata(), pullMetadata(), pullMetadata()] },
+        [SOURCE_REF_PATH]: {
+            values: [
+                { object: { sha: HEAD } },
+                { object: { sha: HEAD } },
+                { object: { sha: HEAD } },
+            ],
+        },
         [COMPARE_PATH]: {
             values: [{ files: [{ filename: 'docs/readme.md' }, { filename: 'scripts/ci.mjs' }] }],
         },
         [`${PULL_PATH}/reviews`]: {
-            values: [[[review('coderabbitai[bot]')], [review('sourcery-ai[bot]')]]],
+            values: [
+                [[review('coderabbitai[bot]')], [review('sourcery-ai[bot]')]],
+                [[review('coderabbitai[bot]')], [review('sourcery-ai[bot]')]],
+            ],
         },
-        [COMMENTS_PATH]: { values: [[[]]] },
+        [COMMENTS_PATH]: { values: [[[]], [[]]] },
         ...overrides,
     }
 
@@ -163,7 +215,7 @@ test(
 )
 
 test('CLI preserves an insufficient-coverage result and its exit status', CLI_TEST, (t) => {
-    const result = runCollector(t, { [`${PULL_PATH}/reviews`]: { values: [[[]]] } })
+    const result = runCollector(t, { [`${PULL_PATH}/reviews`]: { values: [[[]], [[]]] } })
     assert.equal(result.status, 1)
     assert.equal(JSON.parse(result.stdout).status, 'insufficient_coverage')
 })
@@ -183,11 +235,62 @@ test('CLI propagates child signal termination', CLI_TEST, (t) => {
 
 test('CLI discards evidence when the PR advances during collection', CLI_TEST, (t) => {
     const result = runCollector(t, {
-        [PULL_PATH]: { values: [pullMetadata(), pullMetadata('c'.repeat(40))] },
+        [PULL_PATH]: {
+            values: [pullMetadata(), pullMetadata('c'.repeat(40)), pullMetadata('c'.repeat(40))],
+        },
     })
     assert.equal(result.status, 1)
     assert.equal(result.stdout, '')
     assert.match(result.stderr, /PR changed/)
+})
+
+test('CLI rejects a source ref that is ahead of the pull metadata head', CLI_TEST, (t) => {
+    const result = runCollector(t, {
+        [SOURCE_REF_PATH]: { values: [{ object: { sha: 'c'.repeat(40) } }] },
+    })
+    assert.equal(result.status, 1)
+    assert.equal(result.stdout, '')
+    assert.match(result.stderr, /Source branch and pull request heads differ/)
+})
+
+test('CLI rechecks the source branch after collecting initial evidence', CLI_TEST, (t) => {
+    const result = runCollector(t, {
+        [SOURCE_REF_PATH]: {
+            values: [
+                { object: { sha: HEAD } },
+                { object: { sha: 'c'.repeat(40) } },
+                { object: { sha: 'c'.repeat(40) } },
+            ],
+        },
+    })
+    assert.equal(result.status, 1)
+    assert.equal(result.stdout, '')
+    assert.match(result.stderr, /Source branch and pull request heads differ/)
+})
+
+test('CLI rejects review or receipt changes during evidence collection', CLI_TEST, (t) => {
+    const initial = [[review('coderabbitai[bot]')], [review('sourcery-ai[bot]')]]
+    const changed = [[review('coderabbitai[bot]')], []]
+    const result = runCollector(t, {
+        [`${PULL_PATH}/reviews`]: { values: [initial, changed] },
+    })
+    assert.equal(result.status, 1)
+    assert.equal(result.stdout, '')
+    assert.match(result.stderr, /Review evidence changed/)
+})
+
+test('CLI rejects an edited issue receipt during evidence collection', CLI_TEST, (t) => {
+    const result = runCollector(t, {
+        [COMMENTS_PATH]: {
+            values: [
+                [[{ id: 1, issue_url: ISSUE_URL, body: 'first' }]],
+                [[{ id: 1, issue_url: ISSUE_URL, body: 'edited' }]],
+            ],
+        },
+    })
+    assert.equal(result.status, 1)
+    assert.equal(result.stdout, '')
+    assert.match(result.stderr, /Review evidence changed/)
 })
 
 test('CLI rejects truncated, duplicate, or over-limit file lists', CLI_TEST, (t) => {
@@ -216,7 +319,7 @@ test('CLI rejects unknown options and duplicate PR numbers before collecting', C
     }
 })
 
-test('filterEvidenceForPull does not treat prose as structured receipt input', () => {
+test('policy does not qualify prose as a structured review receipt', () => {
     const { issueComments } = filterEvidenceForPull(
         PULL,
         [],
@@ -224,11 +327,22 @@ test('filterEvidenceForPull does not treat prose as structured receipt input', (
             {
                 id: 1,
                 issue_url: ISSUE_URL,
-                user: { login: 'codeant-ai[bot]' },
+                user: { login: 'codeant-ai[bot]', type: 'Bot' },
                 body: 'Low Risk summary without supported structured receipt markers',
+                created_at: '2026-01-01T00:00:00Z',
             },
         ],
     )
     assert.equal(issueComments.length, 1)
-    assert.ok(!issueComments[0].body.includes('final_review_risk_coverage'))
+    const result = evaluateReviewCoverage({
+        pullNumber: PULL,
+        headSha: HEAD,
+        recheckedHeadSha: HEAD,
+        changedFiles: ['docs/readme.md'],
+        reviews: [],
+        issueComments,
+        now: '2026-01-01T01:00:00Z',
+    })
+    assert.equal(result.qualifiedReviewers.length, 0)
+    assert.equal(result.satisfied, false)
 })

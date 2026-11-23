@@ -12,6 +12,7 @@ import { resolve } from 'node:path'
 const OWNER = 'qnbs'
 const REPO = 'CannaGuide-2025'
 const SHA = /^[0-9a-f]{40}$/
+const CHILD_TIMEOUT_MS = 120_000
 const GH_MAX_BUFFER = 32 * 1024 * 1024
 const GH_COMPARE_FILE_LIMIT = 300
 
@@ -28,8 +29,15 @@ function isSha(value) {
     return typeof value === 'string' && SHA.test(value)
 }
 
-function runChild(command, args, options) {
-    const result = spawnSync(command, args, { encoding: 'utf8', ...options })
+export function runChild(command, args, options = {}) {
+    const result = spawnSync(command, args, {
+        encoding: 'utf8',
+        timeout: CHILD_TIMEOUT_MS,
+        ...options,
+    })
+    // A timed-out child also reports a signal; keep that distinct from a child
+    // which terminated itself so the caller can report the timeout safely.
+    if (result.error?.code === 'ETIMEDOUT' || result.error?.code === 'ENOBUFS') return result
     if (result.signal) {
         process.kill(process.pid, result.signal)
         return null
@@ -41,6 +49,14 @@ function runChild(command, args, options) {
 function ghJson(pathSuffix, flags = []) {
     const result = runChild('gh', ['api', pathSuffix, ...flags], { maxBuffer: GH_MAX_BUFFER })
     if (!result) return null
+    if (result.error?.code === 'ETIMEDOUT') {
+        fail(`GitHub evidence request timed out after ${CHILD_TIMEOUT_MS / 1000} seconds.`)
+    }
+    if (result.error?.code === 'ENOBUFS') {
+        fail(
+            'GitHub evidence exceeded the 32 MiB collection limit; use the documented manual evidence fallback.',
+        )
+    }
     if (result.status !== 0) {
         console.error(`gh failed with exit ${result.status}.`)
         process.exit(result.status ?? 1)
@@ -155,7 +171,32 @@ function readPull(path) {
     const base = pull?.base?.sha
     requireEvidence(isSha(head), 'Invalid pull request head SHA.')
     requireEvidence(isSha(base), 'Invalid pull request base SHA.')
-    return { head, base, fileCount: pull.changed_files }
+    const sourceRepository = pull?.head?.repo?.full_name
+    const sourceRef = pull?.head?.ref
+    requireEvidence(
+        typeof sourceRepository === 'string' && /^[^/]+\/[^/]+$/.test(sourceRepository),
+        'GitHub did not report a valid source repository.',
+    )
+    requireEvidence(
+        typeof sourceRef === 'string' && sourceRef.length > 0,
+        'GitHub did not report a valid source branch.',
+    )
+    const encodedRef = sourceRef.split('/').map(encodeURIComponent).join('/')
+    return {
+        head,
+        base,
+        fileCount: pull.changed_files,
+        updatedAt: pull.updated_at,
+        sourceRefPath: `repos/${sourceRepository}/git/ref/heads/${encodedRef}`,
+    }
+}
+
+function assertSourceBranchMatchesPull(pull) {
+    const sourceRef = ghJson(pull.sourceRefPath)
+    requireEvidence(
+        isSha(sourceRef?.object?.sha) && sourceRef.object.sha === pull.head,
+        'Source branch and pull request heads differ; discard this snapshot and retry when GitHub has synchronized them.',
+    )
 }
 
 function readChangedFiles({ head, base, fileCount }) {
@@ -216,6 +257,25 @@ function assertPullUnchanged(path, before) {
     return after.head
 }
 
+function canonicalJson(value) {
+    if (Array.isArray(value)) return value.map(canonicalJson)
+    if (isPlainObject(value)) {
+        return Object.fromEntries(
+            Object.keys(value)
+                .sort()
+                .map((key) => [key, canonicalJson(value[key])]),
+        )
+    }
+    return value
+}
+
+function assertEvidenceUnchanged(first, second) {
+    requireEvidence(
+        JSON.stringify(canonicalJson(first)) === JSON.stringify(canonicalJson(second)),
+        'Review evidence changed while collecting it; discard this snapshot and retry when stable.',
+    )
+}
+
 function main() {
     const { pullNumber, expectHead, supplement } = parseArgs(process.argv)
     const repo = `repos/${OWNER}/${REPO}`
@@ -227,11 +287,25 @@ function main() {
         fail(`Live head ${headSha} does not match --expect-head ${expectHead}`)
     }
 
+    // The PR API head alone can lag the source branch after a push. Verify both
+    // independently before and after collecting the evidence snapshot.
+    assertSourceBranchMatchesPull(before)
     const changedFiles = readChangedFiles(before)
     const rawReviews = ghApiPages(`${pullPath}/reviews`)
     const rawComments = ghApiPages(`${repo}/issues/${pullNumber}/comments`)
+    assertPullUnchanged(pullPath, before)
+    assertSourceBranchMatchesPull(before)
+
+    // A second read catches reviews being dismissed and receipt comments being
+    // edited while the first paginated snapshot was in flight. The final PR
+    // metadata read also checks updated_at after this second evidence read.
+    const confirmedReviews = ghApiPages(`${pullPath}/reviews`)
+    const confirmedComments = ghApiPages(`${repo}/issues/${pullNumber}/comments`)
     const recheckedHeadSha = assertPullUnchanged(pullPath, before)
+    assertSourceBranchMatchesPull(before)
     const { reviews, issueComments } = filterEvidenceForPull(pullNumber, rawReviews, rawComments)
+    const confirmed = filterEvidenceForPull(pullNumber, confirmedReviews, confirmedComments)
+    assertEvidenceUnchanged({ reviews, issueComments }, confirmed)
 
     const evidence = {
         pullNumber,
@@ -250,6 +324,10 @@ function main() {
     })
 
     if (!policy) return
+    if (policy.error?.code === 'ETIMEDOUT') {
+        fail(`Review coverage policy timed out after ${CHILD_TIMEOUT_MS / 1000} seconds.`)
+    }
+    requireEvidence(!policy.error, 'Could not run the review coverage policy.')
     process.stdout.write(policy.stdout)
     if (policy.status !== 0 && !policy.stdout) console.error('Review policy produced no result.')
     process.exitCode = policy.status ?? 1

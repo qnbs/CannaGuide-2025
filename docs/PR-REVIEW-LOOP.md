@@ -153,35 +153,63 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
   [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
   repo=repos/qnbs/CannaGuide-2025
   pull="$repo/pulls/$PR_NUMBER"
-  refs() { gh api "$pull" --jq '[.base.sha, .head.sha] | join(" ")'; }
+  refs() { gh api "$pull" --jq '[.base.sha, .head.sha, .updated_at] | @tsv'; }
+  source_ref() {
+    local route
+    route=$(gh api "$pull" --jq '"repos/" + .head.repo.full_name + "/git/ref/heads/" + .head.ref')
+    gh api "$route" --jq '.object.sha'
+  }
   before=$(refs)
-  read -r base head <<< "$before"
+  read -r base head updated_at <<< "$before"
   [[ "$base" =~ ^[0-9a-f]{40}$ && "$head" =~ ^[0-9a-f]{40}$ ]]
-  merge_base=$(git merge-base --all "$base" "$head")
-  [[ "$merge_base" =~ ^[0-9a-f]{40}$ ]]
+  source_before=$(source_ref)
+  [[ "$source_before" == "$head" ]]
+  merge_bases=$(git merge-base --all "$base" "$head")
+  [[ -n "$merge_bases" ]]
 
   evidence_dir=$(mktemp -d)
-  trap 'rm -f -- "$evidence_dir"/{files,reviews.json,comments.json,evidence.json}; rmdir -- "$evidence_dir"' EXIT
-  git diff --name-only --no-renames -z "$merge_base" "$head" > "$evidence_dir/files"
-  gh api "$pull/reviews" --paginate --slurp > "$evidence_dir/reviews.json"
-  gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp > "$evidence_dir/comments.json"
+  trap 'rm -rf -- "$evidence_dir"' EXIT
+  : > "$evidence_dir/files"
+  while IFS= read -r merge_base; do
+    [[ "$merge_base" =~ ^[0-9a-f]{40}$ ]]
+    git diff --name-only --no-renames -z "$merge_base" "$head" >> "$evidence_dir/files"
+  done <<< "$merge_bases"
+  sort -zu "$evidence_dir/files" -o "$evidence_dir/files"
+  gh api "$pull/reviews" --paginate --slurp | jq -S -c . > "$evidence_dir/reviews-first.json"
+  gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/comments-first.json"
+  middle=$(refs)
+  [[ "$before" == "$middle" && "$(source_ref)" == "$head" ]]
+  gh api "$pull/reviews" --paginate --slurp | jq -S -c . > "$evidence_dir/reviews-second.json"
+  gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/comments-second.json"
   after=$(refs)
-  [[ "$before" == "$after" ]]
+  [[ "$before" == "$after" && "$(source_ref)" == "$head" ]]
+  cmp -s "$evidence_dir/reviews-first.json" "$evidence_dir/reviews-second.json"
+  cmp -s "$evidence_dir/comments-first.json" "$evidence_dir/comments-second.json"
   read -r _ rechecked_head <<< "$after"
+
+  supplement='{}'
+  if [[ -n ${EVIDENCE_SUPPLEMENT_JSON:-} ]]; then
+    jq -e 'type == "object" and (keys - ["headEquivalence", "secondReviewRequest"] | length == 0)' \
+      "$EVIDENCE_SUPPLEMENT_JSON" >/dev/null
+    supplement=$(jq -c . "$EVIDENCE_SUPPLEMENT_JSON")
+  fi
 
   jq -n --argjson pullNumber "$PR_NUMBER" --arg headSha "$head" \
     --arg recheckedHeadSha "$rechecked_head" --arg now "$(date -u +%FT%TZ)" \
-    --rawfile files "$evidence_dir/files" --slurpfile reviews "$evidence_dir/reviews.json" \
-    --slurpfile comments "$evidence_dir/comments.json" \
+    --argjson supplement "$supplement" \
+    --rawfile files "$evidence_dir/files" --slurpfile reviews "$evidence_dir/reviews-second.json" \
+    --slurpfile comments "$evidence_dir/comments-second.json" \
     '{$pullNumber, $headSha, $recheckedHeadSha, $now,
       changedFiles: ($files | split("\u0000") | map(select(length > 0))),
-      reviews: ($reviews[0] | add // []), issueComments: ($comments[0] | add // [])}' \
+      reviews: ($reviews[0] | add // []), issueComments: ($comments[0] | add // [])} + $supplement' \
     > "$evidence_dir/evidence.json"
   node scripts/security/review-coverage-policy.mjs < "$evidence_dir/evidence.json"
 )
 ```
 
-The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only --no-renames <merge-base> <head>` so the source and destination of a rename both enter `changedFiles`. The evaluator defaults uncertain files to high risk.
+Use this manual fallback if the collector reports its 32 MiB response limit or a GitHub API timeout. It writes paginated evidence to local temporary files, verifies the PR and source-branch heads, and rejects changes between two complete evidence reads. If Git has multiple best merge bases, it unions the changed paths from every base so an ambiguous history cannot hide a higher-risk path. For a valid optional supplement, set `EVIDENCE_SUPPLEMENT_JSON` to a local JSON file containing only `headEquivalence` and/or `secondReviewRequest`; the values must meet the policy below. The collector has the same 120-second child-process timeout.
+
+The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. Before and after collection, compare the pull's base/head/updated timestamp and the independently fetched source-branch ref; discard a changed snapshot. Fetch reviews and issue comments twice and require identical evidence. To list changed files, use `git diff --name-only --no-renames` against every best merge base and union the paths; this includes both sides of renames and handles criss-cross histories conservatively. The evaluator defaults uncertain files to high risk.
 
 ### Risk tiers and review count
 

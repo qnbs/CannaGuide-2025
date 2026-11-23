@@ -46,9 +46,13 @@ test('Scorecard workflow fails if publication retries do not succeed', () => {
     const yaml = readFileSync('.github/workflows/scorecard.yml', 'utf8')
     assert.match(yaml, /fail_on_publish_error:\s*true/)
     assert.match(yaml, /id:\s*scorecard/)
+    const analysisJobStart = yaml.indexOf('    analysis:\n')
+    const verificationJobStart = yaml.indexOf('    verify-publication:\n')
+    assert.ok(analysisJobStart >= 0 && verificationJobStart > analysisJobStart)
+    const analysisJob = yaml.slice(analysisJobStart, verificationJobStart)
     assert.match(
-        yaml,
-        /results_published:\s*\$\{\{\s*steps\.scorecard\.outputs\.results_published\s*\}\}/,
+        analysisJob,
+        /^        outputs:\s*\n            results_published:\s*\$\{\{\s*steps\.scorecard\.outputs\.results_published\s*\}\}/m,
     )
 
     const verificationJob = yaml.slice(yaml.indexOf('    verify-publication:'))

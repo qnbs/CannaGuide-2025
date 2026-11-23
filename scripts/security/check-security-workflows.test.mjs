@@ -57,7 +57,10 @@ test('Scorecard workflow fails if publication retries do not succeed', () => {
 
     const verificationJob = yaml.slice(yaml.indexOf('    verify-publication:'))
     assert.match(verificationJob, /needs:\s*analysis/)
-    assert.match(verificationJob, /if:\s*always\(\)/)
+    assert.match(verificationJob, /if:\s*\$\{\{\s*!cancelled\(\)\s*\}\}/)
+    assert.doesNotMatch(verificationJob, /if:\s*always\(\)/)
+    assert.match(verificationJob, /^        permissions:\s*\{\}\s*$/m)
+    assert.match(verificationJob, /^        timeout-minutes:\s*\d+\s*$/m)
     assert.match(
         verificationJob,
         /RESULTS_PUBLISHED:\s*\$\{\{\s*needs\.analysis\.outputs\.results_published\s*\}\}/,

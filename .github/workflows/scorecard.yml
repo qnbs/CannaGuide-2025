@@ -57,8 +57,11 @@ jobs:
     verify-publication:
         name: Verify Scorecard publication
         needs: analysis
-        if: always()
+        # Not always(): concurrency cancels superseded runs, and a cancelled run published nothing.
+        if: ${{ !cancelled() }}
         runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions: {}
         steps:
             - name: Require published Scorecard results
               env:

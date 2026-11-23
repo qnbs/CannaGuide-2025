@@ -132,16 +132,88 @@ One stable-head correction: collect findings, group them by root cause, and ship
 Collect API evidence and pass it to the local evaluator. Its result is an operator aid, **not a required CI check** and not a substitute for GitHub rulesets, branch protection, exact-head checks, or review-thread disposition:
 
 ```bash
-gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate | jq -s 'add' > /tmp/pr-reviews.json
-gh api "repos/qnbs/CannaGuide-2025/issues/${PR_NUMBER}/comments" --paginate | jq -s 'add' > /tmp/pr-comments.json
-# Build evidence.json from the current head, its changed-file list, the two API arrays,
-# and (only if invoking the low-risk fallback) one recorded request for the current head.
-# Only when CodeRabbit's marker names an earlier head after base-only merges:
-node scripts/security/review-head-equivalence.mjs --prior "$REVIEWED_HEAD" --head "$HEAD_SHA" > /tmp/head-equivalence.json
-node scripts/security/review-coverage-policy.mjs < evidence.json
+HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo qnbs/CannaGuide-2025 --json headRefOid --jq .headRefOid)
+node scripts/security/collect-review-evidence.mjs "$PR_NUMBER" --expect-head "$HEAD_SHA"
 ```
 
-The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR’s `pull_request_url` and each receipt from that PR’s `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only <merge-base>...<head>` for `changedFiles`; classify the actual diff, not its title or labels. The evaluator defaults uncertain files to high risk.
+When CodeRabbit's marker names an earlier head after a base-only merge, refresh `origin/main` and set `REVIEWED_HEAD` to the full SHA from that marker. Pass the verified proof to the collector:
+
+```bash
+PROOF_DIR=$(mktemp -d) &&
+  node scripts/security/review-head-equivalence.mjs --prior "$REVIEWED_HEAD" --head "$HEAD_SHA" > "$PROOF_DIR/head-equivalence.json" &&
+  jq '{headEquivalence: .}' "$PROOF_DIR/head-equivalence.json" > "$PROOF_DIR/evidence-extra.json" &&
+  node scripts/security/collect-review-evidence.mjs "$PR_NUMBER" --expect-head "$HEAD_SHA" --supplement "$PROOF_DIR/evidence-extra.json"
+```
+
+If the collector cannot get a complete comparison, fetch the exact pull base and head into this clone first. Then run the manual collection from the repository root with `PR_NUMBER` set:
+
+```bash
+(
+  set -euo pipefail
+  [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+  repo=repos/qnbs/CannaGuide-2025
+  pull="$repo/pulls/$PR_NUMBER"
+  refs() { gh api "$pull" --jq '[.base.sha, .head.sha, .updated_at] | @tsv'; }
+  source_ref() {
+    local route
+    route=$(gh api "$pull" --jq '"repos/" + .head.repo.full_name + "/git/ref/heads/" + (.head.ref | split("/") | map(@uri) | join("/"))')
+    gh api "$route" --jq '.object.sha'
+  }
+  before=$(refs)
+  read -r base head updated_at <<< "$before"
+  [[ "$base" =~ ^[0-9a-f]{40}$ && "$head" =~ ^[0-9a-f]{40}$ ]]
+  source_before=$(source_ref)
+  [[ "$source_before" == "$head" ]]
+  [[ "$(git rev-parse --is-shallow-repository)" == false ]] || {
+    echo 'Manual evidence collection requires complete Git history; unshallow this checkout and retry.' >&2
+    exit 1
+  }
+  merge_bases=$(git merge-base --all "$base" "$head")
+  [[ -n "$merge_bases" ]]
+
+  evidence_dir=$(mktemp -d)
+  trap 'rm -rf -- "$evidence_dir"' EXIT
+  : > "$evidence_dir/files"
+  while IFS= read -r merge_base; do
+    [[ "$merge_base" =~ ^[0-9a-f]{40}$ ]]
+    git diff --name-only --no-renames -z "$merge_base" "$head" >> "$evidence_dir/files"
+  done <<< "$merge_bases"
+  sort -zu "$evidence_dir/files" -o "$evidence_dir/files"
+  gh api "$pull/reviews" --paginate --slurp | jq -S -c . > "$evidence_dir/reviews-first.json"
+  gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/comments-first.json"
+  middle=$(refs)
+  [[ "$before" == "$middle" && "$(source_ref)" == "$head" ]]
+  gh api "$pull/reviews" --paginate --slurp | jq -S -c . > "$evidence_dir/reviews-second.json"
+  gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/comments-second.json"
+  after=$(refs)
+  [[ "$before" == "$after" && "$(source_ref)" == "$head" ]]
+  cmp -s "$evidence_dir/reviews-first.json" "$evidence_dir/reviews-second.json"
+  cmp -s "$evidence_dir/comments-first.json" "$evidence_dir/comments-second.json"
+  read -r _ rechecked_head rechecked_updated_at <<< "$after"
+
+  supplement='{}'
+  if [[ -n ${EVIDENCE_SUPPLEMENT_JSON:-} ]]; then
+    jq -e 'type == "object" and (keys - ["headEquivalence", "secondReviewRequest"] | length == 0)' \
+      "$EVIDENCE_SUPPLEMENT_JSON" >/dev/null
+    supplement=$(jq -c . "$EVIDENCE_SUPPLEMENT_JSON")
+  fi
+
+  jq -n --argjson pullNumber "$PR_NUMBER" --arg headSha "$head" \
+    --arg recheckedHeadSha "$rechecked_head" --arg now "$(date -u +%FT%TZ)" \
+    --argjson supplement "$supplement" \
+    --rawfile files "$evidence_dir/files" --slurpfile reviews "$evidence_dir/reviews-second.json" \
+    --slurpfile comments "$evidence_dir/comments-second.json" \
+    '{$pullNumber, $headSha, $recheckedHeadSha, $now,
+      changedFiles: ($files | split("\u0000") | map(select(length > 0))),
+      reviews: ($reviews[0] | add // []), issueComments: ($comments[0] | add // [])} + $supplement' \
+    > "$evidence_dir/evidence.json"
+  node scripts/security/review-coverage-policy.mjs < "$evidence_dir/evidence.json"
+)
+```
+
+Use this manual fallback if the collector reports its 32 MiB response limit or a GitHub API timeout. It writes paginated evidence to local temporary files, verifies the PR and source-branch heads, and rejects changes between two complete evidence reads. It requires complete Git history; it stops on shallow clones so an incomplete merge-base set cannot hide a higher-risk path. If Git has multiple best merge bases, it unions the changed paths from every base so an ambiguous history cannot hide a higher-risk path. For a valid optional supplement, set `EVIDENCE_SUPPLEMENT_JSON` to a local JSON file containing only `headEquivalence` and/or `secondReviewRequest`; the values must meet the policy below. The collector has the same 120-second child-process timeout.
+
+The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. Before and after collection, compare the pull's base/head/updated timestamp and the independently fetched source-branch ref; discard a changed snapshot. Fetch reviews and issue comments twice and require identical evidence. To list changed files, use `git diff --name-only --no-renames` against every best merge base and union the paths; this includes both sides of renames and handles criss-cross histories conservatively. The evaluator defaults uncertain files to high risk.
 
 ### Risk tiers and review count
 
@@ -149,6 +221,23 @@ The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedF
 - **Low risk:** only ordinary documentation or non-security tests, with every changed path explicitly classified low by the evaluator. Two independent reviews remain preferred.
 - **Low-risk fallback:** after one regular request to one missing reviewer for the exact head, one qualified review may suffice only if the second provider is demonstrably unavailable and the bounded wait has elapsed. An explicit rate-limit, timeout, or skip requires at least 30 minutes from the single recorded request; silence requires 24 hours. Record the request reference, provider, exact SHA, timestamps, and outcome. The evaluator rejects repeated requests, wrong-head requests, absent references, or early silence. Zero qualified reviews never satisfies the fallback.
 - Sourcery is opportunistic. A completed Sourcery review counts once when available; its absence, skip, or rate limit never creates another wait. Sourcery quota skips and CodeRabbit skips on a non-default base are recorded availability limits, not completed review evidence. Once two qualified reviews exist, request no third review, including Codex.
+
+### Provider limitations, receipt gaps, and availability (GH #906)
+
+CodeRabbit documents an **incremental** review model (`@coderabbitai review`) that re-analyzes only commits since the last review, and a separate **full** re-review (`@coderabbitai full review`) that disregards prior inline comments ([Manage code reviews](https://docs.coderabbit.ai/guides/commands)). Configuration controls when automatic incremental reviews run (`reviews.auto_review.auto_incremental_review`, `auto_pause_after_reviewed_commits`) but **does not define** a machine-readable exact-head attestation API.
+
+In this repository, the only CodeRabbit attestation accepted locally is either a formal GitHub pull request review on the exact head, or the authenticated `final_review_risk_coverage` marker in the summary issue comment naming that head (see above). Observed failure mode (PR #903, GH #906): after new feature commits, CodeRabbit can edit the summary prose to describe the commit range up to the current head while leaving `sourceCommitId` / `coveredCommitId` on an **earlier** reviewed commit. Incremental analysis in prose is **not** a receipt. The evaluator correctly stays fail-closed; base-only merge carry-forward applies only with a proven `review-head-equivalence.mjs` result, not feature commits on a stack branch.
+
+**Do not** fabricate or edit markers, relax high-risk two-review rules, or invent head equivalence. **Do not** loop `@coderabbitai review` on the same head when the bot replies that incremental mode will not re-review already reviewed commits.
+
+**Recovery without lowering quality:**
+
+1. Keep one stable head; ship one correction wave, then wait for checks and reviews on that SHA.
+2. Obtain **exact-head** qualified evidence from **CodeAnt** or **Codex** (formal review or structured Codex receipt). Two independent providers from the {CodeRabbit, CodeAnt, Codex, Sourcery} pool remain required for high risk; Sourcery is opportunistic for scheduling only, but a completed Sourcery review still counts once when present on the exact head.
+3. When CodeRabbit coverage is required on a **final** stable head and incremental mode is exhausted, the provider-supported option is a single `@coderabbitai full review` on that head (not repeated incremental pings). If even a full review leaves the marker stale, treat it as a provider limitation and cover the head with the other allowlisted reviewers.
+4. Run the collector with the expected head as shown above immediately before merge. It reads the changed files from an immutable base/head comparison and checks the count against the pull request metadata. The comparison endpoint returns at most 300 files. A larger, missing or incomplete list aborts collection. For such a pull, assemble evidence manually from the exact Git merge base and head. The collector reads reviews and comments across all API pages and rejects a snapshot if the pull head or base changes during collection.
+
+**Systemic availability:** the qualified pool is {CodeRabbit, CodeAnt, Codex, Sourcery}. Any two independent qualified reviews on the exact head satisfy high-risk coverage, including a completed Sourcery review paired with any other allowlisted provider. A receipt gap from one vendor is an integration or quota limit, not permission to merge with one reviewer or human prose. Record skips in the PR thread; use the bounded low-risk fallback only when the evaluator classifies low risk and the wait rules are met.
 
 ### Findings and final readback
 

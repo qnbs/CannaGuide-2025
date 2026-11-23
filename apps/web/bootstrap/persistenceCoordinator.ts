@@ -7,6 +7,7 @@ let persistenceSuspended = false
 // Set for good when this page no longer owns the saved data (GH #669). Unlike
 // the recovery suspension it is never resumed.
 let persistenceStopped = false
+let lastWriteFence: { deadlineAt: number } | undefined
 let activeWrite: Promise<void> = Promise.resolve()
 
 type RecoveryEpoch = { available: true; value: string | null } | { available: false }
@@ -97,11 +98,24 @@ if (typeof window !== 'undefined') {
     })
 }
 
+const lastWriteDeadlinePassed = (): boolean =>
+    lastWriteFence !== undefined && Date.now() >= lastWriteFence.deadlineAt
+
 const persistenceBlocked = (): boolean =>
-    persistenceSuspended || persistenceStopped || recoveryEpochChanged()
+    persistenceSuspended ||
+    persistenceStopped ||
+    recoveryEpochChanged() ||
+    lastWriteDeadlinePassed()
+
+/**
+ * A write gets `isBlocked` for a re-check right before its commit, because its
+ * preparation can outlast a fence set meanwhile. Resolving to `false` reports that
+ * nothing was written.
+ */
+export type PersistenceWrite = (isBlocked: () => boolean) => Promise<unknown>
 
 /** Serialize writes and skip any write that has not started when recovery begins. */
-export const schedulePersistenceWrite = async (write: () => Promise<void>): Promise<boolean> => {
+export const schedulePersistenceWrite = async (write: PersistenceWrite): Promise<boolean> => {
     if (persistenceBlocked()) return false
 
     let completed = false
@@ -111,8 +125,7 @@ export const schedulePersistenceWrite = async (write: () => Promise<void>): Prom
             // Re-check after acquiring the cross-tab lock. Recovery may have
             // committed a new epoch while this write was queued.
             if (persistenceBlocked()) return
-            await write()
-            completed = true
+            completed = (await write(persistenceBlocked)) !== false
         })
     })
     activeWrite = scheduledWrite.catch(() => {})
@@ -153,6 +166,21 @@ export const suspendPersistenceForRecovery = async (): Promise<ResumePersistence
  * and resume through the returned function (null while already suspended).
  */
 export const suspendPersistenceForQuit = suspendPersistenceForRecovery
+
+/**
+ * No write may start at or after `deadlineAt`. The native side stops waiting for a
+ * slow last save at a fixed time and releases the profile lock, so the save itself
+ * has to end by then (GH #883). It compares the clock when a write starts, so a page
+ * whose timers are delayed is fenced as well. The returned function lifts this fence
+ * and leaves a newer one in place.
+ */
+export const fencePersistenceWritesAfter = (deadlineAt: number): (() => void) => {
+    const fence = { deadlineAt }
+    lastWriteFence = fence
+    return () => {
+        if (lastWriteFence === fence) lastWriteFence = undefined
+    }
+}
 
 /**
  * This page must not save any more because another tab may own the data now

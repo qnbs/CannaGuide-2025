@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 let coordinator: typeof import('./persistenceCoordinator')
 
@@ -7,6 +7,90 @@ describe('persistenceCoordinator', () => {
         vi.resetModules()
         localStorage.clear()
         coordinator = await import('./persistenceCoordinator')
+    })
+
+    describe('last-write deadline (GH #883)', () => {
+        afterEach(() => vi.restoreAllMocks())
+
+        it('allows a write before the deadline and refuses one at the deadline', async () => {
+            const now = vi.spyOn(Date, 'now').mockReturnValue(1_000)
+            coordinator.fencePersistenceWritesAfter(2_000)
+            const early = vi.fn(async () => undefined)
+            const late = vi.fn(async () => undefined)
+
+            await expect(coordinator.schedulePersistenceWrite(early)).resolves.toBe(true)
+            now.mockReturnValue(2_000)
+            await expect(coordinator.schedulePersistenceWrite(late)).resolves.toBe(false)
+
+            expect(early).toHaveBeenCalledOnce()
+            expect(late).not.toHaveBeenCalled()
+        })
+
+        it('refuses a write that was queued behind a slow one when the deadline passes', async () => {
+            const now = vi.spyOn(Date, 'now').mockReturnValue(1_000)
+            coordinator.fencePersistenceWritesAfter(2_000)
+            let finishSlow: (() => void) | undefined
+            const slowBlocked = new Promise<void>((resolve) => {
+                finishSlow = resolve
+            })
+            const slowStarted = vi.fn()
+            const slow = coordinator.schedulePersistenceWrite(async () => {
+                slowStarted()
+                await slowBlocked
+            })
+            const queued = vi.fn(async () => undefined)
+            const queuedResult = coordinator.schedulePersistenceWrite(queued)
+            await vi.waitFor(() => expect(slowStarted).toHaveBeenCalledOnce())
+
+            now.mockReturnValue(2_000)
+            finishSlow?.()
+
+            await expect(slow).resolves.toBe(true)
+            await expect(queuedResult).resolves.toBe(false)
+            expect(queued).not.toHaveBeenCalled()
+        })
+
+        it('tells a running write that the deadline passed, and reports it as not written', async () => {
+            const now = vi.spyOn(Date, 'now').mockReturnValue(1_000)
+            coordinator.fencePersistenceWritesAfter(2_000)
+            const commit = vi.fn()
+
+            const result = await coordinator.schedulePersistenceWrite(async (isBlocked) => {
+                now.mockReturnValue(2_000)
+                if (isBlocked()) return false
+                commit()
+                return true
+            })
+
+            expect(result).toBe(false)
+            expect(commit).not.toHaveBeenCalled()
+        })
+
+        it('saves again once the fence is lifted', async () => {
+            vi.spyOn(Date, 'now').mockReturnValue(2_000)
+            const lift = coordinator.fencePersistenceWritesAfter(2_000)
+            await expect(coordinator.schedulePersistenceWrite(async () => undefined)).resolves.toBe(
+                false,
+            )
+
+            lift()
+
+            await expect(coordinator.schedulePersistenceWrite(async () => undefined)).resolves.toBe(
+                true,
+            )
+        })
+
+        it('keeps a newer fence when an older one is lifted', async () => {
+            vi.spyOn(Date, 'now').mockReturnValue(2_000)
+            const liftOld = coordinator.fencePersistenceWritesAfter(5_000)
+            coordinator.fencePersistenceWritesAfter(2_000)
+
+            liftOld()
+
+            await expect(coordinator.schedulePersistenceWrite(async () => undefined)).resolves.toBe(
+                false,
+            )
+        })
     })
 
     it('serializes persisted-state writes', async () => {

@@ -1,7 +1,11 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/services/platformService', () => ({ platform: { isTauri: true } }))
 
+import { schedulePersistenceWrite } from '@/bootstrap/persistenceCoordinator'
 import {
     createDesktopUpdater,
     DesktopUpdateError,
@@ -15,6 +19,7 @@ import {
     type PersistFlush,
     type TauriBridge,
     LAST_SAVE_HOLD_MS,
+    LAST_WRITE_START_MS,
     releaseWriteHold,
 } from './desktopLifecycleService'
 
@@ -741,5 +746,98 @@ describe('the write hold after the last save (CodeRabbit on #881)', () => {
         )
         expect(order.slice(0, 2)).toEqual(['resume', 'save'])
         expect(order.slice(-2)).toEqual(['hold', 'confirm'])
+    })
+})
+
+describe('a last save slower than the native wait (GH #883)', () => {
+    afterEach(() => {
+        releaseWriteHold()
+        vi.useRealTimers()
+    })
+
+    it('stops new writes before the native side gives up on the quit', async () => {
+        vi.useFakeTimers()
+        const save = deferredSave()
+        const { bridge } = fakeBridge()
+        const done = flushThenConfirmQuit(save.flush, async () => bridge)
+
+        await vi.advanceTimersByTimeAsync(LAST_WRITE_START_MS - 1)
+        await expect(schedulePersistenceWrite(async () => undefined)).resolves.toBe(true)
+        await vi.advanceTimersByTimeAsync(1)
+        const lateWrite = vi.fn(async () => undefined)
+        await expect(schedulePersistenceWrite(lateWrite)).resolves.toBe(false)
+        expect(lateWrite).not.toHaveBeenCalled()
+
+        save.finish(false)
+        await done
+    })
+
+    it('stops new writes before the native side gives up on an update restart', async () => {
+        vi.useFakeTimers()
+        const save = deferredSave()
+        const { bridge } = fakeBridge()
+        const done = flushThenConfirmFinalSave(save.flush, async () => bridge)
+
+        await vi.advanceTimersByTimeAsync(LAST_WRITE_START_MS)
+        const lateWrite = vi.fn(async () => undefined)
+        await expect(schedulePersistenceWrite(lateWrite)).resolves.toBe(false)
+        expect(lateWrite).not.toHaveBeenCalled()
+
+        save.finish(false)
+        await done
+    })
+
+    it('saves again if the page outlives a save that never returns', async () => {
+        vi.useFakeTimers()
+        const save = deferredSave()
+        const { bridge } = fakeBridge()
+        void flushThenConfirmQuit(save.flush, async () => bridge)
+
+        await vi.advanceTimersByTimeAsync(LAST_WRITE_START_MS + LAST_SAVE_HOLD_MS - 1)
+        await expect(schedulePersistenceWrite(async () => undefined)).resolves.toBe(false)
+        await vi.advanceTimersByTimeAsync(1)
+        await expect(schedulePersistenceWrite(async () => undefined)).resolves.toBe(true)
+    })
+
+    it('a slow save that a newer quit replaced does not hold that quit', async () => {
+        // One result for both calls: the new quit's release also runs a catch-up save.
+        let finishFirst: (saved: boolean) => void = () => undefined
+        const firstResult = new Promise<boolean>((done) => {
+            finishFirst = done
+        })
+        const { bridge: firstBridge } = fakeBridge()
+        const firstSuspend = vi.fn(async () => () => undefined)
+        const first = flushThenConfirmFinalSave(
+            () => firstResult,
+            async () => firstBridge,
+            firstSuspend,
+        )
+        await settle()
+
+        const { bridge } = fakeBridge()
+        const secondResume = vi.fn()
+        await flushThenConfirmQuit(
+            async () => true,
+            async () => bridge,
+            async () => secondResume,
+        )
+        finishFirst(true)
+        await first
+
+        expect(firstSuspend).not.toHaveBeenCalled()
+        expect(secondResume).not.toHaveBeenCalled()
+    })
+
+    it('stops writes before the native timeout in lifecycle.rs', () => {
+        const here = dirname(fileURLToPath(import.meta.url))
+        const source = readFileSync(
+            resolve(here, '../../desktop/src-tauri/src/lifecycle.rs'),
+            'utf8',
+        )
+        const seconds = /QUIT_FLUSH_TIMEOUT: Duration = Duration::from_secs\((\d+)\)/u.exec(
+            source,
+        )?.[1]
+        expect(seconds).toBeDefined()
+        expect(LAST_WRITE_START_MS).toBeLessThan(Number(seconds) * 1_000)
     })
 })

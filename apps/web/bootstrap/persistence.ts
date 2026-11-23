@@ -47,13 +47,16 @@ export const setupPersistedStateSync = (
         const saveAttempt = ++saveAttemptSequence
         let writeCallbackStarted = false
         try {
-            const saved = await schedulePersistenceWrite(async () => {
+            const saved = await schedulePersistenceWrite(async (isBlocked) => {
                 writeCallbackStarted = true
                 try {
                     const state = hydratedStore.getState() as RootState
                     const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                         state.simulation,
                     )
+                    // This step can take seconds: a quit or restart may have passed its
+                    // last-write deadline meanwhile, and then nothing may be committed.
+                    if (isBlocked()) return false
                     const stateToSave = buildPersistedSnapshot(
                         state,
                         optimizedSimulation,
@@ -64,6 +67,7 @@ export const setupPersistedStateSync = (
                     // Do this while still inside the scheduled write slot. A later
                     // save in another tab must not clear this tab's failed lineage.
                     clearSnapshotSaveFailureForTab(failureMarkerTabId, observedFailureMarkers)
+                    return true
                 } catch (error) {
                     if (!(error instanceof StaleSnapshotError)) {
                         // Record the failure before the coordinator releases its write slot.

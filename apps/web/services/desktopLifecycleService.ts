@@ -27,7 +27,10 @@
  *   Settings > About and coming back, or a startup check finding a newer release
  *   while the card is open, therefore never leaves the card on a stale copy.
  */
-import { suspendPersistenceForQuit } from '@/bootstrap/persistenceCoordinator'
+import {
+    fencePersistenceWritesAfter,
+    suspendPersistenceForQuit,
+} from '@/bootstrap/persistenceCoordinator'
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import { platform } from '@/services/platformService'
 
@@ -409,7 +412,16 @@ export const SAVE_BEFORE_RESTART_EVENT = 'cannaguide://save-before-restart'
 /** After this long the page is evidently still here: the quit or restart did not happen. */
 export const LAST_SAVE_HOLD_MS = 10_000
 
+/**
+ * The native side waits QUIT_FLUSH_TIMEOUT (10 s, lifecycle.rs) for the last save and
+ * then goes on, releasing the profile lock. No write may start after this point of
+ * that wait, so a slow save cannot land once a new instance may own the profile
+ * (GH #883). The margin covers the event's trip to the page and a commit in progress.
+ */
+export const LAST_WRITE_START_MS = 9_000
+
 type SuspendPersistence = () => Promise<(() => void) | null>
+type FenceWrites = (deadlineAt: number) => () => void
 
 /**
  * No write may start after the last save before a quit or restart: the native side
@@ -420,7 +432,14 @@ type SuspendPersistence = () => Promise<(() => void) | null>
  */
 type HoldKind = 'quit' | 'final-save'
 
-let activeHold: { kind: HoldKind; release: () => void } | undefined
+interface WriteHold {
+    kind: HoldKind
+    release: () => void
+    /** The last save finished: hold every write from now on. */
+    holdFrom: (resumeWrites: () => void) => void
+}
+
+let activeHold: WriteHold | undefined
 
 /**
  * Ends a write hold early: the update install failed and the app stays open, or a new
@@ -435,11 +454,51 @@ export const releaseWriteHold = (kind?: HoldKind): void => {
     hold.release()
 }
 
-const holdWritesAfterLastSave = async (
+/**
+ * Starts the last save: from LAST_WRITE_START_MS on no write may start, even while this
+ * save is still running. If the page outlives the native wait, the same hold ends after
+ * LAST_SAVE_HOLD_MS more, so a save that never returns cannot stop saving for good.
+ */
+const openLastSaveWindow = (
     flush: PersistFlush | undefined,
-    suspend: SuspendPersistence,
+    fence: FenceWrites,
     kind: HoldKind,
+): WriteHold => {
+    // A hold left by a failed update install would refuse this save.
+    releaseWriteHold()
+    const liftFence = fence(Date.now() + LAST_WRITE_START_MS)
+    let resumeHeldWrites: (() => void) | undefined
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const endAfter = (delayMs: number): void => {
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+            if (activeHold === hold) releaseWriteHold()
+        }, delayMs)
+    }
+    const hold: WriteHold = {
+        kind,
+        release: () => {
+            clearTimeout(timer)
+            resumeHeldWrites?.()
+            liftFence()
+            void flush?.().catch(() => undefined)
+        },
+        holdFrom: (resumeWrites) => {
+            resumeHeldWrites = resumeWrites
+            endAfter(LAST_SAVE_HOLD_MS)
+        },
+    }
+    activeHold = hold
+    endAfter(LAST_WRITE_START_MS + LAST_SAVE_HOLD_MS)
+    return hold
+}
+
+const holdWritesAfterLastSave = async (
+    hold: WriteHold,
+    suspend: SuspendPersistence,
 ): Promise<void> => {
+    // A newer quit or restart took over while this save ran; its save must not be refused.
+    if (activeHold !== hold) return
     let resume: (() => void) | null = null
     try {
         resume = await suspend()
@@ -447,34 +506,28 @@ const holdWritesAfterLastSave = async (
         console.warn('[Desktop] could not hold writes after the last save:', messageOf(error))
     }
     if (!resume) return
-    const resumeWrites = resume
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const release = (): void => {
-        clearTimeout(timer)
-        resumeWrites()
-        void flush?.().catch(() => undefined)
-    }
-    activeHold = { kind, release }
-    timer = setTimeout(() => releaseWriteHold(kind), LAST_SAVE_HOLD_MS)
+    if (activeHold === hold) hold.holdFrom(resume)
+    else resume()
 }
 
 export const flushThenConfirmFinalSave = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
     suspend: SuspendPersistence = suspendPersistenceForQuit,
+    fence: FenceWrites = fencePersistenceWritesAfter,
 ): Promise<void> => {
     // Loaded before the save, so after its last comparison only the confirmation's
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
-    releaseWriteHold()
+    const hold = openLastSaveWindow(flush, fence, 'final-save')
     try {
         const saved = flush ? await flush() : false
         if (!saved) console.warn('[DesktopUpdate] latest changes not saved before the restart')
     } catch (error) {
         console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
     }
-    await holdWritesAfterLastSave(flush, suspend, 'final-save')
+    await holdWritesAfterLastSave(hold, suspend)
     const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_final_save')
 }
@@ -488,13 +541,13 @@ export const flushThenConfirmQuit = async (
     flush: PersistFlush | undefined,
     loadBridge: () => Promise<TauriBridge> = loadTauriBridge,
     suspend: SuspendPersistence = suspendPersistenceForQuit,
+    fence: FenceWrites = fencePersistenceWritesAfter,
 ): Promise<void> => {
     // Loaded before the save, so after its last comparison only the confirmation's
     // round trip remains (CodeAnt on #878). Marked handled now; awaited below.
     const pendingBridge = loadBridge()
     pendingBridge.catch(() => undefined)
-    // A hold left by a failed update install would refuse this quit's save.
-    releaseWriteHold()
+    const hold = openLastSaveWindow(flush, fence, 'quit')
     let saved = false
     try {
         saved = flush ? await flush() : false
@@ -502,7 +555,7 @@ export const flushThenConfirmQuit = async (
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
-    await holdWritesAfterLastSave(flush, suspend, 'quit')
+    await holdWritesAfterLastSave(hold, suspend)
     const bridge = await pendingBridge
     // The quit goes on either way; `saved` tells the native side (and the runtime smoke
     // test) whether this run's last changes reached storage.

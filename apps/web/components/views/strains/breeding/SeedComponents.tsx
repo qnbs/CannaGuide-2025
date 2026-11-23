@@ -5,6 +5,7 @@ import { strainTypeInfo } from '@/utils/breedingUtils'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { reportedPercentText } from '@/components/views/strains/reportedStrainFacts'
 
 export const SeedCard: React.FC<{
     seed: Seed
@@ -43,9 +44,6 @@ const ParentTypeMark: React.FC<{
     </div>
 )
 
-const percentText = (value: number, unknown: string): string =>
-    Number.isFinite(value) ? `${value.toFixed(1)}%` : unknown
-
 const selectedParent = (
     seed: Seed | undefined,
     strains: Strain[],
@@ -70,8 +68,8 @@ const FilledParent: React.FC<{
             <p className="font-bold text-slate-100">{seed.strainName}</p>
             <div className="text-xs text-slate-400 mt-1">
                 <p>
-                    THC: {percentText(strain.thc, unknown)} | CBD:{' '}
-                    {percentText(strain.cbd, unknown)}
+                    THC: {reportedPercentText(strain.thc, strain.thcRange, unknown)} | CBD:{' '}
+                    {reportedPercentText(strain.cbd, strain.cbdRange, unknown)}
                 </p>
                 <p>
                     {t('common.quality')}: {(seed.quality * 100).toFixed(0)}%

@@ -13,6 +13,19 @@ export const reportedStrainType = (type: string | undefined): StrainType | undef
 export const reportedNumber = (value: unknown, digits: number, unknownLabel: string): string =>
     typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : unknownLabel
 
+/** The reported point value, otherwise the record's stated range such as "<1%". */
+export const reportedPercentText = (
+    value: unknown,
+    range: unknown,
+    unknownLabel: string,
+): string => {
+    if (typeof value === 'number' && Number.isFinite(value)) return `${value.toFixed(1)}%`
+    if (typeof range !== 'string') return unknownLabel
+    const text = range.trim()
+    if (text === '' || text.toLowerCase() === 'unknown') return unknownLabel
+    return text.endsWith('%') ? text : `${text}%`
+}
+
 export const formatFloweringWeeks = (
     range: string | undefined,
     weeks: unknown,

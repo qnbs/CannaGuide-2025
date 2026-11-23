@@ -3,6 +3,7 @@ import { dbService } from './dbService'
 import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants'
 import { mergeStrainCatalogForUpdate } from '@/services/migrationLogic'
 import { createStrainObject } from '@/services/strainFactory'
+import { withoutContradictedPoints } from '@/services/strainCatalogTruth'
 import { getCatalogVersion } from '@/data/strainCatalogVersion'
 
 export { getCatalogVersion }
@@ -28,7 +29,7 @@ const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
 
     for (const candidate of candidates) {
         try {
-            const strain = createStrainObject(candidate)
+            const strain = withoutContradictedPoints(createStrainObject(candidate))
             if (seenIds.has(strain.id)) {
                 continue
             }

@@ -19,6 +19,7 @@ const ISSUE_URL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/903'
 const OTHER_PULL = 'https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/902'
 const OTHER_ISSUE = 'https://api.github.com/repos/qnbs/CannaGuide-2025/issues/902'
 const SOURCE_REF_PATH = 'repos/qnbs/CannaGuide-2025/git/ref/heads/feature/source'
+const ENCODED_SOURCE_REF_PATH = 'repos/qnbs/CannaGuide-2025/git/ref/heads/feature/source%23review'
 
 test('filterEvidenceForPull keeps only matching pull/issue URLs and sorts by id', () => {
     const { reviews, issueComments } = filterEvidenceForPull(
@@ -129,9 +130,9 @@ function review(login) {
     }
 }
 
-function pullMetadata(head = HEAD, changedFiles = 2) {
+function pullMetadata(head = HEAD, changedFiles = 2, sourceRef = 'feature/source') {
     return {
-        head: { sha: head, ref: 'feature/source', repo: { full_name: 'qnbs/CannaGuide-2025' } },
+        head: { sha: head, ref: sourceRef, repo: { full_name: 'qnbs/CannaGuide-2025' } },
         base: { sha: BASE },
         changed_files: changedFiles,
         updated_at: '2026-01-01T00:00:00Z',
@@ -251,6 +252,21 @@ test('CLI rejects a source ref that is ahead of the pull metadata head', CLI_TES
     assert.equal(result.status, 1)
     assert.equal(result.stdout, '')
     assert.match(result.stderr, /Source branch and pull request heads differ/)
+})
+
+test('CLI encodes reserved source branch characters without encoding slashes', CLI_TEST, (t) => {
+    const pull = pullMetadata(HEAD, 2, 'feature/source#review')
+    const result = runCollector(t, {
+        [PULL_PATH]: { values: [pull, pull, pull] },
+        [ENCODED_SOURCE_REF_PATH]: {
+            values: [
+                { object: { sha: HEAD } },
+                { object: { sha: HEAD } },
+                { object: { sha: HEAD } },
+            ],
+        },
+    })
+    assert.equal(result.status, 0, result.stderr || result.stdout)
 })
 
 test('CLI rechecks the source branch after collecting initial evidence', CLI_TEST, (t) => {

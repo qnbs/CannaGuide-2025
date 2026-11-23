@@ -156,7 +156,7 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
   refs() { gh api "$pull" --jq '[.base.sha, .head.sha, .updated_at] | @tsv'; }
   source_ref() {
     local route
-    route=$(gh api "$pull" --jq '"repos/" + .head.repo.full_name + "/git/ref/heads/" + .head.ref')
+    route=$(gh api "$pull" --jq '"repos/" + .head.repo.full_name + "/git/ref/heads/" + (.head.ref | split("/") | map(@uri) | join("/"))')
     gh api "$route" --jq '.object.sha'
   }
   before=$(refs)
@@ -164,6 +164,10 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
   [[ "$base" =~ ^[0-9a-f]{40}$ && "$head" =~ ^[0-9a-f]{40}$ ]]
   source_before=$(source_ref)
   [[ "$source_before" == "$head" ]]
+  [[ "$(git rev-parse --is-shallow-repository)" == false ]] || {
+    echo 'Manual evidence collection requires complete Git history; unshallow this checkout and retry.' >&2
+    exit 1
+  }
   merge_bases=$(git merge-base --all "$base" "$head")
   [[ -n "$merge_bases" ]]
 
@@ -185,7 +189,7 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
   [[ "$before" == "$after" && "$(source_ref)" == "$head" ]]
   cmp -s "$evidence_dir/reviews-first.json" "$evidence_dir/reviews-second.json"
   cmp -s "$evidence_dir/comments-first.json" "$evidence_dir/comments-second.json"
-  read -r _ rechecked_head <<< "$after"
+  read -r _ rechecked_head rechecked_updated_at <<< "$after"
 
   supplement='{}'
   if [[ -n ${EVIDENCE_SUPPLEMENT_JSON:-} ]]; then
@@ -207,7 +211,7 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
 )
 ```
 
-Use this manual fallback if the collector reports its 32 MiB response limit or a GitHub API timeout. It writes paginated evidence to local temporary files, verifies the PR and source-branch heads, and rejects changes between two complete evidence reads. If Git has multiple best merge bases, it unions the changed paths from every base so an ambiguous history cannot hide a higher-risk path. For a valid optional supplement, set `EVIDENCE_SUPPLEMENT_JSON` to a local JSON file containing only `headEquivalence` and/or `secondReviewRequest`; the values must meet the policy below. The collector has the same 120-second child-process timeout.
+Use this manual fallback if the collector reports its 32 MiB response limit or a GitHub API timeout. It writes paginated evidence to local temporary files, verifies the PR and source-branch heads, and rejects changes between two complete evidence reads. It requires complete Git history; it stops on shallow clones so an incomplete merge-base set cannot hide a higher-risk path. If Git has multiple best merge bases, it unions the changed paths from every base so an ambiguous history cannot hide a higher-risk path. For a valid optional supplement, set `EVIDENCE_SUPPLEMENT_JSON` to a local JSON file containing only `headEquivalence` and/or `secondReviewRequest`; the values must meet the policy below. The collector has the same 120-second child-process timeout.
 
 The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. Before and after collection, compare the pull's base/head/updated timestamp and the independently fetched source-branch ref; discard a changed snapshot. Fetch reviews and issue comments twice and require identical evidence. To list changed files, use `git diff --name-only --no-renames` against every best merge base and union the paths; this includes both sides of renames and handles criss-cross histories conservatively. The evaluator defaults uncertain files to high risk.
 

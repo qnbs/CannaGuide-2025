@@ -165,29 +165,31 @@ function parseArgs(argv) {
     return { pullNumber, expectHead, supplement }
 }
 
+function sourceRefApiPath(head) {
+    const sourceRepository = head?.repo?.full_name
+    const sourceRef = head?.ref
+    requireEvidence(
+        typeof sourceRepository === 'string' &&
+            /^[^/]+\/[^/]+$/.test(sourceRepository) &&
+            typeof sourceRef === 'string' &&
+            sourceRef.length > 0,
+        'GitHub did not report a valid source repository and branch.',
+    )
+    const encodedRef = sourceRef.split('/').map(encodeURIComponent).join('/')
+    return `repos/${sourceRepository}/git/ref/heads/${encodedRef}`
+}
+
 function readPull(path) {
     const pull = ghJson(path)
     const head = pull?.head?.sha
     const base = pull?.base?.sha
-    requireEvidence(isSha(head), 'Invalid pull request head SHA.')
-    requireEvidence(isSha(base), 'Invalid pull request base SHA.')
-    const sourceRepository = pull?.head?.repo?.full_name
-    const sourceRef = pull?.head?.ref
-    requireEvidence(
-        typeof sourceRepository === 'string' && /^[^/]+\/[^/]+$/.test(sourceRepository),
-        'GitHub did not report a valid source repository.',
-    )
-    requireEvidence(
-        typeof sourceRef === 'string' && sourceRef.length > 0,
-        'GitHub did not report a valid source branch.',
-    )
-    const encodedRef = sourceRef.split('/').map(encodeURIComponent).join('/')
+    requireEvidence(isSha(head) && isSha(base), 'Invalid pull request head or base SHA.')
     return {
         head,
         base,
         fileCount: pull.changed_files,
         updatedAt: pull.updated_at,
-        sourceRefPath: `repos/${sourceRepository}/git/ref/heads/${encodedRef}`,
+        sourceRefPath: sourceRefApiPath(pull.head),
     }
 }
 

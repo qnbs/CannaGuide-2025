@@ -145,16 +145,43 @@ PROOF_DIR=$(mktemp -d) &&
   node scripts/security/collect-review-evidence.mjs "$PR_NUMBER" --expect-head "$HEAD_SHA" --supplement "$PROOF_DIR/evidence-extra.json"
 ```
 
-To build `evidence.json` manually:
+If the collector cannot get a complete comparison, fetch the exact pull base and head into this clone first. Then run the manual collection from the repository root with `PR_NUMBER` set:
 
 ```bash
-gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate | jq -s 'add' > /tmp/pr-reviews.json
-gh api "repos/qnbs/CannaGuide-2025/issues/${PR_NUMBER}/comments" --paginate | jq -s 'add' > /tmp/pr-comments.json
-# ... headSha, recheckedHeadSha, changedFiles, now (ISO), optional headEquivalence, optional secondReviewRequest
-node scripts/security/review-coverage-policy.mjs < evidence.json
+(
+  set -euo pipefail
+  [[ "$PR_NUMBER" =~ ^[1-9][0-9]*$ ]]
+  repo=repos/qnbs/CannaGuide-2025
+  pull="$repo/pulls/$PR_NUMBER"
+  refs() { gh api "$pull" --jq '[.base.sha, .head.sha] | join(" ")'; }
+  before=$(refs)
+  read -r base head <<< "$before"
+  [[ "$base" =~ ^[0-9a-f]{40}$ && "$head" =~ ^[0-9a-f]{40}$ ]]
+  merge_base=$(git merge-base --all "$base" "$head")
+  [[ "$merge_base" =~ ^[0-9a-f]{40}$ ]]
+
+  evidence_dir=$(mktemp -d)
+  trap 'rm -f -- "$evidence_dir"/{files,reviews.json,comments.json,evidence.json}; rmdir -- "$evidence_dir"' EXIT
+  git diff --name-only --no-renames -z "$merge_base" "$head" > "$evidence_dir/files"
+  gh api "$pull/reviews" --paginate --slurp > "$evidence_dir/reviews.json"
+  gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp > "$evidence_dir/comments.json"
+  after=$(refs)
+  [[ "$before" == "$after" ]]
+  read -r _ rechecked_head <<< "$after"
+
+  jq -n --argjson pullNumber "$PR_NUMBER" --arg headSha "$head" \
+    --arg recheckedHeadSha "$rechecked_head" --arg now "$(date -u +%FT%TZ)" \
+    --rawfile files "$evidence_dir/files" --slurpfile reviews "$evidence_dir/reviews.json" \
+    --slurpfile comments "$evidence_dir/comments.json" \
+    '{$pullNumber, $headSha, $recheckedHeadSha, $now,
+      changedFiles: ($files | split("\u0000") | map(select(length > 0))),
+      reviews: ($reviews[0] | add // []), issueComments: ($comments[0] | add // [])}' \
+    > "$evidence_dir/evidence.json"
+  node scripts/security/review-coverage-policy.mjs < "$evidence_dir/evidence.json"
+)
 ```
 
-The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR’s `pull_request_url` and each receipt from that PR’s `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only <merge-base>...<head>` for `changedFiles`; classify the actual diff, not its title or labels. The evaluator defaults uncertain files to high risk.
+The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only --no-renames <merge-base> <head>` so the source and destination of a rename both enter `changedFiles`. The evaluator defaults uncertain files to high risk.
 
 ### Risk tiers and review count
 

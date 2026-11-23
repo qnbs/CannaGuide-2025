@@ -79,6 +79,7 @@ const CLI = new URL('./collect-review-evidence.mjs', import.meta.url)
 const POLICY = new URL('./review-coverage-policy.mjs', import.meta.url)
 const PULL_PATH = `repos/qnbs/CannaGuide-2025/pulls/${PULL}`
 const COMMENTS_PATH = `repos/qnbs/CannaGuide-2025/issues/${PULL}/comments`
+const COMPARE_PATH = `repos/qnbs/CannaGuide-2025/compare/${BASE}...${HEAD}?per_page=1`
 const CLI_TEST = { skip: process.platform === 'win32' && 'Uses a POSIX gh shim and signals' }
 
 function review(login) {
@@ -105,8 +106,8 @@ function runCollector(t, overrides = {}, argv = [String(PULL), '--expect-head', 
     copyFileSync(POLICY, join(scriptDir, 'review-coverage-policy.mjs'))
     const responses = {
         [PULL_PATH]: { values: [pullMetadata(), pullMetadata()] },
-        [`${PULL_PATH}/files`]: {
-            values: [[[{ filename: 'docs/readme.md' }], [{ filename: 'scripts/ci.mjs' }]]],
+        [COMPARE_PATH]: {
+            values: [{ files: [{ filename: 'docs/readme.md' }, { filename: 'scripts/ci.mjs' }] }],
         },
         [`${PULL_PATH}/reviews`]: {
             values: [[[review('coderabbitai[bot]')], [review('sourcery-ai[bot]')]]],
@@ -128,7 +129,7 @@ if (response.exit) {
     process.stderr.write('fixture private diagnostic')
     process.exit(response.exit)
 }
-const paginated = route.endsWith('/files') || route.endsWith('/reviews') || route.endsWith('/comments')
+const paginated = route.endsWith('/reviews') || route.endsWith('/comments')
 if (paginated && process.argv.slice(4).join(' ') !== '--paginate --slurp') process.exit(91)
 const countFile = process.env.CANNAGUIDE_REVIEW_REQUESTS
 const counts = fs.existsSync(countFile) ? JSON.parse(fs.readFileSync(countFile)) : {}
@@ -192,12 +193,12 @@ test('CLI discards evidence when the PR advances during collection', CLI_TEST, (
 test('CLI rejects truncated, duplicate, or over-limit file lists', CLI_TEST, (t) => {
     const entry = { filename: 'docs/readme.md' }
     for (const files of [[entry], [entry, entry]]) {
-        const result = runCollector(t, { [`${PULL_PATH}/files`]: { values: [[files]] } })
+        const result = runCollector(t, { [COMPARE_PATH]: { values: [{ files }] } })
         assert.equal(result.status, 1)
         assert.equal(result.stdout, '')
         assert.match(result.stderr, /incomplete or duplicate/)
     }
-    const result = runCollector(t, { [PULL_PATH]: { values: [pullMetadata(HEAD, 3001)] } })
+    const result = runCollector(t, { [PULL_PATH]: { values: [pullMetadata(HEAD, 301)] } })
     assert.equal(result.status, 1)
     assert.equal(result.stdout, '')
     assert.match(result.stderr, /file-list limit/)

@@ -13,10 +13,19 @@ const OWNER = 'qnbs'
 const REPO = 'CannaGuide-2025'
 const SHA = /^[0-9a-f]{40}$/
 const GH_MAX_BUFFER = 32 * 1024 * 1024
+const GH_COMPARE_FILE_LIMIT = 300
 
 function fail(message) {
     console.error(message)
     process.exit(1)
+}
+
+function requireEvidence(condition, message) {
+    if (!condition) fail(message)
+}
+
+function isSha(value) {
+    return typeof value === 'string' && SHA.test(value)
 }
 
 function runChild(command, args, options) {
@@ -25,7 +34,7 @@ function runChild(command, args, options) {
         process.kill(process.pid, result.signal)
         return null
     }
-    if (result.error) fail(`Could not run ${command === 'gh' ? 'gh' : 'the review policy'}.`)
+    requireEvidence(!result.error, 'Could not start the evidence collection child process.')
     return result
 }
 
@@ -45,9 +54,10 @@ function ghJson(pathSuffix, flags = []) {
 
 function ghApiPages(pathSuffix) {
     const pages = ghJson(pathSuffix, ['--paginate', '--slurp'])
-    if (!Array.isArray(pages) || pages.length === 0 || !pages.every(Array.isArray)) {
-        fail('GitHub did not return an array of evidence pages.')
-    }
+    const message = 'GitHub did not return an array of evidence pages.'
+    requireEvidence(Array.isArray(pages), message)
+    requireEvidence(pages.length > 0, message)
+    requireEvidence(pages.every(Array.isArray), message)
     return pages.flat()
 }
 
@@ -100,7 +110,7 @@ function scanArgv(argv) {
 
 function validateExpectHead(expectHead) {
     if (expectHead === null) return
-    if (!SHA.test(expectHead)) {
+    if (!isSha(expectHead)) {
         console.error('--expect-head must be a full lowercase git SHA')
         process.exit(2)
     }
@@ -143,20 +153,24 @@ function readPull(path) {
     const pull = ghJson(path)
     const head = pull?.head?.sha
     const base = pull?.base?.sha
-    if (!SHA.test(head ?? '') || !SHA.test(base ?? '')) fail('Invalid pull request SHAs.')
+    requireEvidence(isSha(head), 'Invalid pull request head SHA.')
+    requireEvidence(isSha(base), 'Invalid pull request base SHA.')
     return { head, base, fileCount: pull.changed_files }
 }
 
-function readChangedFiles(pullPath, fileCount) {
-    if (!Number.isInteger(fileCount) || fileCount < 1 || fileCount > 3000) {
-        fail('Invalid changed-file count or GitHub file-list limit exceeded.')
-    }
-    const files = ghApiPages(`${pullPath}/files`)
-    const currentPaths = new Set(files.map((entry) => entry?.filename))
-    if (files.length !== fileCount || currentPaths.size !== fileCount) {
-        fail('GitHub returned an incomplete or duplicate changed-file list.')
-    }
-    if (files.some((entry) => !isValidFileEntry(entry))) fail('Invalid changed-file entry.')
+function readChangedFiles({ head, base, fileCount }) {
+    requireEvidence(Number.isInteger(fileCount), 'GitHub did not report an integer file count.')
+    requireEvidence(fileCount > 0, 'GitHub reported an empty changed-file list.')
+    requireEvidence(fileCount <= GH_COMPARE_FILE_LIMIT, 'GitHub compare file-list limit exceeded.')
+    // GitHub sends the file list on page one, regardless of the commit page size.
+    const comparison = ghJson(`repos/${OWNER}/${REPO}/compare/${base}...${head}?per_page=1`)
+    const files = comparison?.files
+    requireEvidence(Array.isArray(files), 'GitHub comparison did not return a changed-file list.')
+    requireEvidence(files.every(isValidFileEntry), 'Invalid changed-file entry.')
+    const currentPaths = new Set(files.map((entry) => entry.filename))
+    const message = 'GitHub returned an incomplete or duplicate changed-file list.'
+    requireEvidence(files.length === fileCount, message)
+    requireEvidence(currentPaths.size === fileCount, message)
     return changedFilesFromPullFiles(files)
 }
 
@@ -194,13 +208,11 @@ export function filterEvidenceForPull(pullNumber, reviews, issueComments) {
 
 function assertPullUnchanged(path, before) {
     const after = readPull(path)
-    if (
-        after.head !== before.head ||
-        after.base !== before.base ||
-        after.fileCount !== before.fileCount
-    ) {
-        fail('PR changed while collecting evidence; discard and retry when stable.')
-    }
+    const unchanged = Object.entries(before).every(([key, value]) => after[key] === value)
+    requireEvidence(
+        unchanged,
+        'PR changed while collecting evidence; discard and retry when stable.',
+    )
     return after.head
 }
 
@@ -215,7 +227,7 @@ function main() {
         fail(`Live head ${headSha} does not match --expect-head ${expectHead}`)
     }
 
-    const changedFiles = readChangedFiles(pullPath, before.fileCount)
+    const changedFiles = readChangedFiles(before)
     const rawReviews = ghApiPages(`${pullPath}/reviews`)
     const rawComments = ghApiPages(`${repo}/issues/${pullNumber}/comments`)
     const recheckedHeadSha = assertPullUnchanged(pullPath, before)

@@ -134,15 +134,24 @@ Collect API evidence and pass it to the local evaluator. Its result is an operat
 ```bash
 HEAD_SHA=$(gh pr view "$PR_NUMBER" --repo qnbs/CannaGuide-2025 --json headRefOid --jq .headRefOid)
 node scripts/security/collect-review-evidence.mjs "$PR_NUMBER" --expect-head "$HEAD_SHA"
-# With a prepared optional proof file:
-# node scripts/security/collect-review-evidence.mjs "$PR_NUMBER" --expect-head "$HEAD_SHA" --supplement evidence-extra.json
-# Or build evidence.json manually:
+```
+
+When CodeRabbit's marker names an earlier head after a base-only merge, refresh `origin/main` and set `REVIEWED_HEAD` to the full SHA from that marker. Pass the verified proof to the collector:
+
+```bash
+PROOF_DIR=$(mktemp -d) &&
+  node scripts/security/review-head-equivalence.mjs --prior "$REVIEWED_HEAD" --head "$HEAD_SHA" > "$PROOF_DIR/head-equivalence.json" &&
+  jq '{headEquivalence: .}' "$PROOF_DIR/head-equivalence.json" > "$PROOF_DIR/evidence-extra.json" &&
+  node scripts/security/collect-review-evidence.mjs "$PR_NUMBER" --expect-head "$HEAD_SHA" --supplement "$PROOF_DIR/evidence-extra.json"
+```
+
+To build `evidence.json` manually:
+
+```bash
 gh api "repos/qnbs/CannaGuide-2025/pulls/${PR_NUMBER}/reviews" --paginate | jq -s 'add' > /tmp/pr-reviews.json
 gh api "repos/qnbs/CannaGuide-2025/issues/${PR_NUMBER}/comments" --paginate | jq -s 'add' > /tmp/pr-comments.json
 # ... headSha, recheckedHeadSha, changedFiles, now (ISO), optional headEquivalence, optional secondReviewRequest
 node scripts/security/review-coverage-policy.mjs < evidence.json
-# Only when CodeRabbit's marker names an earlier head after base-only merges:
-node scripts/security/review-head-equivalence.mjs --prior "$REVIEWED_HEAD" --head "$HEAD_SHA" > /tmp/head-equivalence.json
 ```
 
 The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR’s `pull_request_url` and each receipt from that PR’s `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. The collector must read the PR head before fetching evidence and re-read it afterward. If either SHA differs, discard the snapshot and repeat once the head is stable. Use `git diff --name-only <merge-base>...<head>` for `changedFiles`; classify the actual diff, not its title or labels. The evaluator defaults uncertain files to high risk.
@@ -167,7 +176,7 @@ In this repository, the only CodeRabbit attestation accepted locally is either a
 1. Keep one stable head; ship one correction wave, then wait for checks and reviews on that SHA.
 2. Obtain **exact-head** qualified evidence from **CodeAnt** or **Codex** (formal review or structured Codex receipt). Two independent providers from the {CodeRabbit, CodeAnt, Codex, Sourcery} pool remain required for high risk; Sourcery is opportunistic for scheduling only, but a completed Sourcery review still counts once when present on the exact head.
 3. When CodeRabbit coverage is required on a **final** stable head and incremental mode is exhausted, the provider-supported option is a single `@coderabbitai full review` on that head (not repeated incremental pings). If even a full review leaves the marker stale, treat it as a provider limitation and cover the head with the other allowlisted reviewers.
-4. Run the collector with the expected head as shown above immediately before merge. It reads paginated GitHub API responses, checks the file list against the reported changed-file count, and rejects a snapshot if the head or base changes during collection. It filters reviews and comments to the selected pull and passes the snapshot to `review-coverage-policy.mjs`.
+4. Run the collector with the expected head as shown above immediately before merge. It reads the changed files from an immutable base/head comparison and checks the count against the pull request metadata. The comparison endpoint returns at most 300 files. A larger, missing or incomplete list aborts collection. For such a pull, assemble evidence manually from the exact Git merge base and head. The collector reads reviews and comments across all API pages and rejects a snapshot if the pull head or base changes during collection.
 
 **Systemic availability:** the qualified pool is {CodeRabbit, CodeAnt, Codex, Sourcery}. Any two independent qualified reviews on the exact head satisfy high-risk coverage, including a completed Sourcery review paired with any other allowlisted provider. A receipt gap from one vendor is an integration or quota limit, not permission to merge with one reviewer or human prose. Record skips in the PR thread; use the bounded low-risk fallback only when the evaluator classifies low risk and the wait rules are met.
 

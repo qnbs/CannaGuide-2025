@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **chore(deps):** The desktop shell plugin moves to 2.6.0 on both sides: the npm package `@tauri-apps/plugin-shell` and the Rust crate `tauri-plugin-shell`, whose lockfile entry had stayed on 2.3.5 because Dependabot does not track Cargo ([#927](https://github.com/qnbs/CannaGuide-2025/pull/927)). The update adds process-group and kill-on-drop options and fixes event order for fast-exiting commands; no app code changes.
 - **chore(deps):** Dependabot merges on `main` since 1.12.1: `@google/genai` 2.32.0 to 3.3.0 ([#894](https://github.com/qnbs/CannaGuide-2025/pull/894)); `dompurify` 3.4.17 to 3.4.18 ([#889](https://github.com/qnbs/CannaGuide-2025/pull/889)); `@tauri-apps/api` 2.12.4 on the desktop shell ([#901](https://github.com/qnbs/CannaGuide-2025/pull/901)); dev tooling `postcss` 8.5.33 ([#890](https://github.com/qnbs/CannaGuide-2025/pull/890)), `lint-staged` 17.6.1 ([#891](https://github.com/qnbs/CannaGuide-2025/pull/891)), `@testing-library/user-event` 14.6.12 and `msw` 3.0.6 ([#888](https://github.com/qnbs/CannaGuide-2025/pull/888)).
 - **chore(deps):** `@cannaguide/web` upgrades `vite-plugin-pwa` from 1.3.0 to 2.0.0 (dev dependency). The app still uses `injectManifest` with `public/sw.js`; no user-facing PWA behaviour change is intended beyond the major-line dependency adoption ([#905](https://github.com/qnbs/CannaGuide-2025/pull/905)).
 

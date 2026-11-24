@@ -247,7 +247,21 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
     if (IS_DESKTOP_SHELL) {
-        event.waitUntil(self.registration.unregister())
+        // Nothing on the desktop reads this worker's caches any more (the page never opens
+        // them), so an older build's shell and model caches are freed before it leaves.
+        event.waitUntil(
+            caches
+                .keys()
+                .then((names) =>
+                    Promise.all(
+                        names
+                            .filter((name) => name.startsWith('cannaguide-'))
+                            .map((name) => caches.delete(name)),
+                    ),
+                )
+                .catch(() => undefined)
+                .then(() => self.registration.unregister()),
+        )
         return
     }
     event.waitUntil(

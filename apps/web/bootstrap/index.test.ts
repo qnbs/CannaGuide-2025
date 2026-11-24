@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
     leave: vi.fn<() => Promise<boolean>>(),
@@ -20,12 +20,23 @@ describe('startApp', () => {
         mocks.mount.mockReset().mockResolvedValue(undefined)
     })
 
-    it('stops before the app mounts while the page reloads without an old worker (GH #931)', async () => {
+    afterEach(() => {
+        vi.useRealTimers()
+    })
+
+    it('waits for the reload without an old worker before anything mounts (GH #931)', async () => {
+        vi.useFakeTimers()
         mocks.leave.mockResolvedValue(true)
-        const { startApp } = await import('./index')
-        await startApp()
+        const { DESKTOP_RELOAD_FALLBACK_MS, startApp } = await import('./index')
+        const started = startApp()
+        await vi.advanceTimersByTimeAsync(DESKTOP_RELOAD_FALLBACK_MS - 1)
         expect(mocks.register).not.toHaveBeenCalled()
         expect(mocks.mount).not.toHaveBeenCalled()
+        // A reload that never happened must not leave the window blank.
+        await vi.advanceTimersByTimeAsync(1)
+        await started
+        expect(mocks.register).toHaveBeenCalledTimes(1)
+        expect(mocks.mount).toHaveBeenCalledTimes(1)
     })
 
     it('registers and mounts when no reload is needed', async () => {

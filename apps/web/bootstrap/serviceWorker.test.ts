@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { runInNewContext } from 'node:vm'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -278,10 +279,50 @@ describe('the desktop shell runs no service worker (GH #931)', () => {
             // The shell guard is the first statement of each handler.
             expect(source.slice(at, at + 120), event).toMatch(/=> \{\s+if \(IS_DESKTOP_SHELL\) \{/)
         }
-        const activateAt = source.indexOf("self.addEventListener('activate'")
-        expect(source.slice(activateAt, activateAt + 200)).toContain(
-            'event.waitUntil(self.registration.unregister())',
-        )
+    })
+
+    it('frees only its own caches, then leaves, when it activates inside the shell', async () => {
+        const source = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
+        const listeners: Record<string, (event: unknown) => void> = {}
+        const order: string[] = []
+        const context = {
+            self: {
+                __WB_MANIFEST: [],
+                location: { hostname: 'tauri.localhost' },
+                addEventListener: (type: string, listener: (event: unknown) => void) => {
+                    listeners[type] = listener
+                },
+                registration: {
+                    unregister: async () => {
+                        order.push('unregister')
+                        return true
+                    },
+                },
+            },
+            caches: {
+                keys: async () => ['cannaguide-abc-pwa-cache', 'cannaguide-ml-models-v1', 'other'],
+                delete: async (name: string) => {
+                    order.push(`delete:${name}`)
+                    return true
+                },
+            },
+            Response,
+            URL,
+            console: { debug: () => undefined },
+        }
+        runInNewContext(source, context)
+        let pending: PromiseLike<unknown> | undefined
+        listeners.activate?.({
+            waitUntil: (promise: PromiseLike<unknown>) => {
+                pending = promise
+            },
+        })
+        await pending
+        expect(order).toEqual([
+            'delete:cannaguide-abc-pwa-cache',
+            'delete:cannaguide-ml-models-v1',
+            'unregister',
+        ])
     })
 })
 

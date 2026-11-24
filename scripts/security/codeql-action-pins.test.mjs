@@ -10,16 +10,23 @@ import { fileURLToPath } from 'node:url'
 // group that keeps them together are checked here.
 
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const WORKFLOWS = join(REPO_ROOT, '.github/workflows')
-const USE = /uses:\s*github\/codeql-action(?:\/([\w-]+))?@([^\s#]+)(?:[ \t]*#[ \t]*(\S+))?/gu
+const GITHUB_DIR = join(REPO_ROOT, '.github')
+// A quoted value is valid YAML too: `uses: 'github/codeql-action/analyze@<sha>' # v4.39.4`.
+const USE =
+    /uses:\s*(['"]?)github\/codeql-action(?:\/([\w-]+))?@([^\s#'"]+)\1(?:[ \t]*#[ \t]*(\S+))?/u
+const MENTION = /\buses:.*github\/codeql-action/u
 
+/** Every codeql-action step in one file; a `uses:` line the parser cannot read is reported. */
 function codeqlUses(file, text) {
-    return [...text.matchAll(USE)].map((match) => ({
-        file,
-        action: match[1] ?? '(root)',
-        ref: match[2],
-        version: match[3],
-    }))
+    return text
+        .split('\n')
+        .filter((line) => MENTION.test(line))
+        .map((line) => {
+            const match = USE.exec(line)
+            return match
+                ? { file, action: match[2] ?? '(root)', ref: match[3], version: match[4] }
+                : { file, action: '(unparsed)', ref: line.trim(), version: undefined }
+        })
 }
 
 /** Problems with a set of codeql-action steps; empty when they all run one pinned version. */
@@ -38,11 +45,13 @@ function pinProblems(uses) {
     return problems
 }
 
+/** Workflows and composite actions alike: every YAML file under .github. */
 function workflowUses() {
-    return readdirSync(WORKFLOWS)
+    return readdirSync(GITHUB_DIR, { recursive: true })
+        .map(String)
         .filter((name) => /\.ya?ml$/u.test(name))
         .sort()
-        .flatMap((name) => codeqlUses(name, readFileSync(join(WORKFLOWS, name), 'utf8')))
+        .flatMap((name) => codeqlUses(name, readFileSync(join(GITHUB_DIR, name), 'utf8')))
 }
 
 test('every github/codeql-action step pins the same commit and version', () => {
@@ -67,6 +76,33 @@ test('a bump of one sub-action alone is reported, as in GH #925', () => {
         'codeql.yml: upload-sarif has no version comment',
         `more than one pin: 1bd86f2fdb4b86187fa4059f16f31a3202acc9ea v4.39.4, 33d7b85da1a04171e211befe2c739303b9a4c066 v4.39.3, v4 undefined`,
     ])
+})
+
+test('a quoted reference is read like a bare one, and an unreadable one is reported', () => {
+    const pin = '1bd86f2fdb4b86187fa4059f16f31a3202acc9ea'
+    const old = '33d7b85da1a04171e211befe2c739303b9a4c066'
+    const uses = codeqlUses(
+        'codeql.yml',
+        [
+            `      - uses: github/codeql-action/init@${pin} # v4.39.4`,
+            `        uses: 'github/codeql-action/analyze@${old}' # v4.39.3`,
+            `        uses: "github/codeql-action/upload-sarif@${pin}" # v4.39.4`,
+            '        uses: >-',
+            '        name: not a step github/codeql-action',
+        ].join('\n'),
+    )
+    assert.deepEqual(
+        uses.map(({ action, ref, version }) => [action, ref, version]),
+        [
+            ['init', pin, 'v4.39.4'],
+            ['analyze', old, 'v4.39.3'],
+            ['upload-sarif', pin, 'v4.39.4'],
+        ],
+    )
+    assert.ok(pinProblems(uses).some((problem) => problem.startsWith('more than one pin')))
+    const folded = codeqlUses('x.yml', 'uses: github/codeql-action/init@ # v4.39.4')
+    assert.equal(folded[0].action, '(unparsed)')
+    assert.ok(pinProblems(folded).length > 0)
 })
 
 test('Dependabot updates the github/codeql-action family in one group', () => {

@@ -150,43 +150,42 @@ function parseHeadEquivalence(proof, headSha) {
  * skips a head that only merged the base branch, so its marker may name the earlier
  * reviewed head when a valid head-equivalence proof names that same head.
  */
-function parseCodeRabbitReceipt(comment, headSha, pullNumber, equivalence = null) {
-    if (
-        !isReviewBot(comment?.user, CODERABBIT_LOGIN) ||
-        comment.issue_url !== `${API_ROOT}/issues/${pullNumber}`
-    )
-        return null
+/** The coverage payload of a CodeRabbit summary that carries each marker exactly once. */
+function codeRabbitCoveragePayload(comment, pullNumber) {
     const body = comment?.body
-    if (typeof body !== 'string') return null
-    if (
-        body.split(CODERABBIT_SUMMARY_MARKER).length !== 2 ||
-        body.split(CODERABBIT_COVERAGE_PREFIX).length !== 2
-    )
-        return null
-    const match = body.match(/<!-- final_review_risk_coverage:(\{[^\r\n]*\}) -->/)
+    const wellFormed =
+        isReviewBot(comment?.user, CODERABBIT_LOGIN) &&
+        comment.issue_url === `${API_ROOT}/issues/${pullNumber}` &&
+        typeof body === 'string' &&
+        body.split(CODERABBIT_SUMMARY_MARKER).length === 2 &&
+        body.split(CODERABBIT_COVERAGE_PREFIX).length === 2
+    const match = wellFormed
+        ? body.match(/<!-- final_review_risk_coverage:(\{[^\r\n]*\}) -->/)
+        : null
     if (!match) return null
-
-    let payload
     try {
-        payload = JSON.parse(match[1])
+        return JSON.parse(match[1])
     } catch {
         return null
     }
-    const exactHead = payload?.coveredCommitId === headSha && payload?.sourceCommitId === headSha
+}
+
+/** Whether a payload names one commit as both its source and its covered commit. */
+const coversCommit = (payload, sha) =>
+    payload?.coveredCommitId === sha && payload?.sourceCommitId === sha
+
+function parseCodeRabbitReceipt(comment, headSha, pullNumber, equivalence = null) {
+    const payload = codeRabbitCoveragePayload(comment, pullNumber)
+    const exactHead = coversCommit(payload, headSha)
     const equivalentHead =
-        !exactHead &&
-        equivalence !== null &&
-        payload?.coveredCommitId === equivalence.priorHeadSha &&
-        payload?.sourceCommitId === equivalence.priorHeadSha
-    if (
-        payload?.kind !== 'reviewed' ||
-        !SHA.test(payload.coveredCommitId ?? '') ||
-        !(exactHead || equivalentHead)
-    ) {
-        return null
-    }
-    const observedAt = comment.updated_at ?? comment.created_at
-    if (!timestamp(observedAt)) return null
+        !exactHead && equivalence !== null && coversCommit(payload, equivalence.priorHeadSha)
+    const observedAt = comment?.updated_at ?? comment?.created_at
+    const valid =
+        payload?.kind === 'reviewed' &&
+        SHA.test(payload.coveredCommitId ?? '') &&
+        (exactHead || equivalentHead) &&
+        Boolean(timestamp(observedAt))
+    if (!valid) return null
     return {
         provider: 'CodeRabbit',
         login: CODERABBIT_LOGIN,
@@ -426,57 +425,29 @@ function isThreadReplyOnly(review, reviewComments) {
     )
 }
 
-/** Evaluate operator-collected GitHub API evidence. This is not a required CI check. */
-export function evaluateReviewCoverage(evidence) {
-    const headSha = evidence?.headSha
-    const recheckedHeadSha = evidence?.recheckedHeadSha
-    const pullNumber = evidence?.pullNumber
-    const files = Array.isArray(evidence?.changedFiles) ? evidence.changedFiles : []
-    const now = timestamp(evidence?.now) ?? Date.now()
-    const highRiskFiles = files.filter((file) => typeof file !== 'string' || !lowRiskFile(file))
-    const risk = files.length > 0 && highRiskFiles.length === 0 ? 'low' : 'high'
-    if (
-        !Number.isInteger(pullNumber) ||
-        pullNumber < 1 ||
-        !SHA.test(headSha ?? '') ||
-        recheckedHeadSha !== headSha
-    ) {
-        return {
-            status: 'invalid_or_changed_head',
-            headSha: headSha ?? null,
-            risk,
-            qualifiedReviewers: [],
-            requiredReviews: risk === 'high' ? 2 : 2,
-            satisfied: false,
-        }
-    }
+const list = (value) => (Array.isArray(value) ? value : [])
 
-    const reviewComments = Array.isArray(evidence.reviewComments) ? evidence.reviewComments : []
+/** The latest formal review per qualified bot on this head, and the bots whose latest was dismissed. */
+function formalReviews(reviews, headSha, pullNumber, reviewComments) {
     const reviewsByLogin = new Map()
-    for (const review of Array.isArray(evidence.reviews) ? evidence.reviews : []) {
+    for (const review of reviews) {
         const login = review?.user?.login
-        if (
-            !REVIEWERS.has(login) ||
-            review.commit_id !== headSha ||
-            review.pull_request_url !== `${API_ROOT}/pulls/${pullNumber}`
-        )
-            continue
-        if (!isReviewBot(review.user, login)) continue
+        const onThisHead =
+            REVIEWERS.has(login) &&
+            review.commit_id === headSha &&
+            review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}`
+        if (!onThisHead || !isReviewBot(review.user, login)) continue
         if (isThreadReplyOnly(review, reviewComments)) continue
         const current = reviewsByLogin.get(login)
         if (!current || compareLatest(review, current, 'submitted_at') > 0) {
             reviewsByLogin.set(login, review)
         }
     }
-
     const formal = new Map()
     const blockedByDismissal = new Set()
     for (const [login, review] of reviewsByLogin) {
-        if (review.state === 'DISMISSED') {
-            blockedByDismissal.add(login)
-            continue
-        }
-        if (COMPLETED_REVIEW_STATES.has(review.state) && timestamp(review.submitted_at)) {
+        if (review.state === 'DISMISSED') blockedByDismissal.add(login)
+        else if (COMPLETED_REVIEW_STATES.has(review.state) && timestamp(review.submitted_at)) {
             formal.set(login, {
                 provider: REVIEWERS.get(login),
                 login,
@@ -487,52 +458,148 @@ export function evaluateReviewCoverage(evidence) {
             })
         }
     }
+    return { formal, blockedByDismissal }
+}
 
-    const latestCodexMarker = (Array.isArray(evidence.issueComments) ? evidence.issueComments : [])
+/** The latest comment by one bot on this pull request that carries a marker. */
+function latestMarkerComment(issueComments, login, pullNumber, marker, dateField) {
+    return issueComments
         .filter(
             (comment) =>
-                isReviewBot(comment?.user, 'chatgpt-codex-connector[bot]') &&
+                isReviewBot(comment?.user, login) &&
                 comment.issue_url === `${API_ROOT}/issues/${pullNumber}` &&
                 typeof comment.body === 'string' &&
-                comment.body.includes('<!-- codex-review-state:v1 '),
+                comment.body.includes(marker),
         )
-        .sort((a, b) => compareLatest(a, b, 'created_at'))
+        .sort((a, b) => compareLatest(a, b, dateField))
         .at(-1)
-    const receipt = latestCodexMarker
-        ? parseCodexReceipt(latestCodexMarker, headSha, pullNumber)
-        : null
+}
 
+/**
+ * A head-equivalence proof lets the marker of the earlier reviewed head count, unless
+ * CodeRabbit's review on that earlier head was dismissed.
+ */
+function usableEquivalence(evidence, headSha, pullNumber, reviewComments) {
+    const equivalence = parseHeadEquivalence(evidence.headEquivalence, headSha)
+    if (!equivalence) return null
+    const prior = latestCodeRabbitReviewOn(
+        evidence.reviews,
+        equivalence.priorHeadSha,
+        pullNumber,
+        reviewComments,
+    )
+    return prior?.state === 'DISMISSED' ? null : equivalence
+}
+
+/**
+ * The on-demand Claude review counts as one qualified provider of its own (owner decision,
+ * 2026-11-24): never as two, and only as the receipt-bound formal review. It is recorded as
+ * standing in for CodeRabbit when CodeRabbit demonstrably could not review this head.
+ */
+function claudeEntry(evidence, headSha, pullNumber, qualified) {
+    if (pullNumber === TRANSITION_PULL_NUMBER) return null
+    const claude = claudeReviewOn(list(evidence.reviews), headSha, pullNumber, evidence.claudeRuns)
+    if (!claude) return null
+    const standsIn =
+        !qualified.has(CODERABBIT_LOGIN) &&
+        codeRabbitUnavailable(list(evidence.issueComments), headSha, pullNumber)
+    return { ...claude, standsInFor: standsIn ? 'CodeRabbit' : null }
+}
+
+/** How many reviews count and how many are required, with the low-risk fallback. */
+function coverageRequirement(evidence, { pullNumber, headSha, highRisk, formal, qualified, now }) {
+    if (pullNumber === TRANSITION_PULL_NUMBER) {
+        return { eligibleCount: formal.size, requiredReviews: 2, fallback: false }
+    }
+    const eligibleCount = qualified.size
+    const fallback =
+        !highRisk &&
+        eligibleCount === 1 &&
+        unavailableFallback(
+            evidence.secondReviewRequest,
+            pullNumber,
+            headSha,
+            new Set(qualified.keys()),
+            now,
+        )
+    return { eligibleCount, requiredReviews: fallback ? 1 : 2, fallback }
+}
+
+function receiptSummary(receipt) {
+    return receipt
+        ? {
+              hasAnyFindings: receipt.hasAnyFindings,
+              hasUnresolvedFindings: receipt.hasUnresolvedFindings,
+          }
+        : null
+}
+
+function equivalentHeadSummary(qualified, equivalence) {
+    return qualified.get(CODERABBIT_LOGIN)?.source === 'coverage_marker_equivalent_head'
+        ? { reviewedHeadSha: equivalence.priorHeadSha, changeDigest: equivalence.changeDigest }
+        : null
+}
+
+function claudeSummary(qualified) {
+    const claude = qualified.get(CLAUDE_KEY)
+    return claude
+        ? { findings: claude.findings, runId: claude.runId, standsInFor: claude.standsInFor }
+        : null
+}
+
+/** Evaluate operator-collected GitHub API evidence. This is not a required CI check. */
+export function evaluateReviewCoverage(evidence) {
+    const headSha = evidence?.headSha
+    const pullNumber = evidence?.pullNumber
+    const files = list(evidence?.changedFiles)
+    const now = timestamp(evidence?.now) ?? Date.now()
+    const highRiskFiles = files.filter((file) => typeof file !== 'string' || !lowRiskFile(file))
+    const risk = files.length > 0 && highRiskFiles.length === 0 ? 'low' : 'high'
+    const validHead =
+        Number.isInteger(pullNumber) &&
+        pullNumber >= 1 &&
+        SHA.test(headSha ?? '') &&
+        evidence?.recheckedHeadSha === headSha
+    if (!validHead) {
+        return {
+            status: 'invalid_or_changed_head',
+            headSha: headSha ?? null,
+            risk,
+            qualifiedReviewers: [],
+            requiredReviews: 2,
+            satisfied: false,
+        }
+    }
+
+    const reviewComments = list(evidence.reviewComments)
+    const issueComments = list(evidence.issueComments)
+    const { formal, blockedByDismissal } = formalReviews(
+        list(evidence.reviews),
+        headSha,
+        pullNumber,
+        reviewComments,
+    )
+    const codexMarker = latestMarkerComment(
+        issueComments,
+        'chatgpt-codex-connector[bot]',
+        pullNumber,
+        '<!-- codex-review-state:v1 ',
+        'created_at',
+    )
+    const receipt = codexMarker ? parseCodexReceipt(codexMarker, headSha, pullNumber) : null
     // CodeRabbit edits its summary in place, so the latest edit is the current state.
     // Pick the latest summary first and only then check its marker: a newer summary
     // without a valid marker (rate limited, skipped, failed) voids an older marker.
-    const latestCodeRabbitSummary = (
-        Array.isArray(evidence.issueComments) ? evidence.issueComments : []
+    const codeRabbitSummary = latestMarkerComment(
+        issueComments,
+        CODERABBIT_LOGIN,
+        pullNumber,
+        CODERABBIT_SUMMARY_MARKER,
+        'updated_at',
     )
-        .filter(
-            (comment) =>
-                isReviewBot(comment?.user, CODERABBIT_LOGIN) &&
-                comment.issue_url === `${API_ROOT}/issues/${pullNumber}` &&
-                typeof comment.body === 'string' &&
-                comment.body.includes(CODERABBIT_SUMMARY_MARKER),
-        )
-        .sort((a, b) => compareLatest(a, b, 'updated_at'))
-        .at(-1)
-    // A head-equivalence proof lets the marker of the earlier reviewed head count, unless
-    // CodeRabbit's review on that earlier head was dismissed.
-    let equivalence = parseHeadEquivalence(evidence.headEquivalence, headSha)
-    if (
-        equivalence &&
-        latestCodeRabbitReviewOn(
-            evidence.reviews,
-            equivalence.priorHeadSha,
-            pullNumber,
-            reviewComments,
-        )?.state === 'DISMISSED'
-    ) {
-        equivalence = null
-    }
-    const codeRabbitReceipt = latestCodeRabbitSummary
-        ? parseCodeRabbitReceipt(latestCodeRabbitSummary, headSha, pullNumber, equivalence)
+    const equivalence = usableEquivalence(evidence, headSha, pullNumber, reviewComments)
+    const codeRabbitReceipt = codeRabbitSummary
+        ? parseCodeRabbitReceipt(codeRabbitSummary, headSha, pullNumber, equivalence)
         : null
 
     const qualified = new Map(formal)
@@ -541,52 +608,18 @@ export function evaluateReviewCoverage(evidence) {
             qualified.set(issued.login, issued)
         }
     }
+    const claude = claudeEntry(evidence, headSha, pullNumber, qualified)
+    if (claude) qualified.set(CLAUDE_KEY, claude)
 
-    // The on-demand Claude review counts as one qualified provider of its own (owner decision,
-    // 2026-11-24): never as two, and only as the receipt-bound formal review. It is recorded
-    // as standing in for CodeRabbit when CodeRabbit demonstrably could not review this head.
-    const claude = claudeReviewOn(
-        Array.isArray(evidence.reviews) ? evidence.reviews : [],
-        headSha,
-        pullNumber,
-        evidence.claudeRuns,
-    )
-    if (claude && pullNumber !== TRANSITION_PULL_NUMBER) {
-        const standsIn =
-            !qualified.has(CODERABBIT_LOGIN) &&
-            codeRabbitUnavailable(
-                Array.isArray(evidence.issueComments) ? evidence.issueComments : [],
-                headSha,
-                pullNumber,
-            )
-        qualified.set(CLAUDE_KEY, { ...claude, standsInFor: standsIn ? 'CodeRabbit' : null })
-    }
-
-    const qualifiedLogins = new Set(qualified.keys())
-    const highRisk = risk === 'high'
     const transitionPull = pullNumber === TRANSITION_PULL_NUMBER
-    const formalCount = formal.size
-    const qualifiedCount = qualified.size
-    let eligibleCount
-    let requiredReviews = 2
-    let fallback = false
-    if (transitionPull) {
-        eligibleCount = formalCount
-    } else if (highRisk) {
-        eligibleCount = qualifiedCount
-    } else {
-        eligibleCount = qualifiedCount
-        fallback =
-            eligibleCount === 1 &&
-            unavailableFallback(
-                evidence.secondReviewRequest,
-                pullNumber,
-                headSha,
-                qualifiedLogins,
-                now,
-            )
-        requiredReviews = fallback ? 1 : 2
-    }
+    const { eligibleCount, requiredReviews, fallback } = coverageRequirement(evidence, {
+        pullNumber,
+        headSha,
+        highRisk: risk === 'high',
+        formal,
+        qualified,
+        now,
+    })
     const satisfied = eligibleCount >= requiredReviews
 
     return {
@@ -605,26 +638,9 @@ export function evaluateReviewCoverage(evidence) {
             login,
             state,
         })),
-        receiptFindings: receipt
-            ? {
-                  hasAnyFindings: receipt.hasAnyFindings,
-                  hasUnresolvedFindings: receipt.hasUnresolvedFindings,
-              }
-            : null,
-        equivalentHead:
-            qualified.get(CODERABBIT_LOGIN)?.source === 'coverage_marker_equivalent_head'
-                ? {
-                      reviewedHeadSha: equivalence.priorHeadSha,
-                      changeDigest: equivalence.changeDigest,
-                  }
-                : null,
-        claudeReview: qualified.has(CLAUDE_KEY)
-            ? {
-                  findings: claude.findings,
-                  runId: claude.runId,
-                  standsInFor: qualified.get(CLAUDE_KEY).standsInFor,
-              }
-            : null,
+        receiptFindings: receiptSummary(receipt),
+        equivalentHead: equivalentHeadSummary(qualified, equivalence),
+        claudeReview: claudeSummary(qualified),
         fallback,
         requiredReviews,
         satisfied,

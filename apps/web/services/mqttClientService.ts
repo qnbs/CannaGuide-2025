@@ -60,6 +60,8 @@ class MqttClientService {
     private unsubscribeStore: (() => void) | null = null
     private unsubscribeCredentials: (() => void) | null = null
     private credentialHandle: ReturnType<typeof setTimeout> | null = null
+    /** A backoff retry that came due while credentials were settling; settlement runs it. */
+    private retryDeferred = false
     /** The username and password the last CONNECT used; a settled change is compared to it. */
     private appliedCredentials: { username: string; password: string } | null = null
     private currentTopic: string | null = null
@@ -113,7 +115,12 @@ class MqttClientService {
                         applied === null ||
                         applied.username !== username ||
                         applied.password !== password
-                    if (isEnabled && brokerUrl && changed) this.connect()
+                    const deferred = this.retryDeferred
+                    this.retryDeferred = false
+                    if (!isEnabled || !brokerUrl) return
+                    // New credentials start afresh; an unchanged set still runs the retry it held.
+                    if (changed) this.connect()
+                    else if (deferred) this.connect({ retry: true })
                 }, CREDENTIAL_SETTLE_MS)
             },
         )
@@ -126,12 +133,22 @@ class MqttClientService {
     // Connection lifecycle
     // -----------------------------------------------------------------------
 
-    private connect(): void {
+    /**
+     * Opens a connection. A backoff retry keeps the growing delay; anything else starts
+     * again from the first delay. Either way a retry still pending is dropped: this
+     * connection replaces whatever it would have opened.
+     */
+    private connect({ retry = false }: { retry?: boolean } = {}): void {
+        if (this.reconnectHandle) {
+            clearTimeout(this.reconnectHandle)
+            this.reconnectHandle = null
+        }
+        this.retryDeferred = false
         // Tear down any existing connection first
         this.disconnectClient()
         this.intentionalDisconnect = false
         this.refusedByBroker = false
-        this.currentReconnectMs = INITIAL_RECONNECT_MS
+        if (!retry) this.currentReconnectMs = INITIAL_RECONNECT_MS
 
         const { brokerUrl, username, password, topicPrefix } = useIotStore.getState()
         this.appliedCredentials = { username, password }
@@ -190,6 +207,7 @@ class MqttClientService {
 
         client.on('connect', () => {
             if (!current()) return
+            this.currentReconnectMs = INITIAL_RECONNECT_MS
             useIotStore.getState().setConnectionStatus('connected')
             client.subscribe(topic, { qos: 0 }, (err) => {
                 if (err) {
@@ -228,9 +246,14 @@ class MqttClientService {
         console.debug(`[MQTT-Client] Reconnecting in ${delay}ms`)
         this.reconnectHandle = setTimeout(() => {
             this.reconnectHandle = null
-            if (!this.intentionalDisconnect && useIotStore.getState().isEnabled) {
-                this.connect()
+            if (this.intentionalDisconnect || !useIotStore.getState().isEnabled) return
+            // Credentials still being typed: do not send the half-typed ones; settlement
+            // connects with the final ones, or runs this retry if they did not change.
+            if (this.credentialHandle) {
+                this.retryDeferred = true
+                return
             }
+            this.connect({ retry: true })
         }, delay)
         this.currentReconnectMs = Math.min(
             this.currentReconnectMs * BACKOFF_MULTIPLIER,

@@ -176,6 +176,23 @@ describe('runPostHydrationServices', () => {
         expect(order).toEqual(['load', 'init'])
     })
 
+    it('starts the IoT client after a bounded wait when the password load stalls', async () => {
+        vi.useFakeTimers()
+        try {
+            mockLoadPersistedPassword.mockImplementation(() => new Promise<void>(() => undefined))
+            const { PASSWORD_LOAD_TIMEOUT_MS } = await import('./postHydration')
+            const started = runPostHydrationServices(createTestStore())
+            await vi.advanceTimersByTimeAsync(PASSWORD_LOAD_TIMEOUT_MS - 1)
+            expect(mockMqttInit).not.toHaveBeenCalled()
+            await vi.advanceTimersByTimeAsync(1)
+            await vi.waitFor(() => expect(mockMqttInit).toHaveBeenCalledOnce())
+            await vi.runOnlyPendingTimersAsync()
+            await started
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
     it('still starts the IoT client when the saved password cannot be loaded', async () => {
         mockLoadPersistedPassword.mockRejectedValue(new Error('decrypt failed'))
         const store = createTestStore()

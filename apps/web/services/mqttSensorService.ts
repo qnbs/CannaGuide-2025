@@ -191,14 +191,23 @@ class MqttSensorService {
         }
     }
 
-    connect(): void {
+    /**
+     * Opens a connection. A backoff retry keeps the growing delay; a call from the user starts
+     * again from the first delay. A retry still pending is dropped either way.
+     */
+    connect({ retry = false }: { retry?: boolean } = {}): void {
+        if (this.reconnectHandle) {
+            clearTimeout(this.reconnectHandle)
+            this.reconnectHandle = null
+        }
+        const delay = this.currentReconnectMs
         if (this.client) {
             this.disconnect()
         }
 
         this.intentionalDisconnect = false
         this.refusedByBroker = false
-        this.currentReconnectMs = INITIAL_RECONNECT_MS
+        this.currentReconnectMs = retry ? delay : INITIAL_RECONNECT_MS
         if (this.refuseBlockedBroker()) return
         this.pausedByLocalOnly = false
         this.setConnectionState('connecting')
@@ -327,7 +336,7 @@ class MqttSensorService {
         this.reconnectHandle = setTimeout(() => {
             this.reconnectHandle = null
             if (!this.intentionalDisconnect) {
-                this.connect()
+                this.connect({ retry: true })
             }
         }, delay)
         // Exponential backoff with cap

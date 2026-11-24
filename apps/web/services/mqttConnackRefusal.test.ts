@@ -18,6 +18,9 @@ describe('permanentConnackRefusal', () => {
         expect(permanentConnackRefusal(refusal('Not authorized', 0x87))).toBe(0x87)
         expect(permanentConnackRefusal(refusal('Banned', 0x8a))).toBe(0x8a)
         expect(permanentConnackRefusal(refusal('Server moved', 0x9d))).toBe(0x9d)
+        // The broker cannot parse our CONNECT, or it breaks the protocol for this broker.
+        expect(permanentConnackRefusal(refusal('Malformed Packet', 0x81))).toBe(0x81)
+        expect(permanentConnackRefusal(refusal('Protocol Error', 0x82))).toBe(0x82)
     })
 
     it('leaves busy, unavailable and other errors to the usual backoff', () => {
@@ -159,6 +162,51 @@ describe('the IoT journal client when the credentials change', () => {
         expect(Reflect.get(options ?? {}, 'password')).toBe(typed)
     })
 
+    it('lets the backoff grow across failed retries', async () => {
+        await start()
+        refuseAndClose(refusal('Server unavailable', 3))
+        await vi.advanceTimersByTimeAsync(1000)
+        expect(connect).toHaveBeenCalledTimes(2)
+        refuseAndClose(refusal('Server unavailable', 3))
+        // The second retry waits 2 s, not 1 s again.
+        await vi.advanceTimersByTimeAsync(1000)
+        expect(connect).toHaveBeenCalledTimes(2)
+        await vi.advanceTimersByTimeAsync(1000)
+        expect(connect).toHaveBeenCalledTimes(3)
+    })
+
+    it('drops a pending backoff retry once corrected credentials connect', async () => {
+        const { store, settle } = await start()
+        for (let attempt = 0; attempt < 3; attempt += 1) {
+            refuseAndClose(refusal('Server unavailable', 3))
+            await vi.advanceTimersByTimeAsync(1000 * 2 ** attempt)
+        }
+        expect(connect).toHaveBeenCalledTimes(4)
+        // The next retry is due in 8 s; the corrected credentials connect after 1.5 s.
+        refuseAndClose(refusal('Server unavailable', 3))
+        store.getState().setUsername('grower-2')
+        await vi.advanceTimersByTimeAsync(settle)
+        expect(connect).toHaveBeenCalledTimes(5)
+        latest().handlers.get('connect')?.()
+        await vi.advanceTimersByTimeAsync(60_000)
+        expect(connect).toHaveBeenCalledTimes(5)
+        expect(store.getState().connectionStatus).toBe('connected')
+    })
+
+    it('holds a retry that comes due while credentials settle, and runs it after', async () => {
+        const { store, settle } = await start()
+        refuseAndClose(refusal('Server unavailable', 3))
+        // Typing starts just before the 1 s retry is due, then returns to the old value.
+        await vi.advanceTimersByTimeAsync(900)
+        store.getState().setUsername('grower-2')
+        await vi.advanceTimersByTimeAsync(200)
+        expect(connect).toHaveBeenCalledOnce()
+        store.getState().setUsername('grower')
+        await vi.advanceTimersByTimeAsync(settle)
+        // Unchanged credentials, but the held retry still runs: recovery is not lost.
+        expect(connect).toHaveBeenCalledTimes(2)
+    })
+
     it('ignores the late close of the client a credential change replaced', async () => {
         const { store, settle } = await start()
         const first = latest()
@@ -215,6 +263,19 @@ describe('the sensor client after a refused CONNECT', () => {
         await vi.advanceTimersByTimeAsync(120_000)
         expect(connect).toHaveBeenCalledOnce()
         expect(service.getConnectionState()).toBe('error')
+        service.disconnect()
+    })
+
+    it('lets the backoff grow across failed retries', async () => {
+        const service = await start()
+        refuseAndClose(refusal('Server busy', 0x89))
+        await vi.advanceTimersByTimeAsync(1000)
+        expect(connect).toHaveBeenCalledTimes(2)
+        refuseAndClose(refusal('Server busy', 0x89))
+        await vi.advanceTimersByTimeAsync(1000)
+        expect(connect).toHaveBeenCalledTimes(2)
+        await vi.advanceTimersByTimeAsync(1000)
+        expect(connect).toHaveBeenCalledTimes(3)
         service.disconnect()
     })
 

@@ -15,6 +15,8 @@ const PERMANENT_REFUSALS: ReadonlySet<number> = new Set([
     4, // bad username or password
     5, // not authorized
     // MQTT 5 reason codes
+    0x81, // malformed packet: the broker cannot parse our CONNECT
+    0x82, // protocol error: our CONNECT breaks the protocol for this broker
     0x84, // unsupported protocol version
     0x85, // client identifier not valid
     0x86, // bad user name or password

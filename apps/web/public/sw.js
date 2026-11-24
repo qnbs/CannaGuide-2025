@@ -27,6 +27,15 @@ const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
 const ML_MODEL_CACHE_NAME = 'cannaguide-ml-models-v1'
 const API_HOSTNAMES = new Set(['generativelanguage.googleapis.com', 'googleapis.com'])
 
+// The desktop shell serves the bundle from tauri.localhost on Windows and updates through
+// its signed updater, so a service worker there is only a second cache in front of the
+// app. It answers a start network-first from its own context and can fall back to the
+// offline page with no app code (GH #931). A worker that finds itself in the shell caches
+// nothing, handles no request and unregisters once it is active. The page no longer
+// registers one there (bootstrap/serviceWorker.ts); this heals a profile an older build
+// left one in, where no app code may run to remove it.
+const IS_DESKTOP_SHELL = self.location.hostname === 'tauri.localhost'
+
 // Allowlisted CDN hosts from which ML model artefacts are fetched.
 // Mirrors `connect-src` in `apps/desktop/src-tauri/tauri.conf.json` and
 // the production CSP in `apps/web/securityHeaders.ts`.
@@ -200,6 +209,13 @@ const offlineFallback = new Response(
 )
 
 self.addEventListener('install', (event) => {
+    if (IS_DESKTOP_SHELL) {
+        // Take over at once: a stale worker would otherwise keep answering the open window
+        // until it closes, since nothing there posts SKIP_WAITING. The activate handler then
+        // unregisters. The web build still waits for the user to accept an update.
+        self.skipWaiting()
+        return
+    }
     // Do not skipWaiting here. Doing so activates this worker, claims the
     // page, and reloads an open client before the update prompt can run.
     // A client posts { type: 'SKIP_WAITING' } to activate: the first visit
@@ -230,6 +246,24 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
+    if (IS_DESKTOP_SHELL) {
+        // Nothing on the desktop reads this worker's caches any more (the page never opens
+        // them), so an older build's shell and model caches are freed before it leaves.
+        event.waitUntil(
+            caches
+                .keys()
+                .then((names) =>
+                    Promise.all(
+                        names
+                            .filter((name) => name.startsWith('cannaguide-'))
+                            .map((name) => caches.delete(name)),
+                    ),
+                )
+                .catch(() => undefined)
+                .then(() => self.registration.unregister()),
+        )
+        return
+    }
     event.waitUntil(
         caches
             .keys()
@@ -352,6 +386,10 @@ async function pruneIfOverQuota() {
 }
 
 self.addEventListener('fetch', (event) => {
+    if (IS_DESKTOP_SHELL) {
+        return
+    }
+
     const { request } = event
     const url = new URL(request.url)
 

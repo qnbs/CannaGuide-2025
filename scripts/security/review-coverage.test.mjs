@@ -119,7 +119,7 @@ test('a blank COMMENTED review needs a new inline comment to count', () => {
 })
 
 test('a later thread reply does not hide a real review on the same head', () => {
-    const real = { ...review('coderabbitai[bot]', 'COMMENTED'), id: 302 }
+    const real = { ...review('coderabbitai[bot]', 'CHANGES_REQUESTED'), id: 302 }
     const reply = {
         ...review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T11:00:00Z'),
         id: 303,
@@ -130,7 +130,10 @@ test('a later thread reply does not hide a real review on the same head', () => 
         reviewComments: [{ id: 3, pull_request_review_id: 303, in_reply_to_id: 9 }],
     })
 
-    assert.equal(result.qualifiedReviewers.length, 1)
+    assert.deepEqual(
+        result.formalReviewers.map((reviewer) => reviewer.state),
+        ['CHANGES_REQUESTED'],
+    )
 })
 
 test('a blank approval still counts as a completed review', () => {
@@ -586,11 +589,17 @@ function equivalenceProof(overrides = {}) {
     }
 }
 
-function evaluateEquivalent({ proof = equivalenceProof(), marker = {}, reviews = [] } = {}) {
+function evaluateEquivalent({
+    proof = equivalenceProof(),
+    marker = {},
+    reviews = [],
+    reviewComments = [],
+} = {}) {
     return evaluate({
         pullNumber: 868,
         changedFiles: HIGH_FILES,
         reviews,
+        reviewComments,
         issueComments: [
             receipt({ pullNumber: 868 }),
             coderabbitSummary({ pullNumber: 868, source: PRIOR, covered: PRIOR, ...marker }),
@@ -701,6 +710,28 @@ test('a head-equivalence proof that is incomplete, inconsistent, or for other co
 test('a dismissed CodeRabbit review on the reviewed head blocks the equivalent-head marker', () => {
     const dismissed = review('coderabbitai[bot]', 'DISMISSED', PRIOR, '2026-11-16T10:45:00Z', 868)
     const result = evaluateEquivalent({ reviews: [dismissed] })
+    assert.equal(result.satisfied, false)
+    assert.deepEqual(
+        result.qualifiedReviewers.map((reviewer) => reviewer.provider),
+        ['Codex'],
+    )
+})
+
+test('a later thread reply does not hide a dismissal on the reviewed head', () => {
+    const dismissed = {
+        ...review('coderabbitai[bot]', 'DISMISSED', PRIOR, '2026-11-16T10:45:00Z', 868),
+        id: 305,
+    }
+    const reply = {
+        ...review('coderabbitai[bot]', 'COMMENTED', PRIOR, '2026-11-16T10:50:00Z', 868),
+        id: 306,
+        body: '',
+    }
+    const result = evaluateEquivalent({
+        reviews: [dismissed, reply],
+        reviewComments: [{ id: 4, pull_request_review_id: 306, in_reply_to_id: 9 }],
+    })
+
     assert.equal(result.satisfied, false)
     assert.deepEqual(
         result.qualifiedReviewers.map((reviewer) => reviewer.provider),

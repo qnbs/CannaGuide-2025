@@ -193,13 +193,14 @@ function parseCodeRabbitReceipt(comment, headSha, pullNumber, equivalence = null
 }
 
 /** The latest CodeRabbit review object on a given commit of this pull, if any. */
-function latestCodeRabbitReviewOn(reviews, commitSha, pullNumber) {
+function latestCodeRabbitReviewOn(reviews, commitSha, pullNumber, reviewComments) {
     return (Array.isArray(reviews) ? reviews : [])
         .filter(
             (review) =>
                 isReviewBot(review?.user, CODERABBIT_LOGIN) &&
                 review.commit_id === commitSha &&
-                review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}`,
+                review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}` &&
+                !isThreadReplyOnly(review, reviewComments),
         )
         .sort((a, b) => compareLatest(a, b, 'submitted_at'))
         .at(-1)
@@ -376,8 +377,12 @@ export function evaluateReviewCoverage(evidence) {
     let equivalence = parseHeadEquivalence(evidence.headEquivalence, headSha)
     if (
         equivalence &&
-        latestCodeRabbitReviewOn(evidence.reviews, equivalence.priorHeadSha, pullNumber)?.state ===
-            'DISMISSED'
+        latestCodeRabbitReviewOn(
+            evidence.reviews,
+            equivalence.priorHeadSha,
+            pullNumber,
+            reviewComments,
+        )?.state === 'DISMISSED'
     ) {
         equivalence = null
     }

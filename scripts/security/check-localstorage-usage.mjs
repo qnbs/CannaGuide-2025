@@ -205,34 +205,40 @@ const CONTINUATION = /^(?:[+\-*/%?:.[(|&^<>=`]|\?\?)/
 export function maskComments(source) {
     let out = ''
     for (let at = 0; at < source.length;) {
-        const opensComment =
-            (source.startsWith('//', at) || source.startsWith('/*', at)) &&
-            (at === 0 || /[\s;,(){}[\]]/.test(source[at - 1]))
-        if (opensComment) {
-            const end = source.startsWith('//', at)
-                ? source.indexOf('\n', at)
-                : source.indexOf('*/', at + 2) + 2
-            const stop = end <= 0 || end === 1 ? source.length : end
-            out += source.slice(at, stop).replace(/[^\n]/g, ' ')
-            at = stop
+        const comment = commentEnd(source, at)
+        if (comment !== -1) {
+            out += source.slice(at, comment).replace(/[^\n]/g, ' ')
+            at = comment
             continue
         }
-        const quote = source[at]
-        if (quote === "'" || quote === '"' || quote === '`') {
-            let end = at + 1
-            while (end < source.length && source[end] !== quote) {
-                if (quote !== '`' && source[end] === '\n') break
-                end += source[end] === '\\' ? 2 : 1
-            }
-            end = Math.min(end + 1, source.length)
-            out += source.slice(at, end)
-            at = end
-            continue
-        }
-        out += source[at]
-        at += 1
+        const next = QUOTES.includes(source[at]) ? quotedEnd(source, at) : at + 1
+        out += source.slice(at, next)
+        at = next
     }
     return out
+}
+
+const QUOTES = `'"\``
+
+/** Where a comment opening at `at` ends, or -1 when none opens there (see maskComments). */
+function commentEnd(source, at) {
+    const line = source.startsWith('//', at)
+    if (!line && !source.startsWith('/*', at)) return -1
+    if (at > 0 && !/[\s;,(){}[\]]/.test(source[at - 1])) return -1
+    const end = line ? source.indexOf('\n', at) : source.indexOf('*/', at + 2)
+    if (end === -1) return source.length
+    return line ? end : end + 2
+}
+
+/** Where a quoted string opening at `at` ends; a ' or " string ends at its line at the latest. */
+function quotedEnd(source, at) {
+    const quote = source[at]
+    let end = at + 1
+    while (end < source.length && source[end] !== quote) {
+        if (quote !== '`' && source[end] === '\n') break
+        end += source[end] === '\\' ? 2 : 1
+    }
+    return Math.min(end + 1, source.length)
 }
 
 /** The string a constant holds, following aliases, imports and re-exports; null when unknown. */

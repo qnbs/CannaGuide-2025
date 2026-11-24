@@ -1,8 +1,9 @@
 name: OSSF Scorecard
 
+# A periodic supply-chain assessment, not a step of every merge (owner decision, 2026-11-24):
+# weekly and on demand. The analysis, the publication check and the SARIF upload are the same
+# on either trigger.
 on:
-    push:
-        branches: [main]
     schedule:
         - cron: '19 5 * * 1'
     workflow_dispatch:

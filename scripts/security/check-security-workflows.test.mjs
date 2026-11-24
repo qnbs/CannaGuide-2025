@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
+
+import { parse } from 'yaml'
 
 test('labeler does not use pull_request_target', () => {
     const yaml = readFileSync('.github/workflows/labeler.yml', 'utf8')
@@ -65,6 +68,72 @@ test('Scorecard workflow fails if publication retries do not succeed', () => {
         verificationJob,
         /RESULTS_PUBLISHED:\s*\$\{\{\s*needs\.analysis\.outputs\.results_published\s*\}\}/,
     )
-    assert.match(verificationJob, /!= "true"/)
     assert.match(verificationJob, /exit 1/)
+})
+
+/** The verify step's script, run under bash with the given outputs of the analysis job. */
+function runVerify(env) {
+    const workflow = parse(readFileSync('.github/workflows/scorecard.yml', 'utf8'))
+    const step = workflow.jobs['verify-publication'].steps.find(
+        (entry) => entry.name === 'Require published Scorecard results',
+    )
+    assert.deepEqual(Object.keys(step.env).sort(), [
+        'ANALYSIS_RESULT',
+        'PUBLICATION_STATUS',
+        'RESULTS_PUBLISHED',
+    ])
+    const result = spawnSync('bash', ['-e', '-c', step.run], {
+        encoding: 'utf8',
+        env: { PATH: process.env.PATH, ANALYSIS_RESULT: 'success', PUBLICATION_STATUS: '', ...env },
+    })
+    return { code: result.status, out: result.stdout }
+}
+
+test('Scorecard verification names why nothing was published', () => {
+    const workflow = parse(readFileSync('.github/workflows/scorecard.yml', 'utf8'))
+    assert.equal(
+        workflow.jobs.analysis.outputs.publication_status,
+        '${{ steps.scorecard.outputs.publication_status }}',
+    )
+    const upload = workflow.jobs.analysis.steps.find((s) => s.name === 'Upload Scorecard SARIF')
+    assert.equal(upload.if, "always() && hashFiles('scorecard-results.sarif') != ''")
+
+    assert.deepEqual(runVerify({ RESULTS_PUBLISHED: 'true', PUBLICATION_STATUS: '201' }), {
+        code: 0,
+        out: 'Scorecard results were published (HTTP 201).\n',
+    })
+    const cases = [
+        // The 2026-11-24 outage: the action image did not pull, so no output was ever set.
+        [
+            { RESULTS_PUBLISHED: '', ANALYSIS_RESULT: 'failure' },
+            /never reached publication: the analysis job ended 'failure'/,
+        ],
+        [
+            { RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: 'skipped' },
+            /did not attempt to publish/,
+        ],
+        [{ RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: 'error' }, /gave no answer/],
+        [{ RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: '429' }, /retry later \(HTTP 429/],
+        [{ RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: '408' }, /retry later \(HTTP 408/],
+        [
+            { RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: '403' },
+            /rejected the results \(HTTP 403\)/,
+        ],
+        [{ RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: '503' }, /answered HTTP 503/],
+        // Output text that is not a status is never echoed into a workflow command.
+        [
+            { RESULTS_PUBLISHED: 'false', PUBLICATION_STATUS: '::warning::x' },
+            /never reached publication/,
+        ],
+        [
+            { RESULTS_PUBLISHED: 'yes', PUBLICATION_STATUS: '201', ANALYSIS_RESULT: 'x;y' },
+            /answered HTTP 201/,
+        ],
+    ]
+    for (const [env, message] of cases) {
+        const { code, out } = runVerify(env)
+        assert.equal(code, 1, JSON.stringify(env))
+        assert.match(out, new RegExp(`^::error::.*${message.source}`), JSON.stringify(env))
+        assert.doesNotMatch(out, /::warning::x|x;y/)
+    }
 })

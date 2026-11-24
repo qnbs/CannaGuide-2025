@@ -3,6 +3,7 @@ import { View } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { ReloadPrompt } from '@/components/common/ReloadPrompt'
+import { platform } from '@/services/platformService'
 import { Header } from '@/components/navigation/Header'
 import { BottomNav } from '@/components/navigation/BottomNav'
 import { SideNav } from '@/components/navigation/SideNav'
@@ -454,7 +455,8 @@ export const App: React.FC = () => {
                 <SaveSetupModalContainer />
             </Suspense>
             {showGeoLegal && <GeoLegalBanner onDismiss={dismissGeoLegal} />}
-            <ReloadPrompt />
+            {/* Its hook registers the service worker, which the desktop shell does not run (GH #931). */}
+            {platform.isTauri ? null : <ReloadPrompt />}
             <PrivacyPolicyModal
                 isOpen={showPrivacyPolicy}
                 onClose={() => setShowPrivacyPolicy(false)}

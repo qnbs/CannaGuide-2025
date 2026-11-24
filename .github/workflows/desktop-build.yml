@@ -21,6 +21,9 @@ on:
             # The quit save decides when it has settled by comparing these inputs.
             - 'apps/web/services/persistedSnapshotFormat.ts'
             - 'apps/web/index.html'
+            # The service worker stands down in the desktop shell (GH #931).
+            - 'apps/web/public/sw.js'
+            - 'apps/web/components/common/ReloadPrompt.tsx'
             - 'scripts/desktop-smoke.mjs'
             - 'scripts/desktop-smoke-ci.mjs'
             - 'scripts/desktop-smoke-profile.mjs'

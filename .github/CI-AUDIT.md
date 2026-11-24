@@ -5,7 +5,7 @@ Last updated: 2026-10-06 (live merge gate reconciled with `ci.yml`)
 ## Current policy (2026-10-06)
 
 The dated session notes below are history. They are not the live merge gate.
-`workflow-inventory: 29`
+`workflow-inventory: 30`
 
 | Fact                    | Live behavior                                                                                                                                                                                                                                                                         |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -139,7 +139,7 @@ Chromium E2E is blocking inside `✅ CI Status`. Cross-browser E2E stays advisor
 - Deploy: `deploy.yml` + `lighthouserc.json`
 - Weekly: `benchmark.yml` (`continue-on-error`)
 
-## Inventory (29 workflows)
+## Inventory (30 workflows)
 
 See [workflows/README.md](workflows/README.md). Shared setup: [setup-node-ci](actions/setup-node-ci/action.yml).
 

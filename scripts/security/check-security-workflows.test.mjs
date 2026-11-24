@@ -71,6 +71,18 @@ test('Scorecard workflow fails if publication retries do not succeed', () => {
     assert.match(verificationJob, /exit 1/)
 })
 
+test('Scorecard runs weekly and on demand, not on every push to main', () => {
+    // A periodic supply-chain assessment, not a step of every merge (owner decision, 2026-11-24).
+    const workflow = parse(readFileSync('.github/workflows/scorecard.yml', 'utf8'))
+    assert.deepEqual(Object.keys(workflow.on).sort(), ['schedule', 'workflow_dispatch'])
+    assert.equal(workflow.on.schedule.length, 1)
+    assert.match(workflow.on.schedule[0].cron, /^\d+ \d+ \* \* [0-6]$/)
+    // The publication gate itself is unchanged.
+    const scorecard = workflow.jobs.analysis.steps.find((step) => step.id === 'scorecard')
+    assert.equal(scorecard.with.publish_results, true)
+    assert.equal(scorecard.with.fail_on_publish_error, true)
+})
+
 /** The verify step's script, run under bash with the given outputs of the analysis job. */
 function runVerify(env) {
     const workflow = parse(readFileSync('.github/workflows/scorecard.yml', 'utf8'))

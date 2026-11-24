@@ -15,6 +15,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **ci(scorecard):** OSSF Scorecard runs weekly and on demand instead of on every push to `main` (owner decision): it is a periodic supply-chain assessment, not part of each merge. The analysis, the `results_published` gate and the SARIF upload are unchanged, and it is not a required or release check.
 - **chore(ci):** The dev container's Playwright base image is pinned by digest (OSSF Scorecard, pinned dependencies), and `scripts/agent-doctor.mjs` drops two unused duplicate variables (CodeQL). The workflow-lint baseline drops to the current counts: no cache-poisoning or unpinned-image finding is left, and artipacked falls from 38 to 31.
 
 ### Fixed

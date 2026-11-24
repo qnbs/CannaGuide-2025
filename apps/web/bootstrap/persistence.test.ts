@@ -11,6 +11,7 @@ import {
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
+import { dbService } from '@/services/dbService'
 
 const runtimeTabContext = globalThis as typeof globalThis & {
     __cannaguidePersistenceFailureTabId?: string
@@ -99,8 +100,16 @@ describe('persisted settings snapshot (#654)', () => {
     })
 
     it('commits nothing when a quit deadline passed while the snapshot was prepared (GH #883)', async () => {
+        // Unblocked when the write starts; the deadline passes during preparation.
+        let blocked = false
+        vi.mocked(dbService.optimizeSimulationForPersistence).mockImplementationOnce(
+            async (simulation) => {
+                blocked = true
+                return simulation
+            },
+        )
         vi.mocked(schedulePersistenceWrite).mockImplementationOnce(
-            async (write) => (await write(() => true)) !== false,
+            async (write) => (await write(() => blocked)) !== false,
         )
         const flush = setupPersistedStateSync(storeWithKey())
 

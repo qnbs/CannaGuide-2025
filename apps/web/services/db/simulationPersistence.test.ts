@@ -31,6 +31,7 @@ vi.mock('./storageHelpers', async (importOriginal) => ({
 }))
 
 import { simulationPersistence } from './simulationPersistence'
+import { getStorageEstimateSnapshot } from './storageHelpers'
 
 const entry = (index: number): JournalEntry =>
     ({
@@ -108,8 +109,17 @@ describe('journal overflow archive (GH #668)', () => {
         expect(state.plants.entities.p1?.journal).toHaveLength(10)
     })
 
-    it('writes no archive once a quit deadline has passed (GH #883)', async () => {
-        await simulationPersistence.optimizeSimulationForPersistence(simulationWith(10), () => true)
+    it('writes no archive once a quit deadline passes during preparation (GH #883)', async () => {
+        // Unblocked at the start; the deadline passes while the storage estimate is read.
+        let blocked = false
+        vi.mocked(getStorageEstimateSnapshot).mockImplementationOnce(async () => {
+            blocked = true
+            return { usageRatio: 0 } as Awaited<ReturnType<typeof getStorageEstimateSnapshot>>
+        })
+        await simulationPersistence.optimizeSimulationForPersistence(
+            simulationWith(10),
+            () => blocked,
+        )
 
         expect(store.writes).toBe(0)
         expect(archivedIds()).toEqual([])

@@ -42,6 +42,12 @@ const validatePayload = (raw: unknown): MqttJournalPayload | null => {
 const INITIAL_RECONNECT_MS = 1000
 const MAX_RECONNECT_MS = 60_000
 const BACKOFF_MULTIPLIER = 2
+/**
+ * How long credentials must stay unchanged before a reconnect applies them. Settings stores
+ * the username and password on every keystroke; without this wait each character would open
+ * a new connection, and against a refusing broker, a new refusal.
+ */
+export const CREDENTIAL_SETTLE_MS = 1500
 const KEEPALIVE_SECONDS = 30
 
 // ---------------------------------------------------------------------------
@@ -52,6 +58,10 @@ class MqttClientService {
     private client: MqttClient | null = null
     private store: AppStore | null = null
     private unsubscribeStore: (() => void) | null = null
+    private unsubscribeCredentials: (() => void) | null = null
+    private credentialHandle: ReturnType<typeof setTimeout> | null = null
+    /** The username and password the last CONNECT used; a settled change is compared to it. */
+    private appliedCredentials: { username: string; password: string } | null = null
     private currentTopic: string | null = null
     private currentReconnectMs = INITIAL_RECONNECT_MS
     private reconnectHandle: ReturnType<typeof setTimeout> | null = null
@@ -87,6 +97,27 @@ class MqttClientService {
             { fireImmediately: true },
         )
 
+        // Changed credentials reconnect once they settle: that is how a refused CONNECT, which
+        // is not retried, recovers. Unchanged credentials never reconnect, so a refusal cannot
+        // loop. The saved password is loaded before init, so its arrival is no change here.
+        this.unsubscribeCredentials = useIotStore.subscribe(
+            (s) => ({ username: s.username, password: s.password }),
+            (cur, prev) => {
+                if (cur.username === prev.username && cur.password === prev.password) return
+                this.clearCredentialTimer()
+                this.credentialHandle = setTimeout(() => {
+                    this.credentialHandle = null
+                    const { isEnabled, brokerUrl, username, password } = useIotStore.getState()
+                    const applied = this.appliedCredentials
+                    const changed =
+                        applied === null ||
+                        applied.username !== username ||
+                        applied.password !== password
+                    if (isEnabled && brokerUrl && changed) this.connect()
+                }, CREDENTIAL_SETTLE_MS)
+            },
+        )
+
         // Clean up on page unload
         window.addEventListener('pagehide', () => this.dispose(), { once: true })
     }
@@ -103,6 +134,7 @@ class MqttClientService {
         this.currentReconnectMs = INITIAL_RECONNECT_MS
 
         const { brokerUrl, username, password, topicPrefix } = useIotStore.getState()
+        this.appliedCredentials = { username, password }
         if (!isValidBrokerUrl(brokerUrl)) {
             useIotStore
                 .getState()
@@ -237,7 +269,15 @@ class MqttClientService {
         if (isEnabled && brokerUrl) this.connect()
     }
 
+    private clearCredentialTimer(): void {
+        if (this.credentialHandle) {
+            clearTimeout(this.credentialHandle)
+            this.credentialHandle = null
+        }
+    }
+
     private disconnect(): void {
+        this.clearCredentialTimer()
         this.intentionalDisconnect = true
         if (this.reconnectHandle) {
             clearTimeout(this.reconnectHandle)
@@ -316,9 +356,12 @@ class MqttClientService {
             clearTimeout(this.reconnectHandle)
             this.reconnectHandle = null
         }
+        this.clearCredentialTimer()
         this.disconnectClient()
         this.unsubscribeStore?.()
         this.unsubscribeStore = null
+        this.unsubscribeCredentials?.()
+        this.unsubscribeCredentials = null
         this.store = null
     }
 }

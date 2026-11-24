@@ -7,6 +7,7 @@
  */
 import { OFFLINE_ACTION_TYPES } from '@/constants/offlineActions'
 import { dbService } from '@/services/dbService'
+import { platform } from '@/services/platformService'
 import type { JournalEntry } from '@/types'
 
 export type OfflineActionRecord = {
@@ -15,6 +16,24 @@ export type OfflineActionRecord = {
     idempotencyKey?: string
     queuedAt?: number
     [key: string]: unknown
+}
+
+/**
+ * How long a sync request waits for an active service worker. `ready` never settles when no
+ * worker registers -- a failed registration, or the desktop shell, which runs none (GH #931).
+ */
+export const SERVICE_WORKER_READY_MS = 5000
+
+const readyWithin = async (ms: number): Promise<ServiceWorkerRegistration | undefined> => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const deadline = new Promise<undefined>((resolve) => {
+        timer = setTimeout(() => resolve(undefined), ms)
+    })
+    try {
+        return await Promise.race([navigator.serviceWorker.ready, deadline])
+    } finally {
+        clearTimeout(timer)
+    }
 }
 
 const formatActionType = (action: OfflineActionRecord): string => {
@@ -58,9 +77,13 @@ export const offlineActionQueueService = {
         if (typeof navigator === 'undefined' || !navigator.serviceWorker) {
             return false
         }
+        // The desktop shell runs no service worker, so there is nothing to replay the queue.
+        if (platform.isTauri) {
+            return false
+        }
         try {
-            const registration = await navigator.serviceWorker.ready
-            if ('sync' in registration) {
+            const registration = await readyWithin(SERVICE_WORKER_READY_MS)
+            if (registration && 'sync' in registration) {
                 await // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Background Sync API
                 (registration.sync as { register: (tag: string) => Promise<void> }).register(
                     'data-sync',

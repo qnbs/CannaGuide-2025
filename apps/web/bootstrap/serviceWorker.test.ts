@@ -181,26 +181,90 @@ describe('the desktop shell runs no service worker (GH #931)', () => {
         vi.unstubAllGlobals()
     })
 
-    it('registers nothing and removes a registration an older build left', async () => {
-        const unregister = vi.fn().mockResolvedValue(true)
+    const desktopNavigator = (controller: unknown, registrations: unknown[] = []) => {
         const serviceWorker = {
-            controller: null,
+            controller,
             register: vi.fn(),
-            getRegistrations: vi.fn().mockResolvedValue([{ unregister }, { unregister }]),
+            getRegistrations: vi.fn().mockResolvedValue(registrations),
             addEventListener: vi.fn(),
         }
         vi.stubGlobal('navigator', { serviceWorker })
+        return serviceWorker
+    }
+
+    const loadDesktop = async (isTauri = true) => {
         vi.resetModules()
-        vi.doMock('@/services/platformService', () => ({ platform: { isTauri: true } }))
-        const { registerServiceWorker } = await import('./serviceWorker')
+        vi.doMock('@/services/platformService', () => ({ platform: { isTauri } }))
+        return import('./serviceWorker')
+    }
+
+    const stubReload = () => {
+        const reload = vi.fn()
+        Object.defineProperty(window, 'location', { configurable: true, value: { reload } })
+        return reload
+    }
+
+    it('registers nothing under Tauri', async () => {
+        const serviceWorker = desktopNavigator(null)
+        const { registerServiceWorker } = await loadDesktop()
 
         registerServiceWorker()
         window.dispatchEvent(new Event('load'))
         await flush()
 
         expect(serviceWorker.register).not.toHaveBeenCalled()
+    })
+
+    it("removes an older build's registrations and starts when none controls the page", async () => {
+        const unregister = vi.fn().mockResolvedValue(true)
+        const serviceWorker = desktopNavigator(null, [{ unregister }, { unregister }])
+        const reload = stubReload()
+        const { leaveDesktopServiceWorker } = await loadDesktop()
+
+        await expect(leaveDesktopServiceWorker()).resolves.toBe(false)
         expect(serviceWorker.getRegistrations).toHaveBeenCalledTimes(1)
         expect(unregister).toHaveBeenCalledTimes(2)
+        expect(reload).not.toHaveBeenCalled()
+    })
+
+    it('reloads once when an older worker still controls the page', async () => {
+        sessionStorage.clear()
+        const unregister = vi.fn().mockResolvedValue(true)
+        desktopNavigator({ state: 'activated' }, [{ unregister }])
+        const reload = stubReload()
+        const { leaveDesktopServiceWorker, DESKTOP_WORKER_RELOAD_FLAG } = await loadDesktop()
+
+        await expect(leaveDesktopServiceWorker()).resolves.toBe(true)
+        expect(reload).toHaveBeenCalledTimes(1)
+        expect(sessionStorage.getItem(DESKTOP_WORKER_RELOAD_FLAG)).toBe('1')
+
+        // Still controlled after that reload: start anyway rather than loop.
+        await expect(leaveDesktopServiceWorker()).resolves.toBe(false)
+        expect(reload).toHaveBeenCalledTimes(1)
+        sessionStorage.clear()
+    })
+
+    it('starts when the removal fails or never answers', async () => {
+        const reload = stubReload()
+        const serviceWorker = desktopNavigator({ state: 'activated' })
+        serviceWorker.getRegistrations.mockRejectedValue(new Error('storage error'))
+        const { leaveDesktopServiceWorker, DESKTOP_WORKER_REMOVAL_MS } = await loadDesktop()
+        await expect(leaveDesktopServiceWorker()).resolves.toBe(false)
+
+        vi.useFakeTimers()
+        serviceWorker.getRegistrations.mockReturnValue(new Promise(() => undefined))
+        const pending = leaveDesktopServiceWorker()
+        await vi.advanceTimersByTimeAsync(DESKTOP_WORKER_REMOVAL_MS)
+        await expect(pending).resolves.toBe(false)
+        expect(reload).not.toHaveBeenCalled()
+    })
+
+    it('does nothing outside the desktop shell', async () => {
+        const serviceWorker = desktopNavigator({ state: 'activated' })
+        const { leaveDesktopServiceWorker } = await loadDesktop(false)
+
+        await expect(leaveDesktopServiceWorker()).resolves.toBe(false)
+        expect(serviceWorker.getRegistrations).not.toHaveBeenCalled()
     })
 
     it('stands the worker down when it runs inside the shell', () => {

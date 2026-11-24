@@ -8,6 +8,7 @@
 // ---------------------------------------------------------------------------
 
 import { isLocalOnlyMode } from '@/services/localOnlyModeService'
+import { CURRENT_STRAIN_DATA_VERSION } from '@/constants'
 import { allStrainsData } from '@/data/strains/index'
 import { createStrainObject } from '@/services/strainFactory'
 import { StrainType, type Strain } from '@/types'
@@ -66,6 +67,8 @@ export interface UserStrainProfile {
 
 const DAILY_PICK_COUNT = 5
 const STORAGE_KEY = 'cg.daily-drop.feed'
+
+type StoredDailyFeed = DailyStrainsFeed & { strainDataVersion?: number }
 const DISMISSED_KEY = 'cg.daily-drop.dismissed'
 
 /** Categories for diversity rotation. Each day emphasises a different one. */
@@ -249,18 +252,19 @@ function pickFromPool(
 
 function saveFeedToStorage(feed: DailyStrainsFeed): void {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(feed))
+        const stored: StoredDailyFeed = { ...feed, strainDataVersion: CURRENT_STRAIN_DATA_VERSION }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
     } catch {
         // Storage full -- ignore
     }
 }
 
-function loadFeedFromStorage(): DailyStrainsFeed | null {
+function loadFeedFromStorage(): StoredDailyFeed | null {
     try {
         const raw = localStorage.getItem(STORAGE_KEY)
         if (!raw) return null
         // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- localStorage JSON boundary
-        return JSON.parse(raw) as DailyStrainsFeed
+        return JSON.parse(raw) as StoredDailyFeed
     } catch {
         return null
     }
@@ -571,7 +575,11 @@ export const dailyStrainsService = {
 
         // Try localStorage
         const stored = loadFeedFromStorage()
-        if (stored?.dateKey === todayKey) {
+        // A feed saved from an older catalog can carry corrected values, so it is rebuilt.
+        if (
+            stored?.dateKey === todayKey &&
+            stored.strainDataVersion === CURRENT_STRAIN_DATA_VERSION
+        ) {
             cachedFeed = stored
             return stored
         }

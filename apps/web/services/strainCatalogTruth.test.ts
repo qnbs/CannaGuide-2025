@@ -6,6 +6,7 @@ import { reportedPercentText } from '@/components/views/strains/reportedStrainFa
 import { allStrainsData } from '@/data/strains/index'
 import { withoutContradictedPoints } from '@/services/strainCatalogTruth'
 import { createStrainObject } from '@/services/strainFactory'
+import { lookupLocalCatalog } from '@/services/strain-lookup/localStrainLookup'
 import type { Strain } from '@/types'
 
 interface CatalogRecord {
@@ -31,7 +32,6 @@ const upperBound = (range: string | undefined): number | undefined => {
 
 const contradicts = (value: number | undefined, range: string | undefined): boolean => {
     if (value === undefined) return false
-    if (range?.trim().toLowerCase() === 'unknown') return true
     const bound = upperBound(range)
     return bound !== undefined && value >= bound
 }
@@ -47,9 +47,9 @@ describe('withoutContradictedPoints', () => {
         expect(above.thcRange).toBe('<1%')
     })
 
-    it('drops a value whose own range says it is unknown', () => {
+    it('keeps a value next to an unknown range, which rules nothing out', () => {
         const strain = withoutContradictedPoints(strainWith({ cbd: 0, cbdRange: 'Unknown' }))
-        expect(strain.cbd).toBeUndefined()
+        expect(strain.cbd).toBe(0)
     })
 
     it('keeps a real value that agrees with its range', () => {
@@ -113,6 +113,16 @@ describe('the bundled catalog (GH #750)', () => {
                 contradicts(record.cbd, record.cbdRange) ? undefined : record.cbd,
             )
         }
+    })
+})
+
+describe('the local strain lookup', () => {
+    it('keeps a strain without a CBD value out of NaN charts and scores', () => {
+        const result = lookupLocalCatalog('24k Gold')
+
+        expect(result?.fullStrain?.cbd).toBeUndefined()
+        expect(result?.cbd).toBe(0)
+        expect(Number.isFinite(result?.totalEntourageScore)).toBe(true)
     })
 })
 

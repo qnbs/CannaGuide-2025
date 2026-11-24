@@ -88,6 +88,23 @@ describe('strainService', () => {
         })
     })
 
+    describe('init', () => {
+        it('does not write an older catalog over one a newer version migrated', async () => {
+            const { strainService } = await import('@/services/strainService')
+            const { dbService } = await import('@/services/dbService')
+            const { CURRENT_STRAIN_DATA_VERSION } = await import('@/constants')
+            vi.mocked(dbService.addStrains).mockClear()
+            vi.mocked(dbService.setMetadata).mockClear()
+            vi.mocked(dbService.getStrainsCount).mockResolvedValueOnce(776)
+            vi.mocked(dbService.getMetadata).mockResolvedValueOnce(CURRENT_STRAIN_DATA_VERSION + 1)
+
+            await strainService.init()
+
+            expect(dbService.addStrains).not.toHaveBeenCalled()
+            expect(dbService.setMetadata).not.toHaveBeenCalled()
+        })
+    })
+
     describe('getSimilarStrains', () => {
         it('returns strains sorted by similarity', async () => {
             const { strainService } = await import('@/services/strainService')

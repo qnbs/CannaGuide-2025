@@ -1,11 +1,11 @@
 import { allStrainsData } from '@/data/strains/index'
 import type { LookupStrainResult } from '@/services/strain-lookup/strainLookupTypes'
 import {
-  buildCannabinoidDataPoints,
-  buildFlavonoidDataPoints,
-  buildTerpeneDataPoints,
-  calculateEntourageScore,
-  shannonDiversity,
+    buildCannabinoidDataPoints,
+    buildFlavonoidDataPoints,
+    buildTerpeneDataPoints,
+    calculateEntourageScore,
+    shannonDiversity,
 } from '@/services/strain-lookup/strainLookupEnrichment'
 
 export function getFuzzySuggestions(query: string, limit = 8): string[] {
@@ -21,6 +21,10 @@ export function getFuzzySuggestions(query: string, limit = 8): string[] {
         .slice(0, limit)
         .map((s) => s.name)
 }
+/** The lookup card hides a 0, so an unreported value stays out of its chart and score. */
+const reportedOrZero = (value: number | undefined): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : 0
+
 export function lookupLocalCatalog(name: string): LookupStrainResult | null {
     const q = name.toLowerCase().trim()
     const hit =
@@ -31,7 +35,9 @@ export function lookupLocalCatalog(name: string): LookupStrainResult | null {
     const terpenes = buildTerpeneDataPoints(hit)
     const cannabinoids = buildCannabinoidDataPoints(hit)
     const flavonoids = buildFlavonoidDataPoints(hit.type)
-    const totalEntourageScore = calculateEntourageScore(terpenes, hit.thc, hit.cbd, flavonoids)
+    const thc = reportedOrZero(hit.thc)
+    const cbd = reportedOrZero(hit.cbd)
+    const totalEntourageScore = calculateEntourageScore(terpenes, thc, cbd, flavonoids)
     const terpeneDiversity = shannonDiversity(terpenes)
 
     return {
@@ -40,8 +46,8 @@ export function lookupLocalCatalog(name: string): LookupStrainResult | null {
         breeder: hit.lineage?.breeder ?? 'Community',
         type: hit.type,
         floweringType: hit.floweringType,
-        thc: hit.thc,
-        cbd: hit.cbd,
+        thc,
+        cbd,
         cbg: hit.cbg ?? 0,
         thcv: hit.thcv ?? 0,
         description: hit.description ?? '',

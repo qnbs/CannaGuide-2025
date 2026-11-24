@@ -3,13 +3,16 @@ import { createStrainObject } from '@/services/strainFactory'
 
 const UPPER_BOUND_RANGE = /^\s*<\s*(\d+(?:\.\d+)?)\s*%?\s*$/u
 
-const rangeContradicts = (value: unknown, range: unknown): boolean => {
-    if (typeof value !== 'number' || !Number.isFinite(value) || typeof range !== 'string') {
-        return false
-    }
-    if (range.trim().toLowerCase() === 'unknown') return true
+const upperBoundOf = (range: unknown): number | undefined => {
+    if (typeof range !== 'string') return undefined
     const bound = UPPER_BOUND_RANGE.exec(range)?.[1]
-    return bound !== undefined && value >= Number(bound)
+    return bound === undefined ? undefined : Number(bound)
+}
+
+const rangeContradicts = (value: unknown, range: unknown): boolean => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return false
+    const bound = upperBoundOf(range)
+    return bound !== undefined && value >= bound
 }
 
 /**

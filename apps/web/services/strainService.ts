@@ -145,6 +145,14 @@ class StrainService {
             const storedVersion = await dbService.getMetadata(STRAIN_DATA_VERSION_KEY)
             const dbCount = await dbService.getStrainsCount()
 
+            // A newer app version in another tab already migrated the shared catalog.
+            // This older tab must not write its older catalog back over it.
+            if (typeof storedVersion === 'number' && storedVersion > CURRENT_STRAIN_DATA_VERSION) {
+                this.allStrains = allStrainsData
+                this.isInitialized = true
+                return
+            }
+
             if (
                 dbCount > 0 &&
                 storedVersion === CURRENT_STRAIN_DATA_VERSION &&

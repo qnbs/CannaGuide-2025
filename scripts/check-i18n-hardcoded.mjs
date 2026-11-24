@@ -30,12 +30,14 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WEB_DIR = resolve(__dirname, '..', 'apps', 'web')
-const COMPONENTS_DIR = resolve(WEB_DIR, 'components')
+/** Not app UI: build output, tests, translations and static assets. */
+const SKIPPED_DIRS = new Set(['node_modules', 'dist', 'coverage', 'tests', 'locales', 'public'])
 
 // Files excluded from scanning (dev-only or decorative/aria-hidden content)
 const EXCLUDED_FILES = new Set([
     'DevTelemetryPanel.tsx', // dev-only telemetry panel, technical labels
     'PaymentIcons.tsx', // SVG titles inside aria-hidden="true" elements
+    'render.tsx', // bootstrap's start-failure page: shown when the start, i18n included, failed
 ])
 
 // Props that typically contain user-facing text
@@ -109,7 +111,7 @@ function collectTsxFiles(dir) {
         const full = resolve(dir, entry)
         const stat = statSync(full)
         if (stat.isDirectory()) {
-            results.push(...collectTsxFiles(full))
+            if (!SKIPPED_DIRS.has(entry)) results.push(...collectTsxFiles(full))
         } else if (
             entry.endsWith('.tsx') &&
             !entry.endsWith('.test.tsx') &&
@@ -168,7 +170,7 @@ function scanFile(filePath) {
 }
 
 function main() {
-    const files = collectTsxFiles(COMPONENTS_DIR)
+    const files = collectTsxFiles(WEB_DIR)
     let totalFindings = 0
     const fileResults = []
 
@@ -181,7 +183,7 @@ function main() {
     }
 
     if (totalFindings === 0) {
-        console.log('[PASS] No hardcoded i18n strings detected in .tsx components.')
+        console.log('[PASS] No hardcoded i18n strings detected in the web app's .tsx files.')
         process.exit(0)
     }
 

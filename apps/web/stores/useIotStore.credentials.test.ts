@@ -39,28 +39,20 @@ describe('loading the saved broker credential', () => {
         expect(store.getState().password).toBe(saved)
     })
 
-    it('keeps a value typed while the saved one was still decrypting', async () => {
+    it.each([
+        ['succeeds', false],
+        ['fails', true],
+    ])('keeps a value typed while the saved one decrypts, when decryption %s', async (_, fails) => {
         const store = await load()
         await store.getState().setPassword('grow-room')
         store.setState({ password: '' })
         const loading = store.getState().loadPersistedPassword()
         const typedLater = 'grow-room-2'
         await store.getState().setPassword(typedLater)
+        crypto.failDecrypt = fails
         crypto.releaseDecrypt()
         await loading
-        expect(store.getState().password).toBe(typedLater)
-        expect(store.getState().encryptedPassword).toBe(`sealed:${typedLater}`)
-    })
-
-    it('does not clear a value typed while a failing decryption was pending', async () => {
-        const store = await load()
-        await store.getState().setPassword('grow-room')
-        const loading = store.getState().loadPersistedPassword()
-        const typedLater = 'grow-room-2'
-        await store.getState().setPassword(typedLater)
-        crypto.failDecrypt = true
-        crypto.releaseDecrypt()
-        await loading
+        // Neither the saved value nor a failed decryption may replace the newer one.
         expect(store.getState().password).toBe(typedLater)
         expect(store.getState().encryptedPassword).toBe(`sealed:${typedLater}`)
     })

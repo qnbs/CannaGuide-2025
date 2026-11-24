@@ -180,9 +180,9 @@ describe('runPostHydrationServices', () => {
         vi.useFakeTimers()
         try {
             mockLoadPersistedPassword.mockImplementation(() => new Promise<void>(() => undefined))
-            const { PASSWORD_LOAD_TIMEOUT_MS } = await import('./postHydration')
+            const { IOT_START_WAIT_MS } = await import('./postHydration')
             const started = runPostHydrationServices(createTestStore())
-            await vi.advanceTimersByTimeAsync(PASSWORD_LOAD_TIMEOUT_MS - 1)
+            await vi.advanceTimersByTimeAsync(IOT_START_WAIT_MS - 1)
             expect(mockMqttInit).not.toHaveBeenCalled()
             await vi.advanceTimersByTimeAsync(1)
             await vi.waitFor(() => expect(mockMqttInit).toHaveBeenCalledOnce())

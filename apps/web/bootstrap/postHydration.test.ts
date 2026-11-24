@@ -153,6 +153,36 @@ describe('runPostHydrationServices', () => {
         expect(document.body.getAttribute('data-app-ready')).toBe('true')
     })
 
+    it('loads the saved MQTT password before the IoT client can connect with it', async () => {
+        const order: string[] = []
+        let finishLoad: () => void = () => undefined
+        mockLoadPersistedPassword.mockImplementation(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishLoad = () => {
+                        order.push('password')
+                        resolve()
+                    }
+                }),
+        )
+        mockMqttInit.mockImplementation(() => {
+            order.push('mqtt')
+        })
+        const started = runPostHydrationServices(createTestStore())
+        await vi.waitFor(() => expect(mockLoadPersistedPassword).toHaveBeenCalled())
+        expect(mockMqttInit).not.toHaveBeenCalled()
+        finishLoad()
+        await started
+        expect(order).toEqual(['password', 'mqtt'])
+    })
+
+    it('still starts the IoT client when the saved password cannot be loaded', async () => {
+        mockLoadPersistedPassword.mockRejectedValue(new Error('decrypt failed'))
+        const store = createTestStore()
+        await runPostHydrationServices(store)
+        expect(mockMqttInit).toHaveBeenCalledWith(store)
+    })
+
     it.each([false, true])(
         'restores the saved Local-Only setting before any service starts (local-only: %s)',
         async (localOnly) => {

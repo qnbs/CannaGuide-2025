@@ -82,8 +82,8 @@ const detectedLang =
         ? (navigator.language.split('-')[0] ?? 'en')
         : 'en'
 const initialLang: SupportedLocale = (SUPPORTED_LOCALES as readonly string[]).includes(detectedLang)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
-    ? (detectedLang as SupportedLocale)
+    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
+      (detectedLang as SupportedLocale)
     : 'en'
 
 // The initialization is now a promise that the app will wait for
@@ -98,6 +98,10 @@ export const i18nPromise = (async () => {
     await i18nInstance.use(initReactI18next).init({
         lng: initialLang,
         fallbackLng: 'en',
+        // An empty translation falls back to English instead of rendering blank. This is the
+        // i18next 27 default (26 returned the empty string); pinned so a future default
+        // change cannot flip it unnoticed.
+        returnEmptyString: false,
         resources,
         interpolation: {
             escapeValue: false,

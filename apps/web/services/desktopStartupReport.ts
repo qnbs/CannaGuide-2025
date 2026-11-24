@@ -43,8 +43,12 @@ export interface DesktopStartupReport {
     savedSnapshotPresent: boolean
     /** Whether a service worker controls this page; the desktop shell runs none (GH #931). */
     serviceWorkerControlled: boolean
-    /** Diagnostic only: whether a service worker is registered for this origin at all. */
-    serviceWorkerRegistered: boolean
+    /**
+     * Whether a service worker is registered for this origin, read once the page has loaded
+     * (the old code registered on load). null when the lookup failed or did not answer in time:
+     * the smoke test then fails rather than reading "unknown" as "none".
+     */
+    serviceWorkerRegistered: boolean | null
     /** An error's class name, e.g. "TypeError"; the native side enforces the shape. */
     errorCode?: string
 }
@@ -64,34 +68,45 @@ export const errorCodeOf = (error: unknown): string => {
 }
 
 /**
- * A blocked IndexedDB open or a stuck service-worker lookup must not hold the report back;
- * both flags are diagnostic only, so a probe that does not answer in time reads as false.
+ * A blocked IndexedDB open or a stuck service-worker lookup must not hold the report back.
+ * A probe that fails or does not answer in time reads as its fallback.
  */
 export const SNAPSHOT_PROBE_MS = 2000
 
-const withinProbeTime = async (probe: () => Promise<boolean>): Promise<boolean> => {
+const withinProbeTime = async <T>(probe: () => Promise<T>, fallback: T): Promise<T> => {
     let timer: ReturnType<typeof setTimeout> | undefined
-    const deadline = new Promise<boolean>((resolve) => {
-        timer = setTimeout(() => resolve(false), SNAPSHOT_PROBE_MS)
+    const deadline = new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), SNAPSHOT_PROBE_MS)
     })
     try {
         return await Promise.race([probe(), deadline])
     } catch {
-        return false
+        return fallback
     } finally {
         clearTimeout(timer)
     }
 }
 
+/** Diagnostic only, so an unreadable store reads as no snapshot. */
 const snapshotPresent = (): Promise<boolean> =>
-    withinProbeTime(() => hasStoredItem(REDUX_STATE_KEY))
+    withinProbeTime(() => hasStoredItem(REDUX_STATE_KEY), false)
 
-const serviceWorkerRegistered = (): Promise<boolean> =>
-    withinProbeTime(async () =>
-        'serviceWorker' in navigator
-            ? (await navigator.serviceWorker.getRegistration()) !== undefined
-            : false,
-    )
+/** The old code registered the worker from a load listener, so wait for load first. */
+const pageLoaded = (): Promise<void> =>
+    document.readyState === 'complete'
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+              window.addEventListener('load', () => resolve(), { once: true })
+          })
+
+/** A gate reads this, so a failed or unanswered lookup is null, never false. */
+const serviceWorkerRegistered = (): Promise<boolean | null> =>
+    'serviceWorker' in navigator
+        ? withinProbeTime<boolean | null>(async () => {
+              await pageLoaded()
+              return (await navigator.serviceWorker.getRegistration()) !== undefined
+          }, null)
+        : Promise.resolve(false)
 
 export const buildDesktopStartupReport = async (
     outcome: DesktopStartupOutcome,

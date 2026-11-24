@@ -95,8 +95,9 @@ pub(crate) struct FrontendReport {
     saved_snapshot_present: bool,
     /// The desktop shell runs no service worker; true means one still controls the page.
     service_worker_controlled: bool,
-    /// Diagnostic only: whether any service worker is registered for the app's origin.
-    service_worker_registered: bool,
+    /// Whether any service worker is registered for the app's origin; `None` when the
+    /// frontend could not tell, which the smoke test fails.
+    service_worker_registered: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     error_code: Option<String>,
 }
@@ -312,7 +313,13 @@ mod tests {
         assert!(report.local_only);
         assert!(!report.saved_snapshot_present);
         assert!(!report.service_worker_controlled);
-        assert!(!report.service_worker_registered);
+        assert_eq!(report.service_worker_registered, Some(false));
+        let unknown = report_json("").replace(
+            r#""serviceWorkerRegistered":false"#,
+            r#""serviceWorkerRegistered":null"#,
+        );
+        let unknown: FrontendReport = serde_json::from_str(&unknown).unwrap();
+        assert_eq!(unknown.service_worker_registered, None);
         assert_eq!(report.error_code, None);
         assert_eq!(StartupOutcome::NewerSnapshot.as_str(), "newer-snapshot");
     }

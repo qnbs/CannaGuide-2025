@@ -109,7 +109,7 @@ test('a page a service worker controls fails, and so does a report without the f
 })
 
 test('any service worker registration fails the run, even one that controls nothing', () => {
-    for (const serviceWorkerRegistered of [true, undefined]) {
+    for (const serviceWorkerRegistered of [true, null, undefined]) {
         assert.deepEqual(
             failed(
                 evaluateRecord(record({ serviceWorkerRegistered }), {

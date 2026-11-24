@@ -102,15 +102,42 @@ describe('desktopStartupReport', () => {
             expect(report.serviceWorkerControlled).toBe(true)
             expect(report.serviceWorkerRegistered).toBe(true)
 
+            // A lookup that fails is unknown, not "none": the smoke gate must not pass on it.
             getRegistration.mockRejectedValue(new Error('storage error'))
             const unreadable = await buildDesktopStartupReport(
                 'started',
                 undefined,
                 documentWith(''),
             )
-            expect(unreadable.serviceWorkerRegistered).toBe(false)
+            expect(unreadable.serviceWorkerRegistered).toBeNull()
         } finally {
             Reflect.deleteProperty(navigator, 'serviceWorker')
+        }
+    })
+
+    it('reads the registration only after the page has loaded', async () => {
+        const getRegistration = vi.fn().mockResolvedValue(undefined)
+        let readyState = 'loading'
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: { controller: null, getRegistration },
+        })
+        Object.defineProperty(document, 'readyState', { configurable: true, get: () => readyState })
+        try {
+            const { buildDesktopStartupReport } = await load()
+            const pending = buildDesktopStartupReport('started', undefined, documentWith(''))
+            await Promise.resolve()
+            await Promise.resolve()
+            // The old code registered from a load listener: reading before load could miss it.
+            expect(getRegistration).not.toHaveBeenCalled()
+            readyState = 'complete'
+            window.dispatchEvent(new Event('load'))
+            const report = await pending
+            expect(getRegistration).toHaveBeenCalledTimes(1)
+            expect(report.serviceWorkerRegistered).toBe(false)
+        } finally {
+            Reflect.deleteProperty(navigator, 'serviceWorker')
+            Reflect.deleteProperty(document, 'readyState')
         }
     })
 

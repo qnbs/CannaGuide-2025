@@ -50,6 +50,9 @@ const I18N_SENSITIVE_PROPS =
 // Matches lines like:  <p>Some English Text</p>  or  >Warning: something<
 const JSX_TEXT_CONTENT = />\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?-]+){1,})\s*</g
 
+// A line that starts a block or JSX comment: `/*`, `/**` or `{/*`
+const BLOCK_COMMENT_OPENER = /^\s*\{?\/\*/
+
 // The same text alone on its line, for text that Prettier moved off the tag's line
 const OWN_LINE_TEXT = /^\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?'-]+){1,})\s*$/
 
@@ -147,9 +150,20 @@ const shortened = (value) => (value.length > 60 ? value.slice(0, 57) + '...' : v
 export function scanSource(content) {
     const lines = content.split('\n')
     const findings = []
+    let inBlockComment = false
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
+        // A block or JSX comment that opens a line and stays open hides the lines up to `*/`.
+        if (inBlockComment) {
+            inBlockComment = !line.includes('*/')
+            continue
+        }
+        const opener = BLOCK_COMMENT_OPENER.exec(line)
+        if (opener && !line.slice(opener[0].length).includes('*/')) {
+            inBlockComment = true
+            continue
+        }
         if (shouldSkipLine(line)) continue
 
         // Check i18n-sensitive props with hardcoded string values

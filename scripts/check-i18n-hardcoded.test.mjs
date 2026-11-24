@@ -52,6 +52,27 @@ test('translated text, comments, code and single words stay quiet', () => {
     }
 })
 
+test('text inside a multi-line block or JSX comment is not UI text', () => {
+    assert.deepEqual(texts(['/*', 'Some Example Text', '*/', 'export {}'].join('\n')), [])
+    assert.deepEqual(
+        texts(['<div>', '    {/*', '    Some Example Text', '    */}', '</div>'].join('\n')),
+        [],
+    )
+    // The same text right after the comment, inside the JSX, is still found.
+    const afterComment = [
+        '<Button>',
+        '    {/* the icon */}',
+        '    <Icon />',
+        '    Save Experiment Results',
+        '</Button>',
+    ].join('\n')
+    assert.deepEqual(texts(afterComment), ['4:Save Experiment Results'])
+    // A glob in an attribute does not open a comment.
+    assert.deepEqual(texts('<input accept="image/*" />\n<p>Some Hardcoded Words</p>'), [
+        '2:Some Hardcoded Words',
+    ])
+})
+
 test('CI runs the check in strict mode, so a finding fails the job', () => {
     // Without CHECK_I18N_STRICT=1 the check prints its findings and exits 0.
     const ci = readFileSync(resolve(ROOT, '.github/workflows/ci.yml'), 'utf8')

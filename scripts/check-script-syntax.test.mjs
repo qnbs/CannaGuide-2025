@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
-import { syntaxErrors, unlintedScripts } from './check-script-syntax.mjs'
+import { syntaxErrors, UNLINTED, unlintedScripts } from './check-script-syntax.mjs'
 
 test('the scope is the JavaScript that ESLint ignores', () => {
     const files = unlintedScripts()
@@ -17,6 +17,19 @@ test('the scope is the JavaScript that ESLint ignores', () => {
         assert.ok(files.includes(covered), covered)
     }
     assert.ok(!files.includes('apps/web/index.tsx'))
+    // Every service-worker path eslint.config.js ignores, whether or not it exists today.
+    for (const worker of [
+        'public/sw.js',
+        'public/sw.mjs',
+        'apps/web/public/sw.js',
+        'apps/web/public/sw.mjs',
+    ]) {
+        assert.ok(
+            UNLINTED.some((pattern) => pattern.test(worker)),
+            worker,
+        )
+    }
+    assert.ok(!UNLINTED.some((pattern) => pattern.test('apps/web/public/other.js')))
 })
 
 test('a script that does not parse is reported, and one that does is not', (t) => {

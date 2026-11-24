@@ -243,50 +243,83 @@ export function isShadowed(source, name) {
     return (source.match(new RegExp(`\\bconst\\s+${name}\\b`, 'g')) ?? []).length > 1
 }
 
+/** Length of the comment or string literal that starts at `at`, or 0 for code. */
+function nonCodeLength(text, at) {
+    if (text.startsWith('//', at)) {
+        const end = text.indexOf('\n', at)
+        return (end === -1 ? text.length : end) - at
+    }
+    if (text.startsWith('/*', at)) {
+        const end = text.indexOf('*/', at + 2)
+        return (end === -1 ? text.length : end + 2) - at
+    }
+    const quote = text[at]
+    if (quote !== "'" && quote !== '"' && quote !== '`') return 0
+    let end = at + 1
+    while (end < text.length && text[end] !== quote) end += text[end] === '\\' ? 2 : 1
+    return Math.min(end + 1, text.length) - at
+}
+
 /**
- * The text of the object literal around an index, or null when it cannot be found. Braces
- * inside strings are not told apart; a persist options object holds none in this code base.
+ * The text of the object literal around an index, or null when it cannot be found. The walk
+ * back does not tell braces inside strings apart; a persist options object holds none in this
+ * code base, and its closing brace is found skipping comments and strings.
  */
 function enclosingObject(source, index) {
     let depth = 0
-    let start = -1
     for (let at = index; at >= 0; at -= 1) {
         if (source[at] === '}') depth += 1
         if (source[at] === '{') {
             if (depth === 0) {
-                start = at
-                break
+                const end = matchingBrace(source, at)
+                return end === -1 ? null : source.slice(at + 1, end)
             }
             depth -= 1
         }
     }
-    if (start === -1) return null
-    const end = matchingBrace(source, start)
-    return end === -1 ? null : source.slice(start + 1, end)
+    return null
 }
 
 function matchingBrace(source, start) {
     let depth = 0
-    for (let at = start; at < source.length; at += 1) {
+    for (let at = start; at < source.length;) {
+        const skipped = nonCodeLength(source, at)
+        if (skipped > 0) {
+            at += skipped
+            continue
+        }
         if (source[at] === '{') depth += 1
         if (source[at] === '}' && --depth === 0) return at
+        at += 1
     }
     return -1
 }
 
-/** The `name` property at the top level of an options object, wherever it stands. */
+/**
+ * The `name` property at the top level of an options object, wherever it stands. Comments are
+ * skipped and keep the place of a property; strings are skipped and end it, so neither a
+ * commented-out name nor a comma inside a string or comment can stand in for the real one.
+ */
 function topLevelName(objectText) {
     let depth = 0
-    let lineStart = true
-    for (let at = 0; at < objectText.length; at += 1) {
+    let propertyStart = true
+    for (let at = 0; at < objectText.length;) {
+        if (depth === 0 && propertyStart) {
+            const match = PERSIST_NAME.exec(objectText.slice(at))
+            if (match) return match[2]
+        }
+        const skipped = nonCodeLength(objectText, at)
+        if (skipped > 0) {
+            if (objectText[at] !== '/') propertyStart = false
+            at += skipped
+            continue
+        }
         const char = objectText[at]
         if ('{[('.includes(char)) depth += 1
         else if ('}])'.includes(char)) depth -= 1
-        else if (depth === 0 && (lineStart || char === ',')) {
-            const match = PERSIST_NAME.exec(objectText.slice(char === ',' ? at + 1 : at))
-            if (match) return match[2]
-        }
-        lineStart = char === '\n'
+        if (depth === 0 && char === ',') propertyStart = true
+        else if (!/\s/.test(char)) propertyStart = false
+        at += 1
     }
     return undefined
 }

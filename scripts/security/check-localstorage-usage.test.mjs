@@ -145,6 +145,38 @@ test('a constant name that a parameter or local binding shadows counts as comput
     assert.equal(isShadowed("const KEY = 'a'\nlocalStorage.getItem(KEY)", 'KEY'), false)
 })
 
+test('a commented-out name, or a comma inside a string, is not the store name', (t) => {
+    const sources = {
+        'apps/web/after.ts': [
+            'persist(store, {',
+            '    storage: createJSONStorage(() => localStorage),',
+            "    // Previously used, name: 'cannaguide-iot-settings'",
+            "    name: 'raw-secret-store',",
+            '})',
+        ].join('\n'),
+        'apps/web/before.ts': [
+            'persist(store, {',
+            "    /* old, name: 'cannaguide-iot-settings' */",
+            "    name: 'raw-secret-store',",
+            "    note: 'a, name: cannaguide-iot-settings',",
+            '    storage: createJSONStorage(() => localStorage),',
+            '})',
+        ].join('\n'),
+        'apps/web/only-comment.ts': [
+            'persist(store, {',
+            "    // name: 'cannaguide-iot-settings',",
+            '    storage: createJSONStorage(() => localStorage),',
+            '})',
+        ].join('\n'),
+    }
+    const root = fixture(t, sources)
+    const keyOf = (file) => storageCalls(file, sources[file], root)[0]
+    assert.equal(keyOf('apps/web/after.ts').key, 'raw-secret-store')
+    assert.equal(keyOf('apps/web/before.ts').key, 'raw-secret-store')
+    // No live name: the store counts as computed and needs a review.
+    assert.equal(keyOf('apps/web/only-comment.ts').kind, 'dynamic')
+})
+
 test('the persisted store name comes from its own options object, in any order', (t) => {
     const source = [
         "const unrelated = { name: 'cannaguide-iot-settings' }",

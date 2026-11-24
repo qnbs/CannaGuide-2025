@@ -19,7 +19,7 @@ export const UNLINTED = [
     /^docker\/.*\.(mjs|cjs|js)$/,
     /^\.claude\/.*\.(mjs|cjs|js)$/,
     /\.cjs$/,
-    /^apps\/web\/public\/sw\.js$/,
+    /^(apps\/web\/)?public\/sw\.(js|mjs)$/,
 ]
 
 export function unlintedScripts(root = ROOT) {

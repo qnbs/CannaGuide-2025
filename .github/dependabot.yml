@@ -28,6 +28,14 @@ updates:
           prefix-development: 'chore'
           include: scope
       groups:
+          # react and react-dom must move together: a split bump stops the app from mounting.
+          # No update-types filter, so a major update stays in one PR too.
+          react-runtime:
+              patterns:
+                  - 'react'
+                  - 'react-dom'
+                  - '@types/react'
+                  - '@types/react-dom'
           ai-and-ml:
               patterns:
                   - '@google/genai'

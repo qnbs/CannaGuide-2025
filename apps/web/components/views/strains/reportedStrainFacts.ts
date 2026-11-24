@@ -13,6 +13,9 @@ export const reportedStrainType = (type: string | undefined): StrainType | undef
 export const reportedNumber = (value: unknown, digits: number, unknownLabel: string): string =>
     typeof value === 'number' && Number.isFinite(value) ? value.toFixed(digits) : unknownLabel
 
+export const isPositiveReported = (value: number | undefined): value is number =>
+    typeof value === 'number' && value > 0
+
 /** The reported point value, otherwise the record's stated range such as "<1%". */
 export const reportedPercentText = (
     value: unknown,

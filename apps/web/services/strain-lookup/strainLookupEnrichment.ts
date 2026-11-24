@@ -3,7 +3,11 @@
 
 import { TERPENE_DATABASE } from '@/data/terpeneDatabase'
 import type { Strain } from '@/types'
-import type { CannabinoidDataPoint, FlavonoidDataPoint, TerpeneDataPoint } from '@/services/strain-lookup/strainLookupTypes'
+import type {
+    CannabinoidDataPoint,
+    FlavonoidDataPoint,
+    TerpeneDataPoint,
+} from '@/services/strain-lookup/strainLookupTypes'
 import { TYPE_FLAVONOIDS } from '@/services/strain-lookup/flavonoidProfiles'
 import { TERPENE_SYNERGIES } from '@/services/strain-lookup/terpeneSynergies'
 
@@ -58,8 +62,8 @@ export function buildFlavonoidDataPoints(strainType: string): FlavonoidDataPoint
  */
 export function calculateEntourageScore(
     terpenes: TerpeneDataPoint[],
-    thc: number,
-    cbd: number,
+    thc: number | undefined,
+    cbd: number | undefined,
     flavonoids: FlavonoidDataPoint[],
 ): number {
     // Terpene contribution (up to 50 pts)
@@ -70,15 +74,22 @@ export function calculateEntourageScore(
     const flavoSum = flavonoids.reduce((acc, f) => acc + (f.entourageScore ?? 3), 0)
     const flavoPts = Math.min(20, (flavoSum / Math.max(1, flavonoids.length)) * 3)
 
-    // Cannabinoid balance bonus (up to 20 pts): THC:CBD ratio closer to 1:1 = higher score
-    const total = thc + cbd
-    const ratio = total > 0 ? Math.min(thc, cbd) / Math.max(thc, cbd) : 0
-    const cannabinoidPts = ratio * 20
+    const cannabinoidPts = cannabinoidBalancePoints(thc, cbd)
 
     // Terpene diversity bonus (up to 10 pts)
     const diversityPts = Math.min(10, terpenes.length * 1.8)
 
     return Math.round(terpenePts + flavoPts + cannabinoidPts + diversityPts)
+}
+
+/**
+ * Balance bonus (up to 20 pts): a THC:CBD ratio closer to 1:1 scores higher. A ratio
+ * needs both values, so an unreported one earns no bonus instead of a computed ratio.
+ */
+function cannabinoidBalancePoints(thc: number | undefined, cbd: number | undefined): number {
+    if (thc === undefined || cbd === undefined) return 0
+    const total = thc + cbd
+    return total > 0 ? (Math.min(thc, cbd) / Math.max(thc, cbd)) * 20 : 0
 }
 
 /**

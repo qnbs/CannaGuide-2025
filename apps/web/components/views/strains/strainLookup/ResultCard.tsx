@@ -4,6 +4,7 @@ import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { cn } from '@/lib/utils'
+import { isPositiveReported } from '@/components/views/strains/reportedStrainFacts'
 import type { LookupStrainResult } from '@/services/strainLookupService'
 import {
     ConfidenceBadge,
@@ -51,6 +52,8 @@ export const ResultCard: React.FC<ResultCardProps> = memo(
 
         const hasTerpenes = result.terpenes.length > 0
         const hasCannabinoids = result.cannabinoids.length > 1
+        // The balance chart compares both values, so it needs both.
+        const showsBalance = isPositiveReported(result.thc) && result.cbd !== undefined
 
         return (
             <Card className="overflow-hidden border border-primary-500/20 bg-gradient-to-b from-slate-800/80 to-slate-900/80">
@@ -100,12 +103,12 @@ export const ResultCard: React.FC<ResultCardProps> = memo(
 
                     {/* Quick stats */}
                     <div className="flex gap-4 text-sm flex-wrap">
-                        {result.thc > 0 && (
+                        {isPositiveReported(result.thc) && (
                             <span className="text-emerald-400 font-semibold">
                                 THC {result.thc.toFixed(1)}%
                             </span>
                         )}
-                        {result.cbd > 0 && (
+                        {isPositiveReported(result.cbd) && (
                             <span className="text-blue-400 font-semibold">
                                 CBD {result.cbd.toFixed(1)}%
                             </span>
@@ -138,9 +141,11 @@ export const ResultCard: React.FC<ResultCardProps> = memo(
                     )}
 
                     {/* Charts grid */}
-                    {(result.thc > 0 || hasTerpenes || hasCannabinoids) && (
+                    {(showsBalance || hasTerpenes || hasCannabinoids) && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-white/5 pt-4">
-                            {result.thc > 0 && <CannabinoidPie thc={result.thc} cbd={result.cbd} />}
+                            {isPositiveReported(result.thc) && result.cbd !== undefined && (
+                                <CannabinoidPie thc={result.thc} cbd={result.cbd} />
+                            )}
                             {hasTerpenes && <TerpeneRadar terpenes={result.terpenes} />}
                             {hasCannabinoids && (
                                 <CannabinoidBar cannabinoids={result.cannabinoids} />

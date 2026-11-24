@@ -117,11 +117,11 @@ describe('the bundled catalog (GH #750)', () => {
 })
 
 describe('the local strain lookup', () => {
-    it('keeps a strain without a CBD value out of NaN charts and scores', () => {
+    it('keeps an unreported CBD value unknown, with a finite score', () => {
         const result = lookupLocalCatalog('24k Gold')
 
         expect(result?.fullStrain?.cbd).toBeUndefined()
-        expect(result?.cbd).toBe(0)
+        expect(result?.cbd).toBeUndefined()
         expect(Number.isFinite(result?.totalEntourageScore)).toBe(true)
     })
 })

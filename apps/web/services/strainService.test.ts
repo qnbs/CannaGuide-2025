@@ -97,11 +97,14 @@ describe('strainService', () => {
             vi.mocked(dbService.setMetadata).mockClear()
             vi.mocked(dbService.getStrainsCount).mockResolvedValueOnce(776)
             vi.mocked(dbService.getMetadata).mockResolvedValueOnce(CURRENT_STRAIN_DATA_VERSION + 1)
+            const stored = [mockStrain({ id: 'user-strain' })]
+            vi.mocked(dbService.getAllStrains).mockResolvedValueOnce(stored)
 
             await strainService.init()
 
             expect(dbService.addStrains).not.toHaveBeenCalled()
             expect(dbService.setMetadata).not.toHaveBeenCalled()
+            await expect(strainService.getAllStrains()).resolves.toEqual(stored)
         })
     })
 

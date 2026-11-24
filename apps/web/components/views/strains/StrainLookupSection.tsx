@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react'
+import { isPositiveReported } from '@/components/views/strains/reportedStrainFacts'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
@@ -59,8 +60,9 @@ export const StrainLookupSection: React.FC = memo(() => {
         const avgCbd = cbdSum / total
         const typeRatio = (typeCounts[result.type] ?? 0) / total
         score += typeRatio * 30
-        if (result.thc > 0) score += Math.max(0, 20 - Math.abs(result.thc - avgThc))
-        if (result.cbd > 0) score += Math.max(0, 10 - Math.abs(result.cbd - avgCbd) * 5)
+        if (isPositiveReported(result.thc)) score += Math.max(0, 20 - Math.abs(result.thc - avgThc))
+        if (isPositiveReported(result.cbd))
+            score += Math.max(0, 10 - Math.abs(result.cbd - avgCbd) * 5)
         return Math.min(100, Math.max(0, Math.round(score)))
     }, [result, userStrains])
 
@@ -152,8 +154,8 @@ export const StrainLookupSection: React.FC = memo(() => {
                 breeder: r.breeder,
                 type: r.type,
                 floweringType: r.floweringType,
-                thc: r.thc,
-                cbd: r.cbd,
+                ...(r.thc === undefined ? {} : { thc: r.thc }),
+                ...(r.cbd === undefined ? {} : { cbd: r.cbd }),
                 description: r.description,
                 genetics: r.genetics,
                 source: 'ai-lookup' as const,
@@ -196,8 +198,8 @@ export const StrainLookupSection: React.FC = memo(() => {
         const lines: string[] = [
             r.name,
             r.type !== 'Unknown' ? r.type : '',
-            r.thc > 0 ? `THC ${r.thc.toFixed(1)}%` : '',
-            r.cbd > 0 ? `CBD ${r.cbd.toFixed(1)}%` : '',
+            isPositiveReported(r.thc) ? `THC ${r.thc.toFixed(1)}%` : '',
+            isPositiveReported(r.cbd) ? `CBD ${r.cbd.toFixed(1)}%` : '',
             r.description ?? '',
         ].filter(Boolean)
         void navigator

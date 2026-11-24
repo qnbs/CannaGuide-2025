@@ -350,6 +350,31 @@ test('fingerprints code and data files statically matched by Vite globs', (t) =>
     assert.notEqual(changedMinified.fingerprint, changedJson.fingerprint)
 })
 
+test('a first match of an empty or missing Vite glob changes the fingerprint', (t) => {
+    const { root, source } = createFixture()
+    t.after(() => rmSync(root, { recursive: true, force: true }))
+    const empty = path.join(root, 'apps/web/data/empty')
+    const missing = path.join(root, 'apps/web/data/missing')
+    mkdirSync(empty, { recursive: true })
+    writeFileSync(
+        path.join(source, 'target.ts'),
+        "export const modules = import.meta.glob(['../../data/empty/*.ts', '../../data/missing/*.ts'])\n",
+    )
+
+    const initial = calculateMutationDependencyFingerprint({ repoRoot: root })
+
+    writeFileSync(path.join(empty, 'first.ts'), 'export const first = true\n')
+    const afterEmptyMatch = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(afterEmptyMatch.fingerprint, initial.fingerprint)
+    assert.ok(afterEmptyMatch.files.includes('apps/web/data/empty/first.ts'))
+
+    mkdirSync(missing, { recursive: true })
+    writeFileSync(path.join(missing, 'second.ts'), 'export const second = true\n')
+    const afterMissingMatch = calculateMutationDependencyFingerprint({ repoRoot: root })
+    assert.notEqual(afterMissingMatch.fingerprint, afterEmptyMatch.fingerprint)
+    assert.ok(afterMissingMatch.files.includes('apps/web/data/missing/second.ts'))
+})
+
 test('treats literal Vite glob entries as exact filesystem matches', (t) => {
     const { root, source } = createFixture()
     t.after(() => rmSync(root, { recursive: true, force: true }))

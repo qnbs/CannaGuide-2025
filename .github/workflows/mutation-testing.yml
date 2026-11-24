@@ -45,7 +45,7 @@ jobs:
                   path: reports/mutation/.stryker-incremental.json
                   # Exact-key restore only. Hash target modules and their recursive first-party
                   # imports, workspace package sources/manifests and install policy, plus tests/tooling.
-                  key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'package.json', '.node-version', 'pnpm-workspace.yaml', 'apps/web/package.json', 'packages/*/package.json', 'packages/*/src/**', 'pnpm-lock.yaml', 'apps/web/**/*.test.ts', 'apps/web/**/*.test.tsx', 'apps/web/vite.config.ts', 'apps/web/vitest.setup.ts', 'apps/web/tsconfig*.json', 'tsconfig*.json', 'scripts/mutation-cache-fingerprint.mjs', 'scripts/mutation-cache-fingerprint.test.mjs') }}-${{ steps.mutation-dependency-fingerprint.outputs.fingerprint }}
+                  key: stryker-incremental-${{ hashFiles('stryker.conf.json', 'package.json', '.node-version', '.npmrc', '.pnpmfile.cjs', 'pnpm-workspace.yaml', 'apps/web/package.json', 'packages/*/package.json', 'packages/*/tsconfig*.json', 'packages/*/src/**', 'pnpm-lock.yaml', 'apps/web/**/*.test.ts', 'apps/web/**/*.test.tsx', 'apps/web/vite.config.ts', 'apps/web/vitest.setup.ts', 'apps/web/tsconfig*.json', 'tsconfig*.json', 'scripts/mutation-cache-fingerprint.mjs', 'scripts/mutation-cache-fingerprint.test.mjs') }}-${{ steps.mutation-dependency-fingerprint.outputs.fingerprint }}
 
             - name: Run Stryker
               working-directory: apps/web

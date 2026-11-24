@@ -35,7 +35,7 @@ const QUIT_POLL_INTERVAL: Duration = Duration::from_millis(200);
 /// A held smoke run quits by itself after this, so a lost harness leaves no process.
 const MAX_HOLD: Duration = Duration::from_secs(600);
 const MAX_CODE_CHARS: usize = 64;
-/// 3: the report says whether a service worker controls the page (GH #931).
+/// 3: the report says whether a service worker controls the page or is registered (GH #931).
 const REPORT_SCHEMA: u32 = 3;
 
 /// How the frontend's start ended; mirrors `DesktopStartupOutcome` in the web app.
@@ -95,6 +95,8 @@ pub(crate) struct FrontendReport {
     saved_snapshot_present: bool,
     /// The desktop shell runs no service worker; true means one still controls the page.
     service_worker_controlled: bool,
+    /// Diagnostic only: whether any service worker is registered for the app's origin.
+    service_worker_registered: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     error_code: Option<String>,
 }
@@ -296,7 +298,7 @@ mod tests {
 
     fn report_json(extra: &str) -> String {
         format!(
-            r#"{{"outcome":"newer-snapshot","frontendVersion":"1.12.1","view":"dialog","visible":true,"hydration":"backup","localOnly":true,"savedSnapshotPresent":false,"serviceWorkerControlled":false{extra}}}"#
+            r#"{{"outcome":"newer-snapshot","frontendVersion":"1.12.1","view":"dialog","visible":true,"hydration":"backup","localOnly":true,"savedSnapshotPresent":false,"serviceWorkerControlled":false,"serviceWorkerRegistered":false{extra}}}"#
         )
     }
 
@@ -310,6 +312,7 @@ mod tests {
         assert!(report.local_only);
         assert!(!report.saved_snapshot_present);
         assert!(!report.service_worker_controlled);
+        assert!(!report.service_worker_registered);
         assert_eq!(report.error_code, None);
         assert_eq!(StartupOutcome::NewerSnapshot.as_str(), "newer-snapshot");
     }

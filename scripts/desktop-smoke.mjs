@@ -156,6 +156,7 @@ export function evaluateRecord(record, { version, run, target }) {
             frontend.serviceWorkerControlled === false,
             String(frontend.serviceWorkerControlled),
         ),
+        info(`${run}: service worker registered`, String(frontend.serviceWorkerRegistered)),
     ]
     if (run.startsWith('restart')) {
         checks.push(

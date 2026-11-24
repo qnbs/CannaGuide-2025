@@ -65,6 +65,7 @@ describe('desktopStartupReport', () => {
             localOnly: true,
             savedSnapshotPresent: false,
             serviceWorkerControlled: false,
+            serviceWorkerRegistered: false,
         })
         expect(mocks.hasStoredItem).toHaveBeenCalledWith('cannaguide-redux-storage')
 
@@ -87,6 +88,30 @@ describe('desktopStartupReport', () => {
         odd.name = 'Error: secret note'
         expect(errorCodeOf(odd)).toBe('UnrecognizedError')
         expect(errorCodeOf('a string')).toBe('string')
+    })
+
+    it('reports a service worker that is registered and controls the page', async () => {
+        const getRegistration = vi.fn().mockResolvedValue({ scope: 'http://tauri.localhost/' })
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: { controller: { state: 'activated' }, getRegistration },
+        })
+        try {
+            const { buildDesktopStartupReport } = await load()
+            const report = await buildDesktopStartupReport('started', undefined, documentWith(''))
+            expect(report.serviceWorkerControlled).toBe(true)
+            expect(report.serviceWorkerRegistered).toBe(true)
+
+            getRegistration.mockRejectedValue(new Error('storage error'))
+            const unreadable = await buildDesktopStartupReport(
+                'started',
+                undefined,
+                documentWith(''),
+            )
+            expect(unreadable.serviceWorkerRegistered).toBe(false)
+        } finally {
+            Reflect.deleteProperty(navigator, 'serviceWorker')
+        }
     })
 
     it('reports a storage that cannot be read as no saved snapshot', async () => {

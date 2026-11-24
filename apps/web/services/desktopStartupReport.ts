@@ -43,6 +43,8 @@ export interface DesktopStartupReport {
     savedSnapshotPresent: boolean
     /** Whether a service worker controls this page; the desktop shell runs none (GH #931). */
     serviceWorkerControlled: boolean
+    /** Diagnostic only: whether a service worker is registered for this origin at all. */
+    serviceWorkerRegistered: boolean
     /** An error's class name, e.g. "TypeError"; the native side enforces the shape. */
     errorCode?: string
 }
@@ -61,16 +63,19 @@ export const errorCodeOf = (error: unknown): string => {
     return ERROR_CODE.test(name) ? name : 'UnrecognizedError'
 }
 
-/** A blocked IndexedDB open must not hold the report back; the flag is diagnostic only. */
+/**
+ * A blocked IndexedDB open or a stuck service-worker lookup must not hold the report back;
+ * both flags are diagnostic only, so a probe that does not answer in time reads as false.
+ */
 export const SNAPSHOT_PROBE_MS = 2000
 
-const snapshotPresent = async (): Promise<boolean> => {
+const withinProbeTime = async (probe: () => Promise<boolean>): Promise<boolean> => {
     let timer: ReturnType<typeof setTimeout> | undefined
     const deadline = new Promise<boolean>((resolve) => {
         timer = setTimeout(() => resolve(false), SNAPSHOT_PROBE_MS)
     })
     try {
-        return await Promise.race([hasStoredItem(REDUX_STATE_KEY), deadline])
+        return await Promise.race([probe(), deadline])
     } catch {
         return false
     } finally {
@@ -78,22 +83,36 @@ const snapshotPresent = async (): Promise<boolean> => {
     }
 }
 
+const snapshotPresent = (): Promise<boolean> =>
+    withinProbeTime(() => hasStoredItem(REDUX_STATE_KEY))
+
+const serviceWorkerRegistered = (): Promise<boolean> =>
+    withinProbeTime(async () =>
+        'serviceWorker' in navigator
+            ? (await navigator.serviceWorker.getRegistration()) !== undefined
+            : false,
+    )
+
 export const buildDesktopStartupReport = async (
     outcome: DesktopStartupOutcome,
     error?: unknown,
     doc: Document = document,
-): Promise<DesktopStartupReport> => ({
-    outcome,
-    frontendVersion: __APP_VERSION__,
-    view: currentStartupView(doc),
-    visible: doc.visibilityState === 'visible',
-    hydration: getStartupHydration(),
-    localOnly: isLocalOnlyMode(),
-    savedSnapshotPresent: await snapshotPresent(),
-    serviceWorkerControlled:
-        'serviceWorker' in navigator && navigator.serviceWorker.controller !== null,
-    ...(error === undefined ? {} : { errorCode: errorCodeOf(error) }),
-})
+): Promise<DesktopStartupReport> => {
+    const [saved, registered] = await Promise.all([snapshotPresent(), serviceWorkerRegistered()])
+    return {
+        outcome,
+        frontendVersion: __APP_VERSION__,
+        view: currentStartupView(doc),
+        visible: doc.visibilityState === 'visible',
+        hydration: getStartupHydration(),
+        localOnly: isLocalOnlyMode(),
+        savedSnapshotPresent: saved,
+        serviceWorkerControlled:
+            'serviceWorker' in navigator && navigator.serviceWorker.controller !== null,
+        serviceWorkerRegistered: registered,
+        ...(error === undefined ? {} : { errorCode: errorCodeOf(error) }),
+    }
+}
 
 /** A hidden or minimized window never paints, so the wait for a frame is bounded. */
 export const PAINT_WAIT_MS = 2000

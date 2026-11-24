@@ -46,6 +46,7 @@ const record = (frontend = {}) => ({
         localOnly: false,
         savedSnapshotPresent: true,
         serviceWorkerControlled: false,
+        serviceWorkerRegistered: false,
         ...frontend,
     },
 })
@@ -241,7 +242,7 @@ const hydration = mode === 'fresh-restart' ? 'fresh' : existsSync(saved) ? 'snap
 publish(report, JSON.stringify({
     schema: ${REPORT_SCHEMA}, nativeVersion: '1.12.1', os: process.platform, arch: process.arch, readyAfterMs: 5,
     frontend: { outcome: 'started', frontendVersion: '1.12.1', view: 'app', visible: true, hydration,
-        localOnly: false, savedSnapshotPresent: existsSync(saved), serviceWorkerControlled: false },
+        localOnly: false, savedSnapshotPresent: existsSync(saved), serviceWorkerControlled: false, serviceWorkerRegistered: false },
 }))
 const quit = () => {
     if (mode === 'flush-timeout') {

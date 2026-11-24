@@ -166,13 +166,15 @@ export const runPostHydrationServices = async (
         import('@/services/local-ai'),
     ])
 
-    void mqttClientService.init(hydratedStore)
-
+    // The saved password first: the client connects at once when IoT is enabled, and a
+    // CONNECT with the still-empty password is refused for bad credentials. Since mqtt 5.16
+    // such a refusal is final (not retried), so connecting early would never recover.
     try {
         await useIotStore.getState().loadPersistedPassword()
     } catch (err) {
         console.debug('[IoT] Could not load the saved MQTT password:', err)
     }
+    void mqttClientService.init(hydratedStore)
 
     const { initializeWorkerInfrastructure } = await import('./workers')
     await initializeWorkerInfrastructure(hydratedStore)

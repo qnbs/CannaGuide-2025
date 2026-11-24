@@ -104,6 +104,21 @@ test('no pull-request code is checked out: its changed files arrive through the 
     assert.match(resolveHead, /gh api "\$compare\?per_page=1"/)
     assert.doesNotMatch(resolveHead, /pulls\/\$PR\/files|pulls\/\$PR" -H/)
     assert.match(resolveHead, /\[ "\$changed" -gt 300 \]/)
+    // A failed fetch or an unsafe path stops the review; nothing is silently left out.
+    assert.doesNotMatch(resolveHead, /\|\| rm -f|2>\/dev\/null|\) continue/)
+    assert.match(
+        resolveHead,
+        /if ! gh api "repos\/\$GITHUB_REPOSITORY\/contents\/\$encoded_path\?ref=\$sha"/,
+    )
+    assert.match(
+        resolveHead,
+        /could not be fetched at the head; the review would be incomplete\."\n\s+exit 1/,
+    )
+    assert.match(resolveHead, /cannot be stored safely\."\n\s+exit 1/)
+    // What is cut is written down, and Claude is told to name it.
+    assert.match(resolveHead, />> \.claude-review\/truncated\.txt/)
+    assert.match(resolveHead, /diff\.patch is cut at 400000 of \$full_bytes bytes\./)
+    assert.match(String(claude.with.prompt), /If \.claude-review\/limits\.txt exists/)
     // Each file is fetched at the exact head SHA, by a decoded path kept inside head/.
     assert.match(resolveHead, /contents\/\$encoded_path\?ref=\$sha/)
     assert.match(resolveHead, /@base64/)

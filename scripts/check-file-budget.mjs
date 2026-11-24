@@ -87,11 +87,11 @@ function gitDiffFiles(ref) {
  * quotes kept the shell from doing it, so a full scan checked zero files. The type filter
  * now runs here instead.
  */
-export function allTrackedInScanDirs() {
+export function allTrackedInScanDirs(cwd = process.cwd()) {
     const result = spawnSync(
         'git',
         ['ls-files', '-z', '--', ...SCAN_GLOBS, ...SCAN_ROOT_FILES_OF],
-        { encoding: 'utf8' },
+        { cwd, encoding: 'utf8' },
     )
     if (result.status !== 0) throw new Error('[file-budget] git ls-files failed')
     return result.stdout

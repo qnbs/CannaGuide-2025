@@ -422,7 +422,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                             </span>
-                            IoT Live
+                            {t('plantsView.growRoom3d.iotLive')}
                         </span>
                     )}
                     <button
@@ -563,15 +563,10 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                                 >
                                     {vpdValue.toFixed(2)}
                                 </span>
-                                <span className="text-3xs sm:text-3xs text-muted">
-                                    kPa
-                                </span>
+                                <span className="text-3xs sm:text-3xs text-muted">kPa</span>
                             </div>
                             <span
-                                className={cn(
-                                    'text-3xs sm:text-xs font-semibold',
-                                    vpdStatus.color,
-                                )}
+                                className={cn('text-3xs sm:text-xs font-semibold', vpdStatus.color)}
                             >
                                 {vpdStatus.label}
                             </span>

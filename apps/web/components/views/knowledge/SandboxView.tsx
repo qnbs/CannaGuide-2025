@@ -298,7 +298,7 @@ const SandboxView: React.FC = () => {
                 <div className="mt-4 text-center">
                     <Button onClick={handleSave}>
                         <PhosphorIcons.ArchiveBox className="w-5 h-5 mr-2" />
-                        Save Experiment Results
+                        {t('knowledgeView.sandbox.saveResults')}
                     </Button>
                 </div>
             </div>

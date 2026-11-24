@@ -769,6 +769,7 @@ export const plantsView = {
     growRoom3d: {
         title: '3D Grow-Room',
         live: 'Live',
+        iotLive: 'IoT Live',
         temp: 'Temp',
         humidity: 'LF',
         plants: 'Pflanzen',

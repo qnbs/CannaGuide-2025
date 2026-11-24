@@ -130,7 +130,7 @@ const STORAGE_CALL = /\b(localStorage|sessionStorage)\s*\.\s*(getItem|setItem|re
 const LITERAL = /^(['"`])([^'"`$\\\n]*)\1$/
 /** zustand's persist middleware writes under its `name`, with no visible getItem call. */
 const PERSIST_STORAGE = /createJSONStorage\(\s*\(\)\s*=>\s*(localStorage|sessionStorage)\s*\)/g
-const PERSIST_NAME = /\bname:\s*(['"`])([^'"`$\\\n]+)\1/g
+const PERSIST_NAME = /^\s*name\s*:\s*(['"`])([^'"`$\\\n]+)\1/
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/
 const MAX_DEPTH = 6
 
@@ -223,6 +223,74 @@ export function resolveConstant(file, name, root = ROOT, depth = 0) {
 
 const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
 
+/**
+ * Whether a name is also bound as a parameter, a `let`/`var`/`catch` binding, or by a second
+ * `const` in the file. A file-wide constant lookup cannot tell which binding a call sees, so a
+ * shadowed name is treated as computed and needs a review (no scope analysis without a parser).
+ */
+export function isShadowed(source, name) {
+    const parameterLists = [
+        ...source.matchAll(/\bfunction\b[^(]*\(([^()]*)\)/g),
+        ...source.matchAll(/\(([^()]*)\)\s*(?::[^=>{]+)?(?:=>|\{)/g),
+    ].map((match) => match[1])
+    const parameters = parameterLists.flatMap((list) =>
+        list.split(',').map((part) => /^\s*(?:\.\.\.)?([A-Za-z_$][\w$]*)/.exec(part)?.[1]),
+    )
+    if (parameters.includes(name)) return true
+    if (new RegExp(`\\b${name}\\s*=>`).test(source)) return true
+    if (new RegExp(`\\b(?:let|var)\\s+${name}\\b|\\bcatch\\s*\\(\\s*${name}\\s*\\)`).test(source))
+        return true
+    return (source.match(new RegExp(`\\bconst\\s+${name}\\b`, 'g')) ?? []).length > 1
+}
+
+/**
+ * The text of the object literal around an index, or null when it cannot be found. Braces
+ * inside strings are not told apart; a persist options object holds none in this code base.
+ */
+function enclosingObject(source, index) {
+    let depth = 0
+    let start = -1
+    for (let at = index; at >= 0; at -= 1) {
+        if (source[at] === '}') depth += 1
+        if (source[at] === '{') {
+            if (depth === 0) {
+                start = at
+                break
+            }
+            depth -= 1
+        }
+    }
+    if (start === -1) return null
+    const end = matchingBrace(source, start)
+    return end === -1 ? null : source.slice(start + 1, end)
+}
+
+function matchingBrace(source, start) {
+    let depth = 0
+    for (let at = start; at < source.length; at += 1) {
+        if (source[at] === '{') depth += 1
+        if (source[at] === '}' && --depth === 0) return at
+    }
+    return -1
+}
+
+/** The `name` property at the top level of an options object, wherever it stands. */
+function topLevelName(objectText) {
+    let depth = 0
+    let lineStart = true
+    for (let at = 0; at < objectText.length; at += 1) {
+        const char = objectText[at]
+        if ('{[('.includes(char)) depth += 1
+        else if ('}])'.includes(char)) depth -= 1
+        else if (depth === 0 && (lineStart || char === ',')) {
+            const match = PERSIST_NAME.exec(objectText.slice(char === ',' ? at + 1 : at))
+            if (match) return match[2]
+        }
+        lineStart = char === '\n'
+    }
+    return undefined
+}
+
 /** Every storage call in one file, classified by how its key is known. */
 export function storageCalls(file, source, root = ROOT) {
     const calls = []
@@ -239,7 +307,10 @@ export function storageCalls(file, source, root = ROOT) {
             calls.push({ ...site, expression, kind: 'literal', key: literal[2] })
             continue
         }
-        const key = IDENTIFIER.test(expression) ? resolveConstant(file, expression, root) : null
+        const key =
+            IDENTIFIER.test(expression) && !isShadowed(source, expression)
+                ? resolveConstant(file, expression, root)
+                : null
         calls.push(
             key === null
                 ? { ...site, expression, kind: 'dynamic' }
@@ -247,9 +318,9 @@ export function storageCalls(file, source, root = ROOT) {
         )
     }
     for (const match of source.matchAll(PERSIST_STORAGE)) {
-        // The persist options carry the name shortly before the storage option.
-        const before = source.slice(Math.max(0, match.index - 600), match.index)
-        const name = [...before.matchAll(PERSIST_NAME)].at(-1)?.[2]
+        // The name comes from the same options object as the storage option, in any order.
+        const options = enclosingObject(source, match.index)
+        const name = options === null ? undefined : topLevelName(options)
         const line = source.slice(0, match.index).split('\n').length
         const site = { file, line, storage: match[1], method: 'setItem', expression: 'persist' }
         calls.push(name ? { ...site, kind: 'persist', key: name } : { ...site, kind: 'dynamic' })
@@ -279,23 +350,22 @@ function reviewedKeyProblem(call, entry) {
 const KNOWN_KINDS = new Set(['literal', 'constant', 'persist'])
 
 /** The violations for a set of classified calls and the reviewed dynamic-key entries. */
+/** Why one call fails, recording the review entry it uses; null when it passes. */
+function callProblem(call, reviewed, used) {
+    if (KNOWN_KINDS.has(call.kind)) return knownKeyProblem(call)
+    const entry = reviewed.find(
+        (candidate) => candidate.file === call.file && candidate.expression === call.expression,
+    )
+    if (entry) used.add(entry)
+    return reviewedKeyProblem(call, entry)
+}
+
 export function violations(calls, reviewed = REVIEWED_DYNAMIC_KEYS) {
-    const problems = []
     const used = new Set()
-    for (const call of calls) {
-        let reason
-        if (KNOWN_KINDS.has(call.kind)) {
-            reason = knownKeyProblem(call)
-        } else {
-            const entry = reviewed.find(
-                (candidate) =>
-                    candidate.file === call.file && candidate.expression === call.expression,
-            )
-            if (entry) used.add(entry)
-            reason = reviewedKeyProblem(call, entry)
-        }
-        if (reason) problems.push({ ...call, reason })
-    }
+    const problems = calls
+        .map((call) => ({ call, reason: callProblem(call, reviewed, used) }))
+        .filter(({ reason }) => reason)
+        .map(({ call, reason }) => ({ ...call, reason }))
     for (const entry of reviewed) {
         if (!used.has(entry)) {
             problems.push({

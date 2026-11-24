@@ -240,6 +240,7 @@ export const knowledgeView = {
         basedOn: 'Basado en: {{name}}',
         run: 'Ejecucion: {{date}}',
         viewResults: 'Ver Resultados',
+        saveResults: 'Guardar Resultados del Experimento',
         customExperiment: 'Experimento Personalizado',
         customDuration: 'Duracion (dias)',
         customActionA: 'Accion A',

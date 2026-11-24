@@ -9,6 +9,7 @@ import {
     ALLOWED_PATTERNS,
     appSourceFiles,
     firstArgument,
+    isShadowed,
     resolveConstant,
     stalePatterns,
     storageCalls,
@@ -110,6 +111,53 @@ test('calls are classified by how their key is known, including a persisted stor
             },
         ],
     )
+})
+
+test('a constant name that a parameter or local binding shadows counts as computed', (t) => {
+    const source = [
+        "const KEY = 'cg.ai.auditLog'",
+        'function save(KEY, value) {',
+        '    localStorage.setItem(KEY, value)',
+        '}',
+        'localStorage.getItem(OTHER)',
+        "const OTHER = 'cg.ai.costTracker'",
+    ].join('\n')
+    const root = fixture(t, { 'apps/web/shadow.ts': source })
+    const calls = storageCalls('apps/web/shadow.ts', source, root)
+    // save('raw_api_key', value) would otherwise pass as the allowed constant.
+    assert.deepEqual(
+        calls.map(({ expression, kind, key }) => ({ expression, kind, key })),
+        [
+            { expression: 'KEY', kind: 'dynamic', key: undefined },
+            { expression: 'OTHER', kind: 'constant', key: 'cg.ai.costTracker' },
+        ],
+    )
+    for (const shadowing of [
+        '(KEY) => localStorage.getItem(KEY)',
+        'KEY => 1',
+        'let KEY = x',
+        'try {} catch (KEY) {}',
+        "const KEY = 'a'\n{ const KEY = 'b' }",
+        'method(a, ...KEY) {}',
+    ]) {
+        assert.equal(isShadowed(shadowing, 'KEY'), true, shadowing)
+    }
+    assert.equal(isShadowed("const KEY = 'a'\nlocalStorage.getItem(KEY)", 'KEY'), false)
+})
+
+test('the persisted store name comes from its own options object, in any order', (t) => {
+    const source = [
+        "const unrelated = { name: 'cannaguide-iot-settings' }",
+        'export const useStore = create(persist(state, {',
+        '    storage: createJSONStorage(() => localStorage),',
+        "    partialize: (s) => ({ name: 'not-this-one' }),",
+        "    name: 'raw-secret-store',",
+        '}))',
+    ].join('\n')
+    const root = fixture(t, { 'apps/web/store.ts': source })
+    const [persisted] = storageCalls('apps/web/store.ts', source, root)
+    assert.equal(persisted.kind, 'persist')
+    assert.equal(persisted.key, 'raw-secret-store')
 })
 
 const call = (fields) => ({ file: 'apps/web/x.ts', line: 1, storage: 'localStorage', ...fields })

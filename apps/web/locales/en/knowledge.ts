@@ -255,6 +255,7 @@ export const knowledgeView = {
         basedOn: 'Based on: {{name}}',
         run: 'Run: {{date}}',
         viewResults: 'View Results',
+        saveResults: 'Save Experiment Results',
         customExperiment: 'Custom Experiment',
         customDuration: 'Duration (days)',
         customActionA: 'Action A',

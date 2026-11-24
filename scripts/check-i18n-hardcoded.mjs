@@ -6,7 +6,9 @@
 // should use t() from react-i18next.
 //
 // Heuristic (regex-based, no AST):
-//   1. JSX text content: >Some English Text< (multi-word, starts with uppercase)
+//   1. JSX text content: >Some English Text< (multi-word, starts with uppercase), and the
+//      same text alone on its line after an opening tag or before a closing tag, the way
+//      Prettier wraps it
 //   2. String props in i18n-sensitive attributes: title="...", label="...",
 //      placeholder="...", description="...", aria-label="..."
 //
@@ -20,12 +22,12 @@
 //   - Known technical strings (URLs, hex colors, mime types, file paths)
 //   - Console/debug statements
 //
-// Exit code: 0 always (warnings only -- does not block lint pipeline).
-// Set CHECK_I18N_STRICT=1 to exit with code 1 on findings.
+// Exit code: 0 on findings unless CHECK_I18N_STRICT=1, which CI sets; then 1.
 // ---------------------------------------------------------------------------
 
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { resolve, dirname, relative } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -48,19 +50,20 @@ const I18N_SENSITIVE_PROPS =
 // Matches lines like:  <p>Some English Text</p>  or  >Warning: something<
 const JSX_TEXT_CONTENT = />\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?-]+){1,})\s*</g
 
+// The same text alone on its line, for text that Prettier moved off the tag's line
+const OWN_LINE_TEXT = /^\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?'-]+){1,})\s*$/
+
 // Lines to skip entirely
 const SKIP_LINE_PATTERNS = [
     /\bt\s*\(/, // already uses t()
     /useTranslation/, // i18n import
     /getT\s*\(/, // service-side i18n
     /i18next/i, // i18n reference
-    /className/, // Tailwind classes
     /console\./, // debug/logging
-    /\/\//, // line comments (crude but effective)
+    /^\s*\/\//, // line comments (a URL's // elsewhere on a line is not one)
     /^\s*\*/, // block comment lines
     /^\s*\/\*/, // block comment start
     /^\s*import\b/, // import statements
-    /^\s*export\b/, // export statements
     /^\s*const\b.*=\s*['"]/, // const assignments (identifiers, not UI)
     /data-testid/, // test IDs
     /data-state/, // state attributes
@@ -128,8 +131,20 @@ function collectTsxFiles(dir) {
 // Main scan
 // ---------------------------------------------------------------------------
 
-function scanFile(filePath) {
-    const content = readFileSync(filePath, 'utf-8')
+/** Whether a line sits between JSX tags: after an opening tag or before a closing one. */
+function isBetweenTags(lines, index) {
+    const previous = lines.slice(0, index).findLast((entry) => entry.trim()) ?? ''
+    const next = lines.slice(index + 1).find((entry) => entry.trim()) ?? ''
+    const following = next.trimStart()
+    return (
+        previous.trimEnd().endsWith('>') || following.startsWith('</') || following.startsWith('{')
+    )
+}
+
+const shortened = (value) => (value.length > 60 ? value.slice(0, 57) + '...' : value)
+
+/** The likely hardcoded strings in one .tsx source. */
+export function scanSource(content) {
     const lines = content.split('\n')
     const findings = []
 
@@ -143,11 +158,7 @@ function scanFile(filePath) {
         while ((propMatch = I18N_SENSITIVE_PROPS.exec(line)) !== null) {
             const value = propMatch[1]
             if (!isIgnoredContent(value)) {
-                findings.push({
-                    line: i + 1,
-                    type: 'prop',
-                    text: value.length > 60 ? value.slice(0, 57) + '...' : value,
-                })
+                findings.push({ line: i + 1, type: 'prop', text: shortened(value) })
             }
         }
 
@@ -157,16 +168,21 @@ function scanFile(filePath) {
         while ((textMatch = JSX_TEXT_CONTENT.exec(line)) !== null) {
             const value = textMatch[1]
             if (!isIgnoredContent(value)) {
-                findings.push({
-                    line: i + 1,
-                    type: 'text',
-                    text: value.length > 60 ? value.slice(0, 57) + '...' : value,
-                })
+                findings.push({ line: i + 1, type: 'text', text: shortened(value) })
             }
+        }
+
+        const ownLine = OWN_LINE_TEXT.exec(line)
+        if (ownLine && !isIgnoredContent(ownLine[1]) && isBetweenTags(lines, i)) {
+            findings.push({ line: i + 1, type: 'text', text: shortened(ownLine[1]) })
         }
     }
 
     return findings
+}
+
+function scanFile(filePath) {
+    return scanSource(readFileSync(filePath, 'utf-8'))
 }
 
 function main() {
@@ -206,4 +222,4 @@ function main() {
     }
 }
 
-main()
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main()

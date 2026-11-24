@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { test } from 'node:test'
 
 import { allTrackedInScanDirs, inScanDirs } from './check-file-budget.mjs'
@@ -42,4 +45,11 @@ test('only direct children of apps/web count as its root files', () => {
     assert.equal(inScanDirs('apps/web/locales/en/common.ts'), false)
     assert.equal(inScanDirs('apps/web/bootstrap/render.tsx'), true)
     assert.equal(inScanDirs('packages/ui/src/index.ts'), true)
+})
+
+test('a failed git enumeration throws instead of scanning nothing', (t) => {
+    // The old full scan matched zero files and passed; an empty answer must never pass now.
+    const outside = mkdtempSync(join(tmpdir(), 'cg-budget-'))
+    t.after(() => rmSync(outside, { recursive: true, force: true }))
+    assert.throws(() => allTrackedInScanDirs(outside), /git ls-files failed/)
 })

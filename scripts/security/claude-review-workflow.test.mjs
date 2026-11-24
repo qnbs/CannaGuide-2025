@@ -162,6 +162,7 @@ test('the review travels as an artifact of this run, never as one large environm
     assert.doesNotMatch(TEXT, /structured_output \}\}/)
     assert.deepEqual(review.outputs, {
         ready: '${{ steps.result.outputs.ready }}',
+        artifact: '${{ steps.result.outputs.artifact }}',
         sha: '${{ steps.head.outputs.sha }}',
     })
     assert.equal(post.if, "needs.review.outputs.ready == 'true'")
@@ -171,10 +172,17 @@ test('the review travels as an artifact of this run, never as one large environm
     assert.match(extract.run, /select\(\.subtype == "success" and \(\.is_error \| not\)\)/)
     const upload = step(review, 'Upload the structured review')
     assert.match(upload.uses, /^actions\/upload-artifact@[0-9a-f]{40}$/)
-    assert.equal(upload.with.name, 'claude-review-result-${{ github.run_attempt }}')
+    // The review attempt names its artifact, and post downloads exactly that name: re-running
+    // only a failed post job raises github.run_attempt but keeps the review job's outputs.
+    assert.match(extract.run, /echo "artifact=claude-review-result-\$GITHUB_RUN_ATTEMPT"/)
+    assert.equal(upload.with.name, '${{ steps.result.outputs.artifact }}')
     assert.equal(upload.with['if-no-files-found'], 'error')
     const download = step(post, 'Download the structured review')
     assert.match(download.uses, /^actions\/download-artifact@[0-9a-f]{40}$/)
-    assert.equal(download.with.name, upload.with.name)
+    assert.equal(download.with.name, '${{ needs.review.outputs.artifact }}')
+    assert.doesNotMatch(
+        JSON.stringify(post.steps),
+        /claude-review-result-\$\{\{ github\.run_attempt/,
+    )
     assert.equal(step(post, 'Post the review').env.REVIEW_FILE, `${download.with.path}/review.json`)
 })

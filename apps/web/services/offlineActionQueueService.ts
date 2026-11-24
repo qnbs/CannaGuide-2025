@@ -36,6 +36,12 @@ const readyWithin = async (ms: number): Promise<ServiceWorkerRegistration | unde
     }
 }
 
+/**
+ * One late registration is enough: the sync tag coalesces, so a second waiter would only
+ * stack another pending continuation for every action queued while no worker is active.
+ */
+let lateSyncScheduled = false
+
 const registerDataSync = async (registration: ServiceWorkerRegistration): Promise<boolean> => {
     if (!('sync' in registration)) return false
     await // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Background Sync API
@@ -93,12 +99,20 @@ export const offlineActionQueueService = {
             if (registration === undefined) {
                 // The caller hears "unavailable" now, but a worker that becomes ready later
                 // still gets the replay scheduled, so the queued entry is not stranded.
-                void navigator.serviceWorker.ready.then(registerDataSync).catch((err: unknown) => {
-                    console.debug(
-                        '[offlineActionQueue] Late background sync registration failed:',
-                        err,
-                    )
-                })
+                if (!lateSyncScheduled) {
+                    lateSyncScheduled = true
+                    void navigator.serviceWorker.ready
+                        .then(registerDataSync)
+                        .catch((err: unknown) => {
+                            console.debug(
+                                '[offlineActionQueue] Late background sync registration failed:',
+                                err,
+                            )
+                        })
+                        .finally(() => {
+                            lateSyncScheduled = false
+                        })
+                }
                 return false
             }
             return await registerDataSync(registration)

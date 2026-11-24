@@ -57,8 +57,14 @@ describe('requestBackgroundSync without a service worker (GH #931)', () => {
         await expect(pending).resolves.toBe(false)
         expect(register).not.toHaveBeenCalled()
 
+        // A second request while no worker is active adds no second waiter.
+        const again = offlineActionQueueService.requestBackgroundSync()
+        await vi.advanceTimersByTimeAsync(SERVICE_WORKER_READY_MS)
+        await expect(again).resolves.toBe(false)
+
         becomeReady({ sync: { register } })
         await vi.advanceTimersByTimeAsync(0)
+        expect(register).toHaveBeenCalledTimes(1)
         expect(register).toHaveBeenCalledWith('data-sync')
     })
 

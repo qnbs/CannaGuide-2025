@@ -4,15 +4,17 @@
  * review, bound to the commit Claude read (`.github/workflows/claude-review.yml`, GH #906).
  *
  * Claude itself has no write access: it returns JSON matching REVIEW_SCHEMA, and this script,
- * run from the default branch, validates it again, removes anything that could forge a
+ * run from the default branch, validates it again, escapes anything that could forge a
  * receipt or mention someone, and submits the review with `commit_id` pinned. When the pull
- * request has moved to another head, it posts nothing. The receipt at the end of the body is
- * what `review-coverage-policy.mjs` reads.
+ * request has moved to another head, it posts nothing. After posting it writes a receipt file
+ * naming the review it created; the workflow uploads that file as an artifact of this run, so
+ * the coverage policy can tell this review from one that only names the run.
  *
  * Environment: REVIEW_JSON, HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY, GH_TOKEN (the job's
- * GITHUB_TOKEN: the action revokes the Claude App token inside its own step), RUN_ID and
- * RUN_ATTEMPT. The receipt names the run, so the policy can check it came from this workflow.
+ * GITHUB_TOKEN: the action revokes the Claude App token inside its own step), RUN_ID,
+ * RUN_ATTEMPT, and RECEIPT_FILE for the artifact.
  */
+import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -21,6 +23,7 @@ const MAX_TEXT = 3000
 const MAX_SUMMARY = 4000
 const MAX_BODY = 60_000
 const SHA = /^[0-9a-f]{40}$/
+const POSITIVE_INTEGER = /^[1-9]\d*$/
 const SEVERITIES = ['critical', 'major', 'minor']
 
 /** Passed to Claude Code as --json-schema; the workflow test checks the copy there. */
@@ -50,49 +53,61 @@ export const REVIEW_SCHEMA = {
 }
 
 /**
- * Model text is untrusted: no HTML comment can survive (a forged receipt), no mention can
- * reach a person or a bot (`@claude review`, `@coderabbitai`), and the length is bounded.
+ * Model text is untrusted. Escaping every `<` leaves no HTML element and no HTML comment, so
+ * no text can forge a receipt; no mention can reach a person or a bot (`@claude review`,
+ * `@coderabbitai`); and the length is bounded.
  */
 export function sanitize(text, max = MAX_TEXT) {
     return String(text)
-        .replace(/<!--|-->/g, '')
+        .replace(/</g, '&lt;')
         .replace(/@(?=[A-Za-z0-9])/g, '(at)')
         .slice(0, max)
         .trim()
 }
 
+/** A repository-relative path: no absolute path, no backslash, no `..` segment. */
+const isSafePath = (path) =>
+    typeof path === 'string' &&
+    path.length > 0 &&
+    !path.startsWith('/') &&
+    !path.includes('\\') &&
+    !path.split('/').includes('..')
+
+function parseFinding(finding, index) {
+    const valid =
+        isSafePath(finding?.path) &&
+        Number.isInteger(finding.line) &&
+        finding.line >= 1 &&
+        SEVERITIES.includes(finding.severity) &&
+        typeof finding.title === 'string' &&
+        typeof finding.body === 'string'
+    if (!valid) throw new Error(`finding ${index} does not match the schema`)
+    return {
+        path: finding.path,
+        line: finding.line,
+        severity: finding.severity,
+        title: sanitize(finding.title, 200),
+        body: sanitize(finding.body),
+    }
+}
+
 /** Checks the structured output again; the schema reaching Claude is not a guarantee. */
 export function parseStructuredReview(raw) {
     const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        throw new Error('the review is not an object')
+    const isObject = parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+    if (!isObject || typeof parsed.summary !== 'string') {
+        throw new Error('the review needs an object with a summary')
     }
-    if (typeof parsed.summary !== 'string') throw new Error('the review has no summary')
     if (!Array.isArray(parsed.findings) || parsed.findings.length > MAX_FINDINGS) {
         throw new Error(`the review needs at most ${MAX_FINDINGS} findings`)
     }
-    const findings = parsed.findings.map((finding, index) => {
-        const valid =
-            finding &&
-            typeof finding.path === 'string' &&
-            finding.path.length > 0 &&
-            !finding.path.includes('..') &&
-            Number.isInteger(finding.line) &&
-            finding.line >= 1 &&
-            SEVERITIES.includes(finding.severity) &&
-            typeof finding.title === 'string' &&
-            typeof finding.body === 'string'
-        if (!valid) throw new Error(`finding ${index} does not match the schema`)
-        return {
-            path: finding.path,
-            line: finding.line,
-            severity: finding.severity,
-            title: sanitize(finding.title, 200),
-            body: sanitize(finding.body),
-        }
-    })
-    return { summary: sanitize(parsed.summary, MAX_SUMMARY), findings }
+    return {
+        summary: sanitize(parsed.summary, MAX_SUMMARY),
+        findings: parsed.findings.map(parseFinding),
+    }
 }
+
+const isRightSideLine = (line) => line.startsWith('+') || line.startsWith(' ')
 
 /** The right-side lines a review comment may point at: added and context lines of a patch. */
 export function commentableLines(patch) {
@@ -101,12 +116,8 @@ export function commentableLines(patch) {
     let next = 0
     for (const line of patch.split('\n')) {
         const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,\d+)? @@/.exec(line)
-        if (hunk) {
-            next = Number(hunk[1])
-        } else if (next > 0 && (line.startsWith('+') || line.startsWith(' '))) {
-            lines.add(next)
-            next += 1
-        }
+        if (hunk) next = Number(hunk[1])
+        else if (next > 0 && isRightSideLine(line)) lines.add(next++)
     }
     return lines
 }
@@ -120,47 +131,83 @@ export const receiptLine = (headSha, findings, run) =>
         run_attempt: run.attempt,
     })} -->`
 
+/** Findings on diff lines go inline; every other finding goes into the body. */
+function placeFindings(findings, files, inline) {
+    const lines = new Map(files.map((file) => [file.filename, commentableLines(file.patch)]))
+    const comments = []
+    const outside = []
+    for (const finding of findings) {
+        if (inline && lines.get(finding.path)?.has(finding.line)) {
+            const body = `**${finding.severity}** -- ${finding.title}\n\n${finding.body}`
+            comments.push({ path: finding.path, line: finding.line, side: 'RIGHT', body })
+        } else {
+            outside.push(finding)
+        }
+    }
+    return { comments, outside }
+}
+
+const findingHead = (finding) =>
+    `- **${finding.severity}** \`${finding.path}:${finding.line}\` -- ${finding.title}: `
+
+/**
+ * Lists every finding within the budget: when they do not fit, each body is shortened, never
+ * a whole finding dropped, so the review inventory stays complete.
+ */
+export function listFindings(findings, budget) {
+    const full = findings.map((finding) => findingHead(finding) + finding.body).join('\n')
+    if (full.length <= budget) return full
+    const share = Math.max(0, Math.floor(budget / Math.max(findings.length, 1)) - 1)
+    return findings
+        .map((finding) => {
+            const head = findingHead(finding)
+            const room = Math.max(0, share - head.length - 3)
+            return finding.body.length <= room
+                ? head + finding.body
+                : `${head}${finding.body.slice(0, room)}...`
+        })
+        .join('\n')
+}
+
+function assertReviewInputs(headSha, run) {
+    if (!SHA.test(headSha ?? '')) throw new Error('the head SHA is not a full commit SHA')
+    const validRun =
+        Number.isSafeInteger(run?.id) &&
+        run.id >= 1 &&
+        Number.isSafeInteger(run.attempt) &&
+        run.attempt >= 1
+    if (!validRun) throw new Error('the workflow run id and attempt are required')
+}
+
 /**
  * One formal COMMENT review: findings on diff lines become inline comments, the rest go into
  * the body. It never approves or requests changes, so it cannot satisfy or block a gate alone.
  */
 export function buildReview({ review, headSha, files, run, inline = true }) {
-    if (!SHA.test(headSha ?? '')) throw new Error('the head SHA is not a full commit SHA')
-    if (
-        !Number.isSafeInteger(run?.id) ||
-        run.id < 1 ||
-        !Number.isSafeInteger(run.attempt) ||
-        run.attempt < 1
-    ) {
-        throw new Error('the workflow run id and attempt are required')
-    }
-    const lines = new Map(files.map((file) => [file.filename, commentableLines(file.patch)]))
-    const comments = []
-    const outside = []
-    for (const finding of review.findings) {
-        const text = `**${finding.severity}** -- ${finding.title}\n\n${finding.body}`
-        if (inline && lines.get(finding.path)?.has(finding.line)) {
-            comments.push({ path: finding.path, line: finding.line, side: 'RIGHT', body: text })
-        } else {
-            outside.push(
-                `- **${finding.severity}** \`${finding.path}:${finding.line}\` -- ${finding.title}: ${finding.body}`,
-            )
-        }
-    }
-    const sections = [
+    assertReviewInputs(headSha, run)
+    const { comments, outside } = placeFindings(review.findings, files, inline)
+    const receipt = receiptLine(headSha, review.findings.length, run)
+    const intro = [
         '## Claude review (on demand)',
         `Reviewed commit \`${headSha}\`, read-only. Findings are inline unless their line is outside the diff.`,
         review.summary || 'No summary.',
+        review.findings.length === 0 ? 'No findings.' : '',
     ]
-    if (outside.length > 0) sections.push(`### Findings outside the diff\n\n${outside.join('\n')}`)
-    if (review.findings.length === 0) sections.push('No findings.')
-    const receipt = receiptLine(headSha, review.findings.length, run)
-    const text = sections.join('\n\n').slice(0, MAX_BODY - receipt.length - 2)
-    return { commit_id: headSha, event: 'COMMENT', body: `${text}\n\n${receipt}`, comments }
+        .filter(Boolean)
+        .join('\n\n')
+    const heading = '\n\n### Findings outside the diff\n\n'
+    const room = MAX_BODY - intro.length - heading.length - receipt.length - 4
+    const listed = outside.length > 0 ? heading + listFindings(outside, room) : ''
+    return {
+        commit_id: headSha,
+        event: 'COMMENT',
+        body: `${intro}${listed}\n\n${receipt}`,
+        comments,
+    }
 }
 
 async function github(path, { token, method = 'GET', body } = {}) {
-    const response = await fetch(`https://api.github.com${path}`, {
+    return fetch(`https://api.github.com${path}`, {
         method,
         headers: {
             accept: 'application/vnd.github+json',
@@ -170,7 +217,6 @@ async function github(path, { token, method = 'GET', body } = {}) {
         },
         ...(body ? { body: JSON.stringify(body) } : {}),
     })
-    return response
 }
 
 async function changedFiles(repo, pull, token) {
@@ -188,53 +234,79 @@ async function changedFiles(repo, pull, token) {
     return files
 }
 
-export async function main(env = process.env, log = console) {
+/** The validated inputs, or an error naming every one the workflow must pass. */
+export function readInputs(env) {
     const { REVIEW_JSON, HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY, GH_TOKEN, RUN_ID, RUN_ATTEMPT } =
         env
-    if (
-        !REVIEW_JSON ||
-        !SHA.test(HEAD_SHA ?? '') ||
-        !/^[1-9]\d*$/.test(PR_NUMBER ?? '') ||
-        !GITHUB_REPOSITORY ||
-        !GH_TOKEN ||
-        !/^[1-9]\d*$/.test(RUN_ID ?? '') ||
-        !/^[1-9]\d*$/.test(RUN_ATTEMPT ?? '')
-    ) {
+    const complete =
+        Boolean(REVIEW_JSON && GITHUB_REPOSITORY && GH_TOKEN) &&
+        SHA.test(HEAD_SHA ?? '') &&
+        [PR_NUMBER, RUN_ID, RUN_ATTEMPT].every((value) => POSITIVE_INTEGER.test(value ?? ''))
+    if (!complete) {
         throw new Error(
             'REVIEW_JSON, HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY, GH_TOKEN, RUN_ID and RUN_ATTEMPT are required',
         )
     }
-    const run = { id: Number(RUN_ID), attempt: Number(RUN_ATTEMPT) }
-    const review = parseStructuredReview(REVIEW_JSON)
-    const pullResponse = await github(`/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}`, {
+    return {
+        review: parseStructuredReview(REVIEW_JSON),
+        headSha: HEAD_SHA,
+        pull: Number(PR_NUMBER),
+        repo: GITHUB_REPOSITORY,
         token: GH_TOKEN,
-    })
-    if (!pullResponse.ok)
-        throw new Error(`reading the pull request failed: HTTP ${pullResponse.status}`)
-    const pull = await pullResponse.json()
-    if (pull.head?.sha !== HEAD_SHA || pull.state !== 'open') {
-        log.log(`[WARN] the pull request is no longer open at ${HEAD_SHA}; no review was posted`)
-        return 'skipped'
+        run: { id: Number(RUN_ID), attempt: Number(RUN_ATTEMPT) },
+        receiptFile: env.RECEIPT_FILE || 'claude-review-receipt.json',
     }
-    const files = await changedFiles(GITHUB_REPOSITORY, PR_NUMBER, GH_TOKEN)
-    const path = `/repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/reviews`
-    let response = await github(path, {
-        token: GH_TOKEN,
-        method: 'POST',
-        body: buildReview({ review, headSha: HEAD_SHA, files, run }),
-    })
-    if (response.status === 422) {
-        // A line GitHub does not accept fails the whole review: post every finding in the body.
-        log.log('[WARN] inline comments were refused; posting all findings in the review body')
-        response = await github(path, {
-            token: GH_TOKEN,
+}
+
+/** Posts the review, falling back to every finding in the body when a line is refused. */
+async function submitReview({ review, headSha, pull, repo, token, run }, files, log) {
+    const path = `/repos/${repo}/pulls/${pull}/reviews`
+    const post = (inline) =>
+        github(path, {
+            token,
             method: 'POST',
-            body: buildReview({ review, headSha: HEAD_SHA, files, run, inline: false }),
+            body: buildReview({ review, headSha, files, run, inline }),
         })
+    let response = await post(true)
+    if (response.status === 422) {
+        log.log('[WARN] inline comments were refused; posting all findings in the review body')
+        response = await post(false)
     }
     if (!response.ok) throw new Error(`posting the review failed: HTTP ${response.status}`)
+    const created = await response.json()
+    if (!Number.isSafeInteger(created?.id)) throw new Error('GitHub returned no review id')
+    return created.id
+}
+
+async function stillOpenAt(inputs) {
+    const response = await github(`/repos/${inputs.repo}/pulls/${inputs.pull}`, {
+        token: inputs.token,
+    })
+    if (!response.ok) throw new Error(`reading the pull request failed: HTTP ${response.status}`)
+    const pull = await response.json()
+    return pull.head?.sha === inputs.headSha && pull.state === 'open'
+}
+
+export async function main(env = process.env, log = console) {
+    const inputs = readInputs(env)
+    if (!(await stillOpenAt(inputs))) {
+        log.log(
+            `[WARN] the pull request is no longer open at ${inputs.headSha}; no review was posted`,
+        )
+        return 'skipped'
+    }
+    const files = await changedFiles(inputs.repo, inputs.pull, inputs.token)
+    const reviewId = await submitReview(inputs, files, log)
+    const receipt = {
+        pull: inputs.pull,
+        head_sha: inputs.headSha,
+        review_id: reviewId,
+        run_id: inputs.run.id,
+        run_attempt: inputs.run.attempt,
+    }
+    writeFileSync(inputs.receiptFile, `${JSON.stringify(receipt)}\n`)
     log.log(
-        `[OK] posted the Claude review for ${HEAD_SHA} with ${review.findings.length} finding(s)`,
+        `[OK] posted Claude review ${reviewId} for ${inputs.headSha} with ${inputs.review.findings.length} finding(s)`,
     )
     return 'posted'
 }

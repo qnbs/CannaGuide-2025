@@ -31,8 +31,15 @@ test('it runs only on a pull-request comment, with no default token rights', () 
     assert.deepEqual(Object.keys(WORKFLOW.on), ['issue_comment'])
     assert.deepEqual(WORKFLOW.on.issue_comment, { types: ['created'] })
     assert.deepEqual(WORKFLOW.permissions, {})
-    assert.deepEqual(WORKFLOW.concurrency, {
+    // On the jobs, not the workflow: a workflow-level group lets any later comment, whose
+    // jobs are all skipped, replace a pending review request.
+    assert.equal(WORKFLOW.concurrency, undefined)
+    assert.deepEqual(review.concurrency, {
         group: 'claude-review-${{ github.event.issue.number }}',
+        'cancel-in-progress': false,
+    })
+    assert.deepEqual(post.concurrency, {
+        group: 'claude-review-post-${{ github.event.issue.number }}',
         'cancel-in-progress': false,
     })
     assert.deepEqual(Object.keys(WORKFLOW.jobs), ['review', 'post'])
@@ -84,19 +91,19 @@ test('Claude can only read: no shell, no writes, no GitHub or CI-log tools', () 
     assert.equal(arg('--max-turns'), '40')
 })
 
-test('the pull request head is read from a subdirectory and never run', () => {
+test('no pull-request code is checked out: its changed files arrive through the API as data', () => {
     const checkouts = review.steps.filter((entry) => entry.uses?.startsWith('actions/checkout@'))
-    assert.equal(checkouts.length, 2)
-    // The default branch sits at the root, as the action's security guidance asks.
+    assert.equal(checkouts.length, 1)
     assert.deepEqual(checkouts[0].with, { 'persist-credentials': false })
-    assert.deepEqual(checkouts[1].with, {
-        ref: '${{ steps.head.outputs.sha }}',
-        path: 'pr-head',
-        'persist-credentials': false,
-    })
-    assert.equal(arg('--add-dir'), 'pr-head')
+    assert.equal(arg('--add-dir'), undefined)
     const resolveHead = step(review, 'Resolve the exact head and the diff').run
     assert.match(resolveHead, /head_repo" != "\$GITHUB_REPOSITORY"/)
+    // Each file is fetched at the exact head SHA, by a decoded path kept inside head/.
+    assert.match(resolveHead, /contents\/\$encoded_path\?ref=\$sha/)
+    assert.match(resolveHead, /@base64/)
+    assert.match(resolveHead, /\*\/\.\.\/\*/)
+    assert.match(resolveHead, /head -c 1000000/)
+    assert.match(String(claude.with.prompt), /\.claude-review\/head\//)
     // No step of the review job installs or runs repository code.
     for (const entry of review.steps) {
         assert.doesNotMatch(entry.run ?? '', /\b(pnpm|npm|npx|node|yarn|bun|make)\b/, entry.name)
@@ -126,10 +133,16 @@ test('only the default branch posting script writes, with the run named for prov
         'GH_TOKEN',
         'HEAD_SHA',
         'PR_NUMBER',
+        'RECEIPT_FILE',
         'REVIEW_JSON',
         'RUN_ATTEMPT',
         'RUN_ID',
     ])
+    // Only this run can upload into itself: the artifact binds the posted review to the run.
+    const upload = step(post, 'Upload the review receipt')
+    assert.match(upload.uses, /^actions\/upload-artifact@[0-9a-f]{40}$/)
+    assert.equal(upload.with.name, 'claude-review-receipt-${{ github.run_attempt }}')
+    assert.equal(upload.with.path, posting.env.RECEIPT_FILE)
     assert.equal(posting.env.RUN_ID, '${{ github.run_id }}')
     assert.doesNotMatch(JSON.stringify(post), /CLAUDE_CODE_OAUTH_TOKEN/)
 })

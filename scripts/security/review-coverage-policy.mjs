@@ -302,23 +302,37 @@ const isClaudeCandidate = (review, pullNumber) =>
     typeof review.body === 'string' &&
     review.body.includes(CLAUDE_RECEIPT_PREFIX)
 
-/** The workflow runs a Claude receipt names; the collector fetches them as evidence. */
-export function claudeReceiptRunIds(reviews, pullNumber) {
-    const ids = new Set()
-    for (const review of Array.isArray(reviews) ? reviews : []) {
-        if (!isClaudeCandidate(review, pullNumber)) continue
-        const runId = claudeReceipt(review.body)?.run_id
-        if (Number.isSafeInteger(runId) && runId > 0) ids.add(runId)
-    }
-    return [...ids].sort((a, b) => a - b)
+const latestClaudeCandidate = (reviews, headSha, pullNumber) =>
+    (Array.isArray(reviews) ? reviews : [])
+        .filter((review) => isClaudeCandidate(review, pullNumber) && review.commit_id === headSha)
+        .sort((a, b) => compareLatest(a, b, 'submitted_at'))
+        .at(-1)
+
+/**
+ * The run the collector must fetch: the one the latest receipt-carrying review on the head
+ * names. The policy decides by that review alone, so no other run is evidence.
+ */
+export function claudeRunToVerify(reviews, headSha, pullNumber) {
+    const latest = latestClaudeCandidate(reviews, headSha, pullNumber)
+    const receipt = latest ? claudeReceipt(latest.body) : null
+    const valid =
+        Number.isSafeInteger(receipt?.run_id) &&
+        receipt.run_id > 0 &&
+        Number.isSafeInteger(receipt.run_attempt) &&
+        receipt.run_attempt > 0
+    return valid ? { runId: receipt.run_id, runAttempt: receipt.run_attempt } : null
 }
 
 /**
  * Only a run of the default branch's claude-review workflow, started by a pull-request
  * comment, can have posted the review: a pull request cannot start an issue_comment run of
- * its own copy, because GitHub runs that event from the default branch only.
+ * its own copy, because GitHub runs that event from the default branch only. Naming such a run
+ * is not enough, though: any same-repository workflow with pull-requests write access can post
+ * as github-actions[bot]. The run's own receipt artifact, which only that run can upload, has
+ * to name this review, this head and this pull request.
  */
-function trustedClaudeRun(run, receipt, review) {
+function trustedClaudeRun(run, receipt, review, headSha, pullNumber) {
+    const artifact = run?.receipt
     return (
         run?.id === receipt.run_id &&
         run.path === CLAUDE_WORKFLOW_PATH &&
@@ -330,21 +344,24 @@ function trustedClaudeRun(run, receipt, review) {
         Number.isSafeInteger(run.run_attempt) &&
         run.run_attempt >= receipt.run_attempt &&
         timestamp(run.created_at) !== null &&
-        timestamp(run.created_at) <= timestamp(review.submitted_at)
+        timestamp(run.created_at) <= timestamp(review.submitted_at) &&
+        artifact?.review_id === review.id &&
+        artifact.head_sha === headSha &&
+        artifact.pull === pullNumber &&
+        artifact.run_id === run.id &&
+        artifact.run_attempt === receipt.run_attempt
     )
 }
 
 /**
  * The on-demand Claude review (`.github/workflows/claude-review.yml`) is one formal COMMENT
  * review bound to the commit Claude read. It counts only with exactly one receipt at the end
- * of the body naming that head, posted by the workflow's own run, and the latest such review
- * on the head must not be dismissed. A Claude chat reply or inline comment is no review.
+ * of the body naming that head, posted by the workflow's own run as its receipt artifact
+ * proves, and the latest such review on the head must not be dismissed. A Claude chat reply
+ * or inline comment is no review.
  */
 function claudeReviewOn(reviews, headSha, pullNumber, runs) {
-    const latest = reviews
-        .filter((review) => isClaudeCandidate(review, pullNumber) && review.commit_id === headSha)
-        .sort((a, b) => compareLatest(a, b, 'submitted_at'))
-        .at(-1)
+    const latest = latestClaudeCandidate(reviews, headSha, pullNumber)
     if (!latest || latest.state !== 'COMMENTED' || !timestamp(latest.submitted_at)) return null
     const receipt = claudeReceipt(latest.body)
     if (
@@ -357,7 +374,7 @@ function claudeReviewOn(reviews, headSha, pullNumber, runs) {
         return null
     }
     const run = isPlainObject(runs) ? runs[String(receipt.run_id)] : undefined
-    if (!trustedClaudeRun(run, receipt, latest)) return null
+    if (!trustedClaudeRun(run, receipt, latest, headSha, pullNumber)) return null
     return {
         provider: 'Claude',
         login: CLAUDE_POSTER,

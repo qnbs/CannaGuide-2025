@@ -5,11 +5,12 @@
  * does not post comments, edit reviews, or fabricate receipts.
  */
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 
-import { claudeReceiptRunIds } from './review-coverage-policy.mjs'
+import { claudeRunToVerify } from './review-coverage-policy.mjs'
 
 const OWNER = 'qnbs'
 const REPO = 'CannaGuide-2025'
@@ -80,19 +81,27 @@ function ghApiPages(pathSuffix) {
 }
 
 const SUPPLEMENT_KEYS = new Set(['headEquivalence', 'secondReviewRequest'])
-const MAX_CLAUDE_RUNS = 5
-
 /**
- * The workflow runs that Claude review receipts on this pull name, reduced to the fields
- * the policy checks for provenance. A run that cannot be read is left out, so it proves
- * nothing, but a planted receipt cannot stop the whole collection.
+ * The workflow run the latest Claude review on the head names, reduced to the fields the
+ * policy checks, plus that run's own receipt artifact naming the review it posted. Only the
+ * run itself can upload that artifact, so a review that merely names the run fails. A run or
+ * artifact that cannot be read is left out: it proves nothing, but a planted receipt cannot
+ * stop the whole collection.
  */
-export function readClaudeRuns(repo, reviews, pullNumber, fetchRun = ghRunOrNull) {
-    const runs = {}
-    for (const id of claudeReceiptRunIds(reviews, pullNumber).slice(-MAX_CLAUDE_RUNS)) {
-        const run = fetchRun(`${repo}/actions/runs/${id}`)
-        if (!isPlainObject(run) || run.id !== id) continue
-        runs[id] = {
+export function readClaudeRuns(
+    repo,
+    reviews,
+    headSha,
+    pullNumber,
+    fetchRun = ghRunOrNull,
+    fetchReceipt = downloadClaudeReceipt,
+) {
+    const target = claudeRunToVerify(reviews, headSha, pullNumber)
+    if (!target) return {}
+    const run = fetchRun(`${repo}/actions/runs/${target.runId}`)
+    if (!isPlainObject(run) || run.id !== target.runId) return {}
+    return {
+        [run.id]: {
             id: run.id,
             path: run.path,
             event: run.event,
@@ -101,9 +110,9 @@ export function readClaudeRuns(repo, reviews, pullNumber, fetchRun = ghRunOrNull
             head_repository: run.head_repository?.full_name,
             run_attempt: run.run_attempt,
             created_at: run.created_at,
-        }
+            receipt: fetchReceipt(run.id, target.runAttempt),
+        },
     }
-    return runs
 }
 
 function ghRunOrNull(pathSuffix) {
@@ -113,6 +122,32 @@ function ghRunOrNull(pathSuffix) {
         return JSON.parse(result.stdout)
     } catch {
         return null
+    }
+}
+
+/** The run's `claude-review-receipt-<attempt>` artifact, or null when it cannot be read. */
+function downloadClaudeReceipt(runId, runAttempt) {
+    const dir = mkdtempSync(join(tmpdir(), 'cg-claude-receipt-'))
+    try {
+        const name = `claude-review-receipt-${runAttempt}`
+        const result = runChild('gh', [
+            'run',
+            'download',
+            String(runId),
+            '--repo',
+            `${OWNER}/${REPO}`,
+            '--name',
+            name,
+            '--dir',
+            dir,
+        ])
+        if (!result || result.error || result.status !== 0) return null
+        const parsed = JSON.parse(readFileSync(join(dir, 'claude-review-receipt.json'), 'utf8'))
+        return isPlainObject(parsed) ? parsed : null
+    } catch {
+        return null
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
     }
 }
 
@@ -373,7 +408,7 @@ function main() {
         reviews,
         issueComments,
         reviewComments,
-        claudeRuns: readClaudeRuns(repo, reviews, pullNumber),
+        claudeRuns: readClaudeRuns(repo, reviews, headSha, pullNumber),
         now: new Date().toISOString(),
         ...supplement,
     }

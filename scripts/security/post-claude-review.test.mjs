@@ -1,9 +1,13 @@
 import assert from 'node:assert/strict'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, test } from 'node:test'
 
 import {
     buildReview,
     commentableLines,
+    listFindings,
     main,
     MAX_FINDINGS,
     parseStructuredReview,
@@ -23,10 +27,11 @@ const finding = (fields = {}) => ({
     ...fields,
 })
 
-test('model text cannot forge a receipt, mention anyone, or grow unbounded', () => {
+test('model text cannot open HTML, forge a receipt, mention anyone, or grow unbounded', () => {
+    // Every `<` is escaped, so no HTML element or comment survives, however it is nested.
     assert.equal(
-        sanitize('a <!-- claude-review-receipt:v1 {} --> b'),
-        'a  claude-review-receipt:v1 {}  b',
+        sanitize('a <!-- claude-review-receipt:v1 {} --> b <!-<!---->- <script>'),
+        'a &lt;!-- claude-review-receipt:v1 {} --> b &lt;!-&lt;!---->- &lt;script>',
     )
     assert.equal(
         sanitize('@claude review and @coderabbitai, mail a@b'),
@@ -40,6 +45,14 @@ test('the structured review is validated again before anything is posted', () =>
         parseStructuredReview(JSON.stringify({ summary: 's', findings: [finding()] })).findings,
         [finding()],
     )
+    // A name with consecutive dots is a real path; only a `..` segment escapes the tree.
+    assert.equal(
+        parseStructuredReview({
+            summary: 's',
+            findings: [finding({ path: 'src/module..test.ts' })],
+        }).findings[0].path,
+        'src/module..test.ts',
+    )
     const bad = [
         '[]',
         JSON.stringify({ findings: [] }),
@@ -51,6 +64,9 @@ test('the structured review is validated again before anything is posted', () =>
         JSON.stringify({ summary: 's', findings: [finding({ line: 0 })] }),
         JSON.stringify({ summary: 's', findings: [finding({ line: 1.5 })] }),
         JSON.stringify({ summary: 's', findings: [finding({ path: '../secrets' })] }),
+        JSON.stringify({ summary: 's', findings: [finding({ path: 'a/../../b' })] }),
+        JSON.stringify({ summary: 's', findings: [finding({ path: '/etc/passwd' })] }),
+        JSON.stringify({ summary: 's', findings: [finding({ path: 'a\\b' })] }),
         JSON.stringify({ summary: 's', findings: [finding({ path: '' })] }),
         'not json',
     ]
@@ -102,6 +118,28 @@ test('the review is one COMMENT bound to the head, with exactly one closing rece
     )
 })
 
+test('every finding stays listed when the body runs out of room', () => {
+    const findings = Array.from({ length: MAX_FINDINGS }, (_, index) =>
+        finding({ path: `apps/web/f${index}.ts`, line: index + 1, body: 'x'.repeat(3000) }),
+    )
+    const built = buildReview({
+        review: parseStructuredReview({ summary: 's'.repeat(4000), findings }),
+        headSha: HEAD,
+        run: RUN,
+        files: [],
+    })
+    assert.ok(built.body.length <= 60_000, `body is ${built.body.length} characters`)
+    for (let index = 0; index < MAX_FINDINGS; index += 1) {
+        assert.ok(
+            built.body.includes(`apps/web/f${index}.ts:${index + 1}`),
+            `finding ${index} missing`,
+        )
+    }
+    assert.match(built.body, /findings":25,/)
+    // A short list is not touched.
+    assert.equal(listFindings([finding()], 10_000), '- **major** `apps/web/a.ts:11` -- Title: Body')
+})
+
 test('a built review is accepted by the coverage policy, end to end', () => {
     const review = parseStructuredReview({ summary: 'Clean.', findings: [] })
     const built = buildReview({ review, headSha: HEAD, run: RUN, files: [] })
@@ -141,6 +179,13 @@ test('a built review is accepted by the coverage policy, end to end', () => {
                 head_repository: 'qnbs/CannaGuide-2025',
                 run_attempt: 1,
                 created_at: '2026-11-24T10:50:00Z',
+                receipt: {
+                    pull: 900,
+                    head_sha: HEAD,
+                    review_id: 1,
+                    run_id: RUN.id,
+                    run_attempt: 1,
+                },
             },
         },
         now: '2026-11-24T12:00:00Z',
@@ -156,7 +201,7 @@ afterEach(() => {
     globalThis.fetch = realFetch
 })
 
-function fakeGitHub({ headSha = HEAD, state = 'open', postStatuses = [200] } = {}) {
+function fakeGitHub({ headSha = HEAD, state = 'open', postStatuses = [200], reviewId = 77 } = {}) {
     const calls = []
     globalThis.fetch = async (url, init = {}) => {
         const method = init.method ?? 'GET'
@@ -166,7 +211,7 @@ function fakeGitHub({ headSha = HEAD, state = 'open', postStatuses = [200] } = {
             body: init.body ? JSON.parse(init.body) : undefined,
         })
         const json = (status, data) => ({ ok: status < 400, status, json: async () => data })
-        if (method === 'POST') return json(postStatuses.shift() ?? 200, {})
+        if (method === 'POST') return json(postStatuses.shift() ?? 200, { id: reviewId })
         if (String(url).includes('/files'))
             return json(200, [{ filename: 'apps/web/a.ts', patch: PATCH }])
         return json(200, { head: { sha: headSha }, state })
@@ -174,26 +219,47 @@ function fakeGitHub({ headSha = HEAD, state = 'open', postStatuses = [200] } = {
     return calls
 }
 
-const env = {
-    REVIEW_JSON: JSON.stringify({ summary: 'S', findings: [finding()] }),
-    HEAD_SHA: HEAD,
-    PR_NUMBER: '900',
-    GITHUB_REPOSITORY: 'qnbs/CannaGuide-2025',
-    GH_TOKEN: 'token',
-    RUN_ID: '4242',
-    RUN_ATTEMPT: '1',
+function receiptEnv(t) {
+    const dir = mkdtempSync(join(tmpdir(), 'cg-claude-post-'))
+    t.after(() => rmSync(dir, { recursive: true, force: true }))
+    return {
+        REVIEW_JSON: JSON.stringify({ summary: 'S', findings: [finding()] }),
+        HEAD_SHA: HEAD,
+        PR_NUMBER: '900',
+        GITHUB_REPOSITORY: 'qnbs/CannaGuide-2025',
+        GH_TOKEN: 'token',
+        RUN_ID: '4242',
+        RUN_ATTEMPT: '1',
+        RECEIPT_FILE: join(dir, 'claude-review-receipt.json'),
+    }
 }
 const quiet = { log: () => undefined }
 
-test('nothing is posted once the pull request has moved to another head or closed', async () => {
+test('the receipt file names the review GitHub created, for this head and run', async (t) => {
+    const env = receiptEnv(t)
+    fakeGitHub({ reviewId: 77 })
+    assert.equal(await main(env, quiet), 'posted')
+    assert.deepEqual(JSON.parse(readFileSync(env.RECEIPT_FILE, 'utf8')), {
+        pull: 900,
+        head_sha: HEAD,
+        review_id: 77,
+        run_id: 4242,
+        run_attempt: 1,
+    })
+})
+
+test('nothing is posted, and no receipt written, once the pull request has moved or closed', async (t) => {
+    const env = receiptEnv(t)
     for (const options of [{ headSha: 'd'.repeat(40) }, { state: 'closed' }]) {
         const calls = fakeGitHub(options)
         assert.equal(await main(env, quiet), 'skipped')
         assert.equal(calls.filter(({ method }) => method === 'POST').length, 0)
     }
+    assert.throws(() => readFileSync(env.RECEIPT_FILE, 'utf8'), /ENOENT/)
 })
 
-test('a refused inline line falls back to one review with every finding in the body', async () => {
+test('a refused inline line falls back to one review with every finding in the body', async (t) => {
+    const env = receiptEnv(t)
     const calls = fakeGitHub({ postStatuses: [422, 200] })
     assert.equal(await main(env, quiet), 'posted')
     const posts = calls.filter(({ method }) => method === 'POST')
@@ -203,10 +269,13 @@ test('a refused inline line falls back to one review with every finding in the b
     assert.equal(posts[1].body.commit_id, HEAD)
 })
 
-test('missing inputs and a failed post are errors, not a silent success', async () => {
+test('missing inputs, a failed post, and a missing review id are errors', async (t) => {
+    const env = receiptEnv(t)
     await assert.rejects(main({ ...env, HEAD_SHA: 'short' }, quiet), /are required/)
     await assert.rejects(main({ ...env, GH_TOKEN: '' }, quiet), /are required/)
     await assert.rejects(main({ ...env, RUN_ID: '' }, quiet), /are required/)
     fakeGitHub({ postStatuses: [500] })
     await assert.rejects(main(env, quiet), /HTTP 500/)
+    fakeGitHub({ reviewId: 'x' })
+    await assert.rejects(main(env, quiet), /no review id/)
 })

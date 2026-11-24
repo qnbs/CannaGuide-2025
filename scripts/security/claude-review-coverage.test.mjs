@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 
-import { claudeReceiptRunIds, evaluateReviewCoverage } from './review-coverage-policy.mjs'
+import { claudeRunToVerify, evaluateReviewCoverage } from './review-coverage-policy.mjs'
 
 // The on-demand Claude review counts as one qualified provider of its own, but only as one
 // formal review with a head-bound receipt, posted by a run of the default branch's
@@ -57,6 +57,32 @@ const goodRun = {
     created_at: '2026-11-24T10:50:00Z',
 }
 
+/** The run's own receipt artifact, as the collector downloads it: it names one review. */
+const withReceipt = (run, reviewId, fields = {}) => ({
+    ...run,
+    receipt: {
+        pull: PULL,
+        head_sha: HEAD,
+        review_id: reviewId,
+        run_id: RUN_ID,
+        run_attempt: 1,
+        ...fields,
+    },
+})
+
+/** What the collector fetches: the run of the latest Claude candidate, with its artifact. */
+const runsFor = (reviews) => {
+    const latest = reviews
+        .filter(
+            (review) =>
+                review.user?.login === 'github-actions[bot]' &&
+                review.body?.includes('claude-review-receipt:v1'),
+        )
+        .sort((a, b) => Date.parse(a.submitted_at) - Date.parse(b.submitted_at))
+        .at(-1)
+    return { [RUN_ID]: withReceipt(goodRun, latest?.id ?? 501) }
+}
+
 function comment({ login = 'qnbs', type = 'User', body, created = '2026-11-24T10:00:00Z' }) {
     return {
         id: 7,
@@ -95,7 +121,7 @@ const coderabbitLimit = comment({
 function evaluate({
     reviews = [claudeReview()],
     issueComments = [codexReceipt, coderabbitRequest, coderabbitLimit],
-    claudeRuns = { [RUN_ID]: goodRun },
+    claudeRuns,
     pullNumber = PULL,
 } = {}) {
     return evaluateReviewCoverage({
@@ -106,7 +132,7 @@ function evaluate({
         reviews,
         issueComments,
         reviewComments: [],
-        claudeRuns,
+        claudeRuns: claudeRuns ?? runsFor(reviews),
         now: NOW,
     })
 }
@@ -169,11 +195,11 @@ test('only a default-branch run of the Claude workflow, started by a comment, pr
         { ...goodRun, run_attempt: 0 },
     ]
     for (const run of runs) {
-        const claudeRuns = run === undefined ? {} : { [RUN_ID]: run }
+        const claudeRuns = run === undefined ? {} : { [RUN_ID]: withReceipt(run, 501) }
         assert.deepEqual(providers(evaluate({ claudeRuns })), ['Codex'], JSON.stringify(run))
     }
     // A rerun keeps an earlier attempt's receipt valid.
-    const rerun = { [RUN_ID]: { ...goodRun, run_attempt: 2 } }
+    const rerun = { [RUN_ID]: withReceipt({ ...goodRun, run_attempt: 2 }, 501) }
     assert.deepEqual(providers(evaluate({ claudeRuns: rerun })), ['Claude', 'Codex'])
 })
 
@@ -276,18 +302,59 @@ test('the PR #857 transition rules ignore the Claude review', () => {
     assert.deepEqual(result.qualifiedReviewers, [])
 })
 
-test('the collector fetches only runs that a Claude receipt on this pull names', () => {
+test('a review that only names a genuine run fails: the run artifact must name this review', () => {
+    // Another same-repository workflow can post as github-actions[bot] and cite any run.
+    const forged = [
+        { [RUN_ID]: goodRun },
+        { [RUN_ID]: withReceipt(goodRun, 999) },
+        { [RUN_ID]: withReceipt(goodRun, 501, { head_sha: OTHER }) },
+        { [RUN_ID]: withReceipt(goodRun, 501, { pull: 901 }) },
+        { [RUN_ID]: withReceipt(goodRun, 501, { run_id: RUN_ID + 1 }) },
+        { [RUN_ID]: withReceipt(goodRun, 501, { run_attempt: 2 }) },
+    ]
+    for (const claudeRuns of forged) {
+        assert.deepEqual(
+            providers(evaluate({ claudeRuns })),
+            ['Codex'],
+            JSON.stringify(claudeRuns[RUN_ID].receipt ?? null),
+        )
+    }
+    assert.deepEqual(providers(evaluate({ claudeRuns: { [RUN_ID]: withReceipt(goodRun, 501) } })), [
+        'Claude',
+        'Codex',
+    ])
+})
+
+test('the collector verifies exactly the run of the latest review on the head', () => {
     const reviews = [
-        claudeReview({ id: 1 }),
-        claudeReview({ id: 2, receipt: { ...goodReceipt, run_id: 17 } }),
-        claudeReview({ id: 3, pull: 901, receipt: { ...goodReceipt, run_id: 99 } }),
+        claudeReview({
+            id: 1,
+            submitted: '2026-11-24T10:00:00Z',
+            receipt: { ...goodReceipt, run_id: 17 },
+        }),
+        claudeReview({
+            id: 2,
+            submitted: '2026-11-24T11:00:00Z',
+            receipt: { ...goodReceipt, run_id: 18, run_attempt: 2 },
+        }),
+        claudeReview({
+            id: 3,
+            submitted: '2026-11-24T11:30:00Z',
+            commit: OTHER,
+            receipt: { ...goodReceipt, run_id: 19 },
+        }),
         claudeReview({
             id: 4,
-            login: 'qnbs',
-            type: 'User',
-            receipt: { ...goodReceipt, run_id: 98 },
+            submitted: '2026-11-24T11:40:00Z',
+            pull: 901,
+            receipt: { ...goodReceipt, run_id: 20 },
         }),
-        claudeReview({ id: 5, receipt: { ...goodReceipt, run_id: -3 } }),
+        claudeReview({ id: 5, submitted: '2026-11-24T11:50:00Z', login: 'qnbs', type: 'User' }),
     ]
-    assert.deepEqual(claudeReceiptRunIds(reviews, PULL), [17, RUN_ID])
+    assert.deepEqual(claudeRunToVerify(reviews, HEAD, PULL), { runId: 18, runAttempt: 2 })
+    assert.equal(claudeRunToVerify([], HEAD, PULL), null)
+    assert.equal(
+        claudeRunToVerify([claudeReview({ receipt: { ...goodReceipt, run_id: -3 } })], HEAD, PULL),
+        null,
+    )
 })

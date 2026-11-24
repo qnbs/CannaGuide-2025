@@ -402,59 +402,98 @@ test('policy does not qualify prose as a structured review receipt', () => {
     assert.equal(result.satisfied, false)
 })
 
-test('readClaudeRuns fetches only receipt-named runs and keeps only the provenance fields', () => {
+test('readClaudeRuns verifies the latest review run with its receipt artifact', () => {
     const api = 'https://api.github.com/repos/qnbs/CannaGuide-2025'
-    const receiptReview = (id, runId, login = 'github-actions[bot]') => ({
+    const head = 'a'.repeat(40)
+    const receiptReview = (id, runId, submitted, login = 'github-actions[bot]') => ({
         id,
         pull_request_url: `${api}/pulls/42`,
         user: { login, type: login === 'qnbs' ? 'User' : 'Bot' },
         state: 'COMMENTED',
-        commit_id: 'a'.repeat(40),
-        body: `x\n<!-- claude-review-receipt:v1 ${JSON.stringify({ commit_sha: 'a'.repeat(40), status: 'completed', findings: 0, run_id: runId, run_attempt: 1 })} -->`,
+        commit_id: head,
+        submitted_at: submitted,
+        body: `x\n<!-- claude-review-receipt:v1 ${JSON.stringify({ commit_sha: head, status: 'completed', findings: 0, run_id: runId, run_attempt: 2 })} -->`,
     })
+    const reviews = [
+        receiptReview(1, 7, '2026-11-24T10:00:00Z'),
+        receiptReview(2, 9, '2026-11-24T11:00:00Z'),
+        receiptReview(3, 8, '2026-11-24T12:00:00Z', 'qnbs'),
+    ]
     const fetched = []
-    const fetchRun = (path) => {
-        fetched.push(path)
-        const id = Number(path.split('/').at(-1))
-        if (id === 3) return null
-        if (id === 4) return { id: 5 }
-        return {
-            id,
-            path: '.github/workflows/claude-review.yml',
-            event: 'issue_comment',
-            head_branch: 'main',
-            repository: { full_name: 'qnbs/CannaGuide-2025' },
-            head_repository: { full_name: 'qnbs/CannaGuide-2025' },
-            run_attempt: 1,
-            created_at: '2026-11-24T10:00:00Z',
-            triggering_actor: { login: 'someone' },
-        }
-    }
-    const runs = readClaudeRuns(
-        'repos/qnbs/CannaGuide-2025',
-        [
-            receiptReview(1, 2),
-            receiptReview(2, 3),
-            receiptReview(3, 4),
-            receiptReview(4, 9, 'qnbs'),
-        ],
-        42,
-        fetchRun,
-    )
-    assert.deepEqual(fetched, [
-        'repos/qnbs/CannaGuide-2025/actions/runs/2',
-        'repos/qnbs/CannaGuide-2025/actions/runs/3',
-        'repos/qnbs/CannaGuide-2025/actions/runs/4',
-    ])
-    assert.deepEqual(Object.keys(runs), ['2'])
-    assert.deepEqual(runs[2], {
-        id: 2,
+    const run = (id) => ({
+        id,
         path: '.github/workflows/claude-review.yml',
         event: 'issue_comment',
         head_branch: 'main',
-        repository: 'qnbs/CannaGuide-2025',
-        head_repository: 'qnbs/CannaGuide-2025',
-        run_attempt: 1,
+        repository: { full_name: 'qnbs/CannaGuide-2025' },
+        head_repository: { full_name: 'qnbs/CannaGuide-2025' },
+        run_attempt: 2,
         created_at: '2026-11-24T10:00:00Z',
+        triggering_actor: { login: 'someone' },
     })
+    const receipts = []
+    const runs = readClaudeRuns(
+        'repos/qnbs/CannaGuide-2025',
+        reviews,
+        head,
+        42,
+        (path) => {
+            fetched.push(path)
+            return run(Number(path.split('/').at(-1)))
+        },
+        (runId, attempt) => {
+            receipts.push([runId, attempt])
+            return { review_id: 2 }
+        },
+    )
+    // Only the latest receipt-carrying review by github-actions[bot] on the head decides.
+    assert.deepEqual(fetched, ['repos/qnbs/CannaGuide-2025/actions/runs/9'])
+    assert.deepEqual(receipts, [[9, 2]])
+    assert.deepEqual(runs, {
+        9: {
+            id: 9,
+            path: '.github/workflows/claude-review.yml',
+            event: 'issue_comment',
+            head_branch: 'main',
+            repository: 'qnbs/CannaGuide-2025',
+            head_repository: 'qnbs/CannaGuide-2025',
+            run_attempt: 2,
+            created_at: '2026-11-24T10:00:00Z',
+            receipt: { review_id: 2 },
+        },
+    })
+    // An unreadable or mismatched run proves nothing, and no artifact is fetched for it.
+    assert.deepEqual(
+        readClaudeRuns(
+            'r',
+            reviews,
+            head,
+            42,
+            () => null,
+            () => assert.fail(),
+        ),
+        {},
+    )
+    assert.deepEqual(
+        readClaudeRuns(
+            'r',
+            reviews,
+            head,
+            42,
+            () => run(10),
+            () => assert.fail(),
+        ),
+        {},
+    )
+    assert.deepEqual(
+        readClaudeRuns(
+            'r',
+            [],
+            head,
+            42,
+            () => assert.fail(),
+            () => assert.fail(),
+        ),
+        {},
+    )
 })

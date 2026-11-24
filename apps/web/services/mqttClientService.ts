@@ -2,6 +2,7 @@ import mqtt from 'mqtt'
 import type { MqttClient, IClientOptions } from 'mqtt'
 import { getT } from '@/i18n'
 import { EgressBlockedError, isEgressAllowed } from '@/services/net/egress'
+import { permanentConnackRefusal } from '@/services/mqttConnackRefusal'
 import { useIotStore } from '@/stores/useIotStore'
 import { addJournalEntry } from '@/stores/slices/simulationSlice'
 import { JournalEntryType } from '@/types'
@@ -55,6 +56,8 @@ class MqttClientService {
     private currentReconnectMs = INITIAL_RECONNECT_MS
     private reconnectHandle: ReturnType<typeof setTimeout> | null = null
     private intentionalDisconnect = false
+    /** The broker refused the CONNECT for good (see mqttConnackRefusal); do not retry. */
+    private refusedByBroker = false
     /** The broker URL the open client was created with (it can differ from the store). */
     private connectedBrokerUrl: string | null = null
     /** True while Local-Only Mode refused or closed this connection (resumeAfterLocalOnlyMode). */
@@ -96,6 +99,7 @@ class MqttClientService {
         // Tear down any existing connection first
         this.disconnectClient()
         this.intentionalDisconnect = false
+        this.refusedByBroker = false
         this.currentReconnectMs = INITIAL_RECONNECT_MS
 
         const { brokerUrl, username, password, topicPrefix } = useIotStore.getState()
@@ -156,10 +160,14 @@ class MqttClientService {
         })
 
         this.client.on('error', (err) => {
+            if (permanentConnackRefusal(err) !== null) this.refusedByBroker = true
             useIotStore.getState().setConnectionStatus('error', err.message)
         })
 
         this.client.on('close', () => {
+            // A refused CONNECT keeps its error and is not retried: since mqtt 5.16 the socket
+            // closes after it, which would otherwise replace the error and retry bad credentials.
+            if (this.refusedByBroker) return
             // Only set disconnected if we still have a client (not during intentional teardown)
             if (this.client && !this.intentionalDisconnect) {
                 useIotStore.getState().setConnectionStatus('disconnected')

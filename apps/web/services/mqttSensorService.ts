@@ -2,6 +2,7 @@ import mqtt from 'mqtt'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
 import { EgressBlockedError, isEgressAllowed } from '@/services/net/egress'
+import { permanentConnackRefusal } from '@/services/mqttConnackRefusal'
 import { sensorStore } from '@/stores/sensorStore'
 import {
     singleValuePayloadSchema,
@@ -120,6 +121,8 @@ class MqttSensorService {
     // --- Exponential backoff state ---
     private currentReconnectMs = INITIAL_RECONNECT_MS
     private reconnectHandle: ReturnType<typeof setTimeout> | null = null
+    /** The broker refused the CONNECT for good (see mqttConnackRefusal); do not retry. */
+    private refusedByBroker = false
     private intentionalDisconnect = false
     /** The broker URL the open client was created with (configure() can change the config). */
     private connectedBrokerUrl: string | null = null
@@ -194,6 +197,7 @@ class MqttSensorService {
         }
 
         this.intentionalDisconnect = false
+        this.refusedByBroker = false
         this.currentReconnectMs = INITIAL_RECONNECT_MS
         if (this.refuseBlockedBroker()) return
         this.pausedByLocalOnly = false
@@ -265,10 +269,14 @@ class MqttSensorService {
                 this.connectTimeoutHandle = null
             }
             console.debug('[MQTT] Connection error:', error.message)
+            if (permanentConnackRefusal(error) !== null) this.refusedByBroker = true
             this.setConnectionState('error')
         })
 
         this.client.on('close', () => {
+            // A refused CONNECT stays an error and is not retried: since mqtt 5.16 the socket
+            // closes after it, which would otherwise retry bad credentials with backoff.
+            if (this.refusedByBroker) return
             if (this.connectionState === 'connected') {
                 this.emitEvent({
                     type: 'connection_lost',

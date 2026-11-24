@@ -193,13 +193,14 @@ function parseCodeRabbitReceipt(comment, headSha, pullNumber, equivalence = null
 }
 
 /** The latest CodeRabbit review object on a given commit of this pull, if any. */
-function latestCodeRabbitReviewOn(reviews, commitSha, pullNumber) {
+function latestCodeRabbitReviewOn(reviews, commitSha, pullNumber, reviewComments) {
     return (Array.isArray(reviews) ? reviews : [])
         .filter(
             (review) =>
                 isReviewBot(review?.user, CODERABBIT_LOGIN) &&
                 review.commit_id === commitSha &&
-                review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}`,
+                review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}` &&
+                !isThreadReplyOnly(review, reviewComments),
         )
         .sort((a, b) => compareLatest(a, b, 'submitted_at'))
         .at(-1)
@@ -265,6 +266,21 @@ function unavailableFallback(request, pullNumber, headSha, qualifiedLogins, now)
     return request.result === 'silent' ? elapsed >= DAY : elapsed >= HOUR / 2
 }
 
+/**
+ * A bot that answers in an existing thread creates a COMMENTED review object on the
+ * current head, even while its own review of that head is rate limited. Such an object
+ * has no body and no new inline comment, so it is not a review of the head. Without
+ * inline-comment evidence a blank COMMENTED object does not count either.
+ */
+function isThreadReplyOnly(review, reviewComments) {
+    if (review.state !== 'COMMENTED') return false
+    if (typeof review.body === 'string' && review.body.trim() !== '') return false
+    return !reviewComments.some(
+        (comment) =>
+            comment?.pull_request_review_id === review.id && comment.in_reply_to_id == null,
+    )
+}
+
 /** Evaluate operator-collected GitHub API evidence. This is not a required CI check. */
 export function evaluateReviewCoverage(evidence) {
     const headSha = evidence?.headSha
@@ -290,6 +306,7 @@ export function evaluateReviewCoverage(evidence) {
         }
     }
 
+    const reviewComments = Array.isArray(evidence.reviewComments) ? evidence.reviewComments : []
     const reviewsByLogin = new Map()
     for (const review of Array.isArray(evidence.reviews) ? evidence.reviews : []) {
         const login = review?.user?.login
@@ -300,6 +317,7 @@ export function evaluateReviewCoverage(evidence) {
         )
             continue
         if (!isReviewBot(review.user, login)) continue
+        if (isThreadReplyOnly(review, reviewComments)) continue
         const current = reviewsByLogin.get(login)
         if (!current || compareLatest(review, current, 'submitted_at') > 0) {
             reviewsByLogin.set(login, review)
@@ -359,8 +377,12 @@ export function evaluateReviewCoverage(evidence) {
     let equivalence = parseHeadEquivalence(evidence.headEquivalence, headSha)
     if (
         equivalence &&
-        latestCodeRabbitReviewOn(evidence.reviews, equivalence.priorHeadSha, pullNumber)?.state ===
-            'DISMISSED'
+        latestCodeRabbitReviewOn(
+            evidence.reviews,
+            equivalence.priorHeadSha,
+            pullNumber,
+            reviewComments,
+        )?.state === 'DISMISSED'
     ) {
         equivalence = null
     }

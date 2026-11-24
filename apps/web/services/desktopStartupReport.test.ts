@@ -144,6 +144,38 @@ describe('desktopStartupReport', () => {
         }
     })
 
+    it('gives a late load its own bound, so a slow start is not read as unknown', async () => {
+        vi.useFakeTimers()
+        const getRegistrations = vi.fn().mockResolvedValue([])
+        let readyState = 'loading'
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: { controller: null, getRegistrations },
+        })
+        Object.defineProperty(document, 'readyState', { configurable: true, get: () => readyState })
+        try {
+            const { buildDesktopStartupReport, LOAD_WAIT_MS, SNAPSHOT_PROBE_MS } = await load()
+            // Load fires after the 2 s probe time: the lookup still runs and answers.
+            const late = buildDesktopStartupReport('started', undefined, documentWith(''))
+            await vi.advanceTimersByTimeAsync(SNAPSHOT_PROBE_MS + 1000)
+            readyState = 'complete'
+            window.dispatchEvent(new Event('load'))
+            await vi.advanceTimersByTimeAsync(0)
+            expect((await late).serviceWorkerRegistered).toBe(false)
+
+            // A page that never loads is unknown once the load bound runs out.
+            readyState = 'loading'
+            const never = buildDesktopStartupReport('started', undefined, documentWith(''))
+            await vi.advanceTimersByTimeAsync(LOAD_WAIT_MS)
+            expect((await never).serviceWorkerRegistered).toBeNull()
+            expect(getRegistrations).toHaveBeenCalledTimes(1)
+        } finally {
+            vi.useRealTimers()
+            Reflect.deleteProperty(navigator, 'serviceWorker')
+            Reflect.deleteProperty(document, 'readyState')
+        }
+    })
+
     it('reports a storage that cannot be read as no saved snapshot', async () => {
         mocks.hasStoredItem.mockRejectedValue(new Error('IndexedDB unavailable'))
         const { buildDesktopStartupReport } = await load()

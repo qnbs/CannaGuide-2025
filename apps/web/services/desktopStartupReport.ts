@@ -73,10 +73,21 @@ export const errorCodeOf = (error: unknown): string => {
  */
 export const SNAPSHOT_PROBE_MS = 2000
 
-const withinProbeTime = async <T>(probe: () => Promise<T>, fallback: T): Promise<T> => {
+/**
+ * A cold start can fire `load` late (a slow runner, a large bundle). That wait has its own,
+ * longer bound, so it does not eat the registration lookup's probe time; the desktop smoke
+ * allows 120 s for the whole report.
+ */
+export const LOAD_WAIT_MS = 30_000
+
+const withinProbeTime = async <T>(
+    probe: () => Promise<T>,
+    fallback: T,
+    ms = SNAPSHOT_PROBE_MS,
+): Promise<T> => {
     let timer: ReturnType<typeof setTimeout> | undefined
     const deadline = new Promise<T>((resolve) => {
-        timer = setTimeout(() => resolve(fallback), SNAPSHOT_PROBE_MS)
+        timer = setTimeout(() => resolve(fallback), ms)
     })
     try {
         return await Promise.race([probe(), deadline])
@@ -100,14 +111,16 @@ const pageLoaded = (): Promise<void> =>
           })
 
 /** A gate reads this, so a failed or unanswered lookup is null, never false. */
-const serviceWorkerRegistered = (): Promise<boolean | null> =>
-    'serviceWorker' in navigator
-        ? withinProbeTime<boolean | null>(async () => {
-              await pageLoaded()
-              // Every registration on the origin, not only one whose scope covers this page.
-              return (await navigator.serviceWorker.getRegistrations()).length > 0
-          }, null)
-        : Promise.resolve(false)
+const serviceWorkerRegistered = async (): Promise<boolean | null> => {
+    if (!('serviceWorker' in navigator)) return false
+    const loaded = await withinProbeTime(() => pageLoaded().then(() => true), false, LOAD_WAIT_MS)
+    if (!loaded) return null
+    // Every registration on the origin, not only one whose scope covers this page.
+    return withinProbeTime<boolean | null>(
+        async () => (await navigator.serviceWorker.getRegistrations()).length > 0,
+        null,
+    )
+}
 
 export const buildDesktopStartupReport = async (
     outcome: DesktopStartupOutcome,

@@ -45,7 +45,7 @@ const mockClient = {
     unsubscribe: vi.fn(),
     publish: vi.fn(),
 }
-const connect = vi.fn(() => mockClient)
+const connect = vi.fn((_url: string, _options?: Record<string, unknown>) => mockClient)
 vi.mock('mqtt', () => ({ default: { connect } }))
 vi.mock('@/i18n', () => ({ getT: () => (key: string) => key }))
 
@@ -92,6 +92,62 @@ describe('the IoT journal client after a refused CONNECT', () => {
         expect(store.getState().connectionStatus).toBe('disconnected')
         await vi.advanceTimersByTimeAsync(1000)
         expect(connect).toHaveBeenCalledTimes(2)
+    })
+})
+
+describe('the IoT journal client when the credentials change', () => {
+    beforeEach(() => {
+        vi.useFakeTimers()
+        vi.clearAllMocks()
+        handlers.clear()
+        localStorage.clear()
+    })
+    afterEach(() => {
+        vi.useRealTimers()
+    })
+
+    const start = async () => {
+        vi.resetModules()
+        const { useIotStore } = await import('@/stores/useIotStore')
+        const { mqttClientService, CREDENTIAL_SETTLE_MS } = await import('./mqttClientService')
+        mqttClientService.init({} as AppStore)
+        useIotStore.getState().setBrokerUrl('wss://192.168.1.20:9001')
+        useIotStore.getState().setUsername('grower')
+        useIotStore.getState().setEnabled(true)
+        // Typing the username before enabling: the CONNECT already used it, so no second one.
+        await vi.advanceTimersByTimeAsync(CREDENTIAL_SETTLE_MS * 2)
+        expect(connect).toHaveBeenCalledOnce()
+        return { store: useIotStore, settle: CREDENTIAL_SETTLE_MS }
+    }
+
+    it('reconnects once with the corrected password after a refusal, not per keystroke', async () => {
+        const { store, settle } = await start()
+        refuseAndClose(refusal('Bad username or password', 4))
+        // A synthetic value, typed one character at a time as the settings field does.
+        const typed = 'grow-room'
+        for (let length = 1; length <= typed.length; length += 1) {
+            await store.getState().setPassword(typed.slice(0, length))
+            await vi.advanceTimersByTimeAsync(200)
+        }
+        expect(connect).toHaveBeenCalledOnce()
+        await vi.advanceTimersByTimeAsync(settle)
+        expect(connect).toHaveBeenCalledTimes(2)
+        const [, options] = connect.mock.lastCall ?? []
+        expect(options).toMatchObject({ username: 'grower' })
+        expect(Reflect.get(options ?? {}, 'password')).toBe(typed)
+    })
+
+    it('does not reconnect for unchanged credentials or once IoT is turned off', async () => {
+        const { store, settle } = await start()
+        refuseAndClose(refusal('Not authorized', 5))
+        store.getState().setUsername('grower')
+        await vi.advanceTimersByTimeAsync(settle * 2)
+        expect(connect).toHaveBeenCalledOnce()
+
+        store.getState().setUsername('other')
+        store.getState().setEnabled(false)
+        await vi.advanceTimersByTimeAsync(settle * 2)
+        expect(connect).toHaveBeenCalledOnce()
     })
 })
 

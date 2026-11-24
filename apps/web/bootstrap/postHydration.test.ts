@@ -160,20 +160,20 @@ describe('runPostHydrationServices', () => {
             () =>
                 new Promise<void>((resolve) => {
                     finishLoad = () => {
-                        order.push('password')
+                        order.push('load')
                         resolve()
                     }
                 }),
         )
         mockMqttInit.mockImplementation(() => {
-            order.push('mqtt')
+            order.push('init')
         })
         const started = runPostHydrationServices(createTestStore())
         await vi.waitFor(() => expect(mockLoadPersistedPassword).toHaveBeenCalled())
         expect(mockMqttInit).not.toHaveBeenCalled()
         finishLoad()
         await started
-        expect(order).toEqual(['password', 'mqtt'])
+        expect(order).toEqual(['load', 'init'])
     })
 
     it('still starts the IoT client when the saved password cannot be loaded', async () => {

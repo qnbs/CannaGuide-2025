@@ -140,6 +140,9 @@ importers:
       wrangler:
         specifier: ^4.110.0
         version: 4.110.0(@types/node@26.1.1)
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
 
   apps/desktop:
     dependencies:
@@ -7889,11 +7892,6 @@ packages:
     resolution: {integrity: sha512-vIYeF1u3CjlhAFekPPAk2h/Kv4T3mAkMox5OymRiJQB0spDP10LHvt+K7G9Ny6NuuMAb25/6n1qyUjAcGNf/AA==}
     engines: {node: '>= 6'}
 
-  yaml@2.9.0:
-    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
-
   yaml@2.9.1:
     resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
     engines: {node: '>= 14.6'}
@@ -15510,7 +15508,7 @@ snapshots:
       markdown-it: 14.3.3
       minimatch: 10.2.5
       typescript: 6.0.3
-      yaml: 2.9.0
+      yaml: 2.9.1
 
   typescript@6.0.3: {}
 
@@ -15996,10 +15994,7 @@ snapshots:
 
   yaml@1.10.3: {}
 
-  yaml@2.9.0: {}
-
-  yaml@2.9.1:
-    optional: true
+  yaml@2.9.1: {}
 
   yargs-parser@13.1.2:
     dependencies:

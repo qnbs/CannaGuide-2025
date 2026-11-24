@@ -11,7 +11,9 @@
  *
  * This walks every workspace, extracts the external imports from its sources,
  * and checks each one against that workspace's own package.json -- never against
- * whatever happens to be present in node_modules.
+ * whatever happens to be present in node_modules. The repository root counts as
+ * a package too: its scripts and config files resolve against the root manifest,
+ * which declared nothing for `yaml` while a test needed it.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { builtinModules } from 'node:module'
@@ -21,7 +23,9 @@ import { fileURLToPath } from 'node:url'
 const TAG = '[check:phantom-deps]'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
-const WORKSPACE_DIRS = ['apps', 'packages']
+const WORKSPACE_DIRS = ['apps', 'packages', 'docker']
+/** Root code outside the workspaces: config files at the top level, and these directories. */
+const ROOT_SOURCE_DIRS = ['scripts']
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'])
 const SKIP_DIRS = new Set([
     'node_modules',
@@ -75,7 +79,8 @@ function packageNameOf(specifier) {
  * or template literal, so a fixture like `const example = "import('pkg')"` is not
  * mistaken for a dependency.
  */
-const STATIC_IMPORT = /(?:^|[^\w$'"`])(?:import|export)\s+(type\s+)?[\w*{},\s]*?from\s*['"]([^'"]+)['"]/g
+const STATIC_IMPORT =
+    /(?:^|[^\w$'"`])(?:import|export)\s+(type\s+)?[\w*{},\s]*?from\s*['"]([^'"]+)['"]/g
 const SIDE_EFFECT_IMPORT = /(?:^|[^\w$'"`])import\s*['"]([^'"]+)['"]/g
 const DYNAMIC_IMPORT = /(?:^|[^\w$'"`])import\s*\(\s*['"]([^'"]+)['"]\s*\)/g
 const REQUIRE_CALL = /(?:^|[^\w$'"`])require\s*\(\s*['"]([^'"]+)['"]\s*\)/g
@@ -181,12 +186,37 @@ function workspacePackages() {
 const declaredIn = (manifest, ...fields) =>
     new Set(fields.flatMap((field) => Object.keys(manifest[field] ?? {})))
 
+/**
+ * The root package: its manifest is private tooling, so every root file may use its
+ * devDependencies. Only top-level files and ROOT_SOURCE_DIRS belong to it; the
+ * workspaces are checked against their own manifests.
+ */
+function rootPackage() {
+    const manifest = readManifest(ROOT)
+    if (!manifest) return null
+    const files = readdirSync(ROOT)
+        .map((entry) => join(ROOT, entry))
+        .filter(
+            (path) =>
+                statSync(path).isFile() && SOURCE_EXTENSIONS.has(path.slice(path.lastIndexOf('.'))),
+        )
+    for (const dir of ROOT_SOURCE_DIRS) files.push(...sourceFilesIn(join(ROOT, dir)))
+    return {
+        dir: ROOT,
+        manifest: { ...manifest, name: manifest.name ?? '(root)' },
+        files,
+        devOnly: true,
+    }
+}
+
 const workspaces = workspacePackages()
+const root = rootPackage()
+if (root) workspaces.push(root)
 
 const phantom = [] // imported, declared nowhere
 const misplaced = [] // runtime code reaching into a devDependency
 
-for (const { dir, manifest } of workspaces) {
+for (const { dir, manifest, files, devOnly = false } of workspaces) {
     const runtimeDeps = declaredIn(
         manifest,
         'dependencies',
@@ -195,8 +225,8 @@ for (const { dir, manifest } of workspaces) {
     )
     const devDeps = declaredIn(manifest, 'devDependencies')
 
-    for (const file of sourceFilesIn(dir)) {
-        const isDevFile = DEV_FILE.test(relative(ROOT, file))
+    for (const file of files ?? sourceFilesIn(dir)) {
+        const isDevFile = devOnly || DEV_FILE.test(relative(ROOT, file))
         const { runtime, typeOnly } = importedPackages(readFileSync(file, 'utf8'))
 
         // A type-only import is erased at compile time, so it may point at a

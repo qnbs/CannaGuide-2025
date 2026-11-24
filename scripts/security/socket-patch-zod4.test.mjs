@@ -26,6 +26,31 @@ function findPackageRoot(entry) {
     }
 }
 
+/** Read the version the root lockfile importer resolves for a direct dependency. */
+function lockedRootVersion(lockfile, packageName) {
+    const lines = lockfile.split(/\r?\n/u)
+    const importer = lines.indexOf('  .:')
+    assert.notEqual(importer, -1, 'the lockfile has no root importer')
+    const keys = new Set([`      ${packageName}:`, `      '${packageName}':`])
+    for (let index = importer + 1; index < lines.length; index += 1) {
+        if (/^ {0,2}\S/u.test(lines[index])) break
+        if (keys.has(lines[index])) {
+            const version = /^ {8}version: ([^\s(]+)/u.exec(lines[index + 2] ?? '')?.[1]
+            assert.ok(version, `${packageName} has no locked version`)
+            return version
+        }
+    }
+    return assert.fail(`${packageName} is not locked by the root importer`)
+}
+
+/** Mirror the `>=4.6.7 <5` override: stable releases only, so a prerelease cannot pass. */
+function isSupportedZodVersion(version) {
+    const match = /^(\d+)\.(\d+)\.(\d+)$/u.exec(version)
+    if (!match) return false
+    const [major, minor, patch] = match.slice(1).map(Number)
+    return major === 4 && (minor > 6 || (minor === 6 && patch >= 7))
+}
+
 function makeRecord(cves) {
     return {
         uuid: '550e8400-e29b-41d4-a716-446655440000',
@@ -48,7 +73,12 @@ function makeRecord(cves) {
 test('Socket Patch public schema export runs from the patched Zod 4 package', () => {
     const cliManifestPath = join(repositoryRoot, 'node_modules/@socketsecurity/cli/package.json')
     const cli = JSON.parse(readFileSync(cliManifestPath, 'utf8'))
-    assert.equal(cli.version, '1.15.0')
+    const lockfile = readFileSync(join(repositoryRoot, 'pnpm-lock.yaml'), 'utf8')
+    assert.equal(
+        cli.version,
+        lockedRootVersion(lockfile, '@socketsecurity/cli'),
+        'the installed Socket CLI matches the lockfile',
+    )
 
     const cliRequire = createRequire(cliManifestPath)
     const schemaEntry = realpathSync(cliRequire.resolve('@socketsecurity/socket-patch/schema'))
@@ -70,13 +100,16 @@ test('Socket Patch public schema export runs from the patched Zod 4 package', ()
     const patchHash = createHash('sha256').update(readFileSync(patchPath)).digest('hex')
     assert.equal(patchHash, socketPatchHash)
     assert.match(
-        readFileSync(join(repositoryRoot, 'pnpm-lock.yaml'), 'utf8'),
+        lockfile,
         new RegExp(`socket-patch@2\\.0\\.0\\(patch_hash=${socketPatchHash}\\)`, 'u'),
     )
 
     const socketRequire = createRequire(socketPatch.manifestPath)
     const zod = findPackageRoot(socketRequire.resolve('zod'))
-    assert.equal(zod.manifest.version, '4.6.7')
+    assert.ok(
+        isSupportedZodVersion(zod.manifest.version),
+        `Zod ${zod.manifest.version} is outside the >=4.6.7 <5 override`,
+    )
     const { PatchRecordSchema } = cliRequire('@socketsecurity/socket-patch/schema')
 
     assert.equal(
@@ -109,4 +142,43 @@ test('Socket Patch public schema export runs from the patched Zod 4 package', ()
         'GHSA-jrhj-2j3q-xf3v',
         'cves',
     ])
+})
+
+test('Socket contract helpers follow the lockfile and the Zod override range', () => {
+    const lockfile = [
+        'importers:',
+        '',
+        '  .:',
+        '    devDependencies:',
+        "      '@socketsecurity/cli':",
+        '        specifier: ^1.16.0',
+        '        version: 1.17.2(peer@1.0.0)',
+        '      snyk:',
+        '        specifier: ^1.1309.0',
+        '        version: 1.1309.0',
+        '',
+        '  apps/web:',
+        '    dependencies:',
+        '      only-in-web:',
+        '        specifier: ^1.0.0',
+        '        version: 1.0.0',
+        '',
+        'packages:',
+    ].join('\n')
+
+    assert.equal(lockedRootVersion(lockfile, '@socketsecurity/cli'), '1.17.2')
+    assert.equal(lockedRootVersion(lockfile, 'snyk'), '1.1309.0')
+    assert.throws(
+        () => lockedRootVersion(lockfile, 'only-in-web'),
+        /not locked by the root importer/u,
+    )
+    assert.throws(() => lockedRootVersion('packages:\n', 'snyk'), /no root importer/u)
+    assert.equal(lockedRootVersion(lockfile.replaceAll('\n', '\r\n'), 'snyk'), '1.1309.0')
+
+    for (const version of ['4.6.7', '4.6.10', '4.7.0', '4.10.0']) {
+        assert.equal(isSupportedZodVersion(version), true, version)
+    }
+    for (const version of ['4.6.6', '4.5.9', '3.25.0', '5.0.0', '4.7.0-beta.1', 'latest']) {
+        assert.equal(isSupportedZodVersion(version), false, version)
+    }
 })

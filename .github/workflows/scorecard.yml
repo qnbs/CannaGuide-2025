@@ -20,6 +20,8 @@ jobs:
         name: Scorecard Analysis
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        outputs:
+            results_published: ${{ steps.scorecard.outputs.results_published }}
         permissions:
             id-token: write
             contents: read
@@ -37,15 +39,35 @@ jobs:
                   persist-credentials: false
 
             - name: Run OSSF Scorecard
-              uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+              id: scorecard
+              uses: ossf/scorecard-action@23f22cd43608bae7a1f1fa2603d7314dee9538a5 # v2.6.0
               with:
                   results_file: scorecard-results.sarif
                   results_format: sarif
                   repo_token: ${{ secrets.GITHUB_TOKEN }}
                   publish_results: true
+                  fail_on_publish_error: true
 
             - name: Upload Scorecard SARIF
               if: always()
               uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
               with:
                   sarif_file: scorecard-results.sarif
+
+    verify-publication:
+        name: Verify Scorecard publication
+        needs: analysis
+        # Not always(): concurrency cancels superseded runs, and a cancelled run published nothing.
+        if: ${{ !cancelled() }}
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        permissions: {}
+        steps:
+            - name: Require published Scorecard results
+              env:
+                  RESULTS_PUBLISHED: ${{ needs.analysis.outputs.results_published }}
+              run: |
+                  if [ "$RESULTS_PUBLISHED" != "true" ]; then
+                      echo "::error::Scorecard results were not published."
+                      exit 1
+                  fi

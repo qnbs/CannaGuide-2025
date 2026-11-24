@@ -156,7 +156,13 @@ export function evaluateRecord(record, { version, run, target }) {
             frontend.serviceWorkerControlled === false,
             String(frontend.serviceWorkerControlled),
         ),
-        info(`${run}: service worker registered`, String(frontend.serviceWorkerRegistered)),
+        // Deterministic where the hang is not: on Windows a first start registered a worker
+        // and a later start could hang (GH #931), so any registration fails the run.
+        check(
+            `${run}: no service worker is registered`,
+            frontend.serviceWorkerRegistered === false,
+            String(frontend.serviceWorkerRegistered),
+        ),
     ]
     if (run.startsWith('restart')) {
         checks.push(

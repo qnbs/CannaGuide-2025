@@ -1,4 +1,5 @@
 import { growReminderService } from '@/services/growReminderService'
+import { platform } from '@/services/platformService'
 
 const postSkipWaiting = (worker: ServiceWorker): void => {
     worker.postMessage({ type: 'SKIP_WAITING' })
@@ -24,8 +25,25 @@ export const acceptServiceWorkerUpdate = (waiting: ServiceWorker | null): boolea
     return true
 }
 
+/**
+ * The desktop shell runs no service worker: it ships its bundle and updates through its
+ * signed updater, and a worker that once took over answers a later start network-first
+ * from its own context, which can end on the offline page (GH #931). A registration an
+ * older build left behind is removed.
+ */
+const removeDesktopServiceWorkers = async (): Promise<void> => {
+    const registrations = await navigator.serviceWorker.getRegistrations()
+    await Promise.all(registrations.map((registration) => registration.unregister()))
+}
+
 export const registerServiceWorker = (): void => {
     if (!('serviceWorker' in navigator)) {
+        return
+    }
+    if (platform.isTauri) {
+        removeDesktopServiceWorkers().catch((error: unknown) => {
+            console.debug('[SW] Could not remove the desktop service worker:', error)
+        })
         return
     }
 

@@ -108,6 +108,21 @@ test('a page a service worker controls fails, and so does a report without the f
     }
 })
 
+test('any service worker registration fails the run, even one that controls nothing', () => {
+    for (const serviceWorkerRegistered of [true, undefined]) {
+        assert.deepEqual(
+            failed(
+                evaluateRecord(record({ serviceWorkerRegistered }), {
+                    version: '1.12.1',
+                    run: 'first-start',
+                }),
+            ),
+            ['first-start: no service worker is registered'],
+            String(serviceWorkerRegistered),
+        )
+    }
+})
+
 test('a restart must load the saved snapshot; finding it on disk is not enough', () => {
     assert.deepEqual(failed(evaluateRecord(record(), { version: '1.12.1', run: 'restart' })), [])
     for (const hydration of ['fresh', 'backup', undefined]) {

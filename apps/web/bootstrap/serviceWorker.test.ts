@@ -175,6 +175,52 @@ describe('registerServiceWorker update order', () => {
     })
 })
 
+describe('the desktop shell runs no service worker (GH #931)', () => {
+    afterEach(() => {
+        vi.doUnmock('@/services/platformService')
+        vi.unstubAllGlobals()
+    })
+
+    it('registers nothing and removes a registration an older build left', async () => {
+        const unregister = vi.fn().mockResolvedValue(true)
+        const serviceWorker = {
+            controller: null,
+            register: vi.fn(),
+            getRegistrations: vi.fn().mockResolvedValue([{ unregister }, { unregister }]),
+            addEventListener: vi.fn(),
+        }
+        vi.stubGlobal('navigator', { serviceWorker })
+        vi.resetModules()
+        vi.doMock('@/services/platformService', () => ({ platform: { isTauri: true } }))
+        const { registerServiceWorker } = await import('./serviceWorker')
+
+        registerServiceWorker()
+        window.dispatchEvent(new Event('load'))
+        await flush()
+
+        expect(serviceWorker.register).not.toHaveBeenCalled()
+        expect(serviceWorker.getRegistrations).toHaveBeenCalledTimes(1)
+        expect(unregister).toHaveBeenCalledTimes(2)
+    })
+
+    it('stands the worker down when it runs inside the shell', () => {
+        const source = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
+        expect(source).toContain(
+            "const IS_DESKTOP_SHELL = self.location.hostname === 'tauri.localhost'",
+        )
+        for (const event of ['install', 'activate', 'fetch']) {
+            const at = source.indexOf(`self.addEventListener('${event}'`)
+            expect(at, event).toBeGreaterThan(-1)
+            // The shell guard is the first statement of each handler.
+            expect(source.slice(at, at + 120), event).toMatch(/=> \{\s+if \(IS_DESKTOP_SHELL\) \{/)
+        }
+        const activateAt = source.indexOf("self.addEventListener('activate'")
+        expect(source.slice(activateAt, activateAt + 200)).toContain(
+            'event.waitUntil(self.registration.unregister())',
+        )
+    })
+})
+
 describe('service worker install does not skip waiting', () => {
     it('keeps skipWaiting on the SKIP_WAITING message only', () => {
         const source = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')

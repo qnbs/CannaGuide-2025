@@ -295,7 +295,7 @@ Vision AI plant disease detection pipeline:
 
 ### Offline-First Persistence
 
-All user data lives in IndexedDB. The Service Worker uses Network-First for navigation and Cache-First for assets. Background Sync queues offline actions.
+All user data lives in IndexedDB. The Service Worker uses Network-First for navigation and Cache-First for assets. Background Sync queues offline actions. The desktop shell runs no service worker: it ships its bundle and updates through the signed updater ([#931](https://github.com/qnbs/CannaGuide-2025/issues/931)).
 
 **Dual IndexedDB Pattern:**
 

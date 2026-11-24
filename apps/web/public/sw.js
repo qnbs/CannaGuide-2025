@@ -27,6 +27,15 @@ const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
 const ML_MODEL_CACHE_NAME = 'cannaguide-ml-models-v1'
 const API_HOSTNAMES = new Set(['generativelanguage.googleapis.com', 'googleapis.com'])
 
+// The desktop shell serves the bundle from tauri.localhost on Windows and updates through
+// its signed updater, so a service worker there is only a second cache in front of the
+// app. It answers a start network-first from its own context and can fall back to the
+// offline page with no app code (GH #931). A worker that finds itself in the shell caches
+// nothing, handles no request and unregisters once it is active. The page no longer
+// registers one there (bootstrap/serviceWorker.ts); this heals a profile an older build
+// left one in, where no app code may run to remove it.
+const IS_DESKTOP_SHELL = self.location.hostname === 'tauri.localhost'
+
 // Allowlisted CDN hosts from which ML model artefacts are fetched.
 // Mirrors `connect-src` in `apps/desktop/src-tauri/tauri.conf.json` and
 // the production CSP in `apps/web/securityHeaders.ts`.
@@ -200,6 +209,9 @@ const offlineFallback = new Response(
 )
 
 self.addEventListener('install', (event) => {
+    if (IS_DESKTOP_SHELL) {
+        return
+    }
     // Do not skipWaiting here. Doing so activates this worker, claims the
     // page, and reloads an open client before the update prompt can run.
     // A client posts { type: 'SKIP_WAITING' } to activate: the first visit
@@ -230,6 +242,10 @@ self.addEventListener('install', (event) => {
 })
 
 self.addEventListener('activate', (event) => {
+    if (IS_DESKTOP_SHELL) {
+        event.waitUntil(self.registration.unregister())
+        return
+    }
     event.waitUntil(
         caches
             .keys()
@@ -352,6 +368,10 @@ async function pruneIfOverQuota() {
 }
 
 self.addEventListener('fetch', (event) => {
+    if (IS_DESKTOP_SHELL) {
+        return
+    }
+
     const { request } = event
     const url = new URL(request.url)
 

@@ -41,3 +41,30 @@ test('dependency health fails closed and still runs later checks', () => {
     const guarded = yaml.match(/if: always\(\) && steps\.setup\.outcome == 'success'/g) ?? []
     assert.equal(guarded.length, 5)
 })
+
+test('Scorecard workflow fails if publication retries do not succeed', () => {
+    const yaml = readFileSync('.github/workflows/scorecard.yml', 'utf8')
+    assert.match(yaml, /fail_on_publish_error:\s*true/)
+    assert.match(yaml, /id:\s*scorecard/)
+    const analysisJobStart = yaml.indexOf('    analysis:\n')
+    const verificationJobStart = yaml.indexOf('    verify-publication:\n')
+    assert.ok(analysisJobStart >= 0 && verificationJobStart > analysisJobStart)
+    const analysisJob = yaml.slice(analysisJobStart, verificationJobStart)
+    assert.match(
+        analysisJob,
+        /^        outputs:\s*\n            results_published:\s*\$\{\{\s*steps\.scorecard\.outputs\.results_published\s*\}\}/m,
+    )
+
+    const verificationJob = yaml.slice(yaml.indexOf('    verify-publication:'))
+    assert.match(verificationJob, /needs:\s*analysis/)
+    assert.match(verificationJob, /if:\s*\$\{\{\s*!cancelled\(\)\s*\}\}/)
+    assert.doesNotMatch(verificationJob, /if:\s*always\(\)/)
+    assert.match(verificationJob, /^        permissions:\s*\{\}\s*$/m)
+    assert.match(verificationJob, /^        timeout-minutes:\s*\d+\s*$/m)
+    assert.match(
+        verificationJob,
+        /RESULTS_PUBLISHED:\s*\$\{\{\s*needs\.analysis\.outputs\.results_published\s*\}\}/,
+    )
+    assert.match(verificationJob, /!= "true"/)
+    assert.match(verificationJob, /exit 1/)
+})

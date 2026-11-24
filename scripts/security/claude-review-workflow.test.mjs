@@ -128,14 +128,17 @@ test('only the default branch posting script writes, with the run named for prov
     const checkout = post.steps.find((entry) => entry.uses?.startsWith('actions/checkout@'))
     assert.deepEqual(checkout.with, { 'persist-credentials': false })
     const posting = step(post, 'Post the review')
-    assert.match(posting.run, /^node scripts\/security\/post-claude-review\.mjs > receipt\.tmp\n/)
+    assert.match(
+        posting.run,
+        /^node scripts\/security\/post-claude-review\.mjs < "\$REVIEW_FILE" > receipt\.tmp\n/,
+    )
     assert.match(posting.run, /if \[ -s receipt\.tmp \]; then mv receipt\.tmp "\$RECEIPT_FILE"; fi/)
     assert.deepEqual(Object.keys(posting.env).sort(), [
         'GH_TOKEN',
         'HEAD_SHA',
         'PR_NUMBER',
         'RECEIPT_FILE',
-        'REVIEW_JSON',
+        'REVIEW_FILE',
         'RUN_ATTEMPT',
         'RUN_ID',
     ])
@@ -146,4 +149,26 @@ test('only the default branch posting script writes, with the run named for prov
     assert.equal(upload.with.path, posting.env.RECEIPT_FILE)
     assert.equal(posting.env.RUN_ID, '${{ github.run_id }}')
     assert.doesNotMatch(JSON.stringify(post), /CLAUDE_CODE_OAUTH_TOKEN/)
+})
+
+test('the review travels as an artifact of this run, never as one large environment entry', () => {
+    // One environment entry is capped at about 128 KiB on Linux; a long multibyte review is not.
+    assert.doesNotMatch(TEXT, /structured_output \}\}/)
+    assert.deepEqual(review.outputs, {
+        ready: '${{ steps.result.outputs.ready }}',
+        sha: '${{ steps.head.outputs.sha }}',
+    })
+    assert.equal(post.if, "needs.review.outputs.ready == 'true'")
+    const extract = step(review, 'Extract the structured review')
+    assert.deepEqual(extract.env, { EXECUTION_FILE: '${{ steps.claude.outputs.execution_file }}' })
+    assert.match(extract.run, /jq -ce '\[\.\[\] \| select\(\.type == "result"\)\] \| last/)
+    assert.match(extract.run, /select\(\.subtype == "success" and \(\.is_error \| not\)\)/)
+    const upload = step(review, 'Upload the structured review')
+    assert.match(upload.uses, /^actions\/upload-artifact@[0-9a-f]{40}$/)
+    assert.equal(upload.with.name, 'claude-review-result-${{ github.run_attempt }}')
+    assert.equal(upload.with['if-no-files-found'], 'error')
+    const download = step(post, 'Download the structured review')
+    assert.match(download.uses, /^actions\/download-artifact@[0-9a-f]{40}$/)
+    assert.equal(download.with.name, upload.with.name)
+    assert.equal(step(post, 'Post the review').env.REVIEW_FILE, `${download.with.path}/review.json`)
 })

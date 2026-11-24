@@ -7,7 +7,9 @@ import {
     listFindings,
     main,
     MAX_FINDINGS,
+    MAX_REVIEW_BYTES,
     parseStructuredReview,
+    readBounded,
     sanitize,
 } from './post-claude-review.mjs'
 import { evaluateReviewCoverage } from './review-coverage-policy.mjs'
@@ -216,8 +218,8 @@ function fakeGitHub({ headSha = HEAD, state = 'open', postStatuses = [200], revi
     return calls
 }
 
+const REVIEW_TEXT = JSON.stringify({ summary: 'S', findings: [finding()] })
 const env = {
-    REVIEW_JSON: JSON.stringify({ summary: 'S', findings: [finding()] }),
     HEAD_SHA: HEAD,
     PR_NUMBER: '900',
     GITHUB_REPOSITORY: 'qnbs/CannaGuide-2025',
@@ -229,7 +231,7 @@ const quiet = { log: () => undefined }
 
 test('the receipt names the review GitHub created, for this head and run', async () => {
     fakeGitHub({ reviewId: 77 })
-    assert.deepEqual(await main(env, quiet), {
+    assert.deepEqual(await main(env, REVIEW_TEXT, quiet), {
         pull: 900,
         head_sha: HEAD,
         review_id: 77,
@@ -241,14 +243,14 @@ test('the receipt names the review GitHub created, for this head and run', async
 test('nothing is posted, and no receipt returned, once the pull request has moved or closed', async () => {
     for (const options of [{ headSha: 'd'.repeat(40) }, { state: 'closed' }]) {
         const calls = fakeGitHub(options)
-        assert.equal(await main(env, quiet), null)
+        assert.equal(await main(env, REVIEW_TEXT, quiet), null)
         assert.equal(calls.filter(({ method }) => method === 'POST').length, 0)
     }
 })
 
 test('a refused inline line falls back to one review with every finding in the body', async () => {
     const calls = fakeGitHub({ postStatuses: [422, 200] })
-    assert.equal((await main(env, quiet)).review_id, 77)
+    assert.equal((await main(env, REVIEW_TEXT, quiet)).review_id, 77)
     const posts = calls.filter(({ method }) => method === 'POST')
     assert.equal(posts.length, 2)
     assert.equal(posts[0].body.comments.length, 1)
@@ -257,11 +259,35 @@ test('a refused inline line falls back to one review with every finding in the b
 })
 
 test('missing inputs, a failed post, and a missing review id are errors', async () => {
-    await assert.rejects(main({ ...env, HEAD_SHA: 'short' }, quiet), /are required/)
-    await assert.rejects(main({ ...env, GH_TOKEN: '' }, quiet), /are required/)
-    await assert.rejects(main({ ...env, RUN_ID: '' }, quiet), /are required/)
+    await assert.rejects(main({ ...env, HEAD_SHA: 'short' }, REVIEW_TEXT, quiet), /are required/)
+    await assert.rejects(main({ ...env, GH_TOKEN: '' }, REVIEW_TEXT, quiet), /are required/)
+    await assert.rejects(main({ ...env, RUN_ID: '' }, REVIEW_TEXT, quiet), /are required/)
+    await assert.rejects(main(env, '', quiet), /are required/)
     fakeGitHub({ postStatuses: [500] })
-    await assert.rejects(main(env, quiet), /HTTP 500/)
+    await assert.rejects(main(env, REVIEW_TEXT, quiet), /HTTP 500/)
     fakeGitHub({ reviewId: 'x' })
-    await assert.rejects(main(env, quiet), /no review id/)
+    await assert.rejects(main(env, REVIEW_TEXT, quiet), /no review id/)
+})
+
+test('a long multibyte review arrives whole on stdin, and an oversized one is refused', async () => {
+    // 25 findings of 3,000 CJK characters are about 227 KB: too big for one environment entry
+    // (about 128 KiB on Linux), and well inside the stdin limit.
+    const long = JSON.stringify({
+        summary: 's',
+        findings: Array.from({ length: MAX_FINDINGS }, (_, index) =>
+            finding({ line: index + 1, body: '\u6f22'.repeat(3000) }),
+        ),
+    })
+    assert.ok(Buffer.byteLength(long) > 200_000)
+    const chunks = (text, size) =>
+        Array.from({ length: Math.ceil(text.length / size) }, (_, index) =>
+            Buffer.from(text.slice(index * size, (index + 1) * size)),
+        )
+    const read = await readBounded(chunks(long, 4096))
+    assert.equal(read, long)
+    assert.equal(parseStructuredReview(read).findings.length, MAX_FINDINGS)
+    await assert.rejects(
+        readBounded([Buffer.alloc(MAX_REVIEW_BYTES), Buffer.from('x')]),
+        /exceeds 1000000 bytes/,
+    )
 })

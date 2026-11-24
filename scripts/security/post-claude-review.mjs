@@ -11,9 +11,11 @@
  * and uploads it as an artifact of this run, so the coverage policy can tell this review from
  * one that only names the run.
  *
- * Environment: REVIEW_JSON, HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY, GH_TOKEN (the job's
- * GITHUB_TOKEN: the action revokes the Claude App token inside its own step), RUN_ID and
- * RUN_ATTEMPT.
+ * Input: the structured review as JSON on stdin, at most MAX_REVIEW_BYTES. It is not an
+ * environment variable, because Linux caps one environment entry at about 128 KiB, which a
+ * long multibyte review can exceed. Environment: HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY,
+ * GH_TOKEN (the job's GITHUB_TOKEN: the action revokes the Claude App token inside its own
+ * step), RUN_ID and RUN_ATTEMPT.
  */
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -252,17 +254,20 @@ async function changedFiles(repo, pull, token) {
 }
 
 const REQUIRED_INPUTS =
-    'REVIEW_JSON, HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY, GH_TOKEN, RUN_ID and RUN_ATTEMPT are required'
+    'the review on stdin, HEAD_SHA, PR_NUMBER, GITHUB_REPOSITORY, GH_TOKEN, RUN_ID and RUN_ATTEMPT are required'
+
+/** The largest structured review read from stdin; the schema's own caps stay well below it. */
+export const MAX_REVIEW_BYTES = 1_000_000
 
 /** The validated inputs, or an error naming every one the workflow must pass. */
-export function readInputs(env) {
-    const present = [env.REVIEW_JSON, env.GITHUB_REPOSITORY, env.GH_TOKEN].every(Boolean)
+export function readInputs(env, reviewText) {
+    const present = [reviewText, env.GITHUB_REPOSITORY, env.GH_TOKEN].every(Boolean)
     const numbers = [env.PR_NUMBER, env.RUN_ID, env.RUN_ATTEMPT].every((value) =>
         POSITIVE_INTEGER.test(value ?? ''),
     )
     if (!present || !numbers || !SHA.test(env.HEAD_SHA ?? '')) throw new Error(REQUIRED_INPUTS)
     return {
-        review: parseStructuredReview(env.REVIEW_JSON),
+        review: parseStructuredReview(reviewText),
         headSha: env.HEAD_SHA,
         pull: Number(env.PR_NUMBER),
         repo: env.GITHUB_REPOSITORY,
@@ -306,8 +311,8 @@ const toStderr = { log: (line) => console.error(line) }
  * Posts the review. Returns the receipt naming the review GitHub created, or null when the
  * pull request has moved on and nothing was posted.
  */
-export async function main(env = process.env, log = toStderr) {
-    const inputs = readInputs(env)
+export async function main(env, reviewText, log = toStderr) {
+    const inputs = readInputs(env, reviewText)
     if (!(await stillOpenAt(inputs))) {
         log.log(
             `[WARN] the pull request is no longer open at ${inputs.headSha}; no review was posted`,
@@ -328,9 +333,22 @@ export async function main(env = process.env, log = toStderr) {
     }
 }
 
+/** The whole of a stream as text, refusing one larger than the limit. */
+export async function readBounded(stream, limit = MAX_REVIEW_BYTES) {
+    const chunks = []
+    let size = 0
+    for await (const chunk of stream) {
+        size += chunk.length
+        if (size > limit) throw new Error(`the structured review exceeds ${limit} bytes`)
+        chunks.push(Buffer.from(chunk))
+    }
+    return Buffer.concat(chunks).toString('utf8')
+}
+
 const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 if (isDirectRun) {
-    main()
+    readBounded(process.stdin)
+        .then((reviewText) => main(process.env, reviewText))
         .then((receipt) => {
             // The receipt is the only stdout; the workflow saves it for the artifact.
             if (receipt) process.stdout.write(`${JSON.stringify(receipt)}\n`)

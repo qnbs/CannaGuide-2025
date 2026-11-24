@@ -828,6 +828,31 @@ describe('a last save slower than the native wait (GH #883)', () => {
         expect(secondResume).not.toHaveBeenCalled()
     })
 
+    it('saves again when the hold ended while it still waited for a running write', async () => {
+        vi.useFakeTimers()
+        let finishSuspend: (resume: () => void) => void = () => undefined
+        const suspend = () =>
+            new Promise<() => void>((done) => {
+                finishSuspend = done
+            })
+        const flush = vi.fn(async () => true)
+        const { bridge } = fakeBridge()
+        const done = flushThenConfirmQuit(flush, async () => bridge, suspend)
+        await vi.advanceTimersByTimeAsync(0)
+        expect(flush).toHaveBeenCalledTimes(1)
+
+        // The hold ends while suspend() still waits, so this catch-up save is refused.
+        await vi.advanceTimersByTimeAsync(LAST_WRITE_START_MS + LAST_SAVE_HOLD_MS)
+        expect(flush).toHaveBeenCalledTimes(2)
+
+        const resume = vi.fn()
+        finishSuspend(resume)
+        await done
+
+        expect(resume).toHaveBeenCalledOnce()
+        expect(flush).toHaveBeenCalledTimes(3)
+    })
+
     it('stops writes before the native timeout in lifecycle.rs', () => {
         const here = dirname(fileURLToPath(import.meta.url))
         const source = readFileSync(

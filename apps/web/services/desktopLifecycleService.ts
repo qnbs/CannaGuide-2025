@@ -421,7 +421,7 @@ export const LAST_SAVE_HOLD_MS = 10_000
 export const LAST_WRITE_START_MS = 9_000
 
 type SuspendPersistence = () => Promise<(() => void) | null>
-type FenceWrites = (deadlineAt: number) => () => void
+type FenceWrites = (delayMs: number) => () => void
 
 /**
  * No write may start after the last save before a quit or restart: the native side
@@ -466,7 +466,7 @@ const openLastSaveWindow = (
 ): WriteHold => {
     // A hold left by a failed update install would refuse this save.
     releaseWriteHold()
-    const liftFence = fence(Date.now() + LAST_WRITE_START_MS)
+    const liftFence = fence(LAST_WRITE_START_MS)
     let resumeHeldWrites: (() => void) | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     const endAfter = (delayMs: number): void => {
@@ -495,6 +495,7 @@ const openLastSaveWindow = (
 
 const holdWritesAfterLastSave = async (
     hold: WriteHold,
+    flush: PersistFlush | undefined,
     suspend: SuspendPersistence,
 ): Promise<void> => {
     // A newer quit or restart took over while this save ran; its save must not be refused.
@@ -506,8 +507,14 @@ const holdWritesAfterLastSave = async (
         console.warn('[Desktop] could not hold writes after the last save:', messageOf(error))
     }
     if (!resume) return
-    if (activeHold === hold) hold.holdFrom(resume)
-    else resume()
+    if (activeHold === hold) {
+        hold.holdFrom(resume)
+        return
+    }
+    // The hold ended while this waited for a running write, so its catch-up save was
+    // refused by the suspension that ends here. Save again now.
+    resume()
+    void flush?.().catch(() => undefined)
 }
 
 export const flushThenConfirmFinalSave = async (
@@ -527,7 +534,7 @@ export const flushThenConfirmFinalSave = async (
     } catch (error) {
         console.warn('[DesktopUpdate] save before the restart failed:', messageOf(error))
     }
-    await holdWritesAfterLastSave(hold, suspend)
+    await holdWritesAfterLastSave(hold, flush, suspend)
     const bridge = await pendingBridge
     await bridge.invoke<void>('confirm_final_save')
 }
@@ -555,7 +562,7 @@ export const flushThenConfirmQuit = async (
     } catch (error) {
         console.warn('[DesktopQuit] save before quit failed:', messageOf(error))
     }
-    await holdWritesAfterLastSave(hold, suspend)
+    await holdWritesAfterLastSave(hold, flush, suspend)
     const bridge = await pendingBridge
     // The quit goes on either way; `saved` tells the native side (and the runtime smoke
     // test) whether this run's last changes reached storage.

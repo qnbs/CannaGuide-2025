@@ -54,15 +54,15 @@ export const setupPersistedStateSync = (
                     const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                         state.simulation,
                     )
-                    // This step can take seconds: a quit or restart may have passed its
-                    // last-write deadline meanwhile, and then nothing may be committed.
-                    if (isBlocked()) return false
                     const stateToSave = buildPersistedSnapshot(
                         state,
                         optimizedSimulation,
                         pendingLegacySecretPaths(),
                     )
                     const serializedState = JSON.stringify(stateToSave)
+                    // Preparing a large snapshot can take seconds: a quit or restart may
+                    // have passed its last-write deadline, and then nothing may be committed.
+                    if (isBlocked()) return false
                     await writeSnapshot(serializedState)
                     // Do this while still inside the scheduled write slot. A later
                     // save in another tab must not clear this tab's failed lineage.

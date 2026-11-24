@@ -99,7 +99,7 @@ if (typeof window !== 'undefined') {
 }
 
 const lastWriteDeadlinePassed = (): boolean =>
-    lastWriteFence !== undefined && Date.now() >= lastWriteFence.deadlineAt
+    lastWriteFence !== undefined && performance.now() >= lastWriteFence.deadlineAt
 
 const persistenceBlocked = (): boolean =>
     persistenceSuspended ||
@@ -168,14 +168,14 @@ export const suspendPersistenceForRecovery = async (): Promise<ResumePersistence
 export const suspendPersistenceForQuit = suspendPersistenceForRecovery
 
 /**
- * No write may start at or after `deadlineAt`. The native side stops waiting for a
+ * No write may start once `delayMs` have passed. The native side stops waiting for a
  * slow last save at a fixed time and releases the profile lock, so the save itself
- * has to end by then (GH #883). It compares the clock when a write starts, so a page
- * whose timers are delayed is fenced as well. The returned function lifts this fence
- * and leaves a newer one in place.
+ * has to end by then (GH #883). It reads a monotonic clock when a write starts, so
+ * neither delayed page timers nor a system clock change can move the deadline. The
+ * returned function lifts this fence and leaves a newer one in place.
  */
-export const fencePersistenceWritesAfter = (deadlineAt: number): (() => void) => {
-    const fence = { deadlineAt }
+export const fencePersistenceWritesAfter = (delayMs: number): (() => void) => {
+    const fence = { deadlineAt: performance.now() + delayMs }
     lastWriteFence = fence
     return () => {
         if (lastWriteFence === fence) lastWriteFence = undefined

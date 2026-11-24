@@ -98,7 +98,7 @@ describe('persisted settings snapshot (#654)', () => {
         vi.mocked(pendingLegacySecretPaths).mockReturnValue([])
     })
 
-    it('commits nothing when a quit deadline passed while the state was prepared (GH #883)', async () => {
+    it('commits nothing when a quit deadline passed while the snapshot was prepared (GH #883)', async () => {
         vi.mocked(schedulePersistenceWrite).mockImplementationOnce(
             async (write) => (await write(() => true)) !== false,
         )

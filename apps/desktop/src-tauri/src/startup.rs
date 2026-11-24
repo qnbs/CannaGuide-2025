@@ -35,7 +35,8 @@ const QUIT_POLL_INTERVAL: Duration = Duration::from_millis(200);
 /// A held smoke run quits by itself after this, so a lost harness leaves no process.
 const MAX_HOLD: Duration = Duration::from_secs(600);
 const MAX_CODE_CHARS: usize = 64;
-const REPORT_SCHEMA: u32 = 2;
+/// 3: the report says whether a service worker controls the page or is registered (GH #931).
+const REPORT_SCHEMA: u32 = 3;
 
 /// How the frontend's start ended; mirrors `DesktopStartupOutcome` in the web app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
@@ -92,6 +93,11 @@ pub(crate) struct FrontendReport {
     hydration: StartupHydration,
     local_only: bool,
     saved_snapshot_present: bool,
+    /// The desktop shell runs no service worker; true means one still controls the page.
+    service_worker_controlled: bool,
+    /// Whether any service worker is registered for the app's origin; `None` when the
+    /// frontend could not tell, which the smoke test fails.
+    service_worker_registered: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     error_code: Option<String>,
 }
@@ -293,7 +299,7 @@ mod tests {
 
     fn report_json(extra: &str) -> String {
         format!(
-            r#"{{"outcome":"newer-snapshot","frontendVersion":"1.12.1","view":"dialog","visible":true,"hydration":"backup","localOnly":true,"savedSnapshotPresent":false{extra}}}"#
+            r#"{{"outcome":"newer-snapshot","frontendVersion":"1.12.1","view":"dialog","visible":true,"hydration":"backup","localOnly":true,"savedSnapshotPresent":false,"serviceWorkerControlled":false,"serviceWorkerRegistered":false{extra}}}"#
         )
     }
 
@@ -306,6 +312,14 @@ mod tests {
         assert!(report.visible);
         assert!(report.local_only);
         assert!(!report.saved_snapshot_present);
+        assert!(!report.service_worker_controlled);
+        assert_eq!(report.service_worker_registered, Some(false));
+        let unknown = report_json("").replace(
+            r#""serviceWorkerRegistered":false"#,
+            r#""serviceWorkerRegistered":null"#,
+        );
+        let unknown: FrontendReport = serde_json::from_str(&unknown).unwrap();
+        assert_eq!(unknown.service_worker_registered, None);
         assert_eq!(report.error_code, None);
         assert_eq!(StartupOutcome::NewerSnapshot.as_str(), "newer-snapshot");
     }
@@ -321,6 +335,9 @@ mod tests {
         assert!(serde_json::from_str::<FrontendReport>(&unknown_outcome).is_err());
         let unknown_hydration = report_json("").replace("backup", "cloud");
         assert!(serde_json::from_str::<FrontendReport>(&unknown_hydration).is_err());
+        // A schema-2 frontend omits the service-worker flag; the field is required.
+        let without_flag = report_json("").replace(r#","serviceWorkerControlled":false"#, "");
+        assert!(serde_json::from_str::<FrontendReport>(&without_flag).is_err());
     }
 
     #[test]

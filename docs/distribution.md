@@ -138,7 +138,7 @@ Some PRs show a failing check **Workers Builds: cannaguide-2025** from the Cloud
 
 ## Tauri v2 Desktop
 
-Desktop is a separate Tauri v2 wrapper around the shared web frontend. Platform-specific code uses `platformService.ts` (`isTauri`, `isPwa`, `isBrowser`) and native plugins. Source availability and a configured build matrix do not establish current installer availability or platform qualification.
+Desktop is a separate Tauri v2 wrapper around the shared web frontend. It runs no service worker: the bundle is local and updates come from the signed updater, and a worker left by an older build is removed ([#931](https://github.com/qnbs/CannaGuide-2025/issues/931)). Platform-specific code uses `platformService.ts` (`isTauri`, `isPwa`, `isBrowser`) and native plugins. Source availability and a configured build matrix do not establish current installer availability or platform qualification.
 
 **Delivery evidence checked 2026-10-24:**
 

@@ -11,6 +11,7 @@ import { urlService } from '@/services/urlService'
 import { ttsService } from '@/services/ttsService'
 import { buildVoiceCommands, matchVoiceCommand } from '@/services/voiceCommandRegistry'
 import { offlineActionQueueService } from '@/services/offlineActionQueueService'
+import { platform } from '@/services/platformService'
 
 // Import actions to listen for
 import {
@@ -486,7 +487,11 @@ startAppListening({
             })
         }
 
-        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        // The entry is already in state and saved locally. The queue exists for the web's
+        // service worker, which replays it so that another tab's stale snapshot cannot drop
+        // it. The desktop shell has one window and no service worker (GH #931): a copy queued
+        // there would never be replayed or removed.
+        if (typeof navigator !== 'undefined' && !navigator.onLine && !platform.isTauri) {
             try {
                 const { plantId } = action.payload
                 const plant = (listenerApi.getState() as RootState).simulation.plants.entities[

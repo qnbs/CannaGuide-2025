@@ -12,8 +12,9 @@
 //
 // The report holds no user data: an outcome, the build version, which view is on
 // screen, whether the page is visible, where the state came from (saved snapshot,
-// backup or fresh), the Local-Only flag, whether a saved snapshot exists, and for an
-// error only its class name -- never its message.
+// backup or fresh), the Local-Only flag, whether a saved snapshot exists, whether a
+// service worker controls the page, and for an error only its class name -- never its
+// message.
 // ---------------------------------------------------------------------------
 import { whenPersistenceIdle } from '@/bootstrap/persistenceCoordinator'
 import { REDUX_STATE_KEY } from '@/constants'
@@ -40,6 +41,14 @@ export interface DesktopStartupReport {
     localOnly: boolean
     /** Diagnostic only: a stored snapshot can exist and still not have been loaded. */
     savedSnapshotPresent: boolean
+    /** Whether a service worker controls this page; the desktop shell runs none (GH #931). */
+    serviceWorkerControlled: boolean
+    /**
+     * Whether a service worker is registered for this origin, read once the page has loaded
+     * (the old code registered on load). null when the lookup failed or did not answer in time:
+     * the smoke test then fails rather than reading "unknown" as "none".
+     */
+    serviceWorkerRegistered: boolean | null
     /** An error's class name, e.g. "TypeError"; the native side enforces the shape. */
     errorCode?: string
 }
@@ -58,37 +67,81 @@ export const errorCodeOf = (error: unknown): string => {
     return ERROR_CODE.test(name) ? name : 'UnrecognizedError'
 }
 
-/** A blocked IndexedDB open must not hold the report back; the flag is diagnostic only. */
+/**
+ * A blocked IndexedDB open or a stuck service-worker lookup must not hold the report back.
+ * A probe that fails or does not answer in time reads as its fallback.
+ */
 export const SNAPSHOT_PROBE_MS = 2000
 
-const snapshotPresent = async (): Promise<boolean> => {
+/**
+ * A cold start can fire `load` late (a slow runner, a large bundle). That wait has its own,
+ * longer bound, so it does not eat the registration lookup's probe time; the desktop smoke
+ * allows 120 s for the whole report.
+ */
+export const LOAD_WAIT_MS = 30_000
+
+const withinProbeTime = async <T>(
+    probe: () => Promise<T>,
+    fallback: T,
+    ms = SNAPSHOT_PROBE_MS,
+): Promise<T> => {
     let timer: ReturnType<typeof setTimeout> | undefined
-    const deadline = new Promise<boolean>((resolve) => {
-        timer = setTimeout(() => resolve(false), SNAPSHOT_PROBE_MS)
+    const deadline = new Promise<T>((resolve) => {
+        timer = setTimeout(() => resolve(fallback), ms)
     })
     try {
-        return await Promise.race([hasStoredItem(REDUX_STATE_KEY), deadline])
+        return await Promise.race([probe(), deadline])
     } catch {
-        return false
+        return fallback
     } finally {
         clearTimeout(timer)
     }
+}
+
+/** Diagnostic only, so an unreadable store reads as no snapshot. */
+const snapshotPresent = (): Promise<boolean> =>
+    withinProbeTime(() => hasStoredItem(REDUX_STATE_KEY), false)
+
+/** The old code registered the worker from a load listener, so wait for load first. */
+const pageLoaded = (): Promise<void> =>
+    document.readyState === 'complete'
+        ? Promise.resolve()
+        : new Promise((resolve) => {
+              window.addEventListener('load', () => resolve(), { once: true })
+          })
+
+/** A gate reads this, so a failed or unanswered lookup is null, never false. */
+const serviceWorkerRegistered = async (): Promise<boolean | null> => {
+    if (!('serviceWorker' in navigator)) return false
+    const loaded = await withinProbeTime(() => pageLoaded().then(() => true), false, LOAD_WAIT_MS)
+    if (!loaded) return null
+    // Every registration on the origin, not only one whose scope covers this page.
+    return withinProbeTime<boolean | null>(
+        async () => (await navigator.serviceWorker.getRegistrations()).length > 0,
+        null,
+    )
 }
 
 export const buildDesktopStartupReport = async (
     outcome: DesktopStartupOutcome,
     error?: unknown,
     doc: Document = document,
-): Promise<DesktopStartupReport> => ({
-    outcome,
-    frontendVersion: __APP_VERSION__,
-    view: currentStartupView(doc),
-    visible: doc.visibilityState === 'visible',
-    hydration: getStartupHydration(),
-    localOnly: isLocalOnlyMode(),
-    savedSnapshotPresent: await snapshotPresent(),
-    ...(error === undefined ? {} : { errorCode: errorCodeOf(error) }),
-})
+): Promise<DesktopStartupReport> => {
+    const [saved, registered] = await Promise.all([snapshotPresent(), serviceWorkerRegistered()])
+    return {
+        outcome,
+        frontendVersion: __APP_VERSION__,
+        view: currentStartupView(doc),
+        visible: doc.visibilityState === 'visible',
+        hydration: getStartupHydration(),
+        localOnly: isLocalOnlyMode(),
+        savedSnapshotPresent: saved,
+        serviceWorkerControlled:
+            'serviceWorker' in navigator && navigator.serviceWorker.controller !== null,
+        serviceWorkerRegistered: registered,
+        ...(error === undefined ? {} : { errorCode: errorCodeOf(error) }),
+    }
+}
 
 /** A hidden or minimized window never paints, so the wait for a frame is bounded. */
 export const PAINT_WAIT_MS = 2000

@@ -64,6 +64,8 @@ describe('desktopStartupReport', () => {
             hydration: 'backup',
             localOnly: true,
             savedSnapshotPresent: false,
+            serviceWorkerControlled: false,
+            serviceWorkerRegistered: false,
         })
         expect(mocks.hasStoredItem).toHaveBeenCalledWith('cannaguide-redux-storage')
 
@@ -86,6 +88,92 @@ describe('desktopStartupReport', () => {
         odd.name = 'Error: secret note'
         expect(errorCodeOf(odd)).toBe('UnrecognizedError')
         expect(errorCodeOf('a string')).toBe('string')
+    })
+
+    it('reports a service worker that is registered and controls the page', async () => {
+        // A scope that does not cover the page still counts: the check is origin-wide.
+        const getRegistrations = vi
+            .fn()
+            .mockResolvedValue([{ scope: 'http://tauri.localhost/other/' }])
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: { controller: { state: 'activated' }, getRegistrations },
+        })
+        try {
+            const { buildDesktopStartupReport } = await load()
+            const report = await buildDesktopStartupReport('started', undefined, documentWith(''))
+            expect(report.serviceWorkerControlled).toBe(true)
+            expect(report.serviceWorkerRegistered).toBe(true)
+
+            // A lookup that fails is unknown, not "none": the smoke gate must not pass on it.
+            getRegistrations.mockRejectedValue(new Error('storage error'))
+            const unreadable = await buildDesktopStartupReport(
+                'started',
+                undefined,
+                documentWith(''),
+            )
+            expect(unreadable.serviceWorkerRegistered).toBeNull()
+        } finally {
+            Reflect.deleteProperty(navigator, 'serviceWorker')
+        }
+    })
+
+    it('reads the registration only after the page has loaded', async () => {
+        const getRegistrations = vi.fn().mockResolvedValue([])
+        let readyState = 'loading'
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: { controller: null, getRegistrations },
+        })
+        Object.defineProperty(document, 'readyState', { configurable: true, get: () => readyState })
+        try {
+            const { buildDesktopStartupReport } = await load()
+            const pending = buildDesktopStartupReport('started', undefined, documentWith(''))
+            await Promise.resolve()
+            await Promise.resolve()
+            // The old code registered from a load listener: reading before load could miss it.
+            expect(getRegistrations).not.toHaveBeenCalled()
+            readyState = 'complete'
+            window.dispatchEvent(new Event('load'))
+            const report = await pending
+            expect(getRegistrations).toHaveBeenCalledTimes(1)
+            expect(report.serviceWorkerRegistered).toBe(false)
+        } finally {
+            Reflect.deleteProperty(navigator, 'serviceWorker')
+            Reflect.deleteProperty(document, 'readyState')
+        }
+    })
+
+    it('gives a late load its own bound, so a slow start is not read as unknown', async () => {
+        vi.useFakeTimers()
+        const getRegistrations = vi.fn().mockResolvedValue([])
+        let readyState = 'loading'
+        Object.defineProperty(navigator, 'serviceWorker', {
+            configurable: true,
+            value: { controller: null, getRegistrations },
+        })
+        Object.defineProperty(document, 'readyState', { configurable: true, get: () => readyState })
+        try {
+            const { buildDesktopStartupReport, LOAD_WAIT_MS, SNAPSHOT_PROBE_MS } = await load()
+            // Load fires after the 2 s probe time: the lookup still runs and answers.
+            const late = buildDesktopStartupReport('started', undefined, documentWith(''))
+            await vi.advanceTimersByTimeAsync(SNAPSHOT_PROBE_MS + 1000)
+            readyState = 'complete'
+            window.dispatchEvent(new Event('load'))
+            await vi.advanceTimersByTimeAsync(0)
+            expect((await late).serviceWorkerRegistered).toBe(false)
+
+            // A page that never loads is unknown once the load bound runs out.
+            readyState = 'loading'
+            const never = buildDesktopStartupReport('started', undefined, documentWith(''))
+            await vi.advanceTimersByTimeAsync(LOAD_WAIT_MS)
+            expect((await never).serviceWorkerRegistered).toBeNull()
+            expect(getRegistrations).toHaveBeenCalledTimes(1)
+        } finally {
+            vi.useRealTimers()
+            Reflect.deleteProperty(navigator, 'serviceWorker')
+            Reflect.deleteProperty(document, 'readyState')
+        }
     })
 
     it('reports a storage that cannot be read as no saved snapshot', async () => {

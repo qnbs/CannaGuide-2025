@@ -40,3 +40,21 @@ describe('English fallback bundle', () => {
         await changeAppLanguage('en')
     })
 })
+
+describe('empty translations', () => {
+    afterEach(() => {
+        vi.unstubAllGlobals()
+        vi.resetModules()
+    })
+
+    it('fall back to English instead of rendering blank', async () => {
+        vi.resetModules()
+        vi.stubGlobal('navigator', { language: 'de-DE' })
+        const { i18nInstance, i18nPromise } = await import('./i18n')
+        await i18nPromise
+        i18nInstance.addResource('en', 'translation', 'emptyFallbackProbe', 'English text')
+        i18nInstance.addResource('de', 'translation', 'emptyFallbackProbe', '')
+        expect(i18nInstance.t('emptyFallbackProbe', { lng: 'de' })).toBe('English text')
+        expect(i18nInstance.options.returnEmptyString).toBe(false)
+    })
+})

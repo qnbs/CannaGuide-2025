@@ -257,44 +257,44 @@ export function storageCalls(file, source, root = ROOT) {
     return calls
 }
 
+/** Why a literal, constant or persisted key fails; null when it is allowed. */
+function knownKeyProblem(call) {
+    const legacy =
+        call.method !== 'setItem' && LEGACY_READ_REMOVE.some((pattern) => pattern.test(call.key))
+    return legacy || isAllowed(call.key) ? null : `key "${call.key}" not in allowlist`
+}
+
+/** Why a computed key fails against its review entry; null when the entry covers it. */
+function reviewedKeyProblem(call, entry) {
+    if (!entry) return `computed key \`${call.expression}\` is not reviewed`
+    if (!entry.methods.includes(call.method)) {
+        return `computed key \`${call.expression}\` is reviewed for ${entry.methods.join(', ')} only, not ${call.method}`
+    }
+    if (entry.example === null) {
+        return call.method === 'getItem' ? null : 'a reviewed read-every-key site may only read'
+    }
+    return isAllowed(entry.example) ? null : `reviewed example "${entry.example}" not in allowlist`
+}
+
+const KNOWN_KINDS = new Set(['literal', 'constant', 'persist'])
+
 /** The violations for a set of classified calls and the reviewed dynamic-key entries. */
 export function violations(calls, reviewed = REVIEWED_DYNAMIC_KEYS) {
     const problems = []
     const used = new Set()
     for (const call of calls) {
-        if (call.kind === 'literal' || call.kind === 'constant' || call.kind === 'persist') {
-            const legacy =
-                call.method !== 'setItem' &&
-                LEGACY_READ_REMOVE.some((pattern) => pattern.test(call.key))
-            if (!legacy && !isAllowed(call.key)) {
-                problems.push({ ...call, reason: `key "${call.key}" not in allowlist` })
-            }
-            continue
+        let reason
+        if (KNOWN_KINDS.has(call.kind)) {
+            reason = knownKeyProblem(call)
+        } else {
+            const entry = reviewed.find(
+                (candidate) =>
+                    candidate.file === call.file && candidate.expression === call.expression,
+            )
+            if (entry) used.add(entry)
+            reason = reviewedKeyProblem(call, entry)
         }
-        const entry = reviewed.find(
-            (candidate) => candidate.file === call.file && candidate.expression === call.expression,
-        )
-        if (!entry) {
-            problems.push({
-                ...call,
-                reason: `computed key \`${call.expression}\` is not reviewed`,
-            })
-            continue
-        }
-        used.add(entry)
-        if (!entry.methods.includes(call.method)) {
-            problems.push({
-                ...call,
-                reason: `computed key \`${call.expression}\` is reviewed for ${entry.methods.join(', ')} only, not ${call.method}`,
-            })
-        } else if (entry.example !== null && !isAllowed(entry.example)) {
-            problems.push({
-                ...call,
-                reason: `reviewed example "${entry.example}" not in allowlist`,
-            })
-        } else if (entry.example === null && call.method !== 'getItem') {
-            problems.push({ ...call, reason: 'a reviewed read-every-key site may only read' })
-        }
+        if (reason) problems.push({ ...call, reason })
     }
     for (const entry of reviewed) {
         if (!used.has(entry)) {

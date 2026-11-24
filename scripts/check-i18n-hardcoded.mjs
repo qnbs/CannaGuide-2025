@@ -183,7 +183,7 @@ function main() {
     }
 
     if (totalFindings === 0) {
-        console.log('[PASS] No hardcoded i18n strings detected in the web app's .tsx files.')
+        console.log("[PASS] No hardcoded i18n strings detected in the web app's .tsx files.")
         process.exit(0)
     }
 

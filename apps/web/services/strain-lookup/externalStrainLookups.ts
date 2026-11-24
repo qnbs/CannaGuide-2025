@@ -18,6 +18,20 @@ import {
 import { EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { throttleExternal } from '@/services/strain-lookup/strainLookupCache'
 
+/**
+ * A cannabinoid percentage the source actually reported: the first present candidate,
+ * parsed. A missing, blank or unparsable value stays unknown instead of becoming 0, so a
+ * lookup never invents a measurement (GH #750).
+ */
+const reportedPercent = (...candidates: unknown[]): number | undefined => {
+    const raw = candidates.find((value) => value !== undefined && value !== null && value !== '')
+    if (raw === undefined) return undefined
+    const value = typeof raw === 'number' ? raw : Number.parseFloat(String(raw))
+    return Number.isFinite(value) && value >= 0 ? value : undefined
+}
+
+const isPositive = (value: number | undefined): value is number => value !== undefined && value > 0
+
 export async function lookupCannlytics(name: string): Promise<LookupStrainResult | null> {
     if (EXTERNAL_STRAIN_LOOKUPS_DISABLED) return null
     const apiKey =
@@ -39,8 +53,8 @@ export async function lookupCannlytics(name: string): Promise<LookupStrainResult
         const raw = (await response.json()) as Record<string, unknown>
         const data = (raw['data'] as Record<string, unknown> | undefined) ?? raw
 
-        const thc = parseFloat(String(data['thc'] ?? data['total_thc'] ?? 0)) || 0
-        const cbd = parseFloat(String(data['cbd'] ?? data['total_cbd'] ?? 0)) || 0
+        const thc = reportedPercent(data['thc'], data['total_thc'])
+        const cbd = reportedPercent(data['cbd'], data['total_cbd'])
         const cbg = parseFloat(String(data['cbg'] ?? 0)) || 0
         const strainName = String(data['strain_name'] ?? data['name'] ?? name)
 
@@ -55,8 +69,8 @@ export async function lookupCannlytics(name: string): Promise<LookupStrainResult
         }
 
         const cannabinoids: CannabinoidDataPoint[] = []
-        if (thc > 0) cannabinoids.push({ name: 'THC', percentage: thc })
-        if (cbd > 0) cannabinoids.push({ name: 'CBD', percentage: cbd })
+        if (isPositive(thc)) cannabinoids.push({ name: 'THC', percentage: thc })
+        if (isPositive(cbd)) cannabinoids.push({ name: 'CBD', percentage: cbd })
         if (cbg > 0) cannabinoids.push({ name: 'CBG', percentage: cbg })
 
         const rawType = String(data['type'] ?? data['strain_type'] ?? 'hybrid').toLowerCase()
@@ -134,8 +148,8 @@ export async function lookupOtreeba(name: string): Promise<LookupStrainResult | 
         if (!item) return null
 
         const strainName = String(item['name'] ?? name)
-        const thc = parseFloat(String(item['thcRatio'] ?? item['thc'] ?? 0)) || 0
-        const cbd = parseFloat(String(item['cbdRatio'] ?? item['cbd'] ?? 0)) || 0
+        const thc = reportedPercent(item['thcRatio'], item['thc'])
+        const cbd = reportedPercent(item['cbdRatio'], item['cbd'])
 
         const rawType = String(item['race'] ?? item['type'] ?? 'hybrid').toLowerCase()
         const type = rawType.includes('indica')
@@ -171,8 +185,8 @@ export async function lookupOtreeba(name: string): Promise<LookupStrainResult | 
         }
 
         const cannabinoids: CannabinoidDataPoint[] = []
-        if (thc > 0) cannabinoids.push({ name: 'THC', percentage: thc })
-        if (cbd > 0) cannabinoids.push({ name: 'CBD', percentage: cbd })
+        if (isPositive(thc)) cannabinoids.push({ name: 'THC', percentage: thc })
+        if (isPositive(cbd)) cannabinoids.push({ name: 'CBD', percentage: cbd })
 
         const parents = item['parents'] as string[] | undefined
         const genetics = Array.isArray(parents) ? parents.join(' x ') : ''
@@ -299,8 +313,9 @@ export async function lookupCannabisApi(name: string): Promise<LookupStrainResul
             breeder: 'Unknown',
             type,
             floweringType: 'Photoperiod',
-            thc: 0,
-            cbd: 0,
+            // The Cannabis API reports no cannabinoid values, so they stay unknown.
+            thc: undefined,
+            cbd: undefined,
             cbg: 0,
             thcv: 0,
             description: String(hit.description ?? '').slice(0, 500),
@@ -336,9 +351,9 @@ export async function lookupWithAI(name: string): Promise<LookupStrainResult | n
         const prompt =
             lang === 'de'
                 ? `Gib mir detaillierte Informationen zur Cannabis-Sorte "${safeName}" als JSON (kein Begleittext):
-{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Kurze Einschaetzung (2-3 Saetze)."}`
+{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":null,"cbd":null,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Kurze Einschaetzung (2-3 Saetze)."}`
                 : `Provide detailed information about cannabis strain "${safeName}" as JSON only (no surrounding text):
-{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":0,"cbd":0,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Short assessment of why this strain is notable (2-3 sentences)."}`
+{"name":"...","breeder":"...","type":"Indica|Sativa|Hybrid","floweringType":"Photoperiod|Autoflower","thc":null,"cbd":null,"cbg":0,"genetics":"...","description":"...","terpenes":[{"name":"Myrcene","percentage":0.3}],"flavonoids":[{"name":"Cannflavin A","role":"dominant"}],"summary":"Short assessment of why this strain is notable (2-3 sentences)."}`
 
         const plantStub = { id: 'strain-lookup', name: safeName } as Parameters<
             typeof aiService.getMentorResponse
@@ -351,8 +366,8 @@ export async function lookupWithAI(name: string): Promise<LookupStrainResult | n
 
         const parsed = JSON.parse(jsonMatch[0]) as Record<string, unknown>
         const strainName = String(parsed['name'] ?? name)
-        const thc = parseFloat(String(parsed['thc'] ?? 0)) || 0
-        const cbd = parseFloat(String(parsed['cbd'] ?? 0)) || 0
+        const thc = reportedPercent(parsed['thc'])
+        const cbd = reportedPercent(parsed['cbd'])
         const cbg = parseFloat(String(parsed['cbg'] ?? 0)) || 0
 
         const rawType = String(parsed['type'] ?? '').toLowerCase()
@@ -404,8 +419,8 @@ export async function lookupWithAI(name: string): Promise<LookupStrainResult | n
         const flavonoids = aiFlavonoids.length > 0 ? aiFlavonoids : buildFlavonoidDataPoints(type)
 
         const cannabinoids: CannabinoidDataPoint[] = []
-        if (thc > 0) cannabinoids.push({ name: 'THC', percentage: thc, role: 'primary' })
-        if (cbd > 0) cannabinoids.push({ name: 'CBD', percentage: cbd, role: 'secondary' })
+        if (isPositive(thc)) cannabinoids.push({ name: 'THC', percentage: thc, role: 'primary' })
+        if (isPositive(cbd)) cannabinoids.push({ name: 'CBD', percentage: cbd, role: 'secondary' })
         if (cbg > 0) cannabinoids.push({ name: 'CBG', percentage: cbg, role: 'trace' })
 
         const totalEntourageScore = calculateEntourageScore(enrichedTerpenes, thc, cbd, flavonoids)

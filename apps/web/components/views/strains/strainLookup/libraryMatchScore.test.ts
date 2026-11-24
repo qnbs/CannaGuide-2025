@@ -44,6 +44,20 @@ describe('libraryMatchScore', () => {
         expect(libraryMatchScore(lookup({ cbd: undefined }), strains)).toBe(90)
     })
 
+    it('scores a reported zero on the result side', () => {
+        const strains = library({ type: StrainType.Indica, thc: 20, cbd: 0 })
+
+        // 40 base + 30 same type + 20 THC match + 10 CBD match: an exact 0% CBD match.
+        expect(libraryMatchScore(lookup({ cbd: 0 }), strains)).toBe(100)
+    })
+
+    it('adds no closeness for an unreported result value', () => {
+        const strains = library({ type: StrainType.Indica, thc: 20, cbd: 0 })
+
+        // Only base and type remain when the result reports neither cannabinoid.
+        expect(libraryMatchScore(lookup({ thc: undefined, cbd: undefined }), strains)).toBe(70)
+    })
+
     it('returns 0 for an empty library', () => {
         expect(libraryMatchScore(lookup({}), [])).toBe(0)
     })

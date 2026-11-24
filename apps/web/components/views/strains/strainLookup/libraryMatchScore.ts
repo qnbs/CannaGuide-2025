@@ -1,4 +1,3 @@
-import { isPositiveReported } from '@/components/views/strains/reportedStrainFacts'
 import type { LookupStrainResult } from '@/services/strain-lookup/strainLookupTypes'
 import type { Strain } from '@/types'
 
@@ -15,7 +14,8 @@ const reportedAverage = (values: readonly unknown[]): number | undefined => {
 /**
  * How well a lookup result fits the user's library: its share of the same type, plus THC
  * and CBD closeness to the library's averages. An unreported value is never averaged in
- * as 0, and a cannabinoid no library strain reports adds nothing (GH #750).
+ * as 0, a reported 0 counts on both sides, and a cannabinoid no library strain reports
+ * adds nothing (GH #750).
  */
 export const libraryMatchScore = (
     result: LookupStrainResult,
@@ -28,10 +28,10 @@ export const libraryMatchScore = (
     let score = 40 + (sameType.length / userStrains.length) * 30
     const avgThc = reportedAverage(userStrains.map((strain) => strain.thc))
     const avgCbd = reportedAverage(userStrains.map((strain) => strain.cbd))
-    if (isPositiveReported(result.thc) && avgThc !== undefined) {
+    if (isReported(result.thc) && avgThc !== undefined) {
         score += Math.max(0, 20 - Math.abs(result.thc - avgThc))
     }
-    if (isPositiveReported(result.cbd) && avgCbd !== undefined) {
+    if (isReported(result.cbd) && avgCbd !== undefined) {
         score += Math.max(0, 10 - Math.abs(result.cbd - avgCbd) * 5)
     }
     return Math.min(100, Math.max(0, Math.round(score)))

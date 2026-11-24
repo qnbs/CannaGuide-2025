@@ -154,7 +154,10 @@ jobs:
                   RUN_ID: ${{ github.run_id }}
                   RUN_ATTEMPT: ${{ github.run_attempt }}
                   RECEIPT_FILE: claude-review-receipt.json
-              run: node scripts/security/post-claude-review.mjs
+              # The script prints only the receipt on stdout, and nothing when it posted nothing.
+              run: |
+                  node scripts/security/post-claude-review.mjs > receipt.tmp
+                  if [ -s receipt.tmp ]; then mv receipt.tmp "$RECEIPT_FILE"; fi
 
             # Only this run can upload into itself, so the artifact binds the posted review to it.
             - name: Upload the review receipt

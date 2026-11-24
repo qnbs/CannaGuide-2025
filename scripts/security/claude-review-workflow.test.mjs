@@ -128,7 +128,8 @@ test('only the default branch posting script writes, with the run named for prov
     const checkout = post.steps.find((entry) => entry.uses?.startsWith('actions/checkout@'))
     assert.deepEqual(checkout.with, { 'persist-credentials': false })
     const posting = step(post, 'Post the review')
-    assert.equal(posting.run, 'node scripts/security/post-claude-review.mjs')
+    assert.match(posting.run, /^node scripts\/security\/post-claude-review\.mjs > receipt\.tmp\n/)
+    assert.match(posting.run, /if \[ -s receipt\.tmp \]; then mv receipt\.tmp "\$RECEIPT_FILE"; fi/)
     assert.deepEqual(Object.keys(posting.env).sort(), [
         'GH_TOKEN',
         'HEAD_SHA',

@@ -1,7 +1,4 @@
 import assert from 'node:assert/strict'
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { afterEach, test } from 'node:test'
 
 import {
@@ -219,27 +216,20 @@ function fakeGitHub({ headSha = HEAD, state = 'open', postStatuses = [200], revi
     return calls
 }
 
-function receiptEnv(t) {
-    const dir = mkdtempSync(join(tmpdir(), 'cg-claude-post-'))
-    t.after(() => rmSync(dir, { recursive: true, force: true }))
-    return {
-        REVIEW_JSON: JSON.stringify({ summary: 'S', findings: [finding()] }),
-        HEAD_SHA: HEAD,
-        PR_NUMBER: '900',
-        GITHUB_REPOSITORY: 'qnbs/CannaGuide-2025',
-        GH_TOKEN: 'token',
-        RUN_ID: '4242',
-        RUN_ATTEMPT: '1',
-        RECEIPT_FILE: join(dir, 'claude-review-receipt.json'),
-    }
+const env = {
+    REVIEW_JSON: JSON.stringify({ summary: 'S', findings: [finding()] }),
+    HEAD_SHA: HEAD,
+    PR_NUMBER: '900',
+    GITHUB_REPOSITORY: 'qnbs/CannaGuide-2025',
+    GH_TOKEN: 'token',
+    RUN_ID: '4242',
+    RUN_ATTEMPT: '1',
 }
 const quiet = { log: () => undefined }
 
-test('the receipt file names the review GitHub created, for this head and run', async (t) => {
-    const env = receiptEnv(t)
+test('the receipt names the review GitHub created, for this head and run', async () => {
     fakeGitHub({ reviewId: 77 })
-    assert.equal(await main(env, quiet), 'posted')
-    assert.deepEqual(JSON.parse(readFileSync(env.RECEIPT_FILE, 'utf8')), {
+    assert.deepEqual(await main(env, quiet), {
         pull: 900,
         head_sha: HEAD,
         review_id: 77,
@@ -248,20 +238,17 @@ test('the receipt file names the review GitHub created, for this head and run', 
     })
 })
 
-test('nothing is posted, and no receipt written, once the pull request has moved or closed', async (t) => {
-    const env = receiptEnv(t)
+test('nothing is posted, and no receipt returned, once the pull request has moved or closed', async () => {
     for (const options of [{ headSha: 'd'.repeat(40) }, { state: 'closed' }]) {
         const calls = fakeGitHub(options)
-        assert.equal(await main(env, quiet), 'skipped')
+        assert.equal(await main(env, quiet), null)
         assert.equal(calls.filter(({ method }) => method === 'POST').length, 0)
     }
-    assert.throws(() => readFileSync(env.RECEIPT_FILE, 'utf8'), /ENOENT/)
 })
 
-test('a refused inline line falls back to one review with every finding in the body', async (t) => {
-    const env = receiptEnv(t)
+test('a refused inline line falls back to one review with every finding in the body', async () => {
     const calls = fakeGitHub({ postStatuses: [422, 200] })
-    assert.equal(await main(env, quiet), 'posted')
+    assert.equal((await main(env, quiet)).review_id, 77)
     const posts = calls.filter(({ method }) => method === 'POST')
     assert.equal(posts.length, 2)
     assert.equal(posts[0].body.comments.length, 1)
@@ -269,8 +256,7 @@ test('a refused inline line falls back to one review with every finding in the b
     assert.equal(posts[1].body.commit_id, HEAD)
 })
 
-test('missing inputs, a failed post, and a missing review id are errors', async (t) => {
-    const env = receiptEnv(t)
+test('missing inputs, a failed post, and a missing review id are errors', async () => {
     await assert.rejects(main({ ...env, HEAD_SHA: 'short' }, quiet), /are required/)
     await assert.rejects(main({ ...env, GH_TOKEN: '' }, quiet), /are required/)
     await assert.rejects(main({ ...env, RUN_ID: '' }, quiet), /are required/)

@@ -49,7 +49,7 @@ function claudeReview({
 const goodRun = {
     id: RUN_ID,
     path: '.github/workflows/claude-review.yml',
-    event: 'issue_comment',
+    event: 'workflow_dispatch',
     head_branch: 'main',
     repository: 'qnbs/CannaGuide-2025',
     head_repository: 'qnbs/CannaGuide-2025',
@@ -180,14 +180,15 @@ test('Claude counts on its own; the CodeRabbit stand-in is recorded only with ev
     assert.equal(standsIn([codexReceipt, skip]), 'CodeRabbit')
 })
 
-test('only a default-branch run of the Claude workflow, started by a comment, proves provenance', () => {
+test('only a run of the Claude workflow dispatched on main proves provenance', () => {
     const runs = [
         undefined,
         { ...goodRun, id: RUN_ID + 1 },
         { ...goodRun, path: '.github/workflows/claude.yml' },
-        // A pull request can run its own copy of the file, but only on pull_request events.
+        // A dispatch on another branch runs that branch's copy and reports that branch.
         { ...goodRun, event: 'pull_request' },
-        { ...goodRun, event: 'workflow_dispatch' },
+        { ...goodRun, event: 'issue_comment' },
+        { ...goodRun, event: 'push' },
         { ...goodRun, head_branch: 'feature' },
         { ...goodRun, head_repository: 'someone/fork' },
         { ...goodRun, repository: 'someone/CannaGuide-2025' },

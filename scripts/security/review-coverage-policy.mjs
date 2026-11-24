@@ -324,9 +324,10 @@ export function claudeRunToVerify(reviews, headSha, pullNumber) {
 }
 
 /**
- * Only a run of the default branch's claude-review workflow, started by a pull-request
- * comment, can have posted the review: a pull request cannot start an issue_comment run of
- * its own copy, because GitHub runs that event from the default branch only. Naming such a run
+ * Only a run of main's claude-review workflow, dispatched on main, can have posted the review:
+ * a dispatch on another branch runs that branch's copy, and its run reports that branch, so
+ * `head_branch` must be main. (The trigger is workflow_dispatch, not a comment: zizmor ranks
+ * issue_comment a dangerous trigger, and the workflow-lint ratchet only goes down.) Naming such a run
  * is not enough, though: any same-repository workflow with pull-requests write access can post
  * as github-actions[bot]. The run's own receipt artifact, which only that run can upload, has
  * to name this review, this head and this pull request.
@@ -336,7 +337,7 @@ function trustedClaudeRun(run, receipt, review, headSha, pullNumber) {
     return (
         run?.id === receipt.run_id &&
         run.path === CLAUDE_WORKFLOW_PATH &&
-        run.event === 'issue_comment' &&
+        run.event === 'workflow_dispatch' &&
         run.head_branch === 'main' &&
         run.repository === 'qnbs/CannaGuide-2025' &&
         run.head_repository === 'qnbs/CannaGuide-2025' &&

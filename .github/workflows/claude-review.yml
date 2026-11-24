@@ -1,8 +1,9 @@
 name: Claude Review
 
-# An on-demand review by Claude for a pull request (GH #906). It runs only when someone with
-# write access comments `@claude review` on a pull request from this repository; it never runs
-# on push. The review job checks out only the default branch and fetches the changed files at
+# An on-demand review by Claude for a pull request (GH #906). Someone with write access starts
+# it from main with the pull request number (`gh workflow run claude-review.yml --ref main -f
+# pr=<N>`, or Run workflow in the Actions tab); it never runs on push or on comments, since
+# zizmor ranks issue_comment a dangerous trigger and the workflow-lint ratchet only goes down. The review job checks out only the default branch and fetches the changed files at
 # the exact head through the API as data, so no pull-request code is checked out or run.
 # Claude gets Read, Grep and Glob, no shell, no file writes and no GitHub write tools, and
 # returns structured findings. The post job runs only the default branch's script, which
@@ -10,24 +11,25 @@ name: Claude Review
 # has moved, and uploads a receipt artifact naming that review. The policy counts it as one
 # qualified review only when that artifact matches (scripts/security/review-coverage-policy.mjs).
 on:
-    issue_comment:
-        types: [created]
+    workflow_dispatch:
+        inputs:
+            pr:
+                description: Number of the pull request to review (from this repository)
+                required: true
+                type: number
 
 permissions: {}
 
-# Concurrency sits on the jobs, not the workflow: a workflow-level group would let any later
-# comment on the pull request, whose jobs are all skipped, replace a pending review request.
+# Concurrency sits on the jobs: one review and one post per pull request at a time.
 jobs:
     review:
         name: Claude review (read-only)
-        if: >-
-            github.event.issue.pull_request &&
-            startsWith(github.event.comment.body, '@claude review') &&
-            contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+        # Only main's copy of this workflow may review; the policy also rejects any other run.
+        if: github.ref == 'refs/heads/main'
         runs-on: ubuntu-latest
         timeout-minutes: 20
         concurrency:
-            group: claude-review-${{ github.event.issue.number }}
+            group: claude-review-${{ inputs.pr }}
             cancel-in-progress: false
         permissions:
             contents: read # check out the default branch and the pull request head
@@ -51,7 +53,7 @@ jobs:
               id: head
               env:
                   GH_TOKEN: ${{ github.token }}
-                  PR: ${{ github.event.issue.number }}
+                  PR: ${{ inputs.pr }}
               run: |
                   set -euo pipefail
                   pull=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR")
@@ -98,7 +100,7 @@ jobs:
                   display_report: 'false'
                   show_full_output: 'false'
                   prompt: |
-                      Review pull request #${{ github.event.issue.number }} of this repository at commit ${{ steps.head.outputs.sha }}.
+                      Review pull request #${{ inputs.pr }} of this repository at commit ${{ steps.head.outputs.sha }}.
 
                       The default branch is in the working directory. Each file the pull request
                       changes is in .claude-review/head/ at that commit, under its own path. The
@@ -128,7 +130,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 5
         concurrency:
-            group: claude-review-post-${{ github.event.issue.number }}
+            group: claude-review-post-${{ inputs.pr }}
             cancel-in-progress: false
         permissions:
             contents: read # check out the default branch's posting script
@@ -149,7 +151,7 @@ jobs:
               env:
                   REVIEW_JSON: ${{ needs.review.outputs.review }}
                   HEAD_SHA: ${{ needs.review.outputs.sha }}
-                  PR_NUMBER: ${{ github.event.issue.number }}
+                  PR_NUMBER: ${{ inputs.pr }}
                   GH_TOKEN: ${{ github.token }}
                   RUN_ID: ${{ github.run_id }}
                   RUN_ATTEMPT: ${{ github.run_attempt }}

@@ -170,7 +170,7 @@ test('a built review is accepted by the coverage policy, end to end', () => {
             [RUN.id]: {
                 id: RUN.id,
                 path: '.github/workflows/claude-review.yml',
-                event: 'issue_comment',
+                event: 'workflow_dispatch',
                 head_branch: 'main',
                 repository: 'qnbs/CannaGuide-2025',
                 head_repository: 'qnbs/CannaGuide-2025',

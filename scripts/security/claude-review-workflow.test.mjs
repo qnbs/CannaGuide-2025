@@ -27,32 +27,32 @@ const claude = step(review, 'Review')
 const args = String(claude.with.claude_args).split(/\s+(?=--)/)
 const arg = (flag) => args.find((entry) => entry.startsWith(`${flag} `))?.slice(flag.length + 1)
 
-test('it runs only on a pull-request comment, with no default token rights', () => {
-    assert.deepEqual(Object.keys(WORKFLOW.on), ['issue_comment'])
-    assert.deepEqual(WORKFLOW.on.issue_comment, { types: ['created'] })
+test('it runs only when dispatched with a pull request number, with no default token rights', () => {
+    // No comment trigger: zizmor ranks issue_comment a dangerous trigger, and the ratchet
+    // only goes down. Dispatching needs write access to the repository.
+    assert.deepEqual(Object.keys(WORKFLOW.on), ['workflow_dispatch'])
+    assert.deepEqual(WORKFLOW.on.workflow_dispatch.inputs.pr, {
+        description: 'Number of the pull request to review (from this repository)',
+        required: true,
+        type: 'number',
+    })
     assert.deepEqual(WORKFLOW.permissions, {})
-    // On the jobs, not the workflow: a workflow-level group lets any later comment, whose
-    // jobs are all skipped, replace a pending review request.
     assert.equal(WORKFLOW.concurrency, undefined)
     assert.deepEqual(review.concurrency, {
-        group: 'claude-review-${{ github.event.issue.number }}',
+        group: 'claude-review-${{ inputs.pr }}',
         'cancel-in-progress': false,
     })
     assert.deepEqual(post.concurrency, {
-        group: 'claude-review-post-${{ github.event.issue.number }}',
+        group: 'claude-review-post-${{ inputs.pr }}',
         'cancel-in-progress': false,
     })
     assert.deepEqual(Object.keys(WORKFLOW.jobs), ['review', 'post'])
+    assert.doesNotMatch(TEXT, /github\.event\.(issue|comment)/)
 })
 
-test('only a write-access user can start it, with the exact command, on a pull request', () => {
-    const condition = review.if
-    assert.match(condition, /^github\.event\.issue\.pull_request && /)
-    assert.match(condition, /startsWith\(github\.event\.comment\.body, '@claude review'\)/)
-    assert.match(
-        condition,
-        /contains\(fromJSON\('\["OWNER","MEMBER","COLLABORATOR"\]'\), github\.event\.comment\.author_association\)$/,
-    )
+test("only main's copy reviews: a dispatch on another branch does nothing", () => {
+    assert.equal(review.if, "github.ref == 'refs/heads/main'")
+    assert.equal(post.needs, 'review')
 })
 
 test('the review job is read-only and the post job is the only writer', () => {

@@ -241,6 +241,24 @@ test('CLI does not count a bot reply in a thread as a review', CLI_TEST, (t) => 
     )
 })
 
+test('CLI forwards inline comments, so a blank review with a finding counts', CLI_TEST, (t) => {
+    const blank = { ...review('coderabbitai[bot]'), id: 7, body: '' }
+    const reviews = [[blank], [review('sourcery-ai[bot]')]]
+    const inline = [[{ id: 8, pull_request_url: PULL_URL, pull_request_review_id: 7 }]]
+    const result = runCollector(t, {
+        [`${PULL_PATH}/reviews`]: { values: [reviews, reviews] },
+        [`${PULL_PATH}/comments`]: { values: [inline, inline] },
+    })
+
+    assert.equal(result.status, 0, result.stderr || result.stdout)
+    assert.deepEqual(
+        JSON.parse(result.stdout)
+            .qualifiedReviewers.map((reviewer) => reviewer.provider)
+            .sort(),
+        ['CodeRabbit', 'Sourcery'],
+    )
+})
+
 test('CLI preserves a late GitHub failure without emitting partial evidence', CLI_TEST, (t) => {
     const result = runCollector(t, { [COMMENTS_PATH]: { exit: 4 } })
     assert.equal(result.status, 4)

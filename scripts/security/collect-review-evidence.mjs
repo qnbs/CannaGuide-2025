@@ -237,7 +237,7 @@ export function changedFilesFromPullFiles(pullFiles) {
  * Drop reviews and issue comments that do not belong to this pull. The evaluator
  * rejects them anyway; filtering here avoids accidental cross-PR paste-in.
  */
-export function filterEvidenceForPull(pullNumber, reviews, issueComments) {
+export function filterEvidenceForPull(pullNumber, reviews, issueComments, reviewComments = []) {
     const pullUrl = `https://api.github.com/repos/${OWNER}/${REPO}/pulls/${pullNumber}`
     const issueUrl = `https://api.github.com/repos/${OWNER}/${REPO}/issues/${pullNumber}`
     const stableReviews = (Array.isArray(reviews) ? reviews : [])
@@ -246,7 +246,14 @@ export function filterEvidenceForPull(pullNumber, reviews, issueComments) {
     const stableComments = (Array.isArray(issueComments) ? issueComments : [])
         .filter((comment) => comment?.issue_url === issueUrl)
         .sort((a, b) => Number(a.id ?? 0) - Number(b.id ?? 0))
-    return { reviews: stableReviews, issueComments: stableComments }
+    const stableReviewComments = (Array.isArray(reviewComments) ? reviewComments : [])
+        .filter((comment) => comment?.pull_request_url === pullUrl)
+        .sort((a, b) => Number(a.id ?? 0) - Number(b.id ?? 0))
+    return {
+        reviews: stableReviews,
+        issueComments: stableComments,
+        reviewComments: stableReviewComments,
+    }
 }
 
 function assertPullUnchanged(path, before) {
@@ -295,6 +302,7 @@ function main() {
     const changedFiles = readChangedFiles(before)
     const rawReviews = ghApiPages(`${pullPath}/reviews`)
     const rawComments = ghApiPages(`${repo}/issues/${pullNumber}/comments`)
+    const rawReviewComments = ghApiPages(`${pullPath}/comments`)
     assertPullUnchanged(pullPath, before)
     assertSourceBranchMatchesPull(before)
 
@@ -303,11 +311,22 @@ function main() {
     // metadata read also checks updated_at after this second evidence read.
     const confirmedReviews = ghApiPages(`${pullPath}/reviews`)
     const confirmedComments = ghApiPages(`${repo}/issues/${pullNumber}/comments`)
+    const confirmedReviewComments = ghApiPages(`${pullPath}/comments`)
     const recheckedHeadSha = assertPullUnchanged(pullPath, before)
     assertSourceBranchMatchesPull(before)
-    const { reviews, issueComments } = filterEvidenceForPull(pullNumber, rawReviews, rawComments)
-    const confirmed = filterEvidenceForPull(pullNumber, confirmedReviews, confirmedComments)
-    assertEvidenceUnchanged({ reviews, issueComments }, confirmed)
+    const { reviews, issueComments, reviewComments } = filterEvidenceForPull(
+        pullNumber,
+        rawReviews,
+        rawComments,
+        rawReviewComments,
+    )
+    const confirmed = filterEvidenceForPull(
+        pullNumber,
+        confirmedReviews,
+        confirmedComments,
+        confirmedReviewComments,
+    )
+    assertEvidenceUnchanged({ reviews, issueComments, reviewComments }, confirmed)
 
     const evidence = {
         pullNumber,
@@ -316,6 +335,7 @@ function main() {
         changedFiles,
         reviews,
         issueComments,
+        reviewComments,
         now: new Date().toISOString(),
         ...supplement,
     }

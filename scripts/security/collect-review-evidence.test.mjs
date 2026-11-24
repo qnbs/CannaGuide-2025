@@ -8,6 +8,7 @@ import { test } from 'node:test'
 import {
     changedFilesFromPullFiles,
     filterEvidenceForPull,
+    readClaudeRuns,
     readEvidenceSupplement,
     runChild,
 } from './collect-review-evidence.mjs'
@@ -399,4 +400,61 @@ test('policy does not qualify prose as a structured review receipt', () => {
     })
     assert.equal(result.qualifiedReviewers.length, 0)
     assert.equal(result.satisfied, false)
+})
+
+test('readClaudeRuns fetches only receipt-named runs and keeps only the provenance fields', () => {
+    const api = 'https://api.github.com/repos/qnbs/CannaGuide-2025'
+    const receiptReview = (id, runId, login = 'github-actions[bot]') => ({
+        id,
+        pull_request_url: `${api}/pulls/42`,
+        user: { login, type: login === 'qnbs' ? 'User' : 'Bot' },
+        state: 'COMMENTED',
+        commit_id: 'a'.repeat(40),
+        body: `x\n<!-- claude-review-receipt:v1 ${JSON.stringify({ commit_sha: 'a'.repeat(40), status: 'completed', findings: 0, run_id: runId, run_attempt: 1 })} -->`,
+    })
+    const fetched = []
+    const fetchRun = (path) => {
+        fetched.push(path)
+        const id = Number(path.split('/').at(-1))
+        if (id === 3) return null
+        if (id === 4) return { id: 5 }
+        return {
+            id,
+            path: '.github/workflows/claude-review.yml',
+            event: 'issue_comment',
+            head_branch: 'main',
+            repository: { full_name: 'qnbs/CannaGuide-2025' },
+            head_repository: { full_name: 'qnbs/CannaGuide-2025' },
+            run_attempt: 1,
+            created_at: '2026-11-24T10:00:00Z',
+            triggering_actor: { login: 'someone' },
+        }
+    }
+    const runs = readClaudeRuns(
+        'repos/qnbs/CannaGuide-2025',
+        [
+            receiptReview(1, 2),
+            receiptReview(2, 3),
+            receiptReview(3, 4),
+            receiptReview(4, 9, 'qnbs'),
+        ],
+        42,
+        fetchRun,
+    )
+    assert.deepEqual(fetched, [
+        'repos/qnbs/CannaGuide-2025/actions/runs/2',
+        'repos/qnbs/CannaGuide-2025/actions/runs/3',
+        'repos/qnbs/CannaGuide-2025/actions/runs/4',
+    ])
+    assert.deepEqual(Object.keys(runs), ['2'])
+    assert.deepEqual(runs[2], {
+        id: 2,
+        path: '.github/workflows/claude-review.yml',
+        event: 'issue_comment',
+        head_branch: 'main',
+        repository: 'qnbs/CannaGuide-2025',
+        head_repository: 'qnbs/CannaGuide-2025',
+        run_attempt: 1,
+        created_at: '2026-11-24T10:00:00Z',
+    })
 })

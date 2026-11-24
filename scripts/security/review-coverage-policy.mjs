@@ -28,6 +28,10 @@ const TRUST_BOUNDARY_DOC_PATHS = new Set([
     'docs/HOUSEKEEPING.md',
 ])
 
+function isPlainObject(value) {
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 function timestamp(value) {
     const parsed = Date.parse(value ?? '')
     return Number.isFinite(parsed) ? parsed : null
@@ -272,6 +276,129 @@ function unavailableFallback(request, pullNumber, headSha, qualifiedLogins, now)
  * has no body and no new inline comment, so it is not a review of the head. Without
  * inline-comment evidence a blank COMMENTED object does not count either.
  */
+const CLAUDE_KEY = 'claude-review'
+/** The Claude App token is revoked inside the action, so the posting job uses GITHUB_TOKEN. */
+const CLAUDE_POSTER = 'github-actions[bot]'
+const CLAUDE_WORKFLOW_PATH = '.github/workflows/claude-review.yml'
+const CLAUDE_RECEIPT_PREFIX = '<!-- claude-review-receipt:v1 '
+const CLAUDE_RECEIPT = /\n<!-- claude-review-receipt:v1 (\{[^\r\n]*\}) -->\s*$/
+const CODERABBIT_UNAVAILABLE = /Review limit reached|Review rate limited|Review skipped/
+const CODERABBIT_BOT_SKIP = /Review skipped[\s\S]{0,200}Bot user detected/
+
+function claudeReceipt(body) {
+    if (typeof body !== 'string' || body.split(CLAUDE_RECEIPT_PREFIX).length !== 2) return null
+    const match = body.match(CLAUDE_RECEIPT)
+    if (!match) return null
+    try {
+        return JSON.parse(match[1])
+    } catch {
+        return null
+    }
+}
+
+const isClaudeCandidate = (review, pullNumber) =>
+    isReviewBot(review?.user, CLAUDE_POSTER) &&
+    review.pull_request_url === `${API_ROOT}/pulls/${pullNumber}` &&
+    typeof review.body === 'string' &&
+    review.body.includes(CLAUDE_RECEIPT_PREFIX)
+
+/** The workflow runs a Claude receipt names; the collector fetches them as evidence. */
+export function claudeReceiptRunIds(reviews, pullNumber) {
+    const ids = new Set()
+    for (const review of Array.isArray(reviews) ? reviews : []) {
+        if (!isClaudeCandidate(review, pullNumber)) continue
+        const runId = claudeReceipt(review.body)?.run_id
+        if (Number.isSafeInteger(runId) && runId > 0) ids.add(runId)
+    }
+    return [...ids].sort((a, b) => a - b)
+}
+
+/**
+ * Only a run of the default branch's claude-review workflow, started by a pull-request
+ * comment, can have posted the review: a pull request cannot start an issue_comment run of
+ * its own copy, because GitHub runs that event from the default branch only.
+ */
+function trustedClaudeRun(run, receipt, review) {
+    return (
+        run?.id === receipt.run_id &&
+        run.path === CLAUDE_WORKFLOW_PATH &&
+        run.event === 'issue_comment' &&
+        run.head_branch === 'main' &&
+        run.repository === 'qnbs/CannaGuide-2025' &&
+        run.head_repository === 'qnbs/CannaGuide-2025' &&
+        Number.isSafeInteger(receipt.run_attempt) &&
+        Number.isSafeInteger(run.run_attempt) &&
+        run.run_attempt >= receipt.run_attempt &&
+        timestamp(run.created_at) !== null &&
+        timestamp(run.created_at) <= timestamp(review.submitted_at)
+    )
+}
+
+/**
+ * The on-demand Claude review (`.github/workflows/claude-review.yml`) is one formal COMMENT
+ * review bound to the commit Claude read. It counts only with exactly one receipt at the end
+ * of the body naming that head, posted by the workflow's own run, and the latest such review
+ * on the head must not be dismissed. A Claude chat reply or inline comment is no review.
+ */
+function claudeReviewOn(reviews, headSha, pullNumber, runs) {
+    const latest = reviews
+        .filter((review) => isClaudeCandidate(review, pullNumber) && review.commit_id === headSha)
+        .sort((a, b) => compareLatest(a, b, 'submitted_at'))
+        .at(-1)
+    if (!latest || latest.state !== 'COMMENTED' || !timestamp(latest.submitted_at)) return null
+    const receipt = claudeReceipt(latest.body)
+    if (
+        receipt?.commit_sha !== headSha ||
+        receipt.status !== 'completed' ||
+        !Number.isInteger(receipt.findings) ||
+        receipt.findings < 0 ||
+        !Number.isSafeInteger(receipt.run_id)
+    ) {
+        return null
+    }
+    const run = isPlainObject(runs) ? runs[String(receipt.run_id)] : undefined
+    if (!trustedClaudeRun(run, receipt, latest)) return null
+    return {
+        provider: 'Claude',
+        login: CLAUDE_POSTER,
+        state: latest.state,
+        commitSha: headSha,
+        findings: receipt.findings,
+        runId: receipt.run_id,
+        createdAt: latest.submitted_at,
+        source: 'claude_review_receipt',
+    }
+}
+
+/**
+ * CodeRabbit demonstrably could not review this head: a request that names the full head SHA,
+ * answered by CodeRabbit's own limit or skip notice, or its standing skip of a bot-authored
+ * pull request. Only then may the Claude review stand in for it.
+ */
+function codeRabbitUnavailable(issueComments, headSha, pullNumber) {
+    const onThisPull = issueComments.filter(
+        (comment) =>
+            comment?.issue_url === `${API_ROOT}/issues/${pullNumber}` &&
+            typeof comment.body === 'string' &&
+            timestamp(comment.created_at) !== null,
+    )
+    const notices = onThisPull.filter(
+        (comment) =>
+            isReviewBot(comment.user, CODERABBIT_LOGIN) &&
+            CODERABBIT_UNAVAILABLE.test(comment.body),
+    )
+    if (notices.some((notice) => CODERABBIT_BOT_SKIP.test(notice.body))) return true
+    const requests = onThisPull.filter(
+        (comment) =>
+            comment.user?.type === 'User' &&
+            comment.body.includes('@coderabbitai') &&
+            comment.body.includes(headSha),
+    )
+    return requests.some((request) =>
+        notices.some((notice) => timestamp(notice.created_at) >= timestamp(request.created_at)),
+    )
+}
+
 function isThreadReplyOnly(review, reviewComments) {
     if (review.state !== 'COMMENTED') return false
     if (typeof review.body === 'string' && review.body.trim() !== '') return false
@@ -397,6 +524,26 @@ export function evaluateReviewCoverage(evidence) {
         }
     }
 
+    // The on-demand Claude review counts as one qualified provider of its own (owner decision,
+    // 2026-11-24): never as two, and only as the receipt-bound formal review. It is recorded
+    // as standing in for CodeRabbit when CodeRabbit demonstrably could not review this head.
+    const claude = claudeReviewOn(
+        Array.isArray(evidence.reviews) ? evidence.reviews : [],
+        headSha,
+        pullNumber,
+        evidence.claudeRuns,
+    )
+    if (claude && pullNumber !== TRANSITION_PULL_NUMBER) {
+        const standsIn =
+            !qualified.has(CODERABBIT_LOGIN) &&
+            codeRabbitUnavailable(
+                Array.isArray(evidence.issueComments) ? evidence.issueComments : [],
+                headSha,
+                pullNumber,
+            )
+        qualified.set(CLAUDE_KEY, { ...claude, standsInFor: standsIn ? 'CodeRabbit' : null })
+    }
+
     const qualifiedLogins = new Set(qualified.keys())
     const highRisk = risk === 'high'
     const transitionPull = pullNumber === TRANSITION_PULL_NUMBER
@@ -453,6 +600,13 @@ export function evaluateReviewCoverage(evidence) {
                       changeDigest: equivalence.changeDigest,
                   }
                 : null,
+        claudeReview: qualified.has(CLAUDE_KEY)
+            ? {
+                  findings: claude.findings,
+                  runId: claude.runId,
+                  standsInFor: qualified.get(CLAUDE_KEY).standsInFor,
+              }
+            : null,
         fallback,
         requiredReviews,
         satisfied,

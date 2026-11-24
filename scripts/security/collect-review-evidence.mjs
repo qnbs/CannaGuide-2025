@@ -9,6 +9,8 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'node:path'
 
+import { claudeReceiptRunIds } from './review-coverage-policy.mjs'
+
 const OWNER = 'qnbs'
 const REPO = 'CannaGuide-2025'
 const SHA = /^[0-9a-f]{40}$/
@@ -78,6 +80,41 @@ function ghApiPages(pathSuffix) {
 }
 
 const SUPPLEMENT_KEYS = new Set(['headEquivalence', 'secondReviewRequest'])
+const MAX_CLAUDE_RUNS = 5
+
+/**
+ * The workflow runs that Claude review receipts on this pull name, reduced to the fields
+ * the policy checks for provenance. A run that cannot be read is left out, so it proves
+ * nothing, but a planted receipt cannot stop the whole collection.
+ */
+export function readClaudeRuns(repo, reviews, pullNumber, fetchRun = ghRunOrNull) {
+    const runs = {}
+    for (const id of claudeReceiptRunIds(reviews, pullNumber).slice(-MAX_CLAUDE_RUNS)) {
+        const run = fetchRun(`${repo}/actions/runs/${id}`)
+        if (!isPlainObject(run) || run.id !== id) continue
+        runs[id] = {
+            id: run.id,
+            path: run.path,
+            event: run.event,
+            head_branch: run.head_branch,
+            repository: run.repository?.full_name,
+            head_repository: run.head_repository?.full_name,
+            run_attempt: run.run_attempt,
+            created_at: run.created_at,
+        }
+    }
+    return runs
+}
+
+function ghRunOrNull(pathSuffix) {
+    const result = runChild('gh', ['api', pathSuffix], { maxBuffer: GH_MAX_BUFFER })
+    if (!result || result.error || result.status !== 0) return null
+    try {
+        return JSON.parse(result.stdout)
+    } catch {
+        return null
+    }
+}
 
 function isPlainObject(value) {
     if (value === null) return false
@@ -336,6 +373,7 @@ function main() {
         reviews,
         issueComments,
         reviewComments,
+        claudeRuns: readClaudeRuns(repo, reviews, pullNumber),
         now: new Date().toISOString(),
         ...supplement,
     }

@@ -122,7 +122,7 @@ One stable-head correction: collect findings, group them by root cause, and ship
 
 ### Evidence accepted by the operator coverage evaluator
 
-- A **GitHub pull-request review object** counts only when GitHub's API identifies one of the exact allowlisted bot logins (`coderabbitai[bot]`, `codeant-ai[bot]`, `chatgpt-codex-connector[bot]`, `sourcery-ai[bot]`), its GitHub API author type must be Bot, `commit_id` is the full exact current SHA, and the latest review for that provider on that head is submitted in `COMMENTED`, `APPROVED`, or `CHANGES_REQUESTED` state. `PENDING`, `DISMISSED`, unknown states, older heads, and unknown identities do not count. A dismissed latest review invalidates that provider's coverage.
+- A **GitHub pull-request review object** counts only when GitHub's API identifies one of the exact allowlisted bot logins (`coderabbitai[bot]`, `codeant-ai[bot]`, `chatgpt-codex-connector[bot]`, `sourcery-ai[bot]`), its GitHub API author type must be Bot, `commit_id` is the full exact current SHA, and the latest review for that provider on that head is submitted in `COMMENTED`, `APPROVED`, or `CHANGES_REQUESTED` state. `PENDING`, `DISMISSED`, unknown states, older heads, and unknown identities do not count. A dismissed latest review invalidates that provider's coverage. A blank `COMMENTED` object with no new inline comment does not count: GitHub creates one when a bot only replies in an existing thread, even while its review of the head is rate limited.
 - The only supported issue-comment receipts are these two:
     - The codex-review-state:v1 marker emitted by the authenticated Codex bot account (`chatgpt-codex-connector[bot]`): `<!-- codex-pull-request-review-summary -->` followed by exactly one `<!-- codex-review-state:v1 {JSON} -->` marker. Its `code_review.commit_sha` must be a full 40-character lowercase SHA equal to the current head; `status` must equal `completed`; and both `has_any_findings` and `has_unresolved_findings` must be booleans. GitHub API author identity is verified and its author type must be Bot. The latest marked Codex receipt is used. A current-head dismissed Codex review cannot be overridden by a receipt.
     - The CodeRabbit coverage marker in the summary comment of the authenticated CodeRabbit bot account (`coderabbitai[bot]`, author type Bot): the summary marker `<!-- This is an auto-generated comment: summarize by coderabbit.ai -->` and exactly one `<!-- final_review_risk_coverage:{JSON} -->` marker whose `sourceCommitId` and `coveredCommitId` both equal the full current head SHA and whose `kind` is `reviewed`. A CodeRabbit review that finds nothing creates no review object, so without this receipt a clean exact-head pass could not count (PR #866). CodeRabbit edits the summary in place; the latest summary edit is used, and when it has no valid exact-head marker (for example a rate-limited or skipped summary), CodeRabbit does not count. A formal CodeRabbit review on the head takes precedence, and a dismissed one cannot be overridden by the marker.
@@ -181,14 +181,17 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
   sort -zu "$evidence_dir/files" -o "$evidence_dir/files"
   gh api "$pull/reviews" --paginate --slurp | jq -S -c . > "$evidence_dir/reviews-first.json"
   gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/comments-first.json"
+  gh api "$pull/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/review-comments-first.json"
   middle=$(refs)
   [[ "$before" == "$middle" && "$(source_ref)" == "$head" ]]
   gh api "$pull/reviews" --paginate --slurp | jq -S -c . > "$evidence_dir/reviews-second.json"
   gh api "$repo/issues/$PR_NUMBER/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/comments-second.json"
+  gh api "$pull/comments" --paginate --slurp | jq -S -c . > "$evidence_dir/review-comments-second.json"
   after=$(refs)
   [[ "$before" == "$after" && "$(source_ref)" == "$head" ]]
   cmp -s "$evidence_dir/reviews-first.json" "$evidence_dir/reviews-second.json"
   cmp -s "$evidence_dir/comments-first.json" "$evidence_dir/comments-second.json"
+  cmp -s "$evidence_dir/review-comments-first.json" "$evidence_dir/review-comments-second.json"
   read -r _ rechecked_head rechecked_updated_at <<< "$after"
 
   supplement='{}'
@@ -203,9 +206,11 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
     --argjson supplement "$supplement" \
     --rawfile files "$evidence_dir/files" --slurpfile reviews "$evidence_dir/reviews-second.json" \
     --slurpfile comments "$evidence_dir/comments-second.json" \
+    --slurpfile reviewComments "$evidence_dir/review-comments-second.json" \
     '{$pullNumber, $headSha, $recheckedHeadSha, $now,
       changedFiles: ($files | split("\u0000") | map(select(length > 0))),
-      reviews: ($reviews[0] | add // []), issueComments: ($comments[0] | add // [])} + $supplement' \
+      reviews: ($reviews[0] | add // []), issueComments: ($comments[0] | add // []),
+      reviewComments: ($reviewComments[0] | add // [])} + $supplement' \
     > "$evidence_dir/evidence.json"
   node scripts/security/review-coverage-policy.mjs < "$evidence_dir/evidence.json"
 )
@@ -213,7 +218,7 @@ If the collector cannot get a complete comparison, fetch the exact pull base and
 
 Use this manual fallback if the collector reports its 32 MiB response limit or a GitHub API timeout. It writes paginated evidence to local temporary files, verifies the PR and source-branch heads, and rejects changes between two complete evidence reads. It requires complete Git history; it stops on shallow clones so an incomplete merge-base set cannot hide a higher-risk path. If Git has multiple best merge bases, it unions the changed paths from every base so an ambiguous history cannot hide a higher-risk path. For a valid optional supplement, set `EVIDENCE_SUPPLEMENT_JSON` to a local JSON file containing only `headEquivalence` and/or `secondReviewRequest`; the values must meet the policy below. The collector has the same 120-second child-process timeout.
 
-The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. Before and after collection, compare the pull's base/head/updated timestamp and the independently fetched source-branch ref; discard a changed snapshot. Fetch reviews and issue comments twice and require identical evidence. To list changed files, use `git diff --name-only --no-renames` against every best merge base and union the paths; this includes both sides of renames and handles criss-cross histories conservatively. The evaluator defaults uncertain files to high risk.
+The input object contains `pullNumber`, `headSha`, `recheckedHeadSha`, `changedFiles`, `reviews`, `issueComments`, `reviewComments`, and an ISO `now`; each review must come from that PR's `pull_request_url` and each receipt from that PR's `issue_url`. A low-risk fallback also supplies `secondReviewRequest` with `provider`, `pullNumber` (must equal the top-level `pullNumber`), `headSha`, `requestCount`, `requestedAt`, `observedAt`, `result`, and a nonempty `reference`. After a base-only merge, `headEquivalence` holds the unmodified JSON printed by `scripts/security/review-head-equivalence.mjs`. Use the complete API arrays, not summaries. Before and after collection, compare the pull's base/head/updated timestamp and the independently fetched source-branch ref; discard a changed snapshot. Fetch reviews and issue comments twice and require identical evidence. To list changed files, use `git diff --name-only --no-renames` against every best merge base and union the paths; this includes both sides of renames and handles criss-cross histories conservatively. The evaluator defaults uncertain files to high risk.
 
 ### Risk tiers and review count
 

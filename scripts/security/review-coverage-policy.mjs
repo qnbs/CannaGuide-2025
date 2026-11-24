@@ -265,6 +265,21 @@ function unavailableFallback(request, pullNumber, headSha, qualifiedLogins, now)
     return request.result === 'silent' ? elapsed >= DAY : elapsed >= HOUR / 2
 }
 
+/**
+ * A bot that answers in an existing thread creates a COMMENTED review object on the
+ * current head, even while its own review of that head is rate limited. Such an object
+ * has no body and no new inline comment, so it is not a review of the head. Without
+ * inline-comment evidence a blank COMMENTED object does not count either.
+ */
+function isThreadReplyOnly(review, reviewComments) {
+    if (review.state !== 'COMMENTED') return false
+    if (typeof review.body === 'string' && review.body.trim() !== '') return false
+    return !reviewComments.some(
+        (comment) =>
+            comment?.pull_request_review_id === review.id && comment.in_reply_to_id == null,
+    )
+}
+
 /** Evaluate operator-collected GitHub API evidence. This is not a required CI check. */
 export function evaluateReviewCoverage(evidence) {
     const headSha = evidence?.headSha
@@ -290,6 +305,7 @@ export function evaluateReviewCoverage(evidence) {
         }
     }
 
+    const reviewComments = Array.isArray(evidence.reviewComments) ? evidence.reviewComments : []
     const reviewsByLogin = new Map()
     for (const review of Array.isArray(evidence.reviews) ? evidence.reviews : []) {
         const login = review?.user?.login
@@ -300,6 +316,7 @@ export function evaluateReviewCoverage(evidence) {
         )
             continue
         if (!isReviewBot(review.user, login)) continue
+        if (isThreadReplyOnly(review, reviewComments)) continue
         const current = reviewsByLogin.get(login)
         if (!current || compareLatest(review, current, 'submitted_at') > 0) {
             reviewsByLogin.set(login, review)

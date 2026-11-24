@@ -25,6 +25,7 @@ function review(
         pull_request_url: `https://api.github.com/repos/qnbs/CannaGuide-2025/pulls/${pullNumber}`,
         user: { login, type: 'Bot' },
         state,
+        body: 'Reviewed.',
         commit_id: commit,
         submitted_at: submitted,
     }
@@ -88,6 +89,53 @@ test('an authentic completed Codex receipt for the exact head counts once', () =
     )
     assert.equal(result.receiptFindings.hasUnresolvedFindings, false)
     assert.equal(result.satisfied, false, 'two reviews are preferred absent a documented fallback')
+})
+
+test('a bot reply in an existing thread is not a review of the head', () => {
+    const reply = { ...review('coderabbitai[bot]', 'COMMENTED'), id: 300, body: '' }
+    const result = evaluate({
+        reviews: [reply],
+        reviewComments: [{ id: 1, pull_request_review_id: 300, in_reply_to_id: 9 }],
+        issueComments: [receipt()],
+    })
+
+    assert.deepEqual(
+        result.qualifiedReviewers.map((reviewer) => reviewer.login),
+        ['chatgpt-codex-connector[bot]'],
+    )
+    assert.equal(result.satisfied, false)
+})
+
+test('a blank COMMENTED review needs a new inline comment to count', () => {
+    const blank = { ...review('codeant-ai[bot]', 'COMMENTED'), id: 301, body: '  ' }
+    const withFinding = evaluate({
+        reviews: [blank],
+        reviewComments: [{ id: 2, pull_request_review_id: 301, in_reply_to_id: null }],
+    })
+    const withoutEvidence = evaluate({ reviews: [blank] })
+
+    assert.equal(withFinding.qualifiedReviewers.length, 1)
+    assert.deepEqual(withoutEvidence.qualifiedReviewers, [])
+})
+
+test('a later thread reply does not hide a real review on the same head', () => {
+    const real = { ...review('coderabbitai[bot]', 'COMMENTED'), id: 302 }
+    const reply = {
+        ...review('coderabbitai[bot]', 'COMMENTED', HEAD, '2026-11-16T11:00:00Z'),
+        id: 303,
+        body: '',
+    }
+    const result = evaluate({
+        reviews: [real, reply],
+        reviewComments: [{ id: 3, pull_request_review_id: 303, in_reply_to_id: 9 }],
+    })
+
+    assert.equal(result.qualifiedReviewers.length, 1)
+})
+
+test('a blank approval still counts as a completed review', () => {
+    const approval = { ...review('sourcery-ai[bot]', 'APPROVED'), id: 304, body: '' }
+    assert.equal(evaluate({ reviews: [approval] }).qualifiedReviewers.length, 1)
 })
 
 test('a user-authored, copied or malformed Codex receipt is rejected', () => {

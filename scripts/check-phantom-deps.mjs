@@ -170,12 +170,14 @@ function workspacePackages() {
     for (const group of WORKSPACE_DIRS) {
         let entries
         try {
-            entries = readdirSync(join(ROOT, group))
+            entries = readdirSync(join(ROOT, group), { withFileTypes: true })
         } catch {
             continue // group absent
         }
         for (const entry of entries) {
-            const dir = join(ROOT, group, entry)
+            // A plain file in a workspace group (a README, .DS_Store) is not a package.
+            if (!entry.isDirectory()) continue
+            const dir = join(ROOT, group, entry.name)
             const manifest = readManifest(dir)
             if (manifest) packages.push({ dir, manifest })
         }

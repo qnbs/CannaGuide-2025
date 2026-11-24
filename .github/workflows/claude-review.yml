@@ -58,17 +58,28 @@ jobs:
                   set -euo pipefail
                   pull=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR")
                   sha=$(jq -r '.head.sha' <<<"$pull")
+                  base=$(jq -r '.base.sha' <<<"$pull")
                   head_repo=$(jq -r '.head.repo.full_name' <<<"$pull")
                   state=$(jq -r '.state' <<<"$pull")
-                  if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]] || [ "$head_repo" != "$GITHUB_REPOSITORY" ] || [ "$state" != open ]; then
+                  changed=$(jq -r '.changed_files' <<<"$pull")
+                  if [[ ! "$sha" =~ ^[0-9a-f]{40}$ ]] || [[ ! "$base" =~ ^[0-9a-f]{40}$ ]] || [ "$head_repo" != "$GITHUB_REPOSITORY" ] || [ "$state" != open ]; then
                     echo "::error::Only open pull requests from this repository are reviewed."
                     exit 1
                   fi
+                  # The compare API lists at most 300 files, so a larger inventory would be cut.
+                  if [[ ! "$changed" =~ ^[0-9]+$ ]] || [ "$changed" -gt 300 ]; then
+                    echo "::error::A Claude review covers at most 300 changed files."
+                    exit 1
+                  fi
+                  # The diff and the file inventory come from a compare pinned to the base and
+                  # head read above, like the contents below: a head that moves and returns
+                  # meanwhile cannot slip another commit's changes under this head's receipt.
+                  compare="repos/$GITHUB_REPOSITORY/compare/$base...$sha"
                   mkdir -p .claude-review/head
-                  gh api "repos/$GITHUB_REPOSITORY/pulls/$PR" -H 'Accept: application/vnd.github.diff' > .claude-review/full.patch
+                  gh api "$compare" -H 'Accept: application/vnd.github.diff' > .claude-review/full.patch
                   head -c 400000 .claude-review/full.patch > .claude-review/diff.patch
-                  gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/files" \
-                    --jq '.[] | "\(.status)\t\(.filename | @base64)"' > .claude-review/files.tsv
+                  gh api "$compare?per_page=1" \
+                    --jq '.files[] | "\(.status)\t\(.filename | @base64)"' > .claude-review/files.tsv
                   # Each changed file at the exact head, fetched as data; the path is decoded,
                   # checked to stay inside head/, and capped at 300 files of 1 MB each.
                   count=0

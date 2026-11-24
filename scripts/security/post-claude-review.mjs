@@ -165,8 +165,9 @@ function placeFindings(findings, files, inline) {
     return { comments, outside }
 }
 
+// The path is escaped for display only; inline placement keeps the exact path.
 const findingHead = (finding) =>
-    `- **${finding.severity}** \`${finding.path}:${finding.line}\` -- ${finding.title}: `
+    `- **${finding.severity}** \`${sanitize(finding.path, 300)}:${finding.line}\` -- ${finding.title}: `
 
 function shortened(finding, share) {
     const head = findingHead(finding)

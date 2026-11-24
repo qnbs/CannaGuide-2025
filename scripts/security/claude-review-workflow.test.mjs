@@ -98,6 +98,12 @@ test('no pull-request code is checked out: its changed files arrive through the 
     assert.equal(arg('--add-dir'), undefined)
     const resolveHead = step(review, 'Resolve the exact head and the diff').run
     assert.match(resolveHead, /head_repo" != "\$GITHUB_REPOSITORY"/)
+    // Diff and inventory are pinned to the same base and head as the contents, never the live PR.
+    assert.match(resolveHead, /compare="repos\/\$GITHUB_REPOSITORY\/compare\/\$base\.\.\.\$sha"/)
+    assert.match(resolveHead, /gh api "\$compare" -H 'Accept: application\/vnd\.github\.diff'/)
+    assert.match(resolveHead, /gh api "\$compare\?per_page=1"/)
+    assert.doesNotMatch(resolveHead, /pulls\/\$PR\/files|pulls\/\$PR" -H/)
+    assert.match(resolveHead, /\[ "\$changed" -gt 300 \]/)
     // Each file is fetched at the exact head SHA, by a decoded path kept inside head/.
     assert.match(resolveHead, /contents\/\$encoded_path\?ref=\$sha/)
     assert.match(resolveHead, /@base64/)

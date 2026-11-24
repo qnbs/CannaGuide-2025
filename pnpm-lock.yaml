@@ -72,8 +72,8 @@ importers:
         specifier: ^1.65.0
         version: 1.65.1
       '@socketsecurity/cli':
-        specifier: ^1.15.0
-        version: 1.15.0
+        specifier: ^1.16.0
+        version: 1.16.0
       '@typescript-eslint/eslint-plugin':
         specifier: 8.73.0
         version: 8.73.0(@typescript-eslint/parser@8.73.0(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)
@@ -123,8 +123,8 @@ importers:
         specifier: ^3.10.1
         version: 3.10.1
       snyk:
-        specifier: ^1.1308.4
-        version: 1.1308.4
+        specifier: ^1.1309.0
+        version: 1.1309.0
       tsx:
         specifier: ^4.23.1
         version: 4.23.1
@@ -140,6 +140,9 @@ importers:
       wrangler:
         specifier: ^4.110.0
         version: 4.110.0(@types/node@26.1.1)
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
 
   apps/desktop:
     dependencies:
@@ -2807,8 +2810,8 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
-  '@socketsecurity/cli@1.15.0':
-    resolution: {integrity: sha512-gkFRLGAB/i/ZS1ifMNJZeHjYWk072xtLewqV91G7jbKkbYQF2lY/4fpePgNG1CRNcOyv64SIlbo/Zb06msOpgw==}
+  '@socketsecurity/cli@1.16.0':
+    resolution: {integrity: sha512-qCOHhLNwO2l7iSmypu/JqHydYQyp5PKMaqP6BWuUILhiT72F8YFG3WSRp+6kzLObR4S6Ukp3vPX+ojS4EjsjCQ==}
     engines: {node: '>=18.20.8', pnpm: '>=10.33.0'}
     hasBin: true
 
@@ -6975,8 +6978,8 @@ packages:
     resolution: {integrity: sha512-RQsvleCbF8cVHEv+xuDGaA4pOizFqJ0GgjtMSRo6oP8pnN7WsigHgVGey6aILRBKv4W2YOMHLqbKdnB6hpB9fw==}
     engines: {node: '>=20.0.0'}
 
-  snyk@1.1308.4:
-    resolution: {integrity: sha512-BhGSPx0lDhPdq1pTpC3xrdryUcsDKGlS9vt/bJkY33XHxe4OqdXuWxsuzcV/YZIKFnx6gwVXkMUdeHRtJUIA5A==}
+  snyk@1.1309.0:
+    resolution: {integrity: sha512-55HKwR2tnG+MKFAXZdB6XP/SC5PrGUEQChJBfMC+uRBDxma8YynaRRBIeBAG0jQ91o/UaZ8s3wZgk7xSIW6Lpg==}
     engines: {node: '>=12'}
     hasBin: true
     bundledDependencies:
@@ -7888,11 +7891,6 @@ packages:
   yaml@1.10.3:
     resolution: {integrity: sha512-vIYeF1u3CjlhAFekPPAk2h/Kv4T3mAkMox5OymRiJQB0spDP10LHvt+K7G9Ny6NuuMAb25/6n1qyUjAcGNf/AA==}
     engines: {node: '>= 6'}
-
-  yaml@2.9.0:
-    resolution: {integrity: sha512-2AvhNX3mb8zd6Zy7INTtSpl1F15HW6Wnqj0srWlkKLcpYl/gMIMJiyuGq2KeI2YFxUPjdlB+3Lc10seMLtL4cA==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
 
   yaml@2.9.1:
     resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
@@ -10387,9 +10385,10 @@ snapshots:
 
   '@sindresorhus/merge-streams@4.0.0': {}
 
-  '@socketsecurity/cli@1.15.0':
+  '@socketsecurity/cli@1.16.0':
     dependencies:
       '@socketsecurity/socket-patch': 2.0.0(patch_hash=375db8e6bdf3a95986598bdffcecc5defdbe14f45de028c075c3397a02d59e33)
+      cross-spawn: 7.0.6
       form-data: 4.0.6
 
   '@socketsecurity/socket-patch-android-arm64@2.0.0':
@@ -15034,7 +15033,7 @@ snapshots:
 
   smob@1.6.2: {}
 
-  snyk@1.1308.4:
+  snyk@1.1309.0:
     dependencies:
       '@sentry/node': 7.120.4
 
@@ -15509,7 +15508,7 @@ snapshots:
       markdown-it: 14.3.3
       minimatch: 10.2.5
       typescript: 6.0.3
-      yaml: 2.9.0
+      yaml: 2.9.1
 
   typescript@6.0.3: {}
 
@@ -15995,10 +15994,7 @@ snapshots:
 
   yaml@1.10.3: {}
 
-  yaml@2.9.0: {}
-
-  yaml@2.9.1:
-    optional: true
+  yaml@2.9.1: {}
 
   yargs-parser@13.1.2:
     dependencies:

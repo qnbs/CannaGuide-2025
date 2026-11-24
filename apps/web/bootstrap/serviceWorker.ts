@@ -28,7 +28,7 @@ export const acceptServiceWorkerUpdate = (waiting: ServiceWorker | null): boolea
 /** Bounds the removal, so a stuck lookup can never hold the desktop start. */
 export const DESKTOP_WORKER_REMOVAL_MS = 2000
 /** Set before the one reload, so a page that is still controlled afterwards starts anyway. */
-export const DESKTOP_WORKER_RELOAD_FLAG = 'cannaguide-desktop-worker-removed'
+export const DESKTOP_WORKER_RELOAD_FLAG = 'cg.pwa.desktopWorkerRemoved'
 
 const unregisterAll = async (): Promise<boolean> => {
     let timer: ReturnType<typeof setTimeout> | undefined

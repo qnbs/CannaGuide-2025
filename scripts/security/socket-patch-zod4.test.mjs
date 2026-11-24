@@ -28,7 +28,7 @@ function findPackageRoot(entry) {
 
 /** Read the version the root lockfile importer resolves for a direct dependency. */
 function lockedRootVersion(lockfile, packageName) {
-    const lines = lockfile.split('\n')
+    const lines = lockfile.split(/\r?\n/u)
     const importer = lines.indexOf('  .:')
     assert.notEqual(importer, -1, 'the lockfile has no root importer')
     const keys = new Set([`      ${packageName}:`, `      '${packageName}':`])
@@ -173,6 +173,7 @@ test('Socket contract helpers follow the lockfile and the Zod override range', (
         /not locked by the root importer/u,
     )
     assert.throws(() => lockedRootVersion('packages:\n', 'snyk'), /no root importer/u)
+    assert.equal(lockedRootVersion(lockfile.replaceAll('\n', '\r\n'), 'snyk'), '1.1309.0')
 
     for (const version of ['4.6.7', '4.6.10', '4.7.0', '4.10.0']) {
         assert.equal(isSupportedZodVersion(version), true, version)

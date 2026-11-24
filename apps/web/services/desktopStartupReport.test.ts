@@ -64,6 +64,7 @@ describe('desktopStartupReport', () => {
             hydration: 'backup',
             localOnly: true,
             savedSnapshotPresent: false,
+            serviceWorkerControlled: false,
         })
         expect(mocks.hasStoredItem).toHaveBeenCalledWith('cannaguide-redux-storage')
 

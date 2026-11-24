@@ -48,7 +48,7 @@ import { parseArgs } from 'node:util'
 import { isDisposableRunner, removeAppFolder } from './desktop-smoke-profile.mjs'
 
 export const IDENTIFIER = 'com.cannaguide.desktop'
-export const REPORT_SCHEMA = 2
+export const REPORT_SCHEMA = 3
 const FLUSH_TIMEOUT_LINE = '[quit] no flush confirmation from the frontend'
 const QUIT_TIMEOUT_MS = 30_000
 const SECOND_INSTANCE_WAIT_MS = 15_000
@@ -148,6 +148,13 @@ export function evaluateRecord(record, { version, run, target }) {
             `${run}: Local-Only default off`,
             frontend.localOnly === false,
             String(frontend.localOnly),
+        ),
+        // The desktop shell runs no service worker: one that took over can answer a
+        // later start with its offline page, and no app code runs (GH #931).
+        check(
+            `${run}: no service worker controls the page`,
+            frontend.serviceWorkerControlled === false,
+            String(frontend.serviceWorkerControlled),
         ),
     ]
     if (run.startsWith('restart')) {

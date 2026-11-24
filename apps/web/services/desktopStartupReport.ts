@@ -12,8 +12,9 @@
 //
 // The report holds no user data: an outcome, the build version, which view is on
 // screen, whether the page is visible, where the state came from (saved snapshot,
-// backup or fresh), the Local-Only flag, whether a saved snapshot exists, and for an
-// error only its class name -- never its message.
+// backup or fresh), the Local-Only flag, whether a saved snapshot exists, whether a
+// service worker controls the page, and for an error only its class name -- never its
+// message.
 // ---------------------------------------------------------------------------
 import { whenPersistenceIdle } from '@/bootstrap/persistenceCoordinator'
 import { REDUX_STATE_KEY } from '@/constants'
@@ -40,6 +41,8 @@ export interface DesktopStartupReport {
     localOnly: boolean
     /** Diagnostic only: a stored snapshot can exist and still not have been loaded. */
     savedSnapshotPresent: boolean
+    /** Whether a service worker controls this page; the desktop shell runs none (GH #931). */
+    serviceWorkerControlled: boolean
     /** An error's class name, e.g. "TypeError"; the native side enforces the shape. */
     errorCode?: string
 }
@@ -87,6 +90,8 @@ export const buildDesktopStartupReport = async (
     hydration: getStartupHydration(),
     localOnly: isLocalOnlyMode(),
     savedSnapshotPresent: await snapshotPresent(),
+    serviceWorkerControlled:
+        'serviceWorker' in navigator && navigator.serviceWorker.controller !== null,
     ...(error === undefined ? {} : { errorCode: errorCodeOf(error) }),
 })
 

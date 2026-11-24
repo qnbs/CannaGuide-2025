@@ -45,6 +45,7 @@ const record = (frontend = {}) => ({
         hydration: 'snapshot',
         localOnly: false,
         savedSnapshotPresent: true,
+        serviceWorkerControlled: false,
         ...frontend,
     },
 })
@@ -89,6 +90,21 @@ test('a window that starts hidden fails, even with a rendered view', () => {
         ),
         ['first-start: window visible'],
     )
+})
+
+test('a page a service worker controls fails, and so does a report without the flag', () => {
+    for (const serviceWorkerControlled of [true, undefined]) {
+        assert.deepEqual(
+            failed(
+                evaluateRecord(record({ serviceWorkerControlled }), {
+                    version: '1.12.1',
+                    run: 'restart',
+                }),
+            ),
+            ['restart: no service worker controls the page'],
+            String(serviceWorkerControlled),
+        )
+    }
 })
 
 test('a restart must load the saved snapshot; finding it on disk is not enough', () => {
@@ -225,7 +241,7 @@ const hydration = mode === 'fresh-restart' ? 'fresh' : existsSync(saved) ? 'snap
 publish(report, JSON.stringify({
     schema: ${REPORT_SCHEMA}, nativeVersion: '1.12.1', os: process.platform, arch: process.arch, readyAfterMs: 5,
     frontend: { outcome: 'started', frontendVersion: '1.12.1', view: 'app', visible: true, hydration,
-        localOnly: false, savedSnapshotPresent: existsSync(saved) },
+        localOnly: false, savedSnapshotPresent: existsSync(saved), serviceWorkerControlled: false },
 }))
 const quit = () => {
     if (mode === 'flush-timeout') {

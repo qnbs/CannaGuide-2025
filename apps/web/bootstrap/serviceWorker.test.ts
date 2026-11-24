@@ -286,17 +286,20 @@ describe('the desktop shell runs no service worker (GH #931)', () => {
 })
 
 describe('service worker install does not skip waiting', () => {
-    it('keeps skipWaiting on the SKIP_WAITING message only', () => {
+    it('keeps the web install waiting; only the desktop shell and SKIP_WAITING skip it', () => {
         const source = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
         const installAt = source.indexOf("self.addEventListener('install'")
         const activateAt = source.indexOf("self.addEventListener('activate'")
         const installBody = source.slice(installAt, activateAt)
+        const desktopGuard =
+            /if \(IS_DESKTOP_SHELL\) \{[\s\S]*?\n {4}\}\n/.exec(installBody)?.[0] ?? ''
 
         expect(installAt).toBeGreaterThan(-1)
         expect(activateAt).toBeGreaterThan(installAt)
-        expect(installBody).not.toContain('self.skipWaiting')
-        expect(source.match(/self\.skipWaiting\(\)/g)).toHaveLength(1)
+        // The desktop shell stands down at once; the web path waits for the user.
+        expect(desktopGuard).toContain('self.skipWaiting()')
+        expect(installBody.replace(desktopGuard, '')).not.toContain('self.skipWaiting')
+        expect(source.match(/self\.skipWaiting\(\)/g)).toHaveLength(2)
         expect(source).toContain("event.data.type === 'SKIP_WAITING'")
-        expect(source).toContain('self.skipWaiting()')
     })
 })

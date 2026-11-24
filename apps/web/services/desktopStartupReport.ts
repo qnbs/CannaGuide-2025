@@ -104,7 +104,8 @@ const serviceWorkerRegistered = (): Promise<boolean | null> =>
     'serviceWorker' in navigator
         ? withinProbeTime<boolean | null>(async () => {
               await pageLoaded()
-              return (await navigator.serviceWorker.getRegistration()) !== undefined
+              // Every registration on the origin, not only one whose scope covers this page.
+              return (await navigator.serviceWorker.getRegistrations()).length > 0
           }, null)
         : Promise.resolve(false)
 

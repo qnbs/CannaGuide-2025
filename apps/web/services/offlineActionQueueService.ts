@@ -36,6 +36,13 @@ const readyWithin = async (ms: number): Promise<ServiceWorkerRegistration | unde
     }
 }
 
+const registerDataSync = async (registration: ServiceWorkerRegistration): Promise<boolean> => {
+    if (!('sync' in registration)) return false
+    await // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Background Sync API
+    (registration.sync as { register: (tag: string) => Promise<void> }).register('data-sync')
+    return true
+}
+
 const formatActionType = (action: OfflineActionRecord): string => {
     if (action.type === OFFLINE_ACTION_TYPES.ADD_JOURNAL_ENTRY) {
         return 'journalEntry'
@@ -83,13 +90,18 @@ export const offlineActionQueueService = {
         }
         try {
             const registration = await readyWithin(SERVICE_WORKER_READY_MS)
-            if (registration && 'sync' in registration) {
-                await // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Background Sync API
-                (registration.sync as { register: (tag: string) => Promise<void> }).register(
-                    'data-sync',
-                )
-                return true
+            if (registration === undefined) {
+                // The caller hears "unavailable" now, but a worker that becomes ready later
+                // still gets the replay scheduled, so the queued entry is not stranded.
+                void navigator.serviceWorker.ready.then(registerDataSync).catch((err: unknown) => {
+                    console.debug(
+                        '[offlineActionQueue] Late background sync registration failed:',
+                        err,
+                    )
+                })
+                return false
             }
+            return await registerDataSync(registration)
         } catch (err) {
             console.debug('[offlineActionQueue] Background sync registration failed:', err)
         }

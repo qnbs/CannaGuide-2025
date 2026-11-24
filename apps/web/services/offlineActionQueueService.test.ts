@@ -42,14 +42,24 @@ describe('requestBackgroundSync without a service worker (GH #931)', () => {
         expect(ready).not.toHaveBeenCalled()
     })
 
-    it('gives up when no worker becomes ready in time', async () => {
+    it('answers unavailable in time, and still schedules the replay for a late worker', async () => {
         vi.useFakeTimers()
-        vi.stubGlobal('navigator', { serviceWorker: { ready: new Promise(() => undefined) } })
+        let becomeReady: (registration: unknown) => void = () => undefined
+        const ready = new Promise((resolve) => {
+            becomeReady = resolve
+        })
+        const register = vi.fn().mockResolvedValue(undefined)
+        vi.stubGlobal('navigator', { serviceWorker: { ready } })
         const { offlineActionQueueService, SERVICE_WORKER_READY_MS } =
             await import('./offlineActionQueueService')
         const pending = offlineActionQueueService.requestBackgroundSync()
         await vi.advanceTimersByTimeAsync(SERVICE_WORKER_READY_MS)
         await expect(pending).resolves.toBe(false)
+        expect(register).not.toHaveBeenCalled()
+
+        becomeReady({ sync: { register } })
+        await vi.advanceTimersByTimeAsync(0)
+        expect(register).toHaveBeenCalledWith('data-sync')
     })
 
     it('still registers the sync once a worker is ready', async () => {

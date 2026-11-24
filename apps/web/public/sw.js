@@ -210,6 +210,10 @@ const offlineFallback = new Response(
 
 self.addEventListener('install', (event) => {
     if (IS_DESKTOP_SHELL) {
+        // Take over at once: a stale worker would otherwise keep answering the open window
+        // until it closes, since nothing there posts SKIP_WAITING. The activate handler then
+        // unregisters. The web build still waits for the user to accept an update.
+        self.skipWaiting()
         return
     }
     // Do not skipWaiting here. Doing so activates this worker, claims the

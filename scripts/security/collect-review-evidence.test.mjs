@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
 import { test } from 'node:test'
@@ -12,6 +12,7 @@ import {
     readEvidenceSupplement,
     runChild,
 } from './collect-review-evidence.mjs'
+import { buildReview, parseStructuredReview } from './post-claude-review.mjs'
 import { evaluateReviewCoverage } from './review-coverage-policy.mjs'
 
 const PULL = 903
@@ -177,6 +178,7 @@ function runCollector(t, overrides = {}, argv = [String(PULL), '--expect-head', 
         `#!/usr/bin/env node
 import * as fs from 'node:fs'
 const route = process.argv[3]
+fs.appendFileSync(process.env.CANNAGUIDE_REVIEW_REQUESTS + '.log', process.argv.slice(2, 4).join(' ') + '\\n')
 const responses = JSON.parse(process.env.CANNAGUIDE_REVIEW_FIXTURE)
 const response = responses[route]
 if (process.argv[2] !== 'api' || !response) process.exit(90)
@@ -197,6 +199,7 @@ process.stdout.write(JSON.stringify(response.values[index], null, 2))
 `,
         { mode: 0o755 },
     )
+    t.requestLog = join(dir, 'requests.json.log')
     return spawnSync(process.execPath, [cli, ...argv], {
         encoding: 'utf8',
         env: {
@@ -321,6 +324,44 @@ test('CLI rechecks the source branch after collecting initial evidence', CLI_TES
     assert.equal(result.status, 1)
     assert.equal(result.stdout, '')
     assert.match(result.stderr, /Source branch and pull request heads differ/)
+})
+
+test('CLI reads the Claude run and receipt before the confirmation pass', CLI_TEST, (t) => {
+    // A head that moves while the run or its artifact is fetched must void the snapshot, so
+    // those reads have to come before the second evidence read and the final head check.
+    const built = buildReview({
+        review: parseStructuredReview({ summary: 'Clean.', findings: [] }),
+        headSha: HEAD,
+        run: { id: 4242, attempt: 1 },
+        files: [],
+    })
+    const claude = {
+        id: 7,
+        pull_request_url: PULL_URL,
+        user: { login: 'github-actions[bot]', type: 'Bot' },
+        commit_id: HEAD,
+        state: 'COMMENTED',
+        body: built.body,
+        submitted_at: '2026-01-01T00:00:00Z',
+    }
+    const pages = [[review('coderabbitai[bot]'), claude]]
+    const runPath = 'repos/qnbs/CannaGuide-2025/actions/runs/4242'
+    const result = runCollector(t, {
+        [`${PULL_PATH}/reviews`]: { values: [pages, pages] },
+        [runPath]: { values: [{ id: 4242 }] },
+    })
+    assert.equal(result.status === 0 || result.status === 1, true, result.stderr)
+    const order = readFileSync(t.requestLog, 'utf8').trim().split('\n')
+    const reviewReads = order.flatMap((entry, index) =>
+        entry === `api ${PULL_PATH}/reviews` ? [index] : [],
+    )
+    assert.equal(reviewReads.length, 2)
+    const pullReads = order.flatMap((entry, index) => (entry === `api ${PULL_PATH}` ? [index] : []))
+    for (const claudeRead of [`api ${runPath}`, 'run download']) {
+        const at = order.indexOf(claudeRead)
+        assert.ok(at > reviewReads[0] && at < reviewReads[1], `${claudeRead} at ${at}: ${order}`)
+        assert.ok(at < pullReads.at(-1), `${claudeRead} after the final head check`)
+    }
 })
 
 test('CLI rejects review or receipt changes during evidence collection', CLI_TEST, (t) => {

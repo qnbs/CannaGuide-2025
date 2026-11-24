@@ -377,6 +377,16 @@ function main() {
     const rawReviewComments = ghApiPages(`${pullPath}/comments`)
     assertPullUnchanged(pullPath, before)
     assertSourceBranchMatchesPull(before)
+    const { reviews, issueComments, reviewComments } = filterEvidenceForPull(
+        pullNumber,
+        rawReviews,
+        rawComments,
+        rawReviewComments,
+    )
+    // Claude's run and receipt artifact are network reads too. They come before the
+    // confirmation pass, so a head that moves or a review dismissed meanwhile voids the
+    // snapshot instead of reaching the policy.
+    const claudeRuns = readClaudeRuns(repo, reviews, headSha, pullNumber)
 
     // A second read catches reviews being dismissed and receipt comments being
     // edited while the first paginated snapshot was in flight. The final PR
@@ -386,12 +396,6 @@ function main() {
     const confirmedReviewComments = ghApiPages(`${pullPath}/comments`)
     const recheckedHeadSha = assertPullUnchanged(pullPath, before)
     assertSourceBranchMatchesPull(before)
-    const { reviews, issueComments, reviewComments } = filterEvidenceForPull(
-        pullNumber,
-        rawReviews,
-        rawComments,
-        rawReviewComments,
-    )
     const confirmed = filterEvidenceForPull(
         pullNumber,
         confirmedReviews,
@@ -408,7 +412,7 @@ function main() {
         reviews,
         issueComments,
         reviewComments,
-        claudeRuns: readClaudeRuns(repo, reviews, headSha, pullNumber),
+        claudeRuns,
         now: new Date().toISOString(),
         ...supplement,
     }

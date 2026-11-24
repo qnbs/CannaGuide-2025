@@ -159,15 +159,6 @@ export const suspendPersistenceForRecovery = async (): Promise<ResumePersistence
 }
 
 /**
- * After the last save before a desktop quit or update restart: the native side then
- * releases the profile lock and closes or hides the window, whose `visibilitychange`
- * handler would save again -- possibly after a new instance has taken the profile.
- * Same contract as the recovery suspension: wait for a running write, start none,
- * and resume through the returned function (null while already suspended).
- */
-export const suspendPersistenceForQuit = suspendPersistenceForRecovery
-
-/**
  * No write may start once `delayMs` have passed. The native side stops waiting for a
  * slow last save at a fixed time and releases the profile lock, so the save itself
  * has to end by then (GH #883). It reads a monotonic clock when a write starts, so
@@ -180,6 +171,20 @@ export const fencePersistenceWritesAfter = (delayMs: number): (() => void) => {
     return () => {
         if (lastWriteFence === fence) lastWriteFence = undefined
     }
+}
+
+/**
+ * After the last save before a desktop quit or update restart: the native side then
+ * releases the profile lock and closes or hides the window, whose `visibilitychange`
+ * handler would save again -- possibly after a new instance has taken the profile.
+ * Starts no write from now on and waits for a running one. This is a fence and not the
+ * recovery suspension, so a newer quit or restart that replaces this hold can still
+ * save: its own fence takes over, and resuming this one leaves that fence in place.
+ */
+export const suspendPersistenceForQuit = async (): Promise<ResumePersistence> => {
+    const lift = fencePersistenceWritesAfter(0)
+    await activeWrite
+    return lift
 }
 
 /**

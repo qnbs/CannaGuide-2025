@@ -53,6 +53,7 @@ export const setupPersistedStateSync = (
                     const state = hydratedStore.getState() as RootState
                     const optimizedSimulation = await dbService.optimizeSimulationForPersistence(
                         state.simulation,
+                        isBlocked,
                     )
                     const stateToSave = buildPersistedSnapshot(
                         state,

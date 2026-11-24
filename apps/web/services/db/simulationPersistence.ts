@@ -87,6 +87,7 @@ const splitJournals = (simulationState: SimulationState, keepPerPlant: number): 
 export const simulationPersistence = {
     async optimizeSimulationForPersistence(
         simulationState: SimulationState,
+        isBlocked: () => boolean = () => false,
     ): Promise<SimulationState> {
         const estimate = await getStorageEstimateSnapshot()
         const keepPerPlant = chooseJournalRetentionLimit(estimate.usageRatio)
@@ -95,7 +96,7 @@ export const simulationPersistence = {
             keepPerPlant,
         )
 
-        if (Object.keys(archivedByPlant).length > 0) {
+        if (Object.keys(archivedByPlant).length > 0 && !isBlocked()) {
             await metadataStore.updateMetadata<ArchivedJournalMap>(
                 ARCHIVED_LOGS_METADATA_KEY,
                 (existingArchive) =>

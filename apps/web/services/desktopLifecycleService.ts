@@ -457,7 +457,7 @@ export const releaseWriteHold = (kind?: HoldKind): void => {
 /**
  * Starts the last save: from LAST_WRITE_START_MS on no write may start, even while this
  * save is still running. If the page outlives the native wait, the same hold ends after
- * LAST_SAVE_HOLD_MS more, so a save that never returns cannot stop saving for good.
+ * LAST_SAVE_HOLD_MS more and the page saves again.
  */
 const openLastSaveWindow = (
     flush: PersistFlush | undefined,
@@ -511,10 +511,10 @@ const holdWritesAfterLastSave = async (
         hold.holdFrom(resume)
         return
     }
-    // The hold ended while this waited for a running write, so its catch-up save was
-    // refused by the suspension that ends here. Save again now.
     resume()
-    void flush?.().catch(() => undefined)
+    // The hold ended while this waited for a running write, so its catch-up save was
+    // refused. A replacement hold makes its own last save instead.
+    if (activeHold === undefined) void flush?.().catch(() => undefined)
 }
 
 export const flushThenConfirmFinalSave = async (

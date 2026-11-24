@@ -108,6 +108,13 @@ describe('journal overflow archive (GH #668)', () => {
         expect(state.plants.entities.p1?.journal).toHaveLength(10)
     })
 
+    it('writes no archive once a quit deadline has passed (GH #883)', async () => {
+        await simulationPersistence.optimizeSimulationForPersistence(simulationWith(10), () => true)
+
+        expect(store.writes).toBe(0)
+        expect(archivedIds()).toEqual([])
+    })
+
     it('adds only the new overflow when the journal grows', async () => {
         await simulationPersistence.optimizeSimulationForPersistence(simulationWith(10))
         await simulationPersistence.optimizeSimulationForPersistence(simulationWith(12))

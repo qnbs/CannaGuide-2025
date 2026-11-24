@@ -790,13 +790,49 @@ describe('a last save slower than the native wait (GH #883)', () => {
     it('saves again if the page outlives a save that never returns', async () => {
         vi.useFakeTimers()
         const save = deferredSave()
+        const flush = vi.fn(save.flush)
         const { bridge } = fakeBridge()
-        void flushThenConfirmQuit(save.flush, async () => bridge)
+        void flushThenConfirmQuit(flush, async () => bridge)
 
         await vi.advanceTimersByTimeAsync(LAST_WRITE_START_MS + LAST_SAVE_HOLD_MS - 1)
         await expect(schedulePersistenceWrite(async () => undefined)).resolves.toBe(false)
+        expect(flush).toHaveBeenCalledTimes(1)
         await vi.advanceTimersByTimeAsync(1)
+        expect(flush).toHaveBeenCalledTimes(2)
         await expect(schedulePersistenceWrite(async () => undefined)).resolves.toBe(true)
+    })
+
+    it('a quit that replaces a hold still waiting for a write saves, and nothing follows', async () => {
+        let finishRunning: () => void = () => undefined
+        const running = schedulePersistenceWrite(
+            () =>
+                new Promise<void>((done) => {
+                    finishRunning = done
+                }),
+        )
+        await settle()
+        const { bridge: finalBridge } = fakeBridge()
+        const finalSave = flushThenConfirmFinalSave(
+            async () => true,
+            async () => finalBridge,
+        )
+        await settle()
+
+        const quitWrite = vi.fn(async () => undefined)
+        const { bridge, calls } = fakeBridge()
+        const quit = flushThenConfirmQuit(
+            () => schedulePersistenceWrite(quitWrite),
+            async () => bridge,
+        )
+        await settle()
+        finishRunning()
+        await Promise.all([running, finalSave, quit])
+
+        expect(quitWrite).toHaveBeenCalledOnce()
+        expect(calls).toContain('confirm_quit')
+        const afterConfirm = vi.fn(async () => undefined)
+        await expect(schedulePersistenceWrite(afterConfirm)).resolves.toBe(false)
+        expect(afterConfirm).not.toHaveBeenCalled()
     })
 
     it('a slow save that a newer quit replaced does not hold that quit', async () => {

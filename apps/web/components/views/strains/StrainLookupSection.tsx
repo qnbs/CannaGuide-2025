@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react'
+import { libraryMatchScore } from '@/components/views/strains/strainLookup/libraryMatchScore'
 import { isPositiveReported } from '@/components/views/strains/reportedStrainFacts'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
@@ -44,27 +45,10 @@ export const StrainLookupSection: React.FC = memo(() => {
     const isFavorited = result !== null && favoriteIds.includes(result.id)
 
     // Compute match score from user library
-    const matchScore = useMemo(() => {
-        if (!result || !userStrains || userStrains.length === 0) return 0
-        let score = 40
-        const typeCounts: Record<string, number> = {}
-        let thcSum = 0
-        let cbdSum = 0
-        for (const s of userStrains) {
-            if (s.type) typeCounts[s.type] = (typeCounts[s.type] ?? 0) + 1
-            thcSum += s.thc ?? 0
-            cbdSum += s.cbd ?? 0
-        }
-        const total = userStrains.length
-        const avgThc = thcSum / total
-        const avgCbd = cbdSum / total
-        const typeRatio = (typeCounts[result.type] ?? 0) / total
-        score += typeRatio * 30
-        if (isPositiveReported(result.thc)) score += Math.max(0, 20 - Math.abs(result.thc - avgThc))
-        if (isPositiveReported(result.cbd))
-            score += Math.max(0, 10 - Math.abs(result.cbd - avgCbd) * 5)
-        return Math.min(100, Math.max(0, Math.round(score)))
-    }, [result, userStrains])
+    const matchScore = useMemo(
+        () => (result && userStrains ? libraryMatchScore(result, userStrains) : 0),
+        [result, userStrains],
+    )
 
     // Real-time suggestions
     useEffect(() => {

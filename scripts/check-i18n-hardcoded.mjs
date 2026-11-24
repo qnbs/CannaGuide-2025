@@ -17,7 +17,8 @@
 //     htmlFor, src, href, rel, target, pattern, encoding props
 //   - Single-word strings (likely enum values, CSS classes, identifiers)
 //   - Strings that are template literals with expressions {`...${...}...`}
-//   - Lines containing t(, i18next, useTranslation, getT(
+//   - Lines containing i18next, useTranslation, getT( (a `{t(...)}` expression is removed
+//     first, so the text next to it is still checked)
 //   - Test files (*.test.tsx)
 //   - Known technical strings (URLs, hex colors, mime types, file paths)
 //   - Console/debug statements
@@ -58,7 +59,6 @@ const OWN_LINE_TEXT = /^\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?'-]+){1,})\s*$/
 
 // Lines to skip entirely
 const SKIP_LINE_PATTERNS = [
-    /\bt\s*\(/, // already uses t()
     /useTranslation/, // i18n import
     /getT\s*\(/, // service-side i18n
     /i18next/i, // i18n reference
@@ -136,13 +136,16 @@ function collectTsxFiles(dir) {
 
 /** Whether a line sits between JSX tags: after an opening tag or before a closing one. */
 function isBetweenTags(lines, index) {
-    const previous = lines.slice(0, index).findLast((entry) => entry.trim()) ?? ''
+    const previous = (lines.slice(0, index).findLast((entry) => entry.trim()) ?? '').trimEnd()
     const next = lines.slice(index + 1).find((entry) => entry.trim()) ?? ''
     const following = next.trimStart()
-    return (
-        previous.trimEnd().endsWith('>') || following.startsWith('</') || following.startsWith('{')
-    )
+    // `=>` and `->` end a line of code or prose, not an opening tag.
+    const afterTag = previous.endsWith('>') && !/[=-]>$/.test(previous)
+    return afterTag || following.startsWith('</') || following.startsWith('{')
 }
+
+/** A translated `{t('...')}` expression, which says nothing about the text beside it. */
+const TRANSLATED_EXPRESSION = /\{\s*t\s*\([^{}]*\)\s*\}/g
 
 const shortened = (value) => (value.length > 60 ? value.slice(0, 57) + '...' : value)
 
@@ -165,11 +168,14 @@ export function scanSource(content) {
             continue
         }
         if (shouldSkipLine(line)) continue
+        // `<p>{t('a')} Some Words</p>` still has hardcoded text once the translation is gone.
+        const checked = line.replace(TRANSLATED_EXPRESSION, '')
+        if (/\bt\s*\(/.test(checked)) continue
 
         // Check i18n-sensitive props with hardcoded string values
         let propMatch
         I18N_SENSITIVE_PROPS.lastIndex = 0
-        while ((propMatch = I18N_SENSITIVE_PROPS.exec(line)) !== null) {
+        while ((propMatch = I18N_SENSITIVE_PROPS.exec(checked)) !== null) {
             const value = propMatch[1]
             if (!isIgnoredContent(value)) {
                 findings.push({ line: i + 1, type: 'prop', text: shortened(value) })
@@ -179,7 +185,7 @@ export function scanSource(content) {
         // Check JSX text content
         let textMatch
         JSX_TEXT_CONTENT.lastIndex = 0
-        while ((textMatch = JSX_TEXT_CONTENT.exec(line)) !== null) {
+        while ((textMatch = JSX_TEXT_CONTENT.exec(checked)) !== null) {
             const value = textMatch[1]
             if (!isIgnoredContent(value)) {
                 findings.push({ line: i + 1, type: 'text', text: shortened(value) })

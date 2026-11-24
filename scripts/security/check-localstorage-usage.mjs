@@ -193,18 +193,65 @@ function importedName(source, local) {
     return null
 }
 
+/** A next token that continues an expression onto the following line. */
+const CONTINUATION = /^(?:[+\-*/%?:.[(|&^<>=`]|\?\?)/
+
+/**
+ * The source with every comment blanked out (newlines kept, so line numbers hold). A `//` or
+ * `/*` opens a comment only at the start of a line or after whitespace or a delimiter, so the
+ * slashes that end a regex literal such as `/https?:\/\//` do not. A quoted string ends at its
+ * line at the latest, so a quote inside a regex literal cannot swallow the code below it.
+ */
+export function maskComments(source) {
+    let out = ''
+    for (let at = 0; at < source.length;) {
+        const opensComment =
+            (source.startsWith('//', at) || source.startsWith('/*', at)) &&
+            (at === 0 || /[\s;,(){}[\]]/.test(source[at - 1]))
+        if (opensComment) {
+            const end = source.startsWith('//', at)
+                ? source.indexOf('\n', at)
+                : source.indexOf('*/', at + 2) + 2
+            const stop = end <= 0 || end === 1 ? source.length : end
+            out += source.slice(at, stop).replace(/[^\n]/g, ' ')
+            at = stop
+            continue
+        }
+        const quote = source[at]
+        if (quote === "'" || quote === '"' || quote === '`') {
+            let end = at + 1
+            while (end < source.length && source[end] !== quote) {
+                if (quote !== '`' && source[end] === '\n') break
+                end += source[end] === '\\' ? 2 : 1
+            }
+            end = Math.min(end + 1, source.length)
+            out += source.slice(at, end)
+            at = end
+            continue
+        }
+        out += source[at]
+        at += 1
+    }
+    return out
+}
+
 /** The string a constant holds, following aliases, imports and re-exports; null when unknown. */
 export function resolveConstant(file, name, root = ROOT, depth = 0) {
     if (depth > MAX_DEPTH) return null
     let source
     try {
-        source = readFileSync(join(root, file), 'utf8')
+        source = maskComments(readFileSync(join(root, file), 'utf8'))
     } catch {
         return null
     }
     const declaration = new RegExp(
         `(?:^|[\\n;])\\s*(?:export\\s+)?const\\s+${name}\\s*(?::[^=\\n]+)?=\\s*([^\\n;]+)`,
     ).exec(source)
+    // An initializer that goes on past its line (`'a'\n + '.b'`) is not the literal it starts with.
+    const continued =
+        declaration &&
+        CONTINUATION.test(source.slice(declaration.index + declaration[0].length).trimStart())
+    if (continued) return null
     if (declaration) {
         const value = declaration[1]
             .trim()
@@ -229,15 +276,22 @@ const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
  * shadowed name is treated as computed and needs a review (no scope analysis without a parser).
  */
 export function isShadowed(source, name) {
+    const word = new RegExp(`(?<![\\w$])${name}(?![\\w$])`)
     const parameterLists = [
         ...source.matchAll(/\bfunction\b[^(]*\(([^()]*)\)/g),
-        ...source.matchAll(/\(([^()]*)\)\s*(?::[^=>{]+)?(?:=>|\{)/g),
+        // Not the condition of `if (...) {` and the like: that is an expression, not a parameter list.
+        ...source.matchAll(
+            /(?<!\b(?:if|while|for|switch|catch|with)\s*)\(([^()]*)\)\s*(?::[^=>{]+)?(?:=>|\{)/g,
+        ),
     ].map((match) => match[1])
-    const parameters = parameterLists.flatMap((list) =>
-        list.split(',').map((part) => /^\s*(?:\.\.\.)?([A-Za-z_$][\w$]*)/.exec(part)?.[1]),
-    )
-    if (parameters.includes(name)) return true
+    // Any mention in a parameter list counts, destructured (`{ KEY }`, `[KEY]`) or as a
+    // default: a call there may see the parameter, so the key is treated as computed.
+    if (parameterLists.some((list) => word.test(list))) return true
     if (new RegExp(`\\b${name}\\s*=>`).test(source)) return true
+    const destructured = new RegExp(
+        `\\b(?:const|let|var)\\s*[{[][^=]*?(?<![\\w$.])${name}(?![\\w$])[^=]*?[}\\]]\\s*=`,
+    )
+    if (destructured.test(source)) return true
     if (new RegExp(`\\b(?:let|var)\\s+${name}\\b|\\bcatch\\s*\\(\\s*${name}\\s*\\)`).test(source))
         return true
     return (source.match(new RegExp(`\\bconst\\s+${name}\\b`, 'g')) ?? []).length > 1
@@ -299,14 +353,24 @@ function matchingBrace(source, start) {
  * The `name` property at the top level of an options object, wherever it stands. Comments are
  * skipped and keep the place of a property; strings are skipped and end it, so neither a
  * commented-out name nor a comma inside a string or comment can stand in for the real one.
+ * The last `name` wins, as in JavaScript, and a spread after it may override it, so the name
+ * is then unknown (undefined).
  */
 function topLevelName(objectText) {
     let depth = 0
     let propertyStart = true
+    let name
+    let spreadAfterName = false
     for (let at = 0; at < objectText.length;) {
         if (depth === 0 && propertyStart) {
-            const match = PERSIST_NAME.exec(objectText.slice(at))
-            if (match) return match[2]
+            const rest = objectText.slice(at)
+            const match = PERSIST_NAME.exec(rest)
+            if (match) {
+                name = match[2]
+                spreadAfterName = false
+            } else if (/^\s*\.\.\./.test(rest)) {
+                spreadAfterName = true
+            }
         }
         const skipped = nonCodeLength(objectText, at)
         if (skipped > 0) {
@@ -321,13 +385,15 @@ function topLevelName(objectText) {
         else if (!/\s/.test(char)) propertyStart = false
         at += 1
     }
-    return undefined
+    return spreadAfterName ? undefined : name
 }
 
 /** Every storage call in one file, classified by how its key is known. */
 export function storageCalls(file, source, root = ROOT) {
     const calls = []
-    for (const match of source.matchAll(STORAGE_CALL)) {
+    // A commented-out call is not a call: it must not keep an allowance or a review entry alive.
+    const code = maskComments(source)
+    for (const match of code.matchAll(STORAGE_CALL)) {
         const expression = firstArgument(source, match.index + match[0].length)
         const line = source.slice(0, match.index).split('\n').length
         const site = { file, line, storage: match[1], method: match[2] }
@@ -341,7 +407,7 @@ export function storageCalls(file, source, root = ROOT) {
             continue
         }
         const key =
-            IDENTIFIER.test(expression) && !isShadowed(source, expression)
+            IDENTIFIER.test(expression) && !isShadowed(code, expression)
                 ? resolveConstant(file, expression, root)
                 : null
         calls.push(
@@ -350,9 +416,9 @@ export function storageCalls(file, source, root = ROOT) {
                 : { ...site, expression, kind: 'constant', key },
         )
     }
-    for (const match of source.matchAll(PERSIST_STORAGE)) {
+    for (const match of code.matchAll(PERSIST_STORAGE)) {
         // The name comes from the same options object as the storage option, in any order.
-        const options = enclosingObject(source, match.index)
+        const options = enclosingObject(code, match.index)
         const name = options === null ? undefined : topLevelName(options)
         const line = source.slice(0, match.index).split('\n').length
         const site = { file, line, storage: match[1], method: 'setItem', expression: 'persist' }
@@ -382,7 +448,6 @@ function reviewedKeyProblem(call, entry) {
 
 const KNOWN_KINDS = new Set(['literal', 'constant', 'persist'])
 
-/** The violations for a set of classified calls and the reviewed dynamic-key entries. */
 /** Why one call fails, recording the review entry it uses; null when it passes. */
 function callProblem(call, reviewed, used) {
     if (KNOWN_KINDS.has(call.kind)) return knownKeyProblem(call)
@@ -393,6 +458,7 @@ function callProblem(call, reviewed, used) {
     return reviewedKeyProblem(call, entry)
 }
 
+/** The violations for a set of classified calls and the reviewed dynamic-key entries. */
 export function violations(calls, reviewed = REVIEWED_DYNAMIC_KEYS) {
     const used = new Set()
     const problems = calls

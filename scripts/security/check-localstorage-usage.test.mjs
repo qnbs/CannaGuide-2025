@@ -10,6 +10,7 @@ import {
     appSourceFiles,
     firstArgument,
     isShadowed,
+    maskComments,
     resolveConstant,
     stalePatterns,
     storageCalls,
@@ -190,6 +191,82 @@ test('the persisted store name comes from its own options object, in any order',
     const [persisted] = storageCalls('apps/web/store.ts', source, root)
     assert.equal(persisted.kind, 'persist')
     assert.equal(persisted.key, 'raw-secret-store')
+})
+
+test('a commented-out call is not a call, and masking keeps code after a regex literal', () => {
+    const source = [
+        "// localStorage.setItem('installed_plugins_v1', value)",
+        "/* sessionStorage.getItem(ANY) */ localStorage.getItem('cg.ai.auditLog')",
+        "const url = /https?:\\/\\// ; localStorage.removeItem('cg.ai.costTracker')",
+        'const quote = /[\'"]/',
+        "localStorage.getItem('cg.ai.auditLog')",
+    ].join('\n')
+    assert.equal(maskComments(source).split('\n').length, 5)
+    const calls = storageCalls('apps/web/masked.ts', source)
+    assert.deepEqual(
+        calls.map(({ line, key }) => [line, key]),
+        [
+            [2, 'cg.ai.auditLog'],
+            [3, 'cg.ai.costTracker'],
+            [5, 'cg.ai.auditLog'],
+        ],
+    )
+})
+
+test('a constant that continues past its line is computed, a one-line one resolves', (t) => {
+    const root = fixture(t, {
+        'apps/web/multi.ts': "export const KEY = 'cg.ai.auditLog'\n    + '.private'\n",
+        'apps/web/single.ts': "export const KEY = 'cg.ai.auditLog'\nexport const OTHER = 1\n",
+    })
+    assert.equal(resolveConstant('apps/web/multi.ts', 'KEY', root), null)
+    assert.equal(resolveConstant('apps/web/single.ts', 'KEY', root), 'cg.ai.auditLog')
+})
+
+test('destructured bindings and parameters shadow a constant; a condition does not', () => {
+    for (const shadowing of [
+        'function save({ KEY }) {}',
+        'const load = ([KEY]) => KEY',
+        'function f(value = KEY) {}',
+        'const { KEY } = settings',
+        'let [first, KEY] = pair',
+        'for (const KEY of keys) {}',
+    ]) {
+        assert.equal(isShadowed(`const KEY = 'a'\n${shadowing}`, 'KEY'), true, shadowing)
+    }
+    for (const plain of ['if (stored !== KEY) {}', 'while (KEY) {}', 'other.KEY_SUFFIX']) {
+        assert.equal(isShadowed(`const KEY = 'a'\n${plain}`, 'KEY'), false, plain)
+    }
+})
+
+test('the last persisted name wins, and a spread after it makes the name unknown', (t) => {
+    const sources = {
+        'apps/web/spread.ts': [
+            'persist(store, {',
+            "    name: 'cannaguide-iot-settings',",
+            '    storage: createJSONStorage(() => localStorage),',
+            "    ...{ name: 'raw-secret-store' },",
+            '})',
+        ].join('\n'),
+        'apps/web/spread-first.ts': [
+            'persist(store, {',
+            '    ...defaults,',
+            "    name: 'cannaguide-iot-settings',",
+            '    storage: createJSONStorage(() => localStorage),',
+            '})',
+        ].join('\n'),
+        'apps/web/twice.ts': [
+            'persist(store, {',
+            "    name: 'cannaguide-iot-settings',",
+            '    storage: createJSONStorage(() => localStorage),',
+            "    name: 'raw-secret-store',",
+            '})',
+        ].join('\n'),
+    }
+    const root = fixture(t, sources)
+    const first = (file) => storageCalls(file, sources[file], root)[0]
+    assert.equal(first('apps/web/spread.ts').kind, 'dynamic')
+    assert.equal(first('apps/web/spread-first.ts').key, 'cannaguide-iot-settings')
+    assert.equal(first('apps/web/twice.ts').key, 'raw-secret-store')
 })
 
 const call = (fields) => ({ file: 'apps/web/x.ts', line: 1, storage: 'localStorage', ...fields })

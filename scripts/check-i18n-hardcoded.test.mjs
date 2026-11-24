@@ -41,7 +41,6 @@ test('a class list, an export or a URL on the line no longer hides its text', ()
 
 test('translated text, comments, code and single words stay quiet', () => {
     for (const source of [
-        "<p>{t('plants.title')} Some Words</p>",
         '// <p>Some Hardcoded Words</p>',
         ' * <p>Some Hardcoded Words</p>',
         '<p>Live</p>',
@@ -71,6 +70,20 @@ test('text inside a multi-line block or JSX comment is not UI text', () => {
     assert.deepEqual(texts('<input accept="image/*" />\n<p>Some Hardcoded Words</p>'), [
         '2:Some Hardcoded Words',
     ])
+})
+
+test('text beside a translated expression is checked; translated text alone is not', () => {
+    assert.deepEqual(texts("<p>{t('plants.title')} Some Words</p>"), ['1:Some Words'])
+    assert.deepEqual(texts("<p>{t('plants.title')}</p>"), [])
+    // A call the stripper cannot remove still skips its line, as before.
+    assert.deepEqual(texts("<p>{t('a', { n: 1 })} Some Words</p>"), [])
+})
+
+test('an arrow or prose arrow is not an opening tag', () => {
+    for (const before of ['const render = () =>', 'Step one ->']) {
+        assert.deepEqual(texts(`${before}\n    Some Example Text\nconst next = 1`), [], before)
+    }
+    assert.deepEqual(texts('<p>\n    Some Example Text\nconst next = 1'), ['2:Some Example Text'])
 })
 
 test('CI runs the check in strict mode, so a finding fails the job', () => {

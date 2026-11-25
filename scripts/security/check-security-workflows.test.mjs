@@ -76,7 +76,8 @@ test('Scorecard runs weekly and on demand, not on every push to main', () => {
     const workflow = parse(readFileSync('.github/workflows/scorecard.yml', 'utf8'))
     assert.deepEqual(Object.keys(workflow.on).sort(), ['schedule', 'workflow_dispatch'])
     assert.equal(workflow.on.schedule.length, 1)
-    assert.match(workflow.on.schedule[0].cron, /^\d+ \d+ \* \* [0-6]$/)
+    // Mondays at 05:19 UTC; a changed schedule has to change this test too.
+    assert.equal(workflow.on.schedule[0].cron, '19 5 * * 1')
     // The publication gate itself is unchanged.
     const scorecard = workflow.jobs.analysis.steps.find((step) => step.id === 'scorecard')
     assert.equal(scorecard.with.publish_results, true)

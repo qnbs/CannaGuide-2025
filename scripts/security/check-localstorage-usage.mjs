@@ -10,8 +10,9 @@
  *   REVIEWED_DYNAMIC_KEYS with the keys it produces, so a new dynamic key fails until
  *   someone reviews it, and an entry whose call is gone fails as stale.
  *
- * Before 2026-11-24 the check read literal keys only, in six directories: 91 calls that
- * pass a constant or a computed key were never checked.
+ * Before 2026-11-24 the check read literal keys only. On `main` at v1.12.2 that was 6 of
+ * 106 storage calls: the other 100 pass a constant or a computed key and were never checked,
+ * and the persisted IoT store was not seen at all.
  *
  * Exits 1 on an unknown key, an unreviewed dynamic key, or a stale review entry.
  */
@@ -226,9 +227,13 @@ export function maskComments(source) {
 }
 
 const QUOTES = `'"\``
-/** Tokens after which a `/` starts a regex literal, not a division. */
+/**
+ * Tokens after which a `/` starts a regex literal, not a division: an operator, a delimiter,
+ * or a reserved word that is not a property name (`x.return / 2` divides). `of` is left out
+ * because it can be a variable name.
+ */
 const BEFORE_REGEX =
-    /(?:^|[(,=:[!&|?{};+\-*%<>~^]|\b(?:return|typeof|case|in|of|new|delete|void|throw|yield|await))$/
+    /(?:^|[(,=:[!&|?{};+\-*%<>~^]|(?<![.#$\w])(?:return|typeof|case|in|new|delete|void|throw|yield|await))$/
 
 /** Where a regex literal opening at `at` ends, or -1 for a division or no closing `/`. */
 function regexEnd(source, at) {
@@ -242,7 +247,8 @@ function regexEnd(source, at) {
         if (char === '\\') end += 1
         else if (char === '[') inClass = true
         else if (char === ']') inClass = false
-        else if (char === '/' && !inClass) return end + 1
+        // A closing `/` that starts a `//` is more likely a division before a comment.
+        else if (char === '/' && !inClass) return source[end + 1] === '/' ? -1 : end + 1
     }
     return -1
 }

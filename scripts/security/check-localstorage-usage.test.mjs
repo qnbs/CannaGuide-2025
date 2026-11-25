@@ -224,6 +224,13 @@ test('a backtick inside a regex literal opens no template that shifts the maskin
         "localStorage.removeItem('cg.ai.costTracker')",
         'const half = total / 2 / count',
         "localStorage.setItem('cg.ai.auditLog', `x`)",
+        // Divisions after a name that is also a keyword: the comment must stay a comment.
+        'const of = 8',
+        "const ratio = of / 2 // localStorage.setItem('raw_api_key', value)",
+        "const share = box.return / 2 // localStorage.setItem('raw_api_key', value)",
+        // A division continued on its own line: the line start counts as a regex start.
+        'const wrapped = total',
+        "    / 2 // localStorage.setItem('raw_api_key', value)",
     ].join('\n')
     const calls = storageCalls('apps/web/regex.ts', source)
     assert.deepEqual(

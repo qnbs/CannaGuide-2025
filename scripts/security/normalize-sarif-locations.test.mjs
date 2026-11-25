@@ -56,6 +56,7 @@ test('root-relative, relative, workspace-absolute and file: URIs map to the trac
         'apps/desktop/src-tauri/Cargo.lock',
     )
     assert.equal(map('file:///ws/repo/pnpm-lock.yaml'), 'pnpm-lock.yaml')
+    assert.equal(map('file://localhost/ws/repo/pnpm-lock.yaml'), 'pnpm-lock.yaml')
     assert.equal(map('apps//desktop/./src-tauri/Cargo.lock'), 'apps/desktop/src-tauri/Cargo.lock')
     assert.equal(map('apps/desktop/../../pnpm-lock.yaml'), 'pnpm-lock.yaml')
     // Percent-encoding is decoded for the lookup.
@@ -69,6 +70,8 @@ test('external paths, other schemes, traversal and malformed URIs are not mapped
         '/ws/repo-other/pnpm-lock.yaml', // a sibling directory, not the workspace
         'https://example.org/pnpm-lock.yaml', // another scheme
         'file://host/ws/repo/pnpm-lock.yaml', // a file: URI on another host is not this path
+        'file:///pnpm-lock.yaml', // an absolute file: URI outside the workspace
+        'file:///usr/lib/pnpm-lock.yaml',
         '/../etc/passwd', // climbs out of the root
         'apps/../../etc/passwd', // climbs out of the repository
         '%E0%A4%A', // malformed percent-encoding

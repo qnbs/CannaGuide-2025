@@ -5,6 +5,8 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
+import { parse } from 'yaml'
+
 import { collectTsxFiles, EXCLUDED_FILES, scanSource } from './check-i18n-hardcoded.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -118,10 +120,16 @@ test('an excluded file is excluded by its path, not by its name in any directory
 })
 
 test('CI runs the check in strict mode, so a finding fails the job', () => {
-    // Without CHECK_I18N_STRICT=1 the check prints its findings and exits 0.
-    const ci = readFileSync(resolve(ROOT, '.github/workflows/ci.yml'), 'utf8')
-    assert.match(
-        ci,
-        /- name: Hardcoded UI strings \(web app \.tsx\)\n(?:\s+#[^\n]*\n)*\s+env:\n\s+CHECK_I18N_STRICT: '1'\n\s+run: pnpm run lint:i18n\n/,
-    )
+    // Without CHECK_I18N_STRICT=1 the check prints its findings and exits 0. Read the parsed
+    // workflow, not its layout, so a renamed step or an inline variable still counts.
+    const ci = parse(readFileSync(resolve(ROOT, '.github/workflows/ci.yml'), 'utf8'))
+    const steps = Object.values(ci.jobs)
+        .flatMap((job) => job.steps ?? [])
+        .filter((step) => /\blint:i18n\b/.test(step.run ?? ''))
+    assert.ok(steps.length > 0, 'no CI step runs lint:i18n')
+    for (const step of steps) {
+        const strict =
+            String(step.env?.CHECK_I18N_STRICT) === '1' || /\bCHECK_I18N_STRICT=1\b/.test(step.run)
+        assert.ok(strict, `${step.name ?? step.run} runs lint:i18n without CHECK_I18N_STRICT=1`)
+    }
 })

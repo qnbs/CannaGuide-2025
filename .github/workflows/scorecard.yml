@@ -22,6 +22,9 @@ jobs:
         timeout-minutes: 20
         outputs:
             results_published: ${{ steps.scorecard.outputs.results_published }}
+            # The HTTP status of the final publish attempt, `skipped` or `error`; empty when
+            # the action never reached publication (for example, its image did not pull).
+            publication_status: ${{ steps.scorecard.outputs.publication_status }}
         permissions:
             id-token: write
             contents: read
@@ -48,9 +51,11 @@ jobs:
                   publish_results: true
                   fail_on_publish_error: true
 
+            # Only a written result can be uploaded; without one the analysis step has
+            # already failed the job, and an upload error would only hide that cause.
             - name: Upload Scorecard SARIF
-              if: always()
-              uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+              if: always() && hashFiles('scorecard-results.sarif') != ''
+              uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
               with:
                   sarif_file: scorecard-results.sarif
 
@@ -63,11 +68,35 @@ jobs:
         timeout-minutes: 5
         permissions: {}
         steps:
+            # results_published is true only after the Scorecard API accepted the results.
+            # fail_on_publish_error fails the analysis only on a rejection (a 4xx other than
+            # 408 or 429); this job also fails on 5xx, timeouts, rate limits, no answer, and a
+            # run that never reached publication, and names which of those it was.
             - name: Require published Scorecard results
               env:
                   RESULTS_PUBLISHED: ${{ needs.analysis.outputs.results_published }}
+                  PUBLICATION_STATUS: ${{ needs.analysis.outputs.publication_status }}
+                  ANALYSIS_RESULT: ${{ needs.analysis.result }}
               run: |
-                  if [ "$RESULTS_PUBLISHED" != "true" ]; then
-                      echo "::error::Scorecard results were not published."
-                      exit 1
+                  status="$PUBLICATION_STATUS"
+                  case "$status" in
+                      skipped | error | [1-5][0-9][0-9]) ;;
+                      *) status="" ;;
+                  esac
+                  case "$ANALYSIS_RESULT" in
+                      success | failure | cancelled | skipped) analysis="$ANALYSIS_RESULT" ;;
+                      *) analysis="unknown" ;;
+                  esac
+                  if [ "$RESULTS_PUBLISHED" = "true" ]; then
+                      echo "Scorecard results were published (HTTP ${status:-unknown})."
+                      exit 0
                   fi
+                  case "$status" in
+                      "") echo "::error::Scorecard never reached publication: the analysis job ended '$analysis' without a publication status. Its log shows whether the action image, the analysis or the action itself failed." ;;
+                      skipped) echo "::error::Scorecard did not attempt to publish (publish_results is off, or the event was a pull request)." ;;
+                      error) echo "::error::The Scorecard API gave no answer (a network or signing failure). Nothing was published." ;;
+                      408 | 429) echo "::error::The Scorecard API asked to retry later (HTTP $status, a timeout or rate limit). Nothing was published." ;;
+                      4*) echo "::error::The Scorecard API rejected the results (HTTP $status). Check the workflow restrictions." ;;
+                      *) echo "::error::The Scorecard API answered HTTP $status. Nothing was published." ;;
+                  esac
+                  exit 1

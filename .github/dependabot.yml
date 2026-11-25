@@ -129,3 +129,11 @@ updates:
       commit-message:
           prefix: 'chore'
           include: scope
+      groups:
+          # Every step that uses github/codeql-action (init, analyze, autobuild,
+          # upload-sarif) must run the same version, or the analysis fails at once.
+          # Separate PRs per sub-action broke every CodeQL job (GH #925).
+          codeql-action:
+              patterns:
+                  - 'github/codeql-action'
+                  - 'github/codeql-action/*'

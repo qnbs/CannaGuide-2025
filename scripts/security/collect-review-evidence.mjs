@@ -5,9 +5,12 @@
  * does not post comments, edit reviews, or fabricate receipts.
  */
 import { spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { resolve } from 'node:path'
+import { join, resolve } from 'node:path'
+
+import { claudeRunToVerify } from './review-coverage-policy.mjs'
 
 const OWNER = 'qnbs'
 const REPO = 'CannaGuide-2025'
@@ -78,6 +81,75 @@ function ghApiPages(pathSuffix) {
 }
 
 const SUPPLEMENT_KEYS = new Set(['headEquivalence', 'secondReviewRequest'])
+/**
+ * The workflow run the latest Claude review on the head names, reduced to the fields the
+ * policy checks, plus that run's own receipt artifact naming the review it posted. Only the
+ * run itself can upload that artifact, so a review that merely names the run fails. A run or
+ * artifact that cannot be read is left out: it proves nothing, but a planted receipt cannot
+ * stop the whole collection.
+ */
+export function readClaudeRuns(
+    repo,
+    reviews,
+    headSha,
+    pullNumber,
+    fetchRun = ghRunOrNull,
+    fetchReceipt = downloadClaudeReceipt,
+) {
+    const target = claudeRunToVerify(reviews, headSha, pullNumber)
+    if (!target) return {}
+    const run = fetchRun(`${repo}/actions/runs/${target.runId}`)
+    if (!isPlainObject(run) || run.id !== target.runId) return {}
+    return {
+        [run.id]: {
+            id: run.id,
+            path: run.path,
+            event: run.event,
+            head_branch: run.head_branch,
+            repository: run.repository?.full_name,
+            head_repository: run.head_repository?.full_name,
+            run_attempt: run.run_attempt,
+            created_at: run.created_at,
+            receipt: fetchReceipt(run.id, target.runAttempt),
+        },
+    }
+}
+
+function ghRunOrNull(pathSuffix) {
+    const result = runChild('gh', ['api', pathSuffix], { maxBuffer: GH_MAX_BUFFER })
+    if (!result || result.error || result.status !== 0) return null
+    try {
+        return JSON.parse(result.stdout)
+    } catch {
+        return null
+    }
+}
+
+/** The run's `claude-review-receipt-<attempt>` artifact, or null when it cannot be read. */
+function downloadClaudeReceipt(runId, runAttempt) {
+    const dir = mkdtempSync(join(tmpdir(), 'cg-claude-receipt-'))
+    try {
+        const name = `claude-review-receipt-${runAttempt}`
+        const result = runChild('gh', [
+            'run',
+            'download',
+            String(runId),
+            '--repo',
+            `${OWNER}/${REPO}`,
+            '--name',
+            name,
+            '--dir',
+            dir,
+        ])
+        if (!result || result.error || result.status !== 0) return null
+        const parsed = JSON.parse(readFileSync(join(dir, 'claude-review-receipt.json'), 'utf8'))
+        return isPlainObject(parsed) ? parsed : null
+    } catch {
+        return null
+    } finally {
+        rmSync(dir, { recursive: true, force: true })
+    }
+}
 
 function isPlainObject(value) {
     if (value === null) return false
@@ -305,6 +377,16 @@ function main() {
     const rawReviewComments = ghApiPages(`${pullPath}/comments`)
     assertPullUnchanged(pullPath, before)
     assertSourceBranchMatchesPull(before)
+    const { reviews, issueComments, reviewComments } = filterEvidenceForPull(
+        pullNumber,
+        rawReviews,
+        rawComments,
+        rawReviewComments,
+    )
+    // Claude's run and receipt artifact are network reads too. They come before the
+    // confirmation pass, so a head that moves or a review dismissed meanwhile voids the
+    // snapshot instead of reaching the policy.
+    const claudeRuns = readClaudeRuns(repo, reviews, headSha, pullNumber)
 
     // A second read catches reviews being dismissed and receipt comments being
     // edited while the first paginated snapshot was in flight. The final PR
@@ -314,12 +396,6 @@ function main() {
     const confirmedReviewComments = ghApiPages(`${pullPath}/comments`)
     const recheckedHeadSha = assertPullUnchanged(pullPath, before)
     assertSourceBranchMatchesPull(before)
-    const { reviews, issueComments, reviewComments } = filterEvidenceForPull(
-        pullNumber,
-        rawReviews,
-        rawComments,
-        rawReviewComments,
-    )
     const confirmed = filterEvidenceForPull(
         pullNumber,
         confirmedReviews,
@@ -336,6 +412,7 @@ function main() {
         reviews,
         issueComments,
         reviewComments,
+        claudeRuns,
         now: new Date().toISOString(),
         ...supplement,
     }

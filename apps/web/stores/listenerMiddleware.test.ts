@@ -20,7 +20,7 @@ import savedItemsReducer from './slices/savedItemsSlice'
 import nutrientPlannerReducer from './slices/nutrientPlannerSlice'
 import growsReducer, { addGrow, removeGrow } from './slices/growsSlice'
 import type { AppStore } from './store'
-import { PlantStage, StrainType, View } from '@/types'
+import { JournalEntryType, PlantStage, StrainType, View } from '@/types'
 import type { Plant } from '@/types'
 
 // ---------------------------------------------------------------------------
@@ -122,6 +122,17 @@ vi.mock('@/services/urlService', () => ({
     urlService: { serializeFiltersToQueryString: vi.fn(() => '') },
 }))
 
+const platformState = vi.hoisted(() => ({ isTauri: false }))
+vi.mock('@/services/platformService', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/services/platformService')>()
+    return {
+        ...actual,
+        platform: Object.defineProperty({ ...actual.platform }, 'isTauri', {
+            get: () => platformState.isTauri,
+        }),
+    }
+})
+
 vi.mock('@/services/offlineActionQueueService', () => ({
     offlineActionQueueService: {
         queueJournalEntry: vi.fn(),
@@ -143,6 +154,8 @@ vi.mock('@/services/voiceCommandRegistry', () => ({
 // ---------------------------------------------------------------------------
 
 const { listenerMiddleware } = await import('./listenerMiddleware')
+const { offlineActionQueueService } = await import('@/services/offlineActionQueueService')
+const { addJournalEntry } = await import('./slices/simulationSlice')
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -258,6 +271,48 @@ describe('listenerMiddleware', () => {
 
     afterEach(() => {
         vi.restoreAllMocks()
+    })
+
+    // -- offline journal queue ------------------------------------------------
+
+    describe('offline journal queue', () => {
+        const journalOffline = async () => {
+            vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+            store.dispatch(addPlant({ plant: makePlant(), slotIndex: 0 }))
+            store.dispatch(
+                addJournalEntry({
+                    plantId: 'plant-1',
+                    entry: { type: JournalEntryType.Observation, notes: 'Offline note' },
+                }),
+            )
+            await vi.waitFor(() => undefined)
+            await new Promise((resolve) => setTimeout(resolve, 0))
+        }
+
+        beforeEach(() => {
+            vi.mocked(offlineActionQueueService.queueJournalEntry).mockClear()
+            vi.mocked(offlineActionQueueService.requestBackgroundSync)
+                .mockClear()
+                .mockResolvedValue(false)
+        })
+
+        afterEach(() => {
+            platformState.isTauri = false
+        })
+
+        it('queues an entry made offline on the web, for the worker to replay', async () => {
+            await journalOffline()
+            expect(offlineActionQueueService.queueJournalEntry).toHaveBeenCalledTimes(1)
+            expect(offlineActionQueueService.requestBackgroundSync).toHaveBeenCalledTimes(1)
+        })
+
+        it('queues nothing on the desktop, which saves locally and runs no worker (GH #931)', async () => {
+            platformState.isTauri = true
+            await journalOffline()
+            expect(offlineActionQueueService.queueJournalEntry).not.toHaveBeenCalled()
+            expect(offlineActionQueueService.requestBackgroundSync).not.toHaveBeenCalled()
+            expect(store.getState().simulation.plants.entities['plant-1']?.journal).toHaveLength(1)
+        })
     })
 
     // -- setSetting listeners -------------------------------------------------

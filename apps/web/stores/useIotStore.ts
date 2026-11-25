@@ -37,102 +37,112 @@ const TEST_CONNECTION_TIMEOUT_MS = 3000
 
 export const useIotStore = create<IotState>()(
     devtools(
-    subscribeWithSelector(
-        persist(
-            (set, get) => ({
-                // Settings
-                brokerUrl: DEFAULT_BROKER_URL,
-                username: '',
-                password: '',
-                encryptedPassword: '',
-                topicPrefix: DEFAULT_TOPIC_PREFIX,
-                isEnabled: false,
-                connectionStatus: 'disconnected' as IotConnectionStatus,
-                lastError: null,
+        subscribeWithSelector(
+            persist(
+                (set, get) => ({
+                    // Settings
+                    brokerUrl: DEFAULT_BROKER_URL,
+                    username: '',
+                    password: '',
+                    encryptedPassword: '',
+                    topicPrefix: DEFAULT_TOPIC_PREFIX,
+                    isEnabled: false,
+                    connectionStatus: 'disconnected' as IotConnectionStatus,
+                    lastError: null,
 
-                // Actions
-                setBrokerUrl: (url: string) => set({ brokerUrl: url }),
-                setUsername: (username: string) => set({ username }),
-                setPassword: async (password: string): Promise<void> => {
-                    try {
-                        const encryptedPassword = await encrypt(password)
-                        set({ password, encryptedPassword })
-                    } catch {
-                        // Crypto unavailable (e.g. test env): store plaintext only
-                        set({ password, encryptedPassword: '' })
-                    }
-                },
-                setTopicPrefix: (prefix: string) => set({ topicPrefix: prefix }),
-                setEnabled: (enabled: boolean) => {
-                    if (!enabled) {
-                        set({ isEnabled: false, connectionStatus: 'disconnected', lastError: null })
-                    } else {
-                        set({ isEnabled: true })
-                    }
-                },
-                setConnectionStatus: (status: IotConnectionStatus, error?: string) =>
-                    set({ connectionStatus: status, lastError: error ?? null }),
-
-                testConnection: async (): Promise<boolean> => {
-                    const { brokerUrl } = get()
-                    if (!brokerUrl) {
-                        set({ connectionStatus: 'error', lastError: 'No broker URL configured' })
-                        return false
-                    }
-                    set({ connectionStatus: 'connecting', lastError: null })
-                    try {
-                        // Validate URL format
-                        const url = new URL(brokerUrl)
-                        if (url.protocol !== 'wss:' && url.protocol !== 'ws:') {
-                            throw new Error('Broker URL must use ws:// or wss:// protocol')
+                    // Actions
+                    setBrokerUrl: (url: string) => set({ brokerUrl: url }),
+                    setUsername: (username: string) => set({ username }),
+                    setPassword: async (password: string): Promise<void> => {
+                        try {
+                            const encryptedPassword = await encrypt(password)
+                            set({ password, encryptedPassword })
+                        } catch {
+                            // Crypto unavailable (e.g. test env): store plaintext only
+                            set({ password, encryptedPassword: '' })
                         }
-                        // Simulated connection test with timeout
-                        await new Promise<void>((resolve, reject) => {
-                            const timer = setTimeout(
-                                () => reject(new Error('Connection timeout')),
-                                TEST_CONNECTION_TIMEOUT_MS,
-                            )
-                            // In production this would attempt a real MQTT connect/disconnect.
-                            // For now we resolve after a short delay to simulate the handshake.
-                            setTimeout(() => {
-                                clearTimeout(timer)
-                                resolve()
-                            }, 800)
-                        })
-                        set({ connectionStatus: 'connected' })
-                        return true
-                    } catch (err) {
-                        const message = err instanceof Error ? err.message : 'Unknown error'
-                        set({ connectionStatus: 'error', lastError: message })
-                        return false
-                    }
-                },
+                    },
+                    setTopicPrefix: (prefix: string) => set({ topicPrefix: prefix }),
+                    setEnabled: (enabled: boolean) => {
+                        if (!enabled) {
+                            set({
+                                isEnabled: false,
+                                connectionStatus: 'disconnected',
+                                lastError: null,
+                            })
+                        } else {
+                            set({ isEnabled: true })
+                        }
+                    },
+                    setConnectionStatus: (status: IotConnectionStatus, error?: string) =>
+                        set({ connectionStatus: status, lastError: error ?? null }),
 
-                loadPersistedPassword: async (): Promise<void> => {
-                    const { encryptedPassword } = get()
-                    if (!encryptedPassword) return
-                    try {
-                        const password = await decrypt(encryptedPassword)
-                        set({ password })
-                    } catch {
-                        // Decryption failed (key rotated or corrupted) -- clear stored credential
-                        set({ password: '', encryptedPassword: '' })
-                    }
-                },
-            }),
-            {
-                name: 'cannaguide-iot-settings',
-                storage: createJSONStorage(() => localStorage),
-                partialize: (state) => ({
-                    brokerUrl: state.brokerUrl,
-                    username: state.username,
-                    encryptedPassword: state.encryptedPassword,
-                    topicPrefix: state.topicPrefix,
-                    isEnabled: state.isEnabled,
+                    testConnection: async (): Promise<boolean> => {
+                        const { brokerUrl } = get()
+                        if (!brokerUrl) {
+                            set({
+                                connectionStatus: 'error',
+                                lastError: 'No broker URL configured',
+                            })
+                            return false
+                        }
+                        set({ connectionStatus: 'connecting', lastError: null })
+                        try {
+                            // Validate URL format
+                            const url = new URL(brokerUrl)
+                            if (url.protocol !== 'wss:' && url.protocol !== 'ws:') {
+                                throw new Error('Broker URL must use ws:// or wss:// protocol')
+                            }
+                            // Simulated connection test with timeout
+                            await new Promise<void>((resolve, reject) => {
+                                const timer = setTimeout(
+                                    () => reject(new Error('Connection timeout')),
+                                    TEST_CONNECTION_TIMEOUT_MS,
+                                )
+                                // In production this would attempt a real MQTT connect/disconnect.
+                                // For now we resolve after a short delay to simulate the handshake.
+                                setTimeout(() => {
+                                    clearTimeout(timer)
+                                    resolve()
+                                }, 800)
+                            })
+                            set({ connectionStatus: 'connected' })
+                            return true
+                        } catch (err) {
+                            const message = err instanceof Error ? err.message : 'Unknown error'
+                            set({ connectionStatus: 'error', lastError: message })
+                            return false
+                        }
+                    },
+
+                    loadPersistedPassword: async (): Promise<void> => {
+                        const { encryptedPassword } = get()
+                        if (!encryptedPassword) return
+                        // A password typed while this decrypted replaced the stored one: keep it.
+                        const unchanged = (): boolean =>
+                            get().encryptedPassword === encryptedPassword
+                        try {
+                            const password = await decrypt(encryptedPassword)
+                            if (unchanged()) set({ password })
+                        } catch {
+                            // Decryption failed (key rotated or corrupted) -- clear stored credential
+                            if (unchanged()) set({ password: '', encryptedPassword: '' })
+                        }
+                    },
                 }),
-            },
+                {
+                    name: 'cannaguide-iot-settings',
+                    storage: createJSONStorage(() => localStorage),
+                    partialize: (state) => ({
+                        brokerUrl: state.brokerUrl,
+                        username: state.username,
+                        encryptedPassword: state.encryptedPassword,
+                        topicPrefix: state.topicPrefix,
+                        isEnabled: state.isEnabled,
+                    }),
+                },
+            ),
         ),
-    ),
-    { name: 'iot', enabled: import.meta.env.DEV },
+        { name: 'iot', enabled: import.meta.env.DEV },
     ),
 )

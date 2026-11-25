@@ -35,6 +35,38 @@ describe('externalStrainLookups API adapters', () => {
         expect(vi.mocked(fetch)).not.toHaveBeenCalled()
     })
 
+    it('takes the first reported cannabinoid value that parses, past a placeholder', async () => {
+        vi.resetModules()
+        vi.doMock('@/constants', async (importOriginal) => ({
+            ...(await importOriginal<typeof import('@/constants')>()),
+            EXTERNAL_STRAIN_LOOKUPS_DISABLED: false,
+        }))
+        Object.assign(import.meta.env, { VITE_CANNLYTICS_API_KEY: 'test-key' })
+        vi.mocked(fetch).mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    data: {
+                        strain_name: 'Ghost OG',
+                        // A placeholder or a negative value in the primary field must not
+                        // discard the usable value in the fallback field.
+                        thc: 'n/a',
+                        total_thc: 20,
+                        cbd: -1,
+                        total_cbd: '0.5',
+                    },
+                }),
+                { status: 200 },
+            ),
+        )
+        const { lookupCannlytics } = await import('./externalStrainLookups')
+        const result = await lookupCannlytics('Ghost OG')
+
+        expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+        expect(result?.thc).toBe(20)
+        expect(result?.cbd).toBe(0.5)
+        vi.doUnmock('@/constants')
+    })
+
     it('lookupWithAI parses structured mentor JSON in German', async () => {
         vi.resetModules()
         vi.doMock('@/services/aiFacade', () => ({
@@ -69,10 +101,37 @@ describe('externalStrainLookups API adapters', () => {
         const result = await lookupWithAI('Purple Haze')
 
         expect(result?.name).toBe('Purple Haze')
+        expect(result?.thc).toBe(18)
+        expect(result?.cbd).toBe(0.5)
         expect(result?.floweringType).toBe('Autoflower')
         expect(result?.terpenes.length).toBeGreaterThan(0)
         expect(result?.flavonoids?.length).toBeGreaterThan(0)
         expect(result?.confidenceSource).toBe('ai')
+        vi.doUnmock('@/services/aiFacade')
+    })
+
+    it('lookupWithAI keeps unreported cannabinoids unknown instead of 0', async () => {
+        vi.resetModules()
+        const getMentorResponse = vi.fn().mockResolvedValue({
+            title: 'AI',
+            content: JSON.stringify({ name: 'Ghost OG', type: 'Hybrid', thc: 'n/a', cbd: 0 }),
+            uiHighlights: [],
+        })
+        vi.doMock('@/services/aiFacade', () => ({
+            aiService: { getMentorResponse },
+            getAiMode: vi.fn(() => 'hybrid'),
+        }))
+
+        document.documentElement.lang = 'en'
+        const { lookupWithAI } = await import('./externalStrainLookups')
+        const result = await lookupWithAI('Ghost OG')
+
+        // An unparsable THC stays unknown; an explicit 0% CBD stays a reported zero.
+        expect(result?.thc).toBeUndefined()
+        expect(result?.cbd).toBe(0)
+        expect(result?.cannabinoids).toEqual([])
+        // The prompt template no longer shows 0 as the example for unknown values.
+        expect(String(getMentorResponse.mock.calls[0]?.[1])).toContain('"thc":null,"cbd":null')
         vi.doUnmock('@/services/aiFacade')
     })
 

@@ -9,7 +9,7 @@ import {
     favoriteActionLabel,
     formatFloweringWeeks,
     reportedName,
-    reportedNumber,
+    reportedPercentText,
     reportedStrainType,
 } from './reportedStrainFacts'
 
@@ -48,19 +48,12 @@ const UserStrainMark: React.FC<{ visible: boolean }> = ({ visible }) =>
         <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />
     ) : null
 
-const percentText = (value: string, unknown: string): string =>
-    value === unknown ? unknown : `${value}%`
-
-const PercentCell: React.FC<{ value: string; unknown: string; title: string }> = ({
-    value,
-    unknown,
-    title,
-}) => (
+const PercentCell: React.FC<{ value: string; title: string }> = ({ value, title }) => (
     <div
         className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
         title={title}
     >
-        <span>{percentText(value, unknown)}</span>
+        <span>{value}</span>
     </div>
 )
 
@@ -123,8 +116,8 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
         const safeType = reportedStrainType(strain.type)
         const unknown = t('common.unknown')
         const safeName = reportedName(strain.name, t('plantsView.unknownStrain'))
-        const safeThc = reportedNumber(strain.thc, 1, unknown)
-        const safeCbd = reportedNumber(strain.cbd, 1, unknown)
+        const safeThc = reportedPercentText(strain.thc, strain.thcRange, unknown)
+        const safeCbd = reportedPercentText(strain.cbd, strain.cbdRange, unknown)
         const safeFloweringTime = formatFloweringWeeks(
             strain.floweringTimeRange,
             strain.floweringTime,
@@ -167,10 +160,10 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(
                     <NameCell
                         visible={isUserStrain}
                         name={safeName}
-                        mobileLine={`${percentText(safeThc, unknown)} THC | ${safeFloweringTime}`}
+                        mobileLine={`${safeThc} THC | ${safeFloweringTime}`}
                     />
-                    <PercentCell value={safeThc} unknown={unknown} title="THC" />
-                    <PercentCell value={safeCbd} unknown={unknown} title="CBD" />
+                    <PercentCell value={safeThc} title="THC" />
+                    <PercentCell value={safeCbd} title="CBD" />
                     <div
                         className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm"
                         title={t('strainsView.table.flowering')}

@@ -12,6 +12,7 @@ import { RangeSlider } from '@/components/common/RangeSlider'
 import { Switch } from '@/components/common/Switch'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
+import { reportedPercentText } from '@/components/views/strains/reportedStrainFacts'
 import {
     activeFloweringMode,
     lightHoursForMode,
@@ -32,9 +33,6 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
         <span className="font-semibold text-slate-100">{value}</span>
     </div>
 )
-
-const finitePercent = (value: number, unknown: string): string =>
-    Number.isFinite(value) ? `${value}%` : unknown
 
 const finiteWeeks = (value: number, weeks: string, unknown: string): string =>
     Number.isFinite(value) ? `${value} ${weeks}` : unknown
@@ -78,7 +76,7 @@ const SetupStrainCard: React.FC<{ strain: Strain }> = ({ strain }) => {
                 <InfoRow label={t('common.type')} value={strain.type || unknown} />
                 <InfoRow
                     label={t('strainsView.table.thc')}
-                    value={finitePercent(strain.thc, unknown)}
+                    value={reportedPercentText(strain.thc, strain.thcRange, unknown)}
                 />
                 <InfoRow
                     label={t('strainsView.table.flowering')}

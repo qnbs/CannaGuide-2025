@@ -10,6 +10,11 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 - **fix(deps):** The desktop shell's Rust lockfile moves `url` 2.5.8 to 2.5.9 (RUSTSEC-2026-0592: a stack overflow in `Url::origin()` on nested `blob:` URLs), `cookie` 0.18.1 to 0.18.3 (RUSTSEC-2026-0594: private-cookie nonces can repeat in processes that fork) and, with `url`, `form_urlencoded` 1.2.2 to 1.2.3. Both crates come in through Tauri. The app loads only its own bundled pages, uses no private cookie jar and does not fork, so exposure was low; `cargo audit` now reports no vulnerability. Dependabot had raised no alert for either advisory.
 
+### Fixed
+
+- **fix(strains):** Bundled strains no longer show a THC or CBD value that contradicts their own stated range, such as 1% CBD next to `<1%`. This affected 593 of the 776 strains and made the daily "balanced CBD" pick match 725 strains. The list, grid, selector, setup and seed views now show the stated range. The catalog source and all strain IDs are unchanged ([#750](https://github.com/qnbs/CannaGuide-2025/issues/750)).
+- **fix(strains):** A strain lookup no longer turns a missing THC or CBD value into 0%. Adding such a result to the library used to save a made-up 0% value, and the library match score counted missing values as 0. Unknown values now stay unknown, and a reported 0% still counts.
+
 ## [1.12.2] - 2026-11-25
 
 Desktop and IoT maintenance release: the desktop apps run without a service worker and refuse any write that would start after the native quit or update wait (a save already running then can still finish), the MQTT library moves to 5.16.1 for six broker-reachable advisories, two Local-Only privacy gaps are closed, and crash reporting is removed. Installed v1.12.1 apps update in place (Settings > About).

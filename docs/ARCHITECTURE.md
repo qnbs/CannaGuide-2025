@@ -112,6 +112,7 @@ apps/web/                 Main PWA (@cannaguide/web)
     proactiveCoachService.ts  Smart coach: threshold monitoring + AI advice + cooldown
     knowledgeCalculatorService.ts  Terpene entourage, transpiration, EC/TDS, light spectrum, cannabinoid ratio
     dbService.ts          CannaGuideDB (strains, images, search index)
+    strainCatalogTruth.ts Drops bundled THC/CBD values that their own range rules out
     cryptoService.ts      AES-256-GCM key encryption at rest
     privacyService.ts     GDPR Art. 17/20 -- full erasure + data export
     pluginService.ts      Plugin architecture (nutrient, hardware, grow)

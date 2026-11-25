@@ -3,6 +3,7 @@ import { dbService } from './dbService'
 import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants'
 import { mergeStrainCatalogForUpdate } from '@/services/migrationLogic'
 import { createStrainObject } from '@/services/strainFactory'
+import { withoutContradictedPoints } from '@/services/strainCatalogTruth'
 import { getCatalogVersion } from '@/data/strainCatalogVersion'
 
 export { getCatalogVersion }
@@ -28,7 +29,7 @@ const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
 
     for (const candidate of candidates) {
         try {
-            const strain = createStrainObject(candidate)
+            const strain = withoutContradictedPoints(createStrainObject(candidate))
             if (seenIds.has(strain.id)) {
                 continue
             }
@@ -143,6 +144,14 @@ class StrainService {
             const allStrainsData = await loadAllStrainsData()
             const storedVersion = await dbService.getMetadata(STRAIN_DATA_VERSION_KEY)
             const dbCount = await dbService.getStrainsCount()
+
+            // A newer app version in another tab already migrated the shared catalog.
+            // This older tab reads it, with any user strains, and must not write it back.
+            if (typeof storedVersion === 'number' && storedVersion > CURRENT_STRAIN_DATA_VERSION) {
+                this.allStrains = await dbService.getAllStrains()
+                this.isInitialized = true
+                return
+            }
 
             if (
                 dbCount > 0 &&

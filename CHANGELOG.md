@@ -8,6 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **chore(security):** The picomatch audit exception for GHSA-fc5q-39xc-vjpf is removed. GitHub withdrew that advisory on 2026-11-18, one day after the exception was added, and `pnpm audit --audit-level=high` passes without it; left in place, the exception check would have failed on its 2026-12-01 expiry. The two extract-zip exceptions stay, because their fix is still unpublished.
 - **fix(deps):** The desktop shell's Rust lockfile moves `url` 2.5.8 to 2.5.9 (RUSTSEC-2026-0592: a stack overflow in `Url::origin()` on nested `blob:` URLs), `cookie` 0.18.1 to 0.18.3 (RUSTSEC-2026-0594: private-cookie nonces can repeat in processes that fork) and, with `url`, `form_urlencoded` 1.2.2 to 1.2.3. Both crates come in through Tauri. The app loads only its own bundled pages, uses no private cookie jar and does not fork, so exposure was low; `cargo audit` now reports no vulnerability. Dependabot had raised no alert for either advisory.
 
 ## [1.12.2] - 2026-11-25

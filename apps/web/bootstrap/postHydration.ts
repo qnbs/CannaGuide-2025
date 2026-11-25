@@ -95,6 +95,9 @@ const setUpDesktopLifecycle = async (
     })
 }
 
+/** How long the start waits for the saved MQTT login before the IoT client goes on. */
+export const IOT_START_WAIT_MS = 5000
+
 export const runPostHydrationServices = async (
     hydratedStore: AppStore,
     flushPersistedState?: FlushPersistedState,
@@ -166,13 +169,25 @@ export const runPostHydrationServices = async (
         import('@/services/local-ai'),
     ])
 
+    // The saved password first: the client connects at once when IoT is enabled, and a
+    // CONNECT with the still-empty password is refused for bad credentials, which since mqtt
+    // 5.16 is not retried. The wait is bounded, so a stalled decryption cannot hold the client
+    // or the workers back; a password that arrives later reconnects the client once.
+    const savedLoginRead = useIotStore
+        .getState()
+        .loadPersistedPassword()
+        .catch((err: unknown) => {
+            console.debug('[IoT] Could not load the saved MQTT password:', err)
+        })
+    let startWait: ReturnType<typeof setTimeout> | undefined
+    await Promise.race([
+        savedLoginRead,
+        new Promise((resolve) => {
+            startWait = setTimeout(resolve, IOT_START_WAIT_MS)
+        }),
+    ])
+    clearTimeout(startWait)
     void mqttClientService.init(hydratedStore)
-
-    try {
-        await useIotStore.getState().loadPersistedPassword()
-    } catch (err) {
-        console.debug('[IoT] Could not load the saved MQTT password:', err)
-    }
 
     const { initializeWorkerInfrastructure } = await import('./workers')
     await initializeWorkerInfrastructure(hydratedStore)

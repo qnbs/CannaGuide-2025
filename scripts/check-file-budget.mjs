@@ -10,8 +10,10 @@
  *   baseRef defaults to origin/main for CI, or checks all tracked files locally.
  */
 
-import { execSync, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { readFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const MAX_LINES = Number(process.env.FILE_BUDGET_MAX_LINES || '700')
 const ADVISORY = process.env.FILE_BUDGET_ADVISORY === '1'
@@ -28,15 +30,25 @@ function assertSafeGitRef(ref) {
 /** Known god-files — Phase 1 burn-down (warn only until split). Empty when all splits complete. */
 const GRANDFATHERED = new Set([])
 
-const SCAN_GLOBS = [
+export const SCAN_GLOBS = [
     'apps/web/services',
     'apps/web/stores',
     'apps/web/components',
     'apps/web/hooks',
     'apps/web/workers',
     'apps/web/utils',
+    'apps/web/bootstrap',
+    'apps/web/lib',
+    'apps/web/useCases',
+    'apps/web/constants',
+    'apps/web/types',
     'packages/ai-core/src',
+    'packages/ui/src',
 ]
+/** Directories whose own top-level source files are app source too (apps/web/i18n.ts). */
+export const SCAN_ROOT_FILES_OF = ['apps/web']
+const SOURCE = /\.(ts|tsx|mjs)$/
+const TEST = /\.(test|spec)\.(ts|tsx|mjs)$/
 
 function lineCount(filePath) {
     const content = readFileSync(filePath, 'utf8')
@@ -65,30 +77,38 @@ function gitDiffRaw(ref) {
 /** The subset of the diff the budget can even apply to: source files, no tests. */
 function gitDiffFiles(ref) {
     return gitDiffRaw(ref)
-        .filter((f) => /\.(ts|tsx|mjs)$/.test(f) && existsSync(f))
-        .filter((f) => !/\.(test|spec)\.(ts|tsx|mjs)$/.test(f))
+        .filter((f) => SOURCE.test(f) && existsSync(f))
+        .filter((f) => !TEST.test(f))
 }
 
-function allTrackedInScanDirs() {
-    const files = []
-    for (const dir of SCAN_GLOBS) {
-        if (!existsSync(dir)) continue
-        try {
-            const out = execSync(
-                `git ls-files '${dir}/**/*.{ts,tsx,mjs}' 2>/dev/null || git ls-files '${dir}'`,
-                { encoding: 'utf8' },
-            )
-            files.push(
-                ...out
-                    .split('\n')
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-            )
-        } catch {
-            /* ignore */
-        }
-    }
-    return [...new Set(files)]
+/**
+ * Every tracked source file in scope. The previous quoted git pathspec with a
+ * `{ts,tsx,mjs}` brace list matched nothing: git pathspecs have no brace expansion and the
+ * quotes kept the shell from doing it, so a full scan checked zero files. The type filter
+ * now runs here instead.
+ */
+export function allTrackedInScanDirs(cwd = process.cwd()) {
+    // `:(top)` pathspecs and `--full-name` output are relative to the repository root, so
+    // a run from a subdirectory (apps/web) lists the same files instead of none.
+    const pathspecs = [...SCAN_GLOBS, ...SCAN_ROOT_FILES_OF].map((dir) => `:(top)${dir}`)
+    const result = spawnSync('git', ['ls-files', '-z', '--full-name', '--', ...pathspecs], {
+        cwd,
+        encoding: 'utf8',
+    })
+    if (result.status !== 0) throw new Error('[file-budget] git ls-files failed')
+    const files = result.stdout
+        .split('\0')
+        .filter((file) => SOURCE.test(file) && !TEST.test(file) && inScanDirs(file))
+        .sort()
+    if (files.length === 0) throw new Error('[file-budget] the full scan found no file in scope')
+    return files
+}
+
+/** The repository root, from any directory inside the checkout. */
+export function repositoryRoot(cwd = process.cwd()) {
+    const result = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd, encoding: 'utf8' })
+    if (result.status !== 0) throw new Error('[file-budget] not inside a git checkout')
+    return result.stdout.trim()
 }
 
 /**
@@ -98,7 +118,11 @@ function allTrackedInScanDirs() {
  * lines by nature, and no amount of splitting changes that) fails the gate for
  * a file the budget was never meant to police.
  */
-const inScanDirs = (file) => SCAN_GLOBS.some((dir) => file === dir || file.startsWith(`${dir}/`))
+export const inScanDirs = (file) =>
+    SCAN_GLOBS.some((dir) => file === dir || file.startsWith(`${dir}/`)) ||
+    SCAN_ROOT_FILES_OF.some(
+        (dir) => file.startsWith(`${dir}/`) && !file.slice(dir.length + 1).includes('/'),
+    )
 
 function main() {
     // "Did this branch change anything at all?" has to be answered from the raw
@@ -155,4 +179,10 @@ function main() {
     process.exit(0)
 }
 
-main()
+const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isDirectRun) {
+    // git diff paths are root-relative and the files are read relative to the cwd: from a
+    // subdirectory both checks would silently see nothing.
+    process.chdir(repositoryRoot())
+    main()
+}

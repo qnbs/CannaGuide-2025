@@ -6,7 +6,9 @@
 // should use t() from react-i18next.
 //
 // Heuristic (regex-based, no AST):
-//   1. JSX text content: >Some English Text< (multi-word, starts with uppercase)
+//   1. JSX text content: >Some English Text< (multi-word, starts with uppercase), and the
+//      same text alone on its line after an opening tag or before a closing tag, the way
+//      Prettier wraps it
 //   2. String props in i18n-sensitive attributes: title="...", label="...",
 //      placeholder="...", description="...", aria-label="..."
 //
@@ -15,27 +17,31 @@
 //     htmlFor, src, href, rel, target, pattern, encoding props
 //   - Single-word strings (likely enum values, CSS classes, identifiers)
 //   - Strings that are template literals with expressions {`...${...}...`}
-//   - Lines containing t(, i18next, useTranslation, getT(
+//   - Lines containing i18next, useTranslation, getT( (a `{t(...)}` expression is removed
+//     first, so the text next to it is still checked)
 //   - Test files (*.test.tsx)
 //   - Known technical strings (URLs, hex colors, mime types, file paths)
 //   - Console/debug statements
 //
-// Exit code: 0 always (warnings only -- does not block lint pipeline).
-// Set CHECK_I18N_STRICT=1 to exit with code 1 on findings.
+// Exit code: 0 on findings unless CHECK_I18N_STRICT=1, which CI sets; then 1.
 // ---------------------------------------------------------------------------
 
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { resolve, dirname, relative } from 'node:path'
+import { resolve, dirname, relative, sep } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const WEB_DIR = resolve(__dirname, '..', 'apps', 'web')
-const COMPONENTS_DIR = resolve(WEB_DIR, 'components')
+/** Not app UI: build output, tests, translations and static assets. */
+const SKIPPED_DIRS = new Set(['node_modules', 'dist', 'coverage', 'tests', 'locales', 'public'])
 
-// Files excluded from scanning (dev-only or decorative/aria-hidden content)
-const EXCLUDED_FILES = new Set([
-    'DevTelemetryPanel.tsx', // dev-only telemetry panel, technical labels
-    'PaymentIcons.tsx', // SVG titles inside aria-hidden="true" elements
+// Files excluded from scanning (dev-only or decorative/aria-hidden content), by their path
+// under apps/web: a bare file name would exempt every file of that name in any directory.
+export const EXCLUDED_FILES = new Set([
+    'components/common/DevTelemetryPanel.tsx', // dev-only telemetry panel, technical labels
+    'components/icons/PaymentIcons.tsx', // SVG titles inside aria-hidden="true" elements
+    'bootstrap/render.tsx', // the start-failure page: shown when the start, i18n included, failed
 ])
 
 // Props that typically contain user-facing text
@@ -46,19 +52,22 @@ const I18N_SENSITIVE_PROPS =
 // Matches lines like:  <p>Some English Text</p>  or  >Warning: something<
 const JSX_TEXT_CONTENT = />\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?-]+){1,})\s*</g
 
+// A line that starts a block or JSX comment: `/*`, `/**` or `{/*`
+const BLOCK_COMMENT_OPENER = /^\s*\{?\/\*/
+
+// The same text alone on its line, for text that Prettier moved off the tag's line
+const OWN_LINE_TEXT = /^\s*([A-Z][a-zA-Z]*(?:\s+[a-zA-Z()/,.:!?'-]+){1,})\s*$/
+
 // Lines to skip entirely
 const SKIP_LINE_PATTERNS = [
-    /\bt\s*\(/, // already uses t()
     /useTranslation/, // i18n import
     /getT\s*\(/, // service-side i18n
     /i18next/i, // i18n reference
-    /className/, // Tailwind classes
     /console\./, // debug/logging
-    /\/\//, // line comments (crude but effective)
+    /^\s*\/\//, // line comments (a URL's // elsewhere on a line is not one)
     /^\s*\*/, // block comment lines
     /^\s*\/\*/, // block comment start
     /^\s*import\b/, // import statements
-    /^\s*export\b/, // export statements
     /^\s*const\b.*=\s*['"]/, // const assignments (identifiers, not UI)
     /data-testid/, // test IDs
     /data-state/, // state attributes
@@ -103,18 +112,19 @@ function isIgnoredContent(str) {
     return IGNORE_CONTENT_PATTERNS.some((p) => p.test(trimmed))
 }
 
-function collectTsxFiles(dir) {
+/** The .tsx files under `dir` that the scan covers; `root` is the base of EXCLUDED_FILES. */
+export function collectTsxFiles(dir = WEB_DIR, root = dir) {
     const results = []
     for (const entry of readdirSync(dir)) {
         const full = resolve(dir, entry)
         const stat = statSync(full)
         if (stat.isDirectory()) {
-            results.push(...collectTsxFiles(full))
+            if (!SKIPPED_DIRS.has(entry)) results.push(...collectTsxFiles(full, root))
         } else if (
             entry.endsWith('.tsx') &&
             !entry.endsWith('.test.tsx') &&
             !entry.endsWith('.ct.tsx') &&
-            !EXCLUDED_FILES.has(entry)
+            !EXCLUDED_FILES.has(relative(root, full).split(sep).join('/'))
         ) {
             results.push(full)
         }
@@ -126,49 +136,80 @@ function collectTsxFiles(dir) {
 // Main scan
 // ---------------------------------------------------------------------------
 
-function scanFile(filePath) {
-    const content = readFileSync(filePath, 'utf-8')
+/** Whether a line sits between JSX tags: after an opening tag or before a closing one. */
+function isBetweenTags(lines, index) {
+    const previous = (lines.slice(0, index).findLast((entry) => entry.trim()) ?? '').trimEnd()
+    const next = lines.slice(index + 1).find((entry) => entry.trim()) ?? ''
+    const following = next.trimStart()
+    // `=>` and `->` end a line of code or prose, not an opening tag.
+    const afterTag = previous.endsWith('>') && !/[=-]>$/.test(previous)
+    return afterTag || following.startsWith('</') || following.startsWith('{')
+}
+
+/** A translated `{t('...')}` expression, which says nothing about the text beside it. */
+const TRANSLATED_EXPRESSION = /\{\s*t\s*\([^{}]*\)\s*\}/g
+
+const shortened = (value) => (value.length > 60 ? value.slice(0, 57) + '...' : value)
+
+/** The likely hardcoded strings in one .tsx source. */
+export function scanSource(content) {
     const lines = content.split('\n')
     const findings = []
+    let inBlockComment = false
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
+        // A block or JSX comment that opens a line and stays open hides the lines up to `*/`.
+        if (inBlockComment) {
+            inBlockComment = !line.includes('*/')
+            continue
+        }
+        const opener = BLOCK_COMMENT_OPENER.exec(line)
+        if (opener && !line.slice(opener[0].length).includes('*/')) {
+            inBlockComment = true
+            continue
+        }
         if (shouldSkipLine(line)) continue
+        // `<p>{t('a')} Some Words</p>` still has hardcoded text once the translation is gone.
+        const checked = line.replace(TRANSLATED_EXPRESSION, '')
+        if (/\bt\s*\(/.test(checked)) continue
 
         // Check i18n-sensitive props with hardcoded string values
         let propMatch
         I18N_SENSITIVE_PROPS.lastIndex = 0
-        while ((propMatch = I18N_SENSITIVE_PROPS.exec(line)) !== null) {
+        while ((propMatch = I18N_SENSITIVE_PROPS.exec(checked)) !== null) {
             const value = propMatch[1]
             if (!isIgnoredContent(value)) {
-                findings.push({
-                    line: i + 1,
-                    type: 'prop',
-                    text: value.length > 60 ? value.slice(0, 57) + '...' : value,
-                })
+                findings.push({ line: i + 1, type: 'prop', text: shortened(value) })
             }
         }
 
         // Check JSX text content
         let textMatch
         JSX_TEXT_CONTENT.lastIndex = 0
-        while ((textMatch = JSX_TEXT_CONTENT.exec(line)) !== null) {
+        while ((textMatch = JSX_TEXT_CONTENT.exec(checked)) !== null) {
             const value = textMatch[1]
             if (!isIgnoredContent(value)) {
-                findings.push({
-                    line: i + 1,
-                    type: 'text',
-                    text: value.length > 60 ? value.slice(0, 57) + '...' : value,
-                })
+                findings.push({ line: i + 1, type: 'text', text: shortened(value) })
             }
+        }
+
+        // The cleaned line, so `{t('a')} Some Words` on its own line is checked like `Some Words`.
+        const ownLine = OWN_LINE_TEXT.exec(checked)
+        if (ownLine && !isIgnoredContent(ownLine[1]) && isBetweenTags(lines, i)) {
+            findings.push({ line: i + 1, type: 'text', text: shortened(ownLine[1]) })
         }
     }
 
     return findings
 }
 
+function scanFile(filePath) {
+    return scanSource(readFileSync(filePath, 'utf-8'))
+}
+
 function main() {
-    const files = collectTsxFiles(COMPONENTS_DIR)
+    const files = collectTsxFiles(WEB_DIR)
     let totalFindings = 0
     const fileResults = []
 
@@ -181,7 +222,7 @@ function main() {
     }
 
     if (totalFindings === 0) {
-        console.log('[PASS] No hardcoded i18n strings detected in .tsx components.')
+        console.log("[PASS] No hardcoded i18n strings detected in the web app's .tsx files.")
         process.exit(0)
     }
 
@@ -204,4 +245,4 @@ function main() {
     }
 }
 
-main()
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main()

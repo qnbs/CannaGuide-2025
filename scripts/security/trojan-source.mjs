@@ -10,6 +10,8 @@ const excludedPrefixes = [
     '.git/',
 ]
 
+// Text formats stay in scope: SVG can carry script, and lockfiles and test snapshots are
+// reviewed in diffs like source (.svg, .lock and .snap were excluded before 2026-11-24).
 const excludedExtensions = [
     // Images
     '.png',
@@ -20,7 +22,6 @@ const excludedExtensions = [
     '.icns',
     '.webp',
     '.avif',
-    '.svg',
     // Fonts
     '.woff',
     '.woff2',
@@ -39,9 +40,7 @@ const excludedExtensions = [
     '.zst',
     // Build artifacts / generated
     '.map',
-    '.snap',
     '.tsbuildinfo',
-    '.lock',
     // Binary / ML models
     '.wasm',
     '.onnx',

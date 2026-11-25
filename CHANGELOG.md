@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Security
+
+- **fix(deps):** The desktop shell's Rust lockfile moves `url` 2.5.8 to 2.5.9 (RUSTSEC-2026-0592: a stack overflow in `Url::origin()` on nested `blob:` URLs), `cookie` 0.18.1 to 0.18.3 (RUSTSEC-2026-0594: private-cookie nonces can repeat in processes that fork) and, with `url`, `form_urlencoded` 1.2.2 to 1.2.3. Both crates come in through Tauri. The app loads only its own bundled pages, uses no private cookie jar and does not fork, so exposure was low; `cargo audit` now reports no vulnerability. Dependabot had raised no alert for either advisory.
+
 ### Fixed
 
 - **fix(strains):** Bundled strains no longer show a THC or CBD value that contradicts their own stated range, such as 1% CBD next to `<1%`. This affected 593 of the 776 strains and made the daily "balanced CBD" pick match 725 strains. The list, grid, selector, setup and seed views now show the stated range. The catalog source and all strain IDs are unchanged ([#750](https://github.com/qnbs/CannaGuide-2025/issues/750)).

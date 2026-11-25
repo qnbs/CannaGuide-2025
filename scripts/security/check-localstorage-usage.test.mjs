@@ -269,6 +269,70 @@ test('the last persisted name wins, and a spread after it makes the name unknown
     assert.equal(first('apps/web/twice.ts').key, 'raw-secret-store')
 })
 
+test('a persisted name is known only when it is one complete literal', (t) => {
+    const store = (...nameLines) =>
+        [
+            'persist(store, {',
+            '    storage: createJSONStorage(() => localStorage),',
+            ...nameLines,
+            '})',
+        ].join('\n')
+    const sources = {
+        // Each of these starts with an allowed literal, but writes under another key.
+        'apps/web/concat.ts': store("    name: 'cannaguide-iot-settings' + '-private',"),
+        'apps/web/ternary.ts': store("    name: 'cannaguide-iot-settings' ? a : b,"),
+        'apps/web/later.ts': store("    name: 'cannaguide-iot-settings',", '    name: suffixed,'),
+        'apps/web/shorthand.ts': store("    name: 'cannaguide-iot-settings',", '    name,'),
+        // A literal stays known: last property, before a comment, or before a comma.
+        'apps/web/last.ts': store("    name: 'cannaguide-iot-settings'"),
+        'apps/web/commented.ts': store("    name: 'cannaguide-iot-settings' /* store */,"),
+        'apps/web/literal-wins.ts': store(
+            '    name: suffixed,',
+            "    name: 'cannaguide-iot-settings',",
+        ),
+    }
+    const root = fixture(t, sources)
+    const first = (file) => storageCalls(file, sources[file], root)[0]
+    for (const file of ['concat', 'ternary', 'later', 'shorthand']) {
+        assert.equal(first(`apps/web/${file}.ts`).kind, 'dynamic', file)
+    }
+    for (const file of ['last', 'commented', 'literal-wins']) {
+        assert.deepEqual(
+            [first(`apps/web/${file}.ts`).kind, first(`apps/web/${file}.ts`).key],
+            ['persist', 'cannaguide-iot-settings'],
+            file,
+        )
+    }
+})
+
+test('a comment inside the call is no part of its key', (t) => {
+    const source = [
+        "localStorage.getItem(/* cache */ 'cg.ai.auditLog')",
+        "localStorage.setItem('cg.ai.auditLog' /* trailing */, value)",
+        'localStorage.removeItem(/* every */ storedKey)',
+    ].join('\n')
+    const root = fixture(t, { 'apps/web/commented-call.ts': source })
+    const calls = storageCalls('apps/web/commented-call.ts', source, root)
+    assert.deepEqual(
+        calls.map(({ kind, key, expression }) => [kind, key ?? expression]),
+        [
+            ['literal', 'cg.ai.auditLog'],
+            ['literal', 'cg.ai.auditLog'],
+            ['dynamic', 'storedKey'],
+        ],
+    )
+    // The computed key matches its review entry, which names the expression without the comment.
+    const reviewed = [
+        {
+            file: 'apps/web/commented-call.ts',
+            expression: 'storedKey',
+            methods: ['removeItem'],
+            example: 'cg.ai.auditLog',
+        },
+    ]
+    assert.deepEqual(violations(calls, reviewed), [])
+})
+
 const call = (fields) => ({ file: 'apps/web/x.ts', line: 1, storage: 'localStorage', ...fields })
 
 test('unknown keys, unreviewed computed keys and stale review entries fail', () => {

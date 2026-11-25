@@ -9,17 +9,19 @@ import { allTrackedInScanDirs, inScanDirs } from './check-file-budget.mjs'
 
 test('a full scan finds the tracked app source, not zero files', () => {
     const files = allTrackedInScanDirs()
-    // The brace pathspec it used before matched nothing; the scope is several hundred files.
-    assert.ok(files.length > 500, `only ${files.length} files in scope`)
-    for (const covered of [
-        'apps/web/services/aiService.ts',
-        'apps/web/bootstrap/mountHydratedApp.ts',
-        'apps/web/lib/transformersOrtAssets.mjs',
-        'apps/web/i18n.ts',
-        'apps/web/index.tsx',
-    ]) {
-        assert.ok(files.includes(covered), covered)
-    }
+    // The brace pathspec it used before matched nothing. Its answer is compared with an
+    // independent listing of the whole tree, so the test names no file and survives a rename.
+    const independent = spawnSync('git', ['ls-files', '-z'], { encoding: 'utf8' })
+        .stdout.split('\0')
+        .filter(
+            (file) =>
+                /\.(ts|tsx|mjs)$/.test(file) &&
+                !/\.(test|spec)\.(ts|tsx|mjs)$/.test(file) &&
+                inScanDirs(file),
+        )
+        .sort()
+    assert.ok(independent.length > 0, 'no app source in scope at all')
+    assert.deepEqual(files, independent)
     for (const file of files) {
         assert.match(file, /\.(ts|tsx|mjs)$/, file)
         assert.doesNotMatch(file, /\.(test|spec)\.(ts|tsx|mjs)$/, file)
@@ -36,7 +38,12 @@ test('the scope covers every tracked app source directory except data and transl
             !/^apps\/web\/(data|locales|tests|public)\//.test(file) &&
             !file.endsWith('.d.ts'),
     )
-    assert.deepEqual(outside, [], 'app source outside the file budget')
+    // Fails on purpose for a new source directory: add it to SCAN_GLOBS, or exclude it above.
+    assert.deepEqual(
+        outside,
+        [],
+        'app source outside the file budget: add its directory to SCAN_GLOBS or exclude it here',
+    )
 })
 
 test('only direct children of apps/web count as its root files', () => {

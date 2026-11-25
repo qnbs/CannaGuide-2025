@@ -130,7 +130,10 @@ const STORAGE_CALL = /\b(localStorage|sessionStorage)\s*\.\s*(getItem|setItem|re
 const LITERAL = /^(['"`])([^'"`$\\\n]*)\1$/
 /** zustand's persist middleware writes under its `name`, with no visible getItem call. */
 const PERSIST_STORAGE = /createJSONStorage\(\s*\(\)\s*=>\s*(localStorage|sessionStorage)\s*\)/g
-const PERSIST_NAME = /^\s*name\s*:\s*(['"`])([^'"`$\\\n]+)\1/
+/** A `name` that is one complete literal: the property ends right after the closing quote. */
+const PERSIST_NAME = /^\s*name\s*:\s*(['"`])([^'"`$\\\n]+)\1(?=\s*(?:,|$))/
+/** Any `name` property, including `name: prefix + suffix` and a shorthand `name`. */
+const NAME_PROPERTY = /^\s*name\s*(?::|(?=,|$))/
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/
 const MAX_DEPTH = 6
 
@@ -360,7 +363,8 @@ function matchingBrace(source, start) {
  * skipped and keep the place of a property; strings are skipped and end it, so neither a
  * commented-out name nor a comma inside a string or comment can stand in for the real one.
  * The last `name` wins, as in JavaScript, and a spread after it may override it, so the name
- * is then unknown (undefined).
+ * is then unknown (undefined). A `name` that is not one complete literal (a concatenation, a
+ * call, a shorthand) is unknown as well, even when it starts with an allowed literal.
  */
 function topLevelName(objectText) {
     let depth = 0
@@ -373,6 +377,9 @@ function topLevelName(objectText) {
             const match = PERSIST_NAME.exec(rest)
             if (match) {
                 name = match[2]
+                spreadAfterName = false
+            } else if (NAME_PROPERTY.test(rest)) {
+                name = undefined
                 spreadAfterName = false
             } else if (/^\s*\.\.\./.test(rest)) {
                 spreadAfterName = true
@@ -400,7 +407,8 @@ export function storageCalls(file, source, root = ROOT) {
     // A commented-out call is not a call: it must not keep an allowance or a review entry alive.
     const code = maskComments(source)
     for (const match of code.matchAll(STORAGE_CALL)) {
-        const expression = firstArgument(source, match.index + match[0].length)
+        // Read from the masked code (offsets are kept), so a comment in the call is no part of the key.
+        const expression = firstArgument(code, match.index + match[0].length)
         const line = source.slice(0, match.index).split('\n').length
         const site = { file, line, storage: match[1], method: match[2] }
         if (expression === null) {

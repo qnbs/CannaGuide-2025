@@ -192,7 +192,8 @@ export function scanSource(content) {
             }
         }
 
-        const ownLine = OWN_LINE_TEXT.exec(line)
+        // The cleaned line, so `{t('a')} Some Words` on its own line is checked like `Some Words`.
+        const ownLine = OWN_LINE_TEXT.exec(checked)
         if (ownLine && !isIgnoredContent(ownLine[1]) && isBetweenTags(lines, i)) {
             findings.push({ line: i + 1, type: 'text', text: shortened(ownLine[1]) })
         }

@@ -77,6 +77,9 @@ test('text beside a translated expression is checked; translated text alone is n
     assert.deepEqual(texts("<p>{t('plants.title')}</p>"), [])
     // A call the stripper cannot remove still skips its line, as before.
     assert.deepEqual(texts("<p>{t('a', { n: 1 })} Some Words</p>"), [])
+    // The same on its own line, as Prettier wraps it inside a tag.
+    assert.deepEqual(texts("<p>\n    {t('plants.title')} Some Words\n</p>"), ['2:Some Words'])
+    assert.deepEqual(texts("<p>\n    {t('plants.title')}\n</p>"), [])
 })
 
 test('an arrow or prose arrow is not an opening tag', () => {

@@ -25,8 +25,8 @@
  * 106 storage calls: the other 100 pass a constant or a computed key and were never checked,
  * and the persisted IoT store was not seen at all.
  *
- * Scope: accident prevention for code written in good faith, run as an advisory CI step. What
- * the parser cannot read fails closed: an unreadable key, name or storage, and a file or an
+ * Scope: accident prevention for code written in good faith; CI enforces it through the real-tree
+ * test in check-localstorage-usage.test.mjs. What the parser cannot read fails closed: an unreadable key, name or storage, and a file or an
  * imported module that does not parse. It is no boundary against code written to evade it,
  * such as an aliased storage object or a method name built at run time; that needs review.
  *

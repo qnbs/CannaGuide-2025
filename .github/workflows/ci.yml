@@ -406,9 +406,10 @@ jobs:
                   CHECK_I18N_STRICT: '1'
               run: pnpm run lint:i18n
 
-            # Advisory, as it was in the Advisory Metrics job: a finding marks the step, not the job.
+            # The verdict is enforced by the real-tree test in "Security policy regression tests"
+            # above; this step prints every finding readably and only marks itself on failure.
             # It parses source with TypeScript, so it runs here, where dependencies are installed.
-            - name: LocalStorage allowlist (advisory)
+            - name: LocalStorage allowlist (report)
               continue-on-error: true
               run: node scripts/security/check-localstorage-usage.mjs
 

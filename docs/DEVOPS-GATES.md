@@ -162,12 +162,20 @@ every PR.
 
 ## Advisory (non-blocking)
 
-| Gate                    | CI job              | Local command                                                                                                                   |
-| ----------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| E2E cross-browser       | `e2e-cross-browser` | Playwright firefox/webkit                                                                                                       |
-| Critical path JS size   | `advisory`          | `pnpm run measure:critical-path`                                                                                                |
-| File budget (full scan) | `advisory`          | `FILE_BUDGET_ADVISORY=1 pnpm run check:file-budget`                                                                             |
-| localStorage allowlist  | `advisory`          | `pnpm run check:localstorage` (all web app source; literal, constant, computed and persisted-store keys; stale allowances fail) |
+| Gate                                                                                            | CI job                                                      | Local command                                                                                                                   |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| E2E cross-browser                                                                               | `e2e-cross-browser`                                         | Playwright firefox/webkit                                                                                                       |
+| Critical path JS size                                                                           | `advisory`                                                  | `pnpm run measure:critical-path`                                                                                                |
+| File budget (full scan)                                                                         | `advisory`                                                  | `FILE_BUDGET_ADVISORY=1 pnpm run check:file-budget`                                                                             |
+| localStorage allowlist                                                                          | `advisory`                                                  | `pnpm run check:localstorage` (all web app source; literal, constant, computed and persisted-store keys; stale allowances fail) |
+| Rust advisories (cargo audit)                                                                   | `rust-audit` on desktop changes; daily in Dependency Health | `cargo audit --file apps/desktop/src-tauri/Cargo.lock`                                                                          |
+| Extended security scan (Gitleaks full history, Grype, Semgrep, Trojan Source, Dependabot check) | Security Full, weekly (Tuesday) and on demand               | `gh workflow run security-full.yml --ref main`                                                                                  |
+
+`rust-audit` installs a pinned, checksum-verified cargo-audit release and fails on RustSec
+vulnerabilities only; unmaintained, unsound and yanked crates are printed as warnings. It stays
+out of `CI Status` (owner decision, 2026-11-25): an advisory published against a crate a PR does
+not touch must not block that PR. GitHub's advisory database can lag RustSec by days, which is
+why the audit exists at all (#948).
 
 ---
 

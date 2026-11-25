@@ -1,9 +1,13 @@
 name: Security Full
 
-# Manual extended suite. CodeQL and Scorecard deliberately live only in
-# codeql.yml and scorecard.yml: a second uploader for the same tool creates a
-# stale, duplicate code-scanning configuration ("not configured correctly").
+# Extended suite, weekly and on demand: full-history Gitleaks, Grype, Semgrep, Trojan
+# Source and the Dependabot check. It reports and uploads findings; it blocks no merge.
+# CodeQL and Scorecard deliberately live only in codeql.yml and scorecard.yml: a second
+# uploader for the same tool creates a stale, duplicate code-scanning configuration
+# ("not configured correctly").
 on:
+    schedule:
+        - cron: '23 3 * * 2'
     workflow_dispatch:
 
 permissions:
@@ -22,6 +26,8 @@ jobs:
 
             - name: Checkout repository
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
 
             - name: Enable Corepack
               run: corepack enable
@@ -55,6 +61,7 @@ jobs:
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                   fetch-depth: 0
+                  persist-credentials: false
 
             - name: Run Gitleaks
               run: |
@@ -73,6 +80,8 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
 
             - name: Run Grype filesystem scan
               uses: anchore/scan-action@27805bf3b4e84b4a5c980df22ed233c00390a439 # v7.4.2
@@ -83,8 +92,28 @@ jobs:
                   severity-cutoff: high
                   output-format: sarif
 
-            - name: Upload Grype SARIF
+            # A dir:. scan reports Syft's root-relative paths ("/pnpm-lock.yaml"), which code
+            # scanning stores verbatim and cannot map to a file. The script rewrites only the
+            # locations that resolve to tracked files and lists any it keeps unmapped; it
+            # changes no result, rule, level or message.
+            - name: Map Grype locations to repository files
+              id: map-locations
               if: always() && steps.grype.outputs.sarif != ''
+              env:
+                  GRYPE_SARIF: ${{ steps.grype.outputs.sarif }}
+              run: node scripts/security/normalize-sarif-locations.mjs --in "$GRYPE_SARIF" --out grype-results.sarif
+
+            - name: Upload Grype SARIF
+              if: always() && steps.map-locations.outcome == 'success'
+              uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
+              with:
+                  sarif_file: grype-results.sarif
+                  category: grype-filesystem
+
+            # The findings still reach code scanning if the mapping itself fails; the failed
+            # step keeps the run red.
+            - name: Upload unmapped Grype SARIF
+              if: always() && steps.map-locations.outcome == 'failure'
               uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
               with:
                   sarif_file: ${{ steps.grype.outputs.sarif }}
@@ -98,17 +127,28 @@ jobs:
             contents: read
             security-events: write
         container:
-            image: semgrep/semgrep
+            image: semgrep/semgrep:1.185.0@sha256:67518c174185a2043fdbed16c70631b79209499b3671178e7194379b48295a0d
         steps:
             - name: Checkout repository
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
 
             - name: Run Semgrep
-              run: semgrep scan --config auto --metrics=off --sarif -o semgrep-results.sarif
+              # `--config auto` needs metrics on and failed on every run with them off.
+              # Explicit registry rulesets need no metrics; they cover the repository's
+              # languages (TypeScript/React, the Rust shell, Python scripts) and secrets.
+              # Findings go to code scanning;
+              # the scan itself exits 0 with findings and fails only on an error.
+              run: >-
+                  semgrep scan --metrics=off
+                  --config p/javascript --config p/typescript --config p/react
+                  --config p/rust --config p/python --config p/secrets
+                  --sarif -o semgrep-results.sarif
 
             - name: Upload Semgrep results
               uses: github/codeql-action/upload-sarif@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
-              if: always()
+              if: always() && hashFiles('semgrep-results.sarif') != ''
               with:
                   sarif_file: semgrep-results.sarif
 
@@ -119,6 +159,8 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                  persist-credentials: false
 
             - name: Enable Corepack
               run: corepack enable

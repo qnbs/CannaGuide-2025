@@ -148,38 +148,53 @@ export function appSourceFiles(root = ROOT) {
         .sort()
 }
 
+/** How a character changes the bracket depth. */
+const BRACKET_DELTA = { '(': 1, '[': 1, '{': 1, ')': -1, ']': -1, '}': -1 }
+const QUOTES = `'"\``
+
+/** The index just past the quoted string that opens at `index` (escapes skipped). */
+function skipQuoted(source, index) {
+    const quote = source[index]
+    let at = index + 1
+    while (at < source.length && source[at] !== quote) at += source[at] === '\\' ? 2 : 1
+    return at + 1
+}
+
+/** The characters that end a first argument at the top level: a comma or a closer. */
+const ARGUMENT_END = new Set([',', ')', ']', '}'])
+const endsArgument = (char, depth) => depth === 0 && ARGUMENT_END.has(char)
+
 /** The text of a call's first argument, read up to its top-level comma or closing paren. */
 export function firstArgument(source, start) {
     let depth = 0
-    let quote = null
-    for (let index = start; index < source.length; index += 1) {
+    for (let index = start; index < source.length;) {
         const char = source[index]
-        if (quote) {
-            if (char === '\\') index += 1
-            else if (char === quote) quote = null
+        if (QUOTES.includes(char)) {
+            index = skipQuoted(source, index)
             continue
         }
-        if (char === "'" || char === '"' || char === '`') quote = char
-        else if (char === '(' || char === '[' || char === '{') depth += 1
-        else if (char === ')' || char === ']' || char === '}') {
-            if (depth === 0) return source.slice(start, index).trim()
-            depth -= 1
-        } else if (char === ',' && depth === 0) return source.slice(start, index).trim()
+        if (endsArgument(char, depth)) return source.slice(start, index).trim()
+        depth += BRACKET_DELTA[char] ?? 0
+        index += 1
     }
     return null
 }
 
+const MODULE_SUFFIXES = ['', '.ts', '.tsx', '.mjs', '/index.ts', '/index.tsx']
+
+/** The path an `@/` or relative import specifier starts from; null for a package. */
+function moduleBase(fromFile, specifier, root) {
+    if (specifier.startsWith('@/')) return join(root, APP, specifier.slice(2))
+    return specifier.startsWith('.') ? resolve(dirname(join(root, fromFile)), specifier) : null
+}
+
+const isSourceFile = (candidate) => existsSync(candidate) && SOURCE.test(candidate)
+
 function moduleFile(fromFile, specifier, root) {
-    let base
-    if (specifier.startsWith('@/')) base = join(root, APP, specifier.slice(2))
-    else if (specifier.startsWith('.')) base = resolve(dirname(join(root, fromFile)), specifier)
-    else return null
-    for (const suffix of ['', '.ts', '.tsx', '.mjs', '/index.ts', '/index.tsx']) {
-        const candidate = `${base}${suffix}`
-        if (existsSync(candidate) && SOURCE.test(candidate))
-            return normalize(relative(root, candidate))
-    }
-    return null
+    const base = moduleBase(fromFile, specifier, root)
+    if (base === null) return null
+    const found = MODULE_SUFFIXES.map((suffix) => `${base}${suffix}`).find(isSourceFile)
+    return found === undefined ? null : normalize(relative(root, found))
 }
 
 function importedName(source, local) {
@@ -226,7 +241,6 @@ export function maskComments(source) {
     return out
 }
 
-const QUOTES = `'"\``
 /**
  * Tokens after which a `/` starts a regex literal, not a division: an operator, a delimiter,
  * or a reserved word that is not a property name (`x.return / 2` divides). `of` is left out
@@ -235,33 +249,53 @@ const QUOTES = `'"\``
 const BEFORE_REGEX =
     /(?:^|[(,=:[!&|?{};+\-*%<>~^]|(?<![.#$\w])(?:return|typeof|case|in|new|delete|void|throw|yield|await))$/
 
-/** Where a regex literal opening at `at` ends, or -1 for a division or no closing `/`. */
-function regexEnd(source, at) {
-    if (source[at] !== '/') return -1
+/** Whether a `/` at `at` opens a regex literal, judged by the code before it on its line. */
+function opensRegex(source, at) {
+    if (source[at] !== '/') return false
     const lineStart = source.lastIndexOf('\n', at - 1) + 1
-    if (!BEFORE_REGEX.test(source.slice(lineStart, at).trimEnd())) return -1
+    return BEFORE_REGEX.test(source.slice(lineStart, at).trimEnd())
+}
+
+/** Whether the scan is inside a `[...]` class after `char`. */
+function classState(char, inClass) {
+    if (char === '[') return true
+    if (char === ']') return false
+    return inClass
+}
+
+/**
+ * Where a regex body starting at `from` closes, or -1 when its line ends first. A closing `/`
+ * that starts a `//` is more likely a division before a comment, so it closes nothing.
+ */
+function regexClose(source, from) {
     let inClass = false
-    for (let end = at + 1; end < source.length; end += 1) {
+    for (let end = from; end < source.length; end += 1) {
         const char = source[end]
         if (char === '\n') return -1
-        if (char === '\\') end += 1
-        else if (char === '[') inClass = true
-        else if (char === ']') inClass = false
-        // A closing `/` that starts a `//` is more likely a division before a comment.
-        else if (char === '/' && !inClass) return source[end + 1] === '/' ? -1 : end + 1
+        if (char === '\\') {
+            end += 1
+            continue
+        }
+        if (char === '/' && !inClass) return source[end + 1] === '/' ? -1 : end + 1
+        inClass = classState(char, inClass)
     }
     return -1
 }
 
+/** Where a regex literal opening at `at` ends, or -1 for a division or no closing `/`. */
+function regexEnd(source, at) {
+    return opensRegex(source, at) ? regexClose(source, at + 1) : -1
+}
+
 /** Where a comment opening at `at` ends, or -1 when none opens there (see maskComments). */
 function commentEnd(source, at) {
-    const line = source.startsWith('//', at)
-    if (!line && !source.startsWith('/*', at)) return -1
-    if (at > 0 && !/[\s;,(){}[\]]/.test(source[at - 1])) return -1
-    const end = line ? source.indexOf('\n', at) : source.indexOf('*/', at + 2)
-    if (end === -1) return source.length
-    return line ? end : end + 2
+    if (!opensComment(source, at)) return -1
+    if (source.startsWith('//', at)) return lineEnd(source, at)
+    return source.startsWith('/*', at) ? blockEnd(source, at) : -1
 }
+
+/** Whether a comment may open at `at`: at the start, or after whitespace or a delimiter. */
+const opensComment = (source, at) => at === 0 || /[\s;,(){}[\]]/.test(source[at - 1])
 
 /** Where a quoted string opening at `at` ends; a ' or " string ends at its line at the latest. */
 function quotedEnd(source, at) {
@@ -277,34 +311,50 @@ function quotedEnd(source, at) {
 /** The string a constant holds, following aliases, imports and re-exports; null when unknown. */
 export function resolveConstant(file, name, root = ROOT, depth = 0) {
     if (depth > MAX_DEPTH) return null
-    let source
+    const source = maskedSource(root, file)
+    if (source === null) return null
+    const declaration = constDeclaration(source, name)
+    const context = { file, root, depth: depth + 1 }
+    return declaration ? declaredValue(declaration, context) : importedValue(source, name, context)
+}
+
+/** A file's source with comments masked, or null when it cannot be read. */
+function maskedSource(root, file) {
     try {
-        source = maskComments(readFileSync(join(root, file), 'utf8'))
+        return maskComments(readFileSync(join(root, file), 'utf8'))
     } catch {
         return null
     }
-    const declaration = new RegExp(
+}
+
+/** The one-line `const NAME = value` initializer of `name`, or null when none is declared. */
+function constDeclaration(source, name) {
+    const match = new RegExp(
         `(?:^|[\\n;])\\s*(?:export\\s+)?const\\s+${name}\\s*(?::[^=\\n]+)?=\\s*([^\\n;]+)`,
     ).exec(source)
+    if (!match) return null
     // An initializer that goes on past its line (`'a'\n + '.b'`) is not the literal it starts with.
-    const continued =
-        declaration &&
-        CONTINUATION.test(source.slice(declaration.index + declaration[0].length).trimStart())
+    const rest = source.slice(match.index + match[0].length).trimStart()
+    const value = match[1]
+        .trim()
+        .replace(/\s+as\s+const$/, '')
+        .replace(/,$/, '')
+    return { value, continued: CONTINUATION.test(rest) }
+}
+
+/** A declared constant's string: its literal, or the one the constant it aliases holds. */
+function declaredValue({ value, continued }, { file, root, depth }) {
     if (continued) return null
-    if (declaration) {
-        const value = declaration[1]
-            .trim()
-            .replace(/\s+as\s+const$/, '')
-            .replace(/,$/, '')
-        const literal = LITERAL.exec(value)
-        if (literal) return literal[2]
-        if (IDENTIFIER.test(value)) return resolveConstant(file, value, root, depth + 1)
-        return null
-    }
+    const literal = LITERAL.exec(value)
+    if (literal) return literal[2]
+    return IDENTIFIER.test(value) ? resolveConstant(file, value, root, depth) : null
+}
+
+/** The string an imported constant holds in the module it comes from. */
+function importedValue(source, name, { file, root, depth }) {
     const imported = importedName(source, name)
-    if (!imported) return null
-    const target = moduleFile(file, imported.specifier, root)
-    return target ? resolveConstant(target, imported.imported, root, depth + 1) : null
+    const target = imported ? moduleFile(file, imported.specifier, root) : null
+    return target ? resolveConstant(target, imported.imported, root, depth) : null
 }
 
 const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
@@ -316,41 +366,53 @@ const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
  */
 export function isShadowed(source, name) {
     const word = new RegExp(`(?<![\\w$])${name}(?![\\w$])`)
-    const parameterLists = [
+    const bindings = [
+        // Any mention in a parameter list counts, destructured (`{ KEY }`, `[KEY]`) or as a
+        // default: a call there may see the parameter, so the key is treated as computed.
+        () => parameterLists(source).some((list) => word.test(list)),
+        () => new RegExp(`\\b${name}\\s*=>`).test(source),
+        () =>
+            new RegExp(
+                `\\b(?:const|let|var)\\s*[{[][^=]*?(?<![\\w$.])${name}(?![\\w$])[^=]*?[}\\]]\\s*=`,
+            ).test(source),
+        () =>
+            new RegExp(`\\b(?:let|var)\\s+${name}\\b|\\bcatch\\s*\\(\\s*${name}\\s*\\)`).test(
+                source,
+            ),
+        () => (source.match(new RegExp(`\\bconst\\s+${name}\\b`, 'g')) ?? []).length > 1,
+    ]
+    return bindings.some((binds) => binds())
+}
+
+/** The text of every function and arrow-function parameter list in `source`. */
+function parameterLists(source) {
+    return [
         ...source.matchAll(/\bfunction\b[^(]*\(([^()]*)\)/g),
         // Not the condition of `if (...) {` and the like: that is an expression, not a parameter list.
         ...source.matchAll(
             /(?<!\b(?:if|while|for|switch|catch|with)\s*)\(([^()]*)\)\s*(?::[^=>{]+)?(?:=>|\{)/g,
         ),
     ].map((match) => match[1])
-    // Any mention in a parameter list counts, destructured (`{ KEY }`, `[KEY]`) or as a
-    // default: a call there may see the parameter, so the key is treated as computed.
-    if (parameterLists.some((list) => word.test(list))) return true
-    if (new RegExp(`\\b${name}\\s*=>`).test(source)) return true
-    const destructured = new RegExp(
-        `\\b(?:const|let|var)\\s*[{[][^=]*?(?<![\\w$.])${name}(?![\\w$])[^=]*?[}\\]]\\s*=`,
-    )
-    if (destructured.test(source)) return true
-    if (new RegExp(`\\b(?:let|var)\\s+${name}\\b|\\bcatch\\s*\\(\\s*${name}\\s*\\)`).test(source))
-        return true
-    return (source.match(new RegExp(`\\bconst\\s+${name}\\b`, 'g')) ?? []).length > 1
+}
+
+/** Where the line holding `at` ends: at its newline, or at the end of the text. */
+function lineEnd(text, at) {
+    const index = text.indexOf('\n', at)
+    return index === -1 ? text.length : index
+}
+
+/** Where the block comment opening at `at` ends: just past its `*\/`, or at the end. */
+function blockEnd(text, at) {
+    const index = text.indexOf('*/', at + 2)
+    return index === -1 ? text.length : index + 2
 }
 
 /** Length of the comment or string literal that starts at `at`, or 0 for code. */
 function nonCodeLength(text, at) {
-    if (text.startsWith('//', at)) {
-        const end = text.indexOf('\n', at)
-        return (end === -1 ? text.length : end) - at
-    }
-    if (text.startsWith('/*', at)) {
-        const end = text.indexOf('*/', at + 2)
-        return (end === -1 ? text.length : end + 2) - at
-    }
-    const quote = text[at]
-    if (quote !== "'" && quote !== '"' && quote !== '`') return 0
-    let end = at + 1
-    while (end < text.length && text[end] !== quote) end += text[end] === '\\' ? 2 : 1
-    return Math.min(end + 1, text.length) - at
+    if (text.startsWith('//', at)) return lineEnd(text, at) - at
+    if (text.startsWith('/*', at)) return blockEnd(text, at) - at
+    if (!QUOTES.includes(text[at])) return 0
+    return Math.min(skipQuoted(text, at), text.length) - at
 }
 
 /**
@@ -399,76 +461,94 @@ function matchingBrace(source, start) {
 function topLevelName(objectText) {
     let depth = 0
     let propertyStart = true
-    let name
-    let spreadAfterName = false
+    let state = { name: undefined, spread: false }
     for (let at = 0; at < objectText.length;) {
-        if (depth === 0 && propertyStart) {
-            const rest = objectText.slice(at)
-            const match = PERSIST_NAME.exec(rest)
-            if (match) {
-                name = match[2]
-                spreadAfterName = false
-            } else if (NAME_PROPERTY.test(rest)) {
-                name = undefined
-                spreadAfterName = false
-            } else if (/^\s*\.\.\./.test(rest)) {
-                spreadAfterName = true
-            }
-        }
+        if (depth === 0 && propertyStart) state = propertyEffect(objectText.slice(at), state)
         const skipped = nonCodeLength(objectText, at)
         if (skipped > 0) {
-            if (objectText[at] !== '/') propertyStart = false
+            // A comment keeps the place of a property; a string ends it.
+            propertyStart = propertyStart && objectText[at] === '/'
             at += skipped
             continue
         }
         const char = objectText[at]
-        if ('{[('.includes(char)) depth += 1
-        else if ('}])'.includes(char)) depth -= 1
-        if (depth === 0 && char === ',') propertyStart = true
-        else if (!/\s/.test(char)) propertyStart = false
+        depth += BRACKET_DELTA[char] ?? 0
+        propertyStart = startsProperty(char, depth, propertyStart)
         at += 1
     }
-    return spreadAfterName ? undefined : name
+    return state.spread ? undefined : state.name
+}
+
+/**
+ * How a property that starts here changes what is known: a literal `name` sets it, any other
+ * `name` makes it unknown, and a spread may override an earlier name.
+ */
+function propertyEffect(rest, state) {
+    const literal = PERSIST_NAME.exec(rest)
+    if (literal) return { name: literal[2], spread: false }
+    if (NAME_PROPERTY.test(rest)) return { name: undefined, spread: false }
+    return /^\s*\.\.\./.test(rest) ? { ...state, spread: true } : state
+}
+
+/** Whether the next character starts a property: after a top-level comma, through whitespace. */
+function startsProperty(char, depth, current) {
+    if (depth === 0 && char === ',') return true
+    return /\s/.test(char) ? current : false
+}
+
+const lineOf = (source, index) => source.slice(0, index).split('\n').length
+
+/** A name to resolve as a constant: an identifier that no local binding shadows. */
+const isResolvableName = (expression, code) =>
+    IDENTIFIER.test(expression) && !isShadowed(code, expression)
+
+/** How a call's first argument names its key: unparsed, literal, constant or dynamic. */
+function classifyArgument(expression, { file, code, root }) {
+    if (expression === null) return { expression: '', kind: 'unparsed' }
+    const literal = LITERAL.exec(expression)
+    if (literal) return { expression, kind: 'literal', key: literal[2] }
+    const key = isResolvableName(expression, code) ? resolveConstant(file, expression, root) : null
+    return key === null ? { expression, kind: 'dynamic' } : { expression, kind: 'constant', key }
+}
+
+/** The getItem, setItem and removeItem calls of one file. */
+function directCalls(file, source, code, root) {
+    return [...code.matchAll(STORAGE_CALL)].map((match) => ({
+        file,
+        line: lineOf(source, match.index),
+        storage: match[1],
+        method: match[2],
+        // Read from the masked code (offsets are kept): a comment in the call is no part of it.
+        ...classifyArgument(firstArgument(code, match.index + match[0].length), {
+            file,
+            code,
+            root,
+        }),
+    }))
+}
+
+/** The zustand stores persisted to storage, keyed by the `name` of their options object. */
+function persistedStores(file, source, code) {
+    return [...code.matchAll(PERSIST_STORAGE)].map((match) => {
+        // The name comes from the same options object as the storage option, in any order.
+        const options = enclosingObject(code, match.index)
+        const name = options === null ? undefined : topLevelName(options)
+        const site = {
+            file,
+            line: lineOf(source, match.index),
+            storage: match[1],
+            method: 'setItem',
+            expression: 'persist',
+        }
+        return name ? { ...site, kind: 'persist', key: name } : { ...site, kind: 'dynamic' }
+    })
 }
 
 /** Every storage call in one file, classified by how its key is known. */
 export function storageCalls(file, source, root = ROOT) {
-    const calls = []
     // A commented-out call is not a call: it must not keep an allowance or a review entry alive.
     const code = maskComments(source)
-    for (const match of code.matchAll(STORAGE_CALL)) {
-        // Read from the masked code (offsets are kept), so a comment in the call is no part of the key.
-        const expression = firstArgument(code, match.index + match[0].length)
-        const line = source.slice(0, match.index).split('\n').length
-        const site = { file, line, storage: match[1], method: match[2] }
-        if (expression === null) {
-            calls.push({ ...site, expression: '', kind: 'unparsed' })
-            continue
-        }
-        const literal = LITERAL.exec(expression)
-        if (literal) {
-            calls.push({ ...site, expression, kind: 'literal', key: literal[2] })
-            continue
-        }
-        const key =
-            IDENTIFIER.test(expression) && !isShadowed(code, expression)
-                ? resolveConstant(file, expression, root)
-                : null
-        calls.push(
-            key === null
-                ? { ...site, expression, kind: 'dynamic' }
-                : { ...site, expression, kind: 'constant', key },
-        )
-    }
-    for (const match of code.matchAll(PERSIST_STORAGE)) {
-        // The name comes from the same options object as the storage option, in any order.
-        const options = enclosingObject(code, match.index)
-        const name = options === null ? undefined : topLevelName(options)
-        const line = source.slice(0, match.index).split('\n').length
-        const site = { file, line, storage: match[1], method: 'setItem', expression: 'persist' }
-        calls.push(name ? { ...site, kind: 'persist', key: name } : { ...site, kind: 'dynamic' })
-    }
-    return calls
+    return [...directCalls(file, source, code, root), ...persistedStores(file, source, code)]
 }
 
 /** Why a literal, constant or persisted key fails; null when it is allowed. */

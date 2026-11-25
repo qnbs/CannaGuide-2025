@@ -11,6 +11,7 @@ import {
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
 import { schedulePersistenceWrite } from './persistenceCoordinator'
+import { dbService } from '@/services/dbService'
 
 const runtimeTabContext = globalThis as typeof globalThis & {
     __cannaguidePersistenceFailureTabId?: string
@@ -20,7 +21,9 @@ const runtimeTabContext = globalThis as typeof globalThis & {
 const CANARY = 'sk_canary_0000000000000000000000000000'
 
 vi.mock('./persistenceCoordinator', () => ({
-    schedulePersistenceWrite: vi.fn((write: () => Promise<unknown>) => write()),
+    schedulePersistenceWrite: vi.fn((write: (isBlocked: () => boolean) => Promise<unknown>) =>
+        write(() => false),
+    ),
 }))
 vi.mock('@/services/dbService', () => ({
     dbService: {
@@ -95,6 +98,24 @@ describe('persisted settings snapshot (#654)', () => {
         expect(savedSnapshot()).not.toContain(PORCUPINE_CANARY)
         vi.mocked(pendingLegacySecretPaths).mockReturnValue([])
     })
+
+    it('commits nothing when a quit deadline passed while the snapshot was prepared (GH #883)', async () => {
+        // Unblocked when the write starts; the deadline passes during preparation.
+        let blocked = false
+        vi.mocked(dbService.optimizeSimulationForPersistence).mockImplementationOnce(
+            async (simulation) => {
+                blocked = true
+                return simulation
+            },
+        )
+        vi.mocked(schedulePersistenceWrite).mockImplementationOnce(
+            async (write) => (await write(() => blocked)) !== false,
+        )
+        const flush = setupPersistedStateSync(storeWithKey())
+
+        expect(await flush()).toBe(false)
+        expect(indexedDBStorage.setItem).not.toHaveBeenCalled()
+    })
 })
 
 describe('a save that fails (GH #686)', () => {
@@ -110,7 +131,9 @@ describe('a save that fails (GH #686)', () => {
 
     it('tells the caller once per run of failures, and again after a save succeeded', async () => {
         // The coordinator's real contract: true once the write completed.
-        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) =>
+            write(() => false).then(() => true),
+        )
         const onSaveFailure = vi.fn()
         const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
         vi.mocked(indexedDBStorage.setItem).mockRejectedValue(quotaError())
@@ -131,7 +154,9 @@ describe('a save that fails (GH #686)', () => {
     })
 
     it('keeps a payload-free warning marker until a later snapshot save succeeds', async () => {
-        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) =>
+            write(() => false).then(() => true),
+        )
         const onSaveFailure = vi.fn()
         const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
         sessionStorage.clear()
@@ -174,7 +199,7 @@ describe('a save that fails (GH #686)', () => {
         })
         vi.mocked(schedulePersistenceWrite).mockImplementationOnce(async (write) => {
             try {
-                await write()
+                await write(() => false)
                 return true
             } catch (error) {
                 failureInWriteSlot()
@@ -202,7 +227,9 @@ describe('a save that fails (GH #686)', () => {
     })
 
     it('records a failure when the coordinator rejects before invoking the write callback', async () => {
-        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) =>
+            write(() => false).then(() => true),
+        )
         const onSaveFailure = vi.fn()
         const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
         const coordinationError = new Error('Persistence lock request failed')
@@ -221,7 +248,9 @@ describe('a save that fails (GH #686)', () => {
     })
 
     it('does not let an automatic startup save hide a warning captured during hydration', async () => {
-        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) =>
+            write(() => false).then(() => true),
+        )
         const failedTabFlush = setupPersistedStateSync(storeWithKey())
         vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
         await expect(failedTabFlush()).resolves.toBe(false)
@@ -248,7 +277,9 @@ describe('a save that fails (GH #686)', () => {
     })
 
     it('gives a new failure after presentation a new token so a successful retry resolves it', async () => {
-        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) =>
+            write(() => false).then(() => true),
+        )
         const tabFlush = setupPersistedStateSync(storeWithKey())
         vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(quotaError())
         await expect(tabFlush()).resolves.toBe(false)
@@ -275,7 +306,9 @@ describe('a save that fails (GH #686)', () => {
 
     it('keeps the IndexedDB result authoritative when localStorage is unavailable', async () => {
         localStorage.clear()
-        vi.mocked(schedulePersistenceWrite).mockImplementation((write) => write().then(() => true))
+        vi.mocked(schedulePersistenceWrite).mockImplementation((write) =>
+            write(() => false).then(() => true),
+        )
         const onSaveFailure = vi.fn()
         const flush = setupPersistedStateSync(storeWithKey(), undefined, onSaveFailure)
         const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {

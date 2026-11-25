@@ -9,7 +9,9 @@ import { hasPendingSnapshotSaveFailure } from '@/services/persistenceFailureMark
 import { setupPersistedStateSync } from './persistence'
 
 vi.mock('./persistenceCoordinator', () => ({
-    schedulePersistenceWrite: vi.fn((write: () => Promise<unknown>) => write().then(() => true)),
+    schedulePersistenceWrite: vi.fn((write: (isBlocked: () => boolean) => Promise<unknown>) =>
+        write(() => false).then(() => true),
+    ),
 }))
 vi.mock('@/services/dbService', () => ({
     dbService: {

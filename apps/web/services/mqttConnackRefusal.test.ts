@@ -120,6 +120,44 @@ describe('the IoT journal client after a refused CONNECT', () => {
     })
 })
 
+describe('the IoT journal client at start', () => {
+    beforeEach(() => {
+        vi.useFakeTimers()
+        vi.clearAllMocks()
+        clients.length = 0
+        localStorage.clear()
+    })
+    afterEach(() => {
+        vi.useRealTimers()
+    })
+
+    const startWith = async (enabled: boolean, brokerUrl: string) => {
+        vi.resetModules()
+        const { useIotStore } = await import('@/stores/useIotStore')
+        // Saved settings are in the store before the service starts, as after a page load.
+        useIotStore.setState({ isEnabled: enabled, brokerUrl, username: 'grower' })
+        const { mqttClientService } = await import('./mqttClientService')
+        mqttClientService.init({} as AppStore)
+        await vi.advanceTimersByTimeAsync(5000)
+        return useIotStore
+    }
+
+    it('connects once when IoT is already enabled in the saved settings', async () => {
+        await startWith(true, 'wss://192.168.1.20:9001')
+        expect(connect).toHaveBeenCalledOnce()
+        expect(connect).toHaveBeenLastCalledWith(
+            'wss://192.168.1.20:9001',
+            expect.objectContaining({ username: 'grower' }),
+        )
+    })
+
+    it('does not connect at start when IoT is off or has no broker', async () => {
+        await startWith(false, 'wss://192.168.1.20:9001')
+        await startWith(true, '')
+        expect(connect).not.toHaveBeenCalled()
+    })
+})
+
 describe('the IoT journal client when the credentials change', () => {
     beforeEach(() => {
         vi.useFakeTimers()

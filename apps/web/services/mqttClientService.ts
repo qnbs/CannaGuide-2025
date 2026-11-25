@@ -96,7 +96,6 @@ class MqttClientService {
                     }
                 }
             },
-            { fireImmediately: true },
         )
 
         // Changed credentials reconnect once they settle: that is how a refused CONNECT, which
@@ -127,6 +126,12 @@ class MqttClientService {
 
         // Clean up on page unload
         window.addEventListener('pagehide', () => this.dispose(), { once: true })
+
+        // Saved settings are already in the store when the service starts. The subscriptions
+        // only see later changes (an immediate call would compare equal values), so an IoT
+        // connection the user left enabled starts here, once.
+        const { isEnabled, brokerUrl } = useIotStore.getState()
+        if (isEnabled && brokerUrl) this.connect()
     }
 
     // -----------------------------------------------------------------------

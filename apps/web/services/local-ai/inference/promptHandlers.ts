@@ -27,6 +27,7 @@ import {
 } from '@/types/schemas'
 import { localAiFallbackService } from '../fallback/fallbackService'
 import { captureLocalAiError } from '@/services/errorReporting'
+import { ensureLocaleLoaded } from '@/i18n'
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
@@ -182,7 +183,20 @@ export async function handleStrainImageGeneration(
         captureLocalAiError(error, { model: 'sd-turbo', stage: 'image-generation-local' })
         console.debug('[LocalAI] SD-Turbo image generation failed, falling back to SVG.')
     }
+    await loadPosterLocale(lang)
     return localAiFallbackService.generateStrainImage(strain, style, criteria, lang)
+}
+
+/**
+ * Load the poster's language before the synchronous SVG composer translates it: bundles load
+ * lazily, so right after a language switch the poster would otherwise read English.
+ */
+async function loadPosterLocale(lang: Language): Promise<void> {
+    try {
+        await ensureLocaleLoaded(lang)
+    } catch {
+        // A bundle that cannot load leaves the poster in English, which is always loaded.
+    }
 }
 
 // ---------------------------------------------------------------------------

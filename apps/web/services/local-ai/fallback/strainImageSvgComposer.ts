@@ -19,7 +19,9 @@ import { escapeXml } from './strainImageSvgUtils'
 
 /** The flowering length a strain reports, in weeks; null when it reports none. */
 const reportedFloweringWeeks = (strain: Strain): string | null => {
-    if (strain.floweringTimeRange) return strain.floweringTimeRange
+    // A blank range, as the add-strain form can keep it, reports nothing.
+    const range = strain.floweringTimeRange?.trim()
+    if (range) return range
     const weeks = strain.floweringTime
     return typeof weeks === 'number' && Number.isFinite(weeks) ? String(weeks) : null
 }

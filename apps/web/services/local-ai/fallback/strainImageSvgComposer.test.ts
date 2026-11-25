@@ -32,6 +32,13 @@ describe('strainImageSvgComposer', () => {
         expect(svgFor({ floweringTimeRange: '8-9' })).toContain('8-9 weeks flowering')
     })
 
+    it('ignores a blank flowering range: the reported weeks, or unknown, still show', () => {
+        expect(svgFor({ floweringTimeRange: '   ' })).toContain('9 weeks flowering')
+        expect(svgFor({ floweringTimeRange: '   ', floweringTime: undefined })).toContain(
+            'Flowering time unknown',
+        )
+    })
+
     it('says the flowering time is unknown instead of printing an absent value', () => {
         const svg = svgFor({ floweringTime: undefined })
         expect(svg).toContain('Flowering time unknown')

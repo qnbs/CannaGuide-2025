@@ -88,16 +88,27 @@ function gitDiffFiles(ref) {
  * now runs here instead.
  */
 export function allTrackedInScanDirs(cwd = process.cwd()) {
-    const result = spawnSync(
-        'git',
-        ['ls-files', '-z', '--', ...SCAN_GLOBS, ...SCAN_ROOT_FILES_OF],
-        { cwd, encoding: 'utf8' },
-    )
+    // `:(top)` pathspecs and `--full-name` output are relative to the repository root, so
+    // a run from a subdirectory (apps/web) lists the same files instead of none.
+    const pathspecs = [...SCAN_GLOBS, ...SCAN_ROOT_FILES_OF].map((dir) => `:(top)${dir}`)
+    const result = spawnSync('git', ['ls-files', '-z', '--full-name', '--', ...pathspecs], {
+        cwd,
+        encoding: 'utf8',
+    })
     if (result.status !== 0) throw new Error('[file-budget] git ls-files failed')
-    return result.stdout
+    const files = result.stdout
         .split('\0')
         .filter((file) => SOURCE.test(file) && !TEST.test(file) && inScanDirs(file))
         .sort()
+    if (files.length === 0) throw new Error('[file-budget] the full scan found no file in scope')
+    return files
+}
+
+/** The repository root, from any directory inside the checkout. */
+export function repositoryRoot(cwd = process.cwd()) {
+    const result = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd, encoding: 'utf8' })
+    if (result.status !== 0) throw new Error('[file-budget] not inside a git checkout')
+    return result.stdout.trim()
 }
 
 /**
@@ -169,4 +180,9 @@ function main() {
 }
 
 const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
-if (isDirectRun) main()
+if (isDirectRun) {
+    // git diff paths are root-relative and the files are read relative to the cwd: from a
+    // subdirectory both checks would silently see nothing.
+    process.chdir(repositoryRoot())
+    main()
+}

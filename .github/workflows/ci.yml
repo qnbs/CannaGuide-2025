@@ -406,6 +406,12 @@ jobs:
                   CHECK_I18N_STRICT: '1'
               run: pnpm run lint:i18n
 
+            # Advisory, as it was in the Advisory Metrics job: a finding marks the step, not the job.
+            # It parses source with TypeScript, so it runs here, where dependencies are installed.
+            - name: LocalStorage allowlist (advisory)
+              continue-on-error: true
+              run: node scripts/security/check-localstorage-usage.mjs
+
             # ESLint ignores scripts/**, docker/**, *.cjs and the service worker.
             - name: Unlinted script syntax
               run: node scripts/check-script-syntax.mjs
@@ -877,10 +883,6 @@ jobs:
               env:
                   FILE_BUDGET_ADVISORY: '1'
               run: node scripts/check-file-budget.mjs
-
-            - name: LocalStorage allowlist
-              continue-on-error: true
-              run: node scripts/security/check-localstorage-usage.mjs
 
             - name: Advisory summary
               if: always()

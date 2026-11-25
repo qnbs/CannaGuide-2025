@@ -3,27 +3,35 @@
  * Ensures localStorage/sessionStorage usage stays within the allowlist
  * (IndexedDB-first persistence; localStorage only for small non-secret flags).
  *
- * Every storage call in the web app's source is checked, whatever form its key takes:
+ * Every web app file that mentions storage is parsed with TypeScript's parser (syntax only, no
+ * type check), so strings, comments, regex literals and type arguments are read the way the
+ * compiler reads them. Every storage call is checked, whatever form its key takes:
  * - a string literal is checked directly;
- * - a constant is resolved in the same file, or through a named import or re-export;
+ * - an identifier is resolved to the binding the call sees, by block, function and module scope:
+ *   a `const` holding a literal or aliasing one, or a named import or re-export of one. A
+ *   parameter, `let`, `var`, destructured, loop or catch binding is computed;
  * - anything else (a call, a template, a parameter) has to be listed in
  *   REVIEWED_DYNAMIC_KEYS with the keys it produces, so a new dynamic key fails until
  *   someone reviews it, and an entry whose call is gone fails as stale;
- * - every zustand `persist(...)` call (also under an import alias or `ns.persist`) is a store
- *   written under its `name`, to localStorage unless a readable `storage` option says
- *   otherwise. A store whose name or storage cannot be read, or a `createJSONStorage` outside
- *   a persist call, counts as computed and needs a review entry.
+ * - every zustand `persist(...)` call (also renamed on import, as `ns.persist`, through a const
+ *   alias, or a `persist` the file does not declare) is a store written under its `name`, to
+ *   localStorage unless a readable `storage` option says otherwise. A store whose name or
+ *   storage cannot be read, or a `createJSONStorage` that is no persist call's `storage`
+ *   option, counts as computed and needs a review entry for that exact call.
  *
  * Before 2026-11-24 the check read literal keys only. On `main` at v1.12.2 that was 6 of
  * 106 storage calls: the other 100 pass a constant or a computed key and were never checked,
  * and the persisted IoT store was not seen at all.
  *
- * Exits 1 on an unknown key, an unreviewed dynamic key, or a stale review entry.
+ * Exits 1 on an unknown key, an unreviewed or unreadable key, a file that does not parse, a
+ * stale review entry or a stale allowlist pattern.
  */
 import { spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { dirname, join, normalize, relative, resolve } from 'node:path'
+import { dirname, extname, join, normalize, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+import ts from 'typescript'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const APP = 'apps/web'
@@ -80,6 +88,9 @@ export const LEGACY_READ_REMOVE = [/^cg\.crypto\.key\.v1$/, /^cg\.gdpr\.consent\
  * Storage calls whose key is computed. Each entry names the file, the exact key
  * expression, the methods it may use, and an example key it produces; the example must
  * pass the allowlist unless the site only reads every key for the user's own export.
+ * A persisted store's expression is its `persist(...)` options, a stray storage accessor's
+ * its `createJSONStorage(...)` call, so one entry approves one call. Line breaks and their
+ * indentation count as one space.
  */
 export const REVIEWED_DYNAMIC_KEYS = [
     {
@@ -131,22 +142,13 @@ export const REVIEWED_DYNAMIC_KEYS = [
 const SOURCE = /\.(ts|tsx|mjs)$/
 const EXCLUDED =
     /(^|\/)(tests|__mocks__|__tests__)\/|\.(test|spec|ct|stories|bench)\.[cm]?[jt]sx?$|\.d\.ts$|^apps\/web\/(locales|public)\//
-const STORAGE_CALL = /\b(localStorage|sessionStorage)\s*\.\s*(getItem|setItem|removeItem)\s*\(/g
-const LITERAL = /^(['"`])([^'"`$\\\n]*)\1$/
-/**
- * A `createJSONStorage` accessor this scan can read: `() => localStorage` or `sessionStorage`,
- * optionally through `window.`, `globalThis.` or `self.`. Any other storage is unknown.
- */
-const KNOWN_ACCESSOR =
-    /^createJSONStorage\(\s*\(\)\s*=>\s*(?:(?:window|globalThis|self)\.)?(localStorage|sessionStorage)\s*\)$/
-const STORAGE_PROPERTY = /^storage\s*:([\s\S]*)$/
-const ZUSTAND_MIDDLEWARE = String.raw`['"]zustand/middleware['"]`
-/** A `name` that is one complete literal: the property ends right after the closing quote. */
-const PERSIST_NAME = /^\s*name\s*:\s*(['"`])([^'"`$\\\n]+)\1(?=\s*(?:,|$))/
-/** Any `name` property, including `name: prefix + suffix` and a shorthand `name`. */
-const NAME_PROPERTY = /^\s*name\s*(?::|(?=,|$))/
-const IDENTIFIER = /^[A-Za-z_$][\w$]*$/
+/** A file with a storage call or a persisted store mentions one of these; others are not parsed. */
+const MENTIONS_STORAGE = /localStorage|sessionStorage|persist|createJSONStorage/
+const STORAGES = new Set(['localStorage', 'sessionStorage'])
+const METHODS = new Set(['getItem', 'setItem', 'removeItem'])
+const ZUSTAND_MIDDLEWARE = 'zustand/middleware'
 const MAX_DEPTH = 6
+const { NodeFlags, SyntaxKind } = ts
 
 /** The app source the check covers: tracked files, without tests, locales and assets. */
 export function appSourceFiles(root = ROOT) {
@@ -158,42 +160,33 @@ export function appSourceFiles(root = ROOT) {
         .sort()
 }
 
-/** How a character changes the bracket depth. */
-const BRACKET_DELTA = { '(': 1, '[': 1, '{': 1, ')': -1, ']': -1, '}': -1 }
-const QUOTES = `'"\``
+// ---------------------------------------------------------------------------
+// Syntax trees and module resolution
+// ---------------------------------------------------------------------------
 
-/** The index just past the quoted string that opens at `index` (escapes skipped). */
-function skipQuoted(source, index) {
-    const quote = source[index]
-    let at = index + 1
-    while (at < source.length && source[at] !== quote) at += source[at] === '\\' ? 2 : 1
-    return at + 1
+const SCRIPT_KINDS = { '.tsx': ts.ScriptKind.TSX, '.mjs': ts.ScriptKind.JS }
+
+/** A file's syntax tree, with parent links for the scope walk. */
+function parse(file, source) {
+    const kind = SCRIPT_KINDS[extname(file)] ?? ts.ScriptKind.TS
+    return ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, kind)
 }
 
-/** The characters that end a first argument at the top level: a comma or a closer. */
-const ARGUMENT_END = new Set([',', ')', ']', '}'])
-const endsArgument = (char, depth) => depth === 0 && ARGUMENT_END.has(char)
+const modules = new Map()
 
-/** The index of the top-level comma or closer that ends the argument at `start`, or -1. */
-function argumentEnd(source, start) {
-    let depth = 0
-    for (let index = start; index < source.length;) {
-        const char = source[index]
-        if (QUOTES.includes(char)) {
-            index = skipQuoted(source, index)
-            continue
-        }
-        if (endsArgument(char, depth)) return index
-        depth += BRACKET_DELTA[char] ?? 0
-        index += 1
+/** A module's syntax tree, parsed once per path; null when it cannot be read. */
+function parsedModule(root, file) {
+    const path = join(root, file)
+    if (!modules.has(path)) modules.set(path, readModule(path, file))
+    return modules.get(path)
+}
+
+function readModule(path, file) {
+    try {
+        return parse(file, readFileSync(path, 'utf8'))
+    } catch {
+        return null
     }
-    return -1
-}
-
-/** The text of a call's first argument, read up to its top-level comma or closing paren. */
-export function firstArgument(source, start) {
-    const end = argumentEnd(source, start)
-    return end === -1 ? null : source.slice(start, end).trim()
 }
 
 const MODULE_SUFFIXES = ['', '.ts', '.tsx', '.mjs', '/index.ts', '/index.tsx']
@@ -213,403 +206,496 @@ function moduleFile(fromFile, specifier, root) {
     return found === undefined ? null : normalize(relative(root, found))
 }
 
-function importedName(source, local) {
-    const imports = /\b(?:import|export)\s+(?:type\s+)?\{([^}]*)\}\s*from\s*['"]([^'"]+)['"]/g
-    for (const [, names, specifier] of source.matchAll(imports)) {
-        for (const part of names.split(',')) {
-            const [imported, alias] = part
-                .trim()
-                .replace(/^type\s+/, '')
-                .split(/\s+as\s+/)
-            if ((alias ?? imported)?.trim() === local)
-                return { imported: imported.trim(), specifier }
+/** Syntax that wraps an expression without changing its value. */
+const WRAPPERS = new Set([
+    SyntaxKind.ParenthesizedExpression,
+    SyntaxKind.AsExpression,
+    SyntaxKind.SatisfiesExpression,
+    SyntaxKind.TypeAssertionExpression,
+    SyntaxKind.NonNullExpression,
+])
+
+function unwrap(node) {
+    let inner = node
+    while (WRAPPERS.has(inner.kind)) inner = inner.expression
+    return inner
+}
+
+const isMemberAccess = (node) =>
+    ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)
+
+/** The member a property access reads: `a.name`, or `a['name']` with a literal. */
+function memberName(node) {
+    if (ts.isPropertyAccessExpression(node)) return node.name.text
+    const literal =
+        ts.isElementAccessExpression(node) && ts.isStringLiteralLike(node.argumentExpression)
+    return literal ? node.argumentExpression.text : null
+}
+
+/** The name a call's callee goes by: `f` in `f()`, `name` in `a.name()`. */
+function calleeName(call) {
+    const callee = unwrap(call.expression)
+    return ts.isIdentifier(callee) ? callee.text : memberName(callee)
+}
+
+const lineOf = (node) =>
+    node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line + 1
+
+/** A node's source text, line breaks and their indentation folded to one space. */
+const textOf = (node) => node.getText().replace(/\s*\n\s*/g, ' ')
+
+// ---------------------------------------------------------------------------
+// Bindings. A name resolves to what the nearest enclosing scope declares under it: a block's
+// `let`, `const`, function and class declarations, a function's parameters and the `var`s
+// hoisted into it, a loop or catch binding, the module's declarations and imports.
+// ---------------------------------------------------------------------------
+
+/** The identifiers a binding name introduces, destructuring included. */
+function bindingNames(name) {
+    if (ts.isIdentifier(name)) return [name.text]
+    return name.elements.flatMap((element) =>
+        ts.isBindingElement(element) ? bindingNames(element.name) : [],
+    )
+}
+
+/** The names one declaration binds. */
+function namesOf(declaration) {
+    const name = declaration.name
+    if (name === undefined) return []
+    const pattern = ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)
+    return pattern ? bindingNames(name) : [name.text]
+}
+
+const isVarList = (list) => (list.flags & NodeFlags.BlockScoped) === 0
+
+/** The declarations a statement adds to its block (a `var` belongs to its function). */
+const NAMED_DECLARATIONS = new Set([
+    SyntaxKind.FunctionDeclaration,
+    SyntaxKind.ClassDeclaration,
+    SyntaxKind.EnumDeclaration,
+    SyntaxKind.ModuleDeclaration,
+    SyntaxKind.ImportEqualsDeclaration,
+])
+
+function statementDeclarations(statement) {
+    if (ts.isVariableStatement(statement)) {
+        const list = statement.declarationList
+        return isVarList(list) ? [] : [...list.declarations]
+    }
+    if (ts.isImportDeclaration(statement)) return importDeclarations(statement)
+    return NAMED_DECLARATIONS.has(statement.kind) ? [statement] : []
+}
+
+/** The value bindings an import makes; a type-only import makes none. */
+function importDeclarations(statement) {
+    const clause = statement.importClause
+    if (clause === undefined || clause.isTypeOnly) return []
+    const named = clause.namedBindings
+    const defaults = clause.name === undefined ? [] : [clause]
+    if (named === undefined) return defaults
+    if (ts.isNamespaceImport(named)) return [...defaults, named]
+    return [...defaults, ...named.elements.filter((element) => !element.isTypeOnly)]
+}
+
+/** The `var` declarations hoisted into a function or module body: nested functions excluded. */
+function hoistedVars(body) {
+    const found = []
+    const visit = (node) => {
+        if (ts.isFunctionLike(node)) return
+        if (ts.isVariableDeclarationList(node) && isVarList(node)) found.push(...node.declarations)
+        ts.forEachChild(node, visit)
+    }
+    ts.forEachChild(body, visit)
+    return found
+}
+
+const blockDeclarations = (statements) => statements.flatMap(statementDeclarations)
+
+function loopDeclarations(loop) {
+    const init = loop.initializer
+    return init !== undefined && ts.isVariableDeclarationList(init) ? [...init.declarations] : []
+}
+
+/** What a function binds: its own name (a named function expression), parameters, vars. */
+function functionDeclarations(fn) {
+    const own = ts.isFunctionExpression(fn) ? [fn] : []
+    const vars = fn.body === undefined ? [] : hoistedVars(fn.body)
+    return [...own, ...fn.parameters, ...vars]
+}
+
+const SCOPES = new Map([
+    [
+        SyntaxKind.SourceFile,
+        (node) => [...blockDeclarations(node.statements), ...hoistedVars(node)],
+    ],
+    [SyntaxKind.Block, (node) => blockDeclarations(node.statements)],
+    [SyntaxKind.ModuleBlock, (node) => blockDeclarations(node.statements)],
+    [SyntaxKind.CaseBlock, (node) => blockDeclarations(node.clauses.flatMap((c) => c.statements))],
+    [
+        SyntaxKind.CatchClause,
+        (node) => (node.variableDeclaration ? [node.variableDeclaration] : []),
+    ],
+    [SyntaxKind.ForStatement, loopDeclarations],
+    [SyntaxKind.ForInStatement, loopDeclarations],
+    [SyntaxKind.ForOfStatement, loopDeclarations],
+    [SyntaxKind.ClassExpression, (node) => [node]],
+])
+
+const NO_BINDINGS = new Map()
+const scopeIndexes = new WeakMap()
+
+/** Every name a scope declares, mapped to its declarations; built once per scope. */
+function scopeIndex(scope) {
+    const declares = ts.isFunctionLike(scope) ? functionDeclarations : SCOPES.get(scope.kind)
+    if (declares === undefined) return NO_BINDINGS
+    if (!scopeIndexes.has(scope)) scopeIndexes.set(scope, indexByName(declares(scope)))
+    return scopeIndexes.get(scope)
+}
+
+function indexByName(declarations) {
+    const index = new Map()
+    for (const declaration of declarations) {
+        for (const name of namesOf(declaration)) {
+            index.set(name, [...(index.get(name) ?? []), declaration])
         }
     }
-    return null
+    return index
 }
 
-/** A next token that continues an expression onto the following line. */
-const CONTINUATION = /^(?:[+\-*/%?:.[(|&^<>=`]|\?\?)/
-
-/**
- * The source with every comment blanked out (newlines kept, so line numbers hold). A `//` or
- * `/*` opens a comment only at the start of a line or after whitespace or a delimiter, so the
- * slashes that end a regex literal such as `/https?:\/\//` do not. A regex literal is copied as
- * it is, so a quote or backtick inside it (`/`/`) opens no string. A quoted string ends at its
- * line at the latest, so a quote the regex check misses still cannot swallow the code below it.
- */
-export function maskComments(source) {
-    let out = ''
-    for (let at = 0; at < source.length;) {
-        const comment = commentEnd(source, at)
-        if (comment !== -1) {
-            out += source.slice(at, comment).replace(/[^\n]/g, ' ')
-            at = comment
-            continue
-        }
-        const regex = regexEnd(source, at)
-        let next = at + 1
-        if (regex !== -1) next = regex
-        else if (QUOTES.includes(source[at])) next = quotedEnd(source, at)
-        out += source.slice(at, next)
-        at = next
+/** The declarations the nearest scope around an identifier makes of its name; [] for a global. */
+function bindingsOf(identifier) {
+    for (let scope = identifier.parent; scope !== undefined; scope = scope.parent) {
+        const found = scopeIndex(scope).get(identifier.text)
+        if (found !== undefined) return found
     }
-    return out
+    return []
 }
 
-/**
- * Tokens after which a `/` starts a regex literal, not a division: an operator, a delimiter,
- * or a reserved word that is not a property name (`x.return / 2` divides). `of` is left out
- * because it can be a variable name.
- */
-const BEFORE_REGEX =
-    /(?:^|[(,=:[!&|?{};+\-*%<>~^]|(?<![.#$\w])(?:return|typeof|case|in|new|delete|void|throw|yield|await))$/
-
-/** Whether a `/` at `at` opens a regex literal, judged by the code before it on its line. */
-function opensRegex(source, at) {
-    if (source[at] !== '/') return false
-    const lineStart = source.lastIndexOf('\n', at - 1) + 1
-    return BEFORE_REGEX.test(source.slice(lineStart, at).trimEnd())
+/** The one declaration an identifier sees, or null when it is global or declared twice. */
+function soleBinding(identifier) {
+    const found = bindingsOf(identifier)
+    return found.length === 1 ? found[0] : null
 }
 
-/** Whether the scan is inside a `[...]` class after `char`. */
-function classState(char, inClass) {
-    if (char === '[') return true
-    if (char === ']') return false
-    return inClass
+// ---------------------------------------------------------------------------
+// Constant strings
+// ---------------------------------------------------------------------------
+
+/** A `const NAME = value` declaration: one identifier with an initializer, never `using`. */
+function isConstant(declaration) {
+    if (!ts.isVariableDeclaration(declaration) || declaration.initializer === undefined)
+        return false
+    const scoped = declaration.parent.flags & NodeFlags.BlockScoped
+    return ts.isIdentifier(declaration.name) && scoped === NodeFlags.Const
 }
 
-/**
- * Where a regex body starting at `from` closes, or -1 when its line ends first. A closing `/`
- * that starts a `//` is more likely a division before a comment, so it closes nothing.
- */
-function regexClose(source, from) {
-    let inClass = false
-    for (let end = from; end < source.length; end += 1) {
-        const char = source[end]
-        if (char === '\n') return -1
-        if (char === '\\') {
-            end += 1
-            continue
-        }
-        if (char === '/' && !inClass) return source[end + 1] === '/' ? -1 : end + 1
-        inClass = classState(char, inClass)
-    }
-    return -1
+/** The string an expression holds: a literal, or a constant bound to one; null when unknown. */
+function stringValue(expression, context) {
+    const node = unwrap(expression)
+    if (ts.isStringLiteralLike(node)) return node.text
+    return ts.isIdentifier(node) ? identifierValue(node, context) : null
 }
 
-/** Where a regex literal opening at `at` ends, or -1 for a division or no closing `/`. */
-function regexEnd(source, at) {
-    return opensRegex(source, at) ? regexClose(source, at + 1) : -1
+/** The string the binding an identifier sees holds; null for any binding but a constant. */
+function identifierValue(identifier, context) {
+    const binding = soleBinding(identifier)
+    return binding === null ? null : declarationValue(binding, context)
 }
 
-/** Where a comment opening at `at` ends, or -1 when none opens there (see maskComments). */
-function commentEnd(source, at) {
-    if (!opensComment(source, at)) return -1
-    if (source.startsWith('//', at)) return lineEnd(source, at)
-    return source.startsWith('/*', at) ? blockEnd(source, at) : -1
+function declarationValue(declaration, context) {
+    if (context.depth > MAX_DEPTH) return null
+    const next = { ...context, depth: context.depth + 1 }
+    if (ts.isImportSpecifier(declaration)) return importedValue(declaration, next)
+    return isConstant(declaration) ? stringValue(declaration.initializer, next) : null
 }
 
-/** Whether a comment may open at `at`: at the start, or after whitespace or a delimiter. */
-const opensComment = (source, at) => at === 0 || /[\s;,(){}[\]]/.test(source[at - 1])
+const importedName = (specifier) => (specifier.propertyName ?? specifier.name).text
 
-/** Where a quoted string opening at `at` ends; a ' or " string ends at its line at the latest. */
-function quotedEnd(source, at) {
-    const quote = source[at]
-    let end = at + 1
-    while (end < source.length && source[end] !== quote) {
-        if (quote !== '`' && source[end] === '\n') break
-        end += source[end] === '\\' ? 2 : 1
-    }
-    return Math.min(end + 1, source.length)
+/** The string an imported binding holds in the module it comes from. */
+function importedValue(specifier, context) {
+    const statement = specifier.parent.parent.parent
+    return valueFrom(statement.moduleSpecifier, importedName(specifier), context)
+}
+
+/** The string `name` holds in the module a specifier names, or in this one without a specifier. */
+function valueFrom(specifier, name, context) {
+    const { file, root, depth } = context
+    const target = specifier === undefined ? file : moduleFile(file, specifier.text, root)
+    return target === null ? null : resolveConstant(target, name, root, depth)
 }
 
 /** The string a constant holds, following aliases, imports and re-exports; null when unknown. */
 export function resolveConstant(file, name, root = ROOT, depth = 0) {
     if (depth > MAX_DEPTH) return null
-    const source = maskedSource(root, file)
-    if (source === null) return null
-    const declaration = constDeclaration(source, name)
+    const module = parsedModule(root, file)
+    if (module === null) return null
     const context = { file, root, depth: depth + 1 }
-    return declaration ? declaredValue(declaration, context) : importedValue(source, name, context)
+    const declared = scopeIndex(module).get(name)
+    if (declared === undefined) return exportedValue(module, name, context)
+    return declared.length === 1 ? declarationValue(declared[0], context) : null
 }
 
-/** A file's source with comments masked, or null when it cannot be read. */
-function maskedSource(root, file) {
-    try {
-        return maskComments(readFileSync(join(root, file), 'utf8'))
-    } catch {
-        return null
-    }
+/** The string a module re-exports as `name`: `export { a as name }` (from a module) or `export *`. */
+function exportedValue(module, name, context) {
+    const exports = module.statements.filter(
+        (statement) => ts.isExportDeclaration(statement) && !statement.isTypeOnly,
+    )
+    const named = exports.flatMap((statement) => namedExports(statement, name))
+    if (named.length > 0) return named.length === 1 ? reexportedValue(named[0], context) : null
+    const stars = exports.filter((statement) => statement.exportClause === undefined)
+    const values = new Set(stars.map((star) => valueFrom(star.moduleSpecifier, name, context)))
+    values.delete(null)
+    return values.size === 1 ? [...values][0] : null
 }
 
-const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-
-/**
- * A pattern for `name` as one whole identifier. The name is escaped, because `$` is legal in
- * an identifier and an anchor in a pattern, and bounded by identifier characters rather than
- * `\b`, which sees no boundary before a leading `$`.
- */
-const identifier = (name) => String.raw`(?<![\w$])${escapeRegExp(name)}(?![\w$])`
-
-/** The one-line `const NAME = value` initializer of `name`, or null when none is declared. */
-function constDeclaration(source, name) {
-    const match = new RegExp(
-        String.raw`(?:^|[\n;])\s*(?:export\s+)?const\s+${identifier(name)}\s*(?::[^=\n]+)?=\s*([^\n;]+)`,
-    ).exec(source)
-    if (!match) return null
-    // An initializer that goes on past its line (`'a'\n + '.b'`) is not the literal it starts with.
-    const rest = source.slice(match.index + match[0].length).trimStart()
-    const value = match[1]
-        .trim()
-        .replace(/\s+as\s+const$/, '')
-        .replace(/,$/, '')
-    return { value, continued: CONTINUATION.test(rest) }
+function namedExports(statement, name) {
+    const clause = statement.exportClause
+    if (clause === undefined || !ts.isNamedExports(clause)) return []
+    return clause.elements.filter((element) => !element.isTypeOnly && element.name.text === name)
 }
 
-/** A declared constant's string: its literal, or the one the constant it aliases holds. */
-function declaredValue({ value, continued }, { file, root, depth }) {
-    if (continued) return null
-    const literal = LITERAL.exec(value)
-    if (literal) return literal[2]
-    return IDENTIFIER.test(value) ? resolveConstant(file, value, root, depth) : null
+function reexportedValue(specifier, context) {
+    return valueFrom(specifier.parent.parent.moduleSpecifier, importedName(specifier), context)
 }
 
-/** The string an imported constant holds in the module it comes from. */
-function importedValue(source, name, { file, root, depth }) {
-    const imported = importedName(source, name)
-    const target = imported ? moduleFile(file, imported.specifier, root) : null
-    return target ? resolveConstant(target, imported.imported, root, depth) : null
+// ---------------------------------------------------------------------------
+// getItem, setItem and removeItem calls
+// ---------------------------------------------------------------------------
+
+/** The node naming a storage object: `localStorage`, or the member of `window.localStorage`. */
+function storageToken(receiver) {
+    const node = unwrap(receiver)
+    if (ts.isIdentifier(node)) return node
+    if (ts.isPropertyAccessExpression(node)) return node.name
+    const literal =
+        ts.isElementAccessExpression(node) && ts.isStringLiteralLike(node.argumentExpression)
+    return literal ? node.argumentExpression : null
 }
 
-const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
+const storageOf = (token) => (token !== null && STORAGES.has(token.text) ? token.text : null)
 
-/**
- * Whether a name is also bound as a parameter, a `let`/`var`/`catch` binding, or by a second
- * `const` in the file. A file-wide constant lookup cannot tell which binding a call sees, so a
- * shadowed name is treated as computed and needs a review (no scope analysis without a parser).
- */
-export function isShadowed(source, name) {
-    const id = identifier(name)
-    const word = new RegExp(id)
-    const bindings = [
-        // Any mention in a parameter list counts, destructured (`{ KEY }`, `[KEY]`) or as a
-        // default: a call there may see the parameter, so the key is treated as computed.
-        () => parameterLists(source).some((list) => word.test(list)),
-        () => new RegExp(String.raw`${id}\s*=>`).test(source),
-        () =>
-            new RegExp(
-                String.raw`\b(?:const|let|var)\s*[{[][^=]*?(?<!\.)${id}[^=]*?[}\]]\s*=`,
-            ).test(source),
-        () => new RegExp(String.raw`\b(?:let|var)\s+${id}|\bcatch\s*\(\s*${id}\s*\)`).test(source),
-        () => (source.match(new RegExp(String.raw`\bconst\s+${id}`, 'g')) ?? []).length > 1,
-    ]
-    return bindings.some((binds) => binds())
+const UNREADABLE = {
+    missing: 'the call passes no key',
+    spread: 'a spread key argument cannot be read',
 }
 
-/** The text of every function and arrow-function parameter list in `source`. */
-function parameterLists(source) {
-    return [
-        ...source.matchAll(/\bfunction\b[^(]*\(([^()]*)\)/g),
-        // Not the condition of `if (...) {` and the like: that is an expression, not a parameter list.
-        ...source.matchAll(
-            /(?<!\b(?:if|while|for|switch|catch|with)\s*)\(([^()]*)\)\s*(?::[^=>{]+)?(?:=>|\{)/g,
-        ),
-    ].map((match) => match[1])
+/** How a call's first argument names its key: unparsed, literal, constant or dynamic. */
+function classifyKey(argument, context) {
+    if (argument === undefined)
+        return { expression: '', kind: 'unparsed', reason: UNREADABLE.missing }
+    const expression = textOf(argument)
+    if (ts.isSpreadElement(argument))
+        return { expression, kind: 'unparsed', reason: UNREADABLE.spread }
+    const node = unwrap(argument)
+    if (ts.isStringLiteralLike(node)) return { expression, kind: 'literal', key: node.text }
+    const key = ts.isIdentifier(node) ? identifierValue(node, context) : null
+    return key === null ? { expression, kind: 'dynamic' } : { expression, kind: 'constant', key }
 }
 
-/** Where the line holding `at` ends: at its newline, or at the end of the text. */
-function lineEnd(text, at) {
-    const index = text.indexOf('\n', at)
-    return index === -1 ? text.length : index
-}
-
-/** Where the block comment opening at `at` ends: just past its `*\/`, or at the end. */
-function blockEnd(text, at) {
-    const index = text.indexOf('*/', at + 2)
-    return index === -1 ? text.length : index + 2
+/** A getItem, setItem or removeItem call on localStorage or sessionStorage; null otherwise. */
+function directCall(call, context) {
+    const callee = unwrap(call.expression)
+    const method = isMemberAccess(callee) ? memberName(callee) : null
+    if (!METHODS.has(method)) return null
+    const token = storageToken(callee.expression)
+    const storage = storageOf(token)
+    if (storage === null) return null
+    const site = { file: context.file, line: lineOf(token), storage, method }
+    return { ...site, ...classifyKey(call.arguments[0], context) }
 }
 
 // ---------------------------------------------------------------------------
 // Persisted zustand stores. `persist` writes its state under the `name` option, with no
 // visible getItem or setItem call, to `createJSONStorage(() => window.localStorage)` unless a
-// `storage` option says otherwise (zustand 5 middleware). The scan runs on comment-masked code,
-// so a commented-out option is blank and never counts.
+// `storage` option says otherwise (zustand 5 middleware).
 // ---------------------------------------------------------------------------
 
-/** The names a call to zustand's `persist` goes by: `persist`, an import alias, `ns.persist`. */
-function persistCallees(code) {
-    return ['persist', ...persistAliases(code), ...namespacePersist(code)]
+/**
+ * Whether an expression is zustand's `persist`: an import of `persist` (renamed or not, from
+ * any module, so a wrapper that re-exports it counts), `ns.persist` on a namespace import of
+ * zustand/middleware, a const alias of one, or a `persist` the file never declares. A local
+ * function or variable named `persist` is not.
+ */
+function isPersistReference(expression, depth = 0) {
+    const node = unwrap(expression)
+    if (ts.isIdentifier(node)) return depth <= MAX_DEPTH && persistBinding(node, depth)
+    if (!isMemberAccess(node) || memberName(node) !== 'persist') return false
+    return isMiddlewareNamespace(node.expression)
 }
 
-function persistAliases(code) {
-    const named = new RegExp(String.raw`\bimport\s*\{([^}]*)\}\s*from\s*${ZUSTAND_MIDDLEWARE}`, 'g')
-    return [...code.matchAll(named)]
-        .flatMap(([, specifiers]) => specifiers.split(','))
-        .map((specifier) => specifier.trim().split(/\s+as\s+/))
-        .filter(([imported, local]) => imported === 'persist' && local)
-        .map(([, local]) => local.trim())
+function persistBinding(identifier, depth) {
+    const binding = soleBinding(identifier)
+    // Undeclared, or declared twice: a call named `persist` counts, failing closed.
+    if (binding === null) return identifier.text === 'persist'
+    if (ts.isImportSpecifier(binding)) return importedName(binding) === 'persist'
+    if (ts.isImportClause(binding)) return identifier.text === 'persist'
+    return isConstant(binding) && isPersistReference(binding.initializer, depth + 1)
 }
 
-function namespacePersist(code) {
-    const namespace = new RegExp(
-        String.raw`\bimport\s*\*\s*as\s+([A-Za-z_$][\w$]*)\s+from\s*${ZUSTAND_MIDDLEWARE}`,
-        'g',
-    )
-    return [...code.matchAll(namespace)].map(([, alias]) => `${alias}.persist`)
+function isMiddlewareNamespace(expression) {
+    const node = unwrap(expression)
+    const binding = ts.isIdentifier(node) ? soleBinding(node) : null
+    if (binding === null || !ts.isNamespaceImport(binding)) return false
+    return binding.parent.parent.moduleSpecifier.text === ZUSTAND_MIDDLEWARE
 }
 
-/** Every `persist(...)` call: where it starts, its argument texts and where it ends. */
-function persistCalls(code) {
-    return persistCallees(code)
-        .flatMap((callee) => {
-            // Not a member call such as `navigator.storage.persist()`.
-            const call = new RegExp(String.raw`(?<![\w$.])${escapeRegExp(callee)}\s*\(`, 'g')
-            return [...code.matchAll(call)].map((match) => ({
-                index: match.index,
-                ...callArguments(code, match.index + match[0].length),
-            }))
-        })
-        .sort((a, b) => a.index - b.index)
+/** A persist call's options object, or null when its second argument is not one. */
+function optionsObject(call) {
+    const options = call.arguments[1]
+    const node = options === undefined ? null : unwrap(options)
+    return node !== null && ts.isObjectLiteralExpression(node) ? node : null
 }
 
-/** The top-level argument texts of a call read from just past its `(`, and where it ends. */
-function callArguments(source, start) {
-    const args = []
-    for (let at = start; ;) {
-        const end = argumentEnd(source, at)
-        if (end === -1) return { args: null, end: source.length }
-        args.push(source.slice(at, end).trim())
-        if (source[end] !== ',') return { args, end }
-        at = end + 1
-    }
+/** The key a property is written under: its name or a literal computed name; null if computed. */
+function propertyKey(property) {
+    const name = property.name
+    if (!ts.isComputedPropertyName(name)) return name.text
+    const key = unwrap(name.expression)
+    return ts.isStringLiteralLike(key) ? key.text : null
 }
 
-const isObjectLiteral = (text) => typeof text === 'string' && /^\{[\s\S]*\}$/.test(text)
+const UNKNOWN_OPTIONS = { name: null, storage: null }
 
-/** The top-level property texts of an object literal, or null when `text` is not one. */
-function objectProperties(text) {
-    if (!isObjectLiteral(text)) return null
-    const body = text.slice(1, -1)
-    const properties = []
-    for (let start = 0; start <= body.length;) {
-        const end = argumentEnd(body, start)
-        const stop = end === -1 ? body.length : end
-        properties.push(body.slice(start, stop).trim())
-        start = stop + 1
-    }
-    return properties.filter(Boolean)
+/** A store `name`: a literal, or a constant holding one, as a property or a shorthand. */
+function nameOption(property, context) {
+    if (ts.isPropertyAssignment(property)) return stringValue(property.initializer, context)
+    return ts.isShorthandPropertyAssignment(property)
+        ? identifierValue(property.name, context)
+        : null
+}
+
+/** A `storage` option this scan can read: `createJSONStorage(() => localStorage)` and the like. */
+function storageOption(property) {
+    if (!ts.isPropertyAssignment(property)) return null
+    const call = unwrap(property.initializer)
+    if (!isCreateJSONStorage(call) || call.arguments.length !== 1) return null
+    const accessor = unwrap(call.arguments[0])
+    if (!ts.isArrowFunction(accessor) || accessor.parameters.length > 0) return null
+    return ts.isBlock(accessor.body) ? null : storageOf(storageToken(accessor.body))
+}
+
+const OPTION_EFFECTS = {
+    name: (property, state, context) => ({ ...state, name: nameOption(property, context) }),
+    storage: (property, state) => ({ ...state, storage: storageOption(property) }),
 }
 
 /**
- * How one property changes what is known of the name: a literal `name` sets it, any other
- * `name` makes it unknown, and a spread may override an earlier name. The last `name` wins,
- * as in JavaScript, and a `name` that is not one complete literal is unknown even when it
- * starts with an allowed literal.
+ * How one property changes what is known: `name` and `storage` set their option, read or
+ * unknown. A spread or a computed name may set either, so both become unknown until a later
+ * property sets them again: the last property wins, as in JavaScript.
  */
-function propertyEffect(property, state) {
-    const literal = PERSIST_NAME.exec(property)
-    if (literal) return { name: literal[2], spread: false }
-    if (NAME_PROPERTY.test(property)) return { name: undefined, spread: false }
-    return /^\s*\.\.\./.test(property) ? { ...state, spread: true } : state
+function optionEffect(property, state, context) {
+    if (ts.isSpreadAssignment(property)) return UNKNOWN_OPTIONS
+    const key = propertyKey(property)
+    if (key === null) return UNKNOWN_OPTIONS
+    return Object.hasOwn(OPTION_EFFECTS, key)
+        ? OPTION_EFFECTS[key](property, state, context)
+        : state
 }
 
-function storeName(properties) {
-    const initial = { name: undefined, spread: false }
-    const state = properties.reduce((known, property) => propertyEffect(property, known), initial)
-    return state.spread ? undefined : state.name
+/** The name and storage a store's options give; the storage is localStorage unless set. */
+function storeOptions(call, context) {
+    const options = optionsObject(call)
+    if (options === null) return UNKNOWN_OPTIONS
+    const initial = { name: null, storage: 'localStorage' }
+    return options.properties.reduce((state, p) => optionEffect(p, state, context), initial)
 }
 
-/** How one property changes the storage: a `storage` option, or a spread that may set one. */
-function storageEffect(property, storage) {
-    const option = STORAGE_PROPERTY.exec(property)
-    if (option) return KNOWN_ACCESSOR.exec(option[1].trim())?.[1] ?? null
-    return property.startsWith('...') ? null : storage
-}
-
-/** The storage a store writes to: zustand's default localStorage, a known accessor, or null. */
-const storeStorage = (properties) =>
-    properties.reduce((storage, p) => storageEffect(p, storage), 'localStorage')
-
-/** The name and storage a `persist` options argument gives; unknown unless it is a literal. */
-function storeOptions(optionsText) {
-    const properties = objectProperties(optionsText)
-    if (properties === null) return { storage: null, name: undefined }
-    return { storage: storeStorage(properties), name: storeName(properties) }
-}
+/** The arguments that decide a store's key: its options, or every argument without them. */
+const decidingArguments = (call) =>
+    call.arguments.length > 1 ? call.arguments.slice(1) : call.arguments
 
 /** One persisted store: a known key, or computed when its name or its storage is unknown. */
-function persistedStore(site, optionsText) {
-    const { storage, name } = storeOptions(optionsText)
+function persistedStore(call, context) {
+    const { name, storage } = storeOptions(call, context)
     const store = {
-        ...site,
+        file: context.file,
+        line: lineOf(call.expression),
         storage: storage ?? 'unknown',
         method: 'setItem',
-        expression: 'persist',
+        expression: `persist(${decidingArguments(call).map(textOf).join(', ')})`,
     }
-    return storage !== null && name
-        ? { ...store, kind: 'persist', key: name }
-        : { ...store, kind: 'dynamic' }
+    const known = storage !== null && name !== null
+    return known ? { ...store, kind: 'persist', key: name } : { ...store, kind: 'dynamic' }
 }
 
-/** `createJSONStorage` outside a `persist` call: a store this scan cannot read, so computed. */
-function strayStorages(code, calls) {
-    const inside = (index) => calls.some((call) => index > call.index && index < call.end)
-    return [...code.matchAll(/\bcreateJSONStorage\s*\(/g)].filter((match) => !inside(match.index))
+const isCreateJSONStorage = (node) =>
+    ts.isCallExpression(node) && calleeName(node) === 'createJSONStorage'
+
+/** The `storage` initializers of a persist call: the accessors its store analysis reads. */
+function storageInitializers(call) {
+    const options = optionsObject(call)
+    if (options === null) return []
+    return options.properties
+        .filter((p) => ts.isPropertyAssignment(p) && propertyKey(p) === 'storage')
+        .map((p) => unwrap(p.initializer))
 }
 
-const lineOf = (source, index) => source.slice(0, index).split('\n').length
-
-/** A name to resolve as a constant: an identifier that no local binding shadows. */
-const isResolvableName = (expression, code) =>
-    IDENTIFIER.test(expression) && !isShadowed(code, expression)
-
-/** How a call's first argument names its key: unparsed, literal, constant or dynamic. */
-function classifyArgument(expression, { file, code, root }) {
-    if (expression === null) return { expression: '', kind: 'unparsed' }
-    const literal = LITERAL.exec(expression)
-    if (literal) return { expression, kind: 'literal', key: literal[2] }
-    const key = isResolvableName(expression, code) ? resolveConstant(file, expression, root) : null
-    return key === null ? { expression, kind: 'dynamic' } : { expression, kind: 'constant', key }
-}
-
-/** The getItem, setItem and removeItem calls of one file. */
-function directCalls(file, source, code, root) {
-    return [...code.matchAll(STORAGE_CALL)].map((match) => ({
+/** A `createJSONStorage` that is no persist call's `storage`: a store this scan cannot read. */
+function strayStorage(call, file) {
+    return {
         file,
-        line: lineOf(source, match.index),
-        storage: match[1],
-        method: match[2],
-        // Read from the masked code (offsets are kept): a comment in the call is no part of it.
-        ...classifyArgument(firstArgument(code, match.index + match[0].length), {
-            file,
-            code,
-            root,
-        }),
-    }))
-}
-
-/** The zustand stores persisted to storage, keyed by the `name` of their options object. */
-function persistedStores(file, source, code) {
-    const calls = persistCalls(code)
-    const site = (index) => ({ file, line: lineOf(source, index) })
-    const stores = calls.map((call) => persistedStore(site(call.index), call.args?.[1]))
-    const stray = strayStorages(code, calls).map((match) => ({
-        ...site(match.index),
+        line: lineOf(call.expression),
         storage: 'unknown',
         method: 'setItem',
-        expression: 'createJSONStorage',
+        expression: textOf(call),
         kind: 'dynamic',
-    }))
-    return [...stores, ...stray]
+    }
 }
 
-/** Every storage call in one file, classified by how its key is known. */
-export function storageCalls(file, source, root = ROOT) {
-    // A commented-out call is not a call: it must not keep an allowance or a review entry alive.
-    const code = maskComments(source)
-    return [...directCalls(file, source, code, root), ...persistedStores(file, source, code)]
+/** Every call expression of a tree, in source order. */
+function callExpressions(tree) {
+    const calls = []
+    const visit = (node) => {
+        if (ts.isCallExpression(node)) calls.push(node)
+        ts.forEachChild(node, visit)
+    }
+    visit(tree)
+    return calls
 }
+
+/** A file the parser cannot read without errors: what it calls cannot be trusted. */
+function parseFailures(tree, file) {
+    const [first] = tree.parseDiagnostics
+    if (first === undefined) return []
+    const message = ts.flattenDiagnosticMessageText(first.messageText, ' ')
+    const line = tree.getLineAndCharacterOfPosition(first.start).line + 1
+    const reason = `the file does not parse: ${message}`
+    return [
+        {
+            file,
+            line,
+            storage: 'unknown',
+            method: 'setItem',
+            expression: '',
+            kind: 'unparsed',
+            reason,
+        },
+    ]
+}
+
+/** Every storage call and persisted store in one file, classified by how its key is known. */
+export function storageCalls(file, source, root = ROOT) {
+    if (!MENTIONS_STORAGE.test(source)) return []
+    const tree = parse(file, source)
+    const context = { file, root, depth: 0 }
+    const calls = callExpressions(tree)
+    const stores = calls.filter((call) => isPersistReference(call.expression))
+    const read = new Set(stores.flatMap(storageInitializers))
+    const strays = calls.filter((call) => isCreateJSONStorage(call) && !read.has(call))
+    return [
+        ...parseFailures(tree, file),
+        ...calls.map((call) => directCall(call, context)).filter((found) => found !== null),
+        ...stores.map((call) => persistedStore(call, context)),
+        ...strays.map((call) => strayStorage(call, file)),
+    ]
+}
+
+// ---------------------------------------------------------------------------
+// Verdicts
+// ---------------------------------------------------------------------------
+
+const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
 
 /** Why a literal, constant or persisted key fails; null when it is allowed. */
 function knownKeyProblem(call) {
@@ -634,6 +720,8 @@ const KNOWN_KINDS = new Set(['literal', 'constant', 'persist'])
 
 /** Why one call fails, recording the review entry it uses; null when it passes. */
 function callProblem(call, reviewed, used) {
+    // An unreadable call or file is never reviewable: nobody can say which key it writes.
+    if (call.kind === 'unparsed') return call.reason
     if (KNOWN_KINDS.has(call.kind)) return knownKeyProblem(call)
     const entry = reviewed.find(
         (candidate) => candidate.file === call.file && candidate.expression === call.expression,

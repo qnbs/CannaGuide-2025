@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Security
+
+- **fix(deps):** The desktop shell's Rust lockfile moves `url` 2.5.8 to 2.5.9 (RUSTSEC-2026-0592: a stack overflow in `Url::origin()` on nested `blob:` URLs), `cookie` 0.18.1 to 0.18.3 (RUSTSEC-2026-0594: private-cookie nonces can repeat in processes that fork) and, with `url`, `form_urlencoded` 1.2.2 to 1.2.3. Both crates come in through Tauri. The app loads only its own bundled pages, uses no private cookie jar and does not fork, so exposure was low; `cargo audit` now reports no vulnerability. Dependabot had raised no alert for either advisory.
+
 ## [1.12.2] - 2026-11-25
 
 Desktop and IoT maintenance release: the desktop apps run without a service worker and refuse any write that would start after the native quit or update wait (a save already running then can still finish), the MQTT library moves to 5.16.1 for six broker-reachable advisories, two Local-Only privacy gaps are closed, and crash reporting is removed. Installed v1.12.1 apps update in place (Settings > About).

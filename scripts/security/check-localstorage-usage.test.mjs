@@ -665,6 +665,88 @@ test('a file that does not parse fails, instead of passing what the parser skipp
     )
 })
 
+test('an escaped spelling or a barrel import is read, so no file is skipped by its text', (t) => {
+    const sources = {
+        // `S` and `\x53` are an S: JavaScript reads both as localStorage.
+        'apps/web/unicode.ts': "window['local\\u0053torage'].setItem('draft-store', value)",
+        'apps/web/hex.ts': "window['local\\x53torage'].setItem('draft-store', value)",
+        'apps/web/barrel.ts': "export { persist as keep } from 'zustand/middleware'\n",
+        // Neither spelling appears here: the store is found through the barrel's export.
+        'apps/web/consumer.ts':
+            "import { keep } from './barrel'\nkeep(store, { name: 'draft-store' })",
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/unicode.ts', sources, root), [['literal', 'draft-store']])
+    assert.deepEqual(found('apps/web/hex.ts', sources, root), [['literal', 'draft-store']])
+    assert.deepEqual(found('apps/web/consumer.ts', sources, root), [['persist', 'draft-store']])
+})
+
+test('an import resolves through the module exports, never a broken or private declaration', (t) => {
+    const sources = {
+        'apps/web/broken.ts': "export const KEY = 'cg.ai.auditLog'\nconst oops = ;\n",
+        'apps/web/other.ts': "export const KEY = 'draft-store'\n",
+        // A private KEY here is not what `export { KEY } from` gives importers.
+        'apps/web/barrel.ts': "const KEY = 'cg.ai.auditLog'\nexport { KEY } from './other'\n",
+        'apps/web/uses-broken.ts': "import { KEY } from './broken'\nlocalStorage.setItem(KEY, v)",
+        'apps/web/uses-barrel.ts': "import { KEY } from './barrel'\nlocalStorage.setItem(KEY, v)",
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/uses-broken.ts', sources, root), [['dynamic', 'KEY']])
+    assert.deepEqual(found('apps/web/uses-barrel.ts', sources, root), [['constant', 'draft-store']])
+})
+
+test('class static blocks and parameter defaults keep their own scopes', (t) => {
+    const keep = "import { persist as keep } from 'zustand/middleware'"
+    const sources = {
+        // A static block's var stays in the block, so the top-level keep is still persist.
+        'apps/web/static.ts': `${keep}\nclass A { static { var keep = 1 } }\nkeep(s, { name: '${IOT}' })`,
+        // A default value does not see the body's var: its keep is still persist.
+        'apps/web/default.ts': [
+            keep,
+            "function make(store = keep(init, { name: 'draft-store' })) {",
+            '    var keep',
+            '    return store',
+            '}',
+        ].join('\n'),
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/static.ts', sources, root), [['persist', IOT]])
+    assert.deepEqual(found('apps/web/default.ts', sources, root), [['persist', 'draft-store']])
+})
+
+test('a spread before the options leaves them unknown', (t) => {
+    const source = `persist(...[init, { name: 'draft-store' }], { name: '${IOT}' })`
+    const calls = storageCalls('apps/web/spread-args.ts', source, fixture(t, {}))
+    assert.deepEqual(
+        calls.map(({ kind }) => kind),
+        ['dynamic'],
+    )
+})
+
+test('one review entry approves one computed store, and a line break in a template counts', (t) => {
+    const store = `persist(store, { name: storeName(id), storage: ${LOCAL_ACCESSOR} })`
+    const twins = storageCalls('apps/web/twins.ts', `${store}\n${store}`, fixture(t, {}))
+    const entry = {
+        file: 'apps/web/twins.ts',
+        expression: twins[0].expression,
+        methods: ['setItem'],
+        example: 'cg.ai.auditLog',
+    }
+    assert.deepEqual(
+        violations(twins, [entry]).map(({ line, reason }) => [line, reason]),
+        [
+            [
+                2,
+                `computed key \`${twins[0].expression}\` is reviewed for line 1 only: each computed store needs its own entry`,
+            ],
+        ],
+    )
+    // Only line breaks between tokens fold: the two templates are different keys.
+    const source = 'localStorage.getItem(key(`a\nb`))\nlocalStorage.getItem(key(`a b`))'
+    const keys = storageCalls('apps/web/templates.ts', source).map((c) => c.expression)
+    assert.deepEqual(keys, ['key(`a\nb`)', 'key(`a b`)'])
+})
+
 const call = (fields) => ({ file: 'apps/web/x.ts', line: 1, storage: 'localStorage', ...fields })
 
 test('unknown keys, unreviewed computed keys and stale review entries fail', () => {

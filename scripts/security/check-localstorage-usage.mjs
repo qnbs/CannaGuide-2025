@@ -3,25 +3,32 @@
  * Ensures localStorage/sessionStorage usage stays within the allowlist
  * (IndexedDB-first persistence; localStorage only for small non-secret flags).
  *
- * Every web app file that mentions storage is parsed with TypeScript's parser (syntax only, no
- * type check), so strings, comments, regex literals and type arguments are read the way the
- * compiler reads them. Every storage call is checked, whatever form its key takes:
+ * Every web app file is parsed with TypeScript's parser (syntax only, no type check), so
+ * strings, comments, escapes, regex literals and type arguments are read the way the compiler
+ * reads them. Every storage call is checked, whatever form its key takes:
  * - a string literal is checked directly;
  * - an identifier is resolved to the binding the call sees, by block, function and module scope:
- *   a `const` holding a literal or aliasing one, or a named import or re-export of one. A
- *   parameter, `let`, `var`, destructured, loop or catch binding is computed;
+ *   a `const` holding a literal or aliasing one, or a named import or re-export of one, read
+ *   through the exporting module's exports, never its private declarations. A parameter,
+ *   `let`, `var`, destructured, loop or catch binding is computed;
  * - anything else (a call, a template, a parameter) has to be listed in
  *   REVIEWED_DYNAMIC_KEYS with the keys it produces, so a new dynamic key fails until
  *   someone reviews it, and an entry whose call is gone fails as stale;
- * - every zustand `persist(...)` call (also renamed on import, as `ns.persist`, through a const
- *   alias, or a `persist` the file does not declare) is a store written under its `name`, to
- *   localStorage unless a readable `storage` option says otherwise. A store whose name or
- *   storage cannot be read, or a `createJSONStorage` that is no persist call's `storage`
- *   option, counts as computed and needs a review entry for that exact call.
+ * - every zustand `persist(...)` call (imported under any name, also through a local module
+ *   that re-exports it, as `ns.persist`, through a const alias, or a `persist` the file does
+ *   not declare) is a store written under its `name`, to localStorage unless a readable
+ *   `storage` option says otherwise. A store whose name or storage cannot be read, or a
+ *   `createJSONStorage` that is no persist call's `storage` option, counts as computed and
+ *   needs a review entry for that exact call; one entry approves one such call.
  *
  * Before 2026-11-24 the check read literal keys only. On `main` at v1.12.2 that was 6 of
  * 106 storage calls: the other 100 pass a constant or a computed key and were never checked,
  * and the persisted IoT store was not seen at all.
+ *
+ * Scope: accident prevention for code written in good faith, run as an advisory CI step. What
+ * the parser cannot read fails closed: an unreadable key, name or storage, and a file or an
+ * imported module that does not parse. It is no boundary against code written to evade it,
+ * such as an aliased storage object or a method name built at run time; that needs review.
  *
  * Exits 1 on an unknown key, an unreviewed or unreadable key, a file that does not parse, a
  * stale review entry or a stale allowlist pattern.
@@ -142,8 +149,6 @@ export const REVIEWED_DYNAMIC_KEYS = [
 const SOURCE = /\.(ts|tsx|mjs)$/
 const EXCLUDED =
     /(^|\/)(tests|__mocks__|__tests__)\/|\.(test|spec|ct|stories|bench)\.[cm]?[jt]sx?$|\.d\.ts$|^apps\/web\/(locales|public)\//
-/** A file with a storage call or a persisted store mentions one of these; others are not parsed. */
-const MENTIONS_STORAGE = /localStorage|sessionStorage|persist|createJSONStorage/
 const STORAGES = new Set(['localStorage', 'sessionStorage'])
 const METHODS = new Set(['getItem', 'setItem', 'removeItem'])
 const ZUSTAND_MIDDLEWARE = 'zustand/middleware'
@@ -181,12 +186,28 @@ function parsedModule(root, file) {
     return modules.get(path)
 }
 
+/** A module's tree when it parses cleanly; null when it cannot be read or has syntax errors. */
 function readModule(path, file) {
+    let tree
     try {
-        return parse(file, readFileSync(path, 'utf8'))
+        tree = parse(file, readFileSync(path, 'utf8'))
     } catch {
         return null
     }
+    // A declaration the parser recovered from a broken module is no evidence for a key.
+    return syntaxErrors(tree).length === 0 ? tree : null
+}
+
+/**
+ * The parser's syntax errors for a tree. TypeScript keeps them on `parseDiagnostics`, which is
+ * not public API: if a release moves it, fail loudly rather than pass every broken file.
+ */
+function syntaxErrors(tree) {
+    const errors = tree.parseDiagnostics
+    if (!Array.isArray(errors)) {
+        throw new TypeError('typescript no longer exposes parseDiagnostics; update this check')
+    }
+    return errors
 }
 
 const MODULE_SUFFIXES = ['', '.ts', '.tsx', '.mjs', '/index.ts', '/index.tsx']
@@ -241,8 +262,32 @@ function calleeName(call) {
 const lineOf = (node) =>
     node.getSourceFile().getLineAndCharacterOfPosition(node.getStart()).line + 1
 
-/** A node's source text, line breaks and their indentation folded to one space. */
-const textOf = (node) => node.getText().replace(/\s*\n\s*/g, ' ')
+/** The tokens of a node in source order: the leaves of its syntax tree. */
+function tokensOf(node) {
+    const children = node.getChildren()
+    return children.length === 0 ? [node] : children.flatMap(tokensOf)
+}
+
+const foldedGap = (gap) => (gap.includes('\n') ? ' ' : gap)
+
+/**
+ * A node's source text with each line break between two tokens, and the indentation around
+ * it, folded to one space. Tokens are kept as written: a line break inside a template stays.
+ */
+function textOf(node) {
+    const text = node.getSourceFile().text
+    let out = ''
+    let previous = null
+    for (const token of tokensOf(node)) {
+        const start = token.getStart()
+        if (previous !== null) out += foldedGap(text.slice(previous, start))
+        out += text.slice(start, token.end)
+        previous = token.end
+    }
+    return out
+}
+
+const fileOf = (node) => node.getSourceFile().fileName
 
 // ---------------------------------------------------------------------------
 // Bindings. A name resolves to what the nearest enclosing scope declares under it: a block's
@@ -297,11 +342,11 @@ function importDeclarations(statement) {
     return [...defaults, ...named.elements.filter((element) => !element.isTypeOnly)]
 }
 
-/** The `var` declarations hoisted into a function or module body: nested functions excluded. */
+/** The `var`s hoisted into a body: nested functions and class static blocks keep their own. */
 function hoistedVars(body) {
     const found = []
     const visit = (node) => {
-        if (ts.isFunctionLike(node)) return
+        if (ts.isFunctionLike(node) || ts.isClassStaticBlockDeclaration(node)) return
         if (ts.isVariableDeclarationList(node) && isVarList(node)) found.push(...node.declarations)
         ts.forEachChild(node, visit)
     }
@@ -316,11 +361,16 @@ function loopDeclarations(loop) {
     return init !== undefined && ts.isVariableDeclarationList(init) ? [...init.declarations] : []
 }
 
-/** What a function binds: its own name (a named function expression), parameters, vars. */
+/** What a parameter list sees: a named function expression's own name and the parameters. */
+const parameterDeclarations = (fn) => [
+    ...(ts.isFunctionExpression(fn) ? [fn] : []),
+    ...fn.parameters,
+]
+
+/** What a function body sees: that, and the `var`s hoisted into the body. */
 function functionDeclarations(fn) {
-    const own = ts.isFunctionExpression(fn) ? [fn] : []
     const vars = fn.body === undefined ? [] : hoistedVars(fn.body)
-    return [...own, ...fn.parameters, ...vars]
+    return [...parameterDeclarations(fn), ...vars]
 }
 
 const SCOPES = new Map([
@@ -338,18 +388,29 @@ const SCOPES = new Map([
     [SyntaxKind.ForStatement, loopDeclarations],
     [SyntaxKind.ForInStatement, loopDeclarations],
     [SyntaxKind.ForOfStatement, loopDeclarations],
+    [SyntaxKind.ClassStaticBlockDeclaration, (node) => hoistedVars(node.body)],
     [SyntaxKind.ClassExpression, (node) => [node]],
 ])
 
 const NO_BINDINGS = new Map()
 const scopeIndexes = new WeakMap()
+const parameterIndexes = new WeakMap()
 
-/** Every name a scope declares, mapped to its declarations; built once per scope. */
-function scopeIndex(scope) {
+/**
+ * Every name a scope declares, as seen from its child `child`, mapped to its declarations and
+ * built once per scope. A parameter's default value sees the parameters, not the body's vars.
+ */
+function scopeIndex(scope, child = scope) {
+    if (ts.isFunctionLike(scope) && ts.isParameter(child)) {
+        return cachedIndex(parameterIndexes, scope, parameterDeclarations)
+    }
     const declares = ts.isFunctionLike(scope) ? functionDeclarations : SCOPES.get(scope.kind)
-    if (declares === undefined) return NO_BINDINGS
-    if (!scopeIndexes.has(scope)) scopeIndexes.set(scope, indexByName(declares(scope)))
-    return scopeIndexes.get(scope)
+    return declares === undefined ? NO_BINDINGS : cachedIndex(scopeIndexes, scope, declares)
+}
+
+function cachedIndex(cache, scope, declares) {
+    if (!cache.has(scope)) cache.set(scope, indexByName(declares(scope)))
+    return cache.get(scope)
 }
 
 function indexByName(declarations) {
@@ -364,9 +425,11 @@ function indexByName(declarations) {
 
 /** The declarations the nearest scope around an identifier makes of its name; [] for a global. */
 function bindingsOf(identifier) {
+    let child = identifier
     for (let scope = identifier.parent; scope !== undefined; scope = scope.parent) {
-        const found = scopeIndex(scope).get(identifier.text)
+        const found = scopeIndex(scope, child).get(identifier.text)
         if (found !== undefined) return found
+        child = scope
     }
     return []
 }
@@ -399,53 +462,60 @@ function stringValue(expression, context) {
 /** The string the binding an identifier sees holds; null for any binding but a constant. */
 function identifierValue(identifier, context) {
     const binding = soleBinding(identifier)
-    return binding === null ? null : declarationValue(binding, context)
+    return originValue(binding === null ? null : originOf(binding, context), context)
 }
+
+const originValue = (origin, context) =>
+    origin?.declaration === undefined ? null : declarationValue(origin.declaration, context)
 
 function declarationValue(declaration, context) {
-    if (context.depth > MAX_DEPTH) return null
-    const next = { ...context, depth: context.depth + 1 }
-    if (ts.isImportSpecifier(declaration)) return importedValue(declaration, next)
-    return isConstant(declaration) ? stringValue(declaration.initializer, next) : null
+    return isConstant(declaration) ? stringValue(declaration.initializer, deeper(context)) : null
 }
 
+const deeper = (context) => ({ ...context, depth: context.depth + 1 })
 const importedName = (specifier) => (specifier.propertyName ?? specifier.name).text
 
-/** The string an imported binding holds in the module it comes from. */
-function importedValue(specifier, context) {
-    const statement = specifier.parent.parent.parent
-    return valueFrom(statement.moduleSpecifier, importedName(specifier), context)
+/**
+ * Where a binding's value is declared: the declaration itself, or for an import what the
+ * exporting module exports under that name. A package is not opened: it ends the walk as
+ * `{ package, name }`.
+ */
+function originOf(declaration, context) {
+    if (context.depth > MAX_DEPTH) return null
+    if (!ts.isImportSpecifier(declaration)) return { declaration }
+    const from = declaration.parent.parent.parent.moduleSpecifier.text
+    return exportOrigin(fileOf(declaration), from, importedName(declaration), deeper(context))
 }
 
-/** The string `name` holds in the module a specifier names, or in this one without a specifier. */
-function valueFrom(specifier, name, context) {
-    const { file, root, depth } = context
-    const target = specifier === undefined ? file : moduleFile(file, specifier.text, root)
-    return target === null ? null : resolveConstant(target, name, root, depth)
+/** What module `from`, imported by `fromFile`, exports as `name`. */
+function exportOrigin(fromFile, from, name, context) {
+    if (moduleBase(fromFile, from, context.root) === null) return { package: from, name }
+    const target = moduleFile(fromFile, from, context.root)
+    const module = target === null ? null : parsedModule(context.root, target)
+    return module === null ? null : moduleExport(module, name, context)
 }
 
-/** The string a constant holds, following aliases, imports and re-exports; null when unknown. */
-export function resolveConstant(file, name, root = ROOT, depth = 0) {
-    if (depth > MAX_DEPTH) return null
-    const module = parsedModule(root, file)
-    if (module === null) return null
-    const context = { file, root, depth: depth + 1 }
-    const declared = scopeIndex(module).get(name)
-    if (declared === undefined) return exportedValue(module, name, context)
-    return declared.length === 1 ? declarationValue(declared[0], context) : null
+const isExported = (declaration) =>
+    (ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Export) !== 0
+
+/** A module's export `name`: an exported declaration, else an export list or `export *`. */
+function moduleExport(module, name, context) {
+    const declared = (scopeIndex(module).get(name) ?? []).filter(isExported)
+    if (declared.length === 0) return listedExport(module, name, context)
+    return declared.length === 1 ? originOf(declared[0], deeper(context)) : null
 }
 
-/** The string a module re-exports as `name`: `export { a as name }` (from a module) or `export *`. */
-function exportedValue(module, name, context) {
-    const exports = module.statements.filter(
+/** `export { a as name }` (from a module, or of a local binding), else `export *`. */
+function listedExport(module, name, context) {
+    const statements = module.statements.filter(
         (statement) => ts.isExportDeclaration(statement) && !statement.isTypeOnly,
     )
-    const named = exports.flatMap((statement) => namedExports(statement, name))
-    if (named.length > 0) return named.length === 1 ? reexportedValue(named[0], context) : null
-    const stars = exports.filter((statement) => statement.exportClause === undefined)
-    const values = new Set(stars.map((star) => valueFrom(star.moduleSpecifier, name, context)))
-    values.delete(null)
-    return values.size === 1 ? [...values][0] : null
+    const named = statements.flatMap((statement) => namedExports(statement, name))
+    if (named.length > 0) return named.length === 1 ? specifierOrigin(named[0], context) : null
+    const stars = statements.filter((statement) => statement.exportClause === undefined)
+    const via = (star) =>
+        exportOrigin(fileOf(star), star.moduleSpecifier.text, name, deeper(context))
+    return soleOrigin(stars.map(via))
 }
 
 function namedExports(statement, name) {
@@ -454,8 +524,41 @@ function namedExports(statement, name) {
     return clause.elements.filter((element) => !element.isTypeOnly && element.name.text === name)
 }
 
-function reexportedValue(specifier, context) {
-    return valueFrom(specifier.parent.parent.moduleSpecifier, importedName(specifier), context)
+function specifierOrigin(specifier, context) {
+    const from = specifier.parent.parent.moduleSpecifier
+    const local = importedName(specifier)
+    if (from !== undefined)
+        return exportOrigin(fileOf(specifier), from.text, local, deeper(context))
+    const binding = moduleBinding(specifier.getSourceFile(), local)
+    return binding === null ? null : originOf(binding, deeper(context))
+}
+
+function moduleBinding(module, name) {
+    const found = scopeIndex(module).get(name) ?? []
+    return found.length === 1 ? found[0] : null
+}
+
+/**
+ * The one origin several `export *` agree on; null for none or a conflict. A package is
+ * never opened, so a local module that declares the name wins over a package's guess.
+ */
+function soleOrigin(origins) {
+    const found = origins.filter((origin) => origin !== null)
+    const local = found.filter((origin) => origin.declaration !== undefined)
+    const pool = local.length > 0 ? local : found
+    const distinct = new Set(pool.map((o) => o.declaration ?? `${o.package}#${o.name}`))
+    return distinct.size === 1 ? pool[0] : null
+}
+
+/** The string a module-level name holds, following aliases, imports and re-exports; null when unknown. */
+export function resolveConstant(file, name, root = ROOT, depth = 0) {
+    const module = parsedModule(root, file)
+    if (module === null) return null
+    const context = { root, depth }
+    const binding = moduleBinding(module, name)
+    const origin =
+        binding === null ? listedExport(module, name, context) : originOf(binding, context)
+    return originValue(origin, context)
 }
 
 // ---------------------------------------------------------------------------
@@ -512,24 +615,39 @@ function directCall(call, context) {
 
 /**
  * Whether an expression is zustand's `persist`: an import of `persist` (renamed or not, from
- * any module, so a wrapper that re-exports it counts), `ns.persist` on a namespace import of
- * zustand/middleware, a const alias of one, or a `persist` the file never declares. A local
- * function or variable named `persist` is not.
+ * any module, so a wrapper counts), an import under another name whose export chain ends at
+ * `persist`, `ns.persist` on a namespace import of zustand/middleware, a const alias of one,
+ * or a `persist` the file never declares. A local function or variable named `persist` is not.
  */
-function isPersistReference(expression, depth = 0) {
+function isPersistReference(expression, context) {
     const node = unwrap(expression)
-    if (ts.isIdentifier(node)) return depth <= MAX_DEPTH && persistBinding(node, depth)
+    if (ts.isIdentifier(node)) return context.depth <= MAX_DEPTH && persistBinding(node, context)
     if (!isMemberAccess(node) || memberName(node) !== 'persist') return false
     return isMiddlewareNamespace(node.expression)
 }
 
-function persistBinding(identifier, depth) {
+function persistBinding(identifier, context) {
     const binding = soleBinding(identifier)
-    // Undeclared, or declared twice: a call named `persist` counts, failing closed.
-    if (binding === null) return identifier.text === 'persist'
-    if (ts.isImportSpecifier(binding)) return importedName(binding) === 'persist'
-    if (ts.isImportClause(binding)) return identifier.text === 'persist'
-    return isConstant(binding) && isPersistReference(binding.initializer, depth + 1)
+    // Undeclared, declared twice or a default import: a call named `persist` counts, failing closed.
+    if (binding === null || ts.isImportClause(binding)) return identifier.text === 'persist'
+    if (ts.isImportSpecifier(binding)) return importsPersist(binding, context)
+    return aliasesPersist(binding, context)
+}
+
+function importsPersist(specifier, context) {
+    if (importedName(specifier) === 'persist') return true
+    const origin = originOf(specifier, context)
+    if (origin?.package !== undefined) return origin.name === 'persist'
+    return origin !== null && declaresPersist(origin.declaration, context)
+}
+
+/** A declaration that is a `persist` or an alias of one. */
+const declaresPersist = (declaration, context) =>
+    namesOf(declaration).includes('persist') || aliasesPersist(declaration, context)
+
+function aliasesPersist(declaration, context) {
+    if (!isConstant(declaration)) return false
+    return isPersistReference(declaration.initializer, deeper(context))
 }
 
 function isMiddlewareNamespace(expression) {
@@ -541,7 +659,9 @@ function isMiddlewareNamespace(expression) {
 
 /** A persist call's options object, or null when its second argument is not one. */
 function optionsObject(call) {
-    const options = call.arguments[1]
+    const [first, options] = call.arguments
+    // A spread before the options shifts them: zustand may read another value as its options.
+    if (first === undefined || ts.isSpreadElement(first)) return null
     const node = options === undefined ? null : unwrap(options)
     return node !== null && ts.isObjectLiteralExpression(node) ? node : null
 }
@@ -614,6 +734,7 @@ function persistedStore(call, context) {
         storage: storage ?? 'unknown',
         method: 'setItem',
         expression: `persist(${decidingArguments(call).map(textOf).join(', ')})`,
+        oneCall: true,
     }
     const known = storage !== null && name !== null
     return known ? { ...store, kind: 'persist', key: name } : { ...store, kind: 'dynamic' }
@@ -640,6 +761,7 @@ function strayStorage(call, file) {
         method: 'setItem',
         expression: textOf(call),
         kind: 'dynamic',
+        oneCall: true,
     }
 }
 
@@ -656,7 +778,7 @@ function callExpressions(tree) {
 
 /** A file the parser cannot read without errors: what it calls cannot be trusted. */
 function parseFailures(tree, file) {
-    const [first] = tree.parseDiagnostics
+    const [first] = syntaxErrors(tree)
     if (first === undefined) return []
     const message = ts.flattenDiagnosticMessageText(first.messageText, ' ')
     const line = tree.getLineAndCharacterOfPosition(first.start).line + 1
@@ -676,11 +798,10 @@ function parseFailures(tree, file) {
 
 /** Every storage call and persisted store in one file, classified by how its key is known. */
 export function storageCalls(file, source, root = ROOT) {
-    if (!MENTIONS_STORAGE.test(source)) return []
     const tree = parse(file, source)
     const context = { file, root, depth: 0 }
     const calls = callExpressions(tree)
-    const stores = calls.filter((call) => isPersistReference(call.expression))
+    const stores = calls.filter((call) => isPersistReference(call.expression, context))
     const read = new Set(stores.flatMap(storageInitializers))
     const strays = calls.filter((call) => isCreateJSONStorage(call) && !read.has(call))
     return [
@@ -726,13 +847,18 @@ function callProblem(call, reviewed, used) {
     const entry = reviewed.find(
         (candidate) => candidate.file === call.file && candidate.expression === call.expression,
     )
-    if (entry) used.add(entry)
+    const earlier = entry === undefined ? undefined : used.get(entry)
+    // A computed store or accessor is approved one call at a time, never a second identical one.
+    if (call.oneCall && earlier !== undefined) {
+        return `computed key \`${call.expression}\` is reviewed for line ${earlier.line} only: each computed store needs its own entry`
+    }
+    if (entry) used.set(entry, call)
     return reviewedKeyProblem(call, entry)
 }
 
 /** The violations for a set of classified calls and the reviewed dynamic-key entries. */
 export function violations(calls, reviewed = REVIEWED_DYNAMIC_KEYS) {
-    const used = new Set()
+    const used = new Map()
     const problems = calls
         .map((call) => ({ call, reason: callProblem(call, reviewed, used) }))
         .filter(({ reason }) => reason)

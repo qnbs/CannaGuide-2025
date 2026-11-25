@@ -213,6 +213,29 @@ test('a commented-out call is not a call, and masking keeps code after a regex l
     )
 })
 
+test('a backtick inside a regex literal opens no template that shifts the masking', () => {
+    // Read as a template opener, the regex's backtick kept the commented-out call below as code
+    // and turned the real template on line 3 into code, whose `//` then hid the real call.
+    const source = [
+        'const tick = /`/',
+        "// localStorage.setItem('installed_plugins_v1', value)",
+        "const note = `a // b`; localStorage.getItem('cg.ai.auditLog')",
+        'const quotes = /[`\'"]/g.test(value)',
+        "localStorage.removeItem('cg.ai.costTracker')",
+        'const half = total / 2 / count',
+        "localStorage.setItem('cg.ai.auditLog', `x`)",
+    ].join('\n')
+    const calls = storageCalls('apps/web/regex.ts', source)
+    assert.deepEqual(
+        calls.map(({ line, key }) => [line, key]),
+        [
+            [3, 'cg.ai.auditLog'],
+            [5, 'cg.ai.costTracker'],
+            [7, 'cg.ai.auditLog'],
+        ],
+    )
+})
+
 test('a constant that continues past its line is computed, a one-line one resolves', (t) => {
     const root = fixture(t, {
         'apps/web/multi.ts': "export const KEY = 'cg.ai.auditLog'\n    + '.private'\n",

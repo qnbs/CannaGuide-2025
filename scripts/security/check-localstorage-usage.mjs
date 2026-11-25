@@ -202,8 +202,9 @@ const CONTINUATION = /^(?:[+\-*/%?:.[(|&^<>=`]|\?\?)/
 /**
  * The source with every comment blanked out (newlines kept, so line numbers hold). A `//` or
  * `/*` opens a comment only at the start of a line or after whitespace or a delimiter, so the
- * slashes that end a regex literal such as `/https?:\/\//` do not. A quoted string ends at its
- * line at the latest, so a quote inside a regex literal cannot swallow the code below it.
+ * slashes that end a regex literal such as `/https?:\/\//` do not. A regex literal is copied as
+ * it is, so a quote or backtick inside it (`/`/`) opens no string. A quoted string ends at its
+ * line at the latest, so a quote the regex check misses still cannot swallow the code below it.
  */
 export function maskComments(source) {
     let out = ''
@@ -214,7 +215,10 @@ export function maskComments(source) {
             at = comment
             continue
         }
-        const next = QUOTES.includes(source[at]) ? quotedEnd(source, at) : at + 1
+        const regex = regexEnd(source, at)
+        let next = at + 1
+        if (regex !== -1) next = regex
+        else if (QUOTES.includes(source[at])) next = quotedEnd(source, at)
         out += source.slice(at, next)
         at = next
     }
@@ -222,6 +226,26 @@ export function maskComments(source) {
 }
 
 const QUOTES = `'"\``
+/** Tokens after which a `/` starts a regex literal, not a division. */
+const BEFORE_REGEX =
+    /(?:^|[(,=:[!&|?{};+\-*%<>~^]|\b(?:return|typeof|case|in|of|new|delete|void|throw|yield|await))$/
+
+/** Where a regex literal opening at `at` ends, or -1 for a division or no closing `/`. */
+function regexEnd(source, at) {
+    if (source[at] !== '/') return -1
+    const lineStart = source.lastIndexOf('\n', at - 1) + 1
+    if (!BEFORE_REGEX.test(source.slice(lineStart, at).trimEnd())) return -1
+    let inClass = false
+    for (let end = at + 1; end < source.length; end += 1) {
+        const char = source[end]
+        if (char === '\n') return -1
+        if (char === '\\') end += 1
+        else if (char === '[') inClass = true
+        else if (char === ']') inClass = false
+        else if (char === '/' && !inClass) return end + 1
+    }
+    return -1
+}
 
 /** Where a comment opening at `at` ends, or -1 when none opens there (see maskComments). */
 function commentEnd(source, at) {

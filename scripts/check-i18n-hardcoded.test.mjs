@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, relative, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
-import { scanSource } from './check-i18n-hardcoded.mjs'
+import { collectTsxFiles, EXCLUDED_FILES, scanSource } from './check-i18n-hardcoded.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const texts = (source) => scanSource(source).map(({ line, text }) => `${line}:${text}`)
@@ -87,6 +88,33 @@ test('an arrow or prose arrow is not an opening tag', () => {
         assert.deepEqual(texts(`${before}\n    Some Example Text\nconst next = 1`), [], before)
     }
     assert.deepEqual(texts('<p>\n    Some Example Text\nconst next = 1'), ['2:Some Example Text'])
+})
+
+test('an excluded file is excluded by its path, not by its name in any directory', (t) => {
+    const web = mkdtempSync(join(tmpdir(), 'cg-i18n-'))
+    t.after(() => rmSync(web, { recursive: true, force: true }))
+    for (const file of [
+        'bootstrap/render.tsx',
+        'components/views/render.tsx',
+        'components/common/DevTelemetryPanel.tsx',
+        'components/views/DevTelemetryPanel.tsx',
+        'components/views/Panel.test.tsx',
+    ]) {
+        mkdirSync(dirname(join(web, file)), { recursive: true })
+        writeFileSync(join(web, file), '<p>Some Hardcoded Words</p>\n')
+    }
+    const collected = collectTsxFiles(web).map((file) => relative(web, file).replaceAll('\\', '/'))
+    assert.deepEqual(collected.sort(), [
+        'components/views/DevTelemetryPanel.tsx',
+        'components/views/render.tsx',
+    ])
+    // Every exclusion names a real file that the real scan then skips: none is stale.
+    const appDir = resolve(ROOT, 'apps/web')
+    const real = collectTsxFiles().map((file) => relative(appDir, file).replaceAll('\\', '/'))
+    for (const excluded of EXCLUDED_FILES) {
+        assert.ok(existsSync(resolve(appDir, excluded)), `stale exclusion ${excluded}`)
+        assert.ok(!real.includes(excluded), excluded)
+    }
 })
 
 test('CI runs the check in strict mode, so a finding fails the job', () => {

@@ -27,7 +27,7 @@
 // ---------------------------------------------------------------------------
 
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { resolve, dirname, relative } from 'node:path'
+import { resolve, dirname, relative, sep } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
@@ -36,11 +36,12 @@ const WEB_DIR = resolve(__dirname, '..', 'apps', 'web')
 /** Not app UI: build output, tests, translations and static assets. */
 const SKIPPED_DIRS = new Set(['node_modules', 'dist', 'coverage', 'tests', 'locales', 'public'])
 
-// Files excluded from scanning (dev-only or decorative/aria-hidden content)
-const EXCLUDED_FILES = new Set([
-    'DevTelemetryPanel.tsx', // dev-only telemetry panel, technical labels
-    'PaymentIcons.tsx', // SVG titles inside aria-hidden="true" elements
-    'render.tsx', // bootstrap's start-failure page: shown when the start, i18n included, failed
+// Files excluded from scanning (dev-only or decorative/aria-hidden content), by their path
+// under apps/web: a bare file name would exempt every file of that name in any directory.
+export const EXCLUDED_FILES = new Set([
+    'components/common/DevTelemetryPanel.tsx', // dev-only telemetry panel, technical labels
+    'components/icons/PaymentIcons.tsx', // SVG titles inside aria-hidden="true" elements
+    'bootstrap/render.tsx', // the start-failure page: shown when the start, i18n included, failed
 ])
 
 // Props that typically contain user-facing text
@@ -111,18 +112,19 @@ function isIgnoredContent(str) {
     return IGNORE_CONTENT_PATTERNS.some((p) => p.test(trimmed))
 }
 
-function collectTsxFiles(dir) {
+/** The .tsx files under `dir` that the scan covers; `root` is the base of EXCLUDED_FILES. */
+export function collectTsxFiles(dir = WEB_DIR, root = dir) {
     const results = []
     for (const entry of readdirSync(dir)) {
         const full = resolve(dir, entry)
         const stat = statSync(full)
         if (stat.isDirectory()) {
-            if (!SKIPPED_DIRS.has(entry)) results.push(...collectTsxFiles(full))
+            if (!SKIPPED_DIRS.has(entry)) results.push(...collectTsxFiles(full, root))
         } else if (
             entry.endsWith('.tsx') &&
             !entry.endsWith('.test.tsx') &&
             !entry.endsWith('.ct.tsx') &&
-            !EXCLUDED_FILES.has(entry)
+            !EXCLUDED_FILES.has(relative(root, full).split(sep).join('/'))
         ) {
             results.push(full)
         }

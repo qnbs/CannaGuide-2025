@@ -134,6 +134,16 @@ const MOOD_PROMPTS: Record<string, string> = {
 }
 
 /** Build a diffusion prompt from strain data and user preferences. */
+/** Trichome descriptions by the lowest reported THC they describe, highest first. */
+const TRICHOME_HINTS: readonly (readonly [number, string])[] = [
+    [25, 'extremely frosty, heavy trichome coverage'],
+    [18, 'generous trichome coverage'],
+]
+
+/** A trichome description for a reported THC; none when THC is not reported or moderate. */
+const trichomeHint = (thc: number | undefined): string | undefined =>
+    typeof thc === 'number' ? TRICHOME_HINTS.find(([lowest]) => thc >= lowest)?.[1] : undefined
+
 export const buildImagePrompt = (
     strain: Strain,
     style: ImageStyle,
@@ -165,8 +175,8 @@ export const buildImagePrompt = (
 
     if (aromaHints) parts.push(`hints of ${aromaHints} aroma`)
     if (terpeneHints) parts.push(`dominant ${terpeneHints} terpene profile`)
-    if (strain.thc >= 25) parts.push('extremely frosty, heavy trichome coverage')
-    else if (strain.thc >= 18) parts.push('generous trichome coverage')
+    const trichomes = trichomeHint(strain.thc)
+    if (trichomes) parts.push(trichomes)
 
     return parts.join(', ')
 }

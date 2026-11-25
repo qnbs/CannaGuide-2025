@@ -225,12 +225,8 @@ class LocalAiFallbackService {
 
     getStrainTips(strain: Strain, lang: Language): StructuredGrowTips {
         this.track('getStrainTips')
-        let thcLevel: 'high' | 'medium' | 'low' = 'low'
-        if (strain.thc > 25) {
-            thcLevel = 'high'
-        } else if (strain.thc > 15) {
-            thcLevel = 'medium'
-        }
+        // Only a reported high THC changes the advice; an unreported one gets the default tip.
+        const highThc = typeof strain.thc === 'number' && strain.thc > 25
 
         const highThcNutrient = localizeStr(lang, {
             en: `${strain.name} with high THC (${strain.thc}%) needs strong PK boost during flower. Gradually raise EC to 1.8\u20132.2.`,
@@ -248,7 +244,7 @@ class LocalAiFallbackService {
         })
 
         return {
-            nutrientTip: thcLevel === 'high' ? highThcNutrient : defaultNutrient,
+            nutrientTip: highThc ? highThcNutrient : defaultNutrient,
             trainingTip:
                 strain.floweringType === 'Autoflower'
                     ? localizeStr(lang, {

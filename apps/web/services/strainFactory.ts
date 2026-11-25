@@ -104,8 +104,10 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
         ...withGeneticModifiers(data.geneticModifiers),
     }
 
-    // Catalog modules still type every record as Strain. Absent measurements
-    // stay absent at runtime; widening that type is a separate consumer pass.
+    // Strain types thc, cbd and floweringTime as optional. An unreported type,
+    // flowering type, agronomy or genetic coefficients also stay absent at
+    // runtime while Strain still requires them; widening those is the next
+    // consumer pass of #750, which removes this assertion.
     // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
     return strain as Strain
 }

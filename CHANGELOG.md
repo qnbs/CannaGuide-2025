@@ -15,6 +15,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **refactor(strains):** The `Strain` type marks `thc`, `cbd` and `floweringTime` as optional, as the strain factory already leaves them absent when a source reports none ([#750](https://github.com/qnbs/CannaGuide-2025/issues/750)). The compiler now makes every reader handle an absent value. Similarity scores, cannabinoid charts, image prompts, offline grow tips and the grow setup ignore an unreported value, and none of them reads it as 0. Runtime behaviour is unchanged; two new tests pin the image prompt and the offline nutrient tip for a strain without THC.
 - **ci(scorecard):** OSSF Scorecard runs weekly and on demand instead of on every push to `main` (owner decision): it is a periodic supply-chain assessment, not part of each merge. The analysis, the `results_published` gate and the SARIF upload are unchanged, and it is not a required or release check.
 - **chore(ci):** The dev container's Playwright base image is pinned by digest (OSSF Scorecard, pinned dependencies), and `scripts/agent-doctor.mjs` drops two unused duplicate variables (CodeQL). The workflow-lint baseline drops to the current counts: no cache-poisoning or unpinned-image finding is left, and artipacked falls from 38 to 31.
 

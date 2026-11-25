@@ -10,8 +10,7 @@ export const createInitialHarvestData = (plant: Plant): HarvestData => {
     const wetWeight = Math.max(12, Number((plant.biomass.flowers * 5.5).toFixed(1)))
     const targetDryRatio = simClamp(0.2 + (plant.health / 100) * 0.05, 0.18, 0.28)
     const dryWeight = Number((wetWeight * targetDryRatio).toFixed(1))
-    const thcWasReported = simIsFiniteNumber(plant.strain.thc)
-    const reportedThc = thcWasReported ? plant.strain.thc : 0
+    const reportedThc = simIsFiniteNumber(plant.strain.thc) ? plant.strain.thc : 0
     const thc = simClamp(
         reportedThc * 0.78 + plant.health * 0.04 - plant.stressLevel * 0.02,
         reportedThc > 0 ? 4 : 0,

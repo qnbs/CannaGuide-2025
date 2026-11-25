@@ -86,22 +86,22 @@ const loadAllStrainsData = (): Promise<Strain[]> => {
 const sharedNames = (left: string[] | undefined, right: string[] | undefined): number =>
     (left ?? []).filter((name) => (right ?? []).includes(name)).length
 
-const bothNumbers = (left: unknown, right: unknown): boolean =>
-    typeof left === 'number' && typeof right === 'number'
-
 const sameReportedLevel = (left: string | undefined, right: string | undefined): boolean =>
     left !== undefined && left === right
 
 const typeSimilarity = (left: Strain, right: Strain): number =>
     left.type !== undefined && left.type === right.type ? 20 : 0
 
-const measurementGap = (left: number, right: number, weight: number): number =>
-    weight - Math.abs(left - right)
+/** How close two reported measurements are, out of `weight`; 0 when either is not reported. */
+const measurementGap = (
+    left: number | undefined,
+    right: number | undefined,
+    weight: number,
+): number =>
+    typeof left === 'number' && typeof right === 'number' ? weight - Math.abs(left - right) : 0
 
 const chemistrySimilarity = (left: Strain, right: Strain): number => {
-    const thc = bothNumbers(left.thc, right.thc) ? measurementGap(left.thc, right.thc, 15) : 0
-    const cbd = bothNumbers(left.cbd, right.cbd) ? measurementGap(left.cbd, right.cbd, 10) : 0
-    return thc + cbd
+    return measurementGap(left.thc, right.thc, 15) + measurementGap(left.cbd, right.cbd, 10)
 }
 
 const listSimilarity = (left: Strain, right: Strain): number =>

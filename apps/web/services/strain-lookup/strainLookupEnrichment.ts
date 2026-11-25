@@ -127,12 +127,16 @@ export function buildTerpeneDataPoints(strain: Strain): TerpeneDataPoint[] {
     return enrichTerpeneDataPoints(raw)
 }
 
+/** A reported, positive percentage; an absent one is no data point. */
+const isReportedPositive = (value: number | undefined): value is number =>
+    typeof value === 'number' && value > 0
+
 export function buildCannabinoidDataPoints(strain: Strain): CannabinoidDataPoint[] {
     const items: CannabinoidDataPoint[] = []
-    if (strain.thc > 0) items.push({ name: 'THC', percentage: strain.thc })
-    if (strain.cbd > 0) items.push({ name: 'CBD', percentage: strain.cbd })
-    if ((strain.cbg ?? 0) > 0) items.push({ name: 'CBG', percentage: strain.cbg! })
-    if ((strain.thcv ?? 0) > 0) items.push({ name: 'THCV', percentage: strain.thcv! })
+    if (isReportedPositive(strain.thc)) items.push({ name: 'THC', percentage: strain.thc })
+    if (isReportedPositive(strain.cbd)) items.push({ name: 'CBD', percentage: strain.cbd })
+    if (isReportedPositive(strain.cbg)) items.push({ name: 'CBG', percentage: strain.cbg })
+    if (isReportedPositive(strain.thcv)) items.push({ name: 'THCV', percentage: strain.thcv })
     if (strain.cannabinoidProfile && typeof strain.cannabinoidProfile === 'object') {
         const existing = new Set(items.map((i2) => i2.name.toLowerCase()))
         for (const [name, val] of Object.entries(

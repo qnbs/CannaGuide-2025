@@ -148,6 +148,15 @@ describe('imageGenerationService', () => {
             expect(prompt).toContain('generous trichome')
         })
 
+        it('claims no trichome coverage when the strain reports no THC', () => {
+            const prompt = buildImagePrompt({ ...highThcStrain, thc: undefined }, 'botanical', {
+                focus: 'buds',
+                composition: 'dynamic',
+                mood: 'mystical',
+            })
+            expect(prompt).not.toContain('trichome coverage')
+        })
+
         it('resolves random style to one of the valid styles', () => {
             // Run multiple times to verify it picks from pool
             const prompts = new Set<string>()

@@ -18,16 +18,25 @@ import {
 import { EXTERNAL_STRAIN_LOOKUPS_DISABLED } from '@/constants'
 import { throttleExternal } from '@/services/strain-lookup/strainLookupCache'
 
-/**
- * A cannabinoid percentage the source actually reported: the first present candidate,
- * parsed. A missing, blank or unparsable value stays unknown instead of becoming 0, so a
- * lookup never invents a measurement (GH #750).
- */
-const reportedPercent = (...candidates: unknown[]): number | undefined => {
-    const raw = candidates.find((value) => value !== undefined && value !== null && value !== '')
-    if (raw === undefined) return undefined
+/** One candidate as a percentage, or undefined when it is missing, blank or unparsable. */
+const parsePercent = (raw: unknown): number | undefined => {
+    if (raw === undefined || raw === null || raw === '') return undefined
     const value = typeof raw === 'number' ? raw : Number.parseFloat(String(raw))
     return Number.isFinite(value) && value >= 0 ? value : undefined
+}
+
+/**
+ * A cannabinoid percentage the source actually reported: the first candidate that parses.
+ * A missing, blank or unparsable value stays unknown instead of becoming 0, so a lookup
+ * never invents a measurement, and a placeholder such as 'n/a' in the first field does not
+ * hide a real value in a later one (GH #750).
+ */
+const reportedPercent = (...candidates: unknown[]): number | undefined => {
+    for (const raw of candidates) {
+        const value = parsePercent(raw)
+        if (value !== undefined) return value
+    }
+    return undefined
 }
 
 const isPositive = (value: number | undefined): value is number => value !== undefined && value > 0

@@ -35,6 +35,38 @@ describe('externalStrainLookups API adapters', () => {
         expect(vi.mocked(fetch)).not.toHaveBeenCalled()
     })
 
+    it('takes the first reported cannabinoid value that parses, past a placeholder', async () => {
+        vi.resetModules()
+        vi.doMock('@/constants', async (importOriginal) => ({
+            ...(await importOriginal<typeof import('@/constants')>()),
+            EXTERNAL_STRAIN_LOOKUPS_DISABLED: false,
+        }))
+        Object.assign(import.meta.env, { VITE_CANNLYTICS_API_KEY: 'test-key' })
+        vi.mocked(fetch).mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    data: {
+                        strain_name: 'Ghost OG',
+                        // A placeholder or a negative value in the primary field must not
+                        // discard the usable value in the fallback field.
+                        thc: 'n/a',
+                        total_thc: 20,
+                        cbd: -1,
+                        total_cbd: '0.5',
+                    },
+                }),
+                { status: 200 },
+            ),
+        )
+        const { lookupCannlytics } = await import('./externalStrainLookups')
+        const result = await lookupCannlytics('Ghost OG')
+
+        expect(vi.mocked(fetch)).toHaveBeenCalledTimes(1)
+        expect(result?.thc).toBe(20)
+        expect(result?.cbd).toBe(0.5)
+        vi.doUnmock('@/constants')
+    })
+
     it('lookupWithAI parses structured mentor JSON in German', async () => {
         vi.resetModules()
         vi.doMock('@/services/aiFacade', () => ({

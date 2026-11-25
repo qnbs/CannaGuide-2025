@@ -117,19 +117,23 @@ export function collectTsxFiles(dir = WEB_DIR, root = dir) {
     const results = []
     for (const entry of readdirSync(dir)) {
         const full = resolve(dir, entry)
-        const stat = statSync(full)
-        if (stat.isDirectory()) {
+        if (statSync(full).isDirectory()) {
             if (!SKIPPED_DIRS.has(entry)) results.push(...collectTsxFiles(full, root))
-        } else if (
-            entry.endsWith('.tsx') &&
-            !entry.endsWith('.test.tsx') &&
-            !entry.endsWith('.ct.tsx') &&
-            !EXCLUDED_FILES.has(relative(root, full).split(sep).join('/'))
-        ) {
+        } else if (isScannedFile(entry, full, root)) {
             results.push(full)
         }
     }
     return results
+}
+
+/** Test and component-test files are not app UI. */
+const NOT_SCANNED = ['.test.tsx', '.ct.tsx']
+
+/** Whether a file is app UI source: a .tsx file, not a test, not excluded by path. */
+function isScannedFile(entry, full, root) {
+    if (!entry.endsWith('.tsx') || NOT_SCANNED.some((suffix) => entry.endsWith(suffix)))
+        return false
+    return !EXCLUDED_FILES.has(relative(root, full).split(sep).join('/'))
 }
 
 // ---------------------------------------------------------------------------
@@ -156,52 +160,59 @@ export function scanSource(content) {
     const lines = content.split('\n')
     const findings = []
     let inBlockComment = false
-
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i]
-        // A block or JSX comment that opens a line and stays open hides the lines up to `*/`.
-        if (inBlockComment) {
-            inBlockComment = !line.includes('*/')
-            continue
-        }
-        const opener = BLOCK_COMMENT_OPENER.exec(line)
-        if (opener && !line.slice(opener[0].length).includes('*/')) {
-            inBlockComment = true
-            continue
-        }
-        if (shouldSkipLine(line)) continue
-        // `<p>{t('a')} Some Words</p>` still has hardcoded text once the translation is gone.
-        const checked = line.replace(TRANSLATED_EXPRESSION, '')
-        if (/\bt\s*\(/.test(checked)) continue
-
-        // Check i18n-sensitive props with hardcoded string values
-        let propMatch
-        I18N_SENSITIVE_PROPS.lastIndex = 0
-        while ((propMatch = I18N_SENSITIVE_PROPS.exec(checked)) !== null) {
-            const value = propMatch[1]
-            if (!isIgnoredContent(value)) {
-                findings.push({ line: i + 1, type: 'prop', text: shortened(value) })
-            }
-        }
-
-        // Check JSX text content
-        let textMatch
-        JSX_TEXT_CONTENT.lastIndex = 0
-        while ((textMatch = JSX_TEXT_CONTENT.exec(checked)) !== null) {
-            const value = textMatch[1]
-            if (!isIgnoredContent(value)) {
-                findings.push({ line: i + 1, type: 'text', text: shortened(value) })
-            }
-        }
-
-        // The cleaned line, so `{t('a')} Some Words` on its own line is checked like `Some Words`.
-        const ownLine = OWN_LINE_TEXT.exec(checked)
-        if (ownLine && !isIgnoredContent(ownLine[1]) && isBetweenTags(lines, i)) {
-            findings.push({ line: i + 1, type: 'text', text: shortened(ownLine[1]) })
-        }
+    for (let index = 0; index < lines.length; index += 1) {
+        const state = commentState(lines[index], inBlockComment)
+        inBlockComment = state.open
+        if (!state.hidden) findings.push(...lineFindings(lines, index))
     }
-
     return findings
+}
+
+/**
+ * Block-comment state for one line. A block or JSX comment that opens a line and stays open
+ * hides the lines up to `*\/`: `hidden` says whether this line is inside one, `open` whether
+ * one is still open after it.
+ */
+function commentState(line, inBlockComment) {
+    if (inBlockComment) return { hidden: true, open: !line.includes('*/') }
+    const opener = BLOCK_COMMENT_OPENER.exec(line)
+    const opens = opener !== null && !line.slice(opener[0].length).includes('*/')
+    return { hidden: opens, open: opens }
+}
+
+/** The likely hardcoded strings of one line that no comment hides. */
+function lineFindings(lines, index) {
+    const line = lines[index]
+    if (shouldSkipLine(line)) return []
+    // `<p>{t('a')} Some Words</p>` still has hardcoded text once the translation is gone.
+    const checked = line.replace(TRANSLATED_EXPRESSION, '')
+    if (/\bt\s*\(/.test(checked)) return []
+    return [
+        ...matchFindings(I18N_SENSITIVE_PROPS, checked, 'prop', index),
+        ...matchFindings(JSX_TEXT_CONTENT, checked, 'text', index),
+        ...ownLineFindings(checked, lines, index),
+    ]
+}
+
+/** A finding for every match of a global pattern whose text is not ignored content. */
+function matchFindings(pattern, text, type, index) {
+    return [...text.matchAll(pattern)]
+        .map((match) => match[1])
+        .filter((value) => !isIgnoredContent(value))
+        .map((value) => ({ line: index + 1, type, text: shortened(value) }))
+}
+
+/** Text alone on its line, as Prettier wraps it, when the line sits between JSX tags. */
+function ownLineFindings(checked, lines, index) {
+    // The cleaned line, so `{t('a')} Some Words` on its own line is checked like `Some Words`.
+    const text = ownLineText(checked)
+    if (text === null || !isBetweenTags(lines, index)) return []
+    return [{ line: index + 1, type: 'text', text: shortened(text) }]
+}
+
+function ownLineText(checked) {
+    const match = OWN_LINE_TEXT.exec(checked)
+    return match === null || isIgnoredContent(match[1]) ? null : match[1]
 }
 
 function scanFile(filePath) {

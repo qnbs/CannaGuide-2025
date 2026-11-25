@@ -8,9 +8,6 @@ import { fileURLToPath } from 'node:url'
 import {
     ALLOWED_PATTERNS,
     appSourceFiles,
-    firstArgument,
-    isShadowed,
-    maskComments,
     resolveConstant,
     stalePatterns,
     storageCalls,
@@ -18,6 +15,12 @@ import {
 } from './check-localstorage-usage.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
+
+/** The kind and key of each storage call in `snippet`, below `const KEY = 'cg.ai.auditLog'`. */
+function keyIn(snippet) {
+    const source = `const KEY = 'cg.ai.auditLog'\n${snippet}`
+    return storageCalls('apps/web/scope.ts', source).map(({ kind, key }) => [kind, key])
+}
 
 function fixture(t, files) {
     const root = mkdtempSync(join(tmpdir(), 'cg-storage-'))
@@ -49,12 +52,42 @@ test('the scope is all tracked web app source, without tests, locales or assets'
     }
 })
 
-test('the first argument is read up to its top-level comma or paren', () => {
-    const source = "localStorage.setItem(key(a, b), JSON.stringify({ x: ')' }))"
-    assert.equal(firstArgument(source, source.indexOf('(') + 1), 'key(a, b)')
-    const call = "getItem('a,b')"
-    assert.equal(firstArgument(call, call.indexOf('(') + 1), "'a,b'")
-    assert.equal(firstArgument('getItem(`k`', 8), null)
+test('the key argument is read from the call, and an unreadable one fails', (t) => {
+    const source = [
+        "localStorage.setItem(key(a, b), JSON.stringify({ x: ')' }))",
+        "localStorage.getItem('a,b')",
+        'localStorage.getItem()',
+        'localStorage.removeItem(...keys)',
+    ].join('\n')
+    const calls = storageCalls('apps/web/args.ts', source, fixture(t, {}))
+    assert.deepEqual(
+        calls.map(({ kind, key, expression }) => [kind, key ?? expression]),
+        [
+            ['dynamic', 'key(a, b)'],
+            ['literal', 'a,b'],
+            ['unparsed', ''],
+            ['unparsed', '...keys'],
+        ],
+    )
+    // No review entry can approve a key nobody can read.
+    const reviewed = [
+        {
+            file: 'apps/web/args.ts',
+            expression: '...keys',
+            methods: ['removeItem'],
+            example: 'cg.ai.auditLog',
+        },
+    ]
+    assert.deepEqual(
+        violations(calls, reviewed).map(({ reason }) => reason),
+        [
+            'computed key `key(a, b)` is not reviewed',
+            'key "a,b" not in allowlist',
+            'the call passes no key',
+            'a spread key argument cannot be read',
+            'stale review entry `...keys`',
+        ],
+    )
 })
 
 test('a constant resolves in the file, through an alias, an import and a re-export', (t) => {
@@ -69,6 +102,11 @@ test('a constant resolves in the file, through an alias, an import and a re-expo
             'const ALIAS = LOCAL',
             'const COMPUTED = `cg.${x}`',
         ].join('\n'),
+        'apps/web/barrel.ts': [
+            "export * from './constants'",
+            "const INNER = 'cg.ai.monthlyBudget'",
+            'export { INNER as OUTER }',
+        ].join('\n'),
     })
     assert.equal(resolveConstant('apps/web/a.ts', 'LOCAL', root), 'cg.ai.costTracker')
     assert.equal(resolveConstant('apps/web/a.ts', 'ALIAS', root), 'cg.ai.costTracker')
@@ -76,6 +114,8 @@ test('a constant resolves in the file, through an alias, an import and a re-expo
     assert.equal(resolveConstant('apps/web/a.ts', 'OTHER', root), 'x')
     assert.equal(resolveConstant('apps/web/a.ts', 'COMPUTED', root), null)
     assert.equal(resolveConstant('apps/web/a.ts', 'MISSING', root), null)
+    assert.equal(resolveConstant('apps/web/barrel.ts', 'BASE_KEY', root), 'cg.ai.auditLog')
+    assert.equal(resolveConstant('apps/web/barrel.ts', 'OUTER', root), 'cg.ai.monthlyBudget')
 })
 
 test('calls are classified by how their key is known, including a persisted store', (t) => {
@@ -134,16 +174,18 @@ test('a constant name that a parameter or local binding shadows counts as comput
         ],
     )
     for (const shadowing of [
-        '(KEY) => localStorage.getItem(KEY)',
-        'KEY => 1',
-        'let KEY = x',
-        'try {} catch (KEY) {}',
-        "const KEY = 'a'\n{ const KEY = 'b' }",
-        'method(a, ...KEY) {}',
+        'const read = (KEY) => localStorage.getItem(KEY)',
+        'const read = KEY => localStorage.getItem(KEY)',
+        '{ let KEY = x; localStorage.getItem(KEY) }',
+        'try {} catch (KEY) { localStorage.getItem(KEY) }',
+        'class A { method(a, ...KEY) { localStorage.getItem(KEY) } }',
+        // A var anywhere in the function is hoisted over the call.
+        'function load() { localStorage.getItem(KEY); if (x) { var KEY = raw } }',
+        // Declared twice in one scope: which one the call sees is unknown.
+        "const KEY = 'raw_api_key'\nlocalStorage.getItem(KEY)",
     ]) {
-        assert.equal(isShadowed(shadowing, 'KEY'), true, shadowing)
+        assert.deepEqual(keyIn(shadowing), [['dynamic', undefined]], shadowing)
     }
-    assert.equal(isShadowed("const KEY = 'a'\nlocalStorage.getItem(KEY)", 'KEY'), false)
 })
 
 test('a commented-out name, or a comma inside a string, is not the store name', (t) => {
@@ -193,7 +235,7 @@ test('the persisted store name comes from its own options object, in any order',
     assert.equal(persisted.key, 'raw-secret-store')
 })
 
-test('a commented-out call is not a call, and masking keeps code after a regex literal', () => {
+test('a commented-out call is not a call, and code after a regex literal is read', () => {
     const source = [
         "// localStorage.setItem('installed_plugins_v1', value)",
         "/* sessionStorage.getItem(ANY) */ localStorage.getItem('cg.ai.auditLog')",
@@ -201,7 +243,6 @@ test('a commented-out call is not a call, and masking keeps code after a regex l
         'const quote = /[\'"]/',
         "localStorage.getItem('cg.ai.auditLog')",
     ].join('\n')
-    assert.equal(maskComments(source).split('\n').length, 5)
     const calls = storageCalls('apps/web/masked.ts', source)
     assert.deepEqual(
         calls.map(({ line, key }) => [line, key]),
@@ -252,20 +293,61 @@ test('a constant that continues past its line is computed, a one-line one resolv
     assert.equal(resolveConstant('apps/web/single.ts', 'KEY', root), 'cg.ai.auditLog')
 })
 
-test('destructured bindings and parameters shadow a constant; a condition does not', () => {
+test('a name with a $ is matched as one whole identifier, so shadowing still counts', (t) => {
+    // `$` is legal in an identifier but an anchor in a pattern, and \b sees no boundary
+    // before it: unescaped, the shadowed import below resolved and passed the gate.
+    const root = fixture(t, {
+        'apps/web/keys.ts': "export const $KEY = 'cg.ai.auditLog'\n",
+        'apps/web/declared.ts': "const $KEY = 'cg.ai.auditLog'\nlocalStorage.getItem($KEY)\n",
+        'apps/web/shadowed.ts': [
+            "import { $KEY } from './keys'",
+            'function load($KEY) {',
+            '    return localStorage.getItem($KEY)',
+            '}',
+        ].join('\n'),
+    })
+    const first = (file) => storageCalls(file, readFileSync(join(root, file), 'utf8'), root)[0]
+    assert.deepEqual(
+        [first('apps/web/declared.ts').kind, first('apps/web/declared.ts').key],
+        ['constant', 'cg.ai.auditLog'],
+    )
+    assert.equal(first('apps/web/shadowed.ts').kind, 'dynamic')
+    const kinds = (source) => storageCalls('apps/web/dollar.ts', source, root).map((c) => c.kind)
+    const outer = "const $KEY = 'cg.ai.auditLog'\n"
+    // A default value with its own parentheses still leaves $KEY a parameter.
+    assert.deepEqual(
+        kinds(`${outer}function save($KEY, fallback = make()) { localStorage.setItem($KEY, v) }`),
+        ['dynamic'],
+    )
+    assert.deepEqual(kinds(`${outer}const KEY = other\nlocalStorage.getItem($KEY)`), ['constant'])
+    assert.equal(resolveConstant('apps/web/declared.ts', '$KEY', root), 'cg.ai.auditLog')
+})
+
+test('destructured and default parameters shadow a constant; a condition does not', () => {
     for (const shadowing of [
-        'function save({ KEY }) {}',
-        'const load = ([KEY]) => KEY',
-        'function f(value = KEY) {}',
-        'const { KEY } = settings',
-        'let [first, KEY] = pair',
-        'for (const KEY of keys) {}',
+        'function save({ KEY }) { localStorage.getItem(KEY) }',
+        'const load = ([KEY]) => localStorage.getItem(KEY)',
+        'function save(KEY, fallback = make(), { a } = {}) { localStorage.setItem(KEY, v) }',
+        '{ const { KEY } = settings; localStorage.getItem(KEY) }',
+        '{ let [first, KEY] = pair; localStorage.getItem(KEY) }',
+        'for (const KEY of keys) { localStorage.getItem(KEY) }',
     ]) {
-        assert.equal(isShadowed(`const KEY = 'a'\n${shadowing}`, 'KEY'), true, shadowing)
+        assert.deepEqual(keyIn(shadowing), [['dynamic', undefined]], shadowing)
     }
-    for (const plain of ['if (stored !== KEY) {}', 'while (KEY) {}', 'other.KEY_SUFFIX']) {
-        assert.equal(isShadowed(`const KEY = 'a'\n${plain}`, 'KEY'), false, plain)
+    for (const plain of [
+        'if (stored !== KEY) { localStorage.getItem(KEY) }',
+        'while (KEY) { localStorage.getItem(KEY) }',
+        // A default value reads the outer constant, and a parameter elsewhere binds nothing here.
+        'function f(value = KEY) { localStorage.getItem(KEY) }',
+        'function other(KEY) {}\nlocalStorage.getItem(KEY)',
+        'other.KEY = 1\nlocalStorage.getItem(KEY)',
+    ]) {
+        assert.deepEqual(keyIn(plain), [['constant', 'cg.ai.auditLog']], plain)
     }
+    // An inner constant is the one the call sees.
+    assert.deepEqual(keyIn("{ const KEY = 'cg.ai.costTracker'; localStorage.getItem(KEY) }"), [
+        ['constant', 'cg.ai.costTracker'],
+    ])
 })
 
 test('the last persisted name wins, and a spread after it makes the name unknown', (t) => {
@@ -297,6 +379,66 @@ test('the last persisted name wins, and a spread after it makes the name unknown
     assert.equal(first('apps/web/spread.ts').kind, 'dynamic')
     assert.equal(first('apps/web/spread-first.ts').key, 'cannaguide-iot-settings')
     assert.equal(first('apps/web/twice.ts').key, 'raw-secret-store')
+})
+
+test('every zustand persist call is a persisted store, and an unreadable storage fails closed', (t) => {
+    const sources = {
+        // zustand 5 writes to window.localStorage when no storage option is set.
+        'apps/web/default.ts': "persist(store, { name: 'cannaguide-iot-settings' })",
+        'apps/web/window.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: createJSONStorage(() => window.localStorage) })",
+        'apps/web/session.ts':
+            "persist(store, { storage: createJSONStorage(() => globalThis.sessionStorage), name: 'cannaguide-iot-settings' })",
+        // Storage this scan cannot read: the key is computed and needs a review entry.
+        'apps/web/reference.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: createJSONStorage(getStorage) })",
+        'apps/web/adapter.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: adapter })",
+        'apps/web/spread.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: createJSONStorage(() => localStorage), ...extra })",
+        'apps/web/variable.ts': 'persist(store, options)',
+        // Imported under another name, or through a namespace.
+        'apps/web/alias.ts': [
+            "import { persist as keep } from 'zustand/middleware'",
+            "keep(store, { name: 'cannaguide-iot-settings' })",
+        ].join('\n'),
+        'apps/web/namespace.ts': [
+            "import * as mw from 'zustand/middleware'",
+            "mw.persist(store, { name: 'cannaguide-iot-settings' })",
+        ].join('\n'),
+        // A storage accessor outside any persist call.
+        'apps/web/stray.ts': 'const storage = createJSONStorage(() => localStorage)',
+        // Member calls are not zustand's persist.
+        'apps/web/member.ts': 'await navigator.storage.persist(); queue.persist()',
+    }
+    const root = fixture(t, sources)
+    const stores = (file) =>
+        storageCalls(file, sources[file], root).map(({ kind, key, storage }) => ({
+            kind,
+            key,
+            storage,
+        }))
+    const known = (storage) => [{ kind: 'persist', key: 'cannaguide-iot-settings', storage }]
+    const unknown = () => [{ kind: 'dynamic', key: undefined, storage: 'unknown' }]
+    assert.deepEqual(stores('apps/web/default.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/window.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/session.ts'), known('sessionStorage'))
+    for (const file of ['reference', 'adapter', 'spread', 'variable']) {
+        assert.deepEqual(stores(`apps/web/${file}.ts`), unknown(), file)
+    }
+    assert.deepEqual(stores('apps/web/alias.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/namespace.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/stray.ts'), unknown())
+    assert.deepEqual(stores('apps/web/member.ts'), [])
+    // An unknown store is a violation until it is reviewed.
+    const [reason] = violations(
+        storageCalls('apps/web/adapter.ts', sources['apps/web/adapter.ts'], root),
+        [],
+    )
+    assert.equal(
+        reason.reason,
+        "computed key `persist({ name: 'cannaguide-iot-settings', storage: adapter })` is not reviewed",
+    )
 })
 
 test('a persisted name is known only when it is one complete literal', (t) => {
@@ -361,6 +503,284 @@ test('a comment inside the call is no part of its key', (t) => {
         },
     ]
     assert.deepEqual(violations(calls, reviewed), [])
+})
+
+const IOT = 'cannaguide-iot-settings'
+const LOCAL_ACCESSOR = 'createJSONStorage(() => localStorage)'
+
+/** Each call's kind, then its key, or its expression when the key is computed. */
+const found = (file, sources, root) =>
+    storageCalls(file, sources[file], root).map(({ kind, key, expression }) => [
+        kind,
+        key ?? expression,
+    ])
+
+test('type arguments, regex literals and strings do not change what a persist call is', (t) => {
+    const options = `{ name: '${IOT}', storage: ${LOCAL_ACCESSOR} }`
+    const sources = {
+        'apps/web/typed.ts': `persist<State>(store, { name: '${IOT}' })`,
+        'apps/web/tuple.ts': `persist<State, [['zustand/persist', unknown]]>(store, ${options})`,
+        // A bracket or a quote inside a regex literal is no part of the call's structure.
+        'apps/web/regex.ts': `persist(() => ({ pattern: /[)]/, quote: /'/ }), ${options})`,
+        // Text that only looks like a call is no call.
+        'apps/web/strings.ts': [
+            `const example = "persist(init, { name: 'draft-store' })"`,
+            "const doc = `localStorage.setItem('raw_api_key', value)`",
+        ].join('\n'),
+    }
+    const root = fixture(t, sources)
+    for (const file of ['typed', 'tuple', 'regex']) {
+        assert.deepEqual(found(`apps/web/${file}.ts`, sources, root), [['persist', IOT]], file)
+    }
+    assert.deepEqual(found('apps/web/strings.ts', sources, root), [])
+})
+
+test('a persist the file declares itself is no store; an imported or aliased one is', (t) => {
+    const sources = {
+        'apps/web/local.ts': 'function persist(value) {\n    return value\n}\npersist(1)',
+        'apps/web/arrow.ts': "const persist = (value) => value\npersist({ name: 'draft-store' })",
+        // A wrapper module that re-exports persist still writes a store.
+        'apps/web/wrapper.ts': `import { persist } from './middleware'\npersist(store, { name: '${IOT}' })`,
+        'apps/web/alias.ts': [
+            "import { persist } from 'zustand/middleware'",
+            'const keep = persist',
+            `keep(store, { name: '${IOT}' })`,
+        ].join('\n'),
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/local.ts', sources, root), [])
+    assert.deepEqual(found('apps/web/arrow.ts', sources, root), [])
+    assert.deepEqual(found('apps/web/wrapper.ts', sources, root), [['persist', IOT]])
+    assert.deepEqual(found('apps/web/alias.ts', sources, root), [['persist', IOT]])
+})
+
+test('the last name wins however its key is written, and a computed key may override it', (t) => {
+    const store = (...lines) =>
+        ['persist(store, {', `    storage: ${LOCAL_ACCESSOR},`, ...lines, '})'].join('\n')
+    const sources = {
+        'apps/web/quoted.ts': store(`    name: '${IOT}',`, "    'name': 'draft-store',"),
+        'apps/web/literal-key.ts': store(`    name: '${IOT}',`, "    ['name']: 'draft-store',"),
+        'apps/web/computed.ts': store(`    name: '${IOT}',`, '    [field]: value,'),
+        'apps/web/restored.ts': store(
+            '    [field]: value,',
+            `    name: '${IOT}',`,
+            `    storage: ${LOCAL_ACCESSOR},`,
+        ),
+        'apps/web/constant.ts': `const STORE = '${IOT}'\n${store('    name: STORE,')}`,
+    }
+    const root = fixture(t, sources)
+    const first = (file) => found(`apps/web/${file}.ts`, sources, root)[0]
+    assert.deepEqual(first('quoted'), ['persist', 'draft-store'])
+    assert.deepEqual(first('literal-key'), ['persist', 'draft-store'])
+    assert.equal(first('computed')[0], 'dynamic')
+    assert.deepEqual(first('restored'), ['persist', IOT])
+    assert.deepEqual(first('constant'), ['persist', IOT])
+    const quoted = storageCalls('apps/web/quoted.ts', sources['apps/web/quoted.ts'], root)
+    assert.deepEqual(
+        violations(quoted, []).map(({ reason }) => reason),
+        ['key "draft-store" not in allowlist'],
+    )
+})
+
+test('a storage option the scan cannot read is unknown, whatever form it takes', (t) => {
+    const store = (storage) => `persist(store, { name: '${IOT}', ${storage} })`
+    const sources = {
+        'apps/web/shorthand.ts': store('storage'),
+        'apps/web/quoted.ts': store("'storage': adapter"),
+        'apps/web/computed.ts': store("['storage']: adapter"),
+        'apps/web/getter.ts': store('get storage() { return adapter }'),
+        'apps/web/block.ts': store('storage: createJSONStorage(() => { return localStorage })'),
+        'apps/web/quoted-known.ts': store("'storage': createJSONStorage(() => sessionStorage)"),
+    }
+    const root = fixture(t, sources)
+    const storages = (file) =>
+        storageCalls(`apps/web/${file}.ts`, sources[`apps/web/${file}.ts`], root).map(
+            ({ kind, storage }) => [kind, storage],
+        )
+    for (const file of ['shorthand', 'quoted', 'computed', 'getter', 'block']) {
+        assert.deepEqual(storages(file), [['dynamic', 'unknown']], file)
+    }
+    assert.deepEqual(storages('quoted-known'), [['persist', 'sessionStorage']])
+})
+
+test('a createJSONStorage that is no persist storage option is a stray, wherever it is', (t) => {
+    const sources = {
+        // A quote in the store's initializer cannot hide an accessor after the call.
+        'apps/web/after.ts': [
+            "persist(() => ({ quote: '(' }), options)",
+            `const storage = ${LOCAL_ACCESSOR}`,
+        ].join('\n'),
+        'apps/web/inside.ts': `persist(() => ({ cache: ${LOCAL_ACCESSOR} }), { name: '${IOT}' })`,
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/after.ts', sources, root), [
+        ['dynamic', 'persist(options)'],
+        ['dynamic', LOCAL_ACCESSOR],
+    ])
+    assert.deepEqual(found('apps/web/inside.ts', sources, root), [
+        ['persist', IOT],
+        ['dynamic', LOCAL_ACCESSOR],
+    ])
+})
+
+test('a review approves one persisted store, not every computed store in its file', (t) => {
+    const source = [
+        `persist(store, { name: storeName(id), storage: ${LOCAL_ACCESSOR} })`,
+        'persist(other, {',
+        '    name: otherName(id),',
+        `    storage: ${LOCAL_ACCESSOR},`,
+        '})',
+    ].join('\n')
+    const calls = storageCalls('apps/web/stores.ts', source, fixture(t, {}))
+    // Line breaks and their indentation fold to one space.
+    assert.deepEqual(
+        calls.map(({ expression }) => expression),
+        [
+            `persist({ name: storeName(id), storage: ${LOCAL_ACCESSOR} })`,
+            `persist({ name: otherName(id), storage: ${LOCAL_ACCESSOR}, })`,
+        ],
+    )
+    const entry = (expression) => ({
+        file: 'apps/web/stores.ts',
+        expression,
+        methods: ['setItem'],
+        example: 'cg.ai.auditLog',
+    })
+    const reviewed = [entry(calls[0].expression), entry('persist({ name: goneName(id) })')]
+    assert.deepEqual(
+        violations(calls, reviewed).map(({ reason }) => reason),
+        [
+            `computed key \`${calls[1].expression}\` is not reviewed`,
+            'stale review entry `persist({ name: goneName(id) })`',
+        ],
+    )
+})
+
+test('a file that does not parse fails, instead of passing what the parser skipped', () => {
+    const source = "const a = ;\nlocalStorage.setItem('cg.ai.auditLog', value)"
+    const [failure] = violations(storageCalls('apps/web/broken.ts', source), [])
+    assert.deepEqual(
+        [failure.line, failure.reason],
+        [1, 'the file does not parse: Expression expected.'],
+    )
+})
+
+test('an escaped spelling or a barrel import is read, so no file is skipped by its text', (t) => {
+    const sources = {
+        // `S` and `\x53` are an S: JavaScript reads both as localStorage.
+        'apps/web/unicode.ts': "window['local\\u0053torage'].setItem('draft-store', value)",
+        'apps/web/hex.ts': "window['local\\x53torage'].setItem('draft-store', value)",
+        'apps/web/barrel.ts': "export { persist as keep } from 'zustand/middleware'\n",
+        // Neither spelling appears here: the store is found through the barrel's export.
+        'apps/web/consumer.ts':
+            "import { keep } from './barrel'\nkeep(store, { name: 'draft-store' })",
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/unicode.ts', sources, root), [['literal', 'draft-store']])
+    assert.deepEqual(found('apps/web/hex.ts', sources, root), [['literal', 'draft-store']])
+    assert.deepEqual(found('apps/web/consumer.ts', sources, root), [['persist', 'draft-store']])
+})
+
+test('an import resolves through the module exports, never a broken or private declaration', (t) => {
+    const sources = {
+        'apps/web/broken.ts': "export const KEY = 'cg.ai.auditLog'\nconst oops = ;\n",
+        'apps/web/other.ts': "export const KEY = 'draft-store'\n",
+        // A private KEY here is not what `export { KEY } from` gives importers.
+        'apps/web/barrel.ts': "const KEY = 'cg.ai.auditLog'\nexport { KEY } from './other'\n",
+        'apps/web/uses-broken.ts': "import { KEY } from './broken'\nlocalStorage.setItem(KEY, v)",
+        'apps/web/uses-barrel.ts': "import { KEY } from './barrel'\nlocalStorage.setItem(KEY, v)",
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/uses-broken.ts', sources, root), [['dynamic', 'KEY']])
+    assert.deepEqual(found('apps/web/uses-barrel.ts', sources, root), [['constant', 'draft-store']])
+})
+
+test('class static blocks and parameter defaults keep their own scopes', (t) => {
+    const keep = "import { persist as keep } from 'zustand/middleware'"
+    const sources = {
+        // A static block's var stays in the block, so the top-level keep is still persist.
+        'apps/web/static.ts': `${keep}\nclass A { static { var keep = 1 } }\nkeep(s, { name: '${IOT}' })`,
+        // A default value does not see the body's var: its keep is still persist.
+        'apps/web/default.ts': [
+            keep,
+            "function make(store = keep(init, { name: 'draft-store' })) {",
+            '    var keep',
+            '    return store',
+            '}',
+        ].join('\n'),
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/static.ts', sources, root), [['persist', IOT]])
+    assert.deepEqual(found('apps/web/default.ts', sources, root), [['persist', 'draft-store']])
+})
+
+test('a spread before the options leaves them unknown', (t) => {
+    const source = `persist(...[init, { name: 'draft-store' }], { name: '${IOT}' })`
+    const calls = storageCalls('apps/web/spread-args.ts', source, fixture(t, {}))
+    assert.deepEqual(
+        calls.map(({ kind }) => kind),
+        ['dynamic'],
+    )
+})
+
+test('one review entry approves one computed store, and a line break in a template counts', (t) => {
+    const store = `persist(store, { name: storeName(id), storage: ${LOCAL_ACCESSOR} })`
+    const twins = storageCalls('apps/web/twins.ts', `${store}\n${store}`, fixture(t, {}))
+    const entry = {
+        file: 'apps/web/twins.ts',
+        expression: twins[0].expression,
+        methods: ['setItem'],
+        example: 'cg.ai.auditLog',
+    }
+    assert.deepEqual(
+        violations(twins, [entry]).map(({ line, reason }) => [line, reason]),
+        [
+            [
+                2,
+                `computed key \`${twins[0].expression}\` is reviewed for line 1 only: each computed store needs its own entry`,
+            ],
+        ],
+    )
+    // Only line breaks between tokens fold: the two templates are different keys.
+    const source = 'localStorage.getItem(key(`a\nb`))\nlocalStorage.getItem(key(`a b`))'
+    const keys = storageCalls('apps/web/templates.ts', source).map((c) => c.expression)
+    assert.deepEqual(keys, ['key(`a\nb`)', 'key(`a b`)'])
+})
+
+test('cyclic export * ends, and the valid branch still resolves', (t) => {
+    const sources = {
+        'apps/web/a.ts': "export * from './b'\nexport * from './keys'\n",
+        'apps/web/b.ts': "export * from './a'\n",
+        'apps/web/keys.ts': "export const KEY = 'cg.ai.auditLog'\n",
+        'apps/web/uses.ts': "import { KEY } from './a'\nlocalStorage.setItem(KEY, v)",
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/uses.ts', sources, root), [['constant', 'cg.ai.auditLog']])
+})
+
+test('a local barrel namespace, a .js specifier and an unresolvable import reach persist', (t) => {
+    const sources = {
+        'apps/web/barrel.ts':
+            "export { persist } from 'zustand/middleware'\nexport { persist as keep } from 'zustand/middleware'\n",
+        'apps/web/namespace.ts':
+            "import * as mw from './barrel'\nmw.persist(store, { name: 'draft-store' })",
+        'apps/web/js-specifier.ts':
+            "import { keep } from './barrel.js'\nkeep(store, { name: 'draft-store' })",
+        // What cannot be resolved may be persist: it counts, failing closed.
+        'apps/web/missing.ts':
+            "import { keep } from './missing'\nkeep(store, { name: 'draft-store' })",
+        // Another package's namespace member named persist is not zustand's.
+        'apps/web/package.ts': "import * as queue from 'some-queue'\nqueue.persist(job)",
+    }
+    const root = fixture(t, sources)
+    for (const file of ['namespace', 'js-specifier', 'missing']) {
+        assert.deepEqual(
+            found(`apps/web/${file}.ts`, sources, root),
+            [['persist', 'draft-store']],
+            file,
+        )
+    }
+    assert.deepEqual(found('apps/web/package.ts', sources, root), [])
 })
 
 const call = (fields) => ({ file: 'apps/web/x.ts', line: 1, storage: 'localStorage', ...fields })

@@ -406,6 +406,13 @@ jobs:
                   CHECK_I18N_STRICT: '1'
               run: pnpm run lint:i18n
 
+            # The verdict is enforced by the real-tree test in "Security policy regression tests"
+            # above; this step prints every finding readably and only marks itself on failure.
+            # It parses source with TypeScript, so it runs here, where dependencies are installed.
+            - name: LocalStorage allowlist (report)
+              continue-on-error: true
+              run: node scripts/security/check-localstorage-usage.mjs
+
             # ESLint ignores scripts/**, docker/**, *.cjs and the service worker.
             - name: Unlinted script syntax
               run: node scripts/check-script-syntax.mjs
@@ -877,10 +884,6 @@ jobs:
               env:
                   FILE_BUDGET_ADVISORY: '1'
               run: node scripts/check-file-budget.mjs
-
-            - name: LocalStorage allowlist
-              continue-on-error: true
-              run: node scripts/security/check-localstorage-usage.mjs
 
             - name: Advisory summary
               if: always()

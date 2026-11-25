@@ -11,7 +11,7 @@ import {
     favoriteActionLabel,
     formatFloweringWeeks,
     reportedName,
-    reportedNumber,
+    reportedPercentText,
     reportedStrainType,
 } from './reportedStrainFacts'
 
@@ -95,14 +95,10 @@ const matchFor = (
 ): ReturnType<typeof scoreStrain> | undefined =>
     context === undefined ? undefined : scoreStrain(strain, context)
 
-const GridStat: React.FC<{ value: string; unknown: string; icon?: boolean }> = ({
-    value,
-    unknown,
-    icon = false,
-}) => (
+const GridStat: React.FC<{ value: string; icon?: boolean }> = ({ value, icon = false }) => (
     <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">
         {icon ? <PhosphorIcons.ArrowClockwise className="w-3 h-3" /> : null}
-        {value === unknown ? unknown : icon ? value : `${value}%`}
+        {value}
     </div>
 )
 
@@ -122,7 +118,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
         const safeType = reportedStrainType(strain.type)
         const unknown = t('common.unknown')
         const safeName = reportedName(strain.name, t('plantsView.unknownStrain'))
-        const safeThc = reportedNumber(strain.thc, 1, unknown)
+        const safeThc = reportedPercentText(strain.thc, strain.thcRange, unknown)
         const safeFloweringTime = formatFloweringWeeks(
             strain.floweringTimeRange,
             strain.floweringTime,
@@ -175,8 +171,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(
                     titleFor={(score) => t('strainsView.matchScore', { score })}
                 />
                 <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono pointer-events-none">
-                    <GridStat value={safeThc} unknown={unknown} />
-                    <GridStat value={safeFloweringTime} unknown={unknown} icon />
+                    <GridStat value={safeThc} />
+                    <GridStat value={safeFloweringTime} icon />
                 </div>
                 <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-20 pointer-events-auto">
                     <FavoriteButton

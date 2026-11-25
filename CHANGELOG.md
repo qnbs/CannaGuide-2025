@@ -8,12 +8,18 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Security
 
+- **fix(deps):** The desktop shell's Rust lockfile moves `url` 2.5.8 to 2.5.9 (RUSTSEC-2026-0592: a stack overflow in `Url::origin()` on nested `blob:` URLs), `cookie` 0.18.1 to 0.18.3 (RUSTSEC-2026-0594: private-cookie nonces can repeat in processes that fork) and, with `url`, `form_urlencoded` 1.2.2 to 1.2.3. Both crates come in through Tauri. The app loads only its own bundled pages, uses no private cookie jar and does not fork, so exposure was low; `cargo audit` now reports no vulnerability. Dependabot had raised no alert for either advisory.
 - **ci(security):** CI audits the desktop shell's Rust lockfile against the RustSec database (`cargo audit`, a pinned and checksum-verified 0.23.0 release): on every pull request that touches the desktop shell, and daily in Dependency Health. Before, no workflow did, and GitHub's advisory database had no alert for the two advisories fixed in [#948](https://github.com/qnbs/CannaGuide-2025/pull/948). The job is not part of `CI Status`, so an advisory against a crate a pull request does not touch never blocks it.
 - **ci(security):** Security Full runs weekly as well as on demand, and its Semgrep job works again. `--config auto` cannot run with metrics off, so the job had failed on every run since March. It now uses the JavaScript, TypeScript, React and secrets rulesets on a version- and digest-pinned image. Its checkouts no longer keep a git credential.
 
 ### Changed
 
 - **chore(ci):** The dev container's Playwright base image is pinned by digest (OSSF Scorecard, pinned dependencies), and `scripts/agent-doctor.mjs` drops two unused duplicate variables (CodeQL). The workflow-lint baseline drops to the current counts: no cache-poisoning or unpinned-image finding is left, and artipacked falls from 38 to 31.
+
+### Fixed
+
+- **fix(strains):** Bundled strains no longer show a THC or CBD value that contradicts their own stated range, such as 1% CBD next to `<1%`. This affected 593 of the 776 strains and made the daily "balanced CBD" pick match 725 strains. The list, grid, selector, setup and seed views now show the stated range. The catalog source and all strain IDs are unchanged ([#750](https://github.com/qnbs/CannaGuide-2025/issues/750)).
+- **fix(strains):** A strain lookup no longer turns a missing THC or CBD value into 0%. Adding such a result to the library used to save a made-up 0% value, and the library match score counted missing values as 0. Unknown values now stay unknown, and a reported 0% still counts.
 
 ## [1.12.2] - 2026-11-25
 

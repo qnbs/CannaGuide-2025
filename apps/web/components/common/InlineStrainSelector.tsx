@@ -10,7 +10,10 @@ import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { SearchBar } from '@/components/common/SearchBar'
 import { compareText } from '@/components/views/strains/compareText'
-import { formatFloweringWeeks } from '@/components/views/strains/reportedStrainFacts'
+import {
+    formatFloweringWeeks,
+    reportedPercentText,
+} from '@/components/views/strains/reportedStrainFacts'
 
 const lowerText = (value: unknown): string => (typeof value === 'string' ? value : '').toLowerCase()
 
@@ -59,11 +62,6 @@ const oneOf = <T extends string>(value: T | undefined, allowed: readonly T[]): T
 const reportedName = (name: unknown, unknownLabel: string): string => {
     if (typeof name !== 'string' || name.trim() === '') return unknownLabel
     return name
-}
-
-const reportedPercent = (value: unknown, unknownLabel: string): string => {
-    if (typeof value !== 'number' || !Number.isFinite(value)) return unknownLabel
-    return `${value.toFixed(1)}%`
 }
 
 const typeIconFor = (type: string) => {
@@ -170,8 +168,8 @@ const DetailedStrainSelectItem: React.FC<{
     const TypeIcon = typeIconFor(strain.type)
     const unknown = t('common.unknown')
     const safeName = reportedName(strain.name, unknown)
-    const safeThc = reportedPercent(strain.thc, unknown)
-    const safeCbd = reportedPercent(strain.cbd, unknown)
+    const safeThc = reportedPercentText(strain.thc, strain.thcRange, unknown)
+    const safeCbd = reportedPercentText(strain.cbd, strain.cbdRange, unknown)
     const safeFloweringTime = formatFloweringWeeks(
         strain.floweringTimeRange,
         strain.floweringTime,

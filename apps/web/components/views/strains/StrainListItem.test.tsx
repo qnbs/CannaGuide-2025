@@ -78,4 +78,24 @@ describe('StrainListItem', () => {
         expect(onToggleSelection).toHaveBeenCalledWith('strain-1')
         expect(onSelect).not.toHaveBeenCalled()
     })
+
+    it('shows the stated range when a strain has no CBD point value (GH #750)', () => {
+        const { cbd: _placeholder, ...withoutCbd } = strainFixture
+
+        render(
+            <StrainListItem
+                strain={{ ...withoutCbd, cbdRange: '<1%' } as Strain}
+                onSelect={vi.fn()}
+                isSelected={false}
+                onToggleSelection={vi.fn()}
+                isUserStrain={false}
+                onDelete={vi.fn()}
+                isFavorite={false}
+                onToggleFavorite={vi.fn()}
+            />,
+        )
+
+        expect(screen.getByTitle('CBD')).toHaveTextContent('<1%')
+        expect(screen.getByTitle('THC')).toHaveTextContent('24.0%')
+    })
 })

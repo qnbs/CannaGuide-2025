@@ -220,10 +220,18 @@ function moduleBase(fromFile, specifier, root) {
 
 const isSourceFile = (candidate) => existsSync(candidate) && SOURCE.test(candidate)
 
+/** TypeScript resolves an ESM-style `./a.js` specifier to `./a.ts` or `./a.tsx`. */
+const sourceForJs = (base) =>
+    base.endsWith('.js') ? ['.ts', '.tsx'].map((ext) => `${base.slice(0, -3)}${ext}`) : []
+
 function moduleFile(fromFile, specifier, root) {
     const base = moduleBase(fromFile, specifier, root)
     if (base === null) return null
-    const found = MODULE_SUFFIXES.map((suffix) => `${base}${suffix}`).find(isSourceFile)
+    const candidates = [
+        ...MODULE_SUFFIXES.map((suffix) => `${base}${suffix}`),
+        ...sourceForJs(base),
+    ]
+    const found = candidates.find(isSourceFile)
     return found === undefined ? null : normalize(relative(root, found))
 }
 
@@ -489,6 +497,8 @@ function originOf(declaration, context) {
 
 /** What module `from`, imported by `fromFile`, exports as `name`. */
 function exportOrigin(fromFile, from, name, context) {
+    // Cyclic `export *` chains end here instead of overflowing the stack.
+    if (context.depth > MAX_DEPTH) return null
     if (moduleBase(fromFile, from, context.root) === null) return { package: from, name }
     const target = moduleFile(fromFile, from, context.root)
     const module = target === null ? null : parsedModule(context.root, target)
@@ -623,7 +633,7 @@ function isPersistReference(expression, context) {
     const node = unwrap(expression)
     if (ts.isIdentifier(node)) return context.depth <= MAX_DEPTH && persistBinding(node, context)
     if (!isMemberAccess(node) || memberName(node) !== 'persist') return false
-    return isMiddlewareNamespace(node.expression)
+    return isMiddlewareNamespace(node.expression, context)
 }
 
 function persistBinding(identifier, context) {
@@ -636,9 +646,17 @@ function persistBinding(identifier, context) {
 
 function importsPersist(specifier, context) {
     if (importedName(specifier) === 'persist') return true
-    const origin = originOf(specifier, context)
-    if (origin?.package !== undefined) return origin.name === 'persist'
-    return origin !== null && declaresPersist(origin.declaration, context)
+    return isPersistOrigin(originOf(specifier, context), context)
+}
+
+/**
+ * Whether an import's origin is a `persist`: a package export of that name, or a declaration
+ * that is or aliases one. An origin that cannot be found counts, failing closed.
+ */
+function isPersistOrigin(origin, context) {
+    if (origin === null) return true
+    if (origin.package !== undefined) return origin.name === 'persist'
+    return declaresPersist(origin.declaration, context)
 }
 
 /** A declaration that is a `persist` or an alias of one. */
@@ -650,11 +668,17 @@ function aliasesPersist(declaration, context) {
     return isPersistReference(declaration.initializer, deeper(context))
 }
 
-function isMiddlewareNamespace(expression) {
+/** A namespace of zustand/middleware, or of a local module whose `persist` export is one. */
+function isMiddlewareNamespace(expression, context) {
     const node = unwrap(expression)
     const binding = ts.isIdentifier(node) ? soleBinding(node) : null
     if (binding === null || !ts.isNamespaceImport(binding)) return false
-    return binding.parent.parent.moduleSpecifier.text === ZUSTAND_MIDDLEWARE
+    const from = binding.parent.parent.moduleSpecifier.text
+    if (from === ZUSTAND_MIDDLEWARE) return true
+    // Another package's namespace member named persist is not opened, and does not count.
+    if (moduleBase(fileOf(binding), from, context.root) === null) return false
+    const origin = exportOrigin(fileOf(binding), from, 'persist', deeper(context))
+    return isPersistOrigin(origin, context)
 }
 
 /** A persist call's options object, or null when its second argument is not one. */

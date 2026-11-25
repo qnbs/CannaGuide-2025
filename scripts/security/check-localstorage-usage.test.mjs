@@ -747,6 +747,42 @@ test('one review entry approves one computed store, and a line break in a templa
     assert.deepEqual(keys, ['key(`a\nb`)', 'key(`a b`)'])
 })
 
+test('cyclic export * ends, and the valid branch still resolves', (t) => {
+    const sources = {
+        'apps/web/a.ts': "export * from './b'\nexport * from './keys'\n",
+        'apps/web/b.ts': "export * from './a'\n",
+        'apps/web/keys.ts': "export const KEY = 'cg.ai.auditLog'\n",
+        'apps/web/uses.ts': "import { KEY } from './a'\nlocalStorage.setItem(KEY, v)",
+    }
+    const root = fixture(t, sources)
+    assert.deepEqual(found('apps/web/uses.ts', sources, root), [['constant', 'cg.ai.auditLog']])
+})
+
+test('a local barrel namespace, a .js specifier and an unresolvable import reach persist', (t) => {
+    const sources = {
+        'apps/web/barrel.ts':
+            "export { persist } from 'zustand/middleware'\nexport { persist as keep } from 'zustand/middleware'\n",
+        'apps/web/namespace.ts':
+            "import * as mw from './barrel'\nmw.persist(store, { name: 'draft-store' })",
+        'apps/web/js-specifier.ts':
+            "import { keep } from './barrel.js'\nkeep(store, { name: 'draft-store' })",
+        // What cannot be resolved may be persist: it counts, failing closed.
+        'apps/web/missing.ts':
+            "import { keep } from './missing'\nkeep(store, { name: 'draft-store' })",
+        // Another package's namespace member named persist is not zustand's.
+        'apps/web/package.ts': "import * as queue from 'some-queue'\nqueue.persist(job)",
+    }
+    const root = fixture(t, sources)
+    for (const file of ['namespace', 'js-specifier', 'missing']) {
+        assert.deepEqual(
+            found(`apps/web/${file}.ts`, sources, root),
+            [['persist', 'draft-store']],
+            file,
+        )
+    }
+    assert.deepEqual(found('apps/web/package.ts', sources, root), [])
+})
+
 const call = (fields) => ({ file: 'apps/web/x.ts', line: 1, storage: 'localStorage', ...fields })
 
 test('unknown keys, unreviewed computed keys and stale review entries fail', () => {

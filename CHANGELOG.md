@@ -6,6 +6,10 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+## [1.12.2] - 2026-11-25
+
+Desktop and IoT maintenance release: the desktop apps run without a service worker and stop writing after the native quit or update wait, the MQTT library moves to 5.16.1 for six broker-reachable advisories, two Local-Only privacy gaps are closed, and crash reporting is removed. Installed v1.12.1 apps update in place (Settings > About).
+
 ### Changed
 
 - **ci(codeql):** Every `github/codeql-action` step (`init`, `analyze` and three `upload-sarif` uses) moves to 4.39.4 together, pinned to the signed release commit `1bd86f2f`. Dependabot had opened one PR per sub-action ([#924](https://github.com/qnbs/CannaGuide-2025/pull/924), [#925](https://github.com/qnbs/CannaGuide-2025/pull/925), [#926](https://github.com/qnbs/CannaGuide-2025/pull/926)), and a split version fails every CodeQL job. A Dependabot group now keeps the family in one PR, and a script test fails on a split pin or a missing group.

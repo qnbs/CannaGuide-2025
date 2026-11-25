@@ -179,10 +179,14 @@ export const runPostHydrationServices = async (
         .catch((err: unknown) => {
             console.debug('[IoT] Could not load the saved MQTT password:', err)
         })
+    let startWait: ReturnType<typeof setTimeout> | undefined
     await Promise.race([
         savedLoginRead,
-        new Promise((resolve) => setTimeout(resolve, IOT_START_WAIT_MS)),
+        new Promise((resolve) => {
+            startWait = setTimeout(resolve, IOT_START_WAIT_MS)
+        }),
     ])
+    clearTimeout(startWait)
     void mqttClientService.init(hydratedStore)
 
     const { initializeWorkerInfrastructure } = await import('./workers')

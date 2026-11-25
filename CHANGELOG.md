@@ -6,6 +6,15 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [Unreleased]
 
+### Security
+
+- **ci(security):** CI audits the desktop shell's Rust lockfile against the RustSec database (`cargo audit`, a pinned and checksum-verified 0.23.0 release): on every pull request that touches the desktop shell, and daily in Dependency Health. Before, no workflow did, and GitHub's advisory database had no alert for the two advisories fixed in [#948](https://github.com/qnbs/CannaGuide-2025/pull/948). The job is not part of `CI Status`, so an advisory against a crate a pull request does not touch never blocks it.
+- **ci(security):** Security Full runs weekly as well as on demand, and its Semgrep job works again. `--config auto` cannot run with metrics off, so the job had failed on every run since March. It now uses the JavaScript, TypeScript, React and secrets rulesets on a version- and digest-pinned image. Its checkouts no longer keep a git credential.
+
+### Changed
+
+- **chore(ci):** The dev container's Playwright base image is pinned by digest (OSSF Scorecard, pinned dependencies), and `scripts/agent-doctor.mjs` drops two unused duplicate variables (CodeQL). The workflow-lint baseline drops to the current counts: no cache-poisoning or unpinned-image finding is left, and artipacked falls from 38 to 31.
+
 ## [1.12.2] - 2026-11-25
 
 Desktop and IoT maintenance release: the desktop apps run without a service worker and refuse any write that would start after the native quit or update wait (a save already running then can still finish), the MQTT library moves to 5.16.1 for six broker-reachable advisories, two Local-Only privacy gaps are closed, and crash reporting is removed. Installed v1.12.1 apps update in place (Settings > About).

@@ -298,8 +298,6 @@ function main() {
         try {
             const webPkg = JSON.parse(readFileSync(webPkgPath, 'utf8'))
             playwright = webPkg.devDependencies?.['@playwright/test'] ?? ''
-            const component = webPkg.devDependencies?.['@playwright/experimental-ct-react'] ?? ''
-            const rootPlaywright = pkg.devDependencies?.['@playwright/test'] ?? ''
         } catch (error) {
             problems.push(`apps/web/package.json is not JSON: ${error.message}`)
         }

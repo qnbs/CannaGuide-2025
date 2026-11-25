@@ -2,7 +2,10 @@
 # Codespaces-optimized: system deps baked in, source cloned after build
 # Security: layer-minimized, cache-cleaned, scannable by Grype/Trivy
 
-FROM mcr.microsoft.com/playwright:v1.65.1-noble
+# Pinned by digest (OSSF Scorecard: pinned dependencies). When @playwright/test moves, bump
+# the tag and the digest together; the digest is the `docker-content-digest` header of
+# https://mcr.microsoft.com/v2/playwright/manifests/<tag> (the multi-arch index).
+FROM mcr.microsoft.com/playwright:v1.65.1-noble@sha256:1507cbfc550a63a6b7396791ca4f00df17beb56342d2447b3f106c306f525579
 
 LABEL org.opencontainers.image.title="CannaGuide 2025 Dev Container"
 LABEL org.opencontainers.image.source="https://github.com/qnbs/CannaGuide-2025"

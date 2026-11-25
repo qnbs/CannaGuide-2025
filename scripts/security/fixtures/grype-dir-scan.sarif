@@ -1,0 +1,99 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Grype",
+          "version": "0.118.0",
+          "informationUri": "https://github.com/anchore/grype",
+          "rules": [
+            {
+              "id": "GHSA-jmr9-qjv8-65gv-extract-zip",
+              "name": "JavascriptMatcherExactDirectMatch",
+              "shortDescription": {
+                "text": "GHSA-jmr9-qjv8-65gv high vulnerability for extract-zip package"
+              },
+              "fullDescription": {
+                "text": "extract-zip unvalidated symlink path traversal"
+              },
+              "helpUri": "https://github.com/advisories/GHSA-jmr9-qjv8-65gv",
+              "help": {
+                "markdown": "**Vulnerability GHSA-jmr9-qjv8-65gv**\n| Severity | Package | Version | Fix Version | Type | Location | Data Namespace | Link |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| high  | extract-zip  | 2.0.1  |   | npm  | /pnpm-lock.yaml  | github:language:javascript  | [GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv)  |\n",
+                "text": "**Vulnerability GHSA-jmr9-qjv8-65gv**\n| Severity | Package | Version | Fix Version | Type | Location | Data Namespace | Link |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| high  | extract-zip  | 2.0.1  |   | npm  | /pnpm-lock.yaml  | github:language:javascript  | [GHSA-jmr9-qjv8-65gv](https://github.com/advisories/GHSA-jmr9-qjv8-65gv)  |\n"
+              },
+              "properties": {
+                "security-severity": "8.6"
+              }
+            },
+            {
+              "id": "GHSA-wrw7-89jp-8q8g-glib",
+              "name": "RustMatcherExactDirectMatch",
+              "shortDescription": {
+                "text": "GHSA-wrw7-89jp-8q8g medium vulnerability for glib package"
+              },
+              "fullDescription": {
+                "text": "Unsoundness in `Iterator` and `DoubleEndedIterator` impls for `glib::VariantStrIter`"
+              },
+              "helpUri": "https://github.com/advisories/GHSA-wrw7-89jp-8q8g",
+              "help": {
+                "markdown": "**Vulnerability GHSA-wrw7-89jp-8q8g**\n| Severity | Package | Version | Fix Version | Type | Location | Data Namespace | Link |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| medium  | glib  | 0.18.5  | 0.20.0  | rust-crate  | /apps/desktop/src-tauri/Cargo.lock  | github:language:rust  | [GHSA-wrw7-89jp-8q8g](https://github.com/advisories/GHSA-wrw7-89jp-8q8g)  |\n",
+                "text": "**Vulnerability GHSA-wrw7-89jp-8q8g**\n| Severity | Package | Version | Fix Version | Type | Location | Data Namespace | Link |\n| --- | --- | --- | --- | --- | --- | --- | --- |\n| medium  | glib  | 0.18.5  | 0.20.0  | rust-crate  | /apps/desktop/src-tauri/Cargo.lock  | github:language:rust  | [GHSA-wrw7-89jp-8q8g](https://github.com/advisories/GHSA-wrw7-89jp-8q8g)  |\n"
+              },
+              "properties": {
+                "security-severity": "6.9"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "GHSA-jmr9-qjv8-65gv-extract-zip",
+          "level": "error",
+          "message": {
+            "text": "A high vulnerability in npm package: extract-zip, version 2.0.1 was found at: /pnpm-lock.yaml"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "/pnpm-lock.yaml"
+                },
+                "region": {
+                  "endColumn": 1,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "GHSA-wrw7-89jp-8q8g-glib",
+          "level": "warning",
+          "message": {
+            "text": "A medium vulnerability in rust-crate package: glib, version 0.18.5 was found at: /apps/desktop/src-tauri/Cargo.lock"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "/apps/desktop/src-tauri/Cargo.lock"
+                },
+                "region": {
+                  "endColumn": 1,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "startLine": 1
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

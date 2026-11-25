@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest'
+import { CURRENT_STRAIN_DATA_VERSION } from '@/constants'
 import {
+    dailyStrainsService,
     createSeededRng,
     getTodayKey,
     generateDailyPicks,
@@ -252,5 +254,38 @@ describe('dailyStrainsService', () => {
             })
             expect(strain.lineage).toBeUndefined()
         })
+    })
+})
+
+describe('the stored daily feed', () => {
+    const FEED_KEY = 'cg.daily-drop.feed'
+    const storedFeed = (strainDataVersion?: number) =>
+        JSON.stringify({
+            generatedAt: '2026-01-01T00:00:00.000Z',
+            dateKey: getTodayKey(),
+            stats: { totalPicks: 1, categories: [], existingCatalogSize: 1 },
+            strains: [{ id: 'saved-pick', name: 'Saved Pick', cbd: 1 }],
+            ...(strainDataVersion === undefined ? {} : { strainDataVersion }),
+        })
+
+    it('rebuilds a same-day feed saved from an older catalog (GH #750)', () => {
+        dailyStrainsService.invalidate()
+        localStorage.setItem(FEED_KEY, storedFeed())
+
+        const ids = dailyStrainsService.loadFeed().strains.map((strain) => strain.id)
+
+        expect(ids).not.toContain('saved-pick')
+        expect(JSON.parse(localStorage.getItem(FEED_KEY) ?? '{}').strainDataVersion).toBe(
+            CURRENT_STRAIN_DATA_VERSION,
+        )
+    })
+
+    it('keeps a same-day feed saved from the current catalog', () => {
+        dailyStrainsService.invalidate()
+        localStorage.setItem(FEED_KEY, storedFeed(CURRENT_STRAIN_DATA_VERSION))
+
+        const ids = dailyStrainsService.loadFeed().strains.map((strain) => strain.id)
+
+        expect(ids).toEqual(['saved-pick'])
     })
 })

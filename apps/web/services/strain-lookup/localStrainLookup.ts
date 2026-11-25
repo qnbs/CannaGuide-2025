@@ -1,11 +1,11 @@
 import { allStrainsData } from '@/data/strains/index'
 import type { LookupStrainResult } from '@/services/strain-lookup/strainLookupTypes'
 import {
-  buildCannabinoidDataPoints,
-  buildFlavonoidDataPoints,
-  buildTerpeneDataPoints,
-  calculateEntourageScore,
-  shannonDiversity,
+    buildCannabinoidDataPoints,
+    buildFlavonoidDataPoints,
+    buildTerpeneDataPoints,
+    calculateEntourageScore,
+    shannonDiversity,
 } from '@/services/strain-lookup/strainLookupEnrichment'
 
 export function getFuzzySuggestions(query: string, limit = 8): string[] {

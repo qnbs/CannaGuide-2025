@@ -52,8 +52,9 @@ export interface LookupStrainResult {
     breeder: string
     type: string
     floweringType: string
-    thc: number
-    cbd: number
+    /** Undefined when the source reported no value; 0 is a reported zero. */
+    thc: number | undefined
+    cbd: number | undefined
     cbg: number
     thcv: number
     description: string

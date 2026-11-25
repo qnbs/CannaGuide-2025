@@ -9,7 +9,10 @@ import {
     enrichTerpeneDataPoints,
     shannonDiversity,
 } from '@/services/strain-lookup/strainLookupEnrichment'
-import type { FlavonoidDataPoint, TerpeneDataPoint } from '@/services/strain-lookup/strainLookupTypes'
+import type {
+    FlavonoidDataPoint,
+    TerpeneDataPoint,
+} from '@/services/strain-lookup/strainLookupTypes'
 
 describe('strainLookupEnrichment', () => {
     it('shannonDiversity returns 0 for empty profile', () => {
@@ -41,6 +44,19 @@ describe('strainLookupEnrichment', () => {
         const score = calculateEntourageScore(terpenes, 18, 2, flavonoids)
         expect(score).toBeGreaterThan(0)
         expect(score).toBeLessThanOrEqual(100)
+    })
+
+    it('calculateEntourageScore awards no balance bonus without both values', () => {
+        const terpenes = enrichTerpeneDataPoints([{ name: 'Myrcene', percentage: 50 }])
+        const flavonoids: FlavonoidDataPoint[] = buildFlavonoidDataPoints('Indica')
+        const balanced = calculateEntourageScore(terpenes, 10, 10, flavonoids)
+        const withoutBonus = balanced - 20
+
+        expect(calculateEntourageScore(terpenes, 10, undefined, flavonoids)).toBe(withoutBonus)
+        expect(calculateEntourageScore(terpenes, undefined, 10, flavonoids)).toBe(withoutBonus)
+        expect(calculateEntourageScore(terpenes, undefined, undefined, flavonoids)).toBe(
+            withoutBonus,
+        )
     })
 
     it('enrichTerpeneDataPoints assigns roles and entourage scores', () => {

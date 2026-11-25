@@ -7,7 +7,7 @@
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/codeql.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Release](https://img.shields.io/badge/release-v1.12.1-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases/latest)
+[![Release](https://img.shields.io/badge/release-v1.12.2-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases/latest)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/qnbs/CannaGuide-2025?label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -199,12 +199,13 @@ Security policy and reporting: [SECURITY.md](SECURITY.md). Release procedure: [d
 
 ## Releases and roadmap
 
-| Version                                                                 | Date       | Highlights                                                                                                                          |
-| ----------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [v1.12.1](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.12.1) | 2026-11-18 | Desktop recovery: the apps start again, one instance per user, safe quit and update, and every installer is launched before release |
-| [v1.12.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.12.0) | 2026-11-18 | First desktop release with installers for all platforms. The desktop apps do not start, so use v1.12.1.                             |
-| [v1.11.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.11.0) | 2026-10-27 | Web/PWA release                                                                                                                     |
-| [v1.10.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.10.0) | 2026-10-07 | Semantic colour tokens and accessibility fixes across the nine themes                                                               |
+| Version                                                                 | Date       | Highlights                                                                                                                             |
+| ----------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [v1.12.2](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.12.2) | 2026-11-25 | Desktop without a service worker, no new writes at the quit deadline, MQTT 5.16.1 security fixes, Local-Only fixes, no crash reporting |
+| [v1.12.1](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.12.1) | 2026-11-18 | Desktop recovery: the apps start again, one instance per user, safe quit and update, and every installer is launched before release    |
+| [v1.12.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.12.0) | 2026-11-18 | First desktop release with installers for all platforms. The desktop apps do not start, so use v1.12.1.                                |
+| [v1.11.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.11.0) | 2026-10-27 | Web/PWA release                                                                                                                        |
+| [v1.10.0](https://github.com/qnbs/CannaGuide-2025/releases/tag/v1.10.0) | 2026-10-07 | Semantic colour tokens and accessibility fixes across the nine themes                                                                  |
 
 Every change is in the [Changelog](CHANGELOG.md). Planned work is tracked in the [roadmap](ROADMAP.md) and in the open epics:
 

@@ -7,7 +7,10 @@ import { collectReferencedImageIds } from './imageReferences'
 import { getStorageEstimateSnapshot, isQuotaExceededError } from './storageHelpers'
 import { IMAGE_PRUNE_BATCH_SIZE, IMAGE_PRUNE_GRACE_MS, STORAGE_USAGE_WARNING_RATIO } from './types'
 
-const pruneUnreferencedImages = async (maxToDelete: number): Promise<number> => {
+const pruneUnreferencedImages = async (
+    maxToDelete: number,
+    isBlocked: () => boolean,
+): Promise<number> => {
     // Throws if any reference source is unreadable: then nothing is deleted.
     const referenced = await collectReferencedImageIds()
     const conn = await openDB()
@@ -34,7 +37,8 @@ const pruneUnreferencedImages = async (maxToDelete: number): Promise<number> => 
         )
         .toSorted((a, b) => a.createdAt - b.createdAt)
         .slice(0, Math.max(0, maxToDelete))
-    if (imagesToDelete.length === 0) {
+    // Reading every reference can take long: a quit may have passed its write deadline.
+    if (imagesToDelete.length === 0 || isBlocked()) {
         return 0
     }
 
@@ -73,8 +77,8 @@ export const imageStore = {
      */
     async pruneOldImages(maxToDelete = IMAGE_PRUNE_BATCH_SIZE): Promise<number> {
         let deleted = 0
-        const ran = await schedulePersistenceWrite(async () => {
-            deleted = await pruneUnreferencedImages(maxToDelete)
+        const ran = await schedulePersistenceWrite(async (isBlocked) => {
+            deleted = await pruneUnreferencedImages(maxToDelete, isBlocked)
         })
         return ran ? deleted : 0
     },

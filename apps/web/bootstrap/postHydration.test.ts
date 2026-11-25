@@ -153,6 +153,68 @@ describe('runPostHydrationServices', () => {
         expect(document.body.getAttribute('data-app-ready')).toBe('true')
     })
 
+    it('loads the saved MQTT password before the IoT client can connect with it', async () => {
+        const order: string[] = []
+        let finishLoad: () => void = () => undefined
+        mockLoadPersistedPassword.mockImplementation(
+            () =>
+                new Promise<void>((resolve) => {
+                    finishLoad = () => {
+                        order.push('load')
+                        resolve()
+                    }
+                }),
+        )
+        mockMqttInit.mockImplementation(() => {
+            order.push('init')
+        })
+        const started = runPostHydrationServices(createTestStore())
+        await vi.waitFor(() => expect(mockLoadPersistedPassword).toHaveBeenCalled())
+        expect(mockMqttInit).not.toHaveBeenCalled()
+        finishLoad()
+        await started
+        expect(order).toEqual(['load', 'init'])
+    })
+
+    it('starts the IoT client after a bounded wait when the password load stalls', async () => {
+        vi.useFakeTimers()
+        try {
+            mockLoadPersistedPassword.mockImplementation(() => new Promise<void>(() => undefined))
+            const { IOT_START_WAIT_MS } = await import('./postHydration')
+            const started = runPostHydrationServices(createTestStore())
+            await vi.advanceTimersByTimeAsync(IOT_START_WAIT_MS - 1)
+            expect(mockMqttInit).not.toHaveBeenCalled()
+            await vi.advanceTimersByTimeAsync(1)
+            await vi.waitFor(() => expect(mockMqttInit).toHaveBeenCalledOnce())
+            await vi.runOnlyPendingTimersAsync()
+            await started
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('leaves no start-wait timer behind once the saved login is read in time', async () => {
+        vi.useFakeTimers()
+        try {
+            const { IOT_START_WAIT_MS } = await import('./postHydration')
+            await runPostHydrationServices(createTestStore())
+            const before = vi.getTimerCount()
+            await vi.advanceTimersByTimeAsync(IOT_START_WAIT_MS)
+            // Only a timer this start left behind would fire and disappear here.
+            expect(vi.getTimerCount()).toBe(before)
+            expect(mockMqttInit).toHaveBeenCalledOnce()
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('still starts the IoT client when the saved password cannot be loaded', async () => {
+        mockLoadPersistedPassword.mockRejectedValue(new Error('decrypt failed'))
+        const store = createTestStore()
+        await runPostHydrationServices(store)
+        expect(mockMqttInit).toHaveBeenCalledWith(store)
+    })
+
     it.each([false, true])(
         'restores the saved Local-Only setting before any service starts (local-only: %s)',
         async (localOnly) => {

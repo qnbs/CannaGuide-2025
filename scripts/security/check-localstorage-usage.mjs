@@ -343,10 +343,19 @@ function maskedSource(root, file) {
     }
 }
 
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/**
+ * A pattern for `name` as one whole identifier. The name is escaped, because `$` is legal in
+ * an identifier and an anchor in a pattern, and bounded by identifier characters rather than
+ * `\b`, which sees no boundary before a leading `$`.
+ */
+const identifier = (name) => String.raw`(?<![\w$])${escapeRegExp(name)}(?![\w$])`
+
 /** The one-line `const NAME = value` initializer of `name`, or null when none is declared. */
 function constDeclaration(source, name) {
     const match = new RegExp(
-        `(?:^|[\\n;])\\s*(?:export\\s+)?const\\s+${name}\\s*(?::[^=\\n]+)?=\\s*([^\\n;]+)`,
+        String.raw`(?:^|[\n;])\s*(?:export\s+)?const\s+${identifier(name)}\s*(?::[^=\n]+)?=\s*([^\n;]+)`,
     ).exec(source)
     if (!match) return null
     // An initializer that goes on past its line (`'a'\n + '.b'`) is not the literal it starts with.
@@ -381,21 +390,19 @@ const isAllowed = (key) => ALLOWED_PATTERNS.some((pattern) => pattern.test(key))
  * shadowed name is treated as computed and needs a review (no scope analysis without a parser).
  */
 export function isShadowed(source, name) {
-    const word = new RegExp(`(?<![\\w$])${name}(?![\\w$])`)
+    const id = identifier(name)
+    const word = new RegExp(id)
     const bindings = [
         // Any mention in a parameter list counts, destructured (`{ KEY }`, `[KEY]`) or as a
         // default: a call there may see the parameter, so the key is treated as computed.
         () => parameterLists(source).some((list) => word.test(list)),
-        () => new RegExp(`\\b${name}\\s*=>`).test(source),
+        () => new RegExp(String.raw`${id}\s*=>`).test(source),
         () =>
             new RegExp(
-                `\\b(?:const|let|var)\\s*[{[][^=]*?(?<![\\w$.])${name}(?![\\w$])[^=]*?[}\\]]\\s*=`,
+                String.raw`\b(?:const|let|var)\s*[{[][^=]*?(?<!\.)${id}[^=]*?[}\]]\s*=`,
             ).test(source),
-        () =>
-            new RegExp(`\\b(?:let|var)\\s+${name}\\b|\\bcatch\\s*\\(\\s*${name}\\s*\\)`).test(
-                source,
-            ),
-        () => (source.match(new RegExp(`\\bconst\\s+${name}\\b`, 'g')) ?? []).length > 1,
+        () => new RegExp(String.raw`\b(?:let|var)\s+${id}|\bcatch\s*\(\s*${id}\s*\)`).test(source),
+        () => (source.match(new RegExp(String.raw`\bconst\s+${id}`, 'g')) ?? []).length > 1,
     ]
     return bindings.some((binds) => binds())
 }
@@ -451,8 +458,6 @@ function namespacePersist(code) {
     )
     return [...code.matchAll(namespace)].map(([, alias]) => `${alias}.persist`)
 }
-
-const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** Every `persist(...)` call: where it starts, its argument texts and where it ends. */
 function persistCalls(code) {

@@ -252,6 +252,30 @@ test('a constant that continues past its line is computed, a one-line one resolv
     assert.equal(resolveConstant('apps/web/single.ts', 'KEY', root), 'cg.ai.auditLog')
 })
 
+test('a name with a $ is matched as one whole identifier, so shadowing still counts', (t) => {
+    // `$` is legal in an identifier but an anchor in a pattern, and \b sees no boundary
+    // before it: unescaped, the shadowed import below resolved and passed the gate.
+    const root = fixture(t, {
+        'apps/web/keys.ts': "export const $KEY = 'cg.ai.auditLog'\n",
+        'apps/web/declared.ts': "const $KEY = 'cg.ai.auditLog'\nlocalStorage.getItem($KEY)\n",
+        'apps/web/shadowed.ts': [
+            "import { $KEY } from './keys'",
+            'function load($KEY) {',
+            '    return localStorage.getItem($KEY)',
+            '}',
+        ].join('\n'),
+    })
+    const first = (file) => storageCalls(file, readFileSync(join(root, file), 'utf8'), root)[0]
+    assert.deepEqual(
+        [first('apps/web/declared.ts').kind, first('apps/web/declared.ts').key],
+        ['constant', 'cg.ai.auditLog'],
+    )
+    assert.equal(first('apps/web/shadowed.ts').kind, 'dynamic')
+    assert.equal(isShadowed("const $KEY = 'a'\nconst load = ($KEY) => $KEY", '$KEY'), true)
+    assert.equal(isShadowed("const $KEY = 'a'\nconst other = KEY", '$KEY'), false)
+    assert.equal(resolveConstant('apps/web/declared.ts', '$KEY', root), 'cg.ai.auditLog')
+})
+
 test('destructured bindings and parameters shadow a constant; a condition does not', () => {
     for (const shadowing of [
         'function save({ KEY }) {}',

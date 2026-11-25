@@ -463,6 +463,10 @@ export const strainsView = {
         errorInitZoom: "Erreur lors de l'initialisation des controles de zoom",
     },
     imageGen: {
+        poster: {
+            floweringWeeks: '{{weeks}} semaines de floraison',
+            floweringUnknown: 'Durée de floraison inconnue',
+        },
         title: "Generation d'images par IA",
         description:
             "Generez des visualisations uniques de varietes a l'aide de l'IA embarquee (SD-Turbo). Necessite WebGPU.",
@@ -856,7 +860,7 @@ export const strainLookup = {
     analyze: 'Analyser',
     clear: 'Effacer',
     searching: 'Recherche dans toutes les sources...',
-    searchingLocal: 'Recherche dans le catalogue local et l\'IA...',
+    searchingLocal: "Recherche dans le catalogue local et l'IA...",
     notFound: 'Aucune donnee trouvee pour "{{name}}". Essayez une autre orthographe.',
     lookupError: 'Recherche echouee. Veuillez reessayer.',
     addToDB: 'Ajouter a la bibliotheque',

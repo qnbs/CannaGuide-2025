@@ -1,3 +1,4 @@
+import { getT } from '@/i18n'
 import type { Language, Strain } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
 import { localizeStr } from './localeHelpers'
@@ -16,32 +17,22 @@ import {
 } from './strainImageSvgParts'
 import { escapeXml } from './strainImageSvgUtils'
 
-/** The flowering length a strain reports, in weeks, escaped for SVG; null when it reports none. */
+/** The flowering length a strain reports, in weeks; null when it reports none. */
 const reportedFloweringWeeks = (strain: Strain): string | null => {
-    if (strain.floweringTimeRange) return escapeXml(strain.floweringTimeRange)
+    if (strain.floweringTimeRange) return strain.floweringTimeRange
     const weeks = strain.floweringTime
     return typeof weeks === 'number' && Number.isFinite(weeks) ? String(weeks) : null
 }
 
-/** The poster's flowering line: the reported weeks, or an explicit unknown. */
+/** The poster's flowering line, translated and escaped for SVG: the reported weeks, or unknown. */
 const floweringTextFor = (strain: Strain, lang: Language): string => {
+    const t = getT()
     const weeks = reportedFloweringWeeks(strain)
-    if (weeks === null) {
-        return localizeStr(lang, {
-            en: 'Flowering time unknown',
-            de: 'Bl\u00fctezeit unbekannt',
-            es: 'Floracion desconocida',
-            fr: 'Floraison inconnue',
-            nl: 'Bloeitijd onbekend',
-        })
-    }
-    return localizeStr(lang, {
-        en: `${weeks} weeks flowering`,
-        de: `${weeks} Wochen Bl\u00fcte`,
-        es: `${weeks} semanas de floracion`,
-        fr: `${weeks} semaines de floraison`,
-        nl: `${weeks} weken bloei`,
-    })
+    const text =
+        weeks === null
+            ? t('strainsView.imageGen.poster.floweringUnknown', { lng: lang })
+            : t('strainsView.imageGen.poster.floweringWeeks', { lng: lang, weeks })
+    return escapeXml(text)
 }
 
 export const buildStrainImageSvg = (

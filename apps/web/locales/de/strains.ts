@@ -547,6 +547,10 @@ export const strainsView = {
         errorInitZoom: 'Fehler beim Initialisieren der Zoom-Steuerung',
     },
     imageGen: {
+        poster: {
+            floweringWeeks: '{{weeks}} Wochen Blüte',
+            floweringUnknown: 'Blütezeit unbekannt',
+        },
         title: 'KI-Bildgenerierung',
         description:
             'Erzeuge einzigartige Strain-Visualisierungen mit On-Device-KI (SD-Turbo). Erfordert WebGPU.',

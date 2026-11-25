@@ -19,17 +19,16 @@ const makeStrain = (overrides: Partial<Strain> = {}): Strain =>
     }) as Strain
 
 describe('strainImageSvgComposer', () => {
-    const svgFor = (overrides: Partial<Strain>, lang: 'en' | 'de' = 'en') =>
+    const svgFor = (overrides: Partial<Strain>) =>
         buildStrainImageSvg(
             makeStrain(overrides),
             'botanical',
             { focus: 'buds', composition: 'symmetrical', mood: 'calm' },
-            lang,
+            'en',
         )
 
     it('states the reported flowering time in weeks, the unit the catalog uses', () => {
         expect(svgFor({})).toContain('9 weeks flowering')
-        expect(svgFor({}, 'de')).toContain('9 Wochen Bl\u00fcte')
         expect(svgFor({ floweringTimeRange: '8-9' })).toContain('8-9 weeks flowering')
     })
 

@@ -461,6 +461,10 @@ export const strainsView = {
         errorInitZoom: 'Fout bij het initialiseren van zoombediening',
     },
     imageGen: {
+        poster: {
+            floweringWeeks: '{{weeks}} weken bloei',
+            floweringUnknown: 'Bloeitijd onbekend',
+        },
         title: 'AI-beeldgeneratie',
         description:
             'Genereer unieke soortvisualisaties met on-device AI (SD-Turbo). Vereist WebGPU.',

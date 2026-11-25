@@ -544,6 +544,10 @@ export const strainsView = {
         errorInitZoom: 'Error initializing zoom controls',
     },
     imageGen: {
+        poster: {
+            floweringWeeks: '{{weeks}} weeks flowering',
+            floweringUnknown: 'Flowering time unknown',
+        },
         title: 'AI Image Generation',
         description:
             'Generate unique strain visualizations using on-device AI (SD-Turbo). Requires WebGPU.',

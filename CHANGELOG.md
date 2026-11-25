@@ -8,7 +8,7 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [1.12.2] - 2026-11-25
 
-Desktop and IoT maintenance release: the desktop apps run without a service worker and stop writing after the native quit or update wait, the MQTT library moves to 5.16.1 for six broker-reachable advisories, two Local-Only privacy gaps are closed, and crash reporting is removed. Installed v1.12.1 apps update in place (Settings > About).
+Desktop and IoT maintenance release: the desktop apps run without a service worker and refuse any write that would start after the native quit or update wait (a save already running then can still finish), the MQTT library moves to 5.16.1 for six broker-reachable advisories, two Local-Only privacy gaps are closed, and crash reporting is removed. Installed v1.12.1 apps update in place (Settings > About).
 
 ### Changed
 

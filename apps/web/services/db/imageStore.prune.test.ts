@@ -13,10 +13,12 @@ const mocks = vi.hoisted(() => ({
     liveSimulation: undefined as unknown,
     liveStateError: null as Error | null,
     snapshots: new Map<string, string>(),
+    beforeCollect: undefined as (() => void) | undefined,
 }))
 
 vi.mock('@/services/uiStateBridge', () => ({
     getReduxSnapshot: (selector: (state: { simulation: unknown }) => unknown) => {
+        mocks.beforeCollect?.()
         if (mocks.liveStateError) throw mocks.liveStateError
         return selector({ simulation: mocks.liveSimulation })
     },
@@ -87,6 +89,7 @@ describe('imageStore pruning', () => {
         await deleteMainDb()
         mocks.liveSimulation = simulationReferencing()
         mocks.liveStateError = null
+        mocks.beforeCollect = undefined
         mocks.snapshots.clear()
         vi.spyOn(console, 'debug').mockImplementation(() => {})
     })
@@ -132,6 +135,20 @@ describe('imageStore pruning', () => {
             'photo-orphan-fresh',
             'photo-primary',
         ])
+    })
+
+    it('deletes nothing when a quit deadline passes while references are read (GH #883)', async () => {
+        const dbService = await seed([photo('old-unreferenced', 30)])
+        const { fencePersistenceWritesAfter } = await import('@/bootstrap/persistenceCoordinator')
+        const now = vi.spyOn(performance, 'now').mockReturnValue(1_000)
+        const lift = fencePersistenceWritesAfter(1_000)
+        mocks.beforeCollect = () => now.mockReturnValue(2_000)
+
+        await expect(dbService.pruneOldImages(10)).resolves.toBe(0)
+
+        lift()
+        now.mockRestore()
+        await expect(storedIds(dbService)).resolves.toEqual(['old-unreferenced'])
     })
 
     it('reclaims unreferenced images oldest first, up to the limit', async () => {

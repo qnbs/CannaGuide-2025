@@ -15,7 +15,7 @@ import { REVIEW_SCHEMA } from './post-claude-review.mjs'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
 const TEXT = readFileSync(resolve(ROOT, '.github/workflows/claude-review.yml'), 'utf8')
 const WORKFLOW = parse(TEXT)
-const ACTION_PIN = 'anthropics/claude-code-action@5a856893345e332afa621934082d8c660c26d689'
+const ACTION_PIN = 'anthropics/claude-code-action@acfe7992852970efb4fee683d63d628e3e52df67'
 const { review, post } = WORKFLOW.jobs
 
 const step = (job, name) => {

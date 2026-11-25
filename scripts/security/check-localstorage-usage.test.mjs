@@ -299,6 +299,68 @@ test('the last persisted name wins, and a spread after it makes the name unknown
     assert.equal(first('apps/web/twice.ts').key, 'raw-secret-store')
 })
 
+test('every zustand persist call is a persisted store, and an unreadable storage fails closed', (t) => {
+    const sources = {
+        // zustand 5 writes to window.localStorage when no storage option is set.
+        'apps/web/default.ts': "persist(store, { name: 'cannaguide-iot-settings' })",
+        'apps/web/window.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: createJSONStorage(() => window.localStorage) })",
+        'apps/web/session.ts':
+            "persist(store, { storage: createJSONStorage(() => globalThis.sessionStorage), name: 'cannaguide-iot-settings' })",
+        // Storage this scan cannot read: the key is computed and needs a review entry.
+        'apps/web/reference.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: createJSONStorage(getStorage) })",
+        'apps/web/adapter.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: adapter })",
+        'apps/web/spread.ts':
+            "persist(store, { name: 'cannaguide-iot-settings', storage: createJSONStorage(() => localStorage), ...extra })",
+        'apps/web/variable.ts': 'persist(store, options)',
+        // Imported under another name, or through a namespace.
+        'apps/web/alias.ts': [
+            "import { persist as keep } from 'zustand/middleware'",
+            "keep(store, { name: 'cannaguide-iot-settings' })",
+        ].join('\n'),
+        'apps/web/namespace.ts': [
+            "import * as mw from 'zustand/middleware'",
+            "mw.persist(store, { name: 'cannaguide-iot-settings' })",
+        ].join('\n'),
+        // A storage accessor outside any persist call.
+        'apps/web/stray.ts': 'const storage = createJSONStorage(() => localStorage)',
+        // Member calls are not zustand's persist.
+        'apps/web/member.ts': 'await navigator.storage.persist(); queue.persist()',
+    }
+    const root = fixture(t, sources)
+    const stores = (file) =>
+        storageCalls(file, sources[file], root).map(({ kind, key, storage, expression }) => ({
+            kind,
+            key,
+            storage,
+            expression,
+        }))
+    const known = (storage) => [
+        { kind: 'persist', key: 'cannaguide-iot-settings', storage, expression: 'persist' },
+    ]
+    const unknown = (expression = 'persist') => [
+        { kind: 'dynamic', key: undefined, storage: 'unknown', expression },
+    ]
+    assert.deepEqual(stores('apps/web/default.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/window.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/session.ts'), known('sessionStorage'))
+    for (const file of ['reference', 'adapter', 'spread', 'variable']) {
+        assert.deepEqual(stores(`apps/web/${file}.ts`), unknown(), file)
+    }
+    assert.deepEqual(stores('apps/web/alias.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/namespace.ts'), known('localStorage'))
+    assert.deepEqual(stores('apps/web/stray.ts'), unknown('createJSONStorage'))
+    assert.deepEqual(stores('apps/web/member.ts'), [])
+    // An unknown store is a violation until it is reviewed.
+    const [reason] = violations(
+        storageCalls('apps/web/adapter.ts', sources['apps/web/adapter.ts'], root),
+        [],
+    )
+    assert.equal(reason.reason, 'computed key `persist` is not reviewed')
+})
+
 test('a persisted name is known only when it is one complete literal', (t) => {
     const store = (...nameLines) =>
         [

@@ -8,7 +8,11 @@
  * - a constant is resolved in the same file, or through a named import or re-export;
  * - anything else (a call, a template, a parameter) has to be listed in
  *   REVIEWED_DYNAMIC_KEYS with the keys it produces, so a new dynamic key fails until
- *   someone reviews it, and an entry whose call is gone fails as stale.
+ *   someone reviews it, and an entry whose call is gone fails as stale;
+ * - every zustand `persist(...)` call (also under an import alias or `ns.persist`) is a store
+ *   written under its `name`, to localStorage unless a readable `storage` option says
+ *   otherwise. A store whose name or storage cannot be read, or a `createJSONStorage` outside
+ *   a persist call, counts as computed and needs a review entry.
  *
  * Before 2026-11-24 the check read literal keys only. On `main` at v1.12.2 that was 6 of
  * 106 storage calls: the other 100 pass a constant or a computed key and were never checked,
@@ -129,8 +133,14 @@ const EXCLUDED =
     /(^|\/)(tests|__mocks__|__tests__)\/|\.(test|spec|ct|stories|bench)\.[cm]?[jt]sx?$|\.d\.ts$|^apps\/web\/(locales|public)\//
 const STORAGE_CALL = /\b(localStorage|sessionStorage)\s*\.\s*(getItem|setItem|removeItem)\s*\(/g
 const LITERAL = /^(['"`])([^'"`$\\\n]*)\1$/
-/** zustand's persist middleware writes under its `name`, with no visible getItem call. */
-const PERSIST_STORAGE = /createJSONStorage\(\s*\(\)\s*=>\s*(localStorage|sessionStorage)\s*\)/g
+/**
+ * A `createJSONStorage` accessor this scan can read: `() => localStorage` or `sessionStorage`,
+ * optionally through `window.`, `globalThis.` or `self.`. Any other storage is unknown.
+ */
+const KNOWN_ACCESSOR =
+    /^createJSONStorage\(\s*\(\)\s*=>\s*(?:(?:window|globalThis|self)\.)?(localStorage|sessionStorage)\s*\)$/
+const STORAGE_PROPERTY = /^storage\s*:([\s\S]*)$/
+const ZUSTAND_MIDDLEWARE = String.raw`['"]zustand/middleware['"]`
 /** A `name` that is one complete literal: the property ends right after the closing quote. */
 const PERSIST_NAME = /^\s*name\s*:\s*(['"`])([^'"`$\\\n]+)\1(?=\s*(?:,|$))/
 /** Any `name` property, including `name: prefix + suffix` and a shorthand `name`. */
@@ -164,8 +174,8 @@ function skipQuoted(source, index) {
 const ARGUMENT_END = new Set([',', ')', ']', '}'])
 const endsArgument = (char, depth) => depth === 0 && ARGUMENT_END.has(char)
 
-/** The text of a call's first argument, read up to its top-level comma or closing paren. */
-export function firstArgument(source, start) {
+/** The index of the top-level comma or closer that ends the argument at `start`, or -1. */
+function argumentEnd(source, start) {
     let depth = 0
     for (let index = start; index < source.length;) {
         const char = source[index]
@@ -173,11 +183,17 @@ export function firstArgument(source, start) {
             index = skipQuoted(source, index)
             continue
         }
-        if (endsArgument(char, depth)) return source.slice(start, index).trim()
+        if (endsArgument(char, depth)) return index
         depth += BRACKET_DELTA[char] ?? 0
         index += 1
     }
-    return null
+    return -1
+}
+
+/** The text of a call's first argument, read up to its top-level comma or closing paren. */
+export function firstArgument(source, start) {
+    const end = argumentEnd(source, start)
+    return end === -1 ? null : source.slice(start, end).trim()
 }
 
 const MODULE_SUFFIXES = ['', '.ts', '.tsx', '.mjs', '/index.ts', '/index.tsx']
@@ -407,93 +423,134 @@ function blockEnd(text, at) {
     return index === -1 ? text.length : index + 2
 }
 
-/** Length of the comment or string literal that starts at `at`, or 0 for code. */
-function nonCodeLength(text, at) {
-    if (text.startsWith('//', at)) return lineEnd(text, at) - at
-    if (text.startsWith('/*', at)) return blockEnd(text, at) - at
-    if (!QUOTES.includes(text[at])) return 0
-    return Math.min(skipQuoted(text, at), text.length) - at
+// ---------------------------------------------------------------------------
+// Persisted zustand stores. `persist` writes its state under the `name` option, with no
+// visible getItem or setItem call, to `createJSONStorage(() => window.localStorage)` unless a
+// `storage` option says otherwise (zustand 5 middleware). The scan runs on comment-masked code,
+// so a commented-out option is blank and never counts.
+// ---------------------------------------------------------------------------
+
+/** The names a call to zustand's `persist` goes by: `persist`, an import alias, `ns.persist`. */
+function persistCallees(code) {
+    return ['persist', ...persistAliases(code), ...namespacePersist(code)]
+}
+
+function persistAliases(code) {
+    const named = new RegExp(String.raw`\bimport\s*\{([^}]*)\}\s*from\s*${ZUSTAND_MIDDLEWARE}`, 'g')
+    return [...code.matchAll(named)]
+        .flatMap(([, specifiers]) => specifiers.split(','))
+        .map((specifier) => specifier.trim().split(/\s+as\s+/))
+        .filter(([imported, local]) => imported === 'persist' && local)
+        .map(([, local]) => local.trim())
+}
+
+function namespacePersist(code) {
+    const namespace = new RegExp(
+        String.raw`\bimport\s*\*\s*as\s+([A-Za-z_$][\w$]*)\s+from\s*${ZUSTAND_MIDDLEWARE}`,
+        'g',
+    )
+    return [...code.matchAll(namespace)].map(([, alias]) => `${alias}.persist`)
+}
+
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** Every `persist(...)` call: where it starts, its argument texts and where it ends. */
+function persistCalls(code) {
+    return persistCallees(code)
+        .flatMap((callee) => {
+            // Not a member call such as `navigator.storage.persist()`.
+            const call = new RegExp(String.raw`(?<![\w$.])${escapeRegExp(callee)}\s*\(`, 'g')
+            return [...code.matchAll(call)].map((match) => ({
+                index: match.index,
+                ...callArguments(code, match.index + match[0].length),
+            }))
+        })
+        .sort((a, b) => a.index - b.index)
+}
+
+/** The top-level argument texts of a call read from just past its `(`, and where it ends. */
+function callArguments(source, start) {
+    const args = []
+    for (let at = start; ;) {
+        const end = argumentEnd(source, at)
+        if (end === -1) return { args: null, end: source.length }
+        args.push(source.slice(at, end).trim())
+        if (source[end] !== ',') return { args, end }
+        at = end + 1
+    }
+}
+
+const isObjectLiteral = (text) => typeof text === 'string' && /^\{[\s\S]*\}$/.test(text)
+
+/** The top-level property texts of an object literal, or null when `text` is not one. */
+function objectProperties(text) {
+    if (!isObjectLiteral(text)) return null
+    const body = text.slice(1, -1)
+    const properties = []
+    for (let start = 0; start <= body.length;) {
+        const end = argumentEnd(body, start)
+        const stop = end === -1 ? body.length : end
+        properties.push(body.slice(start, stop).trim())
+        start = stop + 1
+    }
+    return properties.filter(Boolean)
 }
 
 /**
- * The text of the object literal around an index, or null when it cannot be found. The walk
- * back does not tell braces inside strings apart; a persist options object holds none in this
- * code base, and its closing brace is found skipping comments and strings.
+ * How one property changes what is known of the name: a literal `name` sets it, any other
+ * `name` makes it unknown, and a spread may override an earlier name. The last `name` wins,
+ * as in JavaScript, and a `name` that is not one complete literal is unknown even when it
+ * starts with an allowed literal.
  */
-function enclosingObject(source, index) {
-    let depth = 0
-    for (let at = index; at >= 0; at -= 1) {
-        if (source[at] === '}') depth += 1
-        if (source[at] === '{') {
-            if (depth === 0) {
-                const end = matchingBrace(source, at)
-                return end === -1 ? null : source.slice(at + 1, end)
-            }
-            depth -= 1
-        }
-    }
-    return null
+function propertyEffect(property, state) {
+    const literal = PERSIST_NAME.exec(property)
+    if (literal) return { name: literal[2], spread: false }
+    if (NAME_PROPERTY.test(property)) return { name: undefined, spread: false }
+    return /^\s*\.\.\./.test(property) ? { ...state, spread: true } : state
 }
 
-function matchingBrace(source, start) {
-    let depth = 0
-    for (let at = start; at < source.length;) {
-        const skipped = nonCodeLength(source, at)
-        if (skipped > 0) {
-            at += skipped
-            continue
-        }
-        if (source[at] === '{') depth += 1
-        if (source[at] === '}' && --depth === 0) return at
-        at += 1
-    }
-    return -1
-}
-
-/**
- * The `name` property at the top level of an options object, wherever it stands. Comments are
- * skipped and keep the place of a property; strings are skipped and end it, so neither a
- * commented-out name nor a comma inside a string or comment can stand in for the real one.
- * The last `name` wins, as in JavaScript, and a spread after it may override it, so the name
- * is then unknown (undefined). A `name` that is not one complete literal (a concatenation, a
- * call, a shorthand) is unknown as well, even when it starts with an allowed literal.
- */
-function topLevelName(objectText) {
-    let depth = 0
-    let propertyStart = true
-    let state = { name: undefined, spread: false }
-    for (let at = 0; at < objectText.length;) {
-        if (depth === 0 && propertyStart) state = propertyEffect(objectText.slice(at), state)
-        const skipped = nonCodeLength(objectText, at)
-        if (skipped > 0) {
-            // A comment keeps the place of a property; a string ends it.
-            propertyStart = propertyStart && objectText[at] === '/'
-            at += skipped
-            continue
-        }
-        const char = objectText[at]
-        depth += BRACKET_DELTA[char] ?? 0
-        propertyStart = startsProperty(char, depth, propertyStart)
-        at += 1
-    }
+function storeName(properties) {
+    const initial = { name: undefined, spread: false }
+    const state = properties.reduce((known, property) => propertyEffect(property, known), initial)
     return state.spread ? undefined : state.name
 }
 
-/**
- * How a property that starts here changes what is known: a literal `name` sets it, any other
- * `name` makes it unknown, and a spread may override an earlier name.
- */
-function propertyEffect(rest, state) {
-    const literal = PERSIST_NAME.exec(rest)
-    if (literal) return { name: literal[2], spread: false }
-    if (NAME_PROPERTY.test(rest)) return { name: undefined, spread: false }
-    return /^\s*\.\.\./.test(rest) ? { ...state, spread: true } : state
+/** How one property changes the storage: a `storage` option, or a spread that may set one. */
+function storageEffect(property, storage) {
+    const option = STORAGE_PROPERTY.exec(property)
+    if (option) return KNOWN_ACCESSOR.exec(option[1].trim())?.[1] ?? null
+    return property.startsWith('...') ? null : storage
 }
 
-/** Whether the next character starts a property: after a top-level comma, through whitespace. */
-function startsProperty(char, depth, current) {
-    if (depth === 0 && char === ',') return true
-    return /\s/.test(char) ? current : false
+/** The storage a store writes to: zustand's default localStorage, a known accessor, or null. */
+const storeStorage = (properties) =>
+    properties.reduce((storage, p) => storageEffect(p, storage), 'localStorage')
+
+/** The name and storage a `persist` options argument gives; unknown unless it is a literal. */
+function storeOptions(optionsText) {
+    const properties = objectProperties(optionsText)
+    if (properties === null) return { storage: null, name: undefined }
+    return { storage: storeStorage(properties), name: storeName(properties) }
+}
+
+/** One persisted store: a known key, or computed when its name or its storage is unknown. */
+function persistedStore(site, optionsText) {
+    const { storage, name } = storeOptions(optionsText)
+    const store = {
+        ...site,
+        storage: storage ?? 'unknown',
+        method: 'setItem',
+        expression: 'persist',
+    }
+    return storage !== null && name
+        ? { ...store, kind: 'persist', key: name }
+        : { ...store, kind: 'dynamic' }
+}
+
+/** `createJSONStorage` outside a `persist` call: a store this scan cannot read, so computed. */
+function strayStorages(code, calls) {
+    const inside = (index) => calls.some((call) => index > call.index && index < call.end)
+    return [...code.matchAll(/\bcreateJSONStorage\s*\(/g)].filter((match) => !inside(match.index))
 }
 
 const lineOf = (source, index) => source.slice(0, index).split('\n').length
@@ -529,19 +586,17 @@ function directCalls(file, source, code, root) {
 
 /** The zustand stores persisted to storage, keyed by the `name` of their options object. */
 function persistedStores(file, source, code) {
-    return [...code.matchAll(PERSIST_STORAGE)].map((match) => {
-        // The name comes from the same options object as the storage option, in any order.
-        const options = enclosingObject(code, match.index)
-        const name = options === null ? undefined : topLevelName(options)
-        const site = {
-            file,
-            line: lineOf(source, match.index),
-            storage: match[1],
-            method: 'setItem',
-            expression: 'persist',
-        }
-        return name ? { ...site, kind: 'persist', key: name } : { ...site, kind: 'dynamic' }
-    })
+    const calls = persistCalls(code)
+    const site = (index) => ({ file, line: lineOf(source, index) })
+    const stores = calls.map((call) => persistedStore(site(call.index), call.args?.[1]))
+    const stray = strayStorages(code, calls).map((match) => ({
+        ...site(match.index),
+        storage: 'unknown',
+        method: 'setItem',
+        expression: 'createJSONStorage',
+        kind: 'dynamic',
+    }))
+    return [...stores, ...stray]
 }
 
 /** Every storage call in one file, classified by how its key is known. */

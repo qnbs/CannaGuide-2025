@@ -16,6 +16,34 @@ import {
 } from './strainImageSvgParts'
 import { escapeXml } from './strainImageSvgUtils'
 
+/** The flowering length a strain reports, in weeks, escaped for SVG; null when it reports none. */
+const reportedFloweringWeeks = (strain: Strain): string | null => {
+    if (strain.floweringTimeRange) return escapeXml(strain.floweringTimeRange)
+    const weeks = strain.floweringTime
+    return typeof weeks === 'number' && Number.isFinite(weeks) ? String(weeks) : null
+}
+
+/** The poster's flowering line: the reported weeks, or an explicit unknown. */
+const floweringTextFor = (strain: Strain, lang: Language): string => {
+    const weeks = reportedFloweringWeeks(strain)
+    if (weeks === null) {
+        return localizeStr(lang, {
+            en: 'Flowering time unknown',
+            de: 'Bl\u00fctezeit unbekannt',
+            es: 'Floracion desconocida',
+            fr: 'Floraison inconnue',
+            nl: 'Bloeitijd onbekend',
+        })
+    }
+    return localizeStr(lang, {
+        en: `${weeks} weeks flowering`,
+        de: `${weeks} Wochen Bl\u00fcte`,
+        es: `${weeks} semanas de floracion`,
+        fr: `${weeks} semaines de floraison`,
+        nl: `${weeks} weken bloei`,
+    })
+}
+
 export const buildStrainImageSvg = (
     strain: Strain,
     style: Exclude<ImageStyle, 'random'>,
@@ -53,13 +81,7 @@ export const buildStrainImageSvg = (
         .slice(0, 5)
         .map((a) => escapeXml(a))
         .join(' \u00b7 ')
-    const floweringText = localizeStr(lang, {
-        en: `${strain.floweringTime}d flowering`,
-        de: `${strain.floweringTime} Tage Bl\u00fcte`,
-        es: `${strain.floweringTime}d floracion`,
-        fr: `${strain.floweringTime}j floraison`,
-        nl: `${strain.floweringTime}d bloei`,
-    })
+    const floweringText = floweringTextFor(strain, lang)
     const genetics = strain.genetics ? escapeXml(strain.genetics.slice(0, 55)) : ''
     const description = strain.description ? escapeXml(strain.description.slice(0, 100)) : ''
 

@@ -133,7 +133,6 @@ const MOOD_PROMPTS: Record<string, string> = {
     calm: 'calm serene atmosphere, warm golden hour lighting, peaceful',
 }
 
-/** Build a diffusion prompt from strain data and user preferences. */
 /** Trichome descriptions by the lowest reported THC they describe, highest first. */
 const TRICHOME_HINTS: readonly (readonly [number, string])[] = [
     [25, 'extremely frosty, heavy trichome coverage'],
@@ -144,6 +143,7 @@ const TRICHOME_HINTS: readonly (readonly [number, string])[] = [
 const trichomeHint = (thc: number | undefined): string | undefined =>
     typeof thc === 'number' ? TRICHOME_HINTS.find(([lowest]) => thc >= lowest)?.[1] : undefined
 
+/** Build a diffusion prompt from strain data and user preferences. */
 export const buildImagePrompt = (
     strain: Strain,
     style: ImageStyle,

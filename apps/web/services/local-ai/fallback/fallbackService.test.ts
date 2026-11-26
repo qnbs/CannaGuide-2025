@@ -74,6 +74,16 @@ const buildPlant = (overrides: Partial<Plant> = {}): Plant => ({
 })
 
 describe('localAiFallbackService', () => {
+    it('gives the high-THC nutrient tip only for a reported high THC', () => {
+        const { strain } = buildPlant()
+        const tip = (thc: number | undefined) =>
+            localAiFallbackService.getStrainTips({ ...strain, thc }, 'en').nutrientTip
+        expect(tip(28)).toContain('high THC (28%)')
+        // An unreported THC is not treated as low or high: it gets the default tip.
+        expect(tip(undefined)).toContain('Increase nutrients gradually')
+        expect(tip(undefined)).not.toContain('THC')
+    })
+
     it('detects multiple environmental issues in the plant diagnosis', () => {
         const plant = buildPlant({
             stage: PlantStage.Flowering,
@@ -126,7 +136,11 @@ describe('localAiFallbackService', () => {
     })
 
     it('produces a localized grow log answer', () => {
-        const response = localAiFallbackService.getGrowLogRagAnswer('What changed?', 'Watering improved after flush.', 'en')
+        const response = localAiFallbackService.getGrowLogRagAnswer(
+            'What changed?',
+            'Watering improved after flush.',
+            'en',
+        )
 
         expect(response.title).toContain('RAG Analysis')
         expect(response.content).toContain('Question: What changed?')

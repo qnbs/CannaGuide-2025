@@ -14,8 +14,9 @@ const StrainImportSchema = z
         id: z.string().min(1),
         name: z.string().min(1),
         type: z.nativeEnum(StrainType),
-        thc: z.number(),
-        cbd: z.number(),
+        // Absent when the strain's source reports none (#750); never filled in as 0.
+        thc: z.number().optional(),
+        cbd: z.number().optional(),
         // Optional fields that are part of the Strain type
         description: z.string().optional(),
         floweringTime: z.number().optional(),

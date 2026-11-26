@@ -23,8 +23,8 @@ export interface DiscoveredStrain {
     breeder?: string
     type?: string
     floweringType?: string
-    thc?: number
-    cbd?: number
+    thc?: number | undefined
+    cbd?: number | undefined
     description: string
     genetics: string
     source: 'daily-pick' | 'ai-lookup' | 'local-catalog'

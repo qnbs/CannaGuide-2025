@@ -65,7 +65,8 @@ export interface GenealogyNode {
     id: string
     name: string
     type: StrainType
-    thc: number
+    /** Reported THC of the strain; absent when its source reports none. */
+    thc?: number | undefined
     isLandrace: boolean
     isPlaceholder?: boolean | undefined
     children?: GenealogyNode[] | undefined

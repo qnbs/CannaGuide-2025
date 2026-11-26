@@ -18,6 +18,11 @@ describe('strainImageSvgUtils', () => {
         it('strips HTML tags via DOMPurify', () => {
             expect(escapeXml('<b>bold</b>')).toBe('bold')
         })
+
+        it('escapes text with a < once, not twice', () => {
+            expect(escapeXml('8<9 & up')).toBe('8&lt;9 &amp; up')
+            expect(escapeXml('a & <b>x</b>')).toBe('a &amp; x')
+        })
     })
 
     describe('resolveStyle', () => {

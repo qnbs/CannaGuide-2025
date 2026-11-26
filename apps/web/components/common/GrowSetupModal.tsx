@@ -34,8 +34,8 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
     </div>
 )
 
-const finiteWeeks = (value: number, weeks: string, unknown: string): string =>
-    Number.isFinite(value) ? `${value} ${weeks}` : unknown
+const finiteWeeks = (value: number | undefined, weeks: string, unknown: string): string =>
+    typeof value === 'number' && Number.isFinite(value) ? `${value} ${weeks}` : unknown
 
 const floweringLabel = (strain: Strain, weeks: string, unknown: string): string => {
     if (strain.floweringTimeRange) return `${strain.floweringTimeRange} ${weeks}`

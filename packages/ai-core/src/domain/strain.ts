@@ -360,13 +360,13 @@ export interface Strain {
     typeDetails?: string | undefined
     genetics?: string | undefined
     floweringType: FloweringType
-    thc: number
-    cbd: number
+    thc?: number | undefined
+    cbd?: number | undefined
     thcRange?: string | undefined
     cbdRange?: string | undefined
     cbg?: number | undefined
     thcv?: number | undefined
-    floweringTime: number
+    floweringTime?: number | undefined
     floweringTimeRange?: string | undefined
     description?: string | undefined
     agronomic: {

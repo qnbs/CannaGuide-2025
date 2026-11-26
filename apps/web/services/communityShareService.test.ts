@@ -13,6 +13,15 @@ vi.mock('@/services/localOnlyModeService', () => ({
 
 const loadService = async () => (await import('./communityShareService')).communityShareService
 
+const sharedPayload = (strains: unknown[]) =>
+    new Response(
+        JSON.stringify({
+            files: {
+                'cannaguide-strains.json': { content: JSON.stringify({ version: 1, strains }) },
+            },
+        }),
+    )
+
 describe('communityShareService', () => {
     beforeEach(() => {
         vi.resetModules()
@@ -57,5 +66,21 @@ describe('communityShareService', () => {
             'common.communityShare.unavailable',
         )
         expect(vi.mocked(global.fetch)).not.toHaveBeenCalled()
+    })
+
+    it('imports a shared strain whose source reports no THC or CBD, without inventing them', async () => {
+        // Sharing stays disabled in the app; only this module sees it enabled, and fetch is mocked.
+        vi.doMock('@/constants', async (importOriginal) => ({
+            ...(await importOriginal<typeof import('@/constants')>()),
+            COMMUNITY_SHARE_DISABLED: false,
+        }))
+        const unreported = { id: 's-1', name: 'Unreported', type: 'Hybrid' }
+        vi.mocked(global.fetch).mockResolvedValue(sharedPayload([unreported]))
+        const service = await loadService()
+        const [imported] = await service.importStrainsFromGist('a'.repeat(32))
+        expect(imported).toEqual(unreported)
+        expect(imported).not.toHaveProperty('thc')
+        expect(imported).not.toHaveProperty('cbd')
+        vi.doUnmock('@/constants')
     })
 })

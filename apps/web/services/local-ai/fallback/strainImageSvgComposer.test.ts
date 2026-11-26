@@ -9,7 +9,7 @@ const makeStrain = (overrides: Partial<Strain> = {}): Strain =>
         type: StrainType.Hybrid,
         thc: 21,
         cbd: 1,
-        floweringTime: 60,
+        floweringTime: 9,
         floweringType: 'Photoperiod',
         agronomic: { difficulty: 'Medium', yield: 'High', height: 'Tall' },
         aromas: ['Earthy', 'Berry', 'Sweet', 'Citrus', 'Pine', 'Woody'],
@@ -19,6 +19,38 @@ const makeStrain = (overrides: Partial<Strain> = {}): Strain =>
     }) as Strain
 
 describe('strainImageSvgComposer', () => {
+    const svgFor = (overrides: Partial<Strain>) =>
+        buildStrainImageSvg(
+            makeStrain(overrides),
+            'botanical',
+            { focus: 'buds', composition: 'symmetrical', mood: 'calm' },
+            'en',
+        )
+
+    it('states the reported flowering time in weeks, the unit the catalog uses', () => {
+        expect(svgFor({})).toContain('9 weeks flowering')
+        expect(svgFor({ floweringTimeRange: '8-9' })).toContain('8-9 weeks flowering')
+    })
+
+    it('ignores a blank flowering range: the reported weeks, or unknown, still show', () => {
+        expect(svgFor({ floweringTimeRange: '   ' })).toContain('9 weeks flowering')
+        expect(svgFor({ floweringTimeRange: '   ', floweringTime: undefined })).toContain(
+            'Flowering time unknown',
+        )
+    })
+
+    it('says the flowering time is unknown instead of printing an absent value', () => {
+        const svg = svgFor({ floweringTime: undefined })
+        expect(svg).toContain('Flowering time unknown')
+        expect(svg).not.toContain('undefined')
+    })
+
+    it('escapes a reported flowering range before it enters the SVG', () => {
+        const svg = svgFor({ floweringTimeRange: '8<9' })
+        expect(svg).toContain('8&lt;9 weeks flowering')
+        expect(svg).not.toContain('8<9')
+    })
+
     it('composes SVG for botanical style in English', () => {
         const svg = buildStrainImageSvg(
             makeStrain(),

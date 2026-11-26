@@ -57,6 +57,14 @@ vi.mock('../fallback/fallbackService', () => ({
     },
 }))
 
+const { ensureLocaleLoadedMock } = vi.hoisted(() => ({
+    ensureLocaleLoadedMock: vi.fn(async (_lang: string) => undefined),
+}))
+vi.mock('@/i18n', async (importOriginal) => ({
+    ...(await importOriginal<typeof import('@/i18n')>()),
+    ensureLocaleLoaded: ensureLocaleLoadedMock,
+}))
+
 vi.mock('../../imageGenerationService', () => ({
     checkImageGenCapability: vi.fn(() => ({ supported: false })),
     generateStrainImageLocal: vi.fn(),
@@ -66,6 +74,7 @@ vi.mock('../../imageGenerationService', () => ({
 // Imports (after mocks)
 // ---------------------------------------------------------------------------
 
+import { localAiFallbackService } from '../fallback/fallbackService'
 import {
     handleEquipmentRecommendation,
     handleNutrientRecommendation,
@@ -478,6 +487,35 @@ describe('localAiPromptHandlers', () => {
                 'botanical',
                 { focus: 'flower', composition: 'close-up', mood: 'warm' },
                 'en',
+            )
+            expect(result).toContain('data:image/svg+xml')
+        })
+
+        it('loads the poster language before composing the SVG fallback', async () => {
+            const order: string[] = []
+            ensureLocaleLoadedMock.mockImplementationOnce(async (lang: string) => {
+                order.push(`load:${lang}`)
+            })
+            vi.mocked(localAiFallbackService.generateStrainImage).mockImplementationOnce(() => {
+                order.push('compose')
+                return 'data:image/svg+xml;base64,de'
+            })
+            await handleStrainImageGeneration(
+                buildPlant().strain,
+                'botanical',
+                { focus: 'flower', composition: 'close-up', mood: 'warm' },
+                'de',
+            )
+            expect(order).toEqual(['load:de', 'compose'])
+        })
+
+        it('still composes the poster when its language bundle cannot load', async () => {
+            ensureLocaleLoadedMock.mockRejectedValueOnce(new Error('offline'))
+            const result = await handleStrainImageGeneration(
+                buildPlant().strain,
+                'botanical',
+                { focus: 'flower', composition: 'close-up', mood: 'warm' },
+                'fr',
             )
             expect(result).toContain('data:image/svg+xml')
         })

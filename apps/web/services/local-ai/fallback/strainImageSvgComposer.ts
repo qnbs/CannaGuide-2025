@@ -1,3 +1,4 @@
+import { getT } from '@/i18n'
 import type { Language, Strain } from '@/types'
 import type { ImageStyle } from '@/types/aiProvider'
 import { localizeStr } from './localeHelpers'
@@ -15,6 +16,26 @@ import {
     getCompositionLayout,
 } from './strainImageSvgParts'
 import { escapeXml } from './strainImageSvgUtils'
+
+/** The flowering length a strain reports, in weeks; null when it reports none. */
+const reportedFloweringWeeks = (strain: Strain): string | null => {
+    // A blank range, as the add-strain form can keep it, reports nothing.
+    const range = strain.floweringTimeRange?.trim()
+    if (range) return range
+    const weeks = strain.floweringTime
+    return typeof weeks === 'number' && Number.isFinite(weeks) ? String(weeks) : null
+}
+
+/** The poster's flowering line, translated and escaped for SVG: the reported weeks, or unknown. */
+const floweringTextFor = (strain: Strain, lang: Language): string => {
+    const t = getT()
+    const weeks = reportedFloweringWeeks(strain)
+    const text =
+        weeks === null
+            ? t('strainsView.imageGen.poster.floweringUnknown', { lng: lang })
+            : t('strainsView.imageGen.poster.floweringWeeks', { lng: lang, weeks })
+    return escapeXml(text)
+}
 
 export const buildStrainImageSvg = (
     strain: Strain,
@@ -53,13 +74,7 @@ export const buildStrainImageSvg = (
         .slice(0, 5)
         .map((a) => escapeXml(a))
         .join(' \u00b7 ')
-    const floweringText = localizeStr(lang, {
-        en: `${strain.floweringTime}d flowering`,
-        de: `${strain.floweringTime} Tage Bl\u00fcte`,
-        es: `${strain.floweringTime}d floracion`,
-        fr: `${strain.floweringTime}j floraison`,
-        nl: `${strain.floweringTime}d bloei`,
-    })
+    const floweringText = floweringTextFor(strain, lang)
     const genetics = strain.genetics ? escapeXml(strain.genetics.slice(0, 55)) : ''
     const description = strain.description ? escapeXml(strain.description.slice(0, 100)) : ''
 

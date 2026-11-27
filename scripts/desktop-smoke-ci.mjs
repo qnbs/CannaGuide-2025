@@ -202,6 +202,7 @@ function linux({ bundle, target, version, evidence }) {
                 'imagemagick',
                 'dbus',
                 'dbus-x11',
+                'squashfs-tools',
             ]),
         )
     ) {
@@ -212,6 +213,19 @@ function linux({ bundle, target, version, evidence }) {
     const appimage = findIn(join(bundle, 'appimage'), /\.AppImage$/)
     if (!deb || !appimage) {
         console.log(`[FAIL] .deb or AppImage missing in ${bundle}`)
+        return false
+    }
+    chmodSync(appimage, 0o755)
+    const imagePath = resolve(appimage)
+    const offset = run(imagePath, ['--appimage-offset'], {
+        stdio: ['ignore', 'pipe', 'inherit'],
+        timeout: 10_000,
+    })
+    if (
+        !ok(offset) ||
+        !ok(run('bash', ['scripts/check-appimage-permissions.sh', imagePath, offset.stdout.trim()]))
+    ) {
+        console.log('[FAIL] could not verify the packaged AppImage permissions')
         return false
     }
     // A virtual display and its own session bus per run; the window check must pass.
@@ -237,10 +251,13 @@ function linux({ bundle, target, version, evidence }) {
     ) {
         passed = false
     }
-    chmodSync(appimage, 0o755)
+    const appimageMode = existsSync('/dev/fuse') ? [] : ['--appimage']
+    if (appimageMode.length) {
+        console.log('[WARN] /dev/fuse unavailable; AppImage smoke uses extraction')
+    }
     if (
         !smoke(
-            ['--app', resolve(appimage), '--appimage', '--label', `${target}-appimage`, ...common],
+            ['--app', imagePath, ...appimageMode, '--label', `${target}-appimage`, ...common],
             wrap,
         )
     ) {

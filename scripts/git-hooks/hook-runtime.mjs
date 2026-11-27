@@ -29,7 +29,7 @@ const LOCAL_TOOL_PACKAGES = {
     eslint: ['eslint', 'eslint'],
     'lint-staged': ['lint-staged', 'lint-staged'],
     prettier: ['prettier', 'prettier'],
-    tsc: ['typescript', 'tsc'],
+    tsc: ['@cannaguide/typescript-native', 'tsc'],
     turbo: ['turbo', 'turbo'],
 }
 const RESOURCE_PRESSURE_MB = {

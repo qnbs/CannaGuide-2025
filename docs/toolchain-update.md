@@ -11,6 +11,37 @@
 
 Alle Versionsangaben sind **gemessen** (lokale Runtimes, `package.json`, `.github/`) bzw. **abgefragt** (npm-Registry am 2026-07-14). Peer-Ranges sind wörtlich aus den Paket-Manifesten zitiert — sie sind der Grund, warum zwei naheliegende Upgrades **nicht** gehen.
 
+## Current toolchain delta — 2026-11-27
+
+The July assessment below is historical. Stable TypeScript 7 can now be adopted as an isolated
+native CLI while retaining TypeScript 6 for JavaScript compiler API consumers. The qualified
+dependency is `typescript@7.0.2`, exposed as `@cannaguide/typescript-native`; the existing
+`typescript@6.0.3` remains installed under its classic package name. This avoids satisfying
+typescript-eslint's optional `@typescript/native` peer, whose current range starts at TypeScript
+7.1 prereleases, while its classic `typescript` API peer remains `<6.1.0`.
+
+`scripts/run-native-tsc.mjs` resolves the CLI by its declared package entrypoint, adds
+`--singleThreaded`, preserves diagnostics when the child is terminated, and filters only the
+existing RTK `TS2719` in `store.ts`. Workspace typecheck and declaration build tasks use this
+runner; declaration builds use one builder. The AST checks continue importing `typescript` 6.0.3.
+
+Measured on the 2026-11-27 candidate worktree with Node 24.22.3 / pnpm 11.19.0:
+
+| Run                                                                               | Wall time |   Maximum RSS | Swap | Result                 |
+| --------------------------------------------------------------------------------- | --------: | ------------: | ---: | ---------------------- |
+| Web native typecheck, cold                                                        |      2:09 | 1,458,328 KiB |    0 | Exit 0, no diagnostics |
+| Web native typecheck, warm                                                        |      0:49 |   525,268 KiB |    0 | Exit 0, no diagnostics |
+| Scoped `pnpm verify` (Git scope unavailable, so all workspaces selected serially) |      3:32 | 1,448,912 KiB |    0 | 5/5 tasks passed       |
+| `ai-core` declaration build                                                       |      0:12 |   146,292 KiB |    0 | Exit 0                 |
+| `ui` declaration build                                                            |      0:09 |   146,592 KiB |    0 | Exit 0                 |
+
+The previous TypeScript 6 measurements remain useful context, not an apples-to-apples baseline:
+the July cold run without incremental state took 321-341 s / 1.54 GB; its warm incremental run
+took 91 s / 0.85 GB. The native CLI's current warm result is faster and uses less memory, while
+its cold run still needs roughly 1.4 GiB RSS. Exact-head classic/native diagnostic-set parity and
+the platform CI matrix remain pending CI qualification. No local cold TypeScript 6 rerun was made
+because earlier attempts crossed the machine's safe available-memory floor.
+
 ---
 
 ## 0. Was der Ubuntu-Upgrade tatsächlich ändert — und was nicht
@@ -142,7 +173,10 @@ Patch. Macht Dependabot von selbst (Gruppe `build-tools`) — **sobald der Auto-
 
 ## 3. Was NICHT geht — mit Beweis
 
-### 🔴 TypeScript 7.0.2 — gesperrt durch typescript-eslint
+### Historical: TypeScript 7.0.2 could not replace the classic TypeScript API package
+
+> Current status (2026-11-27): this peer range still blocks replacing `typescript@6.0.3` as the
+> JavaScript API, but does not block the separately named native CLI described above.
 
 ```text
 typescript-eslint@8.64.0        typescript: ">=4.8.4 <6.1.0"
@@ -315,8 +349,9 @@ repo ended up with git hooks everyone bypassed via `--no-verify`.
 - `scripts/scoped-verify.mjs` does the **diff scoping**: it derives the affected workspaces
   from the merge-base diff and runs `turbo run <task>` filtered to them, at
   `--concurrency=1`. This is what `pre-push` calls.
-- `scripts/typecheck-filter.mjs` is only the `apps/web` wrapper around `tsc --noEmit` (it
-  filters the known upstream RTK `TS2719`). It does no scoping of its own.
+- `scripts/run-native-tsc.mjs` is the native CLI wrapper used by workspace typecheck and
+  declaration build tasks. It filters the known upstream RTK `TS2719`; it does no workspace
+  scoping of its own.
 
 ---
 

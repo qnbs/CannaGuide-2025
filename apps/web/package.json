@@ -10,7 +10,7 @@
         "build:analyze": "ANALYZE=1 vite build --sourcemap",
         "analyze:sme": "source-map-explorer 'dist/assets/index-*.js'",
         "preview": "vite preview",
-        "typecheck": "node ../../scripts/typecheck-filter.mjs",
+        "typecheck": "node ../../scripts/run-native-tsc.mjs --noEmit",
         "test": "vitest",
         "test:run": "vitest run",
         "test:coverage": "vitest run --coverage",

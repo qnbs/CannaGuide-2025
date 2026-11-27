@@ -11,7 +11,7 @@
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/qnbs/CannaGuide-2025?label=OpenSSF%20Scorecard)](https://scorecard.dev/viewer/?uri=github.com/qnbs/CannaGuide-2025)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TypeScript CLI](https://img.shields.io/badge/TypeScript-7.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Tauri](https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white)](https://v2.tauri.app/)
@@ -129,7 +129,7 @@ scripts/           Build, release, security and documentation gates
 
 | Layer           | Technology                                                                                                                                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| UI              | React 19, TypeScript 6 (strict), Tailwind CSS 4, Radix UI, Recharts, D3, Three.js                                                                |
+| UI              | React 19, native TypeScript 7 CLI (strict), TypeScript 6 API for JS tooling, Tailwind CSS 4, Radix UI, Recharts, D3, Three.js                    |
 | State           | Redux Toolkit (persisted domain state) and Zustand (UI state), bridged by `uiStateBridge`                                                        |
 | Persistence     | IndexedDB with debounced, multi-tab-safe snapshot writes; a service worker via `vite-plugin-pwa`                                                 |
 | Background work | Web workers dispatched by the WorkerBus: priorities, backpressure, cancellation                                                                  |

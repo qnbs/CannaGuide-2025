@@ -21,8 +21,8 @@
         "CHANGELOG.md"
     ],
     "scripts": {
-        "typecheck": "tsc --noEmit",
-        "build": "tsc -b",
+        "typecheck": "node ../../scripts/run-native-tsc.mjs --noEmit",
+        "build": "node ../../scripts/run-native-tsc.mjs --build --builders 1",
         "clean": "rm -rf dist tsconfig.tsbuildinfo"
     },
     "dependencies": {

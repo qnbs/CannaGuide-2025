@@ -194,7 +194,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 - Named exports preferred over default exports
 - Explicit return types on public functions
 - `??` for nullish coalescing, never `||` for falsy-sensitive values
-- **Known RTK TS2719**: Redux Toolkit 2.x `configureStore` middleware callback is incompatible with `exactOptionalPropertyTypes`. Filtered in CI via `scripts/typecheck-filter.mjs`
+- **Known RTK TS2719**: Redux Toolkit 2.x `configureStore` middleware callback is incompatible with `exactOptionalPropertyTypes`. Filtered by `scripts/run-native-tsc.mjs`.
 
 ### React
 
@@ -248,7 +248,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 
 ### CI Gate Checklist (verify before every commit)
 
-1. **Typecheck clean:** `node ./scripts/typecheck-filter.mjs` -- 0 errors (TS2719 filtered)
+1. **Typecheck clean:** `pnpm verify` -- serial check of the workspaces affected by the current diff; web changes check `apps/web`, while shared root inputs check every workspace. Only the web typecheck filters the documented RTK TS2719 at `apps/web/stores/store.ts`.
 2. **Tests pass:** `pnpm --filter @cannaguide/web test:run <spec>` -- 0 failures
 3. **Build succeeds:** `pnpm run build`
 4. **Lint zero warnings:** `eslint --max-warnings 0` on staged files (enforced by lint-staged)
@@ -263,10 +263,11 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 ### Low-end hardware: the commands that look safe but are not
 
 The maintainer's machine is dual-core with ~4 GB RAM, and **memory is the binding constraint,
-not CPU**. Measured against `apps/web` (TS 6.0.3; method in `docs/toolchain-update.md`):
-`tsc --noEmit` without `incremental` = **321-341 s / 1.54 GB RSS**; with `incremental`, warm =
-**91 s / 0.85 GB**. With ~1.5 GB free in normal use, the 1.5 GB peak was an OOM waiting to
-happen. An unfiltered `turbo run typecheck` builds five tasks on top of that = **6-9 min**.
+not CPU**. Historical TypeScript 6.0.3 measurements were **321-341 s / 1.54 GB RSS** cold
+without incremental state and **91 s / 0.85 GB** warm with incremental state. The current
+TypeScript 7.0.2 native CLI measured **2:09 / 1.39 GiB** cold and **49 s / 513 MiB** warm;
+results and method are recorded in `docs/toolchain-update.md`. An unfiltered `turbo run
+typecheck` previously built five tasks on top of the cold TypeScript 6 check and took **6-9 min**.
 
 - **Never** a bare `turbo run <task>`; never `pnpm typecheck|test|lint` without `--filter`.
   Use `pnpm verify` / `verify:test` / `verify:lint`.
@@ -681,7 +682,7 @@ After implementation is complete with all validations passing, update **all affe
 | `pnpm-workspace.yaml`                                                           | pnpm workspace definition (packages/_, apps/_)                                                                                                                               |
 | `.npmrc`                                                                        | pnpm config (shamefully-hoist, auto-install-peers, strict-peer-dependencies=false)                                                                                           |
 | `stryker.conf.json`                                                             | Stryker mutation testing config (perTest coverage, TS checker, 6 workers, incremental cache, 50% break)                                                                      |
-| `scripts/typecheck-filter.mjs`                                                  | Typecheck with RTK TS2719 filter (known upstream bug)                                                                                                                        |
+| `scripts/run-native-tsc.mjs`                                                    | Native TypeScript CLI with serialized execution and RTK TS2719 filter (known upstream bug)                                                                                   |
 | `scripts/generate-service-map.mjs`                                              | AI service Mermaid dependency map generator                                                                                                                                  |
 | `scripts/github/pr-push.mjs`                                                    | Automated PR workflow (branch -> PR -> auto-merge -> cleanup)                                                                                                                |
 | `.devcontainer/devcontainer.json`                                               | DevContainer config (Dockerfile build, ports, extensions)                                                                                                                    |

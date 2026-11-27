@@ -577,6 +577,27 @@ test('local tool resolution uses its installed declared entrypoint and never pnp
     }
 })
 
+test('TypeScript hook resolution selects the isolated native compiler package', () => {
+    const { root, cleanup } = fixture()
+    try {
+        const packageDirectory = join(root, 'node_modules', '@cannaguide', 'typescript-native')
+        const entrypoint = join(packageDirectory, 'bin', 'tsc')
+        mkdirSync(join(packageDirectory, 'bin'), { recursive: true })
+        writeFileSync(
+            join(packageDirectory, 'package.json'),
+            JSON.stringify({ bin: { tsc: './bin/tsc' } }),
+        )
+        writeFileSync(entrypoint, 'process.exit(0)\n')
+        assert.deepEqual(resolveLocalTool('tsc', { repoRoot: root }), {
+            command: process.execPath,
+            argsPrefix: [entrypoint],
+            displayPath: entrypoint,
+        })
+    } finally {
+        cleanup()
+    }
+})
+
 test('resource guard warns on low memory but fails only under dangerous pressure', () => {
     assert.deepEqual(
         parseMemoryStatus(
@@ -635,7 +656,7 @@ test('active hook path contains no pnpm process launch', () => {
         'scripts/git-hooks/run-hook.mjs',
         'scripts/git-hooks/dependency-state.mjs',
         'scripts/scoped-verify.mjs',
-        'scripts/typecheck-filter.mjs',
+        'scripts/run-native-tsc.mjs',
         'scripts/lint-scopes.mjs',
     ]
     for (const file of files) {

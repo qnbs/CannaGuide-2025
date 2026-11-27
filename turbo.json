@@ -1,6 +1,11 @@
 {
     "$schema": "https://turbo.build/schema.json",
-    "globalDependencies": ["tsconfig.json", "pnpm-lock.yaml", ".node-version"],
+    "globalDependencies": [
+        "tsconfig.json",
+        "pnpm-lock.yaml",
+        ".node-version",
+        "scripts/run-native-tsc.mjs"
+    ],
     "tasks": {
         "build": {
             "dependsOn": ["^build"],

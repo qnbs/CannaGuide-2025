@@ -7,7 +7,7 @@
 //
 // Checks (all deterministic, read from the working tree):
 //   1. README release badge     == package.json version
-//   2. README TypeScript badge   == root devDep `typescript` major
+//   2. README TypeScript badge   == native CLI alias major (or root devDep `typescript`)
 //   3. README Vite badge         == apps/web devDep `vite` major
 //   4. README coverage badge     == apps/web/vite.config.ts `lines` threshold
 //   5. README CI-workflow count  == number of .github/workflows/*.yml files: the inline
@@ -46,7 +46,10 @@ const readme = readFileSync(README, 'utf8').replace(/\r\n?/g, '\n')
 // --- sources -------------------------------------------------------------
 const rootPkg = readJson('package.json')
 const webPkg = readJson('apps/web/package.json')
-const tsMajor = majorOf(rootPkg.devDependencies?.typescript)
+const tsCompilerSpecifier =
+    rootPkg.devDependencies?.['@cannaguide/typescript-native'] ??
+    rootPkg.devDependencies?.typescript
+const tsMajor = majorOf(tsCompilerSpecifier)
 const viteMajor = majorOf(webPkg.devDependencies?.vite)
 
 const viteConfig = readFileSync(join(ROOT, 'apps/web/vite.config.ts'), 'utf8')
@@ -77,7 +80,7 @@ const assertPresent = (matches, label) => {
 for (const m of assertPresent([...readme.matchAll(/TypeScript-(\d+)\.x-/g)], 'TypeScript badge')) {
     if (m[1] !== tsMajor) {
         fail(
-            `TypeScript badge: README "${m[1]}.x" != devDep major "${tsMajor}" (typescript ${rootPkg.devDependencies?.typescript})`,
+            `TypeScript badge: README "${m[1]}.x" != CLI compiler major "${tsMajor}" (${tsCompilerSpecifier})`,
         )
     }
 }

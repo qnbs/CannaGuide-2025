@@ -1,9 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { screen, fireEvent } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import { renderWithProviders } from '@/tests/test-utils'
 import { PlantStage, StrainType } from '@/types'
 import type { Plant } from '@/types'
 import { LeafDiagnosisPanel } from '@/components/views/plants/LeafDiagnosisPanel'
+import { plantsView as enPlants } from '@/locales/en/plants'
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -138,4 +139,120 @@ describe('LeafDiagnosisPanel', () => {
         const wizard = await screen.findByTestId('wizard-question', {}, { timeout: 5_000 })
         expect(wizard).toBeInTheDocument()
     })
+
+    it('reports camera cancellation after leaving the diagnosis tab during playback', async () => {
+        const stop = vi.fn()
+        const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream
+        const acquisition = Promise.withResolvers<MediaStream>()
+        const playback = Promise.withResolvers<void>()
+        const getUserMedia = vi.fn(() => acquisition.promise)
+        const originalMediaDevices = navigator.mediaDevices
+        Object.defineProperty(navigator, 'mediaDevices', {
+            configurable: true,
+            value: { getUserMedia },
+        })
+        const play = vi.spyOn(HTMLMediaElement.prototype, 'play').mockReturnValue(playback.promise)
+
+        try {
+            renderWithProviders(<LeafDiagnosisPanel plant={buildPlant()} />)
+            fireEvent.click(screen.getByRole('button', { name: 'Capture photo with camera' }))
+            await waitFor(() => expect(getUserMedia).toHaveBeenCalledOnce())
+            acquisition.resolve(stream)
+            await waitFor(() => expect(play).toHaveBeenCalledOnce())
+
+            fireEvent.click(screen.getByTestId('tab-manual'))
+            expect(stop).toHaveBeenCalledOnce()
+            playback.resolve()
+            fireEvent.click(screen.getByTestId('tab-ai'))
+
+            expect(
+                await screen.findByText('Camera capture was cancelled when you left this tab.'),
+            ).toBeVisible()
+        } finally {
+            playback.resolve()
+            play.mockRestore()
+            Object.defineProperty(navigator, 'mediaDevices', {
+                configurable: true,
+                value: originalMediaDevices,
+            })
+        }
+    })
+
+    it.each(['playback fails', 'the canvas context is unavailable'])(
+        'stops the camera stream and reports an error when %s',
+        async (failure) => {
+            const stop = vi.fn()
+            const getUserMedia = vi.fn().mockResolvedValue({
+                getTracks: () => [{ stop }],
+            } as unknown as MediaStream)
+            const originalMediaDevices = navigator.mediaDevices
+            Object.defineProperty(navigator, 'mediaDevices', {
+                configurable: true,
+                value: { getUserMedia },
+            })
+            const play = vi.spyOn(HTMLMediaElement.prototype, 'play')
+            const context = vi.spyOn(HTMLCanvasElement.prototype, 'getContext')
+            if (failure === 'playback fails') {
+                play.mockRejectedValueOnce(new Error('Playback failed'))
+            } else {
+                play.mockResolvedValueOnce(undefined)
+                context.mockReturnValueOnce(null)
+            }
+
+            try {
+                renderWithProviders(<LeafDiagnosisPanel plant={buildPlant()} />)
+                fireEvent.click(screen.getByRole('button', { name: 'Capture photo with camera' }))
+
+                await waitFor(() => expect(getUserMedia).toHaveBeenCalledOnce())
+                await waitFor(() => expect(stop).toHaveBeenCalledOnce())
+                expect(await screen.findByText(enPlants.aiDiagnostics.cameraError)).toBeVisible()
+            } finally {
+                context.mockRestore()
+                play.mockRestore()
+                Object.defineProperty(navigator, 'mediaDevices', {
+                    configurable: true,
+                    value: originalMediaDevices,
+                })
+            }
+        },
+    )
+
+    it.each(['acquisition', 'playback'])(
+        'releases camera tracks when unmounted during %s',
+        async (phase) => {
+            const stop = vi.fn()
+            const stream = { getTracks: () => [{ stop }] } as unknown as MediaStream
+            const acquisition = Promise.withResolvers<MediaStream>()
+            const playback = Promise.withResolvers<void>()
+            const getUserMedia = vi.fn(() => acquisition.promise)
+            const originalMediaDevices = navigator.mediaDevices
+            Object.defineProperty(navigator, 'mediaDevices', {
+                configurable: true,
+                value: { getUserMedia },
+            })
+            const play = vi
+                .spyOn(HTMLMediaElement.prototype, 'play')
+                .mockReturnValue(playback.promise)
+
+            try {
+                const view = renderWithProviders(<LeafDiagnosisPanel plant={buildPlant()} />)
+                fireEvent.click(screen.getByRole('button', { name: 'Capture photo with camera' }))
+                expect(getUserMedia).toHaveBeenCalledOnce()
+                if (phase === 'playback') {
+                    acquisition.resolve(stream)
+                    await waitFor(() => expect(play).toHaveBeenCalledOnce())
+                }
+                view.unmount()
+                if (phase === 'acquisition') acquisition.resolve(stream)
+                await waitFor(() => expect(stop).toHaveBeenCalledOnce())
+                expect(play).toHaveBeenCalledTimes(phase === 'playback' ? 1 : 0)
+            } finally {
+                play.mockRestore()
+                Object.defineProperty(navigator, 'mediaDevices', {
+                    configurable: true,
+                    value: originalMediaDevices,
+                })
+            }
+        },
+    )
 })

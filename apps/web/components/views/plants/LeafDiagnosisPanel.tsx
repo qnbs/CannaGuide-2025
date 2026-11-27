@@ -60,6 +60,17 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
 
     const fileInputRef = useRef<HTMLInputElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const cancelCameraRef = useRef<(() => void) | null>(null)
+
+    useEffect(() => {
+        if (activeTab === 'ai') return
+        const cancelCamera = cancelCameraRef.current
+        if (!cancelCamera) return
+        cancelCamera()
+        setError(t('plantsView.aiDiagnostics.cameraCancelled'))
+    }, [activeTab, t])
+
+    useEffect(() => () => cancelCameraRef.current?.(), [])
 
     // ---- Sync model status on mount ----------------------------------------
     useEffect(() => {
@@ -127,28 +138,50 @@ const LeafDiagnosisPanelComponent: React.FC<Props> = ({ plant }) => {
 
     // ---- Camera capture -------------------------------------------------------
     const handleCamera = useCallback(async () => {
-        if (!navigator.mediaDevices?.getUserMedia) return
+        if (!navigator.mediaDevices?.getUserMedia || cancelCameraRef.current) return
+        let stream: MediaStream | null = null
+        let video: HTMLVideoElement | null = null
+        let cancelled = false
+        const release = () => {
+            stream?.getTracks().forEach((track) => track.stop())
+            stream = null
+            if (video) video.srcObject = null
+        }
+        const cancel = () => {
+            cancelled = true
+            release()
+            cancelCameraRef.current = null
+        }
+        cancelCameraRef.current = cancel
+        setError(null)
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-            const video = document.createElement('video')
+            stream = await navigator.mediaDevices.getUserMedia({ video: true })
+            if (cancelled) return
+            video = document.createElement('video')
             video.srcObject = stream
             await video.play()
+            if (cancelled) return
             const cap = document.createElement('canvas')
             cap.width = video.videoWidth
             cap.height = video.videoHeight
             const ctx = cap.getContext('2d')
             if (!ctx) {
-                stream.getTracks().forEach((t) => t.stop())
+                setError(t('plantsView.aiDiagnostics.cameraError'))
                 return
             }
             ctx.drawImage(video, 0, 0)
-            stream.getTracks().forEach((t) => t.stop())
-            cap.toBlob((blob) => {
-                if (blob) extractImageData(new File([blob], 'capture.jpg', { type: 'image/jpeg' }))
-            }, 'image/jpeg')
+            release()
+            const blob = await new Promise<Blob | null>((resolve) =>
+                cap.toBlob(resolve, 'image/jpeg'),
+            )
+            if (cancelled) return
+            if (blob) extractImageData(new File([blob], 'capture.jpg', { type: 'image/jpeg' }))
+            else setError(t('plantsView.aiDiagnostics.cameraError'))
         } catch {
-            // Camera permission denied or hardware unavailable
-            setError(t('plantsView.aiDiagnostics.cameraError'))
+            if (!cancelled) setError(t('plantsView.aiDiagnostics.cameraError'))
+        } finally {
+            release()
+            if (cancelCameraRef.current === cancel) cancelCameraRef.current = null
         }
     }, [extractImageData, t])
 

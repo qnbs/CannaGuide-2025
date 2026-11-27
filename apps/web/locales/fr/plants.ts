@@ -53,6 +53,7 @@ export const plantsView = {
         dragDrop: 'Glissez-deposez votre image ici, ou cliquez pour parcourir.',
         capture: 'Capturer avec Camera',
         cameraError: "Impossible d'acceder a la camera. Veuillez verifier les permissions.",
+        cameraCancelled: 'La capture camera a ete annulee en quittant cet onglet.',
         plantContext: 'Fournir le contexte pour',
         generalContext: 'Contexte General',
         userNotesPlaceholder:

@@ -60,6 +60,7 @@ export const plantsView = {
         dragDrop: 'Bild hierher ziehen oder klicken, um zu suchen.',
         capture: 'Mit Kamera aufnehmen',
         cameraError: 'Kamerazugriff fehlgeschlagen. Bitte Berechtigungen prüfen.',
+        cameraCancelled: 'Die Kameraaufnahme wurde beim Wechsel des Tabs abgebrochen.',
         plantContext: 'Kontext bereitstellen für',
         generalContext: 'Allgemeiner Kontext',
         userNotesPlaceholder:

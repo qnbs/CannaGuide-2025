@@ -26,6 +26,8 @@ on:
             - 'apps/web/components/common/ReloadPrompt.tsx'
             - 'scripts/desktop-smoke.mjs'
             - 'scripts/desktop-smoke-ci.mjs'
+            - 'scripts/check-appimage-permissions.sh'
+            - 'scripts/prepare-appimage-launcher.sh'
             - 'scripts/desktop-smoke-profile.mjs'
             - '.node-version'
             - '.github/actions/setup-node-ci/action.yml'
@@ -137,6 +139,10 @@ jobs:
             # workflow fail at startup, including the v1.8.2-v1.10.0 tag pushes.
             - name: Setup Node + install dependencies
               uses: ./.github/actions/setup-node-ci
+
+            - name: Prepare verified AppImage launcher
+              if: matrix.target == 'x86_64-unknown-linux-gnu'
+              run: bash scripts/prepare-appimage-launcher.sh
 
             # tauri-bundler starts macOS code signing as soon as APPLE_CERTIFICATE is
             # set -- even to the empty string an unconfigured secret expands to -- and
@@ -316,6 +322,10 @@ jobs:
               run: |
                   node ./scripts/check-pnpm-lockfile.mjs
                   pnpm install --frozen-lockfile
+
+            - name: Prepare verified AppImage launcher
+              if: matrix.target == 'x86_64-unknown-linux-gnu'
+              run: bash scripts/prepare-appimage-launcher.sh
 
             - name: Build unsigned bundles
               working-directory: apps/desktop

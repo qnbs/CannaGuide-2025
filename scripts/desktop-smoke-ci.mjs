@@ -188,6 +188,15 @@ function smoke(args, wrap = []) {
     return ok(run(command, [...harness, ...args]))
 }
 
+export function appImageFuseUnavailable(stdout, stderr) {
+    return (
+        /^Cannot mount AppImage, please check your FUSE setup\.$/m.test(stdout) ||
+        /^(?:fuse: failed to open \/dev\/fuse|fusermount(?:3)?: mount failed|dlopen\(\): error loading libfuse\.so\.2)/m.test(
+            stderr,
+        )
+    )
+}
+
 function linux({ bundle, target, version, evidence }) {
     if (
         !ok(
@@ -202,6 +211,7 @@ function linux({ bundle, target, version, evidence }) {
                 'imagemagick',
                 'dbus',
                 'dbus-x11',
+                'squashfs-tools',
             ]),
         )
     ) {
@@ -212,6 +222,19 @@ function linux({ bundle, target, version, evidence }) {
     const appimage = findIn(join(bundle, 'appimage'), /\.AppImage$/)
     if (!deb || !appimage) {
         console.log(`[FAIL] .deb or AppImage missing in ${bundle}`)
+        return false
+    }
+    chmodSync(appimage, 0o755)
+    const imagePath = resolve(appimage)
+    const offset = run(imagePath, ['--appimage-offset'], {
+        stdio: ['ignore', 'pipe', 'inherit'],
+        timeout: 10_000,
+    })
+    if (
+        !ok(offset) ||
+        !ok(run('bash', ['scripts/check-appimage-permissions.sh', imagePath, offset.stdout.trim()]))
+    ) {
+        console.log('[FAIL] could not verify the packaged AppImage permissions')
         return false
     }
     // A virtual display and its own session bus per run; the window check must pass.
@@ -237,16 +260,24 @@ function linux({ bundle, target, version, evidence }) {
     ) {
         passed = false
     }
-    chmodSync(appimage, 0o755)
-    if (
-        !smoke(
-            ['--app', resolve(appimage), '--appimage', '--label', `${target}-appimage`, ...common],
-            wrap,
-        )
-    ) {
-        passed = false
+    const appimageLabel = `${target}-appimage`
+    const appimageSmoke = (label, flags = []) =>
+        smoke(['--app', imagePath, ...flags, '--label', label, ...common], wrap)
+    if (existsSync('/dev/fuse')) {
+        if (appimageSmoke(appimageLabel)) return passed
+        const summary = join(evidence, `${appimageLabel}-smoke.json`)
+        const stdout = join(evidence, `${appimageLabel}-first-start.stdout.log`)
+        const stderr = join(evidence, `${appimageLabel}-first-start.stderr.log`)
+        if (!existsSync(summary) || !existsSync(stdout) || !existsSync(stderr)) return false
+        if (
+            JSON.parse(readFileSync(summary, 'utf8')).firstRecord ||
+            !appImageFuseUnavailable(readFileSync(stdout, 'utf8'), readFileSync(stderr, 'utf8'))
+        ) {
+            return false
+        }
     }
-    return passed
+    console.log('[WARN] FUSE unavailable; AppImage smoke uses extraction')
+    return appimageSmoke(`${appimageLabel}-extracted`, ['--appimage']) && passed
 }
 
 function macos({ bundle, target, version, evidence }) {

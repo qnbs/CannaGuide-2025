@@ -188,6 +188,15 @@ function smoke(args, wrap = []) {
     return ok(run(command, [...harness, ...args]))
 }
 
+export function appImageFuseUnavailable(stdout, stderr) {
+    return (
+        /^Cannot mount AppImage, please check your FUSE setup\.$/m.test(stdout) ||
+        /^(?:fuse: failed to open \/dev\/fuse|fusermount(?:3)?: mount failed|dlopen\(\): error loading libfuse\.so\.2)/m.test(
+            stderr,
+        )
+    )
+}
+
 function linux({ bundle, target, version, evidence }) {
     if (
         !ok(
@@ -251,19 +260,24 @@ function linux({ bundle, target, version, evidence }) {
     ) {
         passed = false
     }
-    const appimageMode = existsSync('/dev/fuse') ? [] : ['--appimage']
-    if (appimageMode.length) {
-        console.log('[WARN] /dev/fuse unavailable; AppImage smoke uses extraction')
+    const appimageLabel = `${target}-appimage`
+    const appimageSmoke = (label, flags = []) =>
+        smoke(['--app', imagePath, ...flags, '--label', label, ...common], wrap)
+    if (existsSync('/dev/fuse')) {
+        if (appimageSmoke(appimageLabel)) return passed
+        const summary = join(evidence, `${appimageLabel}-smoke.json`)
+        const stdout = join(evidence, `${appimageLabel}-first-start.stdout.log`)
+        const stderr = join(evidence, `${appimageLabel}-first-start.stderr.log`)
+        if (!existsSync(summary) || !existsSync(stdout) || !existsSync(stderr)) return false
+        if (
+            JSON.parse(readFileSync(summary, 'utf8')).firstRecord ||
+            !appImageFuseUnavailable(readFileSync(stdout, 'utf8'), readFileSync(stderr, 'utf8'))
+        ) {
+            return false
+        }
     }
-    if (
-        !smoke(
-            ['--app', imagePath, ...appimageMode, '--label', `${target}-appimage`, ...common],
-            wrap,
-        )
-    ) {
-        passed = false
-    }
-    return passed
+    console.log('[WARN] FUSE unavailable; AppImage smoke uses extraction')
+    return appimageSmoke(`${appimageLabel}-extracted`, ['--appimage']) && passed
 }
 
 function macos({ bundle, target, version, evidence }) {

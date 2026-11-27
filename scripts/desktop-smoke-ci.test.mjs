@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 
 import {
+    appImageFuseUnavailable,
     appBinary,
     findIn,
     findInstalled,
@@ -15,6 +16,22 @@ import {
     uninstallNsis,
     waitUntil,
 } from './desktop-smoke-ci.mjs'
+
+test('AppImage smoke falls back only for explicit FUSE diagnostics', () => {
+    assert.equal(
+        appImageFuseUnavailable('Cannot mount AppImage, please check your FUSE setup.\n', ''),
+        true,
+    )
+    assert.equal(
+        appImageFuseUnavailable('', 'fuse: failed to open /dev/fuse: Operation not permitted'),
+        true,
+    )
+    assert.equal(
+        appImageFuseUnavailable('', 'AppRun: line 12: AppRun.wrapped: Permission denied'),
+        false,
+    )
+    assert.equal(appImageFuseUnavailable('', 'application startup timed out'), false)
+})
 
 const tree = (t) => {
     const root = mkdtempSync(join(tmpdir(), 'cannaguide-smoke-ci-'))

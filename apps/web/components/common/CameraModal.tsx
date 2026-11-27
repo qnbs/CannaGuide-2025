@@ -192,6 +192,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({
                     ref={videoRef}
                     autoPlay
                     playsInline
+                    onError={showCameraError}
                     className={`w-full h-auto max-h-[60dvh] object-contain rounded-md ${videoVisibilityClass}`}
                 >
                     <track

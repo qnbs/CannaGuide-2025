@@ -178,6 +178,43 @@ describe('CameraModal stream lifecycle', () => {
         expect(replacement.stop).toHaveBeenCalledOnce()
     })
 
+    it('releases a failed preview and captures successfully after retry', async () => {
+        const failedPreview = createStream(2)
+        const replacement = createStream(2)
+        const image = 'data:image/jpeg;base64,Y2FtZXJh'
+        getUserMedia
+            .mockResolvedValueOnce(failedPreview.stream)
+            .mockResolvedValueOnce(replacement.stream)
+        vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+            drawImage: vi.fn(),
+        } as unknown as GPUCanvasContext)
+        vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(image)
+        vi.spyOn(HTMLVideoElement.prototype, 'videoWidth', 'get').mockReturnValue(1280)
+        vi.spyOn(HTMLVideoElement.prototype, 'videoHeight', 'get').mockReturnValue(720)
+        const onCapture = vi.fn()
+
+        const view = render(<CameraModal isOpen onClose={vi.fn()} onCapture={onCapture} />)
+        const video = view.container.querySelector('video')
+        if (!video) throw new Error('Expected the camera preview video')
+        await waitFor(() => expect(video.srcObject).toBe(failedPreview.stream))
+
+        fireEvent.error(video)
+
+        for (const stop of failedPreview.stops) expect(stop).toHaveBeenCalledOnce()
+        expect(screen.getByRole('alert')).toHaveTextContent('plantsView.aiDiagnostics.cameraError')
+        expect(screen.getByRole('button', { name: 'common.errorBoundary.retry' })).toBeEnabled()
+
+        fireEvent.click(screen.getByRole('button', { name: 'common.errorBoundary.retry' }))
+        await waitFor(() => expect(video.srcObject).toBe(replacement.stream))
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+        fireEvent.click(screen.getByRole('button', { name: 'plantsView.aiDiagnostics.capture' }))
+        for (const stop of replacement.stops) expect(stop).toHaveBeenCalledOnce()
+        expect(screen.getByAltText('common.capturedImage')).toHaveAttribute('src', image)
+        fireEvent.click(screen.getByRole('button', { name: 'common.confirm' }))
+        expect(onCapture).toHaveBeenCalledExactlyOnceWith(image)
+    })
+
     it.each(['drawImage', 'toDataURL'])(
         'recovers when %s throws during capture',
         async (method) => {

@@ -21,9 +21,11 @@ typescript-eslint's optional `@typescript/native` peer, whose current range star
 7.1 prereleases, while its classic `typescript` API peer remains `<6.1.0`.
 
 `scripts/run-native-tsc.mjs` resolves the CLI by its declared package entrypoint, adds
-`--singleThreaded`, preserves diagnostics when the child is terminated, and filters only the
-existing RTK `TS2719` in `store.ts`. Workspace typecheck and declaration build tasks use this
-runner; declaration builds use one builder. The AST checks continue importing `typescript` 6.0.3.
+`--singleThreaded` and preserves diagnostics when the child is terminated. Only a typecheck
+running from `apps/web` may filter the documented RTK `TS2719` at
+`apps/web/stores/store.ts`; other workspace checks and declaration builds treat every
+TypeScript diagnostic as a failure. Root invocations delegate to `scripts/scoped-verify.mjs`.
+Declaration builds use one builder. The AST checks continue importing `typescript` 6.0.3.
 
 Measured on the 2026-11-27 candidate worktree with Node 24.22.3 / pnpm 11.19.0:
 
@@ -350,8 +352,9 @@ repo ended up with git hooks everyone bypassed via `--no-verify`.
   from the merge-base diff and runs `turbo run <task>` filtered to them, at
   `--concurrency=1`. This is what `pre-push` calls.
 - `scripts/run-native-tsc.mjs` is the native CLI wrapper used by workspace typecheck and
-  declaration build tasks. It filters the known upstream RTK `TS2719`; it does no workspace
-  scoping of its own.
+  declaration build tasks. Root typecheck invocations delegate to `scripts/scoped-verify.mjs`;
+  workspace invocations run the compiler in that workspace. Only the web typecheck filters the
+  one documented upstream diagnostic at `apps/web/stores/store.ts`.
 
 ---
 

@@ -248,7 +248,7 @@ The app enforces the German Cannabis Act (Konsumcannabisgesetz / KCanG) limits a
 
 ### CI Gate Checklist (verify before every commit)
 
-1. **Typecheck clean:** `node ./scripts/run-native-tsc.mjs --noEmit` -- 0 errors (TS2719 filtered)
+1. **Typecheck clean:** `pnpm verify` -- serial check of the workspaces affected by the current diff; web changes check `apps/web`, while shared root inputs check every workspace. Only the web typecheck filters the documented RTK TS2719 at `apps/web/stores/store.ts`.
 2. **Tests pass:** `pnpm --filter @cannaguide/web test:run <spec>` -- 0 failures
 3. **Build succeeds:** `pnpm run build`
 4. **Lint zero warnings:** `eslint --max-warnings 0` on staged files (enforced by lint-staged)

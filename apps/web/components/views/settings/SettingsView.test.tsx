@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { SettingsView } from './SettingsView'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
@@ -111,18 +111,32 @@ describe('SettingsView navigation smoke', () => {
     ]
 
     it.each(tabCases)(
-        'opens tab %s without crash',
+        'opens tab $label without crash',
         async ({ label, expected, expectedHeading }) => {
             render(<SettingsView />)
 
-            fireEvent.click(screen.getByRole('tab', { name: label }))
+            await act(async () => {
+                fireEvent.click(screen.getByRole('tab', { name: label }))
+                if (label === 'settingsView.categories.privacy') {
+                    // Resolve the real lazy module inside act so Suspense can commit its retry.
+                    await import('./PrivacySettingsTab')
+                }
+            })
 
             if (expectedHeading) {
                 expect(
                     await screen.findByRole('heading', { name: expectedHeading }),
                 ).toBeInTheDocument()
             } else {
-                expect(await screen.findByText(expected)).toBeInTheDocument()
+                if (label === 'settingsView.categories.privacy') {
+                    expect(
+                        screen.getByRole('switch', {
+                            name: /^settingsView\.privacy\.requirePin$/i,
+                        }),
+                    ).toBeInTheDocument()
+                } else {
+                    expect(await screen.findByText(expected)).toBeInTheDocument()
+                }
             }
             expect(screen.queryByText('Something went wrong.')).not.toBeInTheDocument()
             expect(screen.queryByText('An unexpected error occurred.')).not.toBeInTheDocument()

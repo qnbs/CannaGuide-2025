@@ -45,6 +45,7 @@ export const VoiceControl: React.FC = () => {
     const [speechConsentDialogOpen, setSpeechConsentDialogOpen] = useState(false)
     const [commandListenerRequested, setCommandListenerRequested] = useState(false)
     const [pendingManualStart, setPendingManualStart] = useState(false)
+    const [hotwordRecoveryRevision, setHotwordRecoveryRevision] = useState(0)
     const pendingStartAfterConsentRef = useRef(false)
     const consentPromptedRef = useRef(false)
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
@@ -60,9 +61,17 @@ export const VoiceControl: React.FC = () => {
     // Read by the end and hotword handlers. As a dependency, isListening made
     // every start or stop of a session rebuild (and abort) the recognizers.
     const isListeningRef = useRef(isListening)
+    const statusMessageRef = useRef(statusMessage)
+    const wakeWordEngineRef = useRef(wakeWordEngine)
     useLayoutEffect(() => {
         isListeningRef.current = isListening
     }, [isListening])
+    useLayoutEffect(() => {
+        statusMessageRef.current = statusMessage
+    }, [statusMessage])
+    useLayoutEffect(() => {
+        wakeWordEngineRef.current = wakeWordEngine
+    }, [wakeWordEngine])
 
     // Hotword listener state
     const hotwordRecRef = useRef<WSpeechRecognition | null>(null)
@@ -230,6 +239,14 @@ export const VoiceControl: React.FC = () => {
                 abortSpeechRecognition(recognition, onResult, onError, onEnd)
                 recognitionRef.current = null
             }
+            if (wakeWordEngineRef.current !== wakeWordEngine && isListeningRef.current) {
+                isListeningRef.current = false
+                setCommandListenerRequested(false)
+                setVoiceListening(false)
+                if (statusMessageRef.current === t('common.voiceControl.listening')) {
+                    setVoiceStatusMessage(null)
+                }
+            }
         }
     }, [
         isAvailable,
@@ -241,6 +258,10 @@ export const VoiceControl: React.FC = () => {
         handleResult,
         handleError,
         handleEnd,
+        setCommandListenerRequested,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        t,
     ])
 
     useEffect(() => {
@@ -255,8 +276,16 @@ export const VoiceControl: React.FC = () => {
             isListeningRef.current = false
             setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
             setVoiceListening(false)
+            setHotwordRecoveryRevision((revision) => revision + 1)
         }
-    }, [pendingManualStart, browserSpeechAllowed, setVoiceListening, setVoiceStatusMessage, t])
+    }, [
+        pendingManualStart,
+        browserSpeechAllowed,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        setHotwordRecoveryRevision,
+        t,
+    ])
 
     useEffect(() => {
         if (speechBlocked || speechConsentGranted) {
@@ -328,6 +357,7 @@ export const VoiceControl: React.FC = () => {
                 isListeningRef.current = false
                 setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
                 setVoiceListening(false)
+                setHotwordRecoveryRevision((revision) => revision + 1)
             }
         }
 
@@ -355,6 +385,7 @@ export const VoiceControl: React.FC = () => {
         setPendingManualStart,
         setVoiceListening,
         setVoiceStatusMessage,
+        setHotwordRecoveryRevision,
         t,
     ])
 
@@ -364,12 +395,13 @@ export const VoiceControl: React.FC = () => {
     const startHotwordSession = useCallback(() => {
         if (speechBlockedRef.current || !speechConsentRef.current) return
         setHotwordActive(true)
-        setVoiceStatusMessage(t('common.voiceControl.hotwordDetected'))
+        const hotwordMessage = t('common.voiceControl.hotwordDetected')
+        setVoiceStatusMessage(hotwordMessage)
         if (hotwordTimerRef.current !== null) clearTimeout(hotwordTimerRef.current)
         hotwordTimerRef.current = setTimeout(() => {
             hotwordTimerRef.current = null
             setHotwordActive(false)
-            setVoiceStatusMessage(null)
+            if (statusMessageRef.current === hotwordMessage) setVoiceStatusMessage(null)
         }, HOTWORD_ACTIVATION_MS)
         requestCommandListening()
     }, [t, setVoiceStatusMessage, requestCommandListening])
@@ -400,6 +432,7 @@ export const VoiceControl: React.FC = () => {
         setVoiceListening,
         setVoiceStatusMessage,
         translate: t,
+        recoveryRevision: hotwordRecoveryRevision,
         speechBlockedRef,
         speechConsentRef,
         isListeningRef,

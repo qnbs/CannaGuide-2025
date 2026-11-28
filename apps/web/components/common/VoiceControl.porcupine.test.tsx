@@ -20,6 +20,10 @@ let localOnly = false
 let hotword = true
 let engine: 'regex' | 'porcupine' = 'porcupine'
 let speechConsentVersion: number | null = null
+let voiceListening = false
+const setVoiceListening = vi.fn((listening: boolean) => {
+    voiceListening = listening
+})
 
 vi.mock('@/services/porcupineKeyService', () => ({
     porcupineKeyService: {
@@ -56,8 +60,8 @@ vi.mock('./BrowserSpeechConsentDialog', () => ({
 vi.mock('@/stores/useUIStore', () => ({
     useUIStore: (selector: (s: Record<string, unknown>) => unknown) =>
         selector({
-            voiceControl: { isListening: false, isAvailable: true, statusMessage: null },
-            setVoiceListening: vi.fn(),
+            voiceControl: { isListening: voiceListening, isAvailable: true, statusMessage: null },
+            setVoiceListening,
             setVoiceStatusMessage: vi.fn(),
             processVoiceCommand: vi.fn(),
             addNotification: vi.fn(),
@@ -103,16 +107,25 @@ vi.mock('./Button', () => ({
 type WindowWithSpeech = Window & { SpeechRecognition?: unknown }
 const startBrowserSpeech = vi.fn()
 const constructBrowserSpeech = vi.fn()
-const mockSpeechInstances: Array<{ abort: ReturnType<typeof vi.fn> }> = []
+const mockSpeechInstances: MockSpeechRecognition[] = []
 class MockSpeechRecognition {
     continuous = false
     interimResults = false
     lang = ''
-    addEventListener = vi.fn()
-    removeEventListener = vi.fn()
+    private readonly listeners: Record<string, (event: unknown) => void> = {}
+    addEventListener = vi.fn((type: string, listener: (event: unknown) => void) => {
+        this.listeners[type] = listener
+    })
+    removeEventListener = vi.fn((type: string, listener: (event: unknown) => void) => {
+        if (this.listeners[type] === listener) delete this.listeners[type]
+    })
     start = startBrowserSpeech
     stop = vi.fn()
     abort = vi.fn()
+
+    fire(type: string, event: unknown): void {
+        this.listeners[type]?.(event)
+    }
 
     constructor() {
         constructBrowserSpeech()
@@ -152,6 +165,7 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         hotword = true
         engine = 'porcupine'
         speechConsentVersion = null
+        voiceListening = false
         mockSpeechInstances.length = 0
         ;(window as WindowWithSpeech).SpeechRecognition = MockSpeechRecognition
     })
@@ -185,6 +199,36 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         expect(porcupine.init).not.toHaveBeenCalled()
         expect(constructBrowserSpeech).not.toHaveBeenCalled()
         expect(startBrowserSpeech).not.toHaveBeenCalled()
+    })
+
+    it('clears active command state when changing recognition engines', async () => {
+        engine = 'regex'
+        speechConsentVersion = 1
+        keyStore.key = STORED
+        const { porcupine, view, VoiceControl } = await renderVoiceControl()
+        const hotword = mockSpeechInstances[1]
+
+        act(() =>
+            hotword?.fire('result', {
+                results: [
+                    Object.assign([{ transcript: 'hey canna', confidence: 1 }], {
+                        isFinal: true,
+                    }),
+                ],
+            }),
+        )
+        expect(voiceListening).toBe(true)
+
+        engine = 'porcupine'
+        view.rerender(<VoiceControl />)
+        await settle()
+
+        view.rerender(<VoiceControl />)
+        await settle()
+
+        expect(voiceListening).toBe(false)
+        expect(setVoiceListening).toHaveBeenLastCalledWith(false)
+        expect(porcupine.start).toHaveBeenCalledOnce()
     })
 
     it('starts regex hotword recognition only after browser speech consent', async () => {

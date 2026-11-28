@@ -81,14 +81,19 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: mockT }),
 }))
 
-const mockSetVoiceListening = vi.fn()
+const mockSetVoiceListening = vi.fn((listening: boolean) => {
+    mockIsListening = listening
+})
 const mockAddNotification = vi.fn()
 let mockLocalOnly = false
 let mockHotwordEnabled = false
 let mockIsListening = false
 let mockContinuous = false
 let mockSpeechConsentVersion: number | null = 1
-const mockSetVoiceStatusMessage = vi.fn()
+let mockStatusMessage: string | null = null
+const mockSetVoiceStatusMessage = vi.fn((message: string | null) => {
+    mockStatusMessage = message
+})
 const mockProcessVoiceCommand = vi.fn()
 
 vi.mock('@/stores/useUIStore', () => ({
@@ -97,7 +102,7 @@ vi.mock('@/stores/useUIStore', () => ({
             voiceControl: {
                 isListening: mockIsListening,
                 isAvailable: true,
-                statusMessage: null,
+                statusMessage: mockStatusMessage,
             },
             setVoiceListening: mockSetVoiceListening,
             setVoiceStatusMessage: mockSetVoiceStatusMessage,
@@ -181,6 +186,7 @@ beforeEach(() => {
     mockIsListening = false
     mockContinuous = false
     mockSpeechConsentVersion = 1
+    mockStatusMessage = null
     installMockSpeechRecognition()
 })
 
@@ -412,6 +418,61 @@ const finalResult = (transcript: string) => ({
 })
 
 describe('VoiceControl -- Local-Only Mode', () => {
+    it('keeps a newer voice status when the hotword announcement expires', async () => {
+        vi.useFakeTimers()
+        try {
+            mockHotwordEnabled = true
+            const VC = await importVoiceControl()
+            const view = render(React.createElement(VC))
+            const hotword = mockInstances[1]
+            act(() => hotword?.fire('result', finalResult('hey canna')))
+
+            expect(mockStatusMessage).toBe('common.voiceControl.listening')
+            mockStatusMessage = 'common.voiceControl.processing'
+            view.rerender(React.createElement(VC))
+
+            act(() => vi.advanceTimersByTime(5_000))
+
+            expect(mockStatusMessage).toBe('common.voiceControl.processing')
+            expect(mockSetVoiceStatusMessage).not.toHaveBeenLastCalledWith(null)
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('restarts the regex wake listener after a command recognizer start failure', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        render(React.createElement(VC))
+        const [command, hotword] = mockInstances
+        command?.start.mockImplementationOnce(() => {
+            throw new Error('start failed')
+        })
+
+        act(() => hotword?.fire('result', finalResult('hey canna')))
+
+        expect(command?.start).toHaveBeenCalledOnce()
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
+            'common.voiceControl.errors.startFailed',
+        )
+        expect(mockInstances).toHaveLength(3)
+        expect(mockInstances[2]?.start).toHaveBeenCalledOnce()
+    })
+
+    it('keeps the consented hotword session across an unrelated render', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        const hotword = mockInstances[1]
+        const instanceCount = mockInstances.length
+
+        view.rerender(React.createElement(VC))
+
+        expect(mockInstances).toHaveLength(instanceCount)
+        expect(hotword?.abort).not.toHaveBeenCalled()
+        expect(hotword?.start).toHaveBeenCalledOnce()
+    })
+
     it('restarts the hotword recognizer after a recoverable network error', async () => {
         vi.useFakeTimers()
         try {
@@ -444,7 +505,7 @@ describe('VoiceControl -- Local-Only Mode', () => {
         }
     })
 
-    it('keeps the activation announcement timer across listening-state changes', async () => {
+    it('preserves the command status after the hotword activation timer expires', async () => {
         vi.useFakeTimers()
         try {
             mockHotwordEnabled = true
@@ -456,7 +517,8 @@ describe('VoiceControl -- Local-Only Mode', () => {
             view.rerender(React.createElement(VC))
             act(() => vi.advanceTimersByTime(5_000))
 
-            expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(null)
+            expect(mockSetVoiceStatusMessage).not.toHaveBeenLastCalledWith(null)
+            expect(mockStatusMessage).toBe('common.voiceControl.listening')
         } finally {
             vi.useRealTimers()
         }

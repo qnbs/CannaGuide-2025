@@ -20,6 +20,7 @@ interface UseRegexHotwordOptions {
     hotwordEnabled: boolean
     speechBlocked: boolean
     speechConsentGranted: boolean
+    recoveryRevision: number
     lang: string
     activateFromHotword: () => void
     handleError: (event: WSpeechRecognitionErrorEvent) => void
@@ -36,39 +37,187 @@ interface UseRegexHotwordOptions {
     hotwordCleanupRef: Ref<(() => void) | null>
 }
 
+type RegexHotwordSessionOptions = Pick<
+    UseRegexHotwordOptions,
+    | 'lang'
+    | 'activateFromHotword'
+    | 'handleError'
+    | 'setVoiceListening'
+    | 'setVoiceStatusMessage'
+    | 'translate'
+    | 'speechBlockedRef'
+    | 'speechConsentRef'
+    | 'isListeningRef'
+    | 'hotwordRecRef'
+    | 'hotwordCleanupRef'
+>
+
+const terminalError = (error: string): boolean =>
+    ['not-allowed', 'service-not-allowed', 'audio-capture', 'language-not-supported'].includes(
+        error,
+    )
+
+class RegexHotwordSession {
+    private stopped = false
+    private restartDelayMs = 200
+    private retryAfterError = false
+    private restartTimer: ReturnType<typeof setTimeout> | null = null
+    private recognition: WSpeechRecognition | null = null
+    private listeners: {
+        result: (event: WSpeechRecognitionEvent) => void
+        error: (event: WSpeechRecognitionErrorEvent) => void
+        end: () => void
+    } | null = null
+    private cleanup: (() => void) | null = null
+
+    constructor(private readonly options: RegexHotwordSessionOptions) {}
+
+    setCleanup(cleanup: () => void): void {
+        this.cleanup = cleanup
+    }
+
+    start(): void {
+        if (!this.isAllowed() || !SpeechRecognitionAPI) return
+        const recognition = new SpeechRecognitionAPI()
+        recognition.continuous = true
+        recognition.interimResults = true
+        recognition.lang = recognitionLang(this.options.lang)
+        this.recognition = recognition
+        this.listeners = {
+            result: (event) => this.handleResult(event),
+            error: (event) => this.handleError(event),
+            end: () => this.handleEnd(),
+        }
+        recognition.addEventListener('result', this.listeners.result)
+        recognition.addEventListener('error', this.listeners.error)
+        recognition.addEventListener('end', this.listeners.end)
+        this.options.hotwordRecRef.current = recognition
+
+        try {
+            recognition.start()
+        } catch {
+            console.debug('[VoiceControl] Hotword recognizer failed to start')
+            this.stop()
+            this.options.setVoiceStatusMessage(
+                this.options.translate('common.voiceControl.errors.startFailed'),
+            )
+            this.options.setVoiceListening(false)
+        }
+    }
+
+    stop(): void {
+        this.stopped = true
+        if (this.restartTimer !== null) clearTimeout(this.restartTimer)
+        this.restartTimer = null
+        this.detachRecognition(true)
+        if (this.options.hotwordCleanupRef.current === this.cleanup) {
+            this.options.hotwordCleanupRef.current = null
+        }
+    }
+
+    private isAllowed(): boolean {
+        const { speechBlockedRef, speechConsentRef, isListeningRef } = this.options
+        return (
+            !this.stopped &&
+            !speechBlockedRef.current &&
+            speechConsentRef.current &&
+            !isListeningRef.current
+        )
+    }
+
+    private handleResult(event: WSpeechRecognitionEvent): void {
+        if (!this.isAllowed()) return
+        this.restartDelayMs = 200
+        this.retryAfterError = false
+        for (const result of Array.from(
+            { length: event.results.length },
+            (_, index) => event.results[index],
+        )) {
+            const transcript = result?.[0]?.transcript
+            if (!transcript || !HOTWORD_REGEX.test(transcript)) continue
+            voiceTelemetryService.recordVoiceEvent('hotwordDetected', { engine: 'regex' })
+            this.options.activateFromHotword()
+            return
+        }
+    }
+
+    private handleError(event: WSpeechRecognitionErrorEvent): void {
+        if (!this.isAllowed()) return
+        if (terminalError(event.error)) this.stop()
+        else this.retryAfterError = true
+        this.options.handleError(event)
+    }
+
+    private handleEnd(): void {
+        if (!this.isAllowed()) {
+            this.detachRecognition(false)
+            return
+        }
+        const delay = this.retryAfterError ? this.restartDelayMs : 200
+        if (this.retryAfterError) this.restartDelayMs = Math.min(this.restartDelayMs * 2, 5_000)
+        this.retryAfterError = false
+        this.detachRecognition(false)
+        this.restartTimer = setTimeout(() => {
+            this.restartTimer = null
+            this.start()
+        }, delay)
+    }
+
+    private detachRecognition(abort: boolean): void {
+        const recognition = this.recognition
+        const listeners = this.listeners
+        this.recognition = null
+        this.listeners = null
+        if (!recognition || !listeners) return
+        if (abort)
+            abortSpeechRecognition(recognition, listeners.result, listeners.error, listeners.end)
+        else {
+            recognition.removeEventListener('result', listeners.result)
+            recognition.removeEventListener('error', listeners.error)
+            recognition.removeEventListener('end', listeners.end)
+        }
+        if (this.options.hotwordRecRef.current === recognition) {
+            this.options.hotwordRecRef.current = null
+        }
+    }
+}
+
 /** Owns the browser hotword recognizer and its recoverable restart lifecycle. */
-export const useRegexHotword = ({
-    wakeWordEngine,
-    isAvailable,
-    isListening,
-    hotwordEnabled,
-    speechBlocked,
-    speechConsentGranted,
-    lang,
-    activateFromHotword,
-    handleError,
-    enqueuePorcupine,
-    releasePorcupine,
-    setVoiceListening,
-    setVoiceStatusMessage,
-    translate,
-    speechBlockedRef,
-    speechConsentRef,
-    isListeningRef,
-    porcupineWasScheduledRef,
-    hotwordRecRef,
-    hotwordCleanupRef,
-}: UseRegexHotwordOptions): void => {
+export const useRegexHotword = (options: UseRegexHotwordOptions): void => {
+    const {
+        wakeWordEngine,
+        isAvailable,
+        isListening,
+        hotwordEnabled,
+        speechBlocked,
+        speechConsentGranted,
+        recoveryRevision,
+        lang,
+        activateFromHotword,
+        handleError,
+        enqueuePorcupine,
+        releasePorcupine,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        translate,
+        speechBlockedRef,
+        speechConsentRef,
+        isListeningRef,
+        porcupineWasScheduledRef,
+        hotwordRecRef,
+        hotwordCleanupRef,
+    } = options
+
     useEffect(() => {
-        if (
-            wakeWordEngine !== 'regex' ||
-            !SpeechRecognitionAPI ||
-            !wakeWordAllowed(
+        const enabled =
+            wakeWordEngine === 'regex' &&
+            Boolean(SpeechRecognitionAPI) &&
+            wakeWordAllowed(
                 hotwordEnabled,
                 isAvailable,
                 speechBlocked || !speechConsentGranted || isListening,
             )
-        ) {
+        if (!enabled) {
             const stopHotword = hotwordCleanupRef.current
             if (stopHotword) stopHotword()
             else {
@@ -78,128 +227,32 @@ export const useRegexHotword = ({
             return
         }
 
-        let stopped = false
-        let restartDelayMs = 200
-        let retryAfterError = false
-        let restartTimer: ReturnType<typeof setTimeout> | null = null
-
-        const startHotword = () => {
-            if (
-                stopped ||
-                speechBlockedRef.current ||
-                !speechConsentRef.current ||
-                isListeningRef.current ||
-                !SpeechRecognitionAPI
-            )
-                return
-            const recognition = new SpeechRecognitionAPI()
-            recognition.continuous = true
-            recognition.interimResults = true
-            recognition.lang = recognitionLang(lang)
-
-            const onResult = (event: WSpeechRecognitionEvent) => {
-                if (
-                    stopped ||
-                    speechBlockedRef.current ||
-                    !speechConsentRef.current ||
-                    isListeningRef.current
-                )
-                    return
-                restartDelayMs = 200
-                retryAfterError = false
-                for (let i = 0; i < event.results.length; i++) {
-                    const item = event.results[i]
-                    const first = item?.[0]
-                    if (first && HOTWORD_REGEX.test(first.transcript)) {
-                        voiceTelemetryService.recordVoiceEvent('hotwordDetected', {
-                            engine: 'regex',
-                        })
-                        activateFromHotword()
-                        return
-                    }
-                }
-            }
-
-            const onEnd = () => {
-                if (
-                    stopped ||
-                    speechBlockedRef.current ||
-                    !speechConsentRef.current ||
-                    isListeningRef.current
-                )
-                    return
-                const delay = retryAfterError ? restartDelayMs : 200
-                if (retryAfterError) restartDelayMs = Math.min(restartDelayMs * 2, 5_000)
-                retryAfterError = false
-                restartTimer = setTimeout(() => {
-                    restartTimer = null
-                    startHotword()
-                }, delay)
-            }
-
-            let disposeRecognition = (): void => undefined
-            const onError = (event: WSpeechRecognitionErrorEvent) => {
-                if (stopped || speechBlockedRef.current || !speechConsentRef.current) return
-                if (
-                    event.error === 'not-allowed' ||
-                    event.error === 'service-not-allowed' ||
-                    event.error === 'audio-capture' ||
-                    event.error === 'language-not-supported'
-                ) {
-                    disposeRecognition()
-                } else {
-                    retryAfterError = true
-                }
-                handleError(event)
-            }
-
-            disposeRecognition = () => {
-                stopped = true
-                if (restartTimer !== null) {
-                    clearTimeout(restartTimer)
-                    restartTimer = null
-                }
-                abortSpeechRecognition(recognition, onResult, onError, onEnd)
-                if (hotwordRecRef.current === recognition) hotwordRecRef.current = null
-                if (hotwordCleanupRef.current === disposeRecognition) {
-                    hotwordCleanupRef.current = null
-                }
-            }
-
-            recognition.addEventListener('result', onResult)
-            recognition.addEventListener('error', onError)
-            recognition.addEventListener('end', onEnd)
-            hotwordCleanupRef.current = disposeRecognition
-
-            try {
-                recognition.start()
-                if (!stopped) hotwordRecRef.current = recognition
-            } catch {
-                console.debug('[VoiceControl] Hotword recognizer failed to start')
-                disposeRecognition()
-                setVoiceStatusMessage(translate('common.voiceControl.errors.startFailed'))
-                setVoiceListening(false)
-            }
-        }
+        const session = new RegexHotwordSession({
+            lang,
+            activateFromHotword,
+            handleError,
+            setVoiceListening,
+            setVoiceStatusMessage,
+            translate,
+            speechBlockedRef,
+            speechConsentRef,
+            isListeningRef,
+            hotwordRecRef,
+            hotwordCleanupRef,
+        })
+        const stopHotword = () => session.stop()
+        session.setCleanup(stopHotword)
+        hotwordCleanupRef.current = stopHotword
 
         if (porcupineWasScheduledRef.current) {
             enqueuePorcupine(async () => {
                 await releasePorcupine()
-                startHotword()
+                session.start()
             })
         } else {
-            startHotword()
+            session.start()
         }
-
-        return () => {
-            stopped = true
-            const stopHotword = hotwordCleanupRef.current
-            if (stopHotword) stopHotword()
-            else {
-                hotwordRecRef.current?.abort()
-                hotwordRecRef.current = null
-            }
-        }
+        return stopHotword
     }, [
         wakeWordEngine,
         isAvailable,
@@ -207,6 +260,7 @@ export const useRegexHotword = ({
         hotwordEnabled,
         speechBlocked,
         speechConsentGranted,
+        recoveryRevision,
         lang,
         activateFromHotword,
         handleError,

@@ -233,6 +233,32 @@ describe('useDictation -- with SpeechRecognition mock', () => {
         expect(result.current.isListening).toBe(false)
     })
 
+    it('does not republish a completed transcript after later consent revocation', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const onTranscript = vi.fn()
+        const { result, rerender } = renderHook(() => useDictation(onTranscript))
+        act(() => result.current.start())
+        const recognition = mockInstances[0]
+        act(() => {
+            recognition?.fire('result', {
+                results: [
+                    Object.assign([{ transcript: 'finished note', confidence: 1 }], {
+                        isFinal: true,
+                    }),
+                ],
+            })
+            recognition?.fire('end')
+        })
+        expect(onTranscript).toHaveBeenCalledOnce()
+
+        onTranscript.mockClear()
+        mockWebSpeechConsentVersion = null
+        rerender()
+
+        expect(onTranscript).not.toHaveBeenCalled()
+        mockWebSpeechConsentVersion = 1
+    })
+
     it('sets error=notAllowed on not-allowed error', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())

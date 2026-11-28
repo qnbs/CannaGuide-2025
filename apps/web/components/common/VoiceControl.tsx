@@ -7,6 +7,7 @@ import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
 import { BrowserSpeechConsentDialog } from './BrowserSpeechConsentDialog'
+import { useRegexHotword } from './useRegexHotword'
 import { porcupineWakeWordService } from '@/services/porcupineWakeWordService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
@@ -14,7 +15,6 @@ import { WEB_SPEECH_CONSENT_VERSION } from '@/services/webSpeechConsent'
 import {
     abortSpeechRecognition,
     HOTWORD_ACTIVATION_MS,
-    HOTWORD_REGEX,
     hasSpeechRecognitionSupport,
     micTitleKey,
     recognitionLang,
@@ -70,6 +70,16 @@ export const VoiceControl: React.FC = () => {
     const hotwordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [hotwordActive, setHotwordActive] = useState(false)
 
+    useEffect(
+        () => () => {
+            if (hotwordTimerRef.current !== null) {
+                clearTimeout(hotwordTimerRef.current)
+                hotwordTimerRef.current = null
+            }
+        },
+        [],
+    )
+
     // Switching Local-Only Mode on stops recognition in the commit itself, not
     // in a later passive cleanup: between the two, a recognizer could keep
     // sending audio, deliver a queued result or restart itself on 'end'. The
@@ -78,6 +88,11 @@ export const VoiceControl: React.FC = () => {
         speechBlockedRef.current = speechBlocked
         speechConsentRef.current = speechConsentGranted
         if (!speechBlocked && speechConsentGranted) return
+        pendingStartGenerationRef.current += 1
+        if (hotwordTimerRef.current !== null) {
+            clearTimeout(hotwordTimerRef.current)
+            hotwordTimerRef.current = null
+        }
         const wasListening = isListeningRef.current || isListening || hotwordActive
         const recognition = recognitionRef.current
         recognitionRef.current = null
@@ -275,6 +290,7 @@ export const VoiceControl: React.FC = () => {
     const porcupineConfigRef = useRef<string | null>(null)
     const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
     const porcupineWasScheduledRef = useRef(false)
+    const pendingStartGenerationRef = useRef(0)
     const releasePorcupine = useCallback(async () => {
         if (porcupineConfigRef.current === null) return
         await porcupineWakeWordService.dispose()
@@ -289,8 +305,16 @@ export const VoiceControl: React.FC = () => {
 
     const requestCommandListening = useCallback(() => {
         if (speechBlockedRef.current || !speechConsentRef.current || isListeningRef.current) return
+        const startGeneration = ++pendingStartGenerationRef.current
         isListeningRef.current = true
         const start = () => {
+            if (
+                startGeneration !== pendingStartGenerationRef.current ||
+                speechBlockedRef.current ||
+                !speechConsentRef.current
+            ) {
+                return
+            }
             if (!recognitionRef.current) {
                 setCommandListenerRequested(true)
                 setPendingManualStart(true)
@@ -308,8 +332,12 @@ export const VoiceControl: React.FC = () => {
         }
 
         const hotwordRecognition = hotwordRecRef.current
-        hotwordRecRef.current = null
-        hotwordRecognition?.abort()
+        const stopHotword = hotwordCleanupRef.current
+        if (stopHotword) stopHotword()
+        else {
+            hotwordRecRef.current = null
+            hotwordRecognition?.abort()
+        }
 
         if (wakeWordEngine === 'porcupine' && porcupineWasScheduledRef.current) {
             enqueuePorcupine(async () => {
@@ -339,6 +367,7 @@ export const VoiceControl: React.FC = () => {
         setVoiceStatusMessage(t('common.voiceControl.hotwordDetected'))
         if (hotwordTimerRef.current !== null) clearTimeout(hotwordTimerRef.current)
         hotwordTimerRef.current = setTimeout(() => {
+            hotwordTimerRef.current = null
             setHotwordActive(false)
             setVoiceStatusMessage(null)
         }, HOTWORD_ACTIVATION_MS)
@@ -356,132 +385,7 @@ export const VoiceControl: React.FC = () => {
         startHotwordSession()
     }, [startHotwordSession])
 
-    useEffect(() => {
-        if (
-            wakeWordEngine !== 'regex' ||
-            !SpeechRecognitionAPI ||
-            !wakeWordAllowed(
-                hotwordEnabled,
-                isAvailable,
-                speechBlocked || !speechConsentGranted || isListening,
-            )
-        ) {
-            if (hotwordRecRef.current) {
-                hotwordRecRef.current.abort()
-                hotwordRecRef.current = null
-            }
-            return
-        }
-
-        let stopped = false
-
-        const startHotword = () => {
-            // A restart timer set before the switch may fire before the cleanup
-            // marks this run stopped: the live setting decides.
-            if (
-                stopped ||
-                speechBlockedRef.current ||
-                !speechConsentRef.current ||
-                isListeningRef.current ||
-                !SpeechRecognitionAPI
-            )
-                return
-            const hw = new SpeechRecognitionAPI()
-            hw.continuous = true
-            hw.interimResults = true
-            hw.lang = recognitionLang(lang)
-
-            const onResult = (event: WSpeechRecognitionEvent) => {
-                if (
-                    stopped ||
-                    speechBlockedRef.current ||
-                    !speechConsentRef.current ||
-                    isListeningRef.current
-                )
-                    return
-                for (let i = 0; i < event.results.length; i++) {
-                    const item = event.results[i]
-                    if (!item) continue
-                    const first = item[0]
-                    if (!first) continue
-                    if (HOTWORD_REGEX.test(first.transcript)) {
-                        voiceTelemetryService.recordVoiceEvent('hotwordDetected', {
-                            engine: 'regex',
-                        })
-                        activateFromHotword()
-                        return
-                    }
-                }
-            }
-
-            const onEnd = () => {
-                // Auto-restart so the hotword listener stays alive
-                if (
-                    !stopped &&
-                    !speechBlockedRef.current &&
-                    speechConsentRef.current &&
-                    !isListeningRef.current
-                ) {
-                    setTimeout(() => startHotword(), 200)
-                }
-            }
-
-            let disposeHotwordRecognition = (): void => undefined
-
-            const onError = (event: WSpeechRecognitionErrorEvent) => {
-                if (stopped || speechBlockedRef.current || !speechConsentRef.current) return
-                disposeHotwordRecognition()
-                handleError(event)
-            }
-
-            disposeHotwordRecognition = () => {
-                stopped = true
-                abortSpeechRecognition(hw, onResult, onError, onEnd)
-                if (hotwordRecRef.current === hw) hotwordRecRef.current = null
-                if (hotwordCleanupRef.current === disposeHotwordRecognition) {
-                    hotwordCleanupRef.current = null
-                }
-            }
-
-            hw.addEventListener('result', onResult)
-            hw.addEventListener('error', onError)
-            hw.addEventListener('end', onEnd)
-            hotwordCleanupRef.current = disposeHotwordRecognition
-
-            try {
-                hw.start()
-                if (!stopped) hotwordRecRef.current = hw
-            } catch {
-                console.debug('[VoiceControl] Hotword recognizer failed to start')
-                disposeHotwordRecognition()
-                setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
-                setVoiceListening(false)
-            }
-        }
-
-        if (porcupineWasScheduledRef.current) {
-            enqueuePorcupine(async () => {
-                // stop() alone can leave the microphone open until dispose().
-                await releasePorcupine()
-                startHotword()
-            })
-        } else {
-            startHotword()
-        }
-
-        return () => {
-            stopped = true
-            if (hotwordTimerRef.current !== null) {
-                clearTimeout(hotwordTimerRef.current)
-            }
-            const stopHotword = hotwordCleanupRef.current
-            if (stopHotword) stopHotword()
-            else {
-                hotwordRecRef.current?.abort()
-                hotwordRecRef.current = null
-            }
-        }
-    }, [
+    useRegexHotword({
         wakeWordEngine,
         isAvailable,
         isListening,
@@ -495,8 +399,14 @@ export const VoiceControl: React.FC = () => {
         releasePorcupine,
         setVoiceListening,
         setVoiceStatusMessage,
-        t,
-    ])
+        translate: t,
+        speechBlockedRef,
+        speechConsentRef,
+        isListeningRef,
+        porcupineWasScheduledRef,
+        hotwordRecRef,
+        hotwordCleanupRef,
+    })
 
     // ---------------------------------------------------------------------------
     // V-03b: Porcupine WASM Wake-Word Detection (optional upgrade)

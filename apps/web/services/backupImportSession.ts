@@ -491,6 +491,14 @@ const parseBackupState = (raw: string): StopOr<object> => {
     if (typeof parsed !== 'object' || parsed === null) {
         return { kind: 'stop', result: failedImport('Invalid backup: state is not an object') }
     }
+    if (
+        isRecord(parsed) &&
+        isRecord(parsed.settings) &&
+        isRecord(parsed.settings.settings) &&
+        isRecord(parsed.settings.settings.privacy)
+    ) {
+        parsed.settings.settings.privacy.webSpeechConsentVersion = null
+    }
     return { kind: 'value', value: parsed }
 }
 

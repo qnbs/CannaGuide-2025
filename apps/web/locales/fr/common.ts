@@ -187,9 +187,9 @@ export const common = {
         speechConsent: {
             title: 'Autoriser la reconnaissance vocale du navigateur ?',
             description:
-                'Certains navigateurs peuvent envoyer l audio du microphone a leur service vocal en ligne pour transcrire la voix. CannaGuide ne recoit pas cet audio.',
+                "Certains navigateurs peuvent envoyer l'audio du microphone \u00E0 leur service vocal en ligne pour transcrire la voix. CannaGuide ne re\u00E7oit pas cet audio.",
             details:
-                'Le fournisseur du navigateur controle le traitement et la conservation de l audio. Cette autorisation est enregistree sur cet appareil, peut etre revoquee dans les parametres et ne desactive pas le mode Local-Only.',
+                "Le fournisseur du navigateur contr\u00F4le le traitement et la conservation de l'audio. Cette autorisation est enregistr\u00E9e sur cet appareil, peut \u00EAtre r\u00E9voqu\u00E9e dans les param\u00E8tres et ne d\u00E9sactive pas le mode Local-Only.",
             allow: 'Autoriser et continuer',
             cancel: 'Pas maintenant',
         },

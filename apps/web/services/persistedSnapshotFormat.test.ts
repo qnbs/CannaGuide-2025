@@ -10,6 +10,7 @@ import {
     buildPersistedSnapshot,
     isImportableSnapshot,
     redactForExport,
+    resetPortableWebSpeechConsentText,
 } from './persistedSnapshotFormat'
 
 // A synthetic canary, never a real key (#654).
@@ -68,6 +69,22 @@ describe('JSON export format (persisted snapshot)', () => {
         expect(json).not.toContain('4711')
         expect(json).not.toContain('canary_sync_key_0000000000')
         expect(passesImportCheck(json)).toBe(true)
+    })
+
+    it('does not transfer Web Speech consent with an exported or imported snapshot', () => {
+        const store = storeWithGrow()
+        store.dispatch(setSetting({ path: 'privacy.webSpeechConsentVersion', value: '2026-11' }))
+        const state = store.getState()
+        const snapshot = buildPersistedSnapshot(state, state.simulation)
+        const exported = redactForExport(snapshot)
+        const restored = JSON.parse(
+            resetPortableWebSpeechConsentText(JSON.stringify(snapshot)),
+        ) as typeof snapshot
+
+        expect(exported.settings?.settings.privacy.webSpeechConsentVersion).toBeNull()
+        expect(restored.settings?.settings.privacy.webSpeechConsentVersion).toBeNull()
+        expect(state.settings.settings.privacy.webSpeechConsentVersion).toBe('2026-11')
+        expect(restored.grows?.grows.ids).toContain('grow-tent')
     })
 })
 

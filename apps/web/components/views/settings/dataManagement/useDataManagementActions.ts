@@ -113,7 +113,11 @@ export function useDataManagementActions() {
     const confirmImport = async () => {
         if (fileToImport) {
             try {
-                const stateRestored = await replacePrimaryPersistedSnapshot(fileToImport)
+                const { resetPortableWebSpeechConsentText } =
+                    await import('@/services/persistedSnapshotFormat')
+                const stateRestored = await replacePrimaryPersistedSnapshot(
+                    resetPortableWebSpeechConsentText(fileToImport),
+                )
                 if (!stateRestored) {
                     throw new Error('State import was blocked by safe recovery.')
                 }

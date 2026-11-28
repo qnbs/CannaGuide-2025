@@ -425,9 +425,9 @@ export const settingsView = {
         voiceControl: {
             browserSpeechConsent: 'Traitement vocal du navigateur',
             browserSpeechConsentDesc:
-                'Autorisez le service vocal du navigateur a traiter l audio du microphone. Vous pouvez revoquer cette autorisation a tout moment ; le mode Local-Only bloque toujours la reconnaissance vocale du navigateur.',
+                "Autorisez le service vocal du navigateur \u00E0 traiter l'audio du microphone. Vous pouvez r\u00E9voquer cette autorisation \u00E0 tout moment ; le mode Local-Only bloque toujours la reconnaissance vocale du navigateur.",
             allowBrowserSpeechConsent: 'Verifier et autoriser',
-            revokeBrowserSpeechConsent: 'Revoquer l autorisation',
+            revokeBrowserSpeechConsent: "R\u00E9voquer l'autorisation",
             enabled: 'Activer la commande vocale',
             enabledDesc:
                 "Contr\u00F4lez l'application \u00E0 l'aide de commandes vocales simples. Elles utilisent la reconnaissance vocale de votre navigateur, que certains navigateurs traitent en ligne ; le mode local uniquement les d\u00E9sactive.",

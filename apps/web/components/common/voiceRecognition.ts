@@ -58,7 +58,7 @@ export function abortSpeechRecognition(
 }
 
 /** Regex that matches "hey canna" or "hey cannaguide" (case-insensitive). */
-export const HOTWORD_REGEX = /hey\s+canna(?:guide)?/i
+export const HOTWORD_REGEX = /hey\s+canna(?:guide)?\b/i
 
 /** Whether a wake word may listen under the app's enabled and privacy state. */
 export function wakeWordAllowed(

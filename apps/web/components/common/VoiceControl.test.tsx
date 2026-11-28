@@ -412,6 +412,71 @@ const finalResult = (transcript: string) => ({
 })
 
 describe('VoiceControl -- Local-Only Mode', () => {
+    it('restarts the hotword recognizer after a recoverable network error', async () => {
+        vi.useFakeTimers()
+        try {
+            mockHotwordEnabled = true
+            const VC = await importVoiceControl()
+            render(React.createElement(VC))
+            const hotword = mockInstances[1]
+
+            act(() => hotword?.fire('error', { error: 'network' }))
+            expect(hotword?.abort).not.toHaveBeenCalled()
+
+            act(() => {
+                hotword?.fire('end')
+                vi.advanceTimersByTime(200)
+            })
+
+            expect(mockInstances).toHaveLength(3)
+            expect(mockInstances[2]?.start).toHaveBeenCalledOnce()
+
+            act(() => {
+                mockInstances[2]?.fire('error', { error: 'network' })
+                mockInstances[2]?.fire('end')
+                vi.advanceTimersByTime(399)
+            })
+            expect(mockInstances).toHaveLength(3)
+            act(() => vi.advanceTimersByTime(1))
+            expect(mockInstances).toHaveLength(4)
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('keeps the activation announcement timer across listening-state changes', async () => {
+        vi.useFakeTimers()
+        try {
+            mockHotwordEnabled = true
+            const VC = await importVoiceControl()
+            const view = render(React.createElement(VC))
+            act(() => mockInstances[1]?.fire('result', finalResult('hey canna')))
+
+            mockIsListening = true
+            view.rerender(React.createElement(VC))
+            act(() => vi.advanceTimersByTime(5_000))
+
+            expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(null)
+        } finally {
+            vi.useRealTimers()
+        }
+    })
+
+    it('removes the hotword error listener before aborting for command recognition', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        render(React.createElement(VC))
+        const hotword = mockInstances[1]
+
+        act(() => hotword?.fire('result', finalResult('hey canna')))
+        const statusCalls = mockSetVoiceStatusMessage.mock.calls.length
+        act(() => hotword?.fire('error', { error: 'aborted' }))
+
+        expect(hotword?.abort).toHaveBeenCalledOnce()
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledTimes(statusCalls)
+        expect(mockSetVoiceListening).toHaveBeenLastCalledWith(true)
+    })
+
     it('surfaces hotword permission denial and does not restart the recognizer', async () => {
         mockHotwordEnabled = true
         const VC = await importVoiceControl()
@@ -680,7 +745,7 @@ describe('VoiceControl -- Local-Only Mode', () => {
 // ---------------------------------------------------------------------------
 
 describe('VoiceControl -- hotword regex (V-03)', () => {
-    const HOTWORD_REGEX = /hey\s+canna(?:guide)?/i
+    const HOTWORD_REGEX = /hey\s+canna(?:guide)?\b/i
 
     it('matches "hey canna"', () => {
         expect(HOTWORD_REGEX.test('hey canna')).toBe(true)
@@ -713,5 +778,11 @@ describe('VoiceControl -- hotword regex (V-03)', () => {
 
     it('allows multiple spaces between hey and canna', () => {
         expect(HOTWORD_REGEX.test('hey   canna')).toBe(true)
+    })
+
+    it('rejects a longer word that merely starts with canna', async () => {
+        const actual = await import('./voiceRecognition')
+        expect(actual.HOTWORD_REGEX.test('hey cannabis')).toBe(false)
+        expect(actual.HOTWORD_REGEX.test('hey cannaguide')).toBe(true)
     })
 })

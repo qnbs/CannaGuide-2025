@@ -206,9 +206,10 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
 
         fireEvent.click(view.getByRole('button', { name: 'common.voiceControl.toggle' }))
         await settle()
+        // Mirror the synchronous Redux update performed by the consent action.
+        speechConsentVersion = 1
         fireEvent.click(view.getByRole('button', { name: 'allow-browser-speech' }))
 
-        speechConsentVersion = 1
         view.rerender(<VoiceControl />)
         await settle()
 
@@ -238,6 +239,31 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         await settle()
         expect(porcupine.dispose).toHaveBeenCalledOnce()
         expect(startBrowserSpeech).toHaveBeenCalledOnce()
+    })
+
+    it('does not resume a queued command start after privacy is toggled off and back on', async () => {
+        keyStore.key = STORED
+        speechConsentVersion = 1
+        const { porcupine, view, VoiceControl } = await renderVoiceControl()
+        let finishRelease: (() => void) | undefined
+        vi.mocked(porcupine.dispose).mockImplementationOnce(
+            () => new Promise<void>((resolve) => (finishRelease = resolve)),
+        )
+        const wakeCallback = vi.mocked(porcupine.setCallback).mock.calls.at(-1)?.[0]
+        expect(wakeCallback).toBeTypeOf('function')
+
+        act(() => wakeCallback?.())
+        await settle()
+        expect(porcupine.dispose).toHaveBeenCalled()
+
+        localOnly = true
+        view.rerender(<VoiceControl />)
+        localOnly = false
+        view.rerender(<VoiceControl />)
+        finishRelease?.()
+        await settle()
+
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
     })
 
     it('stops both browser recognizers before switching from regex to Porcupine', async () => {

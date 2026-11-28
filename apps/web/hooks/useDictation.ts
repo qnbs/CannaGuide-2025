@@ -172,7 +172,12 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         })
 
         rec.addEventListener('end', () => {
-            if (isCurrent()) setIsListening(false)
+            if (!isCurrent()) return
+            // A completed session may still have transcriptRef text. Detach it
+            // so a later consent change cannot publish that stale transcript
+            // after the user has edited the field.
+            recognitionRef.current = null
+            setIsListening(false)
         })
 
         recognitionRef.current = rec

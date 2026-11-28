@@ -184,11 +184,11 @@ export const common = {
     },
     voiceControl: {
         speechConsent: {
-            title: 'Permitir el reconocimiento de voz del navegador?',
+            title: '\u00BFPermitir el reconocimiento de voz del navegador?',
             description:
-                'Algunos navegadores pueden enviar el audio del microfono a su servicio de voz en linea para transcribirlo. CannaGuide no recibe este audio.',
+                'Algunos navegadores pueden enviar el audio del micr\u00F3fono a su servicio de voz en l\u00EDnea para transcribirlo. CannaGuide no recibe este audio.',
             details:
-                'El proveedor del navegador controla el procesamiento y la conservacion del audio. Este permiso se guarda en este dispositivo, puede revocarse en Ajustes y no anula el modo Solo local.',
+                'El proveedor del navegador controla el procesamiento y la conservaci\u00F3n del audio. Este permiso se guarda en este dispositivo, puede revocarse en Ajustes y no anula el modo Solo local.',
             allow: 'Permitir y continuar',
             cancel: 'Ahora no',
         },

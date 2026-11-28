@@ -1,5 +1,43 @@
-import { describe, expect, it } from 'vitest'
-import { clearArchivedAiResponsesFromSnapshot } from './aiHistoryRetention'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import {
+    AI_HISTORY_CLEAR_PENDING_KEY,
+    clearArchivedAiResponsesFromSnapshot,
+    clearPendingAiHistoryClear,
+    getAiHistoryClearPhase,
+    markAiHistoryRecoveryPending,
+} from './aiHistoryRetention'
+
+describe('AI history cleanup retry phases', () => {
+    beforeEach(() => localStorage.clear())
+
+    it('reads the legacy marker as active-snapshot cleanup', () => {
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+
+        expect(getAiHistoryClearPhase()).toBe('active')
+    })
+
+    it('records recovery-only cleanup without requesting active archive deletion', () => {
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+
+        expect(markAiHistoryRecoveryPending()).toBe(true)
+        expect(getAiHistoryClearPhase()).toBe('recovery')
+    })
+
+    it('does not report a stuck recovery marker as cleared', () => {
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+        const removeItem = Storage.prototype.removeItem
+        const failedRemoval = vi
+            .spyOn(Storage.prototype, 'removeItem')
+            .mockImplementation(function (this: Storage, key: string) {
+                if (key === AI_HISTORY_CLEAR_PENDING_KEY) return
+                removeItem.call(this, key)
+            })
+
+        expect(clearPendingAiHistoryClear()).toBe(false)
+        expect(getAiHistoryClearPhase()).toBe('recovery')
+        failedRemoval.mockRestore()
+    })
+})
 
 describe('clear archived AI responses from a saved snapshot', () => {
     it('clears recognized archives while preserving unrelated saved state', () => {

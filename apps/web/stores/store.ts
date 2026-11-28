@@ -33,7 +33,7 @@ import { rememberStoredRevision, setItemIfSnapshotUnchanged } from './snapshotRe
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
     clearArchivedAiResponsesFromSnapshot,
-    hasPendingAiHistoryClear,
+    getAiHistoryClearPhase,
 } from '@/services/aiHistoryRetention'
 import {
     isNewerSnapshotError,
@@ -159,7 +159,9 @@ export const getStartupHydration = (): StartupHydration => startupHydration
 
 export const createAppStore = async (): Promise<AppStore> => {
     startupHydration = 'fresh'
-    const retryAiHistoryClear = hasPendingAiHistoryClear()
+    const retryAiHistoryClear = getAiHistoryClearPhase() === 'active'
+    const shouldClearActiveArchives = (settings: Partial<RootState>['settings']): boolean =>
+        retryAiHistoryClear && settings?.settings?.privacy?.clearAiHistoryOnExit !== false
     let preloadedState: Partial<RootState> | undefined
     let persistedUiState: Partial<UIState> | undefined
 
@@ -174,7 +176,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             delete (migrated as Record<string, unknown>).ui
         }
 
-        if (retryAiHistoryClear) {
+        if (shouldClearActiveArchives(migrated.settings)) {
             migrated.archives = {
                 archivedMentorResponses: [],
                 archivedAdvisorResponses: {},
@@ -215,7 +217,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             console.debug('[Store] Hydrating state from IndexedDB.')
             preloadedState = hydratePersistedState(persistedString)
             startupHydration = 'snapshot'
-            if (retryAiHistoryClear) {
+            if (shouldClearActiveArchives(preloadedState?.settings)) {
                 const backupCopy = clearArchivedAiResponsesFromSnapshot(persistedString)
                 if (backupCopy.status !== 'unrecognized') {
                     await refreshStartupBackup(backupCopy.serialized)

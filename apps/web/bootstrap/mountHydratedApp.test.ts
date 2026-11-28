@@ -31,6 +31,7 @@ import {
     type WriterRole,
 } from './writerOwnership'
 import { stopPersistenceForOwnershipLoss } from './persistenceCoordinator'
+import { AI_HISTORY_CLEAR_PENDING_KEY } from '@/services/aiHistoryRetention'
 
 const flush = vi.fn().mockResolvedValue(true)
 const order: string[] = []
@@ -139,6 +140,7 @@ vi.mock('./persistence', () => ({
 describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        localStorage.clear()
         order.length = 0
         markerState.markers = []
         locale.value = 'browser'
@@ -170,6 +172,15 @@ describe('mountHydratedApp legacy key migration (#654, #711 review)', () => {
         vi.mocked(migrateLegacySecrets).mockResolvedValue(false)
         await mountHydratedApp()
         expect(order).toEqual(['sync', 'services'])
+    })
+
+    it('flushes once on startup when only recovery copies remain to be sanitized', async () => {
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+
+        await mountHydratedApp()
+
+        expect(order).toEqual(['sync', 'flush', 'services'])
+        expect(flush).toHaveBeenCalledOnce()
     })
 
     it('warns when the previous session had an observed snapshot save failure', async () => {

@@ -18,7 +18,7 @@ import {
 } from '@/services/persistenceFailureMarker'
 import { setUncheckedWritePermit } from '@/stores/snapshotRevision'
 import { setupPersistedStateSync } from './persistence'
-import { schedulePersistenceWrite } from './persistenceCoordinator'
+import { runWithExclusiveRecoveryLock, schedulePersistenceWrite } from './persistenceCoordinator'
 import { dbService } from '@/services/dbService'
 
 const runtimeTabContext = globalThis as typeof globalThis & {
@@ -96,7 +96,7 @@ const storeWithKey = (): AppStore =>
         subscribe: vi.fn(),
     }) as unknown as AppStore
 
-const storeWithAiArchives = (): AppStore => {
+const storeWithAiArchives = (clearOnExit = true): AppStore => {
     let state: {
         settings: { version: number; settings: Record<string, unknown> }
         simulation: { plants: Record<string, unknown> }
@@ -110,7 +110,7 @@ const storeWithAiArchives = (): AppStore => {
                 tts: { cloudTtsEnabled: false, cloudTtsApiKey: null },
                 voiceControl: { porcupineAccessKey: null },
                 data: { persistenceIntervalMs: 1500 },
-                privacy: { clearAiHistoryOnExit: true },
+                privacy: { clearAiHistoryOnExit: clearOnExit },
             },
         },
         simulation: { plants: {} },
@@ -273,7 +273,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
         )
     })
 
-    it('preserves an unrecognized recovery snapshot without leaving a stale cleanup marker', async () => {
+    it('preserves opaque recovery bytes while clearing the completed cleanup marker', async () => {
         const store = storeWithAiArchives()
         persistedItems.set(REDUX_STATE_QUARANTINE_KEY, '{unrecognized recovery bytes')
         setupPersistedStateSync(store)
@@ -286,14 +286,166 @@ describe('AI archive cleanup on app exit (#678)', () => {
         expect(persistedItems.get(REDUX_STATE_QUARANTINE_KEY)).toBe('{unrecognized recovery bytes')
     })
 
-    it('does not clear archived replies when a tab is only hidden', () => {
+    it('does not clear active archives when the durable retry marker cannot be written', async () => {
         const store = storeWithAiArchives()
+        const savedSetItem = Storage.prototype.setItem
+        const failedMarkerWrite = vi
+            .spyOn(Storage.prototype, 'setItem')
+            .mockImplementation(function (this: Storage, key: string, value: string) {
+                if (key === AI_HISTORY_CLEAR_PENDING_KEY) throw new Error('storage unavailable')
+                savedSetItem.call(this, key, value)
+            })
         setupPersistedStateSync(store)
 
+        window.dispatchEvent(new Event('pagehide'))
+        await vi.waitFor(() => expect(indexedDBStorage.setItem).toHaveBeenCalled())
+
+        expect(store.dispatch).not.toHaveBeenCalledWith(clearArchives())
+        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses).toHaveLength(1)
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
+        failedMarkerWrite.mockRestore()
+    })
+
+    it('does not clear archives when pagehide enters the back-forward cache', async () => {
+        const store = storeWithAiArchives()
+        setupPersistedStateSync(store)
+        const event = new Event('pagehide') as PageTransitionEvent
+        Object.defineProperty(event, 'persisted', { value: true })
+
+        window.dispatchEvent(event)
+        await vi.waitFor(() => expect(indexedDBStorage.setItem).toHaveBeenCalled())
+
+        expect(store.dispatch).not.toHaveBeenCalledWith(clearArchives())
+        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses).toHaveLength(1)
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
+    })
+
+    it('preserves new archives while finishing a pending recovery-only cleanup', async () => {
+        const store = storeWithAiArchives(false)
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+        persistedItems.set(
+            REDUX_STATE_BACKUP_KEY,
+            JSON.stringify({
+                version: 5,
+                archives: {
+                    archivedMentorResponses: [{ id: 'old-mentor' }],
+                    archivedAdvisorResponses: { old: [{ id: 'old-advisor' }] },
+                },
+            }),
+        )
+        const flush = setupPersistedStateSync(store)
+
+        await expect(flush()).resolves.toBe(true)
+
+        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses[0]?.id).toBe('mentor-1')
+        expect(JSON.parse(persistedItems.get(REDUX_STATE_BACKUP_KEY) ?? '{}').archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
+    })
+
+    it('advances an opted-out session to recovery cleanup after saving its current archives', async () => {
+        const store = storeWithAiArchives(false)
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+        persistedItems.set(
+            REDUX_STATE_BACKUP_KEY,
+            JSON.stringify({
+                version: 5,
+                archives: {
+                    archivedMentorResponses: [{ id: 'old-mentor' }],
+                    archivedAdvisorResponses: { old: [{ id: 'old-advisor' }] },
+                },
+            }),
+        )
+        const flush = setupPersistedStateSync(store)
+
+        await expect(flush()).resolves.toBe(true)
+
+        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses[0]?.id).toBe('mentor-1')
+        expect(JSON.parse(persistedItems.get(REDUX_STATE_BACKUP_KEY) ?? '{}').archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
+    })
+
+    it('keeps the recovery retry marker when recovery locking is unavailable', async () => {
+        const store = storeWithAiArchives()
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+        vi.mocked(runWithExclusiveRecoveryLock).mockResolvedValueOnce(null)
+        const flush = setupPersistedStateSync(store)
+
+        await expect(flush()).resolves.toBe(true)
+
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+    })
+
+    it('keeps the retry marker when a recognized recovery copy cannot be rewritten', async () => {
+        const original = JSON.stringify({
+            version: 5,
+            archives: {
+                archivedMentorResponses: [{ id: 'old-mentor' }],
+                archivedAdvisorResponses: {},
+            },
+        })
+        persistedItems.set(REDUX_STATE_BACKUP_KEY, original)
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+        const setItem = vi.mocked(indexedDBStorage.setItem)
+        const savedImplementation = setItem.getMockImplementation()
+        setItem.mockImplementation(async (key, value) => {
+            if (key === REDUX_STATE_BACKUP_KEY) throw new Error('recovery write failed')
+            await savedImplementation?.(key, value)
+        })
+        const flush = setupPersistedStateSync(storeWithAiArchives(false))
+
+        await expect(flush()).resolves.toBe(true)
+
+        expect(persistedItems.get(REDUX_STATE_BACKUP_KEY)).toBe(original)
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+        setItem.mockImplementation(savedImplementation ?? (async () => undefined))
+    })
+
+    it('keeps the retry marker when recovery-copy read-back does not match', async () => {
+        const original = JSON.stringify({
+            version: 5,
+            archives: {
+                archivedMentorResponses: [{ id: 'old-mentor' }],
+                archivedAdvisorResponses: {},
+            },
+        })
+        persistedItems.set(REDUX_STATE_BACKUP_KEY, original)
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+        const getItem = vi.mocked(indexedDBStorage.getItem)
+        const savedImplementation = getItem.getMockImplementation()
+        let backupReads = 0
+        getItem.mockImplementation(async (key) => {
+            if (key === REDUX_STATE_BACKUP_KEY && backupReads++ > 0) return '{stale read-back}'
+            return (await savedImplementation?.(key)) ?? null
+        })
+        const flush = setupPersistedStateSync(storeWithAiArchives(false))
+
+        await expect(flush()).resolves.toBe(true)
+
+        expect(persistedItems.get(REDUX_STATE_BACKUP_KEY)).not.toBe(original)
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+        getItem.mockImplementation(savedImplementation ?? (async () => null))
+    })
+
+    it('saves on the document hidden event without clearing archived replies', async () => {
+        const store = storeWithAiArchives()
+        setupPersistedStateSync(store)
+        const visibilityState = vi
+            .spyOn(document, 'visibilityState', 'get')
+            .mockReturnValue('hidden')
+
         document.dispatchEvent(new Event('visibilitychange'))
+        await vi.waitFor(() => expect(indexedDBStorage.setItem).toHaveBeenCalled())
 
         expect(store.dispatch).not.toHaveBeenCalledWith(clearArchives())
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
+        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses).toHaveLength(1)
+        visibilityState.mockRestore()
     })
 
     it('retains the retry marker when the primary snapshot write fails', async () => {

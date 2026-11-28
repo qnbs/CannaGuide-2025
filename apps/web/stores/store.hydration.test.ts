@@ -187,12 +187,51 @@ describe('createAppStore with a persisted slice of another schema version', () =
             archivedMentorResponses: [],
             archivedAdvisorResponses: {},
         })
+        expect(getStartupHydration()).toBe('snapshot')
         expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
         expect(JSON.parse(db.data.get(REDUX_STATE_BACKUP_KEY) ?? '{}').archives).toEqual({
             archivedMentorResponses: [],
             archivedAdvisorResponses: {},
         })
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
+    })
+
+    it('preserves archives saved after the setting was disabled during recovery', async () => {
+        const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        snapshot.settings = {
+            version: APP_VERSION,
+            settings: { privacy: { clearAiHistoryOnExit: false } },
+        }
+        snapshot.archives = {
+            archivedMentorResponses: [{ id: 'mentor-new', title: 'New saved reply' }],
+            archivedAdvisorResponses: {},
+        }
+        db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+
+        const store = await createAppStore()
+
+        expect(store.getState().archives.archivedMentorResponses).toEqual([
+            { id: 'mentor-new', title: 'New saved reply' },
+        ])
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
+    })
+
+    it('does not clear the active snapshot again when only recovery copies remain', async () => {
+        const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        snapshot.archives = {
+            archivedMentorResponses: [{ id: 'mentor-new', title: 'New saved reply' }],
+            archivedAdvisorResponses: {},
+        }
+        db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+
+        const store = await createAppStore()
+
+        expect(store.getState().archives.archivedMentorResponses).toEqual([
+            { id: 'mentor-new', title: 'New saved reply' },
+        ])
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
     })
 
     it('keeps the plants through a start, a save and a second start', async () => {

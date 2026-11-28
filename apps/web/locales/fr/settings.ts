@@ -930,7 +930,7 @@ export const settingsView = {
         clearPin: 'Supprimer le PIN',
         clearAiHistory: 'Effacer les réponses IA enregistrées à la fermeture',
         clearAiHistoryDesc:
-            "À la fermeture de l'application, CannaGuide essaie d'effacer les archives enregistrées du Mentor et du Conseiller, puis réessaie au prochain lancement si l'enregistrement a été interrompu. Masquer un onglet ne les efface pas. Cette option ne supprime pas le texte de chat non enregistré ni les autres données dérivées de l'IA.",
+            "Si le stockage du navigateur le permet, un signal de fermeture de l'application demande à CannaGuide d'effacer les archives enregistrées du Mentor et du Conseiller. Si le marqueur de nettoyage en attente est enregistré mais que l'écriture du snapshot est interrompue, le nettoyage est réessayé au prochain lancement. Masquer un onglet ne les efface pas. Cette option ne supprime pas le texte de chat non enregistré ni les autres données dérivées de l'IA.",
         unlockTitle: 'Deverrouiller CannaGuide',
         unlockDesc: 'Entrez votre PIN a 4 chiffres pour continuer.',
         unlockFailed: 'PIN incorrect. Reessayez.',

@@ -906,7 +906,7 @@ export const settingsView = {
         clearPin: 'PIN verwijderen',
         clearAiHistory: 'Opgeslagen AI-antwoorden wissen bij afsluiten',
         clearAiHistoryDesc:
-            'Bij een afsluitsignaal probeert CannaGuide opgeslagen Mentor- en Adviseur-archieven te wissen. Als het opslaan wordt onderbroken, probeert de app dit bij de volgende start opnieuw. Een tabblad verbergen wist ze niet. Niet-opgeslagen chattekst en andere AI-gegevens vallen niet onder deze instelling.',
+            'Als de browseropslag het toelaat, probeert CannaGuide bij een afsluitsignaal opgeslagen Mentor- en Adviseur-archieven te wissen. Als de opschoonmarkering is opgeslagen maar het snapshot opslaan wordt onderbroken, wordt de opschoning bij de volgende start opnieuw geprobeerd. Een tabblad verbergen wist ze niet. Niet-opgeslagen chattekst en andere AI-gegevens vallen niet onder deze instelling.',
         unlockTitle: 'CannaGuide ontgrendelen',
         unlockDesc: 'Voer je 4-cijferige PIN in om door te gaan.',
         unlockFailed: 'PIN onjuist. Probeer het opnieuw.',

@@ -14,9 +14,11 @@ import { clearArchives } from '@/stores/slices/archivesSlice'
 import {
     clearArchivedAiResponsesFromSnapshot,
     clearPendingAiHistoryClear,
+    getAiHistoryClearPhase,
     hasNoArchivedAiResponses,
     hasPendingAiHistoryClear,
     markAiHistoryClearPending,
+    markAiHistoryRecoveryPending,
 } from '@/services/aiHistoryRetention'
 import {
     activatePersistenceFailureTab,
@@ -31,7 +33,12 @@ import { runWithExclusiveRecoveryLock, schedulePersistenceWrite } from './persis
 export type FlushPersistedState = () => Promise<boolean>
 
 const finishPendingAiHistoryClear = async (): Promise<boolean> => {
+    if (getAiHistoryClearPhase() === 'active' && !markAiHistoryRecoveryPending()) {
+        return false
+    }
+
     const finished = await runWithExclusiveRecoveryLock(async () => {
+        let allRecoveryCopiesSafe = true
         for (const key of [
             REDUX_STATE_BACKUP_KEY,
             REDUX_STATE_QUARANTINE_KEY,
@@ -42,23 +49,27 @@ const finishPendingAiHistoryClear = async (): Promise<boolean> => {
                 if (saved === null) continue
 
                 const result = clearArchivedAiResponsesFromSnapshot(saved)
+                if (result.status === 'unrecognized') {
+                    // Opaque recovery data is deliberately preserved rather than deleted.
+                    continue
+                }
                 if (result.status === 'sanitized') {
                     await indexedDBStorage.setItem(key, result.serialized)
-                    if ((await indexedDBStorage.getItem(key)) !== result.serialized) continue
+                    if ((await indexedDBStorage.getItem(key)) !== result.serialized) {
+                        allRecoveryCopiesSafe = false
+                    }
                 }
             } catch {
                 // Preserve a recovery copy that cannot be safely read or verified.
+                allRecoveryCopiesSafe = false
             }
         }
 
-        return clearPendingAiHistoryClear()
+        return allRecoveryCopiesSafe
     })
 
-    // The active snapshot has already been saved without archives. If this browser
-    // cannot provide the recovery lock, do not keep a retry marker that would erase
-    // archives the user creates during a later session.
-    if (finished === null) return clearPendingAiHistoryClear()
-    return finished === true
+    if (finished !== true) return false
+    return clearPendingAiHistoryClear()
 }
 
 /**
@@ -78,6 +89,10 @@ export const setupPersistedStateSync = (
     onSaveFailure?: (error: unknown) => void,
     observedFailureMarkers: readonly PendingSnapshotSaveFailureMarker[] = [],
 ): FlushPersistedState => {
+    const aiHistoryClearWasAppliedAtStartup =
+        getAiHistoryClearPhase() === 'active' &&
+        (hasNoArchivedAiResponses(hydratedStore.getState().archives) ||
+            hydratedStore.getState().settings.settings.privacy?.clearAiHistoryOnExit === false)
     const failureMarkerTabId = getPersistenceFailureMarkerTabId()
     activatePersistenceFailureTab(failureMarkerTabId)
     let failing = false
@@ -127,12 +142,13 @@ export const setupPersistedStateSync = (
             if (saved) {
                 latestSuccessfulSaveAttempt = saveAttempt
                 failing = false
-                if (
-                    hasPendingAiHistoryClear() &&
-                    wroteArchiveFreeSnapshot
-                ) {
+                if (hasPendingAiHistoryClear()) {
                     try {
-                        await finishPendingAiHistoryClear()
+                        const activeSnapshotIsSafe =
+                            getAiHistoryClearPhase() !== 'active' ||
+                            wroteArchiveFreeSnapshot ||
+                            aiHistoryClearWasAppliedAtStartup
+                        if (activeSnapshotIsSafe) await finishPendingAiHistoryClear()
                     } catch {
                         // Keep the marker so startup retries without exposing archived replies.
                     }
@@ -167,17 +183,20 @@ export const setupPersistedStateSync = (
         }, persistenceDelay)
     })
 
-    window.addEventListener('visibilitychange', () => {
+    document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             clearTimeout(saveTimeout)
             void saveState()
         }
     })
 
-    window.addEventListener('pagehide', () => {
+    window.addEventListener('pagehide', (event: PageTransitionEvent) => {
         const { settings } = hydratedStore.getState()
-        if (settings.settings.privacy?.clearAiHistoryOnExit) {
+        if (
+            !event.persisted &&
+            settings.settings.privacy?.clearAiHistoryOnExit &&
             markAiHistoryClearPending()
+        ) {
             hydratedStore.dispatch(clearArchives())
         }
         clearTimeout(saveTimeout)

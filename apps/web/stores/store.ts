@@ -145,6 +145,61 @@ const refreshStartupBackup = async (snapshot: string): Promise<void> => {
     }
 }
 
+const shouldClearActiveArchives = (
+    retryAiHistoryClear: boolean,
+    settings: Partial<RootState>['settings'],
+): boolean => {
+    if (!retryAiHistoryClear) return false
+    return settings?.settings?.privacy?.clearAiHistoryOnExit !== false
+}
+
+const clearActiveArchivesForStartup = (
+    state: Partial<RootState>,
+    retryAiHistoryClear: boolean,
+): Partial<RootState> => {
+    if (!shouldClearActiveArchives(retryAiHistoryClear, state.settings)) return state
+    state.archives = {
+        archivedMentorResponses: [],
+        archivedAdvisorResponses: {},
+    }
+    return state
+}
+
+const refreshStartupBackupAfterAiHistoryClear = async (
+    persistedString: string,
+    retryAiHistoryClear: boolean,
+    settings: Partial<RootState>['settings'],
+): Promise<void> => {
+    if (!shouldClearActiveArchives(retryAiHistoryClear, settings)) {
+        await refreshStartupBackup(persistedString)
+        return
+    }
+
+    const backupCopy = clearArchivedAiResponsesFromSnapshot(persistedString)
+    if (backupCopy.status === 'unrecognized') {
+        console.debug(
+            '[Store] Startup backup retained because its archive shape could not be verified.',
+        )
+        return
+    }
+    await refreshStartupBackup(backupCopy.serialized)
+}
+
+const hydratePersistedStateForStartup = (
+    persistedString: string,
+    retryAiHistoryClear: boolean,
+    onUiState: (state: Partial<UIState>) => void,
+): Partial<RootState> => {
+    const migrated = parseAndMigratePersistedSnapshot(persistedString) as Partial<RootState> & {
+        ui?: Partial<UIState>
+    }
+    if (migrated.ui) {
+        onUiState({ ...initialUIState, ...migrated.ui })
+        delete (migrated as Record<string, unknown>).ui
+    }
+    return clearActiveArchivesForStartup(migrated, retryAiHistoryClear)
+}
+
 /**
  * Where the last `createAppStore()` took its state from: the saved snapshot, the
  * startup backup, or nothing (a first start, or data that could not be read). The
@@ -160,31 +215,12 @@ export const getStartupHydration = (): StartupHydration => startupHydration
 export const createAppStore = async (): Promise<AppStore> => {
     startupHydration = 'fresh'
     const retryAiHistoryClear = getAiHistoryClearPhase() === 'active'
-    const shouldClearActiveArchives = (settings: Partial<RootState>['settings']): boolean =>
-        retryAiHistoryClear && settings?.settings?.privacy?.clearAiHistoryOnExit !== false
     let preloadedState: Partial<RootState> | undefined
     let persistedUiState: Partial<UIState> | undefined
-
-    const hydratePersistedState = (persistedString: string): Partial<RootState> => {
-        const migrated = parseAndMigratePersistedSnapshot(persistedString) as Partial<RootState> & {
-            ui?: Partial<UIState>
-        }
-
-        // Extract UI state for Zustand hydration and remove from Redux preloaded state
-        if (migrated.ui) {
-            persistedUiState = { ...initialUIState, ...migrated.ui }
-            delete (migrated as Record<string, unknown>).ui
-        }
-
-        if (shouldClearActiveArchives(migrated.settings)) {
-            migrated.archives = {
-                archivedMentorResponses: [],
-                archivedAdvisorResponses: {},
-            }
-        }
-
-        return migrated
-    }
+    const hydrate = (snapshot: string): Partial<RootState> =>
+        hydratePersistedStateForStartup(snapshot, retryAiHistoryClear, (uiState) => {
+            persistedUiState = uiState
+        })
 
     const tryLoadBackupState = async (): Promise<Partial<RootState> | undefined> => {
         try {
@@ -195,7 +231,7 @@ export const createAppStore = async (): Promise<AppStore> => {
 
             console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
             const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
-            return repaired ? hydratePersistedState(backupString) : undefined
+            return repaired ? hydrate(backupString) : undefined
         } catch (backupError) {
             // A newer build's backup stops the start like a newer primary does (#666).
             if (isNewerSnapshotError(backupError)) throw backupError
@@ -215,20 +251,13 @@ export const createAppStore = async (): Promise<AppStore> => {
         persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
         if (persistedString) {
             console.debug('[Store] Hydrating state from IndexedDB.')
-            preloadedState = hydratePersistedState(persistedString)
+            preloadedState = hydrate(persistedString)
             startupHydration = 'snapshot'
-            if (shouldClearActiveArchives(preloadedState?.settings)) {
-                const backupCopy = clearArchivedAiResponsesFromSnapshot(persistedString)
-                if (backupCopy.status !== 'unrecognized') {
-                    await refreshStartupBackup(backupCopy.serialized)
-                } else {
-                    console.debug(
-                        '[Store] Startup backup retained because its archive shape could not be verified.',
-                    )
-                }
-            } else {
-                await refreshStartupBackup(persistedString)
-            }
+            await refreshStartupBackupAfterAiHistoryClear(
+                persistedString,
+                retryAiHistoryClear,
+                preloadedState?.settings,
+            )
         }
     } catch (e) {
         // A newer build's snapshot is readable, just not by this build. The backup and

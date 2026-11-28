@@ -124,6 +124,20 @@ const notifySetAside = async (): Promise<void> => {
     }
 }
 
+const flushPendingAiHistoryClear = async (
+    hydratedStore: AppStore,
+    flushPersistedState: FlushPersistedState,
+): Promise<void> => {
+    const phase = getAiHistoryClearPhase()
+    if (phase === 'recovery') {
+        await flushPersistedState()
+        return
+    }
+    if (phase !== 'active') return
+    if (!hasNoArchivedAiResponses(hydratedStore.getState().archives)) return
+    await flushPersistedState()
+}
+
 /** A prior session ended after an observed save failure; the loaded snapshot is older. */
 const notifyPreviousSaveFailure = async (): Promise<boolean> => {
     try {
@@ -251,14 +265,7 @@ export const mountHydratedApp = async (): Promise<void> => {
             notifySaveFailure,
             previousSaveFailures,
         )
-        const aiHistoryClearPhase = getAiHistoryClearPhase()
-        if (
-            aiHistoryClearPhase === 'recovery' ||
-            (aiHistoryClearPhase === 'active' &&
-                hasNoArchivedAiResponses(hydratedStore.getState().archives))
-        ) {
-            await flushPersistedState()
-        }
+        await flushPendingAiHistoryClear(hydratedStore, flushPersistedState)
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState, async () => {
             // Post-hydration restores the saved language before translating this warning.

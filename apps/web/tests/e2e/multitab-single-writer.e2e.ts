@@ -291,7 +291,7 @@ test.describe('Single writer tab (GH #669)', () => {
                 configurable: true,
                 value: 'hidden',
             })
-            window.dispatchEvent(new Event('visibilitychange'))
+            document.dispatchEvent(new Event('visibilitychange'))
         })
         await expect(staleNotice).toBeVisible()
         await background.evaluate(() => {
@@ -299,7 +299,7 @@ test.describe('Single writer tab (GH #669)', () => {
                 configurable: true,
                 value: 'visible',
             })
-            window.dispatchEvent(new Event('visibilitychange'))
+            document.dispatchEvent(new Event('visibilitychange'))
         })
         await expect.poll(() => staleNoticeCount(background)).toBe(1)
         await expect(staleNotice).toContainText(UNSAVED_STALE_EDITS_NOTICE)

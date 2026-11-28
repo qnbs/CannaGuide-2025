@@ -79,6 +79,24 @@ const finishPendingAiHistoryClear = async (expectedMarker: string): Promise<bool
     return clearPendingAiHistoryClear(recoveryMarker)
 }
 
+const finishPendingAiHistoryClearAfterSave = async (
+    wroteArchiveFreeSnapshot: boolean,
+    clearOnExit: boolean | undefined,
+): Promise<void> => {
+    const pendingMarker = getAiHistoryClearMarker()
+    if (pendingMarker === null) return
+
+    const activeSnapshotIsSafe =
+        getAiHistoryClearPhase() !== 'active' || wroteArchiveFreeSnapshot || clearOnExit === false
+    if (!activeSnapshotIsSafe) return
+
+    try {
+        await finishPendingAiHistoryClear(pendingMarker)
+    } catch {
+        // Keep the marker so startup retries without exposing archived replies.
+    }
+}
+
 /**
  * @param onStaleSnapshot called with the refusal when a save is refused because
  * another tab saved since this page loaded, or because this page cannot check
@@ -101,7 +119,14 @@ export const setupPersistedStateSync = (
     let failing = false
     let saveAttemptSequence = 0
     let latestSuccessfulSaveAttempt = 0
-    const reportFailure = (error: unknown): void => {
+    const reportFailure = (
+        error: unknown,
+        saveAttempt: number,
+        writeCallbackStarted: boolean,
+    ): void => {
+        if (!writeCallbackStarted && latestSuccessfulSaveAttempt < saveAttempt) {
+            markPendingSnapshotSaveFailure(failureMarkerTabId)
+        }
         if (failing) return
         failing = true
         onSaveFailure?.(error)
@@ -145,21 +170,10 @@ export const setupPersistedStateSync = (
             if (saved) {
                 latestSuccessfulSaveAttempt = saveAttempt
                 failing = false
-                const pendingAiHistoryMarker = getAiHistoryClearMarker()
-                if (pendingAiHistoryMarker !== null) {
-                    try {
-                        const activeSnapshotIsSafe =
-                            getAiHistoryClearPhase() !== 'active' ||
-                            wroteArchiveFreeSnapshot ||
-                            hydratedStore.getState().settings.settings.privacy
-                                ?.clearAiHistoryOnExit === false
-                        if (activeSnapshotIsSafe) {
-                            await finishPendingAiHistoryClear(pendingAiHistoryMarker)
-                        }
-                    } catch {
-                        // Keep the marker so startup retries without exposing archived replies.
-                    }
-                }
+                await finishPendingAiHistoryClearAfterSave(
+                    wroteArchiveFreeSnapshot,
+                    hydratedStore.getState().settings.settings.privacy?.clearAiHistoryOnExit,
+                )
             }
             return saved
         } catch (e) {
@@ -169,13 +183,9 @@ export const setupPersistedStateSync = (
                 return false
             }
             // A coordinator failure (for example, a rejected Web Lock request)
-            // can happen before the write callback records its failure. Preserve
-            // the warning unless a later save from this tab already succeeded.
-            if (!writeCallbackStarted && latestSuccessfulSaveAttempt < saveAttempt) {
-                markPendingSnapshotSaveFailure(failureMarkerTabId)
-            }
+            // can happen before the write callback records its failure.
             console.error('[Persistence] Failed to save state:', e)
-            reportFailure(e)
+            reportFailure(e, saveAttempt, writeCallbackStarted)
             return false
         }
     }

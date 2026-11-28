@@ -62,13 +62,9 @@ export const markAiHistoryRecoveryPending = (
     expectedMarker: AiHistoryClearMarker,
 ): AiHistoryClearMarker | null => {
     try {
-        if (
-            typeof localStorage === 'undefined' ||
-            localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) !== expectedMarker ||
-            phaseForMarker(expectedMarker) !== 'active'
-        ) {
-            return null
-        }
+        if (typeof localStorage === 'undefined') return null
+        if (localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) !== expectedMarker) return null
+        if (phaseForMarker(expectedMarker) !== 'active') return null
         const requestId = expectedMarker.includes(':')
             ? expectedMarker.slice(expectedMarker.indexOf(':') + 1)
             : createMarkerId()

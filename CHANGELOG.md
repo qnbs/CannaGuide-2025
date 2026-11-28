@@ -16,6 +16,8 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ### Changed
 
+- **fix(deps):** The web app now uses the stable React Compiler Babel plugin `1.0.0`, satisfying Vite React's peer requirement while keeping the compiler transform enabled ([#962](https://github.com/qnbs/CannaGuide-2025/issues/962)).
+
 - **chore(deps):** Commit-message validation now installs the parser version required by its Git client while release changelog generation retains its separate compatible parser context ([#962](https://github.com/qnbs/CannaGuide-2025/issues/962)).
 - **refactor(strains):** The `Strain` type marks `thc`, `cbd` and `floweringTime` as optional, as the strain factory already leaves them absent when a source reports none ([#750](https://github.com/qnbs/CannaGuide-2025/issues/750)). The compiler now makes every reader handle an absent value. Similarity scores, cannabinoid charts, image prompts, offline grow tips and the grow setup ignore an unreported value, and none of them reads it as 0. Two new tests pin the image prompt and the offline nutrient tip for a strain without THC.
 - **ci(scorecard):** OSSF Scorecard runs weekly and on demand instead of on every push to `main` (owner decision): it is a periodic supply-chain assessment, not part of each merge. The analysis, the `results_published` gate and the SARIF upload are unchanged, and it is not a required or release check.

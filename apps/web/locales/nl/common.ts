@@ -183,6 +183,15 @@ export const common = {
         mainNavigation: 'Hoofdnavigatie',
     },
     voiceControl: {
+        speechConsent: {
+            title: 'Spraakherkenning van de browser toestaan?',
+            description:
+                'Sommige browsers sturen microfoonaudio mogelijk naar hun online spraakdienst om spraak te transcriberen. CannaGuide ontvangt deze audio niet.',
+            details:
+                'De browseraanbieder bepaalt hoe spraakaudio wordt verwerkt en bewaard. Deze toestemming wordt op dit apparaat opgeslagen, kan in Instellingen worden ingetrokken en heft de modus Alleen lokaal niet op.',
+            allow: 'Toestaan en doorgaan',
+            cancel: 'Nu niet',
+        },
         listening: 'Luistert...',
         processing: 'Verwerken: "{{transcript}}"',
         toggle: 'Spraakbesturing schakelen',
@@ -214,6 +223,7 @@ export const common = {
             generic: 'Er is een spraakherkenningsfout opgetreden.',
             noSpeech: 'Geen spraak gedetecteerd.',
             notAllowed: 'Microfoontoegang geweigerd.',
+            consentRequired: 'Sta eerst spraakherkenning door de browser toe.',
             startFailed: 'Kon niet beginnen met luisteren.',
             localOnly:
                 'Spraakinvoer staat uit in de alleen-lokaal-modus: de spraakherkenning van de browser kan audio online verwerken.',

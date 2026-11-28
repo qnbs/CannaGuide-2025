@@ -396,7 +396,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Control por Voz y Habla',
                 content:
-                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta. El reconocimiento de voz lo realiza tu navegador: algunos navegadores, como Chrome, env\u00EDan el audio al servicio de voz en l\u00EDnea del fabricante del navegador, por lo que los comandos de voz pueden no funcionar sin conexi\u00F3n.',
+                    'Controla la app sin manos. Presiona el <strong>boton del microfono</strong> en el encabezado para activar la escucha y di comandos como "Ir a Variedades" o "Buscar Blue Dream". Tambien puedes activar <strong>Texto a Voz (TTS)</strong> en Configuracion para que las guias, consejos de IA y descripciones se lean en voz alta. El reconocimiento de voz lo realiza tu navegador: algunos navegadores, como Chrome, env\u00EDan el audio al servicio de voz en l\u00EDnea del fabricante del navegador, por lo que los comandos de voz pueden no funcionar sin conexi\u00F3n. CannaGuide pide permiso antes de iniciar el reconocimiento de voz del navegador; puedes revocarlo en Ajustes. El Modo Solo Local lo sigue bloqueando.',
             },
             dataManagement: {
                 title: 'Soberania de Datos: Respaldo y Restauracion',

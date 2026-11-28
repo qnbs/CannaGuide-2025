@@ -184,6 +184,15 @@ export const common = {
         mainNavigation: 'Navigation principale',
     },
     voiceControl: {
+        speechConsent: {
+            title: 'Autoriser la reconnaissance vocale du navigateur ?',
+            description:
+                "Certains navigateurs peuvent envoyer l'audio du microphone \u00E0 leur service vocal en ligne pour transcrire la voix. CannaGuide ne re\u00E7oit pas cet audio.",
+            details:
+                "Le fournisseur du navigateur contr\u00F4le le traitement et la conservation de l'audio. Cette autorisation est enregistr\u00E9e sur cet appareil, peut \u00EAtre r\u00E9voqu\u00E9e dans les param\u00E8tres et ne d\u00E9sactive pas le mode local uniquement.",
+            allow: 'Autoriser et continuer',
+            cancel: 'Pas maintenant',
+        },
         listening: 'Ecoute...',
         processing: 'Traitement: "{{transcript}}"',
         toggle: 'Basculer le controle vocal',
@@ -215,6 +224,7 @@ export const common = {
             generic: 'Une erreur de reconnaissance vocale est survenue.',
             noSpeech: 'Aucune parole detectee.',
             notAllowed: 'Acces au microphone refuse.',
+            consentRequired: 'Autorisez la reconnaissance vocale du navigateur avant de parler.',
             startFailed: "Impossible de demarrer l'ecoute.",
             localOnly:
                 "La saisie vocale est d\u00E9sactiv\u00E9e en mode local uniquement : la reconnaissance vocale du navigateur peut traiter l'audio en ligne.",

@@ -9,20 +9,27 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { renderHook, act, render } from '@testing-library/react'
 import { createElement, Fragment, useLayoutEffect } from 'react'
 import { isDictationSupported } from '@/hooks/useDictation'
+import { setSetting } from '@/stores/slices/settingsSlice'
 
 // ---------------------------------------------------------------------------
 // Mock i18n selector (selectLanguage -> 'en')
 // ---------------------------------------------------------------------------
 
 let mockLocalOnly = false
+let mockWebSpeechConsentVersion: number | null = 1
+const mockDispatch = vi.hoisted(() => vi.fn())
 
 vi.mock('@/stores/store', () => ({
+    useAppDispatch: () => mockDispatch,
     useAppSelector: (selector: (s: unknown) => unknown) =>
         selector({
             settings: {
                 settings: {
                     general: { language: 'en' },
-                    privacy: { localOnlyMode: mockLocalOnly },
+                    privacy: {
+                        localOnlyMode: mockLocalOnly,
+                        webSpeechConsentVersion: mockWebSpeechConsentVersion,
+                    },
                 },
             },
         }),
@@ -226,6 +233,32 @@ describe('useDictation -- with SpeechRecognition mock', () => {
         expect(result.current.isListening).toBe(false)
     })
 
+    it('does not republish a completed transcript after later consent revocation', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const onTranscript = vi.fn()
+        const { result, rerender } = renderHook(() => useDictation(onTranscript))
+        act(() => result.current.start())
+        const recognition = mockInstances[0]
+        act(() => {
+            recognition?.fire('result', {
+                results: [
+                    Object.assign([{ transcript: 'finished note', confidence: 1 }], {
+                        isFinal: true,
+                    }),
+                ],
+            })
+            recognition?.fire('end')
+        })
+        expect(onTranscript).toHaveBeenCalledOnce()
+
+        onTranscript.mockClear()
+        mockWebSpeechConsentVersion = null
+        rerender()
+
+        expect(onTranscript).not.toHaveBeenCalled()
+        mockWebSpeechConsentVersion = 1
+    })
+
     it('sets error=notAllowed on not-allowed error', async () => {
         const { useDictation } = await import('@/hooks/useDictation')
         const { result } = renderHook(() => useDictation())
@@ -427,5 +460,62 @@ describe('useDictation -- Local-Only Mode (GH #717)', () => {
 
         expect(result.current.error).toBe('localOnly')
         expect(result.current.isListening).toBe(false)
+    })
+})
+
+describe('useDictation -- browser speech consent', () => {
+    beforeEach(() => {
+        mockLocalOnly = false
+        mockWebSpeechConsentVersion = null
+        installMockSpeechRecognition()
+    })
+
+    afterEach(() => {
+        mockLocalOnly = false
+        mockWebSpeechConsentVersion = 1
+        uninstallMockSpeechRecognition()
+    })
+
+    it('does not construct a browser recognizer before explicit consent', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result } = renderHook(() => useDictation())
+
+        act(() => result.current.start())
+
+        expect(result.current.consentRequired).toBe(true)
+        expect(mockInstances).toHaveLength(0)
+        expect(result.current.isListening).toBe(false)
+    })
+
+    it('starts dictation only after the user accepts the consent prompt', async () => {
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result } = renderHook(() => useDictation())
+
+        act(() => result.current.start())
+        expect(mockInstances).toHaveLength(0)
+
+        act(() => result.current.acceptConsentAndStart())
+
+        expect(mockInstances).toHaveLength(1)
+        expect(mockInstances[0]?.start).toHaveBeenCalledOnce()
+        expect(result.current.isListening).toBe(true)
+        expect(mockDispatch).toHaveBeenCalledWith(
+            setSetting({ path: 'privacy.webSpeechConsentVersion', value: 1 }),
+        )
+    })
+
+    it('aborts active dictation immediately when consent is revoked', async () => {
+        mockWebSpeechConsentVersion = 1
+        const { useDictation } = await import('@/hooks/useDictation')
+        const { result, rerender } = renderHook(() => useDictation())
+        act(() => result.current.start())
+        const recognition = mockInstances[0]
+
+        mockWebSpeechConsentVersion = null
+        rerender()
+
+        expect(recognition?.abort).toHaveBeenCalledOnce()
+        expect(result.current.isListening).toBe(false)
+        expect(result.current.error).toBe('consentRequired')
     })
 })

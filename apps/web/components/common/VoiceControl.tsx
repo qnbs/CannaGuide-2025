@@ -1,85 +1,33 @@
 import React, { useEffect, useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useAppSelector } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectLanguage, selectLocalOnlyMode, selectSettings } from '@/stores/selectors'
+import { setSetting } from '@/stores/slices/settingsSlice'
 import { useUIStore } from '@/stores/useUIStore'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
+import { BrowserSpeechConsentDialog } from './BrowserSpeechConsentDialog'
+import { useRegexHotword } from './useRegexHotword'
 import { porcupineWakeWordService } from '@/services/porcupineWakeWordService'
 import { porcupineKeyService } from '@/services/porcupineKeyService'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
-
-// Web Speech API – not yet fully standardized in TypeScript's DOM lib
-interface WSpeechRecognitionResult {
-    readonly isFinal: boolean
-    readonly length: number
-    [index: number]: { transcript: string; confidence: number }
-}
-interface WSpeechRecognitionResultList {
-    readonly length: number
-    [index: number]: WSpeechRecognitionResult
-}
-interface WSpeechRecognitionEvent extends Event {
-    readonly results: WSpeechRecognitionResultList
-}
-interface WSpeechRecognitionErrorEvent extends Event {
-    readonly error: string
-}
-interface WSpeechRecognition extends EventTarget {
-    continuous: boolean
-    interimResults: boolean
-    lang: string
-    addEventListener(type: 'result', listener: (event: WSpeechRecognitionEvent) => void): void
-    addEventListener(type: 'error', listener: (event: WSpeechRecognitionErrorEvent) => void): void
-    addEventListener(type: 'end', listener: () => void): void
-    removeEventListener(type: 'result', listener: (event: WSpeechRecognitionEvent) => void): void
-    removeEventListener(
-        type: 'error',
-        listener: (event: WSpeechRecognitionErrorEvent) => void,
-    ): void
-    removeEventListener(type: 'end', listener: () => void): void
-    start(): void
-    stop(): void
-    abort(): void
-}
-type WSpeechRecognitionCtor = { new (): WSpeechRecognition }
-
-const SpeechRecognitionAPI: WSpeechRecognitionCtor | undefined =
-    (window as Window & { SpeechRecognition?: WSpeechRecognitionCtor }).SpeechRecognition ||
-    (window as Window & { webkitSpeechRecognition?: WSpeechRecognitionCtor })
-        .webkitSpeechRecognition
-const hasSpeechRecognitionSupport = typeof SpeechRecognitionAPI === 'function'
-
-/** Regex that matches "hey canna" or "hey cannaguide" (case-insensitive). */
-const HOTWORD_REGEX = /hey\s+canna(?:guide)?/i
-
-/**
- * Whether a wake word may listen: the hotword is on, voice control is
- * available, and Local-Only Mode is off (GH #717).
- */
-function wakeWordAllowed(
-    hotwordEnabled: boolean,
-    isAvailable: boolean,
-    speechBlocked: boolean,
-): boolean {
-    return hotwordEnabled && isAvailable && !speechBlocked
-}
-
-/** The recognizer language for the app language (commands exist in German and English). */
-function recognitionLang(lang: string): string {
-    return lang === 'de' ? 'de-DE' : 'en-US'
-}
-
-/** The mic's tooltip: why it does nothing while Local-Only Mode is on. */
-function micTitleKey(speechBlocked: boolean): string {
-    return speechBlocked ? 'common.voiceControl.errors.localOnly' : 'common.voiceControl.toggle'
-}
-
-/** Duration (ms) the command listener stays active after hotword detection. */
-const HOTWORD_ACTIVATION_MS = 5_000
+import { WEB_SPEECH_CONSENT_VERSION } from '@/services/webSpeechConsent'
+import {
+    abortSpeechRecognition,
+    HOTWORD_ACTIVATION_MS,
+    hasSpeechRecognitionSupport,
+    micTitleKey,
+    recognitionLang,
+    SpeechRecognitionAPI,
+    wakeWordAllowed,
+    type WSpeechRecognition,
+    type WSpeechRecognitionErrorEvent,
+    type WSpeechRecognitionEvent,
+} from './voiceRecognition'
 
 export const VoiceControl: React.FC = () => {
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
     const settings = useAppSelector(selectSettings)
     // Browser speech recognition may send the audio to the browser vendor's
@@ -90,7 +38,18 @@ export const VoiceControl: React.FC = () => {
     // The live value for listeners created before a change (see the layout
     // effect below, which also aborts the recognizers at commit).
     const speechBlockedRef = useRef(speechBlocked)
+    const speechConsentGranted =
+        settings.privacy.webSpeechConsentVersion === WEB_SPEECH_CONSENT_VERSION
+    const speechConsentRef = useRef(speechConsentGranted)
+    const browserSpeechAllowed = speechConsentGranted && !speechBlocked
+    const [speechConsentDialogOpen, setSpeechConsentDialogOpen] = useState(false)
+    const [commandListenerRequested, setCommandListenerRequested] = useState(false)
+    const [pendingManualStart, setPendingManualStart] = useState(false)
+    const [wakeEngineRecoveryRevision, setWakeEngineRecoveryRevision] = useState(0)
+    const pendingStartAfterConsentRef = useRef(false)
+    const consentPromptedRef = useRef(false)
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
+    const wakeWordEngine = settings.voiceControl.wakeWordEngine
     const continuousListening = settings.voiceControl.continuousListening
     const isListening = useUIStore((s) => s.voiceControl.isListening)
     const isAvailable = useUIStore((s) => s.voiceControl.isAvailable)
@@ -102,14 +61,33 @@ export const VoiceControl: React.FC = () => {
     // Read by the end and hotword handlers. As a dependency, isListening made
     // every start or stop of a session rebuild (and abort) the recognizers.
     const isListeningRef = useRef(isListening)
+    const statusMessageRef = useRef(statusMessage)
+    const wakeWordEngineRef = useRef(wakeWordEngine)
     useLayoutEffect(() => {
         isListeningRef.current = isListening
     }, [isListening])
+    useLayoutEffect(() => {
+        statusMessageRef.current = statusMessage
+    }, [statusMessage])
+    useLayoutEffect(() => {
+        wakeWordEngineRef.current = wakeWordEngine
+    }, [wakeWordEngine])
 
     // Hotword listener state
     const hotwordRecRef = useRef<WSpeechRecognition | null>(null)
+    const hotwordCleanupRef = useRef<(() => void) | null>(null)
     const hotwordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [hotwordActive, setHotwordActive] = useState(false)
+
+    useEffect(
+        () => () => {
+            if (hotwordTimerRef.current !== null) {
+                clearTimeout(hotwordTimerRef.current)
+                hotwordTimerRef.current = null
+            }
+        },
+        [],
+    )
 
     // Switching Local-Only Mode on stops recognition in the commit itself, not
     // in a later passive cleanup: between the two, a recognizer could keep
@@ -117,13 +95,47 @@ export const VoiceControl: React.FC = () => {
     // listeners read the ref, so an event that still arrives does nothing.
     useLayoutEffect(() => {
         speechBlockedRef.current = speechBlocked
-        if (!speechBlocked) return
-        recognitionRef.current?.abort()
-        hotwordRecRef.current?.abort()
-    }, [speechBlocked])
+        speechConsentRef.current = speechConsentGranted
+        if (!speechBlocked && speechConsentGranted) return
+        pendingStartGenerationRef.current += 1
+        if (hotwordTimerRef.current !== null) {
+            clearTimeout(hotwordTimerRef.current)
+            hotwordTimerRef.current = null
+        }
+        const wasListening = isListeningRef.current || isListening || hotwordActive
+        const recognition = recognitionRef.current
+        recognitionRef.current = null
+        recognition?.abort()
+        isListeningRef.current = false
+        setCommandListenerRequested(false)
+        setPendingManualStart(false)
+        const stopHotword = hotwordCleanupRef.current
+        if (stopHotword) stopHotword()
+        else {
+            const hotwordRecognition = hotwordRecRef.current
+            hotwordRecRef.current = null
+            hotwordRecognition?.abort()
+        }
+        setHotwordActive(false)
+        setVoiceListening(false)
+        if (speechBlocked && wasListening) {
+            setVoiceStatusMessage(t('common.voiceControl.errors.localOnly'))
+        } else if (!speechConsentGranted && wasListening) {
+            setVoiceStatusMessage(t('common.voiceControl.errors.consentRequired'))
+        }
+    }, [
+        speechBlocked,
+        speechConsentGranted,
+        isListening,
+        hotwordActive,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        t,
+    ])
 
     const handleResult = useCallback(
         (event: WSpeechRecognitionEvent) => {
+            if (!speechConsentRef.current || speechBlockedRef.current) return
             const latest = event.results[event.results.length - 1]
             if (!latest) return
             const firstResult = latest[0]
@@ -155,6 +167,7 @@ export const VoiceControl: React.FC = () => {
                 errorMessageKey = 'common.voiceControl.errors.notAllowed'
             }
             setVoiceStatusMessage(t(errorMessageKey))
+            isListeningRef.current = false
             setVoiceListening(false)
             setTimeout(() => setVoiceStatusMessage(null), 4000)
         },
@@ -163,7 +176,13 @@ export const VoiceControl: React.FC = () => {
 
     const handleEnd = useCallback(() => {
         // In continuous listening mode, auto-restart recognition
-        if (continuousListening && isListeningRef.current && recognitionRef.current) {
+        if (
+            speechConsentRef.current &&
+            !speechBlockedRef.current &&
+            continuousListening &&
+            isListeningRef.current &&
+            recognitionRef.current
+        ) {
             try {
                 recognitionRef.current.start()
                 return
@@ -171,12 +190,21 @@ export const VoiceControl: React.FC = () => {
                 // Recognition may already be running -- fall through to idle
             }
         }
+        isListeningRef.current = false
+        setCommandListenerRequested(false)
         setVoiceListening(false)
         setVoiceStatusMessage(null)
-    }, [continuousListening, setVoiceListening, setVoiceStatusMessage])
+    }, [continuousListening, setCommandListenerRequested, setVoiceListening, setVoiceStatusMessage])
 
     useEffect(() => {
-        if (!isAvailable || !hasSpeechRecognitionSupport || speechBlocked) return
+        if (
+            (wakeWordEngine === 'porcupine' && !commandListenerRequested) ||
+            !isAvailable ||
+            !SpeechRecognitionAPI ||
+            !browserSpeechAllowed
+        ) {
+            return
+        }
 
         const recognition = new SpeechRecognitionAPI()
         recognition.continuous = continuousListening
@@ -188,16 +216,16 @@ export const VoiceControl: React.FC = () => {
         // A result already queued when Local-Only Mode was switched on must not
         // run a command; the cleanup below may not have run yet.
         const onResult = (event: WSpeechRecognitionEvent): void => {
-            if (!speechBlockedRef.current) handleResult(event)
+            if (!speechBlockedRef.current && speechConsentRef.current) handleResult(event)
         }
 
         // Continuous mode restarts on 'end'; never after the switch.
         const onEnd = (): void => {
-            if (!speechBlockedRef.current) handleEnd()
+            if (!speechBlockedRef.current && speechConsentRef.current) handleEnd()
         }
         // The abort at the switch fires 'aborted'; it must not replace the reason.
         const onError = (event: WSpeechRecognitionErrorEvent): void => {
-            if (!speechBlockedRef.current) handleError(event)
+            if (!speechBlockedRef.current && speechConsentRef.current) handleError(event)
         }
 
         recognition.addEventListener('result', onResult)
@@ -208,22 +236,67 @@ export const VoiceControl: React.FC = () => {
 
         return () => {
             if (recognition) {
-                recognition.removeEventListener('result', onResult)
-                recognition.removeEventListener('error', onError)
-                recognition.removeEventListener('end', onEnd)
-                recognition.abort()
+                abortSpeechRecognition(recognition, onResult, onError, onEnd)
                 recognitionRef.current = null
+            }
+            if (wakeWordEngineRef.current !== wakeWordEngine && isListeningRef.current) {
+                isListeningRef.current = false
+                setCommandListenerRequested(false)
+                setVoiceListening(false)
+                if (statusMessageRef.current === t('common.voiceControl.listening')) {
+                    setVoiceStatusMessage(null)
+                }
             }
         }
     }, [
         isAvailable,
-        speechBlocked,
+        wakeWordEngine,
+        commandListenerRequested,
+        browserSpeechAllowed,
         continuousListening,
         lang,
         handleResult,
         handleError,
         handleEnd,
+        setCommandListenerRequested,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        t,
     ])
+
+    useEffect(() => {
+        if (!pendingManualStart || !browserSpeechAllowed || !recognitionRef.current) return
+        setPendingManualStart(false)
+        try {
+            isListeningRef.current = true
+            recognitionRef.current.start()
+            setVoiceListening(true)
+            setVoiceStatusMessage(t('common.voiceControl.listening'))
+        } catch {
+            isListeningRef.current = false
+            setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
+            setVoiceListening(false)
+            setWakeEngineRecoveryRevision((revision) => revision + 1)
+        }
+    }, [
+        pendingManualStart,
+        browserSpeechAllowed,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        setWakeEngineRecoveryRevision,
+        t,
+    ])
+
+    useEffect(() => {
+        if (speechBlocked || speechConsentGranted) {
+            if (speechConsentGranted) consentPromptedRef.current = false
+            return
+        }
+        if (hotwordEnabled && wakeWordEngine === 'regex' && !consentPromptedRef.current) {
+            consentPromptedRef.current = true
+            setSpeechConsentDialogOpen(true)
+        }
+    }, [hotwordEnabled, wakeWordEngine, speechBlocked, speechConsentGranted])
 
     // Switching Local-Only Mode on aborts the recognizers (the layout effect
     // above); the listening state and the live region must follow. A session
@@ -242,130 +315,11 @@ export const VoiceControl: React.FC = () => {
         if (!speechBlocked) setVoiceStatusMessage(null)
     }, [speechBlocked, setVoiceStatusMessage])
 
-    // ---------------------------------------------------------------------------
-    // V-03: Hotword Wake Detection
-    // Runs a second continuous SpeechRecognition instance that listens passively
-    // for "hey canna(guide)?". When detected, the command listener activates for
-    // HOTWORD_ACTIVATION_MS milliseconds then goes silent again.
-    // ---------------------------------------------------------------------------
-    const startHotwordSession = useCallback(() => {
-        setHotwordActive(true)
-        setVoiceStatusMessage(t('common.voiceControl.hotwordDetected'))
-        if (hotwordTimerRef.current !== null) {
-            clearTimeout(hotwordTimerRef.current)
-        }
-        hotwordTimerRef.current = setTimeout(() => {
-            setHotwordActive(false)
-            setVoiceStatusMessage(null)
-        }, HOTWORD_ACTIVATION_MS)
-
-        // Start main command listener
-        if (recognitionRef.current && !isListeningRef.current) {
-            try {
-                recognitionRef.current.start()
-                setVoiceListening(true)
-            } catch {
-                // already started or unavailable -- ignore
-            }
-        }
-    }, [t, setVoiceStatusMessage, setVoiceListening])
-
-    // A stale hotword or Porcupine listener may still call this after Local-Only
-    // Mode was switched on, so it reads the ref, not the render's value.
-    const activateFromHotword = useCallback(() => {
-        if (!speechBlockedRef.current) startHotwordSession()
-    }, [startHotwordSession])
-
-    useEffect(() => {
-        if (
-            !hasSpeechRecognitionSupport ||
-            !wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
-        ) {
-            if (hotwordRecRef.current) {
-                hotwordRecRef.current.abort()
-                hotwordRecRef.current = null
-            }
-            return
-        }
-
-        let stopped = false
-
-        const startHotword = () => {
-            // A restart timer set before the switch may fire before the cleanup
-            // marks this run stopped: the live setting decides.
-            if (stopped || speechBlockedRef.current || !hasSpeechRecognitionSupport) return
-            const hw = new SpeechRecognitionAPI()
-            hw.continuous = true
-            hw.interimResults = true
-            hw.lang = recognitionLang(lang)
-
-            const onResult = (event: WSpeechRecognitionEvent) => {
-                for (let i = 0; i < event.results.length; i++) {
-                    const item = event.results[i]
-                    if (!item) continue
-                    const first = item[0]
-                    if (!first) continue
-                    if (HOTWORD_REGEX.test(first.transcript)) {
-                        voiceTelemetryService.recordVoiceEvent('hotwordDetected', {
-                            engine: 'regex',
-                        })
-                        activateFromHotword()
-                        return
-                    }
-                }
-            }
-
-            const onEnd = () => {
-                // Auto-restart so the hotword listener stays alive
-                if (!stopped && !speechBlockedRef.current) {
-                    setTimeout(() => startHotword(), 200)
-                }
-            }
-
-            hw.addEventListener('result', onResult)
-            hw.addEventListener('end', onEnd)
-
-            try {
-                hw.start()
-                hotwordRecRef.current = hw
-            } catch {
-                console.debug('[VoiceControl] Hotword recognizer failed to start')
-            }
-        }
-
-        startHotword()
-
-        return () => {
-            stopped = true
-            if (hotwordTimerRef.current !== null) {
-                clearTimeout(hotwordTimerRef.current)
-            }
-            if (hotwordRecRef.current) {
-                hotwordRecRef.current.abort()
-                hotwordRecRef.current = null
-            }
-        }
-    }, [isAvailable, hotwordEnabled, speechBlocked, lang, activateFromHotword])
-
-    // ---------------------------------------------------------------------------
-    // V-03b: Porcupine WASM Wake-Word Detection (optional upgrade)
-    // When wakeWordEngine === 'porcupine' and an access key is set, use
-    // Porcupine for low-CPU always-on keyword detection. Falls back to regex.
-    // ---------------------------------------------------------------------------
-    // Identifies the key and keyword the engine was created with. init() keeps
-    // an existing engine, so a changed or removed key needs dispose() first
-    // (#744 review). Holds no key, only what changed.
+    // Serialize the retained Porcupine engine's setup, stop and release.
     const porcupineConfigRef = useRef<string | null>(null)
-    // Runs setups and stops one at a time: a run started while the previous
-    // one is still in init() would get that run's engine and key back, and a
-    // stop finishing after the next dispose() would mark a released engine
-    // ready again (#744 review).
     const porcupineRunRef = useRef<Promise<void>>(Promise.resolve())
-    // An engine that is no longer wanted (hotword off, another engine,
-    // Local-Only Mode) is released, not only stopped: init() subscribes
-    // WebVoiceProcessor, which keeps the microphone open until dispose()
-    // unsubscribes, and stop() only pauses the worker. Checked when the step
-    // runs, so an init that was still queued is released as well.
+    const porcupineWasScheduledRef = useRef(false)
+    const pendingStartGenerationRef = useRef(0)
     const releasePorcupine = useCallback(async () => {
         if (porcupineConfigRef.current === null) return
         await porcupineWakeWordService.dispose()
@@ -377,6 +331,121 @@ export const VoiceControl: React.FC = () => {
             () => undefined,
         )
     }, [])
+
+    const requestCommandListening = useCallback(() => {
+        if (speechBlockedRef.current || !speechConsentRef.current || isListeningRef.current) return
+        const startGeneration = ++pendingStartGenerationRef.current
+        isListeningRef.current = true
+        const start = () => {
+            if (
+                startGeneration !== pendingStartGenerationRef.current ||
+                speechBlockedRef.current ||
+                !speechConsentRef.current
+            ) {
+                return
+            }
+            if (!recognitionRef.current) {
+                setCommandListenerRequested(true)
+                setPendingManualStart(true)
+                return
+            }
+            try {
+                recognitionRef.current.start()
+                setVoiceListening(true)
+                setVoiceStatusMessage(t('common.voiceControl.listening'))
+            } catch {
+                isListeningRef.current = false
+                setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
+                setVoiceListening(false)
+                setWakeEngineRecoveryRevision((revision) => revision + 1)
+            }
+        }
+
+        const hotwordRecognition = hotwordRecRef.current
+        const stopHotword = hotwordCleanupRef.current
+        if (stopHotword) stopHotword()
+        else {
+            hotwordRecRef.current = null
+            hotwordRecognition?.abort()
+        }
+
+        if (wakeWordEngine === 'porcupine' && porcupineWasScheduledRef.current) {
+            enqueuePorcupine(async () => {
+                await releasePorcupine()
+                start()
+            })
+        } else {
+            start()
+        }
+    }, [
+        wakeWordEngine,
+        enqueuePorcupine,
+        releasePorcupine,
+        setCommandListenerRequested,
+        setPendingManualStart,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        setWakeEngineRecoveryRevision,
+        t,
+    ])
+
+    // ---------------------------------------------------------------------------
+    // V-03: Hotword Wake Detection
+    // ---------------------------------------------------------------------------
+    const startHotwordSession = useCallback(() => {
+        if (speechBlockedRef.current || !speechConsentRef.current) return
+        setHotwordActive(true)
+        const hotwordMessage = t('common.voiceControl.hotwordDetected')
+        setVoiceStatusMessage(hotwordMessage)
+        if (hotwordTimerRef.current !== null) clearTimeout(hotwordTimerRef.current)
+        hotwordTimerRef.current = setTimeout(() => {
+            hotwordTimerRef.current = null
+            setHotwordActive(false)
+            if (statusMessageRef.current === hotwordMessage) setVoiceStatusMessage(null)
+        }, HOTWORD_ACTIVATION_MS)
+        requestCommandListening()
+    }, [t, setVoiceStatusMessage, requestCommandListening])
+
+    // A stale wake listener cannot start Web Speech after Local-Only is enabled.
+    const activateFromHotword = useCallback(() => {
+        if (speechBlockedRef.current) return
+        if (!speechConsentRef.current) {
+            pendingStartAfterConsentRef.current = true
+            setSpeechConsentDialogOpen(true)
+            return
+        }
+        startHotwordSession()
+    }, [startHotwordSession])
+
+    useRegexHotword({
+        wakeWordEngine,
+        isAvailable,
+        isListening,
+        hotwordEnabled,
+        speechBlocked,
+        speechConsentGranted,
+        lang,
+        activateFromHotword,
+        handleError,
+        enqueuePorcupine,
+        releasePorcupine,
+        setVoiceListening,
+        setVoiceStatusMessage,
+        translate: t,
+        recoveryRevision: wakeEngineRecoveryRevision,
+        speechBlockedRef,
+        speechConsentRef,
+        isListeningRef,
+        porcupineWasScheduledRef,
+        hotwordRecRef,
+        hotwordCleanupRef,
+    })
+
+    // ---------------------------------------------------------------------------
+    // V-03b: Porcupine WASM Wake-Word Detection (optional upgrade)
+    // When wakeWordEngine === 'porcupine' and an access key is set, use
+    // Porcupine for low-CPU always-on keyword detection.
+    // ---------------------------------------------------------------------------
     // The access key lives in its encrypted store, not in the settings (#709).
     // A legacy plaintext value whose migration failed keeps working until it
     // moves; a saved or removed key restarts the engine via the version.
@@ -390,7 +459,8 @@ export const VoiceControl: React.FC = () => {
     useEffect(() => {
         const usePorcupine =
             settings.voiceControl.wakeWordEngine === 'porcupine' &&
-            wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked)
+            wakeWordAllowed(hotwordEnabled, isAvailable, speechBlocked) &&
+            !isListening
 
         if (!usePorcupine) {
             enqueuePorcupine(releasePorcupine)
@@ -417,13 +487,17 @@ export const VoiceControl: React.FC = () => {
                     await porcupineWakeWordService.dispose()
                     porcupineConfigRef.current = null
                 }
-                // No key, or the effect was torn down meanwhile: regex fallback.
+                // No key or stale run: leave the selected engine stopped.
                 if (!accessKey || disposed) return
-                await porcupineWakeWordService.init(
+                const initialized = await porcupineWakeWordService.init(
                     accessKey,
                     settings.voiceControl.porcupineKeyword,
                 )
                 porcupineConfigRef.current = configuration
+                if (!initialized) {
+                    await releasePorcupine()
+                    return
+                }
                 // Torn down during init(): the next run decides about this engine.
                 if (disposed) return
                 porcupineWakeWordService.setCallback(() => {
@@ -435,10 +509,11 @@ export const VoiceControl: React.FC = () => {
                 })
                 await porcupineWakeWordService.start()
             } catch {
-                console.debug('[VoiceControl] Porcupine init failed -- regex fallback active')
+                console.debug('[VoiceControl] Porcupine init failed')
             }
         }
 
+        porcupineWasScheduledRef.current = true
         enqueuePorcupine(initPorcupine)
 
         return () => {
@@ -455,7 +530,9 @@ export const VoiceControl: React.FC = () => {
         settings.voiceControl.porcupineKeyword,
         hotwordEnabled,
         isAvailable,
+        isListening,
         speechBlocked,
+        wakeEngineRecoveryRevision,
         activateFromHotword,
         enqueuePorcupine,
         releasePorcupine,
@@ -497,7 +574,35 @@ export const VoiceControl: React.FC = () => {
 
     const handleMicClick = (): void => {
         if (speechBlocked) explainSpeechBlocked()
-        else toggleListening()
+        else if (!speechConsentGranted) {
+            pendingStartAfterConsentRef.current = true
+            setSpeechConsentDialogOpen(true)
+        } else {
+            if (isListening) toggleListening()
+            else requestCommandListening()
+        }
+    }
+
+    const allowBrowserSpeech = (): void => {
+        // The explicit choice authorizes work in this event turn. React's
+        // layout effect updates the shared ref only after the next commit.
+        speechConsentRef.current = true
+        dispatch(
+            setSetting({
+                path: 'privacy.webSpeechConsentVersion',
+                value: WEB_SPEECH_CONSENT_VERSION,
+            }),
+        )
+        setSpeechConsentDialogOpen(false)
+        if (pendingStartAfterConsentRef.current) {
+            pendingStartAfterConsentRef.current = false
+            requestCommandListening()
+        }
+    }
+
+    const dismissBrowserSpeechConsent = (): void => {
+        pendingStartAfterConsentRef.current = false
+        setSpeechConsentDialogOpen(false)
     }
 
     if (!isAvailable || !hasSpeechRecognitionSupport) {
@@ -505,25 +610,32 @@ export const VoiceControl: React.FC = () => {
     }
 
     return (
-        <div className="relative inline-flex items-center">
-            <Button
-                variant="ghost"
-                className={`!p-2 rounded-full transition-colors duration-200 ${
-                    isListening || hotwordActive
-                        ? 'text-red-400 animate-pulse bg-red-500/20'
-                        : 'text-slate-300 hover:text-slate-100'
-                }`}
-                onClick={handleMicClick}
-                title={t(micTitleKey(speechBlocked))}
-                aria-label={t('common.voiceControl.toggle')}
-                aria-pressed={isListening}
-            >
-                <PhosphorIcons.Microphone className="w-6 h-6" />
-            </Button>
-            {/* Screen-reader live region for voice status updates */}
-            <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-                {statusMessage ?? ''}
-            </span>
-        </div>
+        <>
+            <div className="relative inline-flex items-center">
+                <Button
+                    variant="ghost"
+                    className={`!p-2 rounded-full transition-colors duration-200 ${
+                        isListening || hotwordActive
+                            ? 'text-red-400 animate-pulse bg-red-500/20'
+                            : 'text-slate-300 hover:text-slate-100'
+                    }`}
+                    onClick={handleMicClick}
+                    title={t(micTitleKey(speechBlocked))}
+                    aria-label={t('common.voiceControl.toggle')}
+                    aria-pressed={isListening}
+                >
+                    <PhosphorIcons.Microphone className="w-6 h-6" />
+                </Button>
+                {/* Screen-reader live region for voice status updates */}
+                <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+                    {statusMessage ?? ''}
+                </span>
+            </div>
+            <BrowserSpeechConsentDialog
+                isOpen={speechConsentDialogOpen}
+                onAllow={allowBrowserSpeech}
+                onCancel={dismissBrowserSpeechConsent}
+            />
+        </>
     )
 }

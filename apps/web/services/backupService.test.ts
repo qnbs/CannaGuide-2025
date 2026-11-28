@@ -328,6 +328,33 @@ describe('backupService', () => {
                 expect(String(data)).not.toContain('pv_canary_0000000000000000000000000000')
             }
         })
+
+        it('does not transfer device-local Web Speech consent in the ZIP', async () => {
+            mocks.zipEntries.clear()
+            vi.mocked(indexedDBStorage.getItem).mockResolvedValue(
+                JSON.stringify({
+                    settings: {
+                        settings: {
+                            privacy: {
+                                webSpeechConsentVersion: '2026-11',
+                            },
+                        },
+                        version: 5,
+                    },
+                    simulation: { plants: [] },
+                }),
+            )
+
+            const result = await backupService.exportBackup()
+            const portableSnapshot = mocks.zipEntries.get('cannaguide-state.json')
+
+            expect(result.success).toBe(true)
+            expect(typeof portableSnapshot).toBe('string')
+            expect(
+                JSON.parse(String(portableSnapshot)).settings.settings.privacy
+                    .webSpeechConsentVersion,
+            ).toBeNull()
+        })
     })
 
     describe('exportBackup photo completeness (#665)', () => {
@@ -653,6 +680,26 @@ describe('backupService', () => {
                 })
             },
         )
+
+        it('clears device-local Web Speech consent when restoring an archive', async () => {
+            const state = {
+                settings: {
+                    settings: {
+                        privacy: { webSpeechConsentVersion: '2026-11' },
+                    },
+                },
+            }
+
+            const result = await importMockBackup(state)
+            const [persistedSnapshot] =
+                mocks.replacePrimaryPersistedSnapshot.mock.calls.at(-1) ?? []
+
+            expect(result.success).toBe(true)
+            expect(
+                JSON.parse(String(persistedSnapshot)).settings.settings.privacy
+                    .webSpeechConsentVersion,
+            ).toBeNull()
+        })
 
         it('reports browser-unsupported HEIC images after sanitizing their journal reference', async () => {
             const imageData = createHeifDataUrl('image/heic')

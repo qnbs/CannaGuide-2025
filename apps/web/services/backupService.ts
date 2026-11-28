@@ -14,6 +14,7 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 import { openDB } from '@/services/db/connection'
 import { redactSnapshotSecrets } from '@/utils/redactSecrets'
+import { resetPortableWebSpeechConsentText } from '@/services/persistedSnapshotFormat'
 import type { BackupImportLimits } from '@/services/backupImportLimits'
 import { BACKUP_IMPORT_LIMITS } from '@/services/backupImportLimits'
 import {
@@ -181,7 +182,7 @@ const addArchivedJournal = async (
 const buildExportArchive = async (stateString: string): Promise<BackupExportResult> => {
     const zip = new JSZip()
     // A legacy plaintext Cloud TTS key never leaves in a backup (#654).
-    zip.file(STATE_FILENAME, redactSnapshotSecrets(stateString))
+    zip.file(STATE_FILENAME, resetPortableWebSpeechConsentText(redactSnapshotSecrets(stateString)))
 
     // A backup that leaves out photos the state refers to is worse than
     // no backup. An empty photo store is still complete (#665).

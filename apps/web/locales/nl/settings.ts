@@ -411,6 +411,11 @@ export const settingsView = {
         testVoice: 'Stem testen',
         testVoiceSentence: 'Dit is een test van de geselecteerde stem.',
         voiceControl: {
+            browserSpeechConsent: 'Spraakverwerking door browser',
+            browserSpeechConsentDesc:
+                'Sta toe dat de spraakdienst van de browser microfoonaudio verwerkt. Je kunt deze toestemming altijd intrekken; de modus Alleen lokaal blijft browserspraak blokkeren.',
+            allowBrowserSpeechConsent: 'Bekijken en toestaan',
+            revokeBrowserSpeechConsent: 'Toestemming intrekken',
             enabled: 'Spraakbesturing inschakelen',
             enabledDesc:
                 'Bedien de app met eenvoudige spraakopdrachten. Ze gebruiken de spraakherkenning van je browser, die sommige browsers online verwerken; de alleen-lokaal-modus zet ze uit.',

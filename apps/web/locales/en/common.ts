@@ -186,6 +186,15 @@ export const common = {
     metadataDescription:
         'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore 800+ strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
     voiceControl: {
+        speechConsent: {
+            title: 'Allow browser speech recognition?',
+            description:
+                'Some browsers may send microphone audio to their online speech service to transcribe voice input. CannaGuide does not receive this audio.',
+            details:
+                'The browser provider controls how speech audio is processed and retained. This permission is saved on this device, can be revoked in Settings, and does not override Local-Only Mode.',
+            allow: 'Allow and continue',
+            cancel: 'Not now',
+        },
         listening: 'Listening...',
         processing: 'Processing: "{{transcript}}"',
         toggle: 'Toggle Voice Control',
@@ -217,6 +226,7 @@ export const common = {
             generic: 'A speech recognition error occurred.',
             noSpeech: 'No speech was detected.',
             notAllowed: 'Microphone access denied.',
+            consentRequired: 'Allow browser speech recognition before using voice input.',
             startFailed: 'Could not start listening.',
             localOnly:
                 "Voice input is off in Local-Only Mode: the browser's speech recognition may process audio online.",

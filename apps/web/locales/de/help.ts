@@ -570,7 +570,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Sprachsteuerung & Sprachausgabe',
                 content:
-                    'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen. Die Spracherkennung übernimmt Ihr Browser: Manche Browser, etwa Chrome, senden die Aufnahme an den Online-Sprachdienst des Browser-Herstellers; Sprachbefehle funktionieren dann offline nicht.',
+                    'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen. Die Spracherkennung übernimmt Ihr Browser: Manche Browser, etwa Chrome, senden die Aufnahme an den Online-Sprachdienst des Browser-Herstellers; Sprachbefehle funktionieren dann offline nicht. Vor dem Start fragt CannaGuide nach Ihrer Zustimmung; Sie können sie in den Spracheinstellungen widerrufen. Der Nur-lokal-Modus blockiert sie weiterhin.',
             },
             dataManagement: {
                 title: 'Datensouveränität: Backup & Wiederherstellung',

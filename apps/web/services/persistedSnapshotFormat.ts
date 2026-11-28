@@ -139,7 +139,13 @@ export const redactForExport = (snapshot: PersistedState): PersistedState => {
             ...settingsSlice,
             settings: {
                 ...settings,
-                privacy: { ...settings.privacy, pin: null },
+                // Web Speech consent is device-local: another device must ask
+                // for its own explicit permission before cloud recognition.
+                privacy: {
+                    ...settings.privacy,
+                    pin: null,
+                    webSpeechConsentVersion: null,
+                },
                 data: {
                     ...settings.data,
                     cloudSync: { ...settings.data.cloudSync, encryptionKeyBase64: null },
@@ -152,8 +158,40 @@ export const redactForExport = (snapshot: PersistedState): PersistedState => {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
+/** Web Speech consent belongs to the device on which it was explicitly granted. */
+export const resetPortableWebSpeechConsent = (state: unknown): unknown => {
+    if (!isRecord(state) || !isRecord(state.settings)) return state
+    const settingsSlice = state.settings
+    if (!isRecord(settingsSlice.settings)) return state
+    const settings = settingsSlice.settings
+    if (!isRecord(settings.privacy)) return state
+    return {
+        ...state,
+        settings: {
+            ...settingsSlice,
+            settings: {
+                ...settings,
+                privacy: { ...settings.privacy, webSpeechConsentVersion: null },
+            },
+        },
+    }
+}
+
+/** Parses a portable snapshot and clears consent without altering other state. */
+export const resetPortableWebSpeechConsentText = (serialized: string): string => {
+    try {
+        return JSON.stringify(resetPortableWebSpeechConsent(JSON.parse(serialized)))
+    } catch {
+        return serialized
+    }
+}
+
 /** Fields that never leave the device, in addition to the redacted credentials. */
-const DOWNLOAD_ONLY_REDACTED_FIELDS = ['pin', 'encryptionKeyBase64'] as const
+const DOWNLOAD_ONLY_REDACTED_FIELDS = [
+    'pin',
+    'encryptionKeyBase64',
+    'webSpeechConsentVersion',
+] as const
 
 const nullField = (holder: unknown, field: string): void => {
     if (isRecord(holder) && field in holder) holder[field] = null
@@ -173,6 +211,7 @@ export const redactSnapshotTextForDownload = (text: string): string => {
             const settings = isRecord(parsed.settings) ? parsed.settings.settings : undefined
             if (isRecord(settings)) {
                 nullField(settings.privacy, 'pin')
+                nullField(settings.privacy, 'webSpeechConsentVersion')
                 nullField(
                     isRecord(settings.data) ? settings.data.cloudSync : undefined,
                     'encryptionKeyBase64',

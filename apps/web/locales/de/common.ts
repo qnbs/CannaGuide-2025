@@ -189,6 +189,15 @@ export const common = {
     metadataDescription:
         'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie 800+ Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
     voiceControl: {
+        speechConsent: {
+            title: 'Browser-Spracherkennung erlauben?',
+            description:
+                'Einige Browser senden Mikrofon-Audio zur Transkription an ihren Online-Sprachdienst. CannaGuide erhaelt dieses Audio nicht.',
+            details:
+                'Der Browser-Anbieter bestimmt die Verarbeitung und Speicherung des Sprach-Audios. Diese Zustimmung wird auf diesem Geraet gespeichert, kann in den Einstellungen widerrufen werden und setzt den Nur-lokal-Modus nicht ausser Kraft.',
+            allow: 'Erlauben und fortfahren',
+            cancel: 'Jetzt nicht',
+        },
         listening: 'Höre zu...',
         processing: 'Verarbeite: "{{transcript}}"',
         toggle: 'Sprachsteuerung umschalten',
@@ -220,6 +229,7 @@ export const common = {
             generic: 'Ein Fehler bei der Spracherkennung ist aufgetreten.',
             noSpeech: 'Keine Sprache erkannt.',
             notAllowed: 'Mikrofonzugriff verweigert.',
+            consentRequired: 'Erteile zuerst die Zustimmung zur Browser-Spracherkennung.',
             startFailed: 'Zuhören konnte nicht gestartet werden.',
             localOnly:
                 'Spracheingabe ist im Nur-Lokal-Modus aus: Die Spracherkennung des Browsers kann Audio online verarbeiten.',

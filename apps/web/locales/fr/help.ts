@@ -399,7 +399,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Controle Vocal et Parole',
                 content:
-                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres. La reconnaissance vocale est assur\u00E9e par votre navigateur : certains navigateurs, comme Chrome, envoient l'audio au service vocal en ligne de l'\u00E9diteur du navigateur, si bien que les commandes vocales peuvent ne pas fonctionner hors ligne.",
+                    "Controlez l'app en mains libres. Appuyez sur le <strong>bouton microphone</strong> dans l'en-tete pour activer l'ecoute. Vous pouvez aussi activer le <strong>Texte-a-Parole (TTS)</strong> dans les Parametres. La reconnaissance vocale est assur\u00E9e par votre navigateur : certains navigateurs, comme Chrome, envoient l'audio au service vocal en ligne de l'\u00E9diteur du navigateur, si bien que les commandes vocales peuvent ne pas fonctionner hors ligne. CannaGuide demande votre autorisation avant de demarrer la reconnaissance vocale du navigateur ; vous pouvez la revoquer dans les parametres vocaux. Le mode Local-Only la bloque toujours.",
             },
             dataManagement: {
                 title: 'Souverainete des Donnees : Sauvegarde et Restauration',

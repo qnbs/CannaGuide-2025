@@ -22,9 +22,11 @@ import { SearchBar } from '@/components/common/SearchBar'
 import { SettingsRow } from './SettingsShared'
 import { CloudTtsKeyField } from './CloudTtsKeyField'
 import { PorcupineKeyField } from './PorcupineKeyField'
+import { BrowserSpeechConsentDialog } from '@/components/common/BrowserSpeechConsentDialog'
 import { useSettingsRowLabelProps } from '@/components/common/settingsRowLabel'
 import { PORCUPINE_BUILTIN_KEYWORDS } from '@/constants'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
+import { WEB_SPEECH_CONSENT_VERSION } from '@/services/webSpeechConsent'
 import type { VoiceTelemetrySnapshot } from '@/types'
 
 const CommandItem: React.FC<{
@@ -73,6 +75,19 @@ const VoiceSettingsTab: React.FC = () => {
     const availableVoices = useAvailableVoices()
     const [commandSearch, setCommandSearch] = useState('')
     const [analyticsSnapshot, setAnalyticsSnapshot] = useState<VoiceTelemetrySnapshot | null>(null)
+    const [speechConsentDialogOpen, setSpeechConsentDialogOpen] = useState(false)
+    const speechConsentGranted =
+        settings.privacy.webSpeechConsentVersion === WEB_SPEECH_CONSENT_VERSION
+
+    const allowBrowserSpeech = () => {
+        dispatch(
+            setSetting({
+                path: 'privacy.webSpeechConsentVersion',
+                value: WEB_SPEECH_CONSENT_VERSION,
+            }),
+        )
+        setSpeechConsentDialogOpen(false)
+    }
 
     const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path, value }))
@@ -280,6 +295,38 @@ const VoiceSettingsTab: React.FC = () => {
                                 }
                             />
                         </SettingsRow>
+                        <SettingsRow
+                            label={t('settingsView.tts.voiceControl.browserSpeechConsent')}
+                            description={t(
+                                'settingsView.tts.voiceControl.browserSpeechConsentDesc',
+                            )}
+                        >
+                            <Button
+                                size="sm"
+                                variant={speechConsentGranted ? 'secondary' : 'default'}
+                                onClick={() =>
+                                    speechConsentGranted
+                                        ? dispatch(
+                                              setSetting({
+                                                  path: 'privacy.webSpeechConsentVersion',
+                                                  value: null,
+                                              }),
+                                          )
+                                        : setSpeechConsentDialogOpen(true)
+                                }
+                            >
+                                {t(
+                                    speechConsentGranted
+                                        ? 'settingsView.tts.voiceControl.revokeBrowserSpeechConsent'
+                                        : 'settingsView.tts.voiceControl.allowBrowserSpeechConsent',
+                                )}
+                            </Button>
+                        </SettingsRow>
+                        <BrowserSpeechConsentDialog
+                            isOpen={speechConsentDialogOpen}
+                            onAllow={allowBrowserSpeech}
+                            onCancel={() => setSpeechConsentDialogOpen(false)}
+                        />
                         <SettingsRow
                             label={t('settingsView.tts.voiceControl.continuousListening')}
                             description={t('settingsView.tts.voiceControl.continuousListeningDesc')}

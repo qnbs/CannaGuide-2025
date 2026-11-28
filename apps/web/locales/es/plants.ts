@@ -53,6 +53,7 @@ export const plantsView = {
         dragDrop: 'Arrastra y suelta tu imagen aqui, o haz clic para buscar.',
         capture: 'Capturar con Camara',
         cameraError: 'No se pudo acceder a la camara. Por favor verifica los permisos.',
+        cameraCancelled: 'La captura con camara se cancelo al cambiar de pestana.',
         plantContext: 'Proporcionar contexto para',
         generalContext: 'Contexto General',
         userNotesPlaceholder:

@@ -60,6 +60,7 @@ export const plantsView = {
         dragDrop: 'Drag & drop your image here, or click to browse.',
         capture: 'Capture with Camera',
         cameraError: 'Could not access the camera. Please check permissions.',
+        cameraCancelled: 'Camera capture was cancelled when you left this tab.',
         plantContext: 'Provide context for',
         generalContext: 'General Context',
         userNotesPlaceholder: 'Add any extra notes here (e.g., "spots on lower leaves")...',

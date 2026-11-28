@@ -52,6 +52,7 @@ export const plantsView = {
         dragDrop: 'Sleep je afbeelding hierheen, of klik om te bladeren.',
         capture: 'Vastleggen met Camera',
         cameraError: 'Kan geen toegang krijgen tot de camera. Controleer de machtigingen.',
+        cameraCancelled: 'De camera-opname is geannuleerd bij het verlaten van dit tabblad.',
         plantContext: 'Context geven voor',
         generalContext: 'Algemene Context',
         userNotesPlaceholder:

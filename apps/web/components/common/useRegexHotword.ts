@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { voiceTelemetryService } from '@/services/voiceTelemetryService'
 import {
     abortSpeechRecognition,
@@ -51,6 +51,22 @@ type RegexHotwordSessionOptions = Pick<
     | 'hotwordRecRef'
     | 'hotwordCleanupRef'
 >
+
+type RegexHotwordGateOptions = Pick<
+    UseRegexHotwordOptions,
+    | 'wakeWordEngine'
+    | 'isAvailable'
+    | 'isListening'
+    | 'hotwordEnabled'
+    | 'speechBlocked'
+    | 'speechConsentGranted'
+>
+
+type RegexHotwordStartOptions = RegexHotwordSessionOptions &
+    Pick<
+        UseRegexHotwordOptions,
+        'enqueuePorcupine' | 'releasePorcupine' | 'porcupineWasScheduledRef'
+    >
 
 const terminalError = (error: string): boolean =>
     ['not-allowed', 'service-not-allowed', 'audio-capture', 'language-not-supported'].includes(
@@ -182,98 +198,89 @@ class RegexHotwordSession {
     }
 }
 
+const canRunRegexHotword = (options: RegexHotwordGateOptions): boolean =>
+    options.wakeWordEngine === 'regex' &&
+    Boolean(SpeechRecognitionAPI) &&
+    wakeWordAllowed(
+        options.hotwordEnabled,
+        options.isAvailable,
+        options.speechBlocked || !options.speechConsentGranted || options.isListening,
+    )
+
+const stopRegexHotword = (
+    options: Pick<UseRegexHotwordOptions, 'hotwordCleanupRef' | 'hotwordRecRef'>,
+): void => {
+    const stopHotword = options.hotwordCleanupRef.current
+    if (stopHotword) stopHotword()
+    else {
+        options.hotwordRecRef.current?.abort()
+        options.hotwordRecRef.current = null
+    }
+}
+
+const startRegexHotword = (options: RegexHotwordStartOptions): (() => void) => {
+    const session = new RegexHotwordSession({
+        lang: options.lang,
+        activateFromHotword: options.activateFromHotword,
+        handleError: options.handleError,
+        setVoiceListening: options.setVoiceListening,
+        setVoiceStatusMessage: options.setVoiceStatusMessage,
+        translate: options.translate,
+        speechBlockedRef: options.speechBlockedRef,
+        speechConsentRef: options.speechConsentRef,
+        isListeningRef: options.isListeningRef,
+        hotwordRecRef: options.hotwordRecRef,
+        hotwordCleanupRef: options.hotwordCleanupRef,
+    })
+    const stopHotword = () => session.stop()
+    session.setCleanup(stopHotword)
+    options.hotwordCleanupRef.current = stopHotword
+
+    if (options.porcupineWasScheduledRef.current) {
+        options.enqueuePorcupine(async () => {
+            await options.releasePorcupine()
+            session.start()
+        })
+    } else session.start()
+
+    return stopHotword
+}
+
 /** Owns the browser hotword recognizer and its recoverable restart lifecycle. */
 export const useRegexHotword = (options: UseRegexHotwordOptions): void => {
-    const {
-        wakeWordEngine,
-        isAvailable,
-        isListening,
-        hotwordEnabled,
-        speechBlocked,
-        speechConsentGranted,
-        recoveryRevision,
-        lang,
-        activateFromHotword,
-        handleError,
-        enqueuePorcupine,
-        releasePorcupine,
-        setVoiceListening,
-        setVoiceStatusMessage,
-        translate,
-        speechBlockedRef,
-        speechConsentRef,
-        isListeningRef,
-        porcupineWasScheduledRef,
-        hotwordRecRef,
-        hotwordCleanupRef,
-    } = options
+    const latestOptionsRef = useRef(options)
+    useLayoutEffect(() => {
+        latestOptionsRef.current = options
+    }, [options])
+
+    const lifecycleKey = JSON.stringify([
+        options.wakeWordEngine,
+        options.isAvailable,
+        options.isListening,
+        options.hotwordEnabled,
+        options.speechBlocked,
+        options.speechConsentGranted,
+        options.recoveryRevision,
+        options.lang,
+    ])
 
     useEffect(() => {
-        const enabled =
-            wakeWordEngine === 'regex' &&
-            Boolean(SpeechRecognitionAPI) &&
-            wakeWordAllowed(
-                hotwordEnabled,
-                isAvailable,
-                speechBlocked || !speechConsentGranted || isListening,
-            )
-        if (!enabled) {
-            const stopHotword = hotwordCleanupRef.current
-            if (stopHotword) stopHotword()
-            else {
-                hotwordRecRef.current?.abort()
-                hotwordRecRef.current = null
-            }
+        const current = latestOptionsRef.current
+        if (!canRunRegexHotword(current)) {
+            stopRegexHotword(current)
             return
         }
 
-        const session = new RegexHotwordSession({
-            lang,
-            activateFromHotword,
-            handleError,
-            setVoiceListening,
-            setVoiceStatusMessage,
-            translate,
-            speechBlockedRef,
-            speechConsentRef,
-            isListeningRef,
-            hotwordRecRef,
-            hotwordCleanupRef,
+        return startRegexHotword({
+            ...current,
+            activateFromHotword: () => latestOptionsRef.current.activateFromHotword(),
+            handleError: (event) => latestOptionsRef.current.handleError(event),
+            enqueuePorcupine: (step) => latestOptionsRef.current.enqueuePorcupine(step),
+            releasePorcupine: () => latestOptionsRef.current.releasePorcupine(),
+            setVoiceListening: (listening) => latestOptionsRef.current.setVoiceListening(listening),
+            setVoiceStatusMessage: (message) =>
+                latestOptionsRef.current.setVoiceStatusMessage(message),
+            translate: (key) => latestOptionsRef.current.translate(key),
         })
-        const stopHotword = () => session.stop()
-        session.setCleanup(stopHotword)
-        hotwordCleanupRef.current = stopHotword
-
-        if (porcupineWasScheduledRef.current) {
-            enqueuePorcupine(async () => {
-                await releasePorcupine()
-                session.start()
-            })
-        } else {
-            session.start()
-        }
-        return stopHotword
-    }, [
-        wakeWordEngine,
-        isAvailable,
-        isListening,
-        hotwordEnabled,
-        speechBlocked,
-        speechConsentGranted,
-        recoveryRevision,
-        lang,
-        activateFromHotword,
-        handleError,
-        enqueuePorcupine,
-        releasePorcupine,
-        setVoiceListening,
-        setVoiceStatusMessage,
-        translate,
-        speechBlockedRef,
-        speechConsentRef,
-        isListeningRef,
-        porcupineWasScheduledRef,
-        hotwordRecRef,
-        hotwordCleanupRef,
-    ])
+    }, [lifecycleKey])
 }

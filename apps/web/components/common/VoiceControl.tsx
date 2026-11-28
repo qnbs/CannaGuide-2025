@@ -45,7 +45,7 @@ export const VoiceControl: React.FC = () => {
     const [speechConsentDialogOpen, setSpeechConsentDialogOpen] = useState(false)
     const [commandListenerRequested, setCommandListenerRequested] = useState(false)
     const [pendingManualStart, setPendingManualStart] = useState(false)
-    const [hotwordRecoveryRevision, setHotwordRecoveryRevision] = useState(0)
+    const [wakeEngineRecoveryRevision, setWakeEngineRecoveryRevision] = useState(0)
     const pendingStartAfterConsentRef = useRef(false)
     const consentPromptedRef = useRef(false)
     const hotwordEnabled = settings.voiceControl.hotwordEnabled
@@ -276,14 +276,14 @@ export const VoiceControl: React.FC = () => {
             isListeningRef.current = false
             setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
             setVoiceListening(false)
-            setHotwordRecoveryRevision((revision) => revision + 1)
+            setWakeEngineRecoveryRevision((revision) => revision + 1)
         }
     }, [
         pendingManualStart,
         browserSpeechAllowed,
         setVoiceListening,
         setVoiceStatusMessage,
-        setHotwordRecoveryRevision,
+        setWakeEngineRecoveryRevision,
         t,
     ])
 
@@ -357,7 +357,7 @@ export const VoiceControl: React.FC = () => {
                 isListeningRef.current = false
                 setVoiceStatusMessage(t('common.voiceControl.errors.startFailed'))
                 setVoiceListening(false)
-                setHotwordRecoveryRevision((revision) => revision + 1)
+                setWakeEngineRecoveryRevision((revision) => revision + 1)
             }
         }
 
@@ -385,7 +385,7 @@ export const VoiceControl: React.FC = () => {
         setPendingManualStart,
         setVoiceListening,
         setVoiceStatusMessage,
-        setHotwordRecoveryRevision,
+        setWakeEngineRecoveryRevision,
         t,
     ])
 
@@ -432,7 +432,7 @@ export const VoiceControl: React.FC = () => {
         setVoiceListening,
         setVoiceStatusMessage,
         translate: t,
-        recoveryRevision: hotwordRecoveryRevision,
+        recoveryRevision: wakeEngineRecoveryRevision,
         speechBlockedRef,
         speechConsentRef,
         isListeningRef,
@@ -532,6 +532,7 @@ export const VoiceControl: React.FC = () => {
         isAvailable,
         isListening,
         speechBlocked,
+        wakeEngineRecoveryRevision,
         activateFromHotword,
         enqueuePorcupine,
         releasePorcupine,

@@ -15,6 +15,8 @@ const keyStore = vi.hoisted(() => ({
     key: null as string | null,
     listeners: new Set<() => void>(),
 }))
+const porcupineCallback = vi.hoisted(() => ({ current: null as null | (() => void) }))
+const translate = vi.hoisted(() => (key: string) => key)
 let legacyKey: string | null = null
 let localOnly = false
 let hotword = true
@@ -24,6 +26,9 @@ let voiceListening = false
 const setVoiceListening = vi.fn((listening: boolean) => {
     voiceListening = listening
 })
+const setVoiceStatusMessage = vi.fn()
+const processVoiceCommand = vi.fn()
+const addNotification = vi.fn()
 
 vi.mock('@/services/porcupineKeyService', () => ({
     porcupineKeyService: {
@@ -40,13 +45,15 @@ vi.mock('@/services/porcupineWakeWordService', () => ({
         start: vi.fn(async () => undefined),
         stop: vi.fn(async () => undefined),
         dispose: vi.fn(async () => undefined),
-        setCallback: vi.fn(),
+        setCallback: vi.fn((callback: () => void) => {
+            porcupineCallback.current = callback
+        }),
     },
 }))
 vi.mock('@/services/voiceTelemetryService', () => ({
     voiceTelemetryService: { recordVoiceEvent: vi.fn() },
 }))
-vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
+vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: translate }) }))
 vi.mock('./BrowserSpeechConsentDialog', () => ({
     BrowserSpeechConsentDialog: ({ isOpen, onAllow }: { isOpen: boolean; onAllow: () => void }) =>
         isOpen
@@ -62,9 +69,9 @@ vi.mock('@/stores/useUIStore', () => ({
         selector({
             voiceControl: { isListening: voiceListening, isAvailable: true, statusMessage: null },
             setVoiceListening,
-            setVoiceStatusMessage: vi.fn(),
-            processVoiceCommand: vi.fn(),
-            addNotification: vi.fn(),
+            setVoiceStatusMessage,
+            processVoiceCommand,
+            addNotification,
         }),
 }))
 vi.mock('@/stores/store', () => ({
@@ -160,6 +167,7 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         vi.clearAllMocks()
         keyStore.key = null
         keyStore.listeners.clear()
+        porcupineCallback.current = null
         legacyKey = null
         localOnly = false
         hotword = true
@@ -259,6 +267,25 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
 
         expect(constructBrowserSpeech).toHaveBeenCalled()
         expect(startBrowserSpeech).toHaveBeenCalledOnce()
+    })
+
+    it('restores Porcupine when a deferred command recognizer fails to start', async () => {
+        keyStore.key = STORED
+        speechConsentVersion = 1
+        const { porcupine } = await renderVoiceControl()
+        expect(porcupine.init).toHaveBeenCalledOnce()
+
+        startBrowserSpeech.mockImplementation(() => {
+            throw new Error('recognizer start failed')
+        })
+        expect(porcupineCallback.current).not.toBeNull()
+        act(() => porcupineCallback.current?.())
+        await settle()
+        await settle()
+
+        expect(voiceListening).toBe(false)
+        expect(porcupine.init).toHaveBeenCalledTimes(2)
+        expect(porcupine.start).toHaveBeenCalledTimes(2)
     })
 
     it('waits for Porcupine to release its microphone before starting browser hotword', async () => {

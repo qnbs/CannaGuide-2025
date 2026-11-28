@@ -881,8 +881,9 @@ export const settingsView = {
         pinPlaceholder: 'Enter 4 digits',
         savePin: 'Save PIN',
         clearPin: 'Remove PIN',
-        clearAiHistory: 'Clear AI History on Exit',
-        clearAiHistoryDesc: 'Automatically clears all AI chat histories when the app is closed.',
+        clearAiHistory: 'Clear Saved AI Archives on Exit',
+        clearAiHistoryDesc:
+            'When browser storage permits it, an app close signal prompts CannaGuide to clear saved Mentor and Advisor archives. If the pending cleanup marker is saved but the snapshot write is interrupted, cleanup is retried on the next launch. Hiding a tab does not clear them. This setting does not remove unsaved chat text or other AI-derived data.',
         unlockTitle: 'Unlock CannaGuide',
         unlockDesc: 'Enter your 4-digit PIN to continue.',
         unlockFailed: 'PIN incorrect. Try again.',

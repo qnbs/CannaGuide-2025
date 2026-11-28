@@ -1,9 +1,29 @@
 import type { AppStore, RootState } from '@/stores/store'
-import { StaleSnapshotError, writeSnapshot } from '@/stores/snapshotRevision'
+import {
+    getRememberedSnapshotRevision,
+    StaleSnapshotError,
+    writeSnapshot,
+} from '@/stores/snapshotRevision'
 import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { buildPersistedSnapshot } from '@/services/persistedSnapshotFormat'
+import {
+    REDUX_STATE_BACKUP_KEY,
+    REDUX_STATE_QUARANTINE_KEY,
+    REDUX_STATE_ROLLBACK_KEY,
+} from '@/constants'
+import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { clearArchives } from '@/stores/slices/archivesSlice'
+import {
+    clearArchivedAiResponsesFromSnapshot,
+    clearPendingAiHistoryClear,
+    getAiHistoryClearMarker,
+    getAiHistoryClearPhase,
+    hasNoArchivedAiResponses,
+    markAiHistoryClearPending,
+    markAiHistoryRecoveryPending,
+} from '@/services/aiHistoryRetention'
 import {
     activatePersistenceFailureTab,
     clearSnapshotSaveFailureForTab,
@@ -12,9 +32,74 @@ import {
     markPersistenceFailureTabClosed,
     type PendingSnapshotSaveFailureMarker,
 } from '@/services/persistenceFailureMarker'
-import { schedulePersistenceWrite } from './persistenceCoordinator'
+import { runWithExclusiveRecoveryLock, schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
+
+const sanitizeRecoveryCopy = async (key: string): Promise<boolean> => {
+    try {
+        const saved = await indexedDBStorage.getItem(key)
+        if (saved === null) return true
+
+        const result = clearArchivedAiResponsesFromSnapshot(saved)
+        if (result.status === 'unrecognized') {
+            // Opaque recovery data is deliberately preserved rather than deleted.
+            return true
+        }
+        if (result.status === 'clean') return true
+
+        await indexedDBStorage.setItem(key, result.serialized)
+        return (await indexedDBStorage.getItem(key)) === result.serialized
+    } catch {
+        // Preserve a recovery copy that cannot be safely read or verified.
+        return false
+    }
+}
+
+const sanitizeRecoveryCopies = async (): Promise<boolean> => {
+    const results: boolean[] = []
+    for (const key of [
+        REDUX_STATE_BACKUP_KEY,
+        REDUX_STATE_QUARANTINE_KEY,
+        REDUX_STATE_ROLLBACK_KEY,
+    ]) {
+        results.push(await sanitizeRecoveryCopy(key))
+    }
+    return results.every(Boolean)
+}
+
+const promotePendingAiHistoryClear = (expectedMarker: string): string | null =>
+    getAiHistoryClearPhase() === 'active'
+        ? markAiHistoryRecoveryPending(expectedMarker)
+        : expectedMarker
+
+const finishPendingAiHistoryClear = async (expectedMarker: string): Promise<boolean> => {
+    if (getAiHistoryClearMarker() !== expectedMarker) return false
+    const recoveryMarker = promotePendingAiHistoryClear(expectedMarker)
+    if (recoveryMarker === null) return false
+
+    const finished = await runWithExclusiveRecoveryLock(sanitizeRecoveryCopies)
+    if (finished !== true) return false
+    return clearPendingAiHistoryClear(recoveryMarker)
+}
+
+const finishPendingAiHistoryClearAfterSave = async (
+    wroteArchiveFreeSnapshot: boolean,
+    clearOnExit: boolean | undefined,
+): Promise<void> => {
+    const pendingMarker = getAiHistoryClearMarker()
+    if (pendingMarker === null) return
+
+    const activeSnapshotIsSafe =
+        getAiHistoryClearPhase() !== 'active' || wroteArchiveFreeSnapshot || clearOnExit === false
+    if (!activeSnapshotIsSafe) return
+
+    try {
+        await finishPendingAiHistoryClear(pendingMarker)
+    } catch {
+        // Keep the marker so startup retries without exposing archived replies.
+    }
+}
 
 /**
  * @param onStaleSnapshot called with the refusal when a save is refused because
@@ -38,7 +123,14 @@ export const setupPersistedStateSync = (
     let failing = false
     let saveAttemptSequence = 0
     let latestSuccessfulSaveAttempt = 0
-    const reportFailure = (error: unknown): void => {
+    const reportFailure = (
+        error: unknown,
+        saveAttempt: number,
+        writeCallbackStarted: boolean,
+    ): void => {
+        if (!writeCallbackStarted && latestSuccessfulSaveAttempt < saveAttempt) {
+            markPendingSnapshotSaveFailure(failureMarkerTabId)
+        }
         if (failing) return
         failing = true
         onSaveFailure?.(error)
@@ -46,6 +138,7 @@ export const setupPersistedStateSync = (
     const saveState = async () => {
         const saveAttempt = ++saveAttemptSequence
         let writeCallbackStarted = false
+        let wroteArchiveFreeSnapshot = false
         try {
             const saved = await schedulePersistenceWrite(async (isBlocked) => {
                 writeCallbackStarted = true
@@ -65,6 +158,7 @@ export const setupPersistedStateSync = (
                     // have passed its last-write deadline, and then nothing may be committed.
                     if (isBlocked()) return false
                     await writeSnapshot(serializedState)
+                    wroteArchiveFreeSnapshot = hasNoArchivedAiResponses(stateToSave.archives)
                     // Do this while still inside the scheduled write slot. A later
                     // save in another tab must not clear this tab's failed lineage.
                     clearSnapshotSaveFailureForTab(failureMarkerTabId, observedFailureMarkers)
@@ -80,6 +174,10 @@ export const setupPersistedStateSync = (
             if (saved) {
                 latestSuccessfulSaveAttempt = saveAttempt
                 failing = false
+                await finishPendingAiHistoryClearAfterSave(
+                    wroteArchiveFreeSnapshot,
+                    hydratedStore.getState().settings.settings.privacy?.clearAiHistoryOnExit,
+                )
             }
             return saved
         } catch (e) {
@@ -89,13 +187,9 @@ export const setupPersistedStateSync = (
                 return false
             }
             // A coordinator failure (for example, a rejected Web Lock request)
-            // can happen before the write callback records its failure. Preserve
-            // the warning unless a later save from this tab already succeeded.
-            if (!writeCallbackStarted && latestSuccessfulSaveAttempt < saveAttempt) {
-                markPendingSnapshotSaveFailure(failureMarkerTabId)
-            }
+            // can happen before the write callback records its failure.
             console.error('[Persistence] Failed to save state:', e)
-            reportFailure(e)
+            reportFailure(e, saveAttempt, writeCallbackStarted)
             return false
         }
     }
@@ -110,14 +204,19 @@ export const setupPersistedStateSync = (
         }, persistenceDelay)
     })
 
-    window.addEventListener('visibilitychange', () => {
+    document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
             clearTimeout(saveTimeout)
             void saveState()
         }
     })
 
-    window.addEventListener('pagehide', () => {
+    window.addEventListener('pagehide', (event: PageTransitionEvent) => {
+        const { settings } = hydratedStore.getState()
+        if (!event.persisted && settings.settings.privacy?.clearAiHistoryOnExit) {
+            const pendingMarker = markAiHistoryClearPending(getRememberedSnapshotRevision())
+            if (pendingMarker !== null) hydratedStore.dispatch(clearArchives())
+        }
         clearTimeout(saveTimeout)
         void saveState()
         markPersistenceFailureTabClosed(failureMarkerTabId)

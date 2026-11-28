@@ -907,9 +907,9 @@ export const settingsView = {
         pinPlaceholder: '4 Ziffern eingeben',
         savePin: 'PIN speichern',
         clearPin: 'PIN entfernen',
-        clearAiHistory: 'KI-Verlauf beim Beenden löschen',
+        clearAiHistory: 'Gespeicherte KI-Archive beim Beenden löschen',
         clearAiHistoryDesc:
-            'Löscht automatisch alle KI-Chatverläufe, wenn die App geschlossen wird.',
+            'Wenn der Browserspeicher es zulässt, versucht CannaGuide bei einem Schließsignal der App, gespeicherte Mentor- und Beraterantworten zu löschen. Kann der Bereinigungsmarker gespeichert werden, wird ein unterbrochener Snapshot-Schreibvorgang beim nächsten Start erneut versucht. Das Ausblenden eines Tabs löscht sie nicht. Ungespeicherter Chattext und andere KI-Daten sind davon nicht betroffen.',
         unlockTitle: 'CannaGuide entsperren',
         unlockDesc: 'Gib deine 4-stellige PIN ein, um fortzufahren.',
         unlockFailed: 'PIN falsch. Bitte erneut versuchen.',

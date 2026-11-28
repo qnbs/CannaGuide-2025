@@ -31,6 +31,7 @@ import {
     watchForCacheRestore,
 } from './writerOwnership'
 import { hydrateApplicationStores } from './store'
+import { getAiHistoryClearPhase, hasNoArchivedAiResponses } from '@/services/aiHistoryRetention'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
@@ -121,6 +122,20 @@ const notifySetAside = async (): Promise<void> => {
     } catch (error) {
         console.error('[Persistence] Could not show the set-aside notice:', error)
     }
+}
+
+const flushPendingAiHistoryClear = async (
+    hydratedStore: AppStore,
+    flushPersistedState: FlushPersistedState,
+): Promise<void> => {
+    const phase = getAiHistoryClearPhase()
+    if (phase === 'recovery') {
+        await flushPersistedState()
+        return
+    }
+    if (phase !== 'active') return
+    if (!hasNoArchivedAiResponses(hydratedStore.getState().archives)) return
+    await flushPersistedState()
 }
 
 /** A prior session ended after an observed save failure; the loaded snapshot is older. */
@@ -250,6 +265,7 @@ export const mountHydratedApp = async (): Promise<void> => {
             notifySaveFailure,
             previousSaveFailures,
         )
+        await flushPendingAiHistoryClear(hydratedStore, flushPersistedState)
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState, async () => {
             // Post-hydration restores the saved language before translating this warning.

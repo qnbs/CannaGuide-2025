@@ -3,6 +3,10 @@ import { replaceSnapshot } from '@/stores/snapshotRevision'
 import { REDUX_STATE_BACKUP_KEY, REDUX_STATE_KEY, REDUX_STATE_ROLLBACK_KEY } from '@/constants'
 import { migratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
+    clearArchivedAiResponsesFromSnapshot,
+    getAiHistoryClearPhase,
+} from '@/services/aiHistoryRetention'
+import {
     commitRecoveryEpoch,
     runWithExclusiveRecoveryLock,
     suspendPersistenceForRecovery,
@@ -59,6 +63,19 @@ export const triggerSafeRecovery = async (
                     throw new Error('No backup snapshot is available.')
                 }
                 const migratedBackupSnapshot = migratePersistedSnapshot(backupSnapshot)
+                const cleanupPending = getAiHistoryClearPhase() !== null
+                const sanitizedBackup = cleanupPending
+                    ? clearArchivedAiResponsesFromSnapshot(migratedBackupSnapshot)
+                    : null
+                if (sanitizedBackup?.status === 'unrecognized') {
+                    throw new Error(
+                        'Cannot safely restore the backup while saved AI archive cleanup is pending.',
+                    )
+                }
+                const snapshotToRestore =
+                    sanitizedBackup?.status === 'sanitized'
+                        ? sanitizedBackup.serialized
+                        : migratedBackupSnapshot
 
                 originalSnapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
                 const existingRollback = await indexedDBStorage.getItem(SAFE_RECOVERY_ROLLBACK_KEY)
@@ -77,9 +94,9 @@ export const triggerSafeRecovery = async (
                 console.debug(`[SafeRecovery] Triggered by: ${reason}`, error)
 
                 primarySnapshotChanged = true
-                await replaceSnapshot(migratedBackupSnapshot)
+                await replaceSnapshot(snapshotToRestore)
                 const restoredSnapshot = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-                if (restoredSnapshot !== migratedBackupSnapshot) {
+                if (restoredSnapshot !== snapshotToRestore) {
                     throw new Error('Backup snapshot verification failed after restore.')
                 }
 

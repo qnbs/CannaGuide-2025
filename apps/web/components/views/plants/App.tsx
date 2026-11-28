@@ -26,7 +26,6 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { useUIStore } from '@/stores/useUIStore'
 import { setSetting } from '@/stores/slices/settingsSlice'
-import { clearArchives } from '@/stores/slices/archivesSlice'
 import { ToastContainer } from '@/components/common/Toast'
 import { Button } from '@/components/common/Button'
 import { Input } from '@/components/ui/input'
@@ -39,8 +38,6 @@ import { PwaInstallBanner } from '@/components/common/PwaInstallBanner'
 import { OfflineIndicator } from '@/components/common/OfflineIndicator'
 import { DevTelemetryPanel } from '@/components/common/DevTelemetryPanel'
 import { WebLlmPreloadBanner } from '@/components/common/WebLlmPreloadBanner'
-
-const CLEAR_AI_HISTORY_ON_EXIT_KEY = 'cg.ai.clear-on-exit.pending'
 
 const PinLockScreen: React.FC<{
     onUnlock: (pin: string) => boolean
@@ -210,31 +207,6 @@ export const App: React.FC = () => {
             setIsPinUnlocked(true)
         }
     }, [settings.privacy.pin, settings.privacy.requirePinOnLaunch])
-
-    useEffect(() => {
-        if (localStorage.getItem(CLEAR_AI_HISTORY_ON_EXIT_KEY) === '1') {
-            localStorage.removeItem(CLEAR_AI_HISTORY_ON_EXIT_KEY)
-            dispatch(clearArchives())
-        }
-    }, [dispatch])
-
-    useEffect(() => {
-        const handleExitPrivacy = () => {
-            if (settings.privacy.clearAiHistoryOnExit) {
-                localStorage.setItem(CLEAR_AI_HISTORY_ON_EXIT_KEY, '1')
-            } else {
-                localStorage.removeItem(CLEAR_AI_HISTORY_ON_EXIT_KEY)
-            }
-        }
-
-        browserWindow?.addEventListener('pagehide', handleExitPrivacy)
-        document.addEventListener('visibilitychange', handleExitPrivacy)
-
-        return () => {
-            browserWindow?.removeEventListener('pagehide', handleExitPrivacy)
-            document.removeEventListener('visibilitychange', handleExitPrivacy)
-        }
-    }, [settings.privacy.clearAiHistoryOnExit])
 
     const handleUnlockWithPin = useCallback(
         (pin: string) => {

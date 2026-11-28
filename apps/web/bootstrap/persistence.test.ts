@@ -320,34 +320,12 @@ describe('AI archive cleanup on app exit (#678)', () => {
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
     })
 
-    it('preserves new archives while finishing a pending recovery-only cleanup', async () => {
+    it.each([
+        { description: 'recovery-only cleanup', marker: '2' },
+        { description: 'an opted-out active cleanup', marker: '1' },
+    ])('preserves new archives while finishing $description', async ({ marker }) => {
         const store = storeWithAiArchives(false)
-        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
-        persistedItems.set(
-            REDUX_STATE_BACKUP_KEY,
-            JSON.stringify({
-                version: 5,
-                archives: {
-                    archivedMentorResponses: [{ id: 'old-mentor' }],
-                    archivedAdvisorResponses: { old: [{ id: 'old-advisor' }] },
-                },
-            }),
-        )
-        const flush = setupPersistedStateSync(store)
-
-        await expect(flush()).resolves.toBe(true)
-
-        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses[0]?.id).toBe('mentor-1')
-        expect(JSON.parse(persistedItems.get(REDUX_STATE_BACKUP_KEY) ?? '{}').archives).toEqual({
-            archivedMentorResponses: [],
-            archivedAdvisorResponses: {},
-        })
-        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
-    })
-
-    it('advances an opted-out session to recovery cleanup after saving its current archives', async () => {
-        const store = storeWithAiArchives(false)
-        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, marker)
         persistedItems.set(
             REDUX_STATE_BACKUP_KEY,
             JSON.stringify({
@@ -459,7 +437,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
             .spyOn(document, 'visibilityState', 'get')
             .mockReturnValue('hidden')
 
-        document.dispatchEvent(new Event('visibilitychange'))
+        document.dispatchEvent(new Event('visibilitychange', { bubbles: true }))
         await vi.waitFor(() => expect(indexedDBStorage.setItem).toHaveBeenCalled())
 
         expect(store.dispatch).not.toHaveBeenCalledWith(clearArchives())

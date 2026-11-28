@@ -29,12 +29,20 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
-import { rememberStoredRevision, setItemIfSnapshotUnchanged } from './snapshotRevision'
+import {
+    getRememberedSnapshotRevision,
+    rememberStoredRevision,
+    setItemIfSnapshotUnchanged,
+} from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
     clearArchivedAiResponsesFromSnapshot,
+    getAiHistoryClearMarker,
     getAiHistoryClearPhase,
+    getAiHistoryClearRequestRevision,
+    markAiHistoryRecoveryPending,
 } from '@/services/aiHistoryRetention'
+import type { AiHistoryClearPhase } from '@/services/aiHistoryRetention'
 import {
     isNewerSnapshotError,
     isNewerThanThisBuild,
@@ -145,19 +153,19 @@ const refreshStartupBackup = async (snapshot: string): Promise<void> => {
     }
 }
 
-const shouldClearActiveArchives = (
-    retryAiHistoryClear: boolean,
-    settings: Partial<RootState>['settings'],
-): boolean => {
-    if (!retryAiHistoryClear) return false
-    return settings?.settings?.privacy?.clearAiHistoryOnExit !== false
-}
+type StartupSnapshotSource = 'primary' | 'backup'
+
+const shouldClearArchivesForStartup = (
+    phase: AiHistoryClearPhase,
+    source: StartupSnapshotSource,
+): boolean => phase === 'active' || (phase === 'recovery' && source === 'backup')
 
 const clearActiveArchivesForStartup = (
     state: Partial<RootState>,
-    retryAiHistoryClear: boolean,
+    phase: AiHistoryClearPhase,
+    source: StartupSnapshotSource,
 ): Partial<RootState> => {
-    if (!shouldClearActiveArchives(retryAiHistoryClear, state.settings)) return state
+    if (!shouldClearArchivesForStartup(phase, source)) return state
     state.archives = {
         archivedMentorResponses: [],
         archivedAdvisorResponses: {},
@@ -167,10 +175,9 @@ const clearActiveArchivesForStartup = (
 
 const refreshStartupBackupAfterAiHistoryClear = async (
     persistedString: string,
-    retryAiHistoryClear: boolean,
-    settings: Partial<RootState>['settings'],
+    phase: AiHistoryClearPhase,
 ): Promise<void> => {
-    if (!shouldClearActiveArchives(retryAiHistoryClear, settings)) {
+    if (phase !== 'active') {
         await refreshStartupBackup(persistedString)
         return
     }
@@ -185,21 +192,6 @@ const refreshStartupBackupAfterAiHistoryClear = async (
     await refreshStartupBackup(backupCopy.serialized)
 }
 
-const hydratePersistedStateForStartup = (
-    persistedString: string,
-    retryAiHistoryClear: boolean,
-    onUiState: (state: Partial<UIState>) => void,
-): Partial<RootState> => {
-    const migrated = parseAndMigratePersistedSnapshot(persistedString) as Partial<RootState> & {
-        ui?: Partial<UIState>
-    }
-    if (migrated.ui) {
-        onUiState({ ...initialUIState, ...migrated.ui })
-        delete (migrated as Record<string, unknown>).ui
-    }
-    return clearActiveArchivesForStartup(migrated, retryAiHistoryClear)
-}
-
 /**
  * Where the last `createAppStore()` took its state from: the saved snapshot, the
  * startup backup, or nothing (a first start, or data that could not be read). The
@@ -212,74 +204,131 @@ let startupHydration: StartupHydration = 'fresh'
 
 export const getStartupHydration = (): StartupHydration => startupHydration
 
-export const createAppStore = async (): Promise<AppStore> => {
-    startupHydration = 'fresh'
-    const retryAiHistoryClear = getAiHistoryClearPhase() === 'active'
-    let preloadedState: Partial<RootState> | undefined
-    let persistedUiState: Partial<UIState> | undefined
-    const hydrate = (snapshot: string): Partial<RootState> =>
-        hydratePersistedStateForStartup(snapshot, retryAiHistoryClear, (uiState) => {
-            persistedUiState = uiState
-        })
+type HydratedStartupSnapshot = {
+    state: Partial<RootState>
+    uiState: Partial<UIState> | undefined
+    phase: AiHistoryClearPhase
+}
 
-    const tryLoadBackupState = async (): Promise<Partial<RootState> | undefined> => {
-        try {
-            const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
-            if (!backupString) {
-                return undefined
-            }
+const hasPersistedOptOut = (state: Partial<RootState>): boolean =>
+    state.settings?.settings?.privacy?.clearAiHistoryOnExit === false
 
-            console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
-            const repaired = await tryRepairPrimaryPersistedSnapshot(backupString)
-            return repaired ? hydrate(backupString) : undefined
-        } catch (backupError) {
-            // A newer build's backup stops the start like a newer primary does (#666).
-            if (isNewerSnapshotError(backupError)) throw backupError
-            // A backup that cannot be read must not stop the start: the primary still
-            // has to be quarantined before anything else touches it (#666).
-            console.debug('[Store] Could not recover state from the backup:', backupError)
-            return undefined
-        }
+const hasSnapshotAdvancedSinceClearRequest = (): boolean => {
+    const startingRevision = getAiHistoryClearRequestRevision()
+    if (startingRevision === null) return false
+    const currentRevision = getRememberedSnapshotRevision()
+    if (currentRevision === undefined) return false
+    return currentRevision !== startingRevision
+}
+
+const isPersistedOptOutAfterActiveRequest = (
+    migrated: Partial<RootState>,
+    phase: AiHistoryClearPhase,
+    source: StartupSnapshotSource,
+): boolean => {
+    if (source !== 'primary') return false
+    if (phase !== 'active') return false
+    if (!hasPersistedOptOut(migrated)) return false
+    // An active marker records the pre-exit revision; a later revision with the
+    // setting disabled is a persisted opt-out, while an older false setting is not.
+    return hasSnapshotAdvancedSinceClearRequest()
+}
+
+const promoteActiveRequestToRecovery = (): boolean => {
+    const marker = getAiHistoryClearMarker()
+    return marker !== null && markAiHistoryRecoveryPending(marker) !== null
+}
+
+const hydrateStartupSnapshot = (
+    persistedString: string,
+    phase: AiHistoryClearPhase,
+    source: StartupSnapshotSource,
+): HydratedStartupSnapshot => {
+    const migrated = parseAndMigratePersistedSnapshot(persistedString) as Partial<RootState> & {
+        ui?: Partial<UIState>
     }
+    let effectivePhase = phase
+    if (isPersistedOptOutAfterActiveRequest(migrated, effectivePhase, source)) {
+        if (promoteActiveRequestToRecovery()) effectivePhase = 'recovery'
+    }
+    const uiState = migrated.ui ? { ...initialUIState, ...migrated.ui } : undefined
+    delete (migrated as Record<string, unknown>).ui
+    return {
+        state: clearActiveArchivesForStartup(migrated, effectivePhase, source),
+        uiState,
+        phase: effectivePhase,
+    }
+}
 
-    // Before the snapshot, so a save by another tab in between makes this tab's
-    // first save stale rather than letting it overwrite that save (#669).
+type StartupLoadResult = {
+    preloadedState: Partial<RootState> | undefined
+    persistedUiState: Partial<UIState> | undefined
+}
+
+const loadBackupState = async (
+    phase: AiHistoryClearPhase,
+): Promise<HydratedStartupSnapshot | undefined> => {
+    try {
+        const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
+        if (!backupString) return undefined
+
+        console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
+        if (!(await tryRepairPrimaryPersistedSnapshot(backupString))) return undefined
+        return hydrateStartupSnapshot(backupString, phase, 'backup')
+    } catch (backupError) {
+        // Newer backups stop startup; unreadable backups leave primary quarantine next.
+        if (isNewerSnapshotError(backupError)) throw backupError
+        console.debug('[Store] Could not recover state from the backup:', backupError)
+        return undefined
+    }
+}
+
+const recoverFromUnreadablePrimary = async (
+    persistedString: string | null | undefined,
+    phase: AiHistoryClearPhase,
+): Promise<StartupLoadResult> => {
+    startupHydration = 'fresh'
+    const recovered = await loadBackupState(phase)
+    if (recovered) {
+        startupHydration = 'backup'
+        return { preloadedState: recovered.state, persistedUiState: recovered.uiState }
+    }
+    // Preserve the unreadable bytes in quarantine before startup can overwrite them.
+    await discardUnreadablePrimarySnapshot(persistedString)
+    return { preloadedState: undefined, persistedUiState: undefined }
+}
+
+const loadStartupState = async (): Promise<StartupLoadResult> => {
+    let phase = getAiHistoryClearPhase()
+    // Read before the snapshot so a concurrent save makes this page's first write stale.
     await rememberStoredRevision()
 
     let persistedString: string | null | undefined
     try {
         persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY)
-        if (persistedString) {
-            console.debug('[Store] Hydrating state from IndexedDB.')
-            preloadedState = hydrate(persistedString)
-            startupHydration = 'snapshot'
-            await refreshStartupBackupAfterAiHistoryClear(
-                persistedString,
-                retryAiHistoryClear,
-                preloadedState?.settings,
-            )
-        }
-    } catch (e) {
-        // A newer build's snapshot is readable, just not by this build. The backup and
-        // quarantine path below would remove it from the primary key, and starting fresh
-        // would save over it: leave it alone and let the startup show the notice (#666).
-        if (isNewerSnapshotError(e)) throw e
+        if (!persistedString) return { preloadedState: undefined, persistedUiState: undefined }
+
+        console.debug('[Store] Hydrating state from IndexedDB.')
+        const hydrated = hydrateStartupSnapshot(persistedString, phase, 'primary')
+        phase = hydrated.phase
+        startupHydration = 'snapshot'
+        await refreshStartupBackupAfterAiHistoryClear(persistedString, phase)
+        return { preloadedState: hydrated.state, persistedUiState: hydrated.uiState }
+    } catch (error) {
+        if (isNewerSnapshotError(error)) throw error
         console.debug(
             "Could not load or migrate state from IndexedDB, starting fresh. A backup may be available at key '" +
                 REDUX_STATE_KEY +
                 "-backup'.",
-            e,
+            error,
         )
-        startupHydration = 'fresh'
-        preloadedState = await tryLoadBackupState()
-        if (preloadedState) startupHydration = 'backup'
-        if (!preloadedState) {
-            // The startup backup is replaced on every start, so the original bytes
-            // are quarantined first, and the primary stays if that fails (#666).
-            await discardUnreadablePrimarySnapshot(persistedString)
-        }
+        return recoverFromUnreadablePrimary(persistedString, phase)
     }
+}
 
+export const createAppStore = async (): Promise<AppStore> => {
+    startupHydration = 'fresh'
+    const { preloadedState, persistedUiState } = await loadStartupState()
     const store = makeStore(preloadedState)
 
     // Wire up Zustand <-> Redux bridges

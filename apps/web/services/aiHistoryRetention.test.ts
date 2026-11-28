@@ -5,6 +5,7 @@ import {
     clearPendingAiHistoryClear,
     getAiHistoryClearMarker,
     getAiHistoryClearPhase,
+    getAiHistoryClearRequestRevision,
     markAiHistoryClearPending,
     markAiHistoryRecoveryPending,
 } from './aiHistoryRetention'
@@ -39,6 +40,16 @@ describe('AI history cleanup retry phases', () => {
         expect(clearPendingAiHistoryClear(recoveryMarker)).toBe(false)
         expect(getAiHistoryClearMarker()).toBe(newerMarker)
         expect(getAiHistoryClearPhase()).toBe('active')
+    })
+
+    it('preserves the observed snapshot revision when active cleanup becomes recovery-only', () => {
+        const activeMarker = markAiHistoryClearPending('revision-before-exit')
+        if (activeMarker === null) throw new Error('Expected an active clear marker')
+
+        const recoveryMarker = markAiHistoryRecoveryPending(activeMarker)
+
+        expect(recoveryMarker).toMatch(/^2:/)
+        expect(getAiHistoryClearRequestRevision()).toBe('revision-before-exit')
     })
 
     it('does not report a stuck recovery marker as cleared', () => {
@@ -93,5 +104,26 @@ describe('clear archived AI responses from a saved snapshot', () => {
                 JSON.stringify({ version: 5, archives: { archivedMentorResponses: 'unknown' } }),
             ),
         ).toEqual({ status: 'unrecognized' })
+    })
+
+    it('clears known Mentor replies when migration repairs a malformed Advisor collection', () => {
+        const original = JSON.stringify({
+            version: 5,
+            archives: {
+                archivedMentorResponses: [{ id: 'mentor-private' }],
+                archivedAdvisorResponses: null,
+                futureArchiveField: 'preserve',
+            },
+        })
+
+        const result = clearArchivedAiResponsesFromSnapshot(original)
+
+        expect(result.status).toBe('sanitized')
+        if (result.status !== 'sanitized') return
+        expect(JSON.parse(result.serialized).archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+            futureArchiveField: 'preserve',
+        })
     })
 })

@@ -1,5 +1,9 @@
 import type { AppStore, RootState } from '@/stores/store'
-import { StaleSnapshotError, writeSnapshot } from '@/stores/snapshotRevision'
+import {
+    getRememberedSnapshotRevision,
+    StaleSnapshotError,
+    writeSnapshot,
+} from '@/stores/snapshotRevision'
 import { dbService } from '@/services/dbService'
 import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
@@ -210,7 +214,7 @@ export const setupPersistedStateSync = (
     window.addEventListener('pagehide', (event: PageTransitionEvent) => {
         const { settings } = hydratedStore.getState()
         if (!event.persisted && settings.settings.privacy?.clearAiHistoryOnExit) {
-            const pendingMarker = markAiHistoryClearPending()
+            const pendingMarker = markAiHistoryClearPending(getRememberedSnapshotRevision())
             if (pendingMarker !== null) hydratedStore.dispatch(clearArchives())
         }
         clearTimeout(saveTimeout)

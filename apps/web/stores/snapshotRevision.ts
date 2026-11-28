@@ -61,6 +61,9 @@ export const setUncheckedWritePermit = (permit: (() => boolean) | undefined): vo
 /** Whether this page saves with the revision check (it could read or store a revision). */
 export const isRevisionChecked = (): boolean => knownRevision !== undefined
 
+/** Revision observed before loading the current snapshot, if the check is available. */
+export const getRememberedSnapshotRevision = (): string | undefined => knownRevision
+
 const newRevision = (): string =>
     Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) =>
         byte.toString(16).padStart(2, '0'),

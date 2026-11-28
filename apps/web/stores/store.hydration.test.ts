@@ -196,29 +196,87 @@ describe('createAppStore with a persisted slice of another schema version', () =
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
     })
 
-    it('preserves archives saved after the setting was disabled during recovery', async () => {
+    it('honors an active exit request when the saved setting change was not written', async () => {
         const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
         snapshot.settings = {
             version: APP_VERSION,
             settings: { privacy: { clearAiHistoryOnExit: false } },
         }
         snapshot.archives = {
-            archivedMentorResponses: [{ id: 'mentor-new', title: 'New saved reply' }],
-            archivedAdvisorResponses: {},
+            archivedMentorResponses: [{ id: 'mentor-private' }],
+            archivedAdvisorResponses: { 'plant-1': [{ id: 'advisor-private' }] },
         }
         db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
 
         const store = await createAppStore()
 
-        expect(store.getState().archives.archivedMentorResponses).toEqual([
-            { id: 'mentor-new', title: 'New saved reply' },
-        ])
+        expect(store.getState().archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(JSON.parse(db.data.get(REDUX_STATE_BACKUP_KEY) ?? '{}').archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
     })
 
-    it('does not clear the active snapshot again when only recovery copies remain', async () => {
+    it('preserves a later opt-out snapshot after the exit request was committed', async () => {
         const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        snapshot.settings = {
+            version: APP_VERSION,
+            settings: { privacy: { clearAiHistoryOnExit: false } },
+        }
+        snapshot.archives = {
+            archivedMentorResponses: [{ id: 'mentor-after-opt-out' }],
+            archivedAdvisorResponses: {},
+        }
+        db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
+        db.data.set(REDUX_STATE_REVISION_KEY, 'revision-after-request')
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1:request-1:revision-before-request')
+
+        const store = await createAppStore()
+
+        expect(store.getState().archives.archivedMentorResponses).toEqual([
+            { id: 'mentor-after-opt-out' },
+        ])
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe(
+            '2:request-1:revision-before-request',
+        )
+    })
+
+    it('clears archives when recovery falls back to an unsanitized backup', async () => {
+        const backup = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        backup.archives = {
+            archivedMentorResponses: [{ id: 'mentor-private' }],
+            archivedAdvisorResponses: { 'plant-1': [{ id: 'advisor-private' }] },
+        }
+        db.data.set(REDUX_STATE_KEY, unreadableSnapshot())
+        db.data.set(REDUX_STATE_BACKUP_KEY, JSON.stringify(backup))
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
+
+        const store = await createAppStore()
+
+        expect(getStartupHydration()).toBe('backup')
+        expect(store.getState().archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+    })
+
+    it.each([
+        { description: 'the setting was disabled', settingDisabled: true },
+        { description: 'only recovery copies remain', settingDisabled: false },
+    ])('preserves current primary archives when $description', async ({ settingDisabled }) => {
+        const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        if (settingDisabled) {
+            snapshot.settings = {
+                version: APP_VERSION,
+                settings: { privacy: { clearAiHistoryOnExit: false } },
+            }
+        }
         snapshot.archives = {
             archivedMentorResponses: [{ id: 'mentor-new', title: 'New saved reply' }],
             archivedAdvisorResponses: {},

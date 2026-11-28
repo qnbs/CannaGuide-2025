@@ -21,11 +21,29 @@ const createMarkerId = (): string => {
         .slice(2)}`
 }
 
-const phaseForMarker = (marker: string | null): AiHistoryClearPhase => {
-    if (marker === '1' || /^1:[a-zA-Z0-9-]+$/.test(marker ?? '')) return 'active'
-    if (marker === '2' || /^2:[a-zA-Z0-9-]+$/.test(marker ?? '')) return 'recovery'
-    return null
+type ParsedMarker = {
+    phase: Exclude<AiHistoryClearPhase, null>
+    requestId: string | null
+    startingRevision: string | null
 }
+
+const parseMarker = (marker: string | null): ParsedMarker | null => {
+    if (marker === '1') return { phase: 'active', requestId: null, startingRevision: null }
+    if (marker === '2') return { phase: 'recovery', requestId: null, startingRevision: null }
+    const match = /^(1|2):([a-zA-Z0-9-]+)(?::([a-zA-Z0-9-]+))?$/.exec(marker ?? '')
+    if (match === null) return null
+    const markerPhase = match[1]
+    const requestId = match[2]
+    if ((markerPhase !== '1' && markerPhase !== '2') || requestId === undefined) return null
+    return {
+        phase: markerPhase === '1' ? 'active' : 'recovery',
+        requestId,
+        startingRevision: match[3] ?? null,
+    }
+}
+
+const phaseForMarker = (marker: string | null): AiHistoryClearPhase =>
+    parseMarker(marker)?.phase ?? null
 
 export const getAiHistoryClearMarker = (): AiHistoryClearMarker | null => {
     try {
@@ -42,14 +60,20 @@ export const getAiHistoryClearPhase = (): AiHistoryClearPhase => {
     return phaseForMarker(getAiHistoryClearMarker())
 }
 
+export const getAiHistoryClearRequestRevision = (): string | null =>
+    parseMarker(getAiHistoryClearMarker())?.startingRevision ?? null
+
 export const hasPendingAiHistoryClear = (): boolean => {
     return getAiHistoryClearPhase() !== null
 }
 
-export const markAiHistoryClearPending = (): AiHistoryClearMarker | null => {
+export const markAiHistoryClearPending = (
+    startingRevision?: string,
+): AiHistoryClearMarker | null => {
     try {
         if (typeof localStorage === 'undefined') return null
-        const marker = `1:${createMarkerId()}`
+        const revisionSuffix = startingRevision ? `:${startingRevision}` : ''
+        const marker = `1:${createMarkerId()}${revisionSuffix}`
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, marker)
         return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === marker ? marker : null
     } catch {
@@ -64,11 +88,11 @@ export const markAiHistoryRecoveryPending = (
     try {
         if (typeof localStorage === 'undefined') return null
         if (localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) !== expectedMarker) return null
-        if (phaseForMarker(expectedMarker) !== 'active') return null
-        const requestId = expectedMarker.includes(':')
-            ? expectedMarker.slice(expectedMarker.indexOf(':') + 1)
-            : createMarkerId()
-        const recoveryMarker = `2:${requestId}`
+        const parsed = parseMarker(expectedMarker)
+        if (parsed?.phase !== 'active') return null
+        const requestId = parsed.requestId ?? createMarkerId()
+        const revisionSuffix = parsed.startingRevision ? `:${parsed.startingRevision}` : ''
+        const recoveryMarker = `2:${requestId}${revisionSuffix}`
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, recoveryMarker)
         return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === recoveryMarker
             ? recoveryMarker
@@ -105,11 +129,6 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
 
 type Snapshot = Record<string, unknown>
-type ArchiveSnapshot = Record<string, unknown> & {
-    archivedMentorResponses: unknown[]
-    archivedAdvisorResponses: Record<string, unknown>
-}
-
 const parseSnapshot = (serialized: string): Snapshot | null => {
     try {
         const parsed: unknown = JSON.parse(serialized)
@@ -119,20 +138,16 @@ const parseSnapshot = (serialized: string): Snapshot | null => {
     }
 }
 
-const parseArchives = (value: unknown): ArchiveSnapshot | null => {
-    if (!isRecord(value)) return null
-    const archivedMentorResponses = value.archivedMentorResponses
-    const archivedAdvisorResponses = value.archivedAdvisorResponses
-    if (!Array.isArray(archivedMentorResponses)) return null
-    if (!isRecord(archivedAdvisorResponses)) return null
-    return { ...value, archivedMentorResponses, archivedAdvisorResponses }
-}
+const hasClearedArchiveFields = (archives: Record<string, unknown>): boolean =>
+    Array.isArray(archives.archivedMentorResponses) &&
+    archives.archivedMentorResponses.length === 0 &&
+    isRecord(archives.archivedAdvisorResponses) &&
+    Object.keys(archives.archivedAdvisorResponses).length === 0
 
-const hasSavedArchiveEntries = (archives: ArchiveSnapshot): boolean =>
-    archives.archivedMentorResponses.length > 0 ||
-    Object.keys(archives.archivedAdvisorResponses).length > 0
+const hasRecognizableArchiveField = (archives: Record<string, unknown>): boolean =>
+    Array.isArray(archives.archivedMentorResponses) || isRecord(archives.archivedAdvisorResponses)
 
-const sanitizeSnapshot = (snapshot: Snapshot, archives: ArchiveSnapshot): string =>
+const sanitizeSnapshot = (snapshot: Snapshot, archives: Record<string, unknown>): string =>
     JSON.stringify({
         ...snapshot,
         archives: {
@@ -148,9 +163,10 @@ export const clearArchivedAiResponsesFromSnapshot = (serialized: string): Saniti
     if (snapshot === null) return { status: 'unrecognized' }
     if (!Object.hasOwn(snapshot, 'archives')) return { status: 'clean', serialized }
 
-    const archives = parseArchives(snapshot.archives)
-    if (archives === null) return { status: 'unrecognized' }
-    if (!hasSavedArchiveEntries(archives)) return { status: 'clean', serialized }
+    const archives = snapshot.archives
+    if (!isRecord(archives)) return { status: 'unrecognized' }
+    if (hasClearedArchiveFields(archives)) return { status: 'clean', serialized }
+    if (!hasRecognizableArchiveField(archives)) return { status: 'unrecognized' }
 
     return {
         status: 'sanitized',

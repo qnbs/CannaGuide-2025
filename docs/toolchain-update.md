@@ -44,6 +44,17 @@ its cold run still needs roughly 1.4 GiB RSS. Exact-head classic/native diagnost
 the platform CI matrix remain pending CI qualification. No local cold TypeScript 6 rerun was made
 because earlier attempts crossed the machine's safe available-memory floor.
 
+### Local pnpm store overrides through Turbo — 2026-11-28
+
+The pre-push hook can run workspace builds through Turbo before typechecking. Turbo's strict
+environment mode otherwise removes `PNPM_CONFIG_STORE_DIR` from those tasks, so a deliberate
+per-command pnpm store override is lost by nested package-manager commands. The root
+`globalPassThroughEnv` allowlist forwards only that store-location setting; Turbo does not include
+it in task cache keys because the store path does not change build output. This does not change
+the repository's default pnpm store, install policy, hook checks, or CI verification coverage.
+On a machine whose configured store is read-only, set `PNPM_CONFIG_STORE_DIR` for the hook's
+`git push` command to a writable store that already contains the locked packages.
+
 ---
 
 ## 0. Was der Ubuntu-Upgrade tatsächlich ändert — und was nicht

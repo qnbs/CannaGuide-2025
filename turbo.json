@@ -6,6 +6,7 @@
         ".node-version",
         "scripts/run-native-tsc.mjs"
     ],
+    "globalPassThroughEnv": ["PNPM_CONFIG_STORE_DIR"],
     "tasks": {
         "build": {
             "dependsOn": ["^build"],

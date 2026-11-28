@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { AI_HISTORY_CLEAR_PENDING_KEY } from '@/services/aiHistoryRetention'
 
 const mocks = vi.hoisted(() => ({
     getItem: vi.fn(),
@@ -117,6 +118,59 @@ describe('triggerSafeRecovery', () => {
         const staleFlush = vi.fn(async () => {})
         await expect(coordinator.schedulePersistenceWrite(staleFlush)).resolves.toBe(false)
         expect(staleFlush).not.toHaveBeenCalled()
+    })
+
+    it('clears saved AI archives before a manual recovery when cleanup is pending', async () => {
+        const backup = JSON.stringify({
+            version: 1,
+            simulation: { plants: [] },
+            archives: {
+                archivedMentorResponses: [{ id: 'mentor-saved-reply' }],
+                archivedAdvisorResponses: { diagnosis: { id: 'advisor-saved-reply' } },
+            },
+        })
+        const sanitizedBackup = JSON.stringify({
+            version: 1,
+            simulation: { plants: [] },
+            archives: {
+                archivedMentorResponses: [],
+                archivedAdvisorResponses: {},
+            },
+        })
+        const primary = JSON.stringify({ version: 1, simulation: { plants: [{ id: 'p1' }] } })
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2:pending-request')
+        mocks.getItem
+            .mockResolvedValueOnce(backup)
+            .mockResolvedValueOnce(primary)
+            .mockResolvedValueOnce(null)
+            .mockResolvedValueOnce(primary)
+            .mockResolvedValueOnce(sanitizedBackup)
+
+        const reload = vi.fn()
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, reload),
+        ).resolves.toBe(true)
+
+        expect(mocks.setItem).toHaveBeenNthCalledWith(2, PRIMARY_KEY, sanitizedBackup)
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2:pending-request')
+        expect(reload).toHaveBeenCalledOnce()
+    })
+
+    it('refuses a manual recovery with an unrecognized backup while cleanup is pending', async () => {
+        const backup = JSON.stringify({
+            version: 1,
+            archives: { archivedMentorResponses: 'unknown-shape' },
+        })
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2:pending-request')
+        mocks.getItem.mockResolvedValueOnce(backup)
+
+        await expect(
+            recovery.triggerSafeRecovery('manual-safe-recovery', undefined, vi.fn()),
+        ).resolves.toBe(false)
+
+        expect(mocks.setItem).not.toHaveBeenCalled()
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2:pending-request')
+        expect(sessionStorage.getItem(recovery.SAFE_RECOVERY_ATTEMPT_KEY)).toBeNull()
     })
 
     it.each([null, 'not-json', '[]', 'null'])(

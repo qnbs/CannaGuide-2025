@@ -29,17 +29,13 @@ import {
 } from './listenerMiddleware'
 import { voiceOrchestratorService } from '@/services/voiceOrchestratorService'
 import { indexedDBStorage } from './indexedDBStorage'
-import {
-    getRememberedSnapshotRevision,
-    rememberStoredRevision,
-    setItemIfSnapshotUnchanged,
-} from './snapshotRevision'
+import { rememberStoredRevision, setItemIfSnapshotUnchanged } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
     clearArchivedAiResponsesFromSnapshot,
     getAiHistoryClearMarker,
     getAiHistoryClearPhase,
-    getAiHistoryClearRequestRevision,
+    isAiHistoryClearOptOutForCurrentRequest,
     markAiHistoryRecoveryPending,
 } from '@/services/aiHistoryRetention'
 import type { AiHistoryClearPhase } from '@/services/aiHistoryRetention'
@@ -204,6 +200,11 @@ let startupHydration: StartupHydration = 'fresh'
 
 export const getStartupHydration = (): StartupHydration => startupHydration
 
+const resolveInitialView = (
+    preloadedState: Partial<RootState> | undefined,
+    persistedUiState: Partial<UIState> | undefined,
+) => preloadedState?.settings?.settings?.general?.defaultView ?? persistedUiState?.lastActiveView
+
 type HydratedStartupSnapshot = {
     state: Partial<RootState>
     uiState: Partial<UIState> | undefined
@@ -213,26 +214,21 @@ type HydratedStartupSnapshot = {
 const hasPersistedOptOut = (state: Partial<RootState>): boolean =>
     state.settings?.settings?.privacy?.clearAiHistoryOnExit === false
 
-const hasSnapshotAdvancedSinceClearRequest = (): boolean => {
-    const startingRevision = getAiHistoryClearRequestRevision()
-    if (startingRevision === null) return false
-    const currentRevision = getRememberedSnapshotRevision()
-    if (currentRevision === undefined) return false
-    return currentRevision !== startingRevision
-}
+const isPrimaryPersistedOptOut = (
+    state: Partial<RootState>,
+    source: StartupSnapshotSource,
+): boolean => source === 'primary' && hasPersistedOptOut(state)
 
 const isPersistedOptOutAfterActiveRequest = (
     migrated: Partial<RootState>,
     phase: AiHistoryClearPhase,
     source: StartupSnapshotSource,
-): boolean => {
-    if (source !== 'primary') return false
-    if (phase !== 'active') return false
-    if (!hasPersistedOptOut(migrated)) return false
-    // An active marker records the pre-exit revision; a later revision with the
-    // setting disabled is a persisted opt-out, while an older false setting is not.
-    return hasSnapshotAdvancedSinceClearRequest()
-}
+): boolean =>
+    phase === 'active' &&
+    isPrimaryPersistedOptOut(migrated, source) &&
+    // Only an explicit opt-out action while this request was pending proves order.
+    // A different IndexedDB revision may have been written before pagehide by another tab.
+    isAiHistoryClearOptOutForCurrentRequest()
 
 const promoteActiveRequestToRecovery = (): boolean => {
     const marker = getAiHistoryClearMarker()
@@ -265,6 +261,16 @@ type StartupLoadResult = {
     persistedUiState: Partial<UIState> | undefined
 }
 
+const prepareBackupForRecovery = (
+    backupString: string,
+    previousPhase: AiHistoryClearPhase,
+): string | null => {
+    const cleanupPhase = getAiHistoryClearPhase() ?? previousPhase
+    if (cleanupPhase === null) return backupString
+    const sanitized = clearArchivedAiResponsesFromSnapshot(backupString)
+    return sanitized.status === 'unrecognized' ? null : sanitized.serialized
+}
+
 const loadBackupState = async (
     phase: AiHistoryClearPhase,
 ): Promise<HydratedStartupSnapshot | undefined> => {
@@ -272,9 +278,13 @@ const loadBackupState = async (
         const backupString = await indexedDBStorage.getItem(REDUX_STATE_BACKUP_KEY)
         if (!backupString) return undefined
 
+        const backupForRecovery = prepareBackupForRecovery(backupString, phase)
+        if (backupForRecovery === null) return undefined
+        const cleanupPhase = getAiHistoryClearPhase() ?? phase
+
         console.debug('[Store] Attempting recovery from pre-migration backup snapshot.')
-        if (!(await tryRepairPrimaryPersistedSnapshot(backupString))) return undefined
-        return hydrateStartupSnapshot(backupString, phase, 'backup')
+        if (!(await tryRepairPrimaryPersistedSnapshot(backupForRecovery))) return undefined
+        return hydrateStartupSnapshot(backupForRecovery, cleanupPhase, 'backup')
     } catch (backupError) {
         // Newer backups stop startup; unreadable backups leave primary quarantine next.
         if (isNewerSnapshotError(backupError)) throw backupError
@@ -292,6 +302,11 @@ const recoverFromUnreadablePrimary = async (
     if (recovered) {
         startupHydration = 'backup'
         return { preloadedState: recovered.state, persistedUiState: recovered.uiState }
+    }
+    if (phase !== null || getAiHistoryClearPhase() !== null) {
+        throw new Error(
+            'Cannot discard the unreadable primary while saved AI archive cleanup is pending and no safe backup is available.',
+        )
     }
     // Preserve the unreadable bytes in quarantine before startup can overwrite them.
     await discardUnreadablePrimarySnapshot(persistedString)
@@ -337,17 +352,10 @@ export const createAppStore = async (): Promise<AppStore> => {
     voiceOrchestratorService.init(store)
     initOnboardingSubscription(() => store.getState())
 
-    // Hydrate Zustand UI state from persisted data
-    if (persistedUiState) {
-        getUISnapshot().hydrateUI(persistedUiState)
-    }
-
-    // After store creation, set the initial view. Prioritize user's default setting over last active view.
-    if (preloadedState?.settings?.settings?.general?.defaultView) {
-        getUISnapshot().setActiveView(preloadedState.settings.settings.general.defaultView)
-    } else if (persistedUiState?.lastActiveView) {
-        getUISnapshot().setActiveView(persistedUiState.lastActiveView)
-    }
+    if (persistedUiState) getUISnapshot().hydrateUI(persistedUiState)
+    // A user's default view takes priority over the last active view.
+    const initialView = resolveInitialView(preloadedState, persistedUiState)
+    if (initialView) getUISnapshot().setActiveView(initialView)
 
     return store
 }

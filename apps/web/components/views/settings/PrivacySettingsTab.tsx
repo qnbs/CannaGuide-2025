@@ -4,6 +4,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
+import { markAiHistoryClearOptOutAfterRequest } from '@/services/aiHistoryRetention'
 import { Switch } from '@/components/common/Switch'
 import { FormSection } from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
@@ -118,11 +119,12 @@ const PrivacySettingsTab: React.FC = () => {
                         >
                             <Switch
                                 checked={privacy.clearAiHistoryOnExit}
-                                onChange={(value) =>
+                                onChange={(value) => {
+                                    if (!value) markAiHistoryClearOptOutAfterRequest()
                                     dispatch(
                                         setSetting({ path: 'privacy.clearAiHistoryOnExit', value }),
                                     )
-                                }
+                                }}
                             />
                         </SettingsRow>
                     </div>

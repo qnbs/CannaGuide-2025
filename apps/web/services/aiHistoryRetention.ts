@@ -1,6 +1,7 @@
 import type { RootState } from '@/stores/store'
 
 export const AI_HISTORY_CLEAR_PENDING_KEY = 'cg.ai.clear-on-exit.pending'
+const AI_HISTORY_CLEAR_OPTOUT_REQUEST_KEY = 'cg.ai.clear-on-exit.optout-request'
 
 export type AiHistoryClearPhase = 'active' | 'recovery' | null
 export type AiHistoryClearMarker = string
@@ -42,6 +43,38 @@ const parseMarker = (marker: string | null): ParsedMarker | null => {
     }
 }
 
+const serializeMarker = (
+    phase: '1' | '2',
+    requestId: string,
+    startingRevision: string | null,
+): string => `${phase}:${requestId}${startingRevision ? `:${startingRevision}` : ''}`
+
+const ensureMarkerRequestId = (
+    marker: string | null,
+    parsed: ParsedMarker,
+): { requestId: string; marker: string } | null => {
+    const requestId = parsed.requestId ?? createMarkerId()
+    const markerPhase = parsed.phase === 'active' ? '1' : '2'
+    const requestMarker = serializeMarker(markerPhase, requestId, parsed.startingRevision)
+    if (marker === requestMarker) return { requestId, marker: requestMarker }
+
+    localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, requestMarker)
+    return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === requestMarker
+        ? { requestId, marker: requestMarker }
+        : null
+}
+
+const clearOptOutForRequest = (requestId: string | null): void => {
+    if (requestId === null) return
+    try {
+        if (localStorage.getItem(AI_HISTORY_CLEAR_OPTOUT_REQUEST_KEY) === requestId) {
+            localStorage.removeItem(AI_HISTORY_CLEAR_OPTOUT_REQUEST_KEY)
+        }
+    } catch {
+        // A stale request id cannot authorize a future clear request.
+    }
+}
+
 const phaseForMarker = (marker: string | null): AiHistoryClearPhase =>
     parseMarker(marker)?.phase ?? null
 
@@ -63,6 +96,39 @@ export const getAiHistoryClearPhase = (): AiHistoryClearPhase => {
 export const getAiHistoryClearRequestRevision = (): string | null =>
     parseMarker(getAiHistoryClearMarker())?.startingRevision ?? null
 
+/** Associates an explicit opt-out with the clear request currently being handled. */
+export const markAiHistoryClearOptOutAfterRequest = (): boolean => {
+    try {
+        if (typeof localStorage === 'undefined') return false
+        const marker = localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)
+        const parsed = parseMarker(marker)
+        if (parsed === null) return false
+        const request = ensureMarkerRequestId(marker, parsed)
+        if (request === null) return false
+        localStorage.setItem(AI_HISTORY_CLEAR_OPTOUT_REQUEST_KEY, request.requestId)
+        return (
+            localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === request.marker &&
+            localStorage.getItem(AI_HISTORY_CLEAR_OPTOUT_REQUEST_KEY) === request.requestId
+        )
+    } catch {
+        return false
+    }
+}
+
+export const isAiHistoryClearOptOutForCurrentRequest = (): boolean => {
+    try {
+        if (typeof localStorage === 'undefined') return false
+        const parsed = parseMarker(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY))
+        const requestId = parsed?.requestId ?? null
+        return (
+            requestId !== null &&
+            localStorage.getItem(AI_HISTORY_CLEAR_OPTOUT_REQUEST_KEY) === requestId
+        )
+    } catch {
+        return false
+    }
+}
+
 export const hasPendingAiHistoryClear = (): boolean => {
     return getAiHistoryClearPhase() !== null
 }
@@ -72,8 +138,7 @@ export const markAiHistoryClearPending = (
 ): AiHistoryClearMarker | null => {
     try {
         if (typeof localStorage === 'undefined') return null
-        const revisionSuffix = startingRevision ? `:${startingRevision}` : ''
-        const marker = `1:${createMarkerId()}${revisionSuffix}`
+        const marker = serializeMarker('1', createMarkerId(), startingRevision ?? null)
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, marker)
         return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === marker ? marker : null
     } catch {
@@ -91,8 +156,7 @@ export const markAiHistoryRecoveryPending = (
         const parsed = parseMarker(expectedMarker)
         if (parsed?.phase !== 'active') return null
         const requestId = parsed.requestId ?? createMarkerId()
-        const revisionSuffix = parsed.startingRevision ? `:${parsed.startingRevision}` : ''
-        const recoveryMarker = `2:${requestId}${revisionSuffix}`
+        const recoveryMarker = serializeMarker('2', requestId, parsed.startingRevision)
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, recoveryMarker)
         return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === recoveryMarker
             ? recoveryMarker
@@ -110,8 +174,11 @@ export const clearPendingAiHistoryClear = (expectedMarker: AiHistoryClearMarker)
         ) {
             return false
         }
+        const parsed = parseMarker(expectedMarker)
         localStorage.removeItem(AI_HISTORY_CLEAR_PENDING_KEY)
-        return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === null
+        if (localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) !== null) return false
+        clearOptOutForRequest(parsed?.requestId ?? null)
+        return true
     } catch {
         return false
     }

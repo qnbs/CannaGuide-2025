@@ -6,7 +6,9 @@ import {
     getAiHistoryClearMarker,
     getAiHistoryClearPhase,
     getAiHistoryClearRequestRevision,
+    isAiHistoryClearOptOutForCurrentRequest,
     markAiHistoryClearPending,
+    markAiHistoryClearOptOutAfterRequest,
     markAiHistoryRecoveryPending,
 } from './aiHistoryRetention'
 
@@ -50,6 +52,28 @@ describe('AI history cleanup retry phases', () => {
 
         expect(recoveryMarker).toMatch(/^2:/)
         expect(getAiHistoryClearRequestRevision()).toBe('revision-before-exit')
+    })
+
+    it('associates a later opt-out only with the request active when the user changes it', () => {
+        const firstRequest = markAiHistoryClearPending('revision-before-exit')
+        if (firstRequest === null) throw new Error('Expected an active clear marker')
+
+        expect(markAiHistoryClearOptOutAfterRequest()).toBe(true)
+        expect(isAiHistoryClearOptOutForCurrentRequest()).toBe(true)
+
+        const nextRequest = markAiHistoryClearPending('revision-before-next-exit')
+        if (nextRequest === null) throw new Error('Expected a new active clear marker')
+        expect(nextRequest).not.toBe(firstRequest)
+        expect(isAiHistoryClearOptOutForCurrentRequest()).toBe(false)
+    })
+
+    it('clears the opt-out association when its request is completed', () => {
+        const marker = markAiHistoryClearPending()
+        if (marker === null) throw new Error('Expected an active clear marker')
+        expect(markAiHistoryClearOptOutAfterRequest()).toBe(true)
+
+        expect(clearPendingAiHistoryClear(marker)).toBe(true)
+        expect(isAiHistoryClearOptOutForCurrentRequest()).toBe(false)
     })
 
     it('does not report a stuck recovery marker as cleared', () => {

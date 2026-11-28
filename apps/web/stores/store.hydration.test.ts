@@ -106,7 +106,10 @@ import {
 import { PlantStage } from '@/types'
 import { createAppStore, getStartupHydration } from './store'
 import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
-import { AI_HISTORY_CLEAR_PENDING_KEY } from '@/services/aiHistoryRetention'
+import {
+    AI_HISTORY_CLEAR_PENDING_KEY,
+    markAiHistoryClearOptOutAfterRequest,
+} from '@/services/aiHistoryRetention'
 
 const legacyPlant = () => ({
     id: 'plant-1',
@@ -222,29 +225,43 @@ describe('createAppStore with a persisted slice of another schema version', () =
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
     })
 
-    it('preserves a later opt-out snapshot after the exit request was committed', async () => {
-        const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
-        snapshot.settings = {
-            version: APP_VERSION,
-            settings: { privacy: { clearAiHistoryOnExit: false } },
-        }
-        snapshot.archives = {
-            archivedMentorResponses: [{ id: 'mentor-after-opt-out' }],
-            archivedAdvisorResponses: {},
-        }
-        db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
-        db.data.set(REDUX_STATE_REVISION_KEY, 'revision-after-request')
-        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1:request-1:revision-before-request')
+    it.each([
+        { description: 'the other tab opted out before this exit request', laterOptOut: false },
+        { description: 'the user opted out after this exit request', laterOptOut: true },
+    ])(
+        'orders the persisted opt-out against the exit request when $description',
+        async ({ laterOptOut }) => {
+            const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+            snapshot.settings = {
+                version: APP_VERSION,
+                settings: { privacy: { clearAiHistoryOnExit: false } },
+            }
+            snapshot.archives = {
+                archivedMentorResponses: [
+                    { id: laterOptOut ? 'mentor-after-opt-out' : 'mentor-before-exit-request' },
+                ],
+                archivedAdvisorResponses: {},
+            }
+            db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
+            db.data.set(REDUX_STATE_REVISION_KEY, 'revision-after-request')
+            localStorage.setItem(
+                AI_HISTORY_CLEAR_PENDING_KEY,
+                '1:request-1:revision-before-request',
+            )
+            if (laterOptOut) expect(markAiHistoryClearOptOutAfterRequest()).toBe(true)
 
-        const store = await createAppStore()
+            const store = await createAppStore()
 
-        expect(store.getState().archives.archivedMentorResponses).toEqual([
-            { id: 'mentor-after-opt-out' },
-        ])
-        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe(
-            '2:request-1:revision-before-request',
-        )
-    })
+            expect(store.getState().archives.archivedMentorResponses).toEqual(
+                laterOptOut ? [{ id: 'mentor-after-opt-out' }] : [],
+            )
+            expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe(
+                laterOptOut
+                    ? '2:request-1:revision-before-request'
+                    : '1:request-1:revision-before-request',
+            )
+        },
+    )
 
     it('clears archives when recovery falls back to an unsanitized backup', async () => {
         const backup = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
@@ -264,6 +281,51 @@ describe('createAppStore with a persisted slice of another schema version', () =
             archivedAdvisorResponses: {},
         })
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+    })
+
+    it('repairs the primary from an archive-free backup while recovery cleanup is pending', async () => {
+        const backup = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        backup.archives = {
+            archivedMentorResponses: [{ id: 'mentor-private' }],
+            archivedAdvisorResponses: { 'plant-1': [{ id: 'advisor-private' }] },
+        }
+        db.data.set(REDUX_STATE_KEY, unreadableSnapshot())
+        db.data.set(REDUX_STATE_BACKUP_KEY, JSON.stringify(backup))
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2:request-1')
+
+        const store = await createAppStore()
+        const repairedPrimary = JSON.parse(db.data.get(REDUX_STATE_KEY) ?? 'null') as {
+            archives: { archivedMentorResponses: unknown[]; archivedAdvisorResponses: object }
+        }
+
+        expect(store.getState().archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(repairedPrimary.archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2:request-1')
+    })
+
+    it('preserves persisted snapshots when pending cleanup cannot recognize a backup', async () => {
+        const unreadablePrimary = unreadableSnapshot()
+        const unrecognizedBackup = JSON.stringify({
+            version: APP_VERSION,
+            archives: { archivedMentorResponses: 'unknown-shape' },
+        })
+        db.data.set(REDUX_STATE_KEY, unreadablePrimary)
+        db.data.set(REDUX_STATE_BACKUP_KEY, unrecognizedBackup)
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2:request-1')
+
+        await expect(createAppStore()).rejects.toThrow(
+            'Cannot discard the unreadable primary while saved AI archive cleanup is pending',
+        )
+
+        expect(db.data.get(REDUX_STATE_KEY)).toBe(unreadablePrimary)
+        expect(db.data.get(REDUX_STATE_BACKUP_KEY)).toBe(unrecognizedBackup)
+        expect(db.data.has(REDUX_STATE_QUARANTINE_KEY)).toBe(false)
     })
 
     it.each([

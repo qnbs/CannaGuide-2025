@@ -213,6 +213,7 @@ export const defaultSettings: AppSettings = {
         pin: null,
         clearAiHistoryOnExit: false,
         localOnlyMode: false,
+        webSpeechConsentVersion: null,
     },
 }
 

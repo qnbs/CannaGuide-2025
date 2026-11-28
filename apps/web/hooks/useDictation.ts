@@ -6,8 +6,10 @@
  * Used by LogActionModal for hands-free note entry.
  */
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from 'react'
-import { useAppSelector } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectLanguage, selectLocalOnlyMode } from '@/stores/selectors'
+import { setSetting } from '@/stores/slices/settingsSlice'
+import { WEB_SPEECH_CONSENT_VERSION } from '@/services/webSpeechConsent'
 
 // Re-use the same Web Speech API types as VoiceControl.tsx
 interface WDictationRecognitionResult {
@@ -73,8 +75,14 @@ export interface UseDictationReturn {
     transcript: string
     /** Error message if dictation failed, null otherwise. */
     error: string | null
+    /** True when dictation was requested before browser speech consent. */
+    consentRequired: boolean
     /** Start dictation. Safe to call when already listening. */
     start: () => void
+    /** Save consent and start the explicitly requested dictation session. */
+    acceptConsentAndStart: () => void
+    /** Dismiss the consent prompt without starting recognition. */
+    dismissConsent: () => void
     /** Stop dictation and keep the transcript. */
     stop: () => void
     /** Reset transcript and error to empty state. */
@@ -82,13 +90,19 @@ export interface UseDictationReturn {
 }
 
 export function useDictation(onTranscript?: (text: string) => void): UseDictationReturn {
+    const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
     // Browser speech recognition may process the audio online, so Local-Only
     // Mode keeps dictation off and stops a running one (GH #717).
     const localOnly = useAppSelector(selectLocalOnlyMode)
+    const consentVersion = useAppSelector(
+        (state) => state.settings.settings.privacy.webSpeechConsentVersion,
+    )
+    const hasSpeechConsent = consentVersion === WEB_SPEECH_CONSENT_VERSION
     const [isListening, setIsListening] = useState(false)
     const [transcript, setTranscript] = useState('')
     const [error, setError] = useState<string | null>(null)
+    const [consentRequired, setConsentRequired] = useState(false)
     const recognitionRef = useRef<WDictationRecognition | null>(null)
     const onTranscriptRef = useRef(onTranscript)
     // The text so far, including an interim result, for a stop by the switch.
@@ -109,6 +123,7 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         transcriptRef.current = ''
         setTranscript('')
         setError(null)
+        setConsentRequired(false)
     }, [])
 
     const startRecognition = useCallback(() => {
@@ -176,21 +191,49 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
 
     const start = useCallback(() => {
         if (localOnly) setError('localOnly')
-        else startRecognition()
-    }, [localOnly, startRecognition])
+        else if (!hasSpeechConsent) {
+            setConsentRequired(true)
+            setError('consentRequired')
+        } else {
+            setConsentRequired(false)
+            startRecognition()
+        }
+    }, [hasSpeechConsent, localOnly, startRecognition])
+
+    const acceptConsentAndStart = useCallback(() => {
+        if (localOnly) {
+            setError('localOnly')
+            setConsentRequired(false)
+            return
+        }
+        dispatch(
+            setSetting({
+                path: 'privacy.webSpeechConsentVersion',
+                value: WEB_SPEECH_CONSENT_VERSION,
+            }),
+        )
+        setConsentRequired(false)
+        startRecognition()
+    }, [dispatch, localOnly, startRecognition])
+
+    const dismissConsent = useCallback(() => {
+        setConsentRequired(false)
+        setError(null)
+    }, [])
 
     // A layout effect, so the recognizer stops in the commit of the switch: a
     // passive effect would leave a gap in which it keeps listening and a queued
     // result still counts as current and overwrites the note.
     useLayoutEffect(() => {
-        if (!localOnly || !recognitionRef.current) return
-        recognitionRef.current.abort()
+        if ((hasSpeechConsent && !localOnly) || !recognitionRef.current) return
+        const recognition = recognitionRef.current
         recognitionRef.current = null
+        recognition.abort()
         // An aborted recognizer sends no final result: keep what was dictated.
         if (transcriptRef.current) onTranscriptRef.current?.(transcriptRef.current)
         setIsListening(false)
-        setError('localOnly')
-    }, [localOnly])
+        setError(localOnly ? 'localOnly' : 'consentRequired')
+    }, [hasSpeechConsent, localOnly])
 
     // Cleanup on unmount
     useEffect(() => {
@@ -202,5 +245,15 @@ export function useDictation(onTranscript?: (text: string) => void): UseDictatio
         }
     }, [])
 
-    return { isListening, transcript, error, start, stop, reset }
+    return {
+        isListening,
+        transcript,
+        error,
+        consentRequired,
+        start,
+        acceptConsentAndStart,
+        dismissConsent,
+        stop,
+        reset,
+    }
 }

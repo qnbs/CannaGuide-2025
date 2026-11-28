@@ -567,7 +567,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Voice Control & Speech',
                 content:
-                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud. Speech recognition is done by your browser: some browsers, such as Chrome, send the audio to the browser maker\'s online speech service, so voice commands may not work offline.',
+                    'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud. Speech recognition is done by your browser: some browsers, such as Chrome, send the audio to the browser maker\'s online speech service, so voice commands may not work offline. CannaGuide asks for your permission before browser speech starts; you can revoke it in Voice Settings. Local-Only Mode still disables it.',
             },
             dataManagement: {
                 title: 'Data Sovereignty: Backup & Restore',

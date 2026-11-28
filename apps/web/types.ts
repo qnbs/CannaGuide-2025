@@ -446,6 +446,8 @@ export interface AppSettings {
         clearAiHistoryOnExit: boolean
         /** When true, blocks ALL outbound network requests (cloud AI, Gist sync, model downloads). */
         localOnlyMode: boolean
+        /** Version of the explicit consent to browser speech processing; null means revoked. */
+        webSpeechConsentVersion: number | null
     }
 }
 

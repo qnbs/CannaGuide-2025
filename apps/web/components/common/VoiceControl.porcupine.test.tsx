@@ -3,7 +3,7 @@
  * from the settings (#709). Dynamic import after the SpeechRecognition stub,
  * as in VoiceControl.test.tsx (support is evaluated at module load).
  */
-import { act, cleanup, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import React from 'react'
 
@@ -18,6 +18,8 @@ const keyStore = vi.hoisted(() => ({
 let legacyKey: string | null = null
 let localOnly = false
 let hotword = true
+let engine: 'regex' | 'porcupine' = 'porcupine'
+let speechConsentVersion: number | null = null
 
 vi.mock('@/services/porcupineKeyService', () => ({
     porcupineKeyService: {
@@ -41,6 +43,16 @@ vi.mock('@/services/voiceTelemetryService', () => ({
     voiceTelemetryService: { recordVoiceEvent: vi.fn() },
 }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
+vi.mock('./BrowserSpeechConsentDialog', () => ({
+    BrowserSpeechConsentDialog: ({ isOpen, onAllow }: { isOpen: boolean; onAllow: () => void }) =>
+        isOpen
+            ? React.createElement(
+                  'button',
+                  { onClick: onAllow, 'aria-label': 'allow-browser-speech' },
+                  'allow',
+              )
+            : null,
+}))
 vi.mock('@/stores/useUIStore', () => ({
     useUIStore: (selector: (s: Record<string, unknown>) => unknown) =>
         selector({
@@ -52,6 +64,7 @@ vi.mock('@/stores/useUIStore', () => ({
         }),
 }))
 vi.mock('@/stores/store', () => ({
+    useAppDispatch: () => vi.fn(),
     useAppSelector: (selector: (s: unknown) => unknown) =>
         selector({
             settings: {
@@ -60,11 +73,14 @@ vi.mock('@/stores/store', () => ({
                     voiceControl: {
                         hotwordEnabled: hotword,
                         continuousListening: false,
-                        wakeWordEngine: 'porcupine',
+                        wakeWordEngine: engine,
                         porcupineAccessKey: legacyKey,
                         porcupineKeyword: 'porcupine',
                     },
-                    privacy: { localOnlyMode: localOnly },
+                    privacy: {
+                        localOnlyMode: localOnly,
+                        webSpeechConsentVersion: speechConsentVersion,
+                    },
                 },
             },
         }),
@@ -85,15 +101,23 @@ vi.mock('./Button', () => ({
 }))
 
 type WindowWithSpeech = Window & { SpeechRecognition?: unknown }
+const startBrowserSpeech = vi.fn()
+const constructBrowserSpeech = vi.fn()
+const mockSpeechInstances: Array<{ abort: ReturnType<typeof vi.fn> }> = []
 class MockSpeechRecognition {
     continuous = false
     interimResults = false
     lang = ''
     addEventListener = vi.fn()
     removeEventListener = vi.fn()
-    start = vi.fn()
+    start = startBrowserSpeech
     stop = vi.fn()
     abort = vi.fn()
+
+    constructor() {
+        constructBrowserSpeech()
+        mockSpeechInstances.push(this)
+    }
 }
 
 const settle = () =>
@@ -126,6 +150,9 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
         legacyKey = null
         localOnly = false
         hotword = true
+        engine = 'porcupine'
+        speechConsentVersion = null
+        mockSpeechInstances.length = 0
         ;(window as WindowWithSpeech).SpeechRecognition = MockSpeechRecognition
     })
 
@@ -136,20 +163,127 @@ describe('VoiceControl -- Porcupine access key (#709)', () => {
 
     it('initializes Porcupine with the key from the encrypted store', async () => {
         keyStore.key = STORED
+        speechConsentVersion = 1
         const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).toHaveBeenCalledWith(STORED, 'porcupine')
         expect(porcupine.start).toHaveBeenCalled()
+        expect(constructBrowserSpeech).not.toHaveBeenCalled()
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
     })
 
     it('falls back to a legacy key whose migration has not succeeded yet', async () => {
         legacyKey = LEGACY
         const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).toHaveBeenCalledWith(LEGACY, 'porcupine')
+        expect(constructBrowserSpeech).not.toHaveBeenCalled()
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
     })
 
-    it('stays on the regex fallback without any key', async () => {
+    it('does not implicitly start browser speech when the Porcupine key is missing', async () => {
+        speechConsentVersion = 1
         const { porcupine } = await renderVoiceControl()
         expect(porcupine.init).not.toHaveBeenCalled()
+        expect(constructBrowserSpeech).not.toHaveBeenCalled()
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
+    })
+
+    it('starts regex hotword recognition only after browser speech consent', async () => {
+        engine = 'regex'
+        const { view, VoiceControl } = await renderVoiceControl()
+        expect(constructBrowserSpeech).not.toHaveBeenCalled()
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
+
+        speechConsentVersion = 1
+        view.rerender(<VoiceControl />)
+        await settle()
+
+        expect(startBrowserSpeech).toHaveBeenCalledOnce()
+    })
+
+    it('starts a requested command session immediately after consent', async () => {
+        keyStore.key = STORED
+        const { view, VoiceControl } = await renderVoiceControl()
+
+        fireEvent.click(view.getByRole('button', { name: 'common.voiceControl.toggle' }))
+        await settle()
+        fireEvent.click(view.getByRole('button', { name: 'allow-browser-speech' }))
+
+        speechConsentVersion = 1
+        view.rerender(<VoiceControl />)
+        await settle()
+
+        expect(constructBrowserSpeech).toHaveBeenCalled()
+        expect(startBrowserSpeech).toHaveBeenCalledOnce()
+    })
+
+    it('waits for Porcupine to release its microphone before starting browser hotword', async () => {
+        keyStore.key = STORED
+        const { porcupine, view, VoiceControl } = await renderVoiceControl()
+        let stopped: () => void = () => undefined
+        vi.mocked(porcupine.stop).mockImplementationOnce(
+            () =>
+                new Promise<void>((resolve) => {
+                    stopped = resolve
+                }),
+        )
+
+        speechConsentVersion = 1
+        engine = 'regex'
+        view.rerender(<VoiceControl />)
+        await settle()
+        expect(porcupine.stop).toHaveBeenCalled()
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
+
+        stopped()
+        await settle()
+        expect(porcupine.dispose).toHaveBeenCalledOnce()
+        expect(startBrowserSpeech).toHaveBeenCalledOnce()
+    })
+
+    it('stops both browser recognizers before switching from regex to Porcupine', async () => {
+        engine = 'regex'
+        speechConsentVersion = 1
+        keyStore.key = STORED
+        const { porcupine, view, VoiceControl } = await renderVoiceControl()
+        const browserRecognizers = [...mockSpeechInstances]
+        expect(browserRecognizers).toHaveLength(2)
+
+        engine = 'porcupine'
+        view.rerender(<VoiceControl />)
+        await settle()
+
+        expect(
+            browserRecognizers.every((recognition) => recognition.abort.mock.calls.length > 0),
+        ).toBe(true)
+        expect(constructBrowserSpeech).toHaveBeenCalledTimes(2)
+        expect(porcupine.start).toHaveBeenCalledOnce()
+    })
+
+    it('aborts command and hotword recognizers when unmounted', async () => {
+        engine = 'regex'
+        speechConsentVersion = 1
+        const { view } = await renderVoiceControl()
+        const browserRecognizers = [...mockSpeechInstances]
+        expect(browserRecognizers).toHaveLength(2)
+
+        view.unmount()
+
+        expect(
+            browserRecognizers.every((recognition) => recognition.abort.mock.calls.length > 0),
+        ).toBe(true)
+    })
+
+    it('releases failed initialization without starting a browser fallback', async () => {
+        keyStore.key = STORED
+        const { porcupine } = await renderVoiceControl()
+        expect(porcupine.start).toHaveBeenCalledOnce()
+        vi.mocked(porcupine.init).mockResolvedValueOnce(false)
+
+        await changeStoredKey(LEGACY)
+        expect(porcupine.init).toHaveBeenLastCalledWith(LEGACY, 'porcupine')
+        expect(porcupine.dispose).toHaveBeenCalledTimes(2)
+        expect(porcupine.start).toHaveBeenCalledOnce()
+        expect(startBrowserSpeech).not.toHaveBeenCalled()
     })
 
     it('a newly saved key starts Porcupine without a reload', async () => {

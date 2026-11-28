@@ -183,6 +183,15 @@ export const common = {
         mainNavigation: 'Navegacion principal',
     },
     voiceControl: {
+        speechConsent: {
+            title: 'Permitir el reconocimiento de voz del navegador?',
+            description:
+                'Algunos navegadores pueden enviar el audio del microfono a su servicio de voz en linea para transcribirlo. CannaGuide no recibe este audio.',
+            details:
+                'El proveedor del navegador controla el procesamiento y la conservacion del audio. Este permiso se guarda en este dispositivo, puede revocarse en Ajustes y no anula el modo Solo local.',
+            allow: 'Permitir y continuar',
+            cancel: 'Ahora no',
+        },
         listening: 'Escuchando...',
         processing: 'Procesando: "{{transcript}}"',
         toggle: 'Alternar control por voz',
@@ -214,6 +223,7 @@ export const common = {
             generic: 'Ocurrio un error de reconocimiento de voz.',
             noSpeech: 'No se detecto habla.',
             notAllowed: 'Acceso al microfono denegado.',
+            consentRequired: 'Permite primero el reconocimiento de voz del navegador.',
             startFailed: 'No se pudo iniciar la escucha.',
             localOnly:
                 'La entrada de voz est\u00E1 desactivada en el Modo Solo Local: el reconocimiento de voz del navegador puede procesar el audio en l\u00EDnea.',

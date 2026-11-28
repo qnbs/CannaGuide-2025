@@ -419,6 +419,11 @@ export const settingsView = {
         testVoice: 'Probar Voz',
         testVoiceSentence: 'Esta es una prueba de la voz seleccionada.',
         voiceControl: {
+            browserSpeechConsent: 'Procesamiento de voz del navegador',
+            browserSpeechConsentDesc:
+                'Permite que el servicio de voz del navegador procese el audio del microfono. Puedes revocar este permiso cuando quieras; el modo Solo local sigue bloqueando la voz del navegador.',
+            allowBrowserSpeechConsent: 'Revisar y permitir',
+            revokeBrowserSpeechConsent: 'Revocar permiso',
             enabled: 'Habilitar Control por Voz',
             enabledDesc:
                 'Controla la aplicaci\u00F3n usando comandos de voz simples. Usan el reconocimiento de voz de tu navegador, que algunos navegadores procesan en l\u00EDnea; el Modo Solo Local los desactiva.',

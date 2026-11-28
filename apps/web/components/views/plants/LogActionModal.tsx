@@ -31,6 +31,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { resizeImage } from '@/services/imageService'
 import { photoTimelineService } from '@/services/photoTimelineService'
 import { useDictation, isDictationSupported } from '@/hooks/useDictation'
+import { BrowserSpeechConsentDialog } from '@/components/common/BrowserSpeechConsentDialog'
 
 interface LogActionModalProps {
     plant: Plant
@@ -61,7 +62,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
         isListening: isDictating,
         transcript,
         error: dictError,
+        consentRequired: dictationConsentRequired,
         start: startDictation,
+        acceptConsentAndStart,
+        dismissConsent,
         stop: stopDictation,
     } = useDictation((text) => setNotes(text))
 
@@ -205,6 +209,11 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
 
     return (
         <>
+            <BrowserSpeechConsentDialog
+                isOpen={dictationConsentRequired}
+                onAllow={acceptConsentAndStart}
+                onCancel={dismissConsent}
+            />
             {isCameraOpen && (
                 <CameraModal
                     isOpen={isCameraOpen}

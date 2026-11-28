@@ -396,6 +396,11 @@ export const settingsView = {
         testVoice: 'Test Voice',
         testVoiceSentence: 'This is a test of the selected voice.',
         voiceControl: {
+            browserSpeechConsent: 'Browser speech processing',
+            browserSpeechConsentDesc:
+                'Allow the browser speech service to process microphone audio. You can revoke this permission at any time; Local-Only Mode still blocks browser speech.',
+            allowBrowserSpeechConsent: 'Review and allow',
+            revokeBrowserSpeechConsent: 'Revoke permission',
             enabled: 'Enable Voice Control',
             enabledDesc:
                 "Control the app using simple voice commands. They use your browser's speech recognition, which some browsers process online; Local-Only Mode turns them off.",

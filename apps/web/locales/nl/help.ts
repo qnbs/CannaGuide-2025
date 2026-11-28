@@ -397,7 +397,7 @@ export const helpView = {
             voiceControl: {
                 title: 'Spraakbesturing en Spraak',
                 content:
-                    'Bedien de app handsfree. Druk op de <strong>microfoonknop</strong> in de koptekst om te luisteren. Je kunt ook <strong>Tekst-naar-Spraak (TTS)</strong> inschakelen in Instellingen. Spraakherkenning gebeurt door je browser: sommige browsers, zoals Chrome, sturen de audio naar de online spraakdienst van de browsermaker, waardoor spraakopdrachten offline mogelijk niet werken.',
+                    'Bedien de app handsfree. Druk op de <strong>microfoonknop</strong> in de koptekst om te luisteren. Je kunt ook <strong>Tekst-naar-Spraak (TTS)</strong> inschakelen in Instellingen. Spraakherkenning gebeurt door je browser: sommige browsers, zoals Chrome, sturen de audio naar de online spraakdienst van de browsermaker, waardoor spraakopdrachten offline mogelijk niet werken. CannaGuide vraagt toestemming voordat browserspraak start; je kunt die intrekken in Spraakinstellingen. De modus Alleen lokaal blijft browserspraak blokkeren.',
             },
             dataManagement: {
                 title: 'Datasoevereiniteit: Backup en Herstel',

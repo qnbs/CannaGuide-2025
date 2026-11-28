@@ -45,8 +45,8 @@ function installMockSpeechRecognition(): void {
             this._listeners[type] = fn
         }
 
-        removeEventListener(_type: string, _fn: ListenerFn): void {
-            /* no-op for tests */
+        removeEventListener(type: string, fn: ListenerFn): void {
+            if (this._listeners[type] === fn) delete this._listeners[type]
         }
 
         start = vi.fn()
@@ -87,6 +87,7 @@ let mockLocalOnly = false
 let mockHotwordEnabled = false
 let mockIsListening = false
 let mockContinuous = false
+let mockSpeechConsentVersion: number | null = 1
 const mockSetVoiceStatusMessage = vi.fn()
 const mockProcessVoiceCommand = vi.fn()
 
@@ -108,6 +109,7 @@ vi.mock('@/stores/useUIStore', () => ({
 }))
 
 vi.mock('@/stores/store', () => ({
+    useAppDispatch: () => vi.fn(),
     useAppSelector: (selector: (s: unknown) => unknown) =>
         selector({
             settings: {
@@ -115,9 +117,13 @@ vi.mock('@/stores/store', () => ({
                     general: { language: 'en' },
                     voiceControl: {
                         hotwordEnabled: mockHotwordEnabled,
+                        wakeWordEngine: 'regex',
                         continuousListening: mockContinuous,
                     },
-                    privacy: { localOnlyMode: mockLocalOnly },
+                    privacy: {
+                        localOnlyMode: mockLocalOnly,
+                        webSpeechConsentVersion: mockSpeechConsentVersion,
+                    },
                 },
             },
         }),
@@ -150,6 +156,9 @@ vi.mock('./Button', () => ({
         variant?: string
     }) => React.createElement('button', { onClick, ...rest }, children),
 }))
+vi.mock('./BrowserSpeechConsentDialog', () => ({
+    BrowserSpeechConsentDialog: () => null,
+}))
 
 // ---------------------------------------------------------------------------
 // Helper: dynamic import of VoiceControl (must run AFTER mock installation)
@@ -171,6 +180,7 @@ beforeEach(() => {
     mockHotwordEnabled = false
     mockIsListening = false
     mockContinuous = false
+    mockSpeechConsentVersion = 1
     installMockSpeechRecognition()
 })
 
@@ -402,6 +412,44 @@ const finalResult = (transcript: string) => ({
 })
 
 describe('VoiceControl -- Local-Only Mode', () => {
+    it('surfaces hotword permission denial and does not restart the recognizer', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        render(React.createElement(VC))
+        const hotword = mockInstances[1]
+
+        act(() => hotword?.fire('error', { error: 'not-allowed' }))
+
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
+            'common.voiceControl.errors.notAllowed',
+        )
+        expect(hotword?.abort).toHaveBeenCalledOnce()
+
+        await act(async () => {
+            hotword?.fire('end')
+            await new Promise((resolve) => setTimeout(resolve, 250))
+        })
+
+        expect(mockInstances).toHaveLength(2)
+    })
+
+    it('aborts browser recognizers and announces consent revocation', async () => {
+        mockHotwordEnabled = true
+        const VC = await importVoiceControl()
+        const view = render(React.createElement(VC))
+        const [command, hotword] = mockInstances
+
+        fireEvent.click(screen.getByRole('button', { name: 'common.voiceControl.toggle' }))
+        mockSpeechConsentVersion = null
+        view.rerender(React.createElement(VC))
+
+        expect(command?.abort).toHaveBeenCalled()
+        expect(hotword?.abort).toHaveBeenCalled()
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
+            'common.voiceControl.errors.consentRequired',
+        )
+    })
+
     it('creates no recognizer, and the mic says why instead of listening', async () => {
         mockLocalOnly = true
         mockHotwordEnabled = true
@@ -442,7 +490,7 @@ describe('VoiceControl -- Local-Only Mode', () => {
 
     it('stops recognition in the commit of the switch, before any passive cleanup', async () => {
         mockHotwordEnabled = true
-        mockIsListening = true
+        mockIsListening = false
         mockContinuous = true
         const VC = await importVoiceControl()
         const recognizers: {
@@ -500,8 +548,10 @@ describe('VoiceControl -- Local-Only Mode', () => {
         mockIsListening = false
         view.rerender(React.createElement(VC))
 
-        expect(mockInstances).toHaveLength(2)
-        for (const recognizer of running) expect(recognizer.abort).not.toHaveBeenCalled()
+        expect(mockInstances).toHaveLength(3)
+        expect(running[0]?.abort).not.toHaveBeenCalled()
+        expect(running[1]?.abort).toHaveBeenCalled()
+        expect(mockInstances[2]?.start).toHaveBeenCalledOnce()
     })
 
     it('a hotword restart timer that fires in the switch commit starts nothing', async () => {
@@ -548,7 +598,7 @@ describe('VoiceControl -- Local-Only Mode', () => {
         act(() => {
             mockInstances[1]?.fire('result', finalResult('hey canna'))
         })
-        expect(mockSetVoiceStatusMessage).toHaveBeenLastCalledWith(
+        expect(mockSetVoiceStatusMessage).toHaveBeenCalledWith(
             'common.voiceControl.hotwordDetected',
         )
 

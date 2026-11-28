@@ -14,9 +14,9 @@ import { clearArchives } from '@/stores/slices/archivesSlice'
 import {
     clearArchivedAiResponsesFromSnapshot,
     clearPendingAiHistoryClear,
+    getAiHistoryClearMarker,
     getAiHistoryClearPhase,
     hasNoArchivedAiResponses,
-    hasPendingAiHistoryClear,
     markAiHistoryClearPending,
     markAiHistoryRecoveryPending,
 } from '@/services/aiHistoryRetention'
@@ -32,44 +32,51 @@ import { runWithExclusiveRecoveryLock, schedulePersistenceWrite } from './persis
 
 export type FlushPersistedState = () => Promise<boolean>
 
-const finishPendingAiHistoryClear = async (): Promise<boolean> => {
-    if (getAiHistoryClearPhase() === 'active' && !markAiHistoryRecoveryPending()) {
+const sanitizeRecoveryCopy = async (key: string): Promise<boolean> => {
+    try {
+        const saved = await indexedDBStorage.getItem(key)
+        if (saved === null) return true
+
+        const result = clearArchivedAiResponsesFromSnapshot(saved)
+        if (result.status === 'unrecognized') {
+            // Opaque recovery data is deliberately preserved rather than deleted.
+            return true
+        }
+        if (result.status === 'clean') return true
+
+        await indexedDBStorage.setItem(key, result.serialized)
+        return (await indexedDBStorage.getItem(key)) === result.serialized
+    } catch {
+        // Preserve a recovery copy that cannot be safely read or verified.
         return false
     }
+}
 
-    const finished = await runWithExclusiveRecoveryLock(async () => {
-        let allRecoveryCopiesSafe = true
-        for (const key of [
-            REDUX_STATE_BACKUP_KEY,
-            REDUX_STATE_QUARANTINE_KEY,
-            REDUX_STATE_ROLLBACK_KEY,
-        ]) {
-            try {
-                const saved = await indexedDBStorage.getItem(key)
-                if (saved === null) continue
+const sanitizeRecoveryCopies = async (): Promise<boolean> => {
+    const results: boolean[] = []
+    for (const key of [
+        REDUX_STATE_BACKUP_KEY,
+        REDUX_STATE_QUARANTINE_KEY,
+        REDUX_STATE_ROLLBACK_KEY,
+    ]) {
+        results.push(await sanitizeRecoveryCopy(key))
+    }
+    return results.every(Boolean)
+}
 
-                const result = clearArchivedAiResponsesFromSnapshot(saved)
-                if (result.status === 'unrecognized') {
-                    // Opaque recovery data is deliberately preserved rather than deleted.
-                    continue
-                }
-                if (result.status === 'sanitized') {
-                    await indexedDBStorage.setItem(key, result.serialized)
-                    if ((await indexedDBStorage.getItem(key)) !== result.serialized) {
-                        allRecoveryCopiesSafe = false
-                    }
-                }
-            } catch {
-                // Preserve a recovery copy that cannot be safely read or verified.
-                allRecoveryCopiesSafe = false
-            }
-        }
+const promotePendingAiHistoryClear = (expectedMarker: string): string | null =>
+    getAiHistoryClearPhase() === 'active'
+        ? markAiHistoryRecoveryPending(expectedMarker)
+        : expectedMarker
 
-        return allRecoveryCopiesSafe
-    })
+const finishPendingAiHistoryClear = async (expectedMarker: string): Promise<boolean> => {
+    if (getAiHistoryClearMarker() !== expectedMarker) return false
+    const recoveryMarker = promotePendingAiHistoryClear(expectedMarker)
+    if (recoveryMarker === null) return false
 
+    const finished = await runWithExclusiveRecoveryLock(sanitizeRecoveryCopies)
     if (finished !== true) return false
-    return clearPendingAiHistoryClear()
+    return clearPendingAiHistoryClear(recoveryMarker)
 }
 
 /**
@@ -89,10 +96,6 @@ export const setupPersistedStateSync = (
     onSaveFailure?: (error: unknown) => void,
     observedFailureMarkers: readonly PendingSnapshotSaveFailureMarker[] = [],
 ): FlushPersistedState => {
-    const aiHistoryClearWasAppliedAtStartup =
-        getAiHistoryClearPhase() === 'active' &&
-        (hasNoArchivedAiResponses(hydratedStore.getState().archives) ||
-            hydratedStore.getState().settings.settings.privacy?.clearAiHistoryOnExit === false)
     const failureMarkerTabId = getPersistenceFailureMarkerTabId()
     activatePersistenceFailureTab(failureMarkerTabId)
     let failing = false
@@ -142,13 +145,17 @@ export const setupPersistedStateSync = (
             if (saved) {
                 latestSuccessfulSaveAttempt = saveAttempt
                 failing = false
-                if (hasPendingAiHistoryClear()) {
+                const pendingAiHistoryMarker = getAiHistoryClearMarker()
+                if (pendingAiHistoryMarker !== null) {
                     try {
                         const activeSnapshotIsSafe =
                             getAiHistoryClearPhase() !== 'active' ||
                             wroteArchiveFreeSnapshot ||
-                            aiHistoryClearWasAppliedAtStartup
-                        if (activeSnapshotIsSafe) await finishPendingAiHistoryClear()
+                            hydratedStore.getState().settings.settings.privacy
+                                ?.clearAiHistoryOnExit === false
+                        if (activeSnapshotIsSafe) {
+                            await finishPendingAiHistoryClear(pendingAiHistoryMarker)
+                        }
                     } catch {
                         // Keep the marker so startup retries without exposing archived replies.
                     }
@@ -192,12 +199,9 @@ export const setupPersistedStateSync = (
 
     window.addEventListener('pagehide', (event: PageTransitionEvent) => {
         const { settings } = hydratedStore.getState()
-        if (
-            !event.persisted &&
-            settings.settings.privacy?.clearAiHistoryOnExit &&
-            markAiHistoryClearPending()
-        ) {
-            hydratedStore.dispatch(clearArchives())
+        if (!event.persisted && settings.settings.privacy?.clearAiHistoryOnExit) {
+            const pendingMarker = markAiHistoryClearPending()
+            if (pendingMarker !== null) hydratedStore.dispatch(clearArchives())
         }
         clearTimeout(saveTimeout)
         void saveState()

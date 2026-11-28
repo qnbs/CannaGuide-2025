@@ -8,7 +8,7 @@ import {
 } from '@/constants'
 import { clearArchives, type ArchivesState } from '@/stores/slices/archivesSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { AI_HISTORY_CLEAR_PENDING_KEY } from '@/services/aiHistoryRetention'
+import { AI_HISTORY_CLEAR_PENDING_KEY, getAiHistoryClearPhase } from '@/services/aiHistoryRetention'
 import { PlantStage } from '@/types'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import {
@@ -36,6 +36,7 @@ const { persistedItems, storageSetItem } = vi.hoisted(() => {
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
+const RECOVERY_KEYS = [REDUX_STATE_BACKUP_KEY, REDUX_STATE_QUARANTINE_KEY, REDUX_STATE_ROLLBACK_KEY]
 
 vi.mock('./persistenceCoordinator', () => ({
     schedulePersistenceWrite: vi.fn((write: (isBlocked: () => boolean) => Promise<unknown>) =>
@@ -96,7 +97,11 @@ const storeWithKey = (): AppStore =>
         subscribe: vi.fn(),
     }) as unknown as AppStore
 
-const storeWithAiArchives = (clearOnExit = true): AppStore => {
+const storeWithAiArchives = (
+    clearOnExit = true,
+): AppStore & {
+    replaceArchives: (archives: ArchivesState) => void
+} => {
     let state: {
         settings: { version: number; settings: Record<string, unknown> }
         simulation: { plants: Record<string, unknown> }
@@ -152,8 +157,11 @@ const storeWithAiArchives = (clearOnExit = true): AppStore => {
             }
             return action
         }),
+        replaceArchives: (archives: ArchivesState) => {
+            state = { ...state, archives }
+        },
         subscribe: vi.fn(),
-    } as unknown as AppStore
+    } as unknown as AppStore & { replaceArchives: (archives: ArchivesState) => void }
 }
 
 const savedSnapshot = (): string => {
@@ -235,11 +243,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
                 archivedAdvisorResponses: { 'plant-1': [{ id: 'advisor-old' }] },
             },
         })
-        for (const key of [
-            REDUX_STATE_BACKUP_KEY,
-            REDUX_STATE_QUARANTINE_KEY,
-            REDUX_STATE_ROLLBACK_KEY,
-        ]) {
+        for (const key of RECOVERY_KEYS) {
             persistedItems.set(key, fallback)
         }
         setupPersistedStateSync(store)
@@ -258,11 +262,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
             archivedMentorResponses: [],
             archivedAdvisorResponses: {},
         })
-        for (const key of [
-            REDUX_STATE_BACKUP_KEY,
-            REDUX_STATE_QUARANTINE_KEY,
-            REDUX_STATE_ROLLBACK_KEY,
-        ]) {
+        for (const key of RECOVERY_KEYS) {
             expect(JSON.parse(persistedItems.get(key) ?? '{}').archives).toEqual({
                 archivedMentorResponses: [],
                 archivedAdvisorResponses: {},
@@ -370,6 +370,26 @@ describe('AI archive cleanup on app exit (#678)', () => {
         expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
     })
 
+    it('does not reuse startup cleanup allowance after new archives are added', async () => {
+        const store = storeWithAiArchives()
+        store.dispatch(clearArchives())
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+        const flush = setupPersistedStateSync(store)
+        store.replaceArchives({
+            archivedMentorResponses: [
+                { id: 'mentor-new', createdAt: 2, query: 'new', title: 'New', content: 'New' },
+            ],
+            archivedAdvisorResponses: {},
+        })
+
+        await expect(flush()).resolves.toBe(true)
+
+        expect(JSON.parse(savedSnapshot()).archives.archivedMentorResponses[0]?.id).toBe(
+            'mentor-new',
+        )
+        expect(getAiHistoryClearPhase()).toBe('active')
+    })
+
     it('keeps the recovery retry marker when recovery locking is unavailable', async () => {
         const store = storeWithAiArchives()
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
@@ -378,7 +398,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
 
         await expect(flush()).resolves.toBe(true)
 
-        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+        expect(getAiHistoryClearPhase()).toBe('recovery')
     })
 
     it('keeps the retry marker when a recognized recovery copy cannot be rewritten', async () => {
@@ -402,7 +422,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
         await expect(flush()).resolves.toBe(true)
 
         expect(persistedItems.get(REDUX_STATE_BACKUP_KEY)).toBe(original)
-        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+        expect(getAiHistoryClearPhase()).toBe('recovery')
         setItem.mockImplementation(savedImplementation ?? (async () => undefined))
     })
 
@@ -428,7 +448,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
         await expect(flush()).resolves.toBe(true)
 
         expect(persistedItems.get(REDUX_STATE_BACKUP_KEY)).not.toBe(original)
-        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('2')
+        expect(getAiHistoryClearPhase()).toBe('recovery')
         getItem.mockImplementation(savedImplementation ?? (async () => null))
     })
 
@@ -458,7 +478,7 @@ describe('AI archive cleanup on app exit (#678)', () => {
 
         await expect(flush()).resolves.toBe(false)
 
-        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
+        expect(getAiHistoryClearPhase()).toBe('active')
     })
 })
 

@@ -3,7 +3,9 @@ import {
     AI_HISTORY_CLEAR_PENDING_KEY,
     clearArchivedAiResponsesFromSnapshot,
     clearPendingAiHistoryClear,
+    getAiHistoryClearMarker,
     getAiHistoryClearPhase,
+    markAiHistoryClearPending,
     markAiHistoryRecoveryPending,
 } from './aiHistoryRetention'
 
@@ -19,8 +21,24 @@ describe('AI history cleanup retry phases', () => {
     it('records recovery-only cleanup without requesting active archive deletion', () => {
         localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
 
-        expect(markAiHistoryRecoveryPending()).toBe(true)
+        const recoveryMarker = markAiHistoryRecoveryPending('1')
+
+        expect(recoveryMarker).toMatch(/^2:/)
         expect(getAiHistoryClearPhase()).toBe('recovery')
+    })
+
+    it('does not retire a newer pagehide request when earlier recovery finishes', () => {
+        const olderMarker = markAiHistoryClearPending()
+        if (olderMarker === null) throw new Error('Expected an active clear marker')
+        const recoveryMarker = markAiHistoryRecoveryPending(olderMarker)
+        if (recoveryMarker === null) throw new Error('Expected a recovery clear marker')
+
+        const newerMarker = markAiHistoryClearPending()
+        if (newerMarker === null) throw new Error('Expected the new exit marker')
+
+        expect(clearPendingAiHistoryClear(recoveryMarker)).toBe(false)
+        expect(getAiHistoryClearMarker()).toBe(newerMarker)
+        expect(getAiHistoryClearPhase()).toBe('active')
     })
 
     it('does not report a stuck recovery marker as cleared', () => {
@@ -33,7 +51,7 @@ describe('AI history cleanup retry phases', () => {
                 removeItem.call(this, key)
             })
 
-        expect(clearPendingAiHistoryClear()).toBe(false)
+        expect(clearPendingAiHistoryClear('2')).toBe(false)
         expect(getAiHistoryClearPhase()).toBe('recovery')
         failedRemoval.mockRestore()
     })

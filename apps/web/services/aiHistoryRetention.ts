@@ -3,48 +3,93 @@ import type { RootState } from '@/stores/store'
 export const AI_HISTORY_CLEAR_PENDING_KEY = 'cg.ai.clear-on-exit.pending'
 
 export type AiHistoryClearPhase = 'active' | 'recovery' | null
+export type AiHistoryClearMarker = string
 
-/** `1` is the legacy value and means the active snapshot still needs clearing. */
-export const getAiHistoryClearPhase = (): AiHistoryClearPhase => {
+let markerFallbackSequence = 0
+
+const createMarkerId = (): string => {
+    try {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID()
+        }
+    } catch {
+        // Continue with a non-sensitive uniqueness fallback for older browsers.
+    }
+    markerFallbackSequence += 1
+    return `${Date.now().toString(36)}-${markerFallbackSequence.toString(36)}-${Math.random()
+        .toString(36)
+        .slice(2)}`
+}
+
+const phaseForMarker = (marker: string | null): AiHistoryClearPhase => {
+    if (marker === '1' || /^1:[a-zA-Z0-9-]+$/.test(marker ?? '')) return 'active'
+    if (marker === '2' || /^2:[a-zA-Z0-9-]+$/.test(marker ?? '')) return 'recovery'
+    return null
+}
+
+export const getAiHistoryClearMarker = (): AiHistoryClearMarker | null => {
     try {
         if (typeof localStorage === 'undefined') return null
         const marker = localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)
-        if (marker === '1') return 'active'
-        if (marker === '2') return 'recovery'
-        return null
+        return phaseForMarker(marker) === null ? null : marker
     } catch {
         return null
     }
+}
+
+/** `1` is the legacy value and means the active snapshot still needs clearing. */
+export const getAiHistoryClearPhase = (): AiHistoryClearPhase => {
+    return phaseForMarker(getAiHistoryClearMarker())
 }
 
 export const hasPendingAiHistoryClear = (): boolean => {
     return getAiHistoryClearPhase() !== null
 }
 
-export const markAiHistoryClearPending = (): boolean => {
+export const markAiHistoryClearPending = (): AiHistoryClearMarker | null => {
     try {
-        if (typeof localStorage === 'undefined') return false
-        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
-        return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === '1'
+        if (typeof localStorage === 'undefined') return null
+        const marker = `1:${createMarkerId()}`
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, marker)
+        return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === marker ? marker : null
     } catch {
-        return false
+        return null
     }
 }
 
 /** The primary snapshot is already committed; only recovery copies remain. */
-export const markAiHistoryRecoveryPending = (): boolean => {
+export const markAiHistoryRecoveryPending = (
+    expectedMarker: AiHistoryClearMarker,
+): AiHistoryClearMarker | null => {
     try {
-        if (typeof localStorage === 'undefined') return false
-        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '2')
-        return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === '2'
+        if (
+            typeof localStorage === 'undefined' ||
+            localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) !== expectedMarker ||
+            phaseForMarker(expectedMarker) !== 'active'
+        ) {
+            return null
+        }
+        const requestId = expectedMarker.includes(':')
+            ? expectedMarker.slice(expectedMarker.indexOf(':') + 1)
+            : createMarkerId()
+        const recoveryMarker = `2:${requestId}`
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, recoveryMarker)
+        return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === recoveryMarker
+            ? recoveryMarker
+            : null
     } catch {
-        return false
+        return null
     }
 }
 
-export const clearPendingAiHistoryClear = (): boolean => {
+export const clearPendingAiHistoryClear = (expectedMarker: AiHistoryClearMarker): boolean => {
     try {
-        if (typeof localStorage === 'undefined') return false
+        if (
+            typeof localStorage === 'undefined' ||
+            localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) !== expectedMarker
+        ) {
+            return false
+        }
         localStorage.removeItem(AI_HISTORY_CLEAR_PENDING_KEY)
         return localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY) === null
     } catch {

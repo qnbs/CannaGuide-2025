@@ -881,7 +881,7 @@ export const settingsView = {
         pinPlaceholder: 'Enter 4 digits',
         savePin: 'Save PIN',
         clearPin: 'Remove PIN',
-        clearAiHistory: 'Clear AI History on Exit',
+        clearAiHistory: 'Clear Saved AI Archives on Exit',
         clearAiHistoryDesc:
             'On an app close signal, CannaGuide tries to clear saved Mentor and Advisor archives and retries on the next launch if saving was interrupted. Hiding a tab does not clear them. This setting does not remove unsaved chat text or other AI-derived data.',
         unlockTitle: 'Unlock CannaGuide',

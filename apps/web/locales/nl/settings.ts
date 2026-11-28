@@ -904,7 +904,7 @@ export const settingsView = {
         pinPlaceholder: 'Voer 4 cijfers in',
         savePin: 'PIN opslaan',
         clearPin: 'PIN verwijderen',
-        clearAiHistory: 'AI-geschiedenis wissen bij afsluiten',
+        clearAiHistory: 'Opgeslagen AI-antwoorden wissen bij afsluiten',
         clearAiHistoryDesc:
             'Bij een afsluitsignaal probeert CannaGuide opgeslagen Mentor- en Adviseur-archieven te wissen. Als het opslaan wordt onderbroken, probeert de app dit bij de volgende start opnieuw. Een tabblad verbergen wist ze niet. Niet-opgeslagen chattekst en andere AI-gegevens vallen niet onder deze instelling.',
         unlockTitle: 'CannaGuide ontgrendelen',

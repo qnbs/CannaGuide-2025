@@ -924,7 +924,7 @@ export const settingsView = {
         clearPin: 'Eliminar PIN',
         clearAiHistory: 'Borrar Historial AI al Salir',
         clearAiHistoryDesc:
-            'Borra automaticamente todos los historiales de chat AI cuando se cierra la aplicacion.',
+            'Al cerrar la aplicacion, CannaGuide intenta borrar las respuestas guardadas del Mentor y del Asesor y vuelve a intentarlo en el siguiente inicio si se interrumpe el guardado. Ocultar una pestana no las borra. Esta opcion no elimina texto de chat sin guardar ni otros datos derivados de IA.',
         unlockTitle: 'Desbloquear CannaGuide',
         unlockDesc: 'Ingresa tu PIN de 4 digitos para continuar.',
         unlockFailed: 'PIN incorrecto. Intentalo de nuevo.',

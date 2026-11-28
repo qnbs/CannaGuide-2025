@@ -106,6 +106,7 @@ import {
 import { PlantStage } from '@/types'
 import { createAppStore, getStartupHydration } from './store'
 import { NewerSnapshotError } from '@/services/migration/newerSnapshot'
+import { AI_HISTORY_CLEAR_PENDING_KEY } from '@/services/aiHistoryRetention'
 
 const legacyPlant = () => ({
     id: 'plant-1',
@@ -163,9 +164,35 @@ describe('createAppStore with a persisted slice of another schema version', () =
         db.beforeRead.clear()
         db.failGet.clear()
         db.failSet.clear()
+        localStorage.clear()
         vi.spyOn(console, 'warn').mockImplementation(() => undefined)
         vi.spyOn(console, 'debug').mockImplementation(() => undefined)
         vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    })
+
+    it('hides saved archives on startup when a previous close could not finish saving', async () => {
+        const snapshot = JSON.parse(olderSnapshotWithPlant()) as Record<string, unknown>
+        snapshot.archives = {
+            archivedMentorResponses: [{ id: 'mentor-1', title: 'Private saved reply' }],
+            archivedAdvisorResponses: {
+                'plant-1': [{ id: 'advisor-1', title: 'Private saved reply' }],
+            },
+        }
+        db.data.set(REDUX_STATE_KEY, JSON.stringify(snapshot))
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+
+        const store = await createAppStore()
+
+        expect(store.getState().archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(store.getState().simulation.plants.ids).toEqual(['plant-1'])
+        expect(JSON.parse(db.data.get(REDUX_STATE_BACKUP_KEY) ?? '{}').archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
     })
 
     it('keeps the plants through a start, a save and a second start', async () => {

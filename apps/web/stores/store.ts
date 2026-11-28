@@ -32,6 +32,10 @@ import { indexedDBStorage } from './indexedDBStorage'
 import { rememberStoredRevision, setItemIfSnapshotUnchanged } from './snapshotRevision'
 import { parseAndMigratePersistedSnapshot } from '@/services/migration/persistedSnapshot'
 import {
+    clearArchivedAiResponsesFromSnapshot,
+    hasPendingAiHistoryClear,
+} from '@/services/aiHistoryRetention'
+import {
     isNewerSnapshotError,
     isNewerThanThisBuild,
     isSnapshotNewerThan,
@@ -155,6 +159,7 @@ export const getStartupHydration = (): StartupHydration => startupHydration
 
 export const createAppStore = async (): Promise<AppStore> => {
     startupHydration = 'fresh'
+    const retryAiHistoryClear = hasPendingAiHistoryClear()
     let preloadedState: Partial<RootState> | undefined
     let persistedUiState: Partial<UIState> | undefined
 
@@ -167,6 +172,13 @@ export const createAppStore = async (): Promise<AppStore> => {
         if (migrated.ui) {
             persistedUiState = { ...initialUIState, ...migrated.ui }
             delete (migrated as Record<string, unknown>).ui
+        }
+
+        if (retryAiHistoryClear) {
+            migrated.archives = {
+                archivedMentorResponses: [],
+                archivedAdvisorResponses: {},
+            }
         }
 
         return migrated
@@ -203,7 +215,18 @@ export const createAppStore = async (): Promise<AppStore> => {
             console.debug('[Store] Hydrating state from IndexedDB.')
             preloadedState = hydratePersistedState(persistedString)
             startupHydration = 'snapshot'
-            await refreshStartupBackup(persistedString)
+            if (retryAiHistoryClear) {
+                const backupCopy = clearArchivedAiResponsesFromSnapshot(persistedString)
+                if (backupCopy.status !== 'unrecognized') {
+                    await refreshStartupBackup(backupCopy.serialized)
+                } else {
+                    console.debug(
+                        '[Store] Startup backup retained because its archive shape could not be verified.',
+                    )
+                }
+            } else {
+                await refreshStartupBackup(persistedString)
+            }
         }
     } catch (e) {
         // A newer build's snapshot is readable, just not by this build. The backup and

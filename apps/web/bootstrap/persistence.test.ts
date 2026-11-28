@@ -1,7 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { AppStore } from '@/stores/store'
-import { REDUX_STATE_KEY } from '@/constants'
+import {
+    REDUX_STATE_BACKUP_KEY,
+    REDUX_STATE_KEY,
+    REDUX_STATE_QUARANTINE_KEY,
+    REDUX_STATE_ROLLBACK_KEY,
+} from '@/constants'
+import { clearArchives, type ArchivesState } from '@/stores/slices/archivesSlice'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { AI_HISTORY_CLEAR_PENDING_KEY } from '@/services/aiHistoryRetention'
+import { PlantStage } from '@/types'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import {
     getPendingSnapshotSaveFailureMarkers,
@@ -16,6 +24,15 @@ import { dbService } from '@/services/dbService'
 const runtimeTabContext = globalThis as typeof globalThis & {
     __cannaguidePersistenceFailureTabId?: string
 }
+const { persistedItems, storageSetItem } = vi.hoisted(() => {
+    const items = new Map<string, string>()
+    return {
+        persistedItems: items,
+        storageSetItem: vi.fn(async (key: string, value: string) => {
+            items.set(key, value)
+        }),
+    }
+})
 
 // A synthetic canary, never a real key (#654).
 const CANARY = 'sk_canary_0000000000000000000000000000'
@@ -24,6 +41,7 @@ vi.mock('./persistenceCoordinator', () => ({
     schedulePersistenceWrite: vi.fn((write: (isBlocked: () => boolean) => Promise<unknown>) =>
         write(() => false),
     ),
+    runWithExclusiveRecoveryLock: vi.fn(async (operation: () => Promise<unknown>) => operation()),
 }))
 vi.mock('@/services/dbService', () => ({
     dbService: {
@@ -33,7 +51,26 @@ vi.mock('@/services/dbService', () => ({
 vi.mock('@/services/workerBus', () => ({ workerBus: { dispose: vi.fn() } }))
 vi.mock('@/stores/useUIStore', () => ({ getUISnapshot: () => ({}) }))
 vi.mock('@/stores/indexedDBStorage', () => ({
-    indexedDBStorage: { setItem: vi.fn().mockResolvedValue(undefined) },
+    indexedDBStorage: {
+        getItem: vi.fn(async (key: string) => persistedItems.get(key) ?? null),
+        setItem: storageSetItem,
+        removeItem: vi.fn(async (key: string) => {
+            persistedItems.delete(key)
+        }),
+        setItemIfRevision: vi.fn(
+            async (
+                key: string,
+                value: string,
+                revisionKey: string,
+                _expected: string | null,
+                next: string,
+            ) => {
+                await storageSetItem(key, value)
+                persistedItems.set(revisionKey, next)
+                return true
+            },
+        ),
+    },
 }))
 vi.mock('@/services/settingsSecretStores', () => ({
     pendingLegacySecretPaths: vi.fn(() => []),
@@ -59,10 +96,70 @@ const storeWithKey = (): AppStore =>
         subscribe: vi.fn(),
     }) as unknown as AppStore
 
+const storeWithAiArchives = (): AppStore => {
+    let state: {
+        settings: { version: number; settings: Record<string, unknown> }
+        simulation: { plants: Record<string, unknown> }
+        nutrientPlanner: Record<string, unknown>
+        sandbox: Record<string, unknown>
+        archives: ArchivesState
+    } = {
+        settings: {
+            version: 5,
+            settings: {
+                tts: { cloudTtsEnabled: false, cloudTtsApiKey: null },
+                voiceControl: { porcupineAccessKey: null },
+                data: { persistenceIntervalMs: 1500 },
+                privacy: { clearAiHistoryOnExit: true },
+            },
+        },
+        simulation: { plants: {} },
+        nutrientPlanner: {},
+        sandbox: {},
+        archives: {
+            archivedMentorResponses: [
+                {
+                    id: 'mentor-1',
+                    createdAt: 1,
+                    query: 'test query',
+                    title: 'Saved mentor reply',
+                    content: 'Saved mentor content',
+                },
+            ],
+            archivedAdvisorResponses: {
+                'plant-1': [
+                    {
+                        id: 'advisor-1',
+                        createdAt: 1,
+                        plantId: 'plant-1',
+                        plantStage: PlantStage.Vegetative,
+                        query: 'test query',
+                        title: 'Saved advisor reply',
+                        content: 'Saved advisor content',
+                    },
+                ],
+            },
+        },
+    }
+    return {
+        getState: () => state,
+        dispatch: vi.fn((action: ReturnType<typeof clearArchives>) => {
+            if (clearArchives.match(action)) {
+                state = {
+                    ...state,
+                    archives: { archivedMentorResponses: [], archivedAdvisorResponses: {} },
+                }
+            }
+            return action
+        }),
+        subscribe: vi.fn(),
+    } as unknown as AppStore
+}
+
 const savedSnapshot = (): string => {
-    const call = vi
-        .mocked(indexedDBStorage.setItem)
-        .mock.calls.find(([key]) => key === REDUX_STATE_KEY)
+    const call = [...vi.mocked(indexedDBStorage.setItem).mock.calls]
+        .reverse()
+        .find(([key]) => key === REDUX_STATE_KEY)
     expect(call).toBeDefined()
     return String(call?.[1])
 }
@@ -70,6 +167,7 @@ const savedSnapshot = (): string => {
 describe('persisted settings snapshot (#654)', () => {
     beforeEach(() => {
         vi.clearAllMocks()
+        persistedItems.clear()
         localStorage.clear()
         sessionStorage.clear()
         delete runtimeTabContext.__cannaguidePersistenceFailureTabId
@@ -115,6 +213,100 @@ describe('persisted settings snapshot (#654)', () => {
 
         expect(await flush()).toBe(false)
         expect(indexedDBStorage.setItem).not.toHaveBeenCalled()
+    })
+})
+
+describe('AI archive cleanup on app exit (#678)', () => {
+    beforeEach(() => {
+        vi.clearAllMocks()
+        persistedItems.clear()
+        localStorage.clear()
+        sessionStorage.clear()
+        setUncheckedWritePermit(() => true)
+    })
+
+    it('clears archived Mentor and Advisor replies before the pagehide snapshot is written', async () => {
+        const store = storeWithAiArchives()
+        const fallback = JSON.stringify({
+            version: 5,
+            simulation: { selectedPlantId: 'plant-1' },
+            archives: {
+                archivedMentorResponses: [{ id: 'mentor-old' }],
+                archivedAdvisorResponses: { 'plant-1': [{ id: 'advisor-old' }] },
+            },
+        })
+        for (const key of [
+            REDUX_STATE_BACKUP_KEY,
+            REDUX_STATE_QUARANTINE_KEY,
+            REDUX_STATE_ROLLBACK_KEY,
+        ]) {
+            persistedItems.set(key, fallback)
+        }
+        setupPersistedStateSync(store)
+
+        window.dispatchEvent(new Event('pagehide'))
+        await vi.waitFor(() => expect(indexedDBStorage.setItem).toHaveBeenCalled())
+
+        expect(store.dispatch).toHaveBeenCalledWith(clearArchives())
+        const snapshot = JSON.parse(savedSnapshot()) as {
+            archives: {
+                archivedMentorResponses: unknown[]
+                archivedAdvisorResponses: Record<string, unknown[]>
+            }
+        }
+        expect(snapshot.archives).toEqual({
+            archivedMentorResponses: [],
+            archivedAdvisorResponses: {},
+        })
+        for (const key of [
+            REDUX_STATE_BACKUP_KEY,
+            REDUX_STATE_QUARANTINE_KEY,
+            REDUX_STATE_ROLLBACK_KEY,
+        ]) {
+            expect(JSON.parse(persistedItems.get(key) ?? '{}').archives).toEqual({
+                archivedMentorResponses: [],
+                archivedAdvisorResponses: {},
+            })
+        }
+        await vi.waitFor(() =>
+            expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull(),
+        )
+    })
+
+    it('preserves an unrecognized recovery snapshot without leaving a stale cleanup marker', async () => {
+        const store = storeWithAiArchives()
+        persistedItems.set(REDUX_STATE_QUARANTINE_KEY, '{unrecognized recovery bytes')
+        setupPersistedStateSync(store)
+
+        window.dispatchEvent(new Event('pagehide'))
+
+        await vi.waitFor(() =>
+            expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull(),
+        )
+        expect(persistedItems.get(REDUX_STATE_QUARANTINE_KEY)).toBe('{unrecognized recovery bytes')
+    })
+
+    it('does not clear archived replies when a tab is only hidden', () => {
+        const store = storeWithAiArchives()
+        setupPersistedStateSync(store)
+
+        document.dispatchEvent(new Event('visibilitychange'))
+
+        expect(store.dispatch).not.toHaveBeenCalledWith(clearArchives())
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBeNull()
+    })
+
+    it('retains the retry marker when the primary snapshot write fails', async () => {
+        const store = storeWithAiArchives()
+        store.dispatch(clearArchives())
+        localStorage.setItem(AI_HISTORY_CLEAR_PENDING_KEY, '1')
+        const flush = setupPersistedStateSync(store)
+        vi.mocked(indexedDBStorage.setItem).mockRejectedValueOnce(new Error('write failed'))
+        vi.spyOn(console, 'error').mockImplementation(() => undefined)
+
+        await expect(flush()).resolves.toBe(false)
+
+        expect(localStorage.getItem(AI_HISTORY_CLEAR_PENDING_KEY)).toBe('1')
     })
 })
 

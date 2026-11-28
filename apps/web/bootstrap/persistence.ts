@@ -5,6 +5,20 @@ import { workerBus } from '@/services/workerBus'
 import { pendingLegacySecretPaths } from '@/services/settingsSecretStores'
 import { buildPersistedSnapshot } from '@/services/persistedSnapshotFormat'
 import {
+    REDUX_STATE_BACKUP_KEY,
+    REDUX_STATE_QUARANTINE_KEY,
+    REDUX_STATE_ROLLBACK_KEY,
+} from '@/constants'
+import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { clearArchives } from '@/stores/slices/archivesSlice'
+import {
+    clearArchivedAiResponsesFromSnapshot,
+    clearPendingAiHistoryClear,
+    hasNoArchivedAiResponses,
+    hasPendingAiHistoryClear,
+    markAiHistoryClearPending,
+} from '@/services/aiHistoryRetention'
+import {
     activatePersistenceFailureTab,
     clearSnapshotSaveFailureForTab,
     getPersistenceFailureMarkerTabId,
@@ -12,9 +26,40 @@ import {
     markPersistenceFailureTabClosed,
     type PendingSnapshotSaveFailureMarker,
 } from '@/services/persistenceFailureMarker'
-import { schedulePersistenceWrite } from './persistenceCoordinator'
+import { runWithExclusiveRecoveryLock, schedulePersistenceWrite } from './persistenceCoordinator'
 
 export type FlushPersistedState = () => Promise<boolean>
+
+const finishPendingAiHistoryClear = async (): Promise<boolean> => {
+    const finished = await runWithExclusiveRecoveryLock(async () => {
+        for (const key of [
+            REDUX_STATE_BACKUP_KEY,
+            REDUX_STATE_QUARANTINE_KEY,
+            REDUX_STATE_ROLLBACK_KEY,
+        ]) {
+            try {
+                const saved = await indexedDBStorage.getItem(key)
+                if (saved === null) continue
+
+                const result = clearArchivedAiResponsesFromSnapshot(saved)
+                if (result.status === 'sanitized') {
+                    await indexedDBStorage.setItem(key, result.serialized)
+                    if ((await indexedDBStorage.getItem(key)) !== result.serialized) continue
+                }
+            } catch {
+                // Preserve a recovery copy that cannot be safely read or verified.
+            }
+        }
+
+        return clearPendingAiHistoryClear()
+    })
+
+    // The active snapshot has already been saved without archives. If this browser
+    // cannot provide the recovery lock, do not keep a retry marker that would erase
+    // archives the user creates during a later session.
+    if (finished === null) return clearPendingAiHistoryClear()
+    return finished === true
+}
 
 /**
  * @param onStaleSnapshot called with the refusal when a save is refused because
@@ -46,6 +91,7 @@ export const setupPersistedStateSync = (
     const saveState = async () => {
         const saveAttempt = ++saveAttemptSequence
         let writeCallbackStarted = false
+        let wroteArchiveFreeSnapshot = false
         try {
             const saved = await schedulePersistenceWrite(async (isBlocked) => {
                 writeCallbackStarted = true
@@ -65,6 +111,7 @@ export const setupPersistedStateSync = (
                     // have passed its last-write deadline, and then nothing may be committed.
                     if (isBlocked()) return false
                     await writeSnapshot(serializedState)
+                    wroteArchiveFreeSnapshot = hasNoArchivedAiResponses(stateToSave.archives)
                     // Do this while still inside the scheduled write slot. A later
                     // save in another tab must not clear this tab's failed lineage.
                     clearSnapshotSaveFailureForTab(failureMarkerTabId, observedFailureMarkers)
@@ -80,6 +127,16 @@ export const setupPersistedStateSync = (
             if (saved) {
                 latestSuccessfulSaveAttempt = saveAttempt
                 failing = false
+                if (
+                    hasPendingAiHistoryClear() &&
+                    wroteArchiveFreeSnapshot
+                ) {
+                    try {
+                        await finishPendingAiHistoryClear()
+                    } catch {
+                        // Keep the marker so startup retries without exposing archived replies.
+                    }
+                }
             }
             return saved
         } catch (e) {
@@ -118,6 +175,11 @@ export const setupPersistedStateSync = (
     })
 
     window.addEventListener('pagehide', () => {
+        const { settings } = hydratedStore.getState()
+        if (settings.settings.privacy?.clearAiHistoryOnExit) {
+            markAiHistoryClearPending()
+            hydratedStore.dispatch(clearArchives())
+        }
         clearTimeout(saveTimeout)
         void saveState()
         markPersistenceFailureTabClosed(failureMarkerTabId)

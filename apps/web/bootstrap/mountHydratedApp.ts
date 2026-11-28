@@ -31,6 +31,7 @@ import {
     watchForCacheRestore,
 } from './writerOwnership'
 import { hydrateApplicationStores } from './store'
+import { hasPendingAiHistoryClear, hasNoArchivedAiResponses } from '@/services/aiHistoryRetention'
 import { setupPersistedStateSync, type FlushPersistedState } from './persistence'
 import { initializeCrdtLayer } from './crdt'
 import { applyLocalOnlyPrivacy } from './localOnlyPrivacy'
@@ -250,6 +251,12 @@ export const mountHydratedApp = async (): Promise<void> => {
             notifySaveFailure,
             previousSaveFailures,
         )
+        if (
+            hasPendingAiHistoryClear() &&
+            hasNoArchivedAiResponses(hydratedStore.getState().archives)
+        ) {
+            await flushPersistedState()
+        }
         if (secretsMoved) await saveAfterSecretsMoved(flushPersistedState)
         await runServicesUnlessStale(hydratedStore, flushPersistedState, async () => {
             // Post-hydration restores the saved language before translating this warning.
